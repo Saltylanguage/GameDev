@@ -32,8 +32,8 @@ public sealed class WoodChopPrototype : MonoBehaviour
         tree = treeTop.transform;
         MakeSprite("Rock", new Vector2(-0.4f, 1.9f), new Vector3(1.2f, 0.8f, 1f), new Color(0.45f, 0.46f, 0.42f));
 
-        titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } };
-        bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, normal = { textColor = Color.white } };
+        // titleStyle = new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } };
+        // bodyStyle = new GUIStyle(GUI.skin.label) { fontSize = 18, normal = { textColor = Color.white } };
     }
 
     void Update()
