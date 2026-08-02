@@ -35,7 +35,15 @@ namespace SaltyGame
             MakeSprite("Leaves", new Vector2(0f, 1.2f), new Vector3(2.05f, 1.75f, 1f), new Color(0.09f, 0.42f, 0.17f), 1, treeRoot.transform);
             var tree = treeRoot.AddComponent<TreeInteractable>();
             tree.Initialize(treeRoot);
-            Targets = new[] { (IActivityTarget)tree };
+
+            var bushRoot = new GameObject("Berry Bush");
+            bushRoot.transform.SetParent(transform, false);
+            bushRoot.transform.position = new Vector2(-1.1f, -0.7f);
+            MakeSprite("Bush", Vector2.zero, new Vector3(1.25f, 0.9f, 1f), new Color(0.25f, 0.12f, 0.48f), 1, bushRoot.transform);
+            var bush = bushRoot.AddComponent<BerryBushInteractable>();
+            bush.Initialize(bushRoot);
+
+            Targets = new IActivityTarget[] { tree, bush };
         }
 
         static SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)

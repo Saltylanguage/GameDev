@@ -22,7 +22,7 @@ namespace SaltyGame
             body ??= new GUIStyle(GUI.skin.label) { fontSize = 18, normal = { textColor = Color.white } };
 
             GUI.Label(new Rect(24, 18, 500, 45), "Island Chores", title);
-            GUI.Label(new Rect(26, 60, 300, 30), $"Day {runtime.Clock.Day} - {runtime.Clock.TimeOfDay} | Wood: {runtime.Inventory.Get(ResourceId.Wood)}", body);
+            GUI.Label(new Rect(26, 60, 500, 30), $"Day {runtime.Clock.Day} - {runtime.Clock.TimeOfDay} | Wood: {runtime.Inventory.Get(ResourceId.Wood)} | Berries: {runtime.Inventory.Get(ResourceId.Berries)}", body);
 
             if (runtime.Activities.IsActive)
             {

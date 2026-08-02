@@ -27,6 +27,8 @@ portable package setup.
 
 Implement `IActivity` for the rules, then add an `IActivityTarget` component that creates it and applies its `ActivityResult`. Register that target from `WorldRuntime.Build()`. Player movement, input adapters, interaction discovery, activity lifecycle, inventory, bootstrap, and debug UI do not need to change.
 
+The first two activities are wood chopping and berry gathering. Gathering uses the same timing input but has its own rule: three gathers complete the bush, with strong timing yielding two berries and weak timing yielding one.
+
 ## Current controls
 
 - `WASD`: move

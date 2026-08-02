@@ -39,6 +39,19 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void GatheringRewardsMoreBerriesForStrongTiming()
+        {
+            var activity = new GatheringActivity(3);
+            activity.Submit(0.5f);
+            activity.Submit(0.5f);
+            activity.Submit(0.5f);
+
+            Assert.That(activity.IsComplete, Is.True);
+            Assert.That(activity.Result.ResourceId, Is.EqualTo(ResourceId.Berries));
+            Assert.That(activity.Result.Amount, Is.EqualTo(6));
+        }
+
+        [Test]
         public void GameRuntimeBuildsTheFirstVerticalSlice()
         {
             var root = new GameObject("Game Runtime Test");
@@ -47,7 +60,7 @@ namespace SaltyGame.Tests
 
             Assert.That(runtime.State, Is.EqualTo(GameState.Playing));
             Assert.That(runtime.World.PlayerTransform, Is.Not.Null);
-            Assert.That(runtime.World.Targets.Count, Is.EqualTo(1));
+            Assert.That(runtime.World.Targets.Count, Is.EqualTo(2));
             Assert.That(runtime.Inventory.Get(ResourceId.Wood), Is.EqualTo(0));
             Assert.That(runtime.Activities.IsActive, Is.False);
 
