@@ -77,6 +77,12 @@ namespace SaltyGame.Tests
             Assert.That(runtime.Inventory.Get(ResourceId.Wood), Is.EqualTo(0));
             Assert.That(runtime.Activities.IsActive, Is.False);
 
+            var target = runtime.World.Targets[0];
+            target.ApplyActivityResult(new ActivityResult(true, ResourceId.Wood, 3));
+            Assert.That(target.CanInteract, Is.False);
+            runtime.World.ResetTargetsForNewDay();
+            Assert.That(target.CanInteract, Is.True);
+
             Object.DestroyImmediate(runtime.World.gameObject);
             Object.DestroyImmediate(root);
         }
@@ -89,13 +95,13 @@ namespace SaltyGame.Tests
             Assert.That(clock.Day, Is.EqualTo(1));
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
 
-            clock.AdvanceActivity();
+            Assert.That(clock.AdvanceActivity(), Is.False);
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Afternoon));
 
-            clock.AdvanceActivity();
+            Assert.That(clock.AdvanceActivity(), Is.False);
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Night));
 
-            clock.AdvanceActivity();
+            Assert.That(clock.AdvanceActivity(), Is.True);
             Assert.That(clock.Day, Is.EqualTo(2));
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
         }
@@ -108,6 +114,7 @@ namespace SaltyGame.Tests
             public bool Completed { get; private set; }
             public IActivity CreateActivity() => new WoodChoppingActivity(6, 3);
             public void ApplyActivityResult(ActivityResult result) => Completed = result.Succeeded;
+            public void ResetForNewDay() => Completed = false;
         }
     }
 }

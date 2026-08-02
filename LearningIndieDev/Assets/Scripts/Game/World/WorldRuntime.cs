@@ -51,6 +51,12 @@ namespace SaltyGame
             Targets = new IActivityTarget[] { tree, bush, rock };
         }
 
+        public void ResetTargetsForNewDay()
+        {
+            foreach (var target in Targets)
+                target.ResetForNewDay();
+        }
+
         static SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)
         {
             var sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);

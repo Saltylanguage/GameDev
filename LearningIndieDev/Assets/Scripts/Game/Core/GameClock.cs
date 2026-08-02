@@ -12,17 +12,17 @@ namespace SaltyGame
         public int Day { get; private set; } = 1;
         public TimeOfDay TimeOfDay { get; private set; } = TimeOfDay.Morning;
 
-        public void AdvanceActivity()
+        public bool AdvanceActivity()
         {
             if (TimeOfDay == TimeOfDay.Night)
             {
                 Day++;
                 TimeOfDay = TimeOfDay.Morning;
+                return true;
             }
-            else
-            {
-                TimeOfDay = (TimeOfDay)((int)TimeOfDay + 1);
-            }
+
+            TimeOfDay = (TimeOfDay)((int)TimeOfDay + 1);
+            return false;
         }
     }
 }

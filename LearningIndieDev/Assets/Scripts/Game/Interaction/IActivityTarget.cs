@@ -9,5 +9,6 @@ namespace SaltyGame
         Vector2 Position { get; }
         IActivity CreateActivity();
         void ApplyActivityResult(ActivityResult result);
+        void ResetForNewDay();
     }
 }

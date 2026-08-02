@@ -12,7 +12,10 @@ namespace SaltyGame
         public PlayerController Player { get; private set; }
         public InteractionController Interaction { get; private set; }
         public ActivityController Activities { get; private set; }
+        public string TimeMessage { get; private set; }
+        public bool HasTimeMessage => timeMessageRemaining > 0f;
         bool initialized;
+        float timeMessageRemaining;
 
         void Awake()
         {
@@ -52,8 +55,18 @@ namespace SaltyGame
             if (State == GameState.Paused)
                 return;
 
+            if (timeMessageRemaining > 0f)
+                timeMessageRemaining -= Time.deltaTime;
+
             if (Activities.Tick(Time.deltaTime))
-                Clock.AdvanceActivity();
+            {
+                var newDay = Clock.AdvanceActivity();
+                if (newDay)
+                    World.ResetTargetsForNewDay();
+
+                TimeMessage = newDay ? $"NEW DAY\nDay {Clock.Day} - Morning" : Clock.TimeOfDay.ToString().ToUpperInvariant();
+                timeMessageRemaining = 3f;
+            }
             Player.Tick(Time.deltaTime);
             Interaction.Tick();
         }

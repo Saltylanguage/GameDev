@@ -29,5 +29,11 @@ namespace SaltyGame
             depleted = true;
             visualRoot.SetActive(false);
         }
+
+        public void ResetForNewDay()
+        {
+            depleted = false;
+            visualRoot.SetActive(true);
+        }
     }
 }
