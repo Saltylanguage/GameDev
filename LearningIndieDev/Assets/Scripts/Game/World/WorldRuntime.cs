@@ -5,6 +5,7 @@ namespace SaltyGame
 {
     public sealed class WorldRuntime : MonoBehaviour
     {
+        Camera worldCamera;
         public Transform PlayerTransform { get; private set; }
         public IReadOnlyList<IActivityTarget> Targets { get; private set; }
 
@@ -22,6 +23,7 @@ namespace SaltyGame
             camera.orthographicSize = 5.5f;
             camera.transform.position = new Vector3(0f, 0f, -10f);
             camera.backgroundColor = new Color(0.20f, 0.63f, 0.77f);
+            worldCamera = camera;
 
             MakeSprite("Sand", Vector2.zero, new Vector3(13f, 9f, 1f), new Color(0.94f, 0.78f, 0.43f), -10, transform);
             MakeSprite("WaterEdge", new Vector2(0f, -4.2f), new Vector3(13f, 0.5f, 1f), new Color(0.11f, 0.48f, 0.72f), -9, transform);
@@ -49,6 +51,19 @@ namespace SaltyGame
             bush.Initialize(bushRoot);
 
             Targets = new IActivityTarget[] { tree, bush, rock };
+        }
+
+        public void SetTimeOfDay(TimeOfDay timeOfDay)
+        {
+            if (worldCamera == null)
+                return;
+
+            worldCamera.backgroundColor = timeOfDay switch
+            {
+                TimeOfDay.Afternoon => new Color(0.91f, 0.52f, 0.28f),
+                TimeOfDay.Night => new Color(0.05f, 0.08f, 0.20f),
+                _ => new Color(0.20f, 0.63f, 0.77f)
+            };
         }
 
         public void ResetTargetsForNewDay()

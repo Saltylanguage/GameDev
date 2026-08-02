@@ -12,10 +12,7 @@ namespace SaltyGame
         public PlayerController Player { get; private set; }
         public InteractionController Interaction { get; private set; }
         public ActivityController Activities { get; private set; }
-        public string TimeMessage { get; private set; }
-        public bool HasTimeMessage => timeMessageRemaining > 0f;
         bool initialized;
-        float timeMessageRemaining;
 
         void Awake()
         {
@@ -34,6 +31,7 @@ namespace SaltyGame
 
             World = new GameObject("WorldRuntime").AddComponent<WorldRuntime>();
             World.Build();
+            World.SetTimeOfDay(Clock.TimeOfDay);
 
             Activities = new ActivityController(Inventory);
             Player = new PlayerController(World.PlayerTransform, Input, Activities);
@@ -55,17 +53,12 @@ namespace SaltyGame
             if (State == GameState.Paused)
                 return;
 
-            if (timeMessageRemaining > 0f)
-                timeMessageRemaining -= Time.deltaTime;
-
             if (Activities.Tick(Time.deltaTime))
             {
                 var newDay = Clock.AdvanceActivity();
+                World.SetTimeOfDay(Clock.TimeOfDay);
                 if (newDay)
                     World.ResetTargetsForNewDay();
-
-                TimeMessage = newDay ? $"NEW DAY\nDay {Clock.Day} - Morning" : Clock.TimeOfDay.ToString().ToUpperInvariant();
-                timeMessageRemaining = 3f;
             }
             Player.Tick(Time.deltaTime);
             Interaction.Tick();
