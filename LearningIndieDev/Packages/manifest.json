@@ -1,6 +1,5 @@
 {
   "dependencies": {
-    "com.noesis.noesisgui": "file:C:/Users/joshc/Downloads/NoesisGUI-Unity-3.2.13-Indie",
     "com.unity.ai.navigation": "2.0.12",
     "com.unity.cinemachine": "3.1.7",
     "com.unity.collab-proxy": "2.12.4",
