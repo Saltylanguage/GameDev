@@ -36,3 +36,10 @@ The first three activities are wood chopping, berry gathering, and mining. Each 
 - `Space`: submit the current activity timing hit
 - `Escape`: cancel the active activity
 - `F3`: toggle diagnostics
+
+## Editor validation
+
+Use `Salty > Validate Bootstrap Scene` from the Unity editor. It checks that
+the Bootstrap scene exists, is enabled in Build Settings, has one active
+`GameRuntime` composition root, and no longer contains the removed giant
+prototype.
