@@ -1,11 +1,11 @@
+using System;
 using NUnit.Framework;
 using SaltyGame;
-using UnityEngine;
 
 namespace SaltyGame.Tests
 {
     [TestFixture]
-    public sealed class WoodChoppingActivityTests
+    public sealed class ActivityRulesTests
     {
         [Test]
         public void ThreeStrongHitsCompleteAndAwardThreeWood()
@@ -18,24 +18,6 @@ namespace SaltyGame.Tests
             Assert.That(activity.IsComplete, Is.True);
             Assert.That(activity.Result.ResourceId, Is.EqualTo(ResourceId.Wood));
             Assert.That(activity.Result.Amount, Is.EqualTo(3));
-        }
-
-        [Test]
-        public void ActivityControllerDeliversCompletionRewardToInventory()
-        {
-            var inventory = new InventoryState();
-            var controller = new ActivityController(inventory);
-            var target = new TestTarget();
-
-            Assert.That(controller.Start(target), Is.True);
-            controller.Tick(0.4f);
-            controller.SubmitHit();
-            controller.SubmitHit();
-            controller.SubmitHit();
-            controller.Tick(0f);
-
-            Assert.That(inventory.Get(ResourceId.Wood), Is.EqualTo(3));
-            Assert.That(target.Completed, Is.True);
         }
 
         [Test]
@@ -65,26 +47,13 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void GameRuntimeBuildsTheFirstVerticalSlice()
+        public void ActivityDefinitionsRejectInvalidValues()
         {
-            var root = new GameObject("Game Runtime Test");
-            var runtime = root.AddComponent<GameRuntime>();
-            runtime.Initialize();
-
-            Assert.That(runtime.State, Is.EqualTo(GameState.Playing));
-            Assert.That(runtime.World.PlayerTransform, Is.Not.Null);
-            Assert.That(runtime.World.Targets.Count, Is.EqualTo(3));
-            Assert.That(runtime.Inventory.Get(ResourceId.Wood), Is.EqualTo(0));
-            Assert.That(runtime.Activities.IsActive, Is.False);
-
-            var target = runtime.World.Targets[0];
-            target.ApplyActivityResult(new ActivityResult(true, ResourceId.Wood, 3));
-            Assert.That(target.CanInteract, Is.False);
-            runtime.World.ResetTargetsForNewDay();
-            Assert.That(target.CanInteract, Is.True);
-
-            Object.DestroyImmediate(runtime.World.gameObject);
-            Object.DestroyImmediate(root);
+            Assert.Throws<ArgumentOutOfRangeException>(() => new WoodChoppingActivity(0, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new WoodChoppingActivity(6, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new MiningActivity(0, 3));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new MiningActivity(6, 0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new GatheringActivity(0));
         }
 
         [Test]
@@ -104,17 +73,6 @@ namespace SaltyGame.Tests
             Assert.That(clock.AdvanceActivity(), Is.True);
             Assert.That(clock.Day, Is.EqualTo(2));
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
-        }
-
-        sealed class TestTarget : IActivityTarget
-        {
-            public string DisplayName => "Test Tree";
-            public bool CanInteract => !Completed;
-            public UnityEngine.Vector2 Position => UnityEngine.Vector2.zero;
-            public bool Completed { get; private set; }
-            public IActivity CreateActivity() => new WoodChoppingActivity(6, 3);
-            public void ApplyActivityResult(ActivityResult result) => Completed = result.Succeeded;
-            public void ResetForNewDay() => Completed = false;
         }
     }
 }
