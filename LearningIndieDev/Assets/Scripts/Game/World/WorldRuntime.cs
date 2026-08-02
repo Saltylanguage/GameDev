@@ -26,7 +26,12 @@ namespace SaltyGame
             MakeSprite("Sand", Vector2.zero, new Vector3(13f, 9f, 1f), new Color(0.94f, 0.78f, 0.43f), -10, transform);
             MakeSprite("WaterEdge", new Vector2(0f, -4.2f), new Vector3(13f, 0.5f, 1f), new Color(0.11f, 0.48f, 0.72f), -9, transform);
             PlayerTransform = MakeSprite("Player", new Vector2(-2.8f, -0.8f), new Vector3(0.65f, 0.85f, 1f), new Color(0.94f, 0.33f, 0.22f), 2, transform).transform;
-            MakeSprite("Rock", new Vector2(-0.4f, 1.9f), new Vector3(1.2f, 0.8f, 1f), new Color(0.45f, 0.46f, 0.42f), 1, transform);
+            var rockRoot = new GameObject("Rock");
+            rockRoot.transform.SetParent(transform, false);
+            rockRoot.transform.position = new Vector2(-0.4f, 1.9f);
+            MakeSprite("Stone", Vector2.zero, new Vector3(1.2f, 0.8f, 1f), new Color(0.45f, 0.46f, 0.42f), 1, rockRoot.transform);
+            var rock = rockRoot.AddComponent<RockInteractable>();
+            rock.Initialize(rockRoot);
 
             var treeRoot = new GameObject("Tree");
             treeRoot.transform.SetParent(transform, false);
@@ -43,7 +48,7 @@ namespace SaltyGame
             var bush = bushRoot.AddComponent<BerryBushInteractable>();
             bush.Initialize(bushRoot);
 
-            Targets = new IActivityTarget[] { tree, bush };
+            Targets = new IActivityTarget[] { tree, bush, rock };
         }
 
         static SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)

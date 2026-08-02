@@ -4,5 +4,6 @@ namespace SaltyGame
     {
         public const string Wood = "wood";
         public const string Berries = "berries";
+        public const string Stone = "stone";
     }
 }
