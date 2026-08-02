@@ -24,14 +24,15 @@ namespace SaltyGame
             return Active != null;
         }
 
-        public void Tick(float deltaTime)
+        public bool Tick(float deltaTime)
         {
             if (Active == null)
-                return;
+                return false;
 
             Active.Tick(deltaTime);
             if (Active.IsComplete || Active.IsCancelled)
             {
+                var completed = Active.IsComplete;
                 if (Active.IsComplete)
                 {
                     inventory.Add(Active.Result.ResourceId, Active.Result.Amount);
@@ -39,7 +40,10 @@ namespace SaltyGame
                 }
                 Active = null;
                 target = null;
+                return completed;
             }
+
+            return false;
         }
 
         public void SubmitHit()

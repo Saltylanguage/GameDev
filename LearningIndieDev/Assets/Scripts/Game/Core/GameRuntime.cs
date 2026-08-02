@@ -52,8 +52,8 @@ namespace SaltyGame
             if (State == GameState.Paused)
                 return;
 
-            Clock.Tick(Time.deltaTime);
-            Activities.Tick(Time.deltaTime);
+            if (Activities.Tick(Time.deltaTime))
+                Clock.AdvanceActivity();
             Player.Tick(Time.deltaTime);
             Interaction.Tick();
         }

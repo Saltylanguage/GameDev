@@ -81,6 +81,25 @@ namespace SaltyGame.Tests
             Object.DestroyImmediate(root);
         }
 
+        [Test]
+        public void CompletingActivitiesAdvancesTheDayCycle()
+        {
+            var clock = new GameClock();
+
+            Assert.That(clock.Day, Is.EqualTo(1));
+            Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
+
+            clock.AdvanceActivity();
+            Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Afternoon));
+
+            clock.AdvanceActivity();
+            Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Night));
+
+            clock.AdvanceActivity();
+            Assert.That(clock.Day, Is.EqualTo(2));
+            Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
+        }
+
         sealed class TestTarget : IActivityTarget
         {
             public string DisplayName => "Test Tree";
