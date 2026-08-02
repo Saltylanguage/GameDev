@@ -1,3 +1,5 @@
+using System;
+
 namespace SaltyGame
 {
     public sealed class WoodChoppingActivity : IActivity
@@ -11,6 +13,11 @@ namespace SaltyGame
 
         public WoodChoppingActivity(int health, int rewardAmount)
         {
+            if (health <= 0)
+                throw new ArgumentOutOfRangeException(nameof(health), "Health must be greater than zero.");
+            if (rewardAmount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(rewardAmount), "Reward amount must be greater than zero.");
+
             this.health = health;
             this.rewardAmount = rewardAmount;
         }

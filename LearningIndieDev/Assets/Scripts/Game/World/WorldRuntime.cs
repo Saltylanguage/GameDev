@@ -5,13 +5,19 @@ namespace SaltyGame
 {
     public sealed class WorldRuntime : MonoBehaviour
     {
+        readonly List<Sprite> generatedSprites = new List<Sprite>();
         Camera worldCamera;
         public Transform PlayerTransform { get; private set; }
         public IReadOnlyList<IActivityTarget> Targets { get; private set; }
+        public bool IsBuilt { get; private set; }
 
-        public void Build()
+        public void Build(Camera sceneCamera)
         {
-            var camera = Camera.main;
+            if (IsBuilt)
+                return;
+
+            IsBuilt = true;
+            var camera = sceneCamera;
             if (camera == null)
             {
                 camera = new GameObject("Main Camera").AddComponent<Camera>();
@@ -53,6 +59,20 @@ namespace SaltyGame
             Targets = new IActivityTarget[] { tree, bush, rock };
         }
 
+        void OnDestroy()
+        {
+            foreach (var sprite in generatedSprites)
+            {
+                if (sprite == null)
+                    continue;
+
+                if (Application.isPlaying)
+                    Destroy(sprite);
+                else
+                    DestroyImmediate(sprite);
+            }
+        }
+
         public void SetTimeOfDay(TimeOfDay timeOfDay)
         {
             if (worldCamera == null)
@@ -72,9 +92,10 @@ namespace SaltyGame
                 target.ResetForNewDay();
         }
 
-        static SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)
+        SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)
         {
             var sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
+            generatedSprites.Add(sprite);
             var item = new GameObject(name);
             item.transform.SetParent(parent, false);
             item.transform.localPosition = position;

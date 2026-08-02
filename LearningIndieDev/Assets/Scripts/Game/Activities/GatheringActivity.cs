@@ -1,3 +1,5 @@
+using System;
+
 namespace SaltyGame
 {
     public sealed class GatheringActivity : IActivity
@@ -12,6 +14,9 @@ namespace SaltyGame
 
         public GatheringActivity(int requiredActions)
         {
+            if (requiredActions <= 0)
+                throw new ArgumentOutOfRangeException(nameof(requiredActions), "Required actions must be greater than zero.");
+
             this.requiredActions = requiredActions;
         }
 

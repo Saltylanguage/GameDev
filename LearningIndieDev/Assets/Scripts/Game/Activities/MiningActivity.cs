@@ -1,3 +1,5 @@
+using System;
+
 namespace SaltyGame
 {
     public sealed class MiningActivity : IActivity
@@ -8,6 +10,11 @@ namespace SaltyGame
 
         public MiningActivity(int health, int rewardAmount)
         {
+            if (health <= 0)
+                throw new ArgumentOutOfRangeException(nameof(health), "Health must be greater than zero.");
+            if (rewardAmount <= 0)
+                throw new ArgumentOutOfRangeException(nameof(rewardAmount), "Reward amount must be greater than zero.");
+
             this.health = health;
             this.rewardAmount = rewardAmount;
         }

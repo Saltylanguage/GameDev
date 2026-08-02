@@ -11,6 +11,7 @@ namespace SaltyGame.EditorTools
     public static class SaltyBootstrapValidator
     {
         const string BootstrapPath = "Assets/Scenes/Boostrap.unity";
+        const string LegacyPrototypePath = "Assets/Scripts/Prototype/WoodChopPrototype.cs";
 
         [MenuItem("Salty/Validate Bootstrap Scene")]
         public static void ValidateBootstrapScene()
@@ -28,41 +29,49 @@ namespace SaltyGame.EditorTools
             else
                 checks.Add("FAIL: Bootstrap is missing or disabled in Build Settings");
 
-            var scene = SceneManager.GetSceneByPath(BootstrapPath);
-            var openedHere = false;
-            try
+            if (sceneAsset != null)
             {
-                if (!scene.IsValid() || !scene.isLoaded)
+                var scene = SceneManager.GetSceneByPath(BootstrapPath);
+                var openedHere = false;
+                try
                 {
-                    scene = EditorSceneManager.OpenScene(BootstrapPath, OpenSceneMode.Additive);
-                    openedHere = true;
+                    if (!scene.IsValid() || !scene.isLoaded)
+                    {
+                        scene = EditorSceneManager.OpenScene(BootstrapPath, OpenSceneMode.Additive);
+                        openedHere = true;
+                    }
+
+                    var runtimes = scene.GetRootGameObjects()
+                        .Select(root => root.GetComponent<GameRuntime>())
+                        .Where(runtime => runtime != null)
+                        .ToArray();
+
+                    if (runtimes.Length == 1 && runtimes[0].enabled && runtimes[0].gameObject.activeInHierarchy)
+                        checks.Add("PASS: Exactly one active GameRuntime composition root exists");
+                    else
+                        checks.Add($"FAIL: Expected one active GameRuntime, found {runtimes.Length}");
+
+                    if (AssetDatabase.LoadAssetAtPath<MonoScript>(LegacyPrototypePath) == null)
+                        checks.Add("PASS: Legacy giant prototype is absent");
+                    else
+                        checks.Add("FAIL: Legacy giant prototype still exists");
                 }
-
-                var runtimes = scene.GetRootGameObjects()
-                    .Select(root => root.GetComponent<GameRuntime>())
-                    .Where(runtime => runtime != null)
-                    .ToArray();
-
-                if (runtimes.Length == 1 && runtimes[0].enabled && runtimes[0].gameObject.activeInHierarchy)
-                    checks.Add("PASS: Exactly one active GameRuntime composition root exists");
-                else
-                    checks.Add($"FAIL: Expected one active GameRuntime, found {runtimes.Length}");
-
-                if (AssetDatabase.LoadAssetAtPath<MonoScript>("Assets/Scripts/Prototype/WoodChopPrototype.cs") == null)
-                    checks.Add("PASS: Legacy giant prototype is absent");
-                else
-                    checks.Add("FAIL: Legacy giant prototype still exists");
+                finally
+                {
+                    if (openedHere && scene.IsValid() && scene.isLoaded)
+                        EditorSceneManager.CloseScene(scene, true);
+                }
             }
-            finally
+            else
             {
-                if (openedHere && scene.IsValid() && scene.isLoaded)
-                    EditorSceneManager.CloseScene(scene, true);
+                checks.Add("FAIL: Composition root could not be inspected because the scene is missing");
+                checks.Add("FAIL: Legacy prototype check skipped because the scene is missing");
             }
 
             var passed = checks.All(check => check.StartsWith("PASS:"));
             foreach (var check in checks)
             {
-                if (passed)
+                if (check.StartsWith("PASS:"))
                     Debug.Log("[Salty] " + check);
                 else
                     Debug.LogError("[Salty] " + check);
@@ -71,7 +80,7 @@ namespace SaltyGame.EditorTools
             if (!Application.isBatchMode)
             {
                 EditorUtility.DisplayDialog(
-                    "Salty Bootstrap Validation",
+                    $"Salty Bootstrap Validation - {(passed ? "PASS" : "FAIL")}",
                     string.Join("\n", checks),
                     "Close");
             }

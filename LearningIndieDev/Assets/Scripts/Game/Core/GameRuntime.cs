@@ -29,8 +29,10 @@ namespace SaltyGame
             Inventory = new InventoryState();
             Input = gameObject.AddComponent<PlayerInputAdapter>();
 
-            World = new GameObject("WorldRuntime").AddComponent<WorldRuntime>();
-            World.Build();
+            var worldObject = new GameObject("WorldRuntime");
+            worldObject.transform.SetParent(transform, false);
+            World = worldObject.AddComponent<WorldRuntime>();
+            World.Build(Camera.main);
             World.SetTimeOfDay(Clock.TimeOfDay);
 
             Activities = new ActivityController(Inventory);
