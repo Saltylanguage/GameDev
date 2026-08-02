@@ -21,6 +21,8 @@ namespace SaltyGame
         }
 
         public string DisplayName => "Gathering";
+        public ActivityKind Kind => ActivityKind.Gathering;
+        public bool RequiresTimingInput => true;
         public bool IsComplete { get; private set; }
         public bool IsCancelled { get; private set; }
         public float Progress => elapsed * 1.25f % 2f <= 1f ? elapsed * 1.25f % 2f : 2f - elapsed * 1.25f % 2f;

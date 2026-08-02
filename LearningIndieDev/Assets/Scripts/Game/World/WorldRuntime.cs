@@ -7,11 +7,17 @@ namespace SaltyGame
     {
         readonly List<Sprite> generatedSprites = new List<Sprite>();
         Camera worldCamera;
+        ShelterInteractable shelterSite;
         public Transform PlayerTransform { get; private set; }
         public IReadOnlyList<IActivityTarget> Targets { get; private set; }
         public bool IsBuilt { get; private set; }
 
         public void Build(Camera sceneCamera)
+        {
+            Build(sceneCamera, new InventoryState(), new CampState());
+        }
+
+        public void Build(Camera sceneCamera, InventoryState inventory, CampState camp)
         {
             if (IsBuilt)
                 return;
@@ -28,6 +34,7 @@ namespace SaltyGame
             camera.orthographic = true;
             camera.orthographicSize = 5.5f;
             camera.transform.position = new Vector3(0f, 0f, -10f);
+            camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = new Color(0.20f, 0.63f, 0.77f);
             worldCamera = camera;
 
@@ -56,7 +63,27 @@ namespace SaltyGame
             var bush = bushRoot.AddComponent<BerryBushInteractable>();
             bush.Initialize(bushRoot);
 
-            Targets = new IActivityTarget[] { tree, bush, rock };
+            var campRoot = new GameObject("Campfire Site");
+            campRoot.transform.SetParent(transform, false);
+            campRoot.transform.position = new Vector2(-1.2f, -2.2f);
+            MakeSprite("Fire Ring", Vector2.zero, new Vector3(1.35f, 0.45f, 1f), new Color(0.24f, 0.22f, 0.20f), 1, campRoot.transform);
+            var fire = MakeSprite("Campfire", new Vector2(0f, 0.35f), new Vector3(0.45f, 0.8f, 1f), new Color(1f, 0.45f, 0.08f), 2, campRoot.transform);
+            fire.gameObject.SetActive(camp.CampfireBuilt);
+            var campfire = campRoot.AddComponent<CampfireInteractable>();
+            campfire.Initialize(fire.gameObject, inventory, camp);
+
+            var shelterRoot = new GameObject("Shelter Site");
+            shelterRoot.transform.SetParent(transform, false);
+            shelterRoot.transform.position = new Vector2(1.5f, -2.2f);
+            var shelter = MakeSprite("Shelter", Vector2.zero, new Vector3(1.4f, 1.1f, 1f), new Color(0.42f, 0.27f, 0.12f), 1, shelterRoot.transform);
+            shelter.gameObject.SetActive(camp.ShelterBuilt);
+            var shelterMarker = MakeSprite("Shelter Marker", new Vector2(0f, 1.1f), new Vector3(0.34f, 0.34f, 1f), new Color(1f, 0.82f, 0.12f), 3, shelterRoot.transform);
+            shelterMarker.transform.localRotation = Quaternion.Euler(0f, 0f, 45f);
+            shelterMarker.gameObject.SetActive(false);
+            shelterSite = shelterRoot.AddComponent<ShelterInteractable>();
+            shelterSite.Initialize(shelter.gameObject, shelterMarker.gameObject, inventory, camp);
+
+            Targets = new IActivityTarget[] { tree, bush, rock, campfire, shelterSite };
         }
 
         void OnDestroy()
@@ -92,6 +119,12 @@ namespace SaltyGame
                 target.ResetForNewDay();
         }
 
+        public void SetShelterMarkerVisible(bool visible)
+        {
+            if (shelterSite != null)
+                shelterSite.SetMarkerVisible(visible);
+        }
+
         SpriteRenderer MakeSprite(string name, Vector2 position, Vector3 scale, Color color, int sortingOrder, Transform parent = null)
         {
             var sprite = Sprite.Create(Texture2D.whiteTexture, new Rect(0f, 0f, 1f, 1f), new Vector2(0.5f, 0.5f), 1f);
@@ -107,4 +140,5 @@ namespace SaltyGame
             return renderer;
         }
     }
+
 }

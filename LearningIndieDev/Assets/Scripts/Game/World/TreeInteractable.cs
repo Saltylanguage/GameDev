@@ -18,7 +18,7 @@ namespace SaltyGame
 
         public IActivity CreateActivity()
         {
-            return new WoodChoppingActivity(health: 6, rewardAmount: 3);
+            return new WoodChoppingActivity(health: 6, rewardAmount: CampState.CampfireWoodCost);
         }
 
         public void ApplyActivityResult(ActivityResult result)

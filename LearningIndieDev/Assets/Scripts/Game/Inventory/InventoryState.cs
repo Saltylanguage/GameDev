@@ -19,5 +19,14 @@ namespace SaltyGame
         {
             return amounts.TryGetValue(resourceId, out var amount) ? amount : 0;
         }
+
+        public bool TryRemove(string resourceId, int amount)
+        {
+            if (string.IsNullOrEmpty(resourceId) || amount <= 0 || Get(resourceId) < amount)
+                return false;
+
+            amounts[resourceId] -= amount;
+            return true;
+        }
     }
 }

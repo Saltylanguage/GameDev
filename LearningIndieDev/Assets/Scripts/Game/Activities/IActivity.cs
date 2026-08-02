@@ -3,6 +3,8 @@ namespace SaltyGame
     public interface IActivity
     {
         string DisplayName { get; }
+        ActivityKind Kind { get; }
+        bool RequiresTimingInput { get; }
         bool IsComplete { get; }
         bool IsCancelled { get; }
         float Progress { get; }

@@ -13,4 +13,5 @@ namespace SaltyGame
             Amount = amount;
         }
     }
+
 }

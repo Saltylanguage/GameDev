@@ -12,6 +12,8 @@ namespace SaltyGame.EditorTools
     {
         const string BootstrapPath = "Assets/Scenes/Boostrap.unity";
         const string LegacyPrototypePath = "Assets/Scripts/Prototype/WoodChopPrototype.cs";
+        const string SurvivalStatePath = "Assets/Scripts/Game/Survival/SurvivalState.cs";
+        const string CampfirePath = "Assets/Scripts/Game/Camp/CampfireInteractable.cs";
 
         [MenuItem("Salty/Validate Bootstrap Scene")]
         public static void ValidateBootstrapScene()
@@ -51,10 +53,20 @@ namespace SaltyGame.EditorTools
                     else
                         checks.Add($"FAIL: Expected one active GameRuntime, found {runtimes.Length}");
 
-                    if (AssetDatabase.LoadAssetAtPath<MonoScript>(LegacyPrototypePath) == null)
-                        checks.Add("PASS: Legacy giant prototype is absent");
-                    else
-                        checks.Add("FAIL: Legacy giant prototype still exists");
+            if (AssetDatabase.LoadAssetAtPath<MonoScript>(LegacyPrototypePath) == null)
+                checks.Add("PASS: Legacy giant prototype is absent");
+            else
+                checks.Add("FAIL: Legacy giant prototype still exists");
+
+            if (AssetDatabase.LoadAssetAtPath<MonoScript>(SurvivalStatePath) != null)
+                checks.Add("PASS: Survival runtime dependency exists");
+            else
+                checks.Add("FAIL: Missing SurvivalState runtime dependency");
+
+            if (AssetDatabase.LoadAssetAtPath<MonoScript>(CampfirePath) != null)
+                checks.Add("PASS: Camp runtime dependency exists");
+            else
+                checks.Add("FAIL: Missing CampfireInteractable runtime dependency");
                 }
                 finally
                 {

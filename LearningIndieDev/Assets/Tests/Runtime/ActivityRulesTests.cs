@@ -57,7 +57,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void CompletingActivitiesAdvancesTheDayCycle()
+        public void ActivitiesReachNightAndSleepStartsTheNextDay()
         {
             var clock = new GameClock();
 
@@ -67,12 +67,28 @@ namespace SaltyGame.Tests
             Assert.That(clock.AdvanceActivity(), Is.False);
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Afternoon));
 
-            Assert.That(clock.AdvanceActivity(), Is.False);
+            Assert.That(clock.AdvanceActivity(), Is.True);
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Night));
 
-            Assert.That(clock.AdvanceActivity(), Is.True);
+            Assert.That(clock.AdvanceActivity(), Is.False);
+            Assert.That(clock.Day, Is.EqualTo(1));
+
+            clock.BeginNextDay();
             Assert.That(clock.Day, Is.EqualTo(2));
             Assert.That(clock.TimeOfDay, Is.EqualTo(TimeOfDay.Morning));
+        }
+
+        [Test]
+        public void CookingCreatesOneMealAfterItsDuration()
+        {
+            var activity = new CookingActivity();
+            activity.Tick(0.5f);
+            Assert.That(activity.IsComplete, Is.False);
+
+            activity.Tick(0.5f);
+            Assert.That(activity.IsComplete, Is.True);
+            Assert.That(activity.Result.ResourceId, Is.EqualTo(ResourceId.CookedMeal));
+            Assert.That(activity.Result.Amount, Is.EqualTo(1));
         }
     }
 }

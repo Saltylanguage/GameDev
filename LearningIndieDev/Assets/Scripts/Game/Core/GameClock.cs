@@ -15,14 +15,16 @@ namespace SaltyGame
         public bool AdvanceActivity()
         {
             if (TimeOfDay == TimeOfDay.Night)
-            {
-                Day++;
-                TimeOfDay = TimeOfDay.Morning;
-                return true;
-            }
+                return false;
 
             TimeOfDay = (TimeOfDay)((int)TimeOfDay + 1);
-            return false;
+            return TimeOfDay == TimeOfDay.Night;
+        }
+
+        public void BeginNextDay()
+        {
+            Day++;
+            TimeOfDay = TimeOfDay.Morning;
         }
     }
 }
