@@ -1,15 +1,5 @@
 {
   "dependencies": {
-    "com.noesis.noesisgui": {
-      "version": "file:C:/Users/joshc/Downloads/NoesisGUI-Unity-3.2.13-Indie",
-      "depth": 0,
-      "source": "local",
-      "dependencies": {
-        "com.unity.inputsystem": "1.1.1",
-        "com.unity.modules.physics": "1.0.0",
-        "com.unity.modules.video": "1.0.0"
-      }
-    },
     "com.unity.ai.navigation": {
       "version": "2.0.12",
       "depth": 0,
