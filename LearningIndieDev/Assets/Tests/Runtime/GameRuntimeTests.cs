@@ -27,7 +27,7 @@ namespace SaltyGame.Tests
             Assert.That(runtime.World.IsBuilt, Is.True);
             Assert.That(runtime.World.transform.parent, Is.EqualTo(runtimeRoot.transform));
             Assert.That(runtime.World.PlayerTransform, Is.Not.Null);
-            Assert.That(runtime.World.Targets.Count, Is.EqualTo(5));
+            Assert.That(runtime.World.Targets.Count, Is.EqualTo(7));
             Assert.That(Camera.main.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
 
             var worldChildCount = runtime.World.transform.childCount;
@@ -154,6 +154,68 @@ namespace SaltyGame.Tests
             Assert.That(runtime.Storm.IsResolved, Is.True);
             Assert.That(runtime.Survival.Hunger, Is.EqualTo(hungerBeforeStorm + 32));
             Assert.That(runtime.Survival.Energy, Is.EqualTo(energyBeforeStorm - 25));
+        }
+
+        [Test]
+        public void CrudeAxeCostsResourcesAndImprovesTreeChopping()
+        {
+            runtimeRoot = new GameObject("Game Runtime Test");
+            var runtime = runtimeRoot.AddComponent<GameRuntime>();
+            runtime.Initialize();
+
+            runtime.Inventory.Add(ResourceId.Wood, CampState.CampfireWoodCost + CampState.CrudeAxeWoodCost);
+            runtime.Inventory.Add(ResourceId.Stone, CampState.CampfireStoneCost + CampState.CrudeAxeStoneCost);
+            var campfire = (CampfireInteractable)runtime.World.Targets[3];
+            Assert.That(runtime.Activities.Start(campfire), Is.True);
+            runtime.Activities.Tick(0f);
+
+            Assert.That(campfire.TryCraftCrudeAxe(), Is.True);
+            Assert.That(runtime.Camp.CrudeAxeCrafted, Is.True);
+            Assert.That(runtime.Inventory.Get(ResourceId.Wood), Is.EqualTo(0));
+            Assert.That(runtime.Inventory.Get(ResourceId.Stone), Is.EqualTo(0));
+
+            var tree = (TreeInteractable)runtime.World.Targets[0];
+            var axeChop = (WoodChoppingActivity)tree.CreateActivity();
+            axeChop.Submit(0.5f);
+            axeChop.Submit(0.5f);
+            Assert.That(axeChop.IsComplete, Is.True);
+            Assert.That(axeChop.Result.Amount, Is.EqualTo(8));
+        }
+
+        [Test]
+        public void JungleEdgeUsesTheAxeAndSurvivorHelpsOncePerDay()
+        {
+            runtimeRoot = new GameObject("Game Runtime Test");
+            var runtime = runtimeRoot.AddComponent<GameRuntime>();
+            runtime.Initialize();
+
+            var jungle = (JungleEdgeInteractable)runtime.World.Targets[5];
+            var blockedByHands = (WoodChoppingActivity)jungle.CreateActivity();
+            blockedByHands.Submit(0.5f);
+            Assert.That(blockedByHands.IsComplete, Is.False);
+
+            runtime.Inventory.Add(ResourceId.Wood, CampState.CampfireWoodCost + CampState.CrudeAxeWoodCost);
+            runtime.Inventory.Add(ResourceId.Stone, CampState.CampfireStoneCost + CampState.CrudeAxeStoneCost);
+            var campfire = (CampfireInteractable)runtime.World.Targets[3];
+            runtime.Activities.Start(campfire);
+            runtime.Activities.Tick(0f);
+            Assert.That(campfire.TryCraftCrudeAxe(), Is.True);
+
+            var clearedWithAxe = (WoodChoppingActivity)jungle.CreateActivity();
+            clearedWithAxe.Submit(0.5f);
+            clearedWithAxe.Submit(0.5f);
+            Assert.That(clearedWithAxe.IsComplete, Is.True);
+            Assert.That(clearedWithAxe.Result.Amount, Is.EqualTo(8));
+
+            var survivor = (SurvivorInteractable)runtime.World.Targets[6];
+            var berriesBefore = runtime.Inventory.Get(ResourceId.Berries);
+            var timeBefore = runtime.Clock.TimeOfDay;
+            Assert.That(survivor.TrySendScavenging(out _), Is.True);
+            Assert.That(runtime.Inventory.Get(ResourceId.Berries), Is.EqualTo(berriesBefore + 1));
+            Assert.That(survivor.CanInteract, Is.False);
+            Assert.That(runtime.Clock.TimeOfDay, Is.EqualTo(timeBefore));
+            survivor.ResetForNewDay();
+            Assert.That(survivor.CanInteract, Is.True);
         }
     }
 }

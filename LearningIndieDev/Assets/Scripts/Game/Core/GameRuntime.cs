@@ -61,6 +61,9 @@ namespace SaltyGame
 
         void Update()
         {
+            if (!initialized || Input == null || Activities == null || Player == null || Interaction == null || World == null)
+                return;
+
             if (Input.DebugPressed)
                 RuntimeDebugPanel.Toggle();
 
@@ -84,6 +87,7 @@ namespace SaltyGame
             }
             Player.Tick(Time.deltaTime);
             Interaction.Tick();
+            World.SetInteractionTarget(Activities.IsActive ? null : Interaction.CurrentTarget);
             var interactionMessage = Interaction.ConsumeMessage();
             if (!string.IsNullOrEmpty(interactionMessage))
                 ShowMessage(interactionMessage, 2f);

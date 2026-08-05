@@ -8,6 +8,8 @@ namespace SaltyGame
         GameRuntime runtime;
         GUIStyle body;
 
+        public static bool IsVisible => visible;
+
         public void Initialize(GameRuntime runtime)
         {
             this.runtime = runtime;
@@ -20,7 +22,7 @@ namespace SaltyGame
 
         void OnGUI()
         {
-            if (!visible || runtime == null)
+            if (!visible || runtime == null || runtime.Clock == null || runtime.Survival == null || runtime.Inventory == null || runtime.Interaction == null || runtime.Activities == null)
                 return;
 
             body ??= new GUIStyle(GUI.skin.label) { fontSize = 14, normal = { textColor = Color.white } };
