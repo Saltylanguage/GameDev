@@ -37,6 +37,12 @@ namespace SaltyGame
                 return;
             }
 
+            if (CurrentTarget is SurvivorInteractable survivor && input.InteractPressed)
+            {
+                survivor.TrySendScavenging(out pendingMessage);
+                return;
+            }
+
             if (CurrentTarget is CampfireInteractable campfire)
             {
                 if (input.EatPressed)
@@ -51,6 +57,15 @@ namespace SaltyGame
                         sleepRequested = true;
                     else
                         pendingMessage = "Build the campfire before sleeping at camp.";
+                    return;
+                }
+
+                if (input.CraftToolPressed)
+                {
+                    if (campfire.IsBuilt && campfire.CanCraftCrudeAxe && campfire.TryCraftCrudeAxe())
+                        pendingMessage = "Crude axe crafted. Trees now yield more wood.";
+                    else if (campfire.IsBuilt && !campfire.CanCraftCrudeAxe)
+                        pendingMessage = campfire.GetToolStatus();
                     return;
                 }
 

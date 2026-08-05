@@ -5,9 +5,12 @@ namespace SaltyGame
         public const int CampfireWoodCost = 4;
         public const int CampfireStoneCost = 2;
         public const int ShelterWoodCost = 4;
+        public const int CrudeAxeWoodCost = 2;
+        public const int CrudeAxeStoneCost = 2;
 
         public bool CampfireBuilt { get; private set; }
         public bool ShelterBuilt { get; private set; }
+        public bool CrudeAxeCrafted { get; private set; }
 
         public bool CanBuildCampfire(InventoryState inventory)
         {
@@ -37,6 +40,22 @@ namespace SaltyGame
 
             inventory.TryRemove(ResourceId.Wood, ShelterWoodCost);
             ShelterBuilt = true;
+            return true;
+        }
+
+        public bool CanCraftCrudeAxe(InventoryState inventory)
+        {
+            return CampfireBuilt && !CrudeAxeCrafted && inventory.Get(ResourceId.Wood) >= CrudeAxeWoodCost && inventory.Get(ResourceId.Stone) >= CrudeAxeStoneCost;
+        }
+
+        public bool TryCraftCrudeAxe(InventoryState inventory)
+        {
+            if (!CanCraftCrudeAxe(inventory))
+                return false;
+
+            inventory.TryRemove(ResourceId.Wood, CrudeAxeWoodCost);
+            inventory.TryRemove(ResourceId.Stone, CrudeAxeStoneCost);
+            CrudeAxeCrafted = true;
             return true;
         }
     }

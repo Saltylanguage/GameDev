@@ -15,6 +15,12 @@ namespace SaltyGame
         public Vector2 Position => transform.position;
         public bool IsBuilt => camp != null && camp.CampfireBuilt;
         public bool CanCook => camp != null && camp.CampfireBuilt && inventory.Get(ResourceId.Berries) >= BerriesPerMeal;
+        public bool CanCraftCrudeAxe => camp != null && camp.CanCraftCrudeAxe(inventory);
+
+        public bool TryCraftCrudeAxe()
+        {
+            return camp != null && camp.TryCraftCrudeAxe(inventory);
+        }
 
         public void Initialize(GameObject fireVisual, InventoryState inventory, CampState camp)
         {
@@ -75,12 +81,23 @@ namespace SaltyGame
             if (!camp.CampfireBuilt)
                 return $"Press [E] to build campfire ({CampState.CampfireWoodCost} wood, {CampState.CampfireStoneCost} stone)";
 
-            return $"[E] Cook 2 berries | [F] Eat | [R] Sleep | {GetCookStatus()}";
+            var axePrompt = camp.CrudeAxeCrafted ? null : "[Q] Craft axe";
+            var cookPrompt = CanCook ? "[E] Cook" : $"[E] Cook (need {BerriesPerMeal} berries)";
+            return axePrompt == null
+                ? $"{cookPrompt} | [F] Eat | [R] Sleep"
+                : $"{cookPrompt} | [F] Eat | [R] Sleep | {axePrompt}";
         }
 
         public string GetCookStatus()
         {
             return CanCook ? "Cooked food restores more hunger." : $"Need {BerriesPerMeal} berries to cook.";
+        }
+
+        public string GetToolStatus()
+        {
+            return camp.CrudeAxeCrafted
+                ? "The crude axe is already crafted."
+                : $"Need {CampState.CrudeAxeWoodCost} wood and {CampState.CrudeAxeStoneCost} stone to craft the crude axe.";
         }
 
         public void ResetForNewDay() { }

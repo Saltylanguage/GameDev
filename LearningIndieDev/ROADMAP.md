@@ -35,14 +35,41 @@
 - The F3 diagnostics panel now starts hidden, keeping the default game view player-facing.
 - Verification: Edit Mode 17/17 and Play Mode 3/3, including the Bootstrap shelter/storm path.
 
-## Next milestone - Tools and specialization
+### Milestone 4 - Tools and specialization
 
-Add one simple tool upgrade that changes a demonstrated activity decision. Do not introduce generic item, equipment, or crafting frameworks until there is more than one real consumer.
+- A crude axe is crafted at the campfire for 2 wood and 2 stone with [Q].
+- Once crafted, the HUD shows the tool and future trees take 4 hits instead of 6 and yield 8 wood instead of 4.
+- Manual Unity playtest passed: campfire craft, axe craft, day reset, and improved tree reward all worked.
+- Scope remains deliberately local; no generic item, equipment, or crafting framework was introduced.
+
+### Milestone 5 - Visual foundation
+
+- Normal play no longer uses floating world-name labels; the F3 panel remains the explicit debug view.
+- Runtime primitives now have a first visual grammar: layered actors, shadows, resource silhouettes, a readable campfire/shelter pair, and a jungle wall with a visible path opening.
+- Manual Bootstrap playtest passed: the layered silhouettes, world-color time changes, camp/shelter landmarks, and label-free normal view are readable enough to continue.
+
+### Milestone 6 - Compact jungle-edge zone
+
+- A dark jungle-edge clearing is authored at the east side of the starting island.
+- Clearing it uses the existing wood-chopping activity: hands take 8 hits for 4 wood; the crude axe takes 4 hits for 8 wood.
+- The interaction marker and context prompt have been manually verified near the jungle edge.
+- Manual verification passed: the cleared edge returns on a new day.
+
+### Milestone 7 - One survivor with a routine and useful skill
+
+- Mara moves between the berry bush in the morning, jungle edge in the afternoon, and camp at night.
+- Once per day, [E] sends Mara scavenging instantly and returns one bonus berry without consuming the player's activity slot.
+- Mara's no-time-cost assignment and bonus berry have been manually verified.
+- Manual verification passed: Mara cycles through the starting point, jungle edge, and campsite; she can be used once per day and resets after rest.
+
+## Immediate next step - Close the current vertical slice
+
+- Review and commit the accumulated E-drive changes as one coherent slice; do not include generated `artifacts/` output.
+- After that, begin authored art one-for-one, keeping the current primitive visual grammar as the acceptance reference.
 
 ## Later milestones
 
-1. Explore one compact jungle-edge zone
-2. Add one survivor with a routine and useful skill
-3. Autonomous camp assignments
-4. Versioned persistence
-5. Presentation and atmosphere polish
+1. Replace runtime primitives with authored art one-for-one, only after the current slice is committed and the visual grammar remains accepted
+2. Autonomous camp assignments
+3. Versioned persistence
+4. Presentation and atmosphere polish

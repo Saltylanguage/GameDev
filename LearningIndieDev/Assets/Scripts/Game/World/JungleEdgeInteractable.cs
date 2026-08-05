@@ -2,14 +2,14 @@ using UnityEngine;
 
 namespace SaltyGame
 {
-    public sealed class TreeInteractable : MonoBehaviour, IActivityTarget
+    public sealed class JungleEdgeInteractable : MonoBehaviour, IActivityTarget
     {
         GameObject visualRoot;
         CampState camp;
-        bool depleted;
+        bool cleared;
 
-        public string DisplayName => "Tree";
-        public bool CanInteract => !depleted;
+        public string DisplayName => "Jungle Edge";
+        public bool CanInteract => !cleared;
         public Vector2 Position => transform.position;
 
         public void Initialize(GameObject visualRoot, CampState camp)
@@ -21,8 +21,8 @@ namespace SaltyGame
         public IActivity CreateActivity()
         {
             return camp != null && camp.CrudeAxeCrafted
-                ? new WoodChoppingActivity(health: 4, rewardAmount: CampState.CampfireWoodCost * 2)
-                : new WoodChoppingActivity(health: 6, rewardAmount: CampState.CampfireWoodCost);
+                ? new WoodChoppingActivity(4, 8)
+                : new WoodChoppingActivity(8, 4);
         }
 
         public void ApplyActivityResult(ActivityResult result)
@@ -30,13 +30,20 @@ namespace SaltyGame
             if (!result.Succeeded)
                 return;
 
-            depleted = true;
+            cleared = true;
             visualRoot.SetActive(false);
+        }
+
+        public string GetActionPrompt()
+        {
+            return camp != null && camp.CrudeAxeCrafted
+                ? "[E] Clear jungle | 4 hits with axe"
+                : "[E] Clear jungle | 8 hits by hand";
         }
 
         public void ResetForNewDay()
         {
-            depleted = false;
+            cleared = false;
             visualRoot.SetActive(true);
         }
     }
