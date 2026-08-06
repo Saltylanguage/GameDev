@@ -27,7 +27,7 @@ namespace SaltyGame.Tests
             Assert.That(runtime.World.IsBuilt, Is.True);
             Assert.That(runtime.World.transform.parent, Is.EqualTo(runtimeRoot.transform));
             Assert.That(runtime.World.PlayerTransform, Is.Not.Null);
-            Assert.That(runtime.World.Targets.Count, Is.EqualTo(7));
+            Assert.That(runtime.World.Targets.Count, Is.EqualTo(8));
             Assert.That(Camera.main.clearFlags, Is.EqualTo(CameraClearFlags.SolidColor));
 
             var worldChildCount = runtime.World.transform.childCount;

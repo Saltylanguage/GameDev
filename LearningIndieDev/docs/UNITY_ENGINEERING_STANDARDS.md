@@ -216,6 +216,12 @@ Enforcement: performance evidence is required in review for optimization changes
 
 Assets belong in the owning feature folder; settings remain in `Assets/Settings`; third-party content remains isolated. Prefab variants are **SHOULD** be used only when the base/variant ownership is clear. Safe moves/renames require Unity Editor migration, `.meta` preservation, reference validation, and a separate commit/plan. Never bulk move/rename during feature work.
 
+### Interactive terrain states
+
+When an interaction gates a route or changes the world, its visual representation **MUST** be authored as a terrain state that shares the neighboring tile grid, scale, palette, and edge treatment. A closed state hides the route; a cleared state reveals the route through the interactable's explicit visual ownership. Do not layer a self-contained prop over unrelated terrain and call it a terrain transition.
+
+Current example: `JungleEdgeInteractable` owns a closed 3x2 tile set and swaps it for the matching open 3x2 `Jungle Exit Route` tile set when chopped. The cells are rendered individually at the standard 128 pixels per unit, so the transition remains terrain rather than a full-scene texture. This is a small local state change, not a generic world-state framework. New terrain gates should follow that direct two-visual pattern until more than one shared rule proves a reusable abstraction is needed.
+
 Save-data architecture and version migration are **TBD** because no save system exists. When introduced, persistent DTOs must be separate from runtime objects and have an explicit version/migration test.
 
 Enforcement: `.meta` parity, YAML mode, enabled bootstrap, and forbidden generated paths can be checked now; asset ownership and serialized-reference correctness need Unity validation. Exception: package/vendor assets.
