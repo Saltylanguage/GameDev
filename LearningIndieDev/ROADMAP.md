@@ -45,15 +45,16 @@
 ### Milestone 5 - Visual foundation
 
 - Normal play no longer uses floating world-name labels; the F3 panel remains the explicit debug view.
-- Runtime primitives now have a first visual grammar: layered actors, shadows, resource silhouettes, a readable campfire/shelter pair, and a jungle wall with a visible path opening.
-- Manual Bootstrap playtest passed: the layered silhouettes, world-color time changes, camp/shelter landmarks, and label-free normal view are readable enough to continue.
+- The world now uses authored pixel-art atlases, repeated beach/ocean/jungle tiles, a clearer shoreline, and world-Y depth sorting for characters and props.
+- Manual Bootstrap playtests passed for the shoreline composition, time-of-day colors, camp/shelter landmarks, and label-free normal view.
+- The jungle entrance now has a native 3x2 closed/open tile set built from the project canopy and beach pixel language. Its Play Mode visual acceptance remains pending.
 
 ### Milestone 6 - Compact jungle-edge zone
 
-- A dark jungle-edge clearing is authored at the east side of the starting island.
 - Clearing it uses the existing wood-chopping activity: hands take 8 hits for 4 wood; the crude axe takes 4 hits for 8 wood.
 - The interaction marker and context prompt have been manually verified near the jungle edge.
 - Manual verification passed: the cleared edge returns on a new day.
+- The mechanic swaps a closed 3x2 tile set for its matching open route after chopping; confirm the closed, opened, and next-day-reset states in Play Mode.
 
 ### Milestone 7 - One survivor with a routine and useful skill
 
@@ -62,14 +63,15 @@
 - Mara's no-time-cost assignment and bonus berry have been manually verified.
 - Manual verification passed: Mara cycles through the starting point, jungle edge, and campsite; she can be used once per day and resets after rest.
 
-## Immediate next step - Close the current vertical slice
+## Immediate next step - Close the authored visual slice
 
-- Review and commit the accumulated E-drive changes as one coherent slice; do not include generated `artifacts/` output.
-- After that, begin authored art one-for-one, keeping the current primitive visual grammar as the acceptance reference.
+- Run one clean Unity Play Mode check of the closed/open jungle tile states, their next-day reset, and the existing gameplay loop.
+- Keep rejected entrance experiments under local-only `artifacts/`; do not add them to the Unity project.
+- Commit the intentional HUD, world, interaction, test, documentation, and authored-art changes as one coherent slice.
 
 ## Later milestones
 
-1. Replace runtime primitives with authored art one-for-one, only after the current slice is committed and the visual grammar remains accepted
+1. Author a proper jungle entrance as a small set of native tiles or a deliberately matched terrain transition, then connect it to the existing jungle-edge state swap
 2. Autonomous camp assignments
 3. Versioned persistence
 4. Presentation and atmosphere polish

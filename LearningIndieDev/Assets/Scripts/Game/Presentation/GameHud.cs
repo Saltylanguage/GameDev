@@ -21,8 +21,8 @@ namespace SaltyGame
             if (runtime == null || runtime.Clock == null || runtime.Survival == null || runtime.Inventory == null || runtime.Camp == null || runtime.Objective == null || runtime.World == null || runtime.Interaction == null || runtime.Activities == null)
                 return;
 
-            title ??= new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, normal = { textColor = Color.white } };
-            body ??= new GUIStyle(GUI.skin.label) { fontSize = 18, normal = { textColor = Color.white } };
+            title ??= new GUIStyle(GUI.skin.label) { fontSize = 28, fontStyle = FontStyle.Bold, normal = { textColor = new Color(1f, 0.88f, 0.62f) } };
+            body ??= new GUIStyle(GUI.skin.label) { fontSize = 18, normal = { textColor = new Color(1f, 0.93f, 0.76f) } };
             summary ??= new GUIStyle(body) { fontSize = 16, alignment = TextAnchor.MiddleCenter, wordWrap = true };
             prompt ??= new GUIStyle(body) { fontSize = 16, alignment = TextAnchor.MiddleCenter, wordWrap = true };
             if (RuntimeDebugPanel.IsVisible)
@@ -43,7 +43,7 @@ namespace SaltyGame
                 else
                 {
                     var panel = new Rect(Screen.width / 2 - 280, 150, 560, 70);
-                    GUI.Box(panel, GUIContent.none);
+                    DrawPanel(panel);
                     GUI.Label(new Rect(panel.x + 14, panel.y + 6, panel.width - 28, panel.height - 12), runtime.DaySummary, summary);
                 }
             }
@@ -88,10 +88,18 @@ namespace SaltyGame
         void DrawBottomPrompt(string text)
         {
             var panel = new Rect(0f, Screen.height - 54f, Screen.width, 54f);
-            GUI.color = new Color(0f, 0.12f, 0.18f, 0.78f);
-            GUI.Box(panel, GUIContent.none);
+            DrawPanel(panel);
             GUI.color = Color.white;
             GUI.Label(new Rect(18f, panel.y + 5f, panel.width - 36f, panel.height - 10f), text, prompt);
+        }
+
+        void DrawPanel(Rect panel)
+        {
+            GUI.color = new Color(0.76f, 0.55f, 0.25f, 0.95f);
+            GUI.Box(panel, GUIContent.none);
+            GUI.color = new Color(0.04f, 0.12f, 0.17f, 0.9f);
+            GUI.Box(new Rect(panel.x + 2f, panel.y + 2f, panel.width - 4f, panel.height - 4f), GUIContent.none);
+            GUI.color = Color.white;
         }
 
         void DrawWorldLabels()

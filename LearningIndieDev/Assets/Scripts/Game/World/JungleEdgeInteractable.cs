@@ -4,7 +4,8 @@ namespace SaltyGame
 {
     public sealed class JungleEdgeInteractable : MonoBehaviour, IActivityTarget
     {
-        GameObject visualRoot;
+        GameObject blockedVisualRoot;
+        GameObject clearedVisualRoot;
         CampState camp;
         bool cleared;
 
@@ -12,10 +13,13 @@ namespace SaltyGame
         public bool CanInteract => !cleared;
         public Vector2 Position => transform.position;
 
-        public void Initialize(GameObject visualRoot, CampState camp)
+        public void Initialize(GameObject blockedVisualRoot, GameObject clearedVisualRoot, CampState camp)
         {
-            this.visualRoot = visualRoot;
+            this.blockedVisualRoot = blockedVisualRoot;
+            this.clearedVisualRoot = clearedVisualRoot;
             this.camp = camp;
+            this.blockedVisualRoot.SetActive(true);
+            this.clearedVisualRoot.SetActive(false);
         }
 
         public IActivity CreateActivity()
@@ -31,7 +35,8 @@ namespace SaltyGame
                 return;
 
             cleared = true;
-            visualRoot.SetActive(false);
+            blockedVisualRoot.SetActive(false);
+            clearedVisualRoot.SetActive(true);
         }
 
         public string GetActionPrompt()
@@ -44,7 +49,8 @@ namespace SaltyGame
         public void ResetForNewDay()
         {
             cleared = false;
-            visualRoot.SetActive(true);
+            blockedVisualRoot.SetActive(true);
+            clearedVisualRoot.SetActive(false);
         }
     }
 }

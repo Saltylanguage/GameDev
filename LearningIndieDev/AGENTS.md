@@ -3,6 +3,7 @@
 For Unity work in this project:
 
 - Follow [`docs/UNITY_ENGINEERING_STANDARDS.md`](docs/UNITY_ENGINEERING_STANDARDS.md) and use [`docs/UNITY_STANDARDS_ADOPTION_PLAN.md`](docs/UNITY_STANDARDS_ADOPTION_PLAN.md) for migration scope.
+- For terrain added on top of existing tiles or textures, follow [`docs/TILE_AUTHORING_GUIDE.md`](docs/TILE_AUTHORING_GUIDE.md) before creating or wiring production art.
 - Inspect nearby code before choosing a convention; preserve the dominant first-party convention where it is stable.
 - Preserve serialized fields, Unity GUIDs, and every `.meta` file. Do not move or rename Unity assets unless the goal explicitly requests a Unity Editor migration.
 - Keep dependencies visible; avoid global state, service locators, hidden discovery, premature patterns, and unmeasured optimizations.
