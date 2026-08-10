@@ -3,6 +3,8 @@
 For Unity work in this project:
 
 - Read [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md) for current product direction, research references, and durable design decisions that should carry across Codex desktop and IDE conversations.
+- Read [`docs/WORKING_STATE.md`](docs/WORKING_STATE.md) as the collaboration entry point, then inspect the newest and task-relevant notes in `docs/handoffs/`. Confirm them against the current branch and recent Git history before relying on them.
+- Follow [`docs/COLLABORATION_WORKFLOW.md`](docs/COLLABORATION_WORKFLOW.md) when handing work between developers or AI sessions. Update shared context when a material decision or integration state changes; do not store raw chat transcripts in the repository.
 - Follow [`docs/UNITY_ENGINEERING_STANDARDS.md`](docs/UNITY_ENGINEERING_STANDARDS.md) and use [`docs/UNITY_STANDARDS_ADOPTION_PLAN.md`](docs/UNITY_STANDARDS_ADOPTION_PLAN.md) for migration scope.
 - For terrain added on top of existing tiles or textures, follow [`docs/TILE_AUTHORING_GUIDE.md`](docs/TILE_AUTHORING_GUIDE.md) before creating or wiring production art.
 - Inspect nearby code before choosing a convention; preserve the dominant first-party convention where it is stable.
