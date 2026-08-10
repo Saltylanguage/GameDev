@@ -5,6 +5,7 @@ namespace SaltyGame
     public sealed class CellularAutomataPrototypeRuntime : MonoBehaviour
     {
         public CavePreview Preview { get; private set; }
+        public LifeSimulationPreview LifePreview { get; private set; }
 
         void Awake()
         {
@@ -21,6 +22,7 @@ namespace SaltyGame
 
             Preview = gameObject.AddComponent<CavePreview>();
             Preview.Initialize();
+            LifePreview = gameObject.AddComponent<LifeSimulationPreview>();
         }
     }
 }

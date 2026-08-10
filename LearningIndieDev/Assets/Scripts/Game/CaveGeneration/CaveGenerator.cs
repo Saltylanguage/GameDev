@@ -45,9 +45,9 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(wallNeighborThreshold), wallNeighborThreshold, "Wall neighbor threshold must fit within the supplied neighborhood.");
             }
 
-            return new Grid<CaveCell>(source.Width, source.Height, (x, y) =>
+            return GridSimulation.Step(source, (cave, x, y) =>
             {
-                var neighboringWalls = CountNeighboringWalls(source, neighborhood, x, y);
+                var neighboringWalls = CountNeighboringWalls(cave, neighborhood, x, y);
                 return new CaveCell(neighboringWalls >= wallNeighborThreshold);
             });
         }
