@@ -6,9 +6,9 @@ namespace SaltyGame
         readonly SurvivalState survival;
         IActivityTarget target;
 
-        public IActivity Active { get; private set; }
-        public bool IsActive => Active != null && !Active.IsComplete && !Active.IsCancelled;
-        public float Meter => Active?.Progress ?? 0f;
+        public IActivity CurrentActivity { get; private set; }
+        public bool IsActive => CurrentActivity != null && !CurrentActivity.IsComplete && !CurrentActivity.IsCancelled;
+        public float Meter => CurrentActivity?.Progress ?? 0f;
         public ActivityResult LastResult { get; private set; }
         public string LastActivityName { get; private set; }
         public string LastFailureMessage { get; private set; }
@@ -39,28 +39,28 @@ namespace SaltyGame
 
             LastFailureMessage = null;
             this.target = target;
-            Active = activity;
+            CurrentActivity = activity;
             return true;
         }
 
         public bool Tick(float deltaTime)
         {
-            if (Active == null)
+            if (CurrentActivity == null)
                 return false;
 
-            Active.Tick(deltaTime);
-            if (Active.IsComplete || Active.IsCancelled)
+            CurrentActivity.Tick(deltaTime);
+            if (CurrentActivity.IsComplete || CurrentActivity.IsCancelled)
             {
-                var completed = Active.IsComplete;
-                if (Active.IsComplete)
+                var completed = CurrentActivity.IsComplete;
+                if (CurrentActivity.IsComplete)
                 {
-                    LastResult = Active.Result;
-                    LastActivityName = Active.DisplayName;
-                    survival.CompleteActivity(Active.Kind);
-                    inventory.Add(Active.Result.ResourceId, Active.Result.Amount);
-                    target.ApplyActivityResult(Active.Result);
+                    LastResult = CurrentActivity.Result;
+                    LastActivityName = CurrentActivity.DisplayName;
+                    survival.CompleteActivity(CurrentActivity.Kind);
+                    inventory.Add(CurrentActivity.Result.ResourceId, CurrentActivity.Result.Amount);
+                    target.ApplyActivityResult(CurrentActivity.Result);
                 }
-                Active = null;
+                CurrentActivity = null;
                 target = null;
                 return completed;
             }
@@ -71,13 +71,13 @@ namespace SaltyGame
         public void SubmitHit()
         {
             if (IsActive)
-                Active.Submit(Meter);
+                CurrentActivity.Submit(Meter);
         }
 
         public void Cancel()
         {
             if (IsActive)
-                Active.Cancel();
+                CurrentActivity.Cancel();
         }
     }
 }

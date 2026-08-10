@@ -52,7 +52,7 @@ namespace SaltyGame
             {
                 var bar = new Rect(Screen.width / 2 - 180, Screen.height - 105, 360, 24);
                 GUI.Box(bar, GUIContent.none);
-                var active = runtime.Activities.Active;
+                var active = runtime.Activities.CurrentActivity;
                 if (active.RequiresTimingInput)
                 {
                     GUI.color = new Color(0.2f, 0.8f, 0.25f);
@@ -68,7 +68,7 @@ namespace SaltyGame
                 }
 
                 var hint = active.RequiresTimingInput ? "[Space] hit green | [E]/[Esc] cancel" : "Cooking... | [Esc] cancel";
-                DrawBottomPrompt($"{hint} | {runtime.Activities.Active.StatusText}");
+                DrawBottomPrompt($"{hint} | {runtime.Activities.CurrentActivity.StatusText}");
             }
             else
             {
