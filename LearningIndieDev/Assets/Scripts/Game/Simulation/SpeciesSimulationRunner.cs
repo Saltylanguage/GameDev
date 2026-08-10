@@ -7,11 +7,13 @@ namespace SaltyGame
     {
         readonly IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules;
         readonly float stepSeconds;
+        readonly int maxPopulation;
 
         public SpeciesSimulationRunner(
             SimulationRunState run,
             IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
-            float stepSeconds)
+            float stepSeconds,
+            int maxPopulation = 0)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.rules = rules ?? throw new ArgumentNullException(nameof(rules));
@@ -21,6 +23,12 @@ namespace SaltyGame
             }
 
             this.stepSeconds = stepSeconds;
+            if (maxPopulation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxPopulation), maxPopulation, "Maximum population cannot be negative.");
+            }
+
+            this.maxPopulation = maxPopulation;
         }
 
         public SimulationRunState Run { get; }
@@ -57,7 +65,7 @@ namespace SaltyGame
                 return false;
             }
 
-            var next = SpeciesSimulation.Step(Run.Cells, rules, Run.Seed + Run.Tick);
+            var next = SpeciesSimulation.Step(Run.Cells, rules, Run.Seed + Run.Tick, maxPopulation);
             Run.Advance(next, stepSeconds);
             return true;
         }

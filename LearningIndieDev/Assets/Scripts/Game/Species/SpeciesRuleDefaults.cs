@@ -38,7 +38,9 @@ namespace SaltyGame
                     reproductionChance: 0.1f,
                     startingEnergy: 0,
                     wiltChance: 0.003f,
-                    startingFoodReserve: 3.25f),
+                    startingFoodReserve: 3.25f,
+                    energyValue: 1,
+                    metabolism: -1),
                 [SpeciesArchetype.Herbivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: CardinalPattern,
@@ -55,7 +57,9 @@ namespace SaltyGame
                     maxReproductionGroupSize: 4,
                     startingEnergy: 12,
                     crowdingEnergyPenalty: 1,
-                    seedDropChance: 0.05f),
+                    seedDropChance: 0.05f,
+                    energyValue: 4,
+                    metabolism: 1),
                 [SpeciesArchetype.Carnivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: MoorePattern,
@@ -71,7 +75,9 @@ namespace SaltyGame
                     reproductionFoodRequired: 1,
                     maxReproductionGroupSize: 3,
                     startingEnergy: 18,
-                    crowdingEnergyPenalty: 1),
+                    crowdingEnergyPenalty: 1,
+                    energyValue: 8,
+                    metabolism: 1),
             };
         }
 

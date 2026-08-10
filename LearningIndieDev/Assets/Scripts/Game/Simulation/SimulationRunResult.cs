@@ -33,20 +33,36 @@ namespace SaltyGame
             var plants = 0;
             var herbivores = 0;
             var carnivores = 0;
+            var empty = 0;
             for (var y = 0; y < cells.Height; y++)
             {
                 for (var x = 0; x < cells.Width; x++)
                 {
                     var cell = cells.GetCell(x, y);
-                    if (!cell.IsOccupied)
+                    if (!cell.IsPlantResource && !cell.IsCreature)
                     {
+                        empty++;
+                        continue;
+                    }
+
+                    if (cell.IsPlantResource)
+                    {
+                        plants++;
+                    }
+
+                    if (!cell.IsCreature)
+                    {
+                        if (!cell.IsPlantResource)
+                        {
+                            empty++;
+                        }
+
                         continue;
                     }
 
                     switch (cell.Species)
                     {
                         case SpeciesArchetype.Plant:
-                            plants++;
                             break;
                         case SpeciesArchetype.Herbivore:
                             herbivores++;
@@ -65,7 +81,7 @@ namespace SaltyGame
                 plants,
                 herbivores,
                 carnivores,
-                cells.Count - plants - herbivores - carnivores);
+                empty);
         }
     }
 
@@ -216,7 +232,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
-                    if (run.Cells.GetCell(x, y).IsOccupied
+                    if (run.Cells.GetCell(x, y).IsCreature
                         && run.Cells.GetCell(x, y).Species == run.PlayerSpecies)
                     {
                         playerPopulation++;

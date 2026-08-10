@@ -9,7 +9,8 @@ namespace SaltyGame
         public static Grid<SpeciesCell> Step(
             Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
-            int seed)
+            int seed,
+            int maxPopulation = 0)
         {
             if (source == null)
             {
@@ -25,12 +26,47 @@ namespace SaltyGame
             var random = new System.Random(seed);
             ResolveAttacks(source, next, rules);
             ResolveMovement(source, next, rules);
+            ResolveMetabolism(next, rules);
             ResolveStarvation(next, rules);
             ResolveCrowdingStress(next, rules);
             ResolveSeedDrops(next, rules, random);
             ResolveWilt(next, rules, random);
             ResolveReproduction(next, rules, random);
+            ResolvePopulationLimit(next, maxPopulation, random);
             return next;
+        }
+
+        static void ResolvePopulationLimit(Grid<SpeciesCell> next, int maxPopulation, System.Random random)
+        {
+            if (maxPopulation <= 0)
+            {
+                return;
+            }
+
+            var occupied = new List<int>();
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    if (next.GetCell(x, y).IsCreature || next.GetCell(x, y).IsPlantResource)
+                    {
+                        occupied.Add(GetIndex(next, x, y));
+                    }
+                }
+            }
+
+            while (occupied.Count > maxPopulation)
+            {
+                var removeIndex = random.Next(occupied.Count);
+                var cellIndex = occupied[removeIndex];
+                occupied.RemoveAt(removeIndex);
+                var x = cellIndex % next.Width;
+                var y = cellIndex / next.Width;
+                var cell = next.GetCell(x, y);
+                next.SetCell(x, y, cell.IsPlantResource
+                    ? cell.WithoutPlantResource()
+                    : cell.WithoutEntity());
+            }
         }
 
         static void ResolveAttacks(
@@ -43,10 +79,10 @@ namespace SaltyGame
                 for (var x = 0; x < source.Width; x++)
                 {
                     var attacker = source.GetCell(x, y);
-                    if (!attacker.IsOccupied
+                    if (!attacker.IsCreature
                         || !rules.TryGetValue(attacker.Species, out var attackerRules)
                         || attackerRules.AttackAmount <= 0
-                        || !next.GetCell(x, y).IsOccupied)
+                        || !next.GetCell(x, y).IsCreature)
                     {
                         continue;
                     }
@@ -56,12 +92,16 @@ namespace SaltyGame
                         var targetX = x + offset.x;
                         var targetY = y + offset.y;
                         if (!source.TryGetCell(targetX, targetY, out var target)
-                            || !target.IsOccupied
-                            || target.Species == attacker.Species
                             || !attackerRules.DietTarget.HasValue
-                            || target.Species != attackerRules.DietTarget.Value
-                            || !next.TryGetCell(targetX, targetY, out var currentTarget)
-                            || !currentTarget.IsOccupied)
+                            || !IsDietTarget(target, attackerRules.DietTarget.Value))
+                        {
+                            continue;
+                        }
+
+                        var currentTarget = target;
+                        if (target.IsCreature
+                            && (!next.TryGetCell(targetX, targetY, out currentTarget)
+                                || !currentTarget.IsCreature))
                         {
                             continue;
                         }
@@ -74,30 +114,45 @@ namespace SaltyGame
                         }
 
                         var currentAttacker = next.GetCell(x, y);
-                        if (!currentAttacker.IsOccupied || currentAttacker.Species != attacker.Species)
+                        if (!currentAttacker.IsCreature || currentAttacker.Species != attacker.Species)
                         {
                             break;
                         }
 
-                        if (target.Species == SpeciesArchetype.Plant)
+                        if (target.IsPlantResource)
                         {
-                            TryFeedOnPlant(next, targetX, targetY, x, y, currentAttacker, attackerRules);
+                            TryFeedOnPlant(
+                                next,
+                                targetX,
+                                targetY,
+                                x,
+                                y,
+                                currentAttacker,
+                                attackerRules,
+                                rules.TryGetValue(SpeciesArchetype.Plant, out var plantRules)
+                                    ? plantRules.EnergyValue
+                                    : 1);
                             break;
                         }
 
-                        if (damage > 0)
+                        if (damage > 0 && currentTarget.IsCreature)
                         {
                             var remainingHealth = currentTarget.Health - damage;
                             next.SetCell(targetX, targetY, remainingHealth > 0
-                                ? new SpeciesCell(currentTarget.Species, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve)
-                                : SpeciesCell.Empty);
+                                ? currentTarget.WithEntity(currentTarget.Species, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve)
+                                : currentTarget.WithoutEntity());
 
                             if (remainingHealth <= 0
                                 && attackerRules.StartingEnergy > 0
-                                && currentAttacker.IsOccupied
+                                && currentAttacker.IsCreature
                                 && currentAttacker.Species == attacker.Species)
                             {
-                                next.SetCell(x, y, CreateFedCell(currentAttacker, attackerRules));
+                                next.SetCell(x, y, CreateFedCell(
+                                    currentAttacker,
+                                    attackerRules,
+                                    rules.TryGetValue(target.Species, out var foodRules)
+                                        ? foodRules.EnergyValue
+                                        : 0));
                             }
                         }
 
@@ -133,6 +188,9 @@ namespace SaltyGame
         {
             var moved = new bool[source.Count];
             var claimed = new bool[source.Count];
+            var plantEnergyValue = rules.TryGetValue(SpeciesArchetype.Plant, out var plantRules)
+                ? plantRules.EnergyValue
+                : 1;
 
             for (var y = 0; y < source.Height; y++)
             {
@@ -142,8 +200,8 @@ namespace SaltyGame
                     var sourceCell = source.GetCell(x, y);
                     var currentCell = next.GetCell(x, y);
                     if (moved[sourceIndex]
-                        || !sourceCell.IsOccupied
-                        || !currentCell.IsOccupied
+                        || !sourceCell.IsCreature
+                        || !currentCell.IsCreature
                         || !rules.TryGetValue(sourceCell.Species, out var speciesRules)
                         || speciesRules.MovementSpeed <= movementPass
                         || currentCell.Species != sourceCell.Species)
@@ -161,6 +219,7 @@ namespace SaltyGame
                             currentCell,
                             speciesRules,
                             speciesRules.DietPattern,
+                            plantEnergyValue,
                             requireDietTarget: true,
                             moved,
                             claimed))
@@ -198,6 +257,7 @@ namespace SaltyGame
                         currentCell,
                         speciesRules,
                         speciesRules.MovementPattern,
+                        plantEnergyValue,
                         requireDietTarget: false,
                         moved,
                         claimed);
@@ -213,6 +273,7 @@ namespace SaltyGame
             SpeciesCell cell,
             SpeciesRules speciesRules,
             GridPattern pattern,
+            int plantEnergyValue,
             bool requireDietTarget,
             bool[] moved,
             bool[] claimed)
@@ -238,15 +299,19 @@ namespace SaltyGame
 
                 var sourceTarget = source.GetCell(targetX, targetY);
                 var isDietTarget = speciesRules.DietTarget.HasValue
-                    && sourceTarget.IsOccupied
-                    && sourceTarget.Species == speciesRules.DietTarget.Value;
+                    && IsDietTarget(sourceTarget, speciesRules.DietTarget.Value);
                 if (requireDietTarget && !isDietTarget)
                 {
                     continue;
                 }
 
                 var nextTarget = next.GetCell(targetX, targetY);
-                if (nextTarget.IsOccupied && !isDietTarget)
+                if (nextTarget.IsCreature && !isDietTarget)
+                {
+                    continue;
+                }
+
+                if (isDietTarget && sourceTarget.IsCreature)
                 {
                     continue;
                 }
@@ -281,14 +346,13 @@ namespace SaltyGame
             var bestTarget = source.GetCell(bestX, bestY);
             var currentTarget = next.GetCell(bestX, bestY);
             var bestIsDietTarget = speciesRules.DietTarget.HasValue
-                && bestTarget.IsOccupied
-                && currentTarget.IsOccupied
-                && bestTarget.Species == speciesRules.DietTarget.Value;
+                && IsDietTarget(bestTarget, speciesRules.DietTarget.Value)
+                && !bestTarget.IsCreature;
             var bestIndex = GetIndex(source, bestX, bestY);
 
             if (bestIsDietTarget && bestTarget.Species == SpeciesArchetype.Plant)
             {
-                if (!TryFeedOnPlant(next, bestX, bestY, x, y, cell, speciesRules))
+                if (!TryFeedOnPlant(next, bestX, bestY, x, y, cell, speciesRules, plantEnergyValue))
                 {
                     return false;
                 }
@@ -297,10 +361,14 @@ namespace SaltyGame
                 return true;
             }
 
-            next.SetCell(x, y, SpeciesCell.Empty);
-            next.SetCell(bestX, bestY, bestIsDietTarget
-                ? CreateFedCell(cell, speciesRules)
-                : cell);
+            next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
+            next.SetCell(bestX, bestY, currentTarget.WithEntity(
+                cell.Species,
+                cell.Health,
+                cell.Energy,
+                cell.Age,
+                cell.FoodEaten,
+                cell.FoodReserve));
             moved[GetIndex(source, x, y)] = true;
             moved[bestIndex] = true;
             claimed[bestIndex] = true;
@@ -328,8 +396,8 @@ namespace SaltyGame
 
                 var targetIndex = GetIndex(source, targetX, targetY);
                 if (claimed[targetIndex]
-                    || source.GetCell(targetX, targetY).IsOccupied
-                    || next.GetCell(targetX, targetY).IsOccupied)
+                    || source.GetCell(targetX, targetY).IsCreature
+                    || next.GetCell(targetX, targetY).IsCreature)
                 {
                     continue;
                 }
@@ -349,8 +417,14 @@ namespace SaltyGame
                     continue;
                 }
 
-                next.SetCell(x, y, SpeciesCell.Empty);
-                next.SetCell(targetX, targetY, cell);
+                next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
+                next.SetCell(targetX, targetY, next.GetCell(targetX, targetY).WithEntity(
+                    cell.Species,
+                    cell.Health,
+                    cell.Energy,
+                    cell.Age,
+                    cell.FoodEaten,
+                    cell.FoodReserve));
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
@@ -369,18 +443,49 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (!cell.IsOccupied
+                    if (!cell.IsCreature
                         || !rules.TryGetValue(cell.Species, out var speciesRules)
-                        || !speciesRules.DietTarget.HasValue
-                        || speciesRules.StartingEnergy <= 0)
+                        || speciesRules.Metabolism <= 0)
                     {
                         continue;
                     }
 
-                    var remainingEnergy = cell.Energy - 1;
+                    var remainingEnergy = cell.Energy - speciesRules.Metabolism;
                     next.SetCell(x, y, remainingEnergy > 0
-                        ? new SpeciesCell(cell.Species, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
-                        : SpeciesCell.Empty);
+                        ? cell.WithEntity(cell.Species, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
+                        : cell.WithoutEntity());
+                }
+            }
+        }
+
+        static void ResolveMetabolism(
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules)
+        {
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (!cell.IsPlantResource
+                        || !rules.TryGetValue(SpeciesArchetype.Plant, out var plantRules)
+                        || plantRules.Metabolism >= 0)
+                    {
+                        continue;
+                    }
+
+                    var grownEnergy = cell.IsGrass
+                        ? cell.TerrainEnergy - plantRules.Metabolism
+                        : cell.FoodReserve - plantRules.Metabolism;
+                    next.SetCell(x, y, cell.IsGrass
+                        ? cell.WithTerrainEnergy(grownEnergy)
+                        : new SpeciesCell(
+                            cell.Species,
+                            cell.Health,
+                            cell.Energy,
+                            cell.Age,
+                            cell.FoodEaten,
+                            grownEnergy));
                 }
             }
         }
@@ -394,7 +499,7 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (!cell.IsOccupied
+                    if (!cell.IsCreature
                         || !rules.TryGetValue(cell.Species, out var speciesRules)
                         || speciesRules.MaxReproductionGroupSize <= 0
                         || speciesRules.CrowdingEnergyPenalty <= 0)
@@ -418,8 +523,8 @@ namespace SaltyGame
 
                     var remainingEnergy = cell.Energy - excessMembers * speciesRules.CrowdingEnergyPenalty;
                     next.SetCell(x, y, remainingEnergy > 0
-                        ? new SpeciesCell(cell.Species, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
-                        : SpeciesCell.Empty);
+                        ? cell.WithEntity(cell.Species, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
+                        : cell.WithoutEntity());
                 }
             }
         }
@@ -434,7 +539,7 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (!cell.IsOccupied
+                    if (!cell.IsPlantResource
                         || !rules.TryGetValue(cell.Species, out var speciesRules)
                         || speciesRules.WiltChance <= 0f
                         || random.NextDouble() > speciesRules.WiltChance)
@@ -442,7 +547,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    next.SetCell(x, y, SpeciesCell.Empty);
+                    next.SetCell(x, y, cell.WithoutPlantResource());
                 }
             }
         }
@@ -463,7 +568,7 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (!cell.IsOccupied
+                    if (!cell.IsCreature
                         || !rules.TryGetValue(cell.Species, out var speciesRules)
                         || speciesRules.SeedDropChance <= 0f
                         || cell.FoodReserve <= 0f
@@ -480,15 +585,14 @@ namespace SaltyGame
                             (startOffset + offsetIndex) % speciesRules.MovementPattern.Count];
                         var seedX = x + offset.x;
                         var seedY = y + offset.y;
-                        if (!next.IsInBounds(seedX, seedY) || next.GetCell(seedX, seedY).IsOccupied)
+                        if (!next.IsInBounds(seedX, seedY)
+                            || next.GetCell(seedX, seedY).IsCreature
+                            || next.GetCell(seedX, seedY).IsPlantResource)
                         {
                             continue;
                         }
 
-                        next.SetCell(seedX, seedY, new SpeciesCell(
-                            SpeciesArchetype.Plant,
-                            energy: plantRules.StartingEnergy,
-                            foodReserve: plantRules.StartingFoodReserve));
+                        next.SetCell(seedX, seedY, SpeciesCell.Grass(plantRules.StartingFoodReserve));
                         break;
                     }
                 }
@@ -508,16 +612,17 @@ namespace SaltyGame
                 for (var x = 0; x < source.Width; x++)
                 {
                     var parent = source.GetCell(x, y);
-                    if (!parent.IsOccupied
+                    if ((!parent.IsCreature && !parent.IsPlantResource)
                         || !rules.TryGetValue(parent.Species, out var speciesRules)
-                        || !next.GetCell(x, y).IsOccupied)
+                        || (!next.GetCell(x, y).IsCreature && !next.GetCell(x, y).IsPlantResource))
                     {
                         continue;
                     }
 
                     var currentParent = next.GetCell(x, y);
                     if (currentParent.Species != parent.Species
-                        || currentParent.FoodReserve < speciesRules.ReproductionFoodRequired)
+                        || GetReproductionEnergy(currentParent) <= speciesRules.ReproductionFoodRequired
+                        || speciesRules.ReproductionChance <= 0f)
                     {
                         continue;
                     }
@@ -529,8 +634,7 @@ namespace SaltyGame
                         foreach (var offset in speciesRules.ReproductionPattern.Offsets)
                         {
                             if (source.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
-                                && neighbor.IsOccupied
-                                && neighbor.Species == parent.Species)
+                                && IsSameSpecies(neighbor, parent.Species))
                             {
                                 sameSpeciesNeighbors++;
                             }
@@ -554,24 +658,24 @@ namespace SaltyGame
                         }
 
                         var childIndex = GetIndex(source, childX, childY);
-                        if (claimed[childIndex] || next.GetCell(childX, childY).IsOccupied)
+                        if (claimed[childIndex]
+                            || next.GetCell(childX, childY).IsCreature
+                            || next.GetCell(childX, childY).IsPlantResource)
                         {
                             continue;
                         }
 
                         if (random.NextDouble() <= speciesRules.ReproductionChance)
                         {
-                            next.SetCell(childX, childY, new SpeciesCell(
-                                parent.Species,
-                                health: 1,
-                                energy: speciesRules.StartingEnergy));
-                            next.SetCell(x, y, new SpeciesCell(
-                                currentParent.Species,
-                                currentParent.Health,
-                                currentParent.Energy,
-                                currentParent.Age,
-                                currentParent.FoodEaten,
-                                currentParent.FoodReserve - speciesRules.ReproductionFoodRequired));
+                            next.SetCell(childX, childY, parent.Species == SpeciesArchetype.Plant
+                                ? SpeciesCell.Grass(speciesRules.StartingFoodReserve)
+                                : new SpeciesCell(
+                                    parent.Species,
+                                    health: 1,
+                                    energy: speciesRules.StartingEnergy));
+                            next.SetCell(x, y, ConsumeReproductionEnergy(
+                                currentParent,
+                                speciesRules.ReproductionFoodRequired));
                             claimed[childIndex] = true;
                         }
 
@@ -594,12 +698,16 @@ namespace SaltyGame
             return false;
         }
 
-        static SpeciesCell CreateFedCell(SpeciesCell cell, SpeciesRules rules, float foodAmount = 1f)
+        static SpeciesCell CreateFedCell(
+            SpeciesCell cell,
+            SpeciesRules rules,
+            int energyValue,
+            float foodAmount = 1f)
         {
-            return new SpeciesCell(
+            return cell.WithEntity(
                 cell.Species,
                 cell.Health,
-                rules.StartingEnergy,
+                cell.Energy + energyValue,
                 cell.Age,
                 cell.FoodEaten + 1,
                 cell.FoodReserve + foodAmount);
@@ -612,34 +720,84 @@ namespace SaltyGame
             int eaterX,
             int eaterY,
             SpeciesCell eater,
-            SpeciesRules eaterRules)
+            SpeciesRules eaterRules,
+            int energyValue)
         {
             var plant = next.GetCell(plantX, plantY);
-            if (!plant.IsOccupied
-                || plant.Species != SpeciesArchetype.Plant
-                || plant.FoodReserve <= 0f)
+            if (!plant.IsPlantResource)
             {
-                if (plant.IsOccupied && plant.Species == SpeciesArchetype.Plant && plant.FoodReserve <= 0f)
-                {
-                    next.SetCell(plantX, plantY, SpeciesCell.Empty);
-                }
-
                 return false;
             }
 
-            var foodAmount = Math.Min(1f, plant.FoodReserve);
-            next.SetCell(eaterX, eaterY, CreateFedCell(eater, eaterRules, foodAmount));
-            var remainingFood = plant.FoodReserve - foodAmount;
-            next.SetCell(plantX, plantY, remainingFood > 0f
-                ? new SpeciesCell(
-                    plant.Species,
-                    plant.Health,
-                    plant.Energy,
-                    plant.Age,
-                    plant.FoodEaten,
-                    remainingFood)
-                : SpeciesCell.Empty);
+            var availableEnergy = plant.IsGrass ? plant.TerrainEnergy : plant.FoodReserve;
+            if (availableEnergy <= 0f)
+            {
+                return false;
+            }
+
+            var consumedEnergy = Math.Min(1f, availableEnergy);
+            next.SetCell(eaterX, eaterY, CreateFedCell(eater, eaterRules, energyValue, consumedEnergy));
+            var remainingEnergy = availableEnergy - consumedEnergy;
+            next.SetCell(plantX, plantY, plant.IsGrass
+                ? remainingEnergy > 0f
+                    ? plant.WithTerrainEnergy(remainingEnergy)
+                    : plant.WithoutPlantResource()
+                : remainingEnergy > 0f
+                    ? new SpeciesCell(
+                        plant.Species,
+                        plant.Health,
+                        plant.Energy,
+                        plant.Age,
+                        plant.FoodEaten,
+                        remainingEnergy)
+                    : plant.WithoutEntity());
             return true;
+        }
+
+        static bool IsDietTarget(SpeciesCell cell, SpeciesArchetype target)
+        {
+            return target == SpeciesArchetype.Plant
+                ? cell.IsPlantResource && !cell.IsCreature
+                : cell.IsCreature && cell.Species == target;
+        }
+
+        static bool IsSameSpecies(SpeciesCell cell, SpeciesArchetype species)
+        {
+            return species == SpeciesArchetype.Plant
+                ? cell.IsPlantResource
+                : cell.IsCreature && cell.Species == species;
+        }
+
+        static int GetReproductionEnergy(SpeciesCell cell)
+        {
+            return cell.IsCreature
+                ? cell.Energy
+                : (int)(cell.IsGrass ? cell.TerrainEnergy : cell.FoodReserve);
+        }
+
+        static SpeciesCell ConsumeReproductionEnergy(SpeciesCell cell, int amount)
+        {
+            if (cell.IsCreature)
+            {
+                return cell.WithEntity(
+                    cell.Species,
+                    cell.Health,
+                    cell.Energy - amount,
+                    cell.Age,
+                    cell.FoodEaten,
+                    cell.FoodReserve);
+            }
+
+            var remaining = Math.Max(0f, (cell.IsGrass ? cell.TerrainEnergy : cell.FoodReserve) - amount);
+            return cell.IsGrass
+                ? cell.WithTerrainEnergy(remaining)
+                : new SpeciesCell(
+                    cell.Species,
+                    cell.Health,
+                    cell.Energy,
+                    cell.Age,
+                    cell.FoodEaten,
+                    remaining);
         }
 
         static int CountNearbySpecies(
@@ -664,8 +822,7 @@ namespace SaltyGame
                     }
 
                     if (grid.TryGetCell(neighborX, neighborY, out var neighbor)
-                        && neighbor.IsOccupied
-                        && neighbor.Species == species)
+                        && IsSameSpecies(neighbor, species))
                     {
                         count++;
                     }
@@ -695,8 +852,7 @@ namespace SaltyGame
                 }
 
                 if (grid.TryGetCell(neighborX, neighborY, out var neighbor)
-                    && neighbor.IsOccupied
-                    && neighbor.Species == species)
+                    && IsSameSpecies(neighbor, species))
                 {
                     count++;
                 }

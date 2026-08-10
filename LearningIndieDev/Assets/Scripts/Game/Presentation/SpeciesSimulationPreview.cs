@@ -30,8 +30,13 @@ namespace SaltyGame
             Carnivore,
         }
 
+        [System.Serializable]
         sealed class SpeciesRuleDraft
         {
+            public SpeciesRuleDraft()
+            {
+            }
+
             public SpeciesRuleDraft(SpeciesRules rules)
             {
                 MovementSpeed = rules.MovementSpeed;
@@ -58,6 +63,10 @@ namespace SaltyGame
                 MaxReproductionGroupSizeText = rules.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
                 StartingEnergy = rules.StartingEnergy;
                 StartingEnergyText = rules.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+                EnergyValue = rules.EnergyValue;
+                EnergyValueText = rules.EnergyValue.ToString(CultureInfo.InvariantCulture);
+                Metabolism = rules.Metabolism;
+                MetabolismText = rules.Metabolism.ToString(CultureInfo.InvariantCulture);
                 ReproductionEnabled = rules.ReproductionChance > 0f;
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
@@ -96,6 +105,10 @@ namespace SaltyGame
             public string MaxReproductionGroupSizeText;
             public int StartingEnergy;
             public string StartingEnergyText;
+            public int EnergyValue;
+            public string EnergyValueText;
+            public int Metabolism;
+            public string MetabolismText;
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
@@ -108,6 +121,25 @@ namespace SaltyGame
             public string SeedDropChanceText;
         }
 
+        [System.Serializable]
+        sealed class SavedSettings
+        {
+            public int width;
+            public int height;
+            public int seed;
+            public bool randomizeSeedOnStart;
+            public float plantProbability;
+            public float herbivoreProbability;
+            public float carnivoreProbability;
+            public float runDurationSeconds;
+            public float stepInterval;
+            public int maxPopulation;
+            public int minPopulation;
+            public SpeciesRuleDraft plant;
+            public SpeciesRuleDraft herbivore;
+            public SpeciesRuleDraft carnivore;
+        }
+
         [Header("Grid")]
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
@@ -117,13 +149,15 @@ namespace SaltyGame
         [SerializeField, Range(0f, 1f)] float plantProbability = 0.4f;
         [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.16f;
         [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.04f;
+        [SerializeField, Min(0)] int maxPopulation;
+        [SerializeField, Min(0)] int minPopulation;
 
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
 
         [Header("Colors")]
-        [SerializeField] Color emptyColor = new Color(0.03f, 0.04f, 0.07f);
+        [SerializeField] Color emptyColor = new Color(0.35f, 0.2f, 0.1f);
         [SerializeField] Color plantColor = new Color(0.2f, 0.75f, 0.25f);
         [SerializeField] Color herbivoreColor = new Color(0.2f, 0.7f, 1f);
         [SerializeField] Color carnivoreColor = new Color(0.95f, 0.25f, 0.2f);
@@ -149,6 +183,19 @@ namespace SaltyGame
         int runNumber;
         bool rewardGranted;
         bool sessionStarted;
+        string settingsMessage;
+        string widthText;
+        string heightText;
+        string seedText;
+        string maxPopulationText;
+        string minPopulationText;
+        string runDurationText;
+        string stepIntervalText;
+        string plantProbabilityText;
+        string herbivoreProbabilityText;
+        string carnivoreProbabilityText;
+
+        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v2";
 
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
@@ -157,6 +204,7 @@ namespace SaltyGame
         void Awake()
         {
             ruleDrafts = CreateRuleDrafts(SpeciesRuleDefaults.Create());
+            LoadSavedSettings();
             ResetToStart();
         }
 
@@ -193,7 +241,7 @@ namespace SaltyGame
                     alignment = TextAnchor.MiddleCenter,
                 });
 
-            var speciesNames = new[] { "PLANT", "HERBIVORE", "CARNIVORE" };
+            var speciesNames = new[] { "GLOBAL", "PLANT", "HERBIVORE", "CARNIVORE" };
             var speciesTabStyle = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 28,
@@ -203,7 +251,7 @@ namespace SaltyGame
                 new Rect(panelLeft + 24f, panelTop + 138f, panelWidth - 48f, 56f),
                 selectedSettingsSpecies,
                 speciesNames,
-                3,
+                4,
                 speciesTabStyle);
 
             var scrollRect = new Rect(
@@ -217,7 +265,6 @@ namespace SaltyGame
                 settingsScrollPosition,
                 new Rect(0f, 0f, contentWidth, 760f));
 
-            var draft = ruleDrafts[(SpeciesArchetype)selectedSettingsSpecies];
             var labelStyle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 30,
@@ -234,17 +281,82 @@ namespace SaltyGame
                 fixedHeight = 44f,
             };
             var columnWidth = contentWidth * 0.5f;
-            DrawSettingsLeftColumn(draft, 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
-            DrawSettingsRightColumn(draft, columnWidth + 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
+            if (selectedSettingsSpecies == 0)
+            {
+                DrawGlobalSettingsPanel(contentWidth, labelStyle, fieldStyle, optionStyle);
+            }
+            else
+            {
+                var draft = ruleDrafts[(SpeciesArchetype)(selectedSettingsSpecies - 1)];
+                DrawSettingsLeftColumn(draft, 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
+                DrawSettingsRightColumn(draft, columnWidth + 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
+            }
             GUI.EndScrollView();
 
+            var startButtonTop = panelTop + panelHeight - 82f;
+            if (selectedSettingsSpecies == 0)
+            {
+                GUI.Label(new Rect(panelLeft + 24f, panelTop + panelHeight - 190f, panelWidth - 48f, 34f),
+                    settingsMessage ?? string.Empty,
+                    new GUIStyle(GUI.skin.label)
+                    {
+                        fontSize = 24,
+                        alignment = TextAnchor.MiddleCenter,
+                    });
+                var saveButtonStyle = new GUIStyle(buttonStyle)
+                {
+                    fontSize = 28,
+                };
+                if (GUI.Button(
+                    new Rect(panelLeft + 180f, panelTop + panelHeight - 146f, panelWidth - 360f, 56f),
+                    "SAVE CURRENT SETTINGS AS DEFAULT",
+                    saveButtonStyle))
+                {
+                    SaveCurrentSettingsAsDefault();
+                }
+
+                startButtonTop = panelTop + panelHeight - 82f;
+            }
+
             if (GUI.Button(
-                new Rect(panelLeft + 180f, panelTop + panelHeight - 82f, panelWidth - 360f, 64f),
+                new Rect(panelLeft + 180f, startButtonTop, panelWidth - 360f, 64f),
                 "START SIMULATION",
                 buttonStyle))
             {
                 StartSimulation();
             }
+        }
+
+        void DrawGlobalSettingsPanel(
+            float contentWidth,
+            GUIStyle labelStyle,
+            GUIStyle fieldStyle,
+            GUIStyle optionStyle)
+        {
+            var left = 12f;
+            var fieldWidth = contentWidth - 24f;
+            var y = 8f;
+            y = DrawIntField(left, y, fieldWidth, "Grid width", ref widthText, ref width, labelStyle, fieldStyle, minimum: 1);
+            y = DrawIntField(left, y, fieldWidth, "Grid height", ref heightText, ref height, labelStyle, fieldStyle, minimum: 1);
+            y = DrawIntField(left, y, fieldWidth, "Base seed", ref seedText, ref seed, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, fieldWidth, "Maximum population (0 = unlimited)", ref maxPopulationText, ref maxPopulation, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, fieldWidth, "Minimum starting population", ref minPopulationText, ref minPopulation, labelStyle, fieldStyle);
+            y = DrawFloatField(left, y, fieldWidth, "Run duration (seconds)", ref runDurationText, ref runDurationSeconds, labelStyle, fieldStyle, 1f);
+            y = DrawFloatField(left, y, fieldWidth, "Step interval (seconds)", ref stepIntervalText, ref stepInterval, labelStyle, fieldStyle, 0.01f);
+
+            GUI.Label(new Rect(left, y, fieldWidth - 280f, 40f), "Seed mode", labelStyle);
+            var randomMode = GUI.SelectionGrid(
+                new Rect(left + fieldWidth - 270f, y, 260f, 44f),
+                randomizeSeedOnStart ? 1 : 0,
+                new[] { "Deterministic", "Random" },
+                2,
+                optionStyle);
+            randomizeSeedOnStart = randomMode == 1;
+            y += 48f;
+
+            y = DrawFloatField(left, y, fieldWidth, "Initial plant chance", ref plantProbabilityText, ref plantProbability, labelStyle, fieldStyle, 0f, 1f);
+            y = DrawFloatField(left, y, fieldWidth, "Initial herbivore chance", ref herbivoreProbabilityText, ref herbivoreProbability, labelStyle, fieldStyle, 0f, 1f);
+            DrawFloatField(left, y, fieldWidth, "Initial carnivore chance", ref carnivoreProbabilityText, ref carnivoreProbability, labelStyle, fieldStyle, 0f, 1f);
         }
 
         void DrawSettingsLeftColumn(
@@ -283,14 +395,16 @@ namespace SaltyGame
             draft.ReproductionEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.ReproductionEnabled, "Reproduction enabled", labelStyle);
             y += 48f;
             y = DrawFloatField(left, y, width, "Reproduction chance", ref draft.ReproductionChanceText, ref draft.ReproductionChance, labelStyle, fieldStyle, 0f, 1f);
-            y = DrawIntField(left, y, width, "Neighbor requirement", ref draft.ReproductionNeighborCountText, ref draft.ReproductionNeighborCount, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Food requirement", ref draft.ReproductionFoodRequiredText, ref draft.ReproductionFoodRequired, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Nearby mate requirement", ref draft.ReproductionNeighborCountText, ref draft.ReproductionNeighborCount, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Energy required to mate", ref draft.ReproductionFoodRequiredText, ref draft.ReproductionFoodRequired, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Maximum group size", ref draft.MaxReproductionGroupSizeText, ref draft.MaxReproductionGroupSize, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Starting energy", ref draft.StartingEnergyText, ref draft.StartingEnergy, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Energy value", ref draft.EnergyValueText, ref draft.EnergyValue, labelStyle, fieldStyle);
             draft.WiltEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.WiltEnabled, "Wilt enabled", labelStyle);
             y += 48f;
             y = DrawFloatField(left, y, width, "Wilt chance", ref draft.WiltChanceText, ref draft.WiltChance, labelStyle, fieldStyle, 0f, 1f);
-            y = DrawIntField(left, y, width, "Crowding energy cost", ref draft.CrowdingEnergyPenaltyText, ref draft.CrowdingEnergyPenalty, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Metabolism (- adds)", ref draft.MetabolismText, ref draft.Metabolism, labelStyle, fieldStyle, minimum: -1000);
+            y = DrawIntField(left, y, width, "Crowding cost", ref draft.CrowdingEnergyPenaltyText, ref draft.CrowdingEnergyPenalty, labelStyle, fieldStyle);
             y = DrawFloatField(left, y, width, "Starting food reserve", ref draft.StartingFoodReserveText, ref draft.StartingFoodReserve, labelStyle, fieldStyle);
             draft.SeedDropEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.SeedDropEnabled, "Seed drops enabled", labelStyle);
             y += 48f;
@@ -327,13 +441,14 @@ namespace SaltyGame
             ref string text,
             ref int value,
             GUIStyle labelStyle,
-            GUIStyle fieldStyle)
+            GUIStyle fieldStyle,
+            int minimum = 0)
         {
             GUI.Label(new Rect(left, top, width - 190f, 40f), label, labelStyle);
             text = GUI.TextField(new Rect(left + width - 180f, top, 170f, 40f), text, fieldStyle);
             if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
             {
-                value = Mathf.Max(0, parsed);
+                value = Mathf.Max(minimum, parsed);
             }
 
             return top + 48f;
@@ -501,7 +616,77 @@ namespace SaltyGame
             sessionStarted = false;
             selectedSettingsSpecies = 0;
             settingsScrollPosition = Vector2.zero;
+            settingsMessage = string.Empty;
+            SyncGlobalSettingTextFields();
             PrepareNextRun();
+        }
+
+        public void SaveCurrentSettingsAsDefault()
+        {
+            var saved = new SavedSettings
+            {
+                width = width,
+                height = height,
+                seed = seed,
+                randomizeSeedOnStart = randomizeSeedOnStart,
+                plantProbability = plantProbability,
+                herbivoreProbability = herbivoreProbability,
+                carnivoreProbability = carnivoreProbability,
+                runDurationSeconds = runDurationSeconds,
+                stepInterval = stepInterval,
+                maxPopulation = maxPopulation,
+                minPopulation = minPopulation,
+                plant = ruleDrafts[SpeciesArchetype.Plant],
+                herbivore = ruleDrafts[SpeciesArchetype.Herbivore],
+                carnivore = ruleDrafts[SpeciesArchetype.Carnivore],
+            };
+
+            PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
+            PlayerPrefs.Save();
+            settingsMessage = "Current settings saved as the default.";
+        }
+
+        void LoadSavedSettings()
+        {
+            if (!PlayerPrefs.HasKey(DefaultSettingsKey))
+            {
+                return;
+            }
+
+            var saved = JsonUtility.FromJson<SavedSettings>(PlayerPrefs.GetString(DefaultSettingsKey));
+            if (saved == null)
+            {
+                return;
+            }
+
+            width = Mathf.Max(1, saved.width);
+            height = Mathf.Max(1, saved.height);
+            seed = saved.seed;
+            randomizeSeedOnStart = saved.randomizeSeedOnStart;
+            plantProbability = Mathf.Clamp01(saved.plantProbability);
+            herbivoreProbability = Mathf.Clamp01(saved.herbivoreProbability);
+            carnivoreProbability = Mathf.Clamp01(saved.carnivoreProbability);
+            runDurationSeconds = Mathf.Max(1f, saved.runDurationSeconds);
+            stepInterval = Mathf.Max(0.01f, saved.stepInterval);
+            maxPopulation = Mathf.Max(0, saved.maxPopulation);
+            minPopulation = Mathf.Max(0, saved.minPopulation);
+            ruleDrafts[SpeciesArchetype.Plant] = saved.plant ?? ruleDrafts[SpeciesArchetype.Plant];
+            ruleDrafts[SpeciesArchetype.Herbivore] = saved.herbivore ?? ruleDrafts[SpeciesArchetype.Herbivore];
+            ruleDrafts[SpeciesArchetype.Carnivore] = saved.carnivore ?? ruleDrafts[SpeciesArchetype.Carnivore];
+        }
+
+        void SyncGlobalSettingTextFields()
+        {
+            widthText = width.ToString(CultureInfo.InvariantCulture);
+            heightText = height.ToString(CultureInfo.InvariantCulture);
+            seedText = seed.ToString(CultureInfo.InvariantCulture);
+            maxPopulationText = maxPopulation.ToString(CultureInfo.InvariantCulture);
+            minPopulationText = minPopulation.ToString(CultureInfo.InvariantCulture);
+            runDurationText = FormatFloat(runDurationSeconds);
+            stepIntervalText = FormatFloat(stepInterval);
+            plantProbabilityText = FormatFloat(plantProbability);
+            herbivoreProbabilityText = FormatFloat(herbivoreProbability);
+            carnivoreProbabilityText = FormatFloat(carnivoreProbability);
         }
 
         void PrepareNextRun()
@@ -517,7 +702,7 @@ namespace SaltyGame
                 playerSpecies,
                 seed + runNumber,
                 runDurationSeconds);
-            runner = new SpeciesSimulationRunner(run, rules, stepInterval);
+            runner = new SpeciesSimulationRunner(run, rules, stepInterval, maxPopulation);
             tickTimer = 0f;
             result = default;
             rewardGranted = false;
@@ -529,21 +714,29 @@ namespace SaltyGame
 
         void DrawControlPanel()
         {
-            var panelWidth = Mathf.Min(1200f, Screen.width - 32f);
+            var simulationControlsVisible = previewState == SpeciesPreviewState.Running
+                || previewState == SpeciesPreviewState.Paused;
+            var panelWidth = simulationControlsVisible
+                ? Mathf.Min(560f, Screen.width - 32f)
+                : Mathf.Min(1200f, Screen.width - 32f);
             var settingsVisible = previewState == SpeciesPreviewState.Ready && !sessionStarted;
             var panelHeight = settingsVisible
                 ? Mathf.Min(1100f, Screen.height - 24f)
                 : previewState == SpeciesPreviewState.Rewards
                     ? 640f
-                    : previewState == SpeciesPreviewState.Running || previewState == SpeciesPreviewState.Paused
-                        ? 500f
+                    : simulationControlsVisible
+                        ? 300f
                         : 380f;
-            var panelLeft = (Screen.width - panelWidth) * 0.5f;
-            var panelTop = (Screen.height - panelHeight) * 0.5f;
+            var panelLeft = simulationControlsVisible
+                ? Screen.width - panelWidth - 24f
+                : (Screen.width - panelWidth) * 0.5f;
+            var panelTop = simulationControlsVisible
+                ? Screen.height - panelHeight - 24f
+                : (Screen.height - panelHeight) * 0.5f;
             var panelRect = new Rect(panelLeft, panelTop, panelWidth, panelHeight);
             var titleStyle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 44,
+                fontSize = simulationControlsVisible ? 28 : 44,
                 alignment = TextAnchor.MiddleCenter,
             };
             var defaultBodyFontSize = GUI.skin.label.fontSize > 0 ? GUI.skin.label.fontSize : 12;
@@ -557,6 +750,15 @@ namespace SaltyGame
             {
                 fontSize = 40,
                 fixedHeight = 88f,
+            };
+            var simulationBodyStyle = new GUIStyle(bodyStyle)
+            {
+                fontSize = 22,
+            };
+            var simulationButtonStyle = new GUIStyle(buttonStyle)
+            {
+                fontSize = 22,
+                fixedHeight = 48f,
             };
             var cardButtonStyle = new GUIStyle(buttonStyle)
             {
@@ -588,10 +790,10 @@ namespace SaltyGame
 
                     break;
                 case SpeciesPreviewState.Running:
-                    DrawSimulationControls(panelLeft, panelTop, panelWidth, bodyStyle, buttonStyle, paused: false);
+                    DrawSimulationControls(panelLeft, panelTop, panelWidth, simulationBodyStyle, simulationButtonStyle, paused: false);
                     break;
                 case SpeciesPreviewState.Paused:
-                    DrawSimulationControls(panelLeft, panelTop, panelWidth, bodyStyle, buttonStyle, paused: true);
+                    DrawSimulationControls(panelLeft, panelTop, panelWidth, simulationBodyStyle, simulationButtonStyle, paused: true);
                     break;
                 case SpeciesPreviewState.Rewards:
                     DrawRewardPanel(panelLeft, panelTop, panelWidth, bodyStyle, cardButtonStyle);
@@ -610,11 +812,11 @@ namespace SaltyGame
             GUIStyle buttonStyle,
             bool paused)
         {
-            GUI.Label(new Rect(panelLeft + 40f, panelTop + 92f, panelWidth - 80f, 64f),
+            GUI.Label(new Rect(panelLeft + 16f, panelTop + 58f, panelWidth - 32f, 40f),
                 paused ? "The simulation is paused." : "The ecosystem is evolving...", bodyStyle);
 
             if (GUI.Button(
-                new Rect(panelLeft + 180f, panelTop + 190f, panelWidth - 360f, 88f),
+                new Rect(panelLeft + 24f, panelTop + 106f, panelWidth - 48f, 48f),
                 paused ? "RESUME SIMULATION" : "PAUSE SIMULATION",
                 buttonStyle))
             {
@@ -629,7 +831,7 @@ namespace SaltyGame
             }
 
             if (GUI.Button(
-                new Rect(panelLeft + 180f, panelTop + 294f, panelWidth - 360f, 76f),
+                new Rect(panelLeft + 24f, panelTop + 162f, panelWidth - 48f, 48f),
                 "RESTART SIMULATION",
                 buttonStyle))
             {
@@ -637,7 +839,7 @@ namespace SaltyGame
             }
 
             if (GUI.Button(
-                new Rect(panelLeft + 180f, panelTop + 388f, panelWidth - 360f, 76f),
+                new Rect(panelLeft + 24f, panelTop + 218f, panelWidth - 48f, 48f),
                 "STOP AND EDIT SETTINGS",
                 buttonStyle))
             {
@@ -795,7 +997,9 @@ namespace SaltyGame
                     wiltChance: draft.WiltEnabled ? draft.WiltChance : 0f,
                     crowdingEnergyPenalty: draft.CrowdingEnergyPenalty,
                     startingFoodReserve: draft.StartingFoodReserve,
-                    seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f);
+                    seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f,
+                    energyValue: draft.EnergyValue,
+                    metabolism: draft.Metabolism);
             }
 
             return result;
@@ -857,6 +1061,7 @@ namespace SaltyGame
         {
             var random = new System.Random(runSeed);
             var grid = new Grid<SpeciesCell>(width, height);
+            var populationCount = 0;
             for (var y = 0; y < height; y++)
             {
                 for (var x = 0; x < width; x++)
@@ -880,6 +1085,11 @@ namespace SaltyGame
                         continue;
                     }
 
+                    if (maxPopulation > 0 && populationCount >= maxPopulation)
+                    {
+                        continue;
+                    }
+
                     var sameSpeciesNeighbors = CountNearbySpecies(grid, x, y, species);
                     var clumpPenalty = sameSpeciesNeighbors > 2
                         ? 0.9d
@@ -889,14 +1099,64 @@ namespace SaltyGame
                         continue;
                     }
 
-                    grid.SetCell(x, y, new SpeciesCell(
-                        species,
-                        energy: rules[species].StartingEnergy,
-                        foodReserve: rules[species].StartingFoodReserve));
+                    grid.SetCell(x, y, species == SpeciesArchetype.Plant
+                        ? SpeciesCell.Grass(rules[species].StartingFoodReserve)
+                        : new SpeciesCell(
+                            species,
+                            energy: rules[species].StartingEnergy,
+                            foodReserve: rules[species].StartingFoodReserve));
+                    populationCount++;
                 }
             }
 
+            var minimumPopulation = Mathf.Min(minPopulation, grid.Count);
+            if (maxPopulation > 0)
+            {
+                minimumPopulation = Mathf.Min(minimumPopulation, maxPopulation);
+            }
+
+            var attempts = 0;
+            while (populationCount < minimumPopulation && attempts++ < grid.Count * 4)
+            {
+                var index = random.Next(grid.Count);
+                var x = index % width;
+                var y = index / width;
+                if (grid.GetCell(x, y).IsCreature || grid.GetCell(x, y).IsPlantResource)
+                {
+                    continue;
+                }
+
+                var species = GetInitialSpecies(random.NextDouble());
+                grid.SetCell(x, y, species == SpeciesArchetype.Plant
+                    ? SpeciesCell.Grass(rules[species].StartingFoodReserve)
+                    : new SpeciesCell(
+                        species,
+                        energy: rules[species].StartingEnergy,
+                        foodReserve: rules[species].StartingFoodReserve));
+                populationCount++;
+            }
+
             return grid;
+        }
+
+        SpeciesArchetype GetInitialSpecies(double roll)
+        {
+            if (roll < plantProbability)
+            {
+                return SpeciesArchetype.Plant;
+            }
+
+            if (roll < plantProbability + herbivoreProbability)
+            {
+                return SpeciesArchetype.Herbivore;
+            }
+
+            if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
+            {
+                return SpeciesArchetype.Carnivore;
+            }
+
+            return SpeciesArchetype.Plant;
         }
 
         static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesArchetype species)
@@ -912,8 +1172,10 @@ namespace SaltyGame
                     }
 
                     if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
-                        && neighbor.IsOccupied
-                        && neighbor.Species == species)
+                        && ((species == SpeciesArchetype.Plant && neighbor.IsPlantResource)
+                            || (species != SpeciesArchetype.Plant
+                                && neighbor.IsCreature
+                                && neighbor.Species == species)))
                     {
                         count++;
                     }
@@ -925,7 +1187,12 @@ namespace SaltyGame
 
         Color GetCellColor(SpeciesCell cell)
         {
-            if (!cell.IsOccupied)
+            if (cell.IsPlantResource && !cell.IsCreature)
+            {
+                return plantColor;
+            }
+
+            if (!cell.IsCreature)
             {
                 return emptyColor;
             }

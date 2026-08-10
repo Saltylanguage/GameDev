@@ -82,7 +82,9 @@ namespace SaltyGame
                 rules.WiltChance,
                 rules.CrowdingEnergyPenalty,
                 rules.StartingFoodReserve,
-                rules.SeedDropChance);
+                rules.SeedDropChance,
+                rules.EnergyValue,
+                rules.Metabolism);
         }
     }
 }

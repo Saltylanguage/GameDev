@@ -22,7 +22,9 @@ namespace SaltyGame
             float wiltChance = 0f,
             int crowdingEnergyPenalty = 0,
             float startingFoodReserve = 0f,
-            float seedDropChance = 0f)
+            float seedDropChance = 0f,
+            int energyValue = 0,
+            int metabolism = 1)
         {
             if (movementSpeed < 0f)
             {
@@ -84,6 +86,11 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(seedDropChance), seedDropChance, "Seed drop chance must be between zero and one.");
             }
 
+            if (energyValue < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(energyValue), energyValue, "Energy value cannot be negative.");
+            }
+
             MovementSpeed = movementSpeed;
             MovementPattern = movementPattern ?? throw new ArgumentNullException(nameof(movementPattern));
             AttackPattern = attackPattern ?? throw new ArgumentNullException(nameof(attackPattern));
@@ -102,6 +109,8 @@ namespace SaltyGame
             CrowdingEnergyPenalty = crowdingEnergyPenalty;
             StartingFoodReserve = startingFoodReserve;
             SeedDropChance = seedDropChance;
+            EnergyValue = energyValue;
+            Metabolism = metabolism;
         }
 
         public float MovementSpeed { get; }
@@ -120,7 +129,10 @@ namespace SaltyGame
         public int StartingEnergy { get; }
         public float WiltChance { get; }
         public int CrowdingEnergyPenalty { get; }
+        public int CrowdingCost => CrowdingEnergyPenalty;
         public float StartingFoodReserve { get; }
         public float SeedDropChance { get; }
+        public int EnergyValue { get; }
+        public int Metabolism { get; }
     }
 }

@@ -18,6 +18,16 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void GrassIsAResourceButNotAnOccupiedCreatureCell()
+        {
+            var grass = SpeciesCell.Grass(2f);
+
+            Assert.That(grass.IsOccupied, Is.False);
+            Assert.That(grass.IsPlantResource, Is.True);
+            Assert.That(grass.TerrainEnergy, Is.EqualTo(2f));
+        }
+
+        [Test]
         public void SpeciesRulesPreserveBehaviorValuesAndPatterns()
         {
             var attackPattern = new GridPattern(new[] { Vector2Int.right });
@@ -125,6 +135,20 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void SpeciesSimulationRespectsMaximumPopulation()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+
+            var next = SpeciesSimulation.Step(source, SpeciesRuleDefaults.Create(), seed: 42, maxPopulation: 1);
+
+            var occupied = next.GetCell(0, 0).IsCreature ? 1 : 0;
+            occupied += next.GetCell(1, 0).IsCreature ? 1 : 0;
+            Assert.That(occupied, Is.EqualTo(1));
+        }
+
+        [Test]
         public void CarnivoresAttackHerbivoresButHerbivoresDoNotAttackCarnivores()
         {
             var source = new Grid<SpeciesCell>(2, 1);
@@ -170,7 +194,7 @@ namespace SaltyGame.Tests
         public void PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds()
         {
             var source = new Grid<SpeciesCell>(3, 1);
-            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Plant));
+            source.SetCell(1, 0, SpeciesCell.Grass(1f));
             var plantRules = new SpeciesRules(
                 movementSpeed: 0f,
                 movementPattern: EmptyPattern,
@@ -197,10 +221,10 @@ namespace SaltyGame.Tests
         public void CarnivoreNeedsFoodAndANeighborToReproduce()
         {
             var source = new Grid<SpeciesCell>(3, 1);
-            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 3));
             source.SetCell(1, 0, new SpeciesCell(
                 SpeciesArchetype.Carnivore,
-                energy: 2,
+                energy: 3,
                 foodReserve: 1));
             var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
             var carnivoreRules = new SpeciesRules(
@@ -226,11 +250,71 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
             Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Carnivore));
-            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(0));
+            Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(1));
 
-            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));
             var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
             Assert.That(withoutFood.GetCell(2, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void PlantMetabolismAddsEnergyWithoutOccupyingTheTile()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, SpeciesCell.Grass(1f));
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                reproductionChance: 0f,
+                metabolism: -1);
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Plant] = plantRules,
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+            Assert.That(next.GetCell(0, 0).TerrainEnergy, Is.EqualTo(2f));
+        }
+
+        [Test]
+        public void CreaturesCanMoveThroughGrassTiles()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            source.SetCell(1, 0, SpeciesCell.Grass(2f));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Carnivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: right,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(1, 0).IsPlantResource, Is.True);
         }
 
         [Test]
@@ -360,7 +444,8 @@ namespace SaltyGame.Tests
                 dietTarget: SpeciesArchetype.Plant,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
-                startingEnergy: 2);
+                startingEnergy: 2,
+                metabolism: 0);
             var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
             {
                 [SpeciesArchetype.Plant] = plantRules,
