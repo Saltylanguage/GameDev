@@ -4,6 +4,14 @@ using UnityEngine;
 
 namespace SaltyGame
 {
+    public enum SpeciesPreviewState
+    {
+        Ready,
+        Running,
+        Rewards,
+        Results,
+    }
+
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
         [Header("Grid")]
@@ -25,22 +33,27 @@ namespace SaltyGame
         [SerializeField] Color herbivoreColor = new Color(0.2f, 0.7f, 1f);
         [SerializeField] Color carnivoreColor = new Color(0.95f, 0.25f, 0.2f);
 
-        readonly SpeciesUpgrade speedUpgrade = new SpeciesUpgrade(
-            "faster-movement",
-            cost: 5,
-            type: SpeciesUpgradeType.MovementSpeed,
-            value: 0.5f);
+        readonly SpeciesUpgrade[] rewardOptions =
+        {
+            new SpeciesUpgrade("faster-movement", 5, SpeciesUpgradeType.MovementSpeed, 0.5f),
+            new SpeciesUpgrade("stronger-attack", 5, SpeciesUpgradeType.AttackAmount, 1f),
+            new SpeciesUpgrade("stronger-block", 5, SpeciesUpgradeType.BlockAmount, 1f),
+        };
 
         IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules;
         SpeciesProgression progression;
         SpeciesSimulationRunner runner;
         SimulationRunResult result;
+        SpeciesUpgrade selectedUpgrade;
+        SpeciesPreviewState previewState;
+        string rewardMessage;
         float tickTimer;
         int runNumber;
         bool rewardGranted;
 
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
+        public SpeciesPreviewState State => previewState;
 
         void Awake()
         {
@@ -70,6 +83,7 @@ namespace SaltyGame
                 result = SimulationRunResults.Create(runner.Run);
                 progression.AddCurrency(result.CurrencyEarned);
                 rewardGranted = true;
+                previewState = SpeciesPreviewState.Rewards;
             }
         }
 
@@ -91,8 +105,14 @@ namespace SaltyGame
             var gridLeft = (Screen.width - gridWidth) * 0.5f;
             var gridTop = headerHeight + (Screen.height - headerHeight - gridHeight) * 0.5f;
 
-            GUI.Label(new Rect(padding, padding, Screen.width - padding * 2f, 24f),
-                $"Species Run {runNumber}  |  {run.Status}  |  {run.ElapsedSeconds:0.0}/{run.DurationSeconds:0.0}s  |  Currency: {progression.Currency}");
+            var headerStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 24,
+                alignment = TextAnchor.MiddleCenter,
+            };
+            GUI.Label(new Rect(padding, padding, Screen.width - padding * 2f, 32f),
+                $"Species Run {runNumber}  |  {run.Status}  |  {run.ElapsedSeconds:0.0}/{run.DurationSeconds:0.0}s  |  Currency: {progression.Currency}",
+                headerStyle);
 
             var previousColor = GUI.color;
             for (var y = 0; y < run.Cells.Height; y++)
@@ -107,26 +127,7 @@ namespace SaltyGame
             }
 
             GUI.color = previousColor;
-            if (run.Status == SimulationRunStatus.Ready
-                && GUI.Button(new Rect(padding, Screen.height - 44f, 180f, 28f), "Start Simulation"))
-            {
-                StartSimulation();
-            }
-
-            if (run.Status == SimulationRunStatus.Complete)
-            {
-                GUI.Label(new Rect(padding, Screen.height - 72f, 360f, 24f),
-                    $"Run complete  |  Reward: {result.CurrencyEarned}");
-                if (GUI.Button(new Rect(padding, Screen.height - 44f, 180f, 28f), "Buy Speed Upgrade (5)"))
-                {
-                    progression.TryPurchase(speedUpgrade);
-                }
-
-                if (GUI.Button(new Rect(padding + 188f, Screen.height - 44f, 140f, 28f), "Start Next Run"))
-                {
-                    PrepareNextRun();
-                }
-            }
+            DrawControlPanel();
         }
 
         public void StartSimulation()
@@ -134,6 +135,7 @@ namespace SaltyGame
             if (runner != null && runner.Run.Status == SimulationRunStatus.Ready)
             {
                 runner.Start();
+                previewState = SpeciesPreviewState.Running;
             }
         }
 
@@ -154,7 +156,176 @@ namespace SaltyGame
             tickTimer = 0f;
             result = default;
             rewardGranted = false;
+            selectedUpgrade = null;
+            rewardMessage = string.Empty;
+            previewState = SpeciesPreviewState.Ready;
             runNumber++;
+        }
+
+        void DrawControlPanel()
+        {
+            var panelWidth = Mathf.Min(960f, Screen.width - 48f);
+            var panelHeight = previewState == SpeciesPreviewState.Rewards ? 560f : 380f;
+            var panelLeft = (Screen.width - panelWidth) * 0.5f;
+            var panelTop = (Screen.height - panelHeight) * 0.5f;
+            var panelRect = new Rect(panelLeft, panelTop, panelWidth, panelHeight);
+            var titleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 44,
+                alignment = TextAnchor.MiddleCenter,
+            };
+            var defaultBodyFontSize = GUI.skin.label.fontSize > 0 ? GUI.skin.label.fontSize : 12;
+            var bodyStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = defaultBodyFontSize * 2,
+                alignment = TextAnchor.MiddleCenter,
+                wordWrap = true,
+            };
+            var buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 40,
+                fixedHeight = 88f,
+            };
+            var cardButtonStyle = new GUIStyle(buttonStyle)
+            {
+                fontSize = 28,
+                fixedHeight = 52f,
+            };
+
+            GUI.Box(panelRect, GUIContent.none);
+            GUI.Label(new Rect(panelLeft + 20f, panelTop + 16f, panelWidth - 40f, 64f),
+                GetPanelTitle(), titleStyle);
+
+            switch (previewState)
+            {
+                case SpeciesPreviewState.Ready:
+                    GUI.Label(new Rect(panelLeft + 40f, panelTop + 92f, panelWidth - 80f, 64f),
+                        "Your species is ready. Start the simulation to begin the run.", bodyStyle);
+                    if (GUI.Button(new Rect(panelLeft + 180f, panelTop + 190f, panelWidth - 360f, 88f),
+                        "START SIMULATION", buttonStyle))
+                    {
+                        StartSimulation();
+                    }
+
+                    break;
+                case SpeciesPreviewState.Running:
+                    GUI.Label(new Rect(panelLeft + 40f, panelTop + 102f, panelWidth - 80f, 64f),
+                        "The ecosystem is evolving...", bodyStyle);
+                    break;
+                case SpeciesPreviewState.Rewards:
+                    DrawRewardPanel(panelLeft, panelTop, panelWidth, bodyStyle, cardButtonStyle);
+                    break;
+                case SpeciesPreviewState.Results:
+                    DrawResultsPanel(panelLeft, panelTop, panelWidth, bodyStyle, buttonStyle);
+                    break;
+            }
+        }
+
+        void DrawRewardPanel(float panelLeft, float panelTop, float panelWidth, GUIStyle bodyStyle, GUIStyle buttonStyle)
+        {
+            GUI.Label(new Rect(panelLeft + 30f, panelTop + 82f, panelWidth - 60f, 42f),
+                $"Run reward: +{result.CurrencyEarned} currency  |  Choose one upgrade", bodyStyle);
+
+            var cardWidth = (panelWidth - 56f) / rewardOptions.Length;
+            for (var index = 0; index < rewardOptions.Length; index++)
+            {
+                var upgrade = rewardOptions[index];
+                var cardLeft = panelLeft + 14f + index * (cardWidth + 14f);
+                var cardTop = panelTop + 148f;
+                GUI.Box(new Rect(cardLeft, cardTop, cardWidth, 230f), GUIContent.none);
+                GUI.Label(new Rect(cardLeft + 12f, cardTop + 14f, cardWidth - 24f, 56f),
+                    GetUpgradeTitle(upgrade), bodyStyle);
+                GUI.Label(new Rect(cardLeft + 12f, cardTop + 76f, cardWidth - 24f, 76f),
+                    GetUpgradeDescription(upgrade), bodyStyle);
+
+                GUI.enabled = progression.Currency >= upgrade.Cost;
+                if (GUI.Button(new Rect(cardLeft + 16f, cardTop + 166f, cardWidth - 32f, 56f),
+                    $"PURCHASE ({upgrade.Cost})", buttonStyle))
+                {
+                    if (progression.TryPurchase(upgrade))
+                    {
+                        selectedUpgrade = upgrade;
+                        previewState = SpeciesPreviewState.Results;
+                        rewardMessage = string.Empty;
+                    }
+                }
+
+                GUI.enabled = true;
+            }
+
+            GUI.Label(new Rect(panelLeft + 20f, panelTop + 400f, panelWidth - 40f, 42f),
+                string.IsNullOrEmpty(rewardMessage) ? "Select an upgrade to apply it to your species." : rewardMessage,
+                bodyStyle);
+            if (GUI.Button(new Rect(panelLeft + 250f, panelTop + 462f, panelWidth - 500f, 56f),
+                "CONTINUE WITHOUT UPGRADE", buttonStyle))
+            {
+                previewState = SpeciesPreviewState.Results;
+            }
+        }
+
+        void DrawResultsPanel(float panelLeft, float panelTop, float panelWidth, GUIStyle bodyStyle, GUIStyle buttonStyle)
+        {
+            var updateText = selectedUpgrade == null
+                ? "No upgrade selected this run."
+                : $"Applied: {GetUpgradeTitle(selectedUpgrade)}";
+            GUI.Label(new Rect(panelLeft + 30f, panelTop + 92f, panelWidth - 60f, 48f), updateText, bodyStyle);
+            GUI.Label(new Rect(panelLeft + 30f, panelTop + 154f, panelWidth - 60f, 100f),
+                $"Movement: {progression.CurrentRules.MovementSpeed:0.0}    "
+                + $"Attack: {progression.CurrentRules.AttackAmount}    "
+                + $"Block: {progression.CurrentRules.BlockAmount}\n"
+                + $"Currency remaining: {progression.Currency}", bodyStyle);
+            if (GUI.Button(new Rect(panelLeft + 180f, panelTop + 270f, panelWidth - 360f, 88f),
+                "PLAY NEXT SIMULATION", buttonStyle))
+            {
+                PrepareNextRun();
+            }
+        }
+
+        string GetPanelTitle()
+        {
+            switch (previewState)
+            {
+                case SpeciesPreviewState.Ready:
+                    return "SPECIES SIMULATION";
+                case SpeciesPreviewState.Running:
+                    return "SIMULATION IN PROGRESS";
+                case SpeciesPreviewState.Rewards:
+                    return "CHOOSE YOUR REWARD";
+                case SpeciesPreviewState.Results:
+                    return "SPECIES UPDATE";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        static string GetUpgradeTitle(SpeciesUpgrade upgrade)
+        {
+            switch (upgrade.Type)
+            {
+                case SpeciesUpgradeType.MovementSpeed:
+                    return "Swift Cells";
+                case SpeciesUpgradeType.AttackAmount:
+                    return "Sharper Cells";
+                case SpeciesUpgradeType.BlockAmount:
+                    return "Hardier Cells";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        static string GetUpgradeDescription(SpeciesUpgrade upgrade)
+        {
+            switch (upgrade.Type)
+            {
+                case SpeciesUpgradeType.MovementSpeed:
+                    return "+0.5 movement speed";
+                case SpeciesUpgradeType.AttackAmount:
+                    return "+1 attack amount";
+                case SpeciesUpgradeType.BlockAmount:
+                    return "+1 block amount";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
 
         Grid<SpeciesCell> CreateInitialGrid(int runSeed)
