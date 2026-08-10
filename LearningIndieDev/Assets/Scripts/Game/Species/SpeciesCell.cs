@@ -9,7 +9,8 @@ namespace SaltyGame
             int health = 1,
             int energy = 0,
             int age = 0,
-            int foodEaten = 0)
+            int foodEaten = 0,
+            float foodReserve = 0f)
         {
             if (health < 0)
             {
@@ -31,12 +32,18 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(foodEaten), foodEaten, "Food eaten cannot be negative.");
             }
 
+            if (foodReserve < 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(foodReserve), foodReserve, "Food reserve cannot be negative.");
+            }
+
             IsOccupied = true;
             Species = species;
             Health = health;
             Energy = energy;
             Age = age;
             FoodEaten = foodEaten;
+            FoodReserve = foodReserve;
         }
 
         public static SpeciesCell Empty => default;
@@ -47,5 +54,6 @@ namespace SaltyGame
         public int Energy { get; }
         public int Age { get; }
         public int FoodEaten { get; }
+        public float FoodReserve { get; }
     }
 }

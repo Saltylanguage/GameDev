@@ -19,7 +19,10 @@ namespace SaltyGame
             int reproductionFoodRequired = 0,
             int maxReproductionGroupSize = 0,
             int startingEnergy = 0,
-            float wiltChance = 0f)
+            float wiltChance = 0f,
+            int crowdingEnergyPenalty = 0,
+            float startingFoodReserve = 0f,
+            float seedDropChance = 0f)
         {
             if (movementSpeed < 0f)
             {
@@ -66,6 +69,21 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(wiltChance), wiltChance, "Wilt chance must be between zero and one.");
             }
 
+            if (crowdingEnergyPenalty < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(crowdingEnergyPenalty), crowdingEnergyPenalty, "Crowding energy penalty cannot be negative.");
+            }
+
+            if (startingFoodReserve < 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startingFoodReserve), startingFoodReserve, "Starting food reserve cannot be negative.");
+            }
+
+            if (seedDropChance < 0f || seedDropChance > 1f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(seedDropChance), seedDropChance, "Seed drop chance must be between zero and one.");
+            }
+
             MovementSpeed = movementSpeed;
             MovementPattern = movementPattern ?? throw new ArgumentNullException(nameof(movementPattern));
             AttackPattern = attackPattern ?? throw new ArgumentNullException(nameof(attackPattern));
@@ -81,6 +99,9 @@ namespace SaltyGame
             MaxReproductionGroupSize = maxReproductionGroupSize;
             StartingEnergy = startingEnergy;
             WiltChance = wiltChance;
+            CrowdingEnergyPenalty = crowdingEnergyPenalty;
+            StartingFoodReserve = startingFoodReserve;
+            SeedDropChance = seedDropChance;
         }
 
         public float MovementSpeed { get; }
@@ -98,5 +119,8 @@ namespace SaltyGame
         public int MaxReproductionGroupSize { get; }
         public int StartingEnergy { get; }
         public float WiltChance { get; }
+        public int CrowdingEnergyPenalty { get; }
+        public float StartingFoodReserve { get; }
+        public float SeedDropChance { get; }
     }
 }

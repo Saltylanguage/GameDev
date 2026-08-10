@@ -4,6 +4,7 @@ This file is the stable doorway into current collaboration context. It should no
 become a master changelog.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
+- Design scratchpad: [`SPECIES_IDEAS_SCRATCHPAD.md`](SPECIES_IDEAS_SCRATCHPAD.md)
 - One-note-per-task handoff journal: [`handoffs/`](handoffs/)
 - Handoff process: [`COLLABORATION_WORKFLOW.md`](COLLABORATION_WORKFLOW.md)
 

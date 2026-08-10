@@ -30,6 +30,21 @@ namespace SaltyGame
             Run.Start();
         }
 
+        public void Pause()
+        {
+            Run.Pause();
+        }
+
+        public void Resume()
+        {
+            Run.Resume();
+        }
+
+        public void Restart()
+        {
+            Run.Restart();
+        }
+
         public bool AdvanceOneTick()
         {
             if (Run.Status == SimulationRunStatus.Ready)
@@ -37,7 +52,7 @@ namespace SaltyGame
                 Start();
             }
 
-            if (Run.Status == SimulationRunStatus.Complete)
+            if (Run.Status == SimulationRunStatus.Paused || Run.Status == SimulationRunStatus.Complete)
             {
                 return false;
             }

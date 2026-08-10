@@ -35,11 +35,12 @@ namespace SaltyGame
                     dietTarget: null,
                     reproductionPattern: CardinalPattern,
                     reproductionNeighborCount: 0,
-                    reproductionChance: 0.08f,
+                    reproductionChance: 0.1f,
                     startingEnergy: 0,
-                    wiltChance: 0.01f),
+                    wiltChance: 0.003f,
+                    startingFoodReserve: 3.25f),
                 [SpeciesArchetype.Herbivore] = new SpeciesRules(
-                    movementSpeed: 1f,
+                    movementSpeed: 1.5f,
                     movementPattern: CardinalPattern,
                     attackPattern: CardinalPattern,
                     attackAmount: 1,
@@ -50,10 +51,13 @@ namespace SaltyGame
                     reproductionPattern: MoorePattern,
                     reproductionNeighborCount: 1,
                     reproductionChance: 0.5f,
-                    maxReproductionGroupSize: 6,
-                    startingEnergy: 12),
+                    reproductionFoodRequired: 1,
+                    maxReproductionGroupSize: 4,
+                    startingEnergy: 12,
+                    crowdingEnergyPenalty: 1,
+                    seedDropChance: 0.05f),
                 [SpeciesArchetype.Carnivore] = new SpeciesRules(
-                    movementSpeed: 1f,
+                    movementSpeed: 1.5f,
                     movementPattern: MoorePattern,
                     attackPattern: MoorePattern,
                     attackAmount: 2,
@@ -66,8 +70,19 @@ namespace SaltyGame
                     reproductionChance: 0.4f,
                     reproductionFoodRequired: 1,
                     maxReproductionGroupSize: 3,
-                    startingEnergy: 12),
+                    startingEnergy: 18,
+                    crowdingEnergyPenalty: 1),
             };
+        }
+
+        public static GridPattern CreateCardinalPattern()
+        {
+            return CardinalPattern;
+        }
+
+        public static GridPattern CreateMoorePattern()
+        {
+            return MoorePattern;
         }
     }
 }

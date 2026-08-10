@@ -82,6 +82,30 @@ namespace SaltyGame.Tests
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
             Assert.That(run.ElapsedSeconds, Is.EqualTo(2f));
             Assert.That(run.Tick, Is.EqualTo(2));
+            Assert.That(run.PopulationHistory.Count, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void RunStateCanPauseResumeAndRestart()
+        {
+            var initialGrid = new Grid<SpeciesCell>(1, 1);
+            initialGrid.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Plant));
+            var run = new SimulationRunState(initialGrid, SpeciesArchetype.Plant, seed: 42, durationSeconds: 2f);
+
+            run.Start();
+            run.Advance(new Grid<SpeciesCell>(1, 1), 0.5f);
+            run.Pause();
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Paused));
+
+            run.Resume();
+            run.Advance(new Grid<SpeciesCell>(1, 1), 0.5f);
+            run.Restart();
+
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(run.ElapsedSeconds, Is.EqualTo(0f));
+            Assert.That(run.Tick, Is.EqualTo(0));
+            Assert.That(run.Cells.GetCell(0, 0).Species, Is.EqualTo(SpeciesArchetype.Plant));
+            Assert.That(run.PopulationHistory.Count, Is.EqualTo(1));
         }
 
         [Test]
@@ -177,7 +201,7 @@ namespace SaltyGame.Tests
             source.SetCell(1, 0, new SpeciesCell(
                 SpeciesArchetype.Carnivore,
                 energy: 2,
-                foodEaten: 1));
+                foodReserve: 1));
             var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
             var carnivoreRules = new SpeciesRules(
                 movementSpeed: 0f,
@@ -202,6 +226,7 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
             Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Carnivore));
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(0));
 
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
             var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
@@ -301,6 +326,100 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
             Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void PlantFoodReserveFeedsMultipleHerbivoresBeforeBeingConsumed()
+        {
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Herbivore, energy: 1));
+            source.SetCell(2, 0, new SpeciesCell(
+                SpeciesArchetype.Plant,
+                foodReserve: 3.25f));
+            source.SetCell(3, 0, new SpeciesCell(SpeciesArchetype.Herbivore, energy: 1));
+            var cardinal = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: cardinal,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: cardinal,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0);
+            var herbivoreRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: cardinal,
+                attackPattern: cardinal,
+                attackAmount: 1,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: cardinal,
+                dietTarget: SpeciesArchetype.Plant,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                startingEnergy: 2);
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Plant] = plantRules,
+                [SpeciesArchetype.Herbivore] = herbivoreRules,
+            };
+
+            var first = SpeciesSimulation.Step(source, rules, seed: 42);
+            Assert.That(first.GetCell(2, 0).FoodReserve, Is.EqualTo(1.25f).Within(0.001f));
+            Assert.That(first.GetCell(1, 0).FoodReserve, Is.EqualTo(1f));
+            Assert.That(first.GetCell(3, 0).FoodReserve, Is.EqualTo(1f));
+
+            var second = SpeciesSimulation.Step(first, rules, seed: 43);
+            Assert.That(second.GetCell(2, 0).IsOccupied, Is.False);
+            Assert.That(second.GetCell(1, 0).FoodReserve, Is.EqualTo(2f));
+            Assert.That(second.GetCell(3, 0).FoodReserve, Is.EqualTo(1.25f).Within(0.001f));
+        }
+
+        [Test]
+        public void FedHerbivoresCanDropSeedsIntoEmptyTiles()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(
+                SpeciesArchetype.Herbivore,
+                foodReserve: 1f));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: right,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: right,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                startingFoodReserve: 3.25f);
+            var herbivoreRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: right,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: right,
+                dietTarget: SpeciesArchetype.Plant,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                seedDropChance: 1f);
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Plant] = plantRules,
+                [SpeciesArchetype.Herbivore] = herbivoreRules,
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(1, 0).Species, Is.EqualTo(SpeciesArchetype.Plant));
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(3.25f).Within(0.001f));
         }
 
         [Test]

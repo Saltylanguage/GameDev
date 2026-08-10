@@ -79,7 +79,10 @@ namespace SaltyGame
                 rules.ReproductionFoodRequired,
                 rules.MaxReproductionGroupSize,
                 rules.StartingEnergy,
-                rules.WiltChance);
+                rules.WiltChance,
+                rules.CrowdingEnergyPenalty,
+                rules.StartingFoodReserve,
+                rules.SeedDropChance);
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
@@ -6,11 +7,73 @@ namespace SaltyGame
     {
         Ready,
         Running,
+        Paused,
         Complete,
+    }
+
+    public readonly struct SpeciesPopulationSnapshot
+    {
+        public SpeciesPopulationSnapshot(int tick, int plants, int herbivores, int carnivores, int empty)
+        {
+            Tick = tick;
+            Plants = plants;
+            Herbivores = herbivores;
+            Carnivores = carnivores;
+            Empty = empty;
+        }
+
+        public int Tick { get; }
+        public int Plants { get; }
+        public int Herbivores { get; }
+        public int Carnivores { get; }
+        public int Empty { get; }
+
+        public static SpeciesPopulationSnapshot Create(Grid<SpeciesCell> cells, int tick)
+        {
+            var plants = 0;
+            var herbivores = 0;
+            var carnivores = 0;
+            for (var y = 0; y < cells.Height; y++)
+            {
+                for (var x = 0; x < cells.Width; x++)
+                {
+                    var cell = cells.GetCell(x, y);
+                    if (!cell.IsOccupied)
+                    {
+                        continue;
+                    }
+
+                    switch (cell.Species)
+                    {
+                        case SpeciesArchetype.Plant:
+                            plants++;
+                            break;
+                        case SpeciesArchetype.Herbivore:
+                            herbivores++;
+                            break;
+                        case SpeciesArchetype.Carnivore:
+                            carnivores++;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
+
+            return new SpeciesPopulationSnapshot(
+                tick,
+                plants,
+                herbivores,
+                carnivores,
+                cells.Count - plants - herbivores - carnivores);
+        }
     }
 
     public sealed class SimulationRunState
     {
+        readonly Grid<SpeciesCell> initialCells;
+        readonly List<SpeciesPopulationSnapshot> populationHistory;
+
         public SimulationRunState(
             Grid<SpeciesCell> cells,
             SpeciesArchetype playerSpecies,
@@ -27,11 +90,17 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(durationSeconds), durationSeconds, "Run duration must be greater than zero.");
             }
 
+            initialCells = cells.Copy();
             Cells = cells;
             PlayerSpecies = playerSpecies;
             Seed = seed;
             DurationSeconds = durationSeconds;
             Status = SimulationRunStatus.Ready;
+            populationHistory = new List<SpeciesPopulationSnapshot>
+            {
+                SpeciesPopulationSnapshot.Create(cells, tick: 0),
+            };
+            PopulationHistory = populationHistory;
         }
 
         public Grid<SpeciesCell> Cells { get; private set; }
@@ -41,6 +110,7 @@ namespace SaltyGame
         public float ElapsedSeconds { get; private set; }
         public int Tick { get; private set; }
         public SimulationRunStatus Status { get; private set; }
+        public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
 
         public void Start()
         {
@@ -50,6 +120,41 @@ namespace SaltyGame
             }
 
             Status = SimulationRunStatus.Running;
+        }
+
+        public void Pause()
+        {
+            if (Status != SimulationRunStatus.Running)
+            {
+                throw new InvalidOperationException("Only a running simulation can be paused.");
+            }
+
+            Status = SimulationRunStatus.Paused;
+        }
+
+        public void Resume()
+        {
+            if (Status != SimulationRunStatus.Paused)
+            {
+                throw new InvalidOperationException("Only a paused simulation can be resumed.");
+            }
+
+            Status = SimulationRunStatus.Running;
+        }
+
+        public void Restart()
+        {
+            if (Status != SimulationRunStatus.Running && Status != SimulationRunStatus.Paused)
+            {
+                throw new InvalidOperationException("Only a running or paused simulation can be restarted.");
+            }
+
+            Cells = initialCells.Copy();
+            ElapsedSeconds = 0f;
+            Tick = 0;
+            Status = SimulationRunStatus.Ready;
+            populationHistory.Clear();
+            populationHistory.Add(SpeciesPopulationSnapshot.Create(Cells, tick: 0));
         }
 
         public void Advance(Grid<SpeciesCell> nextCells, float stepSeconds)
@@ -77,6 +182,7 @@ namespace SaltyGame
             Cells = nextCells;
             ElapsedSeconds = Math.Min(DurationSeconds, ElapsedSeconds + stepSeconds);
             Tick++;
+            populationHistory.Add(SpeciesPopulationSnapshot.Create(nextCells, Tick));
 
             if (ElapsedSeconds >= DurationSeconds)
             {
