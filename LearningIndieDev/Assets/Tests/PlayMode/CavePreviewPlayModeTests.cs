@@ -9,7 +9,7 @@ namespace SaltyGame.PlayModeTests
     public sealed class CavePreviewPlayModeTests
     {
         [UnityTest]
-        public IEnumerator CellularAutomataPrototypeCreatesAndAnimatesMixedLifePreview()
+        public IEnumerator CellularAutomataPrototypeCreatesAndAnimatesTheSpeciesPreview()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -17,13 +17,15 @@ namespace SaltyGame.PlayModeTests
             var runtime = Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
 
             Assert.That(runtime, Is.Not.Null);
-            Assert.That(runtime.LifePreview, Is.Not.Null);
-            Assert.That(runtime.LifePreview.Cells, Is.Not.Null);
-            Assert.That(runtime.LifePreview.Generation, Is.Zero);
+            Assert.That(runtime.SpeciesPreview, Is.Not.Null);
+            Assert.That(runtime.SpeciesPreview.Run, Is.Not.Null);
+            Assert.That(runtime.SpeciesPreview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+
+            runtime.SpeciesPreview.StartSimulation();
 
             yield return new WaitForSeconds(0.35f);
 
-            Assert.That(runtime.LifePreview.Generation, Is.GreaterThanOrEqualTo(1));
+            Assert.That(runtime.SpeciesPreview.Run.Tick, Is.GreaterThanOrEqualTo(1));
         }
     }
 }

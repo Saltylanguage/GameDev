@@ -4,11 +4,11 @@ namespace SaltyGame
 {
     public sealed class CellularAutomataPrototypeRuntime : MonoBehaviour
     {
-        public LifeSimulationPreview LifePreview { get; private set; }
+        public SpeciesSimulationPreview SpeciesPreview { get; private set; }
 
         void Awake()
         {
-            LifePreview = gameObject.AddComponent<LifeSimulationPreview>();
+            SpeciesPreview = gameObject.AddComponent<SpeciesSimulationPreview>();
         }
     }
 }
