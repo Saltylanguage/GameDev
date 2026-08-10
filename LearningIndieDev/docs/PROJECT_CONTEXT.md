@@ -49,6 +49,21 @@ The turn cadence, player representation, opposing cell behavior, win/loss
 conditions, economy, rule-combination semantics, and run structure remain open
 design questions. Do not silently settle them in foundational grid code.
 
+## CellularSimData direction
+
+- The next architecture step is a `CellularSimData` scenario definition that
+  groups global settings, starting population settings, species rules, and
+  terrain data for one simulation ruleset.
+- A simulation receives a run-start snapshot of this data. Editing, replacing,
+  adding, or removing definitions affects the next run and never mutates an
+  active run's state.
+- Initial-grid creation remains a factory concern; simulation stepping remains a
+  domain concern; `Grid<T>` remains a generic data container.
+- Deferred generalization work and its triggers are tracked in
+  [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
+  species IDs, a terrain registry, or arbitrary rule plugins until a concrete
+  use case activates the corresponding TODO.
+
 ## Procedural cave generation research
 
 Sebastian Lague's video **"Procedural Cave Generation (E01. Cellular Automata)"**

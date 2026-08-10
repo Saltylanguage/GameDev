@@ -1,0 +1,103 @@
+# Cellular simulation deferred work
+
+These are intentional deferrals for the `CellularSimData` direction. They are
+tracked here so we can keep the first implementation small without losing the
+larger plan. Each item has a trigger that should bring it back into scope.
+
+## Active now
+
+- [ ] Create a first `CellularSimData` aggregate for the current species game:
+  global settings, starting population settings, species rules, terrain data,
+  validation, and a run-start snapshot.
+- [ ] Inject the data snapshot into initial-grid creation and the simulation
+  runner so the same seed can be compared under different rulesets.
+- [ ] Keep runtime state (`Grid`, tick, elapsed time, population history,
+  progression, and currency) outside the scenario data.
+
+## Deferred until a concrete use case requires it
+
+### TODO-CS-01 - Replace enum species identity
+
+- [ ] Replace `SpeciesArchetype` with stable data-driven species IDs.
+- Trigger: the project needs to add or remove a species without changing and
+  recompiling the enum and its `switch` statements.
+- Reason deferred: the current three species are code-defined and the enum is
+  the smallest safe representation while the rules are still changing.
+- Required follow-up: migrate species lookup, rendering, population metrics,
+  diet references, UI settings, and save/default data together.
+
+### TODO-CS-02 - Generalize population metrics
+
+- [ ] Replace hardcoded plant/herbivore/carnivore counters in run snapshots with
+  species-keyed metrics while preserving useful aggregate counts such as empty
+  cells.
+- Trigger: a fourth species or species deletion is required, or analysis needs
+  arbitrary per-species graphs.
+- Reason deferred: changing the result model before the species identity model
+  would create a temporary abstraction that will likely be replaced.
+
+### TODO-CS-03 - Data-driven terrain registry
+
+- [ ] Move beyond the current bare/grass assumptions to a terrain definition
+  registry with stable IDs, color/presentation data, passability, resource
+  values, and regrowth settings.
+- Trigger: a second meaningful terrain resource or terrain transformation is
+  needed (for example water, fertile soil, fire, or ice).
+- Reason deferred: current grass and dirt behavior is small and understood;
+  adding a registry now would widen `SpeciesCell` before another terrain proves
+  the need.
+- Required follow-up: define what terrain owns versus what an entity occupies,
+  then migrate rendering, feeding, movement, and snapshots together.
+
+### TODO-CS-04 - Extensible custom rule logic
+
+- [ ] Add composable rule/stage code for mechanics that cannot be represented by
+  data values and patterns alone.
+- Trigger: a new mechanic needs behavior that cannot be expressed by the current
+  simulation stages and parameters.
+- Reason deferred: delegates, serialized callbacks, or a general rule plugin
+  framework would make determinism, testing, and Unity serialization harder.
+- Guardrail: add one focused rule seam for the real mechanic; do not introduce a
+  universal event bus or scripting system.
+
+### TODO-CS-05 - Ruleset fingerprints and comparison metadata
+
+- [ ] Record a stable ruleset/data fingerprint alongside each run's seed and
+  results.
+- Trigger: we begin systematic A/B experiments, replay bug reports, or saved
+  run comparisons.
+- Reason deferred: first establish the data shape and deterministic snapshot
+  behavior; fingerprinting an unstable schema creates misleading identifiers.
+- Required follow-up: use canonical serialized data or an explicitly versioned
+  hash, not process-dependent object hash codes.
+
+### TODO-CS-06 - Data asset/editor authoring
+
+- [ ] Decide whether `CellularSimData` should be authored as a Unity asset,
+  runtime code, or both, with a clear separation between definitions and run
+  state.
+- Trigger: designers need reusable named scenarios, source control-friendly
+  presets, or cross-scene sharing beyond the runtime settings screen.
+- Reason deferred: the current settings UI and plain C# defaults are faster to
+  iterate while the schema is unsettled.
+- Guardrail: do not introduce ScriptableObjects as mutable global runtime state.
+
+### TODO-CS-07 - Legacy prototype cleanup
+
+- [ ] Audit and, where proven unused, remove or further isolate earlier Island
+  Survivor, cave, and Life prototype paths.
+- Trigger: a dependency/scene/build-settings audit confirms a candidate has no
+  active references.
+- Reason deferred: Unity scene references, `.meta` GUIDs, and retained prototype
+  scenes make blind deletion unsafe.
+- Required follow-up: delete in isolated commits and validate both retained
+  prototype scenes.
+
+## Rules for revisiting this list
+
+- A trigger is required before promoting a deferred item into implementation.
+- When an item is started, add a dated handoff note describing the decision and
+  update or close the item here.
+- Do not solve multiple deferred items opportunistically in a balancing or UI
+  change unless their dependencies are explicitly recorded.
+
