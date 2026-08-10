@@ -19,8 +19,8 @@ namespace SaltyGame
         [SerializeField, Min(1)] int width = 20;
         [SerializeField, Min(1)] int height = 20;
         [SerializeField] int seed = 12345;
-        [SerializeField, Range(0f, 1f)] float aliveProbability = 0.35f;
-        [SerializeField, Min(0.01f)] float stepInterval = 0.25f;
+        [SerializeField, Range(0f, 1f)] float aliveProbability = 0.45f;
+        [SerializeField, Min(0.01f)] float stepInterval = 0.35f;
         [SerializeField, Min(2f)] float cellSize = 10f;
         [SerializeField] Color aliveColor = new Color(0.2f, 0.95f, 0.55f);
         [SerializeField] Color deadColor = new Color(0.06f, 0.08f, 0.12f, 0.9f);

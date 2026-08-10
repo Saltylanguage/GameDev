@@ -26,6 +26,21 @@ namespace SaltyGame.Tests
         });
 
         [Test]
+        public void LifeInitializationIsDeterministicForASeed()
+        {
+            var first = LifeSimulation.CreateRandom(6, 4, 1234, 0.35f);
+            var second = LifeSimulation.CreateRandom(6, 4, 1234, 0.35f);
+
+            for (var y = 0; y < first.Height; y++)
+            {
+                for (var x = 0; x < first.Width; x++)
+                {
+                    Assert.That(second.GetCell(x, y).IsAlive, Is.EqualTo(first.GetCell(x, y).IsAlive));
+                }
+            }
+        }
+
+        [Test]
         public void StepSupportsBinaryLifeCellsWithoutChangingTheSource()
         {
             var source = new Grid<LifeCell>(3, 3);

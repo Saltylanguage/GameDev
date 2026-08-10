@@ -19,6 +19,7 @@ cell-state shapes without cell interfaces, inheritance, or rule classes.
 - Added binary `LifeCell`, continuous `HeatCell`, and multi-state `ElementCell`.
 - Demonstrated Life-like evolution, heat averaging, and fire spreading through
   replaceable rule delegates in focused tests.
+- Added explicit deterministic-seed coverage for Life initialization.
 - Routed the existing cave simulation through the same generic step.
 - Added a deterministic Life-like overlay to `CellularAutomataPrototype` that
   advances in real time alongside the retained cave preview.
@@ -35,8 +36,10 @@ cell-state shapes without cell interfaces, inheritance, or rule classes.
 - `SaltyGame.Tests.csproj`: build succeeded with zero warnings and zero errors.
 - `SaltyGame.PlayMode.Tests.csproj`: build succeeded with zero warnings and zero
   errors.
-- Unity Test Runner execution was not available because existing Unity processes
-  held the project open.
+- Runtime and test assemblies compile with zero warnings and zero errors.
+- A batch Unity Edit Mode attempt was blocked by the existing Unity project lock
+  and produced no test-results XML; the Unity Test Runner still needs to be run
+  after closing the open editor session.
 
 ## Risks and incomplete work
 
