@@ -1,4 +1,3 @@
-using System;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -9,14 +8,9 @@ namespace SaltyGame.Tests
     {
         static readonly GridPattern MooreNeighborhood = new GridPattern(new[]
         {
-            new Vector2Int(-1, 1),
-            new Vector2Int(0, 1),
-            new Vector2Int(1, 1),
-            new Vector2Int(-1, 0),
-            new Vector2Int(1, 0),
-            new Vector2Int(-1, -1),
-            new Vector2Int(0, -1),
-            new Vector2Int(1, -1),
+            new Vector2Int(-1, 1), new Vector2Int(0, 1), new Vector2Int(1, 1),
+            new Vector2Int(-1, 0), new Vector2Int(1, 0),
+            new Vector2Int(-1, -1), new Vector2Int(0, -1), new Vector2Int(1, -1),
         });
 
         static readonly GridPattern HorizontalNeighborhood = new GridPattern(new[]
@@ -26,7 +20,7 @@ namespace SaltyGame.Tests
         });
 
         [Test]
-        public void LifeInitializationIsDeterministicForASeed()
+        public void InitializationIsDeterministicForASeed()
         {
             var first = LifeSimulation.CreateRandom(6, 4, 1234, 0.35f);
             var second = LifeSimulation.CreateRandom(6, 4, 1234, 0.35f);
@@ -35,104 +29,39 @@ namespace SaltyGame.Tests
             {
                 for (var x = 0; x < first.Width; x++)
                 {
-                    Assert.That(second.GetCell(x, y).IsAlive, Is.EqualTo(first.GetCell(x, y).IsAlive));
+                    Assert.That(second.GetCell(x, y).CurrentState, Is.EqualTo(first.GetCell(x, y).CurrentState));
                 }
             }
         }
 
         [Test]
-        public void StepSupportsBinaryLifeCellsWithoutChangingTheSource()
+        public void LifeRulesReadThePreviousGeneration()
         {
             var source = new Grid<LifeCell>(3, 3);
-            source.SetCell(1, 0, new LifeCell(true));
-            source.SetCell(1, 1, new LifeCell(true));
-            source.SetCell(1, 2, new LifeCell(true));
+            source.SetCell(1, 0, new LifeCell(LifeCell.State.Life));
+            source.SetCell(1, 1, new LifeCell(LifeCell.State.Life));
+            source.SetCell(1, 2, new LifeCell(LifeCell.State.Life));
 
-            var next = LifeSimulation.Step(source, MooreNeighborhood);
+            var next = LifeSimulation.Step(source, MooreNeighborhood, 123);
 
-            Assert.That(source.GetCell(1, 0).IsAlive, Is.True);
-            Assert.That(source.GetCell(0, 1).IsAlive, Is.False);
-            Assert.That(next.GetCell(0, 1).IsAlive, Is.True);
-            Assert.That(next.GetCell(1, 1).IsAlive, Is.True);
-            Assert.That(next.GetCell(2, 1).IsAlive, Is.True);
-            Assert.That(next.GetCell(1, 0).IsAlive, Is.False);
-            Assert.That(next.GetCell(1, 2).IsAlive, Is.False);
+            Assert.That(source.GetCell(0, 1).CurrentState, Is.EqualTo(LifeCell.State.Empty));
+            Assert.That(next.GetCell(0, 1).CurrentState, Is.EqualTo(LifeCell.State.Life));
+            Assert.That(next.GetCell(1, 1).CurrentState, Is.EqualTo(LifeCell.State.Life));
+            Assert.That(next.GetCell(2, 1).CurrentState, Is.EqualTo(LifeCell.State.Life));
         }
 
         [Test]
-        public void StepSupportsContinuousHeatCells()
+        public void CellTypesInteractInOneAtomicStep()
         {
-            var source = new Grid<HeatCell>(3, 1, (x, _) => new HeatCell(x == 1 ? 100f : 0f));
+            var source = new Grid<LifeCell>(3, 1);
+            source.SetCell(0, 0, new LifeCell(LifeCell.State.Plant));
+            source.SetCell(1, 0, new LifeCell(LifeCell.State.Fire, 100f));
 
-            var next = GridSimulation.Step(source, (grid, x, y) =>
-            {
-                var total = grid.GetCell(x, y).Temperature;
-                var sampleCount = 1;
-                foreach (var offset in HorizontalNeighborhood.Offsets)
-                {
-                    if (grid.TryGetCell(x + offset.x, y + offset.y, out var neighbor))
-                    {
-                        total += neighbor.Temperature;
-                        sampleCount++;
-                    }
-                }
+            var next = LifeSimulation.Step(source, HorizontalNeighborhood, 123);
 
-                return new HeatCell(total / sampleCount);
-            });
-
-            Assert.That(next.GetCell(0, 0).Temperature, Is.EqualTo(50f));
-            Assert.That(next.GetCell(1, 0).Temperature, Is.EqualTo(100f / 3f).Within(0.001f));
+            Assert.That(next.GetCell(0, 0).CurrentState, Is.EqualTo(LifeCell.State.Fire));
+            Assert.That(next.GetCell(1, 0).CurrentState, Is.EqualTo(LifeCell.State.Empty));
             Assert.That(next.GetCell(2, 0).Temperature, Is.EqualTo(50f));
-        }
-
-        [Test]
-        public void StepSupportsMultiStateElementCells()
-        {
-            var source = new Grid<ElementCell>(3, 1);
-            source.SetCell(0, 0, new ElementCell(ElementCell.State.Plant));
-            source.SetCell(1, 0, new ElementCell(ElementCell.State.Fire));
-
-            var next = GridSimulation.Step(source, (grid, x, y) =>
-            {
-                var state = grid.GetCell(x, y).CurrentState;
-                if (state == ElementCell.State.Fire)
-                {
-                    return new ElementCell(ElementCell.State.Empty);
-                }
-
-                var touchesFire = CountMatchingNeighbors(
-                    grid,
-                    HorizontalNeighborhood,
-                    x,
-                    y,
-                    cell => cell.CurrentState == ElementCell.State.Fire) > 0;
-                return new ElementCell(state == ElementCell.State.Plant && touchesFire
-                    ? ElementCell.State.Fire
-                    : state);
-            });
-
-            Assert.That(next.GetCell(0, 0).CurrentState, Is.EqualTo(ElementCell.State.Fire));
-            Assert.That(next.GetCell(1, 0).CurrentState, Is.EqualTo(ElementCell.State.Empty));
-            Assert.That(next.GetCell(2, 0).CurrentState, Is.EqualTo(ElementCell.State.Empty));
-        }
-
-        static int CountMatchingNeighbors<T>(
-            Grid<T> grid,
-            GridPattern neighborhood,
-            int x,
-            int y,
-            Func<T, bool> matches)
-        {
-            var count = 0;
-            foreach (var offset in neighborhood.Offsets)
-            {
-                if (grid.TryGetCell(x + offset.x, y + offset.y, out var neighbor) && matches(neighbor))
-                {
-                    count++;
-                }
-            }
-
-            return count;
         }
     }
 }

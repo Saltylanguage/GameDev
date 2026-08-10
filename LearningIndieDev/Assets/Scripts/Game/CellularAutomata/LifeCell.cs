@@ -2,11 +2,21 @@ namespace SaltyGame
 {
     public readonly struct LifeCell
     {
-        public LifeCell(bool isAlive)
+        public enum State
         {
-            IsAlive = isAlive;
+            Empty,
+            Life,
+            Plant,
+            Fire,
         }
 
-        public bool IsAlive { get; }
+        public LifeCell(State currentState, float temperature = 0f)
+        {
+            CurrentState = currentState;
+            Temperature = temperature;
+        }
+
+        public State CurrentState { get; }
+        public float Temperature { get; }
     }
 }
