@@ -7,7 +7,7 @@ context on separate branches with fewer merge conflicts.
 Create a note from the repository's Unity project directory:
 
 ```powershell
-.\tools\New-Handoff.ps1 -Owner "your-name" -Topic "short feature name"
+.\tools\New-Handoff.cmd -Owner "your-name" -Topic "short feature name"
 ```
 
 Files use `YYYY-MM-DD-HHmm-owner-topic.md`, so ordinary filename sorting puts them

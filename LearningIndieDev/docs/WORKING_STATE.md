@@ -18,7 +18,7 @@ become a master changelog.
 Create a new note instead of editing a running history here:
 
 ```powershell
-.\tools\New-Handoff.ps1 -Owner "your-name" -Topic "short feature name"
+.\tools\New-Handoff.cmd -Owner "your-name" -Topic "short feature name"
 ```
 
 Each generated note links back here. Notes may be corrected while their work is

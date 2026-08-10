@@ -1,27 +1,61 @@
-# Unity generated folders
+# Unity-generated folders
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
 [Bb]uilds/
 [Ll]ogs/
+[Uu]ser[Ss]ettings/
 [Mm]emoryCaptures/
+[Rr]ecordings/
 
-# User/editor settings
-UserSettings/
+# Unity-generated files and exported builds
+sysinfo.txt
+*.unitypackage
+*.apk
+*.aab
+*.app
+*.ipa
+*.xcarchive
 
-# Visual Studio / Rider
+# Crash, diagnostic, and profiling output
+*.log
+crashlytics-build.properties
+[Cc]rashes/
+
+# IDE-generated projects and local settings
 .vs/
 .idea/
+.consulo/
+.vscode/
+.plastic/
 *.csproj
 *.sln
+*.slnx
 *.suo
 *.user
 *.userprefs
 *.pidb
 *.mdb
 *.opendb
+*.booproj
 
-# OS files
+# Build-system caches
+.gradle/
+[Ee]xported[Oo]bj/
+
+# Operating-system files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
+
+# Temporary editor files
+*.tmp
+*.temp
+*.swp
+*~

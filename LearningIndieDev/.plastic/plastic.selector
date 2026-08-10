@@ -1,4 +1,0 @@
-repository "LearningIndieDev/LearningIndieDev@3184736@cloud"
-  path "/"
-    br "/main"
-    co "/main"

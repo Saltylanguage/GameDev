@@ -54,7 +54,7 @@ Before another developer takes over:
 
 1. Commit and push the work intended for sharing, or clearly identify anything
    that remains local.
-2. Create a handoff note with `tools/New-Handoff.ps1`, then fill in the actual
+2. Create a handoff note with `tools/New-Handoff.cmd`, then fill in the actual
    changes, decisions, validation, risks, and next steps. Use a new note for each
    independently reviewable task rather than accumulating a personal diary.
 3. Update `PROJECT_CONTEXT.md` only when durable product direction or a lasting
