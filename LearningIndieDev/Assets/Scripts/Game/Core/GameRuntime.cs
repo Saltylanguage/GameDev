@@ -16,6 +16,7 @@ namespace SaltyGame
         public PlayerController Player { get; private set; }
         public InteractionController Interaction { get; private set; }
         public ActivityController Activities { get; private set; }
+        public CavePreview CavePreview { get; private set; }
         public string ActivityMessage { get; private set; }
         public string DaySummary { get; private set; }
         public float MessageTimer { get; private set; }
@@ -55,6 +56,8 @@ namespace SaltyGame
             hud.Initialize(this);
             var debug = gameObject.AddComponent<RuntimeDebugPanel>();
             debug.Initialize(this);
+            CavePreview = gameObject.AddComponent<CavePreview>();
+            CavePreview.Initialize();
 
             State = GameState.Playing;
         }

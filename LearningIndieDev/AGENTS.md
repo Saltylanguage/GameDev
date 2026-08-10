@@ -2,6 +2,7 @@
 
 For Unity work in this project:
 
+- Read [`docs/PROJECT_CONTEXT.md`](docs/PROJECT_CONTEXT.md) for current product direction, research references, and durable design decisions that should carry across Codex desktop and IDE conversations.
 - Follow [`docs/UNITY_ENGINEERING_STANDARDS.md`](docs/UNITY_ENGINEERING_STANDARDS.md) and use [`docs/UNITY_STANDARDS_ADOPTION_PLAN.md`](docs/UNITY_STANDARDS_ADOPTION_PLAN.md) for migration scope.
 - For terrain added on top of existing tiles or textures, follow [`docs/TILE_AUTHORING_GUIDE.md`](docs/TILE_AUTHORING_GUIDE.md) before creating or wiring production art.
 - Inspect nearby code before choosing a convention; preserve the dominant first-party convention where it is stable.

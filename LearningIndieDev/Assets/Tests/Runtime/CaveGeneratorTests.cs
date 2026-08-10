@@ -78,7 +78,10 @@ namespace SaltyGame.Tests
             Assert.That(CaveCell.Neighborhood.Offsets, Does.Contain(Vector2Int.down));
             Assert.That(CaveCell.Neighborhood.Offsets, Does.Contain(Vector2Int.left));
             Assert.That(CaveCell.Neighborhood.Offsets, Does.Contain(Vector2Int.right));
-            Assert.That(CaveCell.Neighborhood.Offsets, Does.Not.Contain(Vector2Int.zero));
+            foreach (var offset in CaveCell.Neighborhood.Offsets)
+            {
+                Assert.That(offset, Is.Not.EqualTo(Vector2Int.zero));
+            }
         }
     }
 }
