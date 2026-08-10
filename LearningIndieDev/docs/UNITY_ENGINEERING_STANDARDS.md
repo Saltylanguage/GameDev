@@ -55,7 +55,7 @@ The Unity project is `LearningIndieDev`. First-party runtime code lives under `A
 | `Assets/Scripts/Game/Debug` | Development diagnostics; no game rules. |
 | `Assets/Editor/EditorTools` | Editor-only validation and menus; namespace `SaltyGame.EditorTools`. |
 | `Assets/Tests/Runtime` | Current NUnit/Edit Mode tests; assembly `SaltyGame.Tests`. |
-| `Assets/Scenes` | Scene assets. `Boostrap.unity` is the current composition scene. |
+| `Assets/Scenes` | Scene assets. Cellular automata and island-survivor prototypes have separate composition scenes. |
 | `Assets/Settings` | URP and project settings assets. |
 | `Assets/UI` | Optional/experimental UI code, currently outside `SaltyGame.Runtime`. |
 | `Assets/ThirdParty` | Reserved third-party boundary. Do not edit vendor content without an explicit reason. |
@@ -113,7 +113,7 @@ Enforcement: formatting whitespace and braces are enforced by `.editorconfig` fo
 - **Prefabs and scene objects MUST** own composition and serialized references, not hidden game rules. Current prefab usage is TBD; no prefab is currently required by the bootstrap slice.
 - **Editor tooling MUST** remain under `Assets/Editor` or an Editor-only assembly and must not leak into player assemblies.
 
-The approved bootstrap path is `Boostrap.unity` -> exactly one active `GameRuntime` -> `GameRuntime.Initialize()` -> runtime construction. `Salty > Validate Bootstrap Scene` is the current editor validation entry point. **MUST NOT** add a competing bootstrap, `DontDestroyOnLoad` singleton, or implicit scene-order dependency without an architecture decision.
+The approved prototype composition paths are `CellularAutomataPrototype.unity` -> one active `CellularAutomataPrototypeRuntime`, and `IslandSurvivorPrototype.unity` -> one active `GameRuntime` -> `GameRuntime.Initialize()`. `Salty > Validate Island Survivor Scene` validates the retained island slice. **MUST NOT** couple the two prototype roots, add a `DontDestroyOnLoad` singleton, or introduce an implicit scene-order dependency without an architecture decision.
 
 `Awake`, `OnEnable`, `Start`, and scene load timing are not interchangeable. Initialization and shutdown ownership must be documented at the component that owns it. Current runtime construction is explicit, but teardown behavior for generated world objects is incomplete and is an adoption risk, not a reason to refactor now.
 
@@ -212,7 +212,7 @@ Enforcement: performance evidence is required in review for optimization changes
 
 **MUST** preserve every Unity `.meta` file and serialized GUID. The current tracked asset inventory has matching `.meta` files for all non-meta assets. Text/YAML serialization is enabled (`EditorSettings.m_SerializationMode: 2`) and must remain enabled for reviewable scene/prefab changes.
 
-`Boostrap.unity` is the current composition scene and is enabled in Build Settings; `Intro` and `MainMenu` exist but are not currently enabled. Scene responsibilities and additive-scene policy are otherwise **TBD**. Do not assume Addressables: the manifest does not include Addressables, so no Addressables standard applies.
+`CellularAutomataPrototype.unity` and `IslandSurvivorPrototype.unity` are independent composition scenes enabled in Build Settings; the cellular-automata prototype is the default first scene. `Intro` and `MainMenu` exist but are not currently enabled. Additive-scene policy is otherwise **TBD**. Do not assume Addressables: the manifest does not include Addressables, so no Addressables standard applies.
 
 Assets belong in the owning feature folder; settings remain in `Assets/Settings`; third-party content remains isolated. Prefab variants are **SHOULD** be used only when the base/variant ownership is clear. Safe moves/renames require Unity Editor migration, `.meta` preservation, reference validation, and a separate commit/plan. Never bulk move/rename during feature work.
 
@@ -281,7 +281,7 @@ Enforcement: package/code search can flag first-party DOTS introduction for revi
 | Runtime/editor assembly direction | Enforced by asmdefs and Unity compile | Add cycle validator if boundaries grow |
 | Formatting/braces/whitespace | Enforced now for editor-aware new/modified code via `.editorconfig` | Normalize legacy files gradually |
 | Naming/access/serialization conventions | Warning for new or modified code | Migrate touched files only |
-| Bootstrap scene composition | Enforced now by `SaltyBootstrapValidator` | Run in editor/CI where available |
+| Island scene composition | Enforced now by `IslandSurvivorSceneValidator` | Add equivalent cellular-automata validation if its composition grows |
 | Tests | Enforced where existing tests apply | Add Play Mode/save/performance gates by phase |
 | Performance claims | Documentation/review now | Add scenario captures and budgets |
 | Asset moves/renames | Documentation/review only | Unity migration tooling when needed |

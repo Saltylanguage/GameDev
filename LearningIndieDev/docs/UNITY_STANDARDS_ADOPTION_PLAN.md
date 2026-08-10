@@ -73,7 +73,9 @@ No gameplay refactor, asset move/rename, scene/prefab modification, package/Unit
 - `Assets/TutorialInfo` is template content and may follow Unity's template conventions.
 - `WorldRuntime` creates placeholder sprites and uses hard-coded prototype values; authored data/prefab conversion needs a design decision, not an opportunistic cleanup.
 - `RuntimeDebugPanel.visible` is intentionally static development state; it is not approved as a general global-state pattern.
-- The misspelled `Boostrap` scene path is serialized and must not be renamed casually.
+- The former misspelled `Boostrap` scene was intentionally migrated to
+  `IslandSurvivorPrototype` with its scene GUID preserved when the cellular-
+  automata and island prototypes were separated.
 
 ## Recommended first implementation slice
 

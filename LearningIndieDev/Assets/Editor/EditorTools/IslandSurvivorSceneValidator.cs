@@ -8,38 +8,38 @@ using UnityEngine.SceneManagement;
 
 namespace SaltyGame.EditorTools
 {
-    public static class SaltyBootstrapValidator
+    public static class IslandSurvivorSceneValidator
     {
-        const string BootstrapPath = "Assets/Scenes/Boostrap.unity";
+        const string IslandScenePath = "Assets/Scenes/IslandSurvivorPrototype.unity";
         const string LegacyPrototypePath = "Assets/Scripts/Prototype/WoodChopPrototype.cs";
         const string SurvivalStatePath = "Assets/Scripts/Game/Survival/SurvivalState.cs";
         const string CampfirePath = "Assets/Scripts/Game/Camp/CampfireInteractable.cs";
 
-        [MenuItem("Salty/Validate Bootstrap Scene")]
-        public static void ValidateBootstrapScene()
+        [MenuItem("Salty/Validate Island Survivor Scene")]
+        public static void ValidateIslandSurvivorScene()
         {
             var checks = new List<string>();
-            var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(BootstrapPath);
+            var sceneAsset = AssetDatabase.LoadAssetAtPath<SceneAsset>(IslandScenePath);
             if (sceneAsset == null)
-                checks.Add($"FAIL: Missing scene at {BootstrapPath}");
+                checks.Add($"FAIL: Missing scene at {IslandScenePath}");
             else
-                checks.Add($"PASS: Found {BootstrapPath}");
+                checks.Add($"PASS: Found {IslandScenePath}");
 
-            var buildScene = EditorBuildSettings.scenes.FirstOrDefault(scene => scene.path == BootstrapPath);
-            if (buildScene != null && buildScene.path == BootstrapPath && buildScene.enabled)
-                checks.Add("PASS: Bootstrap is enabled in Build Settings");
+            var buildScene = EditorBuildSettings.scenes.FirstOrDefault(scene => scene.path == IslandScenePath);
+            if (buildScene != null && buildScene.path == IslandScenePath && buildScene.enabled)
+                checks.Add("PASS: Island survivor prototype is enabled in Build Settings");
             else
-                checks.Add("FAIL: Bootstrap is missing or disabled in Build Settings");
+                checks.Add("FAIL: Island survivor prototype is missing or disabled in Build Settings");
 
             if (sceneAsset != null)
             {
-                var scene = SceneManager.GetSceneByPath(BootstrapPath);
+                var scene = SceneManager.GetSceneByPath(IslandScenePath);
                 var openedHere = false;
                 try
                 {
                     if (!scene.IsValid() || !scene.isLoaded)
                     {
-                        scene = EditorSceneManager.OpenScene(BootstrapPath, OpenSceneMode.Additive);
+                        scene = EditorSceneManager.OpenScene(IslandScenePath, OpenSceneMode.Additive);
                         openedHere = true;
                     }
 
@@ -92,7 +92,7 @@ namespace SaltyGame.EditorTools
             if (!Application.isBatchMode)
             {
                 EditorUtility.DisplayDialog(
-                    $"Salty Bootstrap Validation - {(passed ? "PASS" : "FAIL")}",
+                    $"Salty Island Survivor Validation - {(passed ? "PASS" : "FAIL")}",
                     string.Join("\n", checks),
                     "Close");
             }

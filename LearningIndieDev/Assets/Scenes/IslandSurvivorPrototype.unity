@@ -443,7 +443,7 @@ GameObject:
   - component: {fileID: 903100003}
   - component: {fileID: 903100002}
   m_Layer: 0
-  m_Name: Game Runtime
+  m_Name: Island Survivor Runtime
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

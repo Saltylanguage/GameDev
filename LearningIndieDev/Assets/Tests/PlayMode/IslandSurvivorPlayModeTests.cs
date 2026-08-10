@@ -7,15 +7,15 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
-    public sealed class BootstrapPlayModeTests
+    public sealed class IslandSurvivorPlayModeTests
     {
         [UnityTest]
-        public IEnumerator BootstrapStartsTheRuntimeAndBuildsTargets()
+        public IEnumerator IslandSurvivorSceneStartsTheRuntimeAndBuildsTargets()
         {
-            yield return SceneManager.LoadSceneAsync("Boostrap");
+            yield return SceneManager.LoadSceneAsync("IslandSurvivorPrototype");
             yield return null;
 
-            var root = GameObject.Find("Game Runtime");
+            var root = GameObject.Find("Island Survivor Runtime");
             Assert.That(root, Is.Not.Null);
 
             var runtime = root.GetComponent<GameRuntime>();
@@ -27,12 +27,12 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator BootstrapSupportsTheEatAndRestLoop()
+        public IEnumerator IslandSurvivorSceneSupportsTheEatAndRestLoop()
         {
-            yield return SceneManager.LoadSceneAsync("Boostrap");
+            yield return SceneManager.LoadSceneAsync("IslandSurvivorPrototype");
             yield return null;
 
-            var runtime = GameObject.Find("Game Runtime").GetComponent<GameRuntime>();
+            var runtime = GameObject.Find("Island Survivor Runtime").GetComponent<GameRuntime>();
             runtime.Inventory.Add(ResourceId.Wood, CampState.CampfireWoodCost);
             runtime.Inventory.Add(ResourceId.Stone, CampState.CampfireStoneCost);
             var campfire = (CampfireInteractable)runtime.World.Targets[3];
@@ -51,12 +51,12 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator BootstrapSupportsPreparingForAndWeatheringTheStorm()
+        public IEnumerator IslandSurvivorSceneSupportsPreparingForAndWeatheringTheStorm()
         {
-            yield return SceneManager.LoadSceneAsync("Boostrap");
+            yield return SceneManager.LoadSceneAsync("IslandSurvivorPrototype");
             yield return null;
 
-            var runtime = GameObject.Find("Game Runtime").GetComponent<GameRuntime>();
+            var runtime = GameObject.Find("Island Survivor Runtime").GetComponent<GameRuntime>();
             runtime.Inventory.Add(ResourceId.Wood, CampState.CampfireWoodCost + CampState.ShelterWoodCost);
             runtime.Inventory.Add(ResourceId.Stone, CampState.CampfireStoneCost);
             Assert.That(runtime.Activities.Start(runtime.World.Targets[3]), Is.True);

@@ -24,8 +24,11 @@ changes, and do not treat research references as approved implementation work.
 - The current island, shoreline, and jungle entrance use an authored pixel-art
   tile workflow. Preserve those retained assets unless a feature explicitly
   replaces or repurposes them.
-- `GameRuntime` remains the composition root. Avoid folding unrelated generation,
-  rendering, or scenario systems into `WorldRuntime` as the project expands.
+- Each retained prototype has its own scene and composition root.
+  `CellularAutomataPrototypeRuntime` owns the cellular-automata preview scene,
+  while `GameRuntime` and `WorldRuntime` remain isolated in the
+  `IslandSurvivorPrototype` scene. Do not reconnect the cave preview to the island
+  runtime merely for convenience.
 
 ## Cellular-automata roguelike concept
 
