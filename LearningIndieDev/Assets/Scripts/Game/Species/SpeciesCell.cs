@@ -4,7 +4,12 @@ namespace SaltyGame
 {
     public readonly struct SpeciesCell
     {
-        public SpeciesCell(SpeciesArchetype species, int health = 1, int energy = 0, int age = 0)
+        public SpeciesCell(
+            SpeciesArchetype species,
+            int health = 1,
+            int energy = 0,
+            int age = 0,
+            int foodEaten = 0)
         {
             if (health < 0)
             {
@@ -21,11 +26,17 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(age), age, "Age cannot be negative.");
             }
 
+            if (foodEaten < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(foodEaten), foodEaten, "Food eaten cannot be negative.");
+            }
+
             IsOccupied = true;
             Species = species;
             Health = health;
             Energy = energy;
             Age = age;
+            FoodEaten = foodEaten;
         }
 
         public static SpeciesCell Empty => default;
@@ -35,5 +46,6 @@ namespace SaltyGame
         public int Health { get; }
         public int Energy { get; }
         public int Age { get; }
+        public int FoodEaten { get; }
     }
 }

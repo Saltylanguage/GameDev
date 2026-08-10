@@ -34,7 +34,10 @@ namespace SaltyGame
                     dietPattern: CardinalPattern,
                     dietTarget: null,
                     reproductionPattern: CardinalPattern,
-                    reproductionNeighborCount: 1),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0.08f,
+                    startingEnergy: 0,
+                    wiltChance: 0.01f),
                 [SpeciesArchetype.Herbivore] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: CardinalPattern,
@@ -42,10 +45,13 @@ namespace SaltyGame
                     attackAmount: 1,
                     blockPattern: CardinalPattern,
                     blockAmount: 0,
-                    dietPattern: CardinalPattern,
+                    dietPattern: MoorePattern,
                     dietTarget: SpeciesArchetype.Plant,
-                    reproductionPattern: CardinalPattern,
-                    reproductionNeighborCount: 1),
+                    reproductionPattern: MoorePattern,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 0.5f,
+                    maxReproductionGroupSize: 6,
+                    startingEnergy: 12),
                 [SpeciesArchetype.Carnivore] = new SpeciesRules(
                     movementSpeed: 1f,
                     movementPattern: MoorePattern,
@@ -55,8 +61,12 @@ namespace SaltyGame
                     blockAmount: 0,
                     dietPattern: MoorePattern,
                     dietTarget: SpeciesArchetype.Herbivore,
-                    reproductionPattern: MoorePattern,
-                    reproductionNeighborCount: 1),
+                    reproductionPattern: CardinalPattern,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 0.4f,
+                    reproductionFoodRequired: 1,
+                    maxReproductionGroupSize: 3,
+                    startingEnergy: 12),
             };
         }
     }

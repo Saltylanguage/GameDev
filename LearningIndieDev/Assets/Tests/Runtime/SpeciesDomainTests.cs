@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -97,6 +98,209 @@ namespace SaltyGame.Tests
             Assert.That(source.GetCell(0, 0).Species, Is.EqualTo(SpeciesArchetype.Herbivore));
             Assert.That(first.GetCell(0, 0).Species, Is.EqualTo(second.GetCell(0, 0).Species));
             Assert.That(first.GetCell(1, 0).Species, Is.EqualTo(second.GetCell(1, 0).Species));
+        }
+
+        [Test]
+        public void CarnivoresAttackHerbivoresButHerbivoresDoNotAttackCarnivores()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Herbivore, health: 3));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, health: 3));
+            var rightPattern = new GridPattern(new[] { Vector2Int.right });
+            var leftPattern = new GridPattern(new[] { Vector2Int.left });
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: rightPattern,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: rightPattern,
+                    dietTarget: SpeciesArchetype.Plant,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f),
+                [SpeciesArchetype.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: leftPattern,
+                    attackAmount: 2,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: leftPattern,
+                    dietTarget: SpeciesArchetype.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).Health, Is.EqualTo(1));
+            Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(3));
+        }
+
+        [Test]
+        public void PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Plant));
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: new GridPattern(new[] { Vector2Int.right }),
+                reproductionNeighborCount: 0,
+                reproductionChance: 1f);
+
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Plant] = plantRules,
+            };
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Plant));
+        }
+
+        [Test]
+        public void CarnivoreNeedsFoodAndANeighborToReproduce()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            source.SetCell(1, 0, new SpeciesCell(
+                SpeciesArchetype.Carnivore,
+                energy: 2,
+                foodEaten: 1));
+            var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
+            var carnivoreRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: SpeciesArchetype.Herbivore,
+                reproductionPattern: reproductionPattern,
+                reproductionNeighborCount: 1,
+                reproductionChance: 1f,
+                reproductionFoodRequired: 1,
+                maxReproductionGroupSize: 3,
+                startingEnergy: 2);
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Carnivore] = carnivoreRules,
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Carnivore));
+
+            source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 2));
+            var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
+            Assert.That(withoutFood.GetCell(2, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void SpeciesWithDietTargetStarvesWhenEnergyRunsOut()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 1));
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: SpeciesArchetype.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    startingEnergy: 1),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void HerbivoresStarveWhenPlantFoodIsUnavailable()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Herbivore, energy: 1));
+
+            var next = SpeciesSimulation.Step(source, SpeciesRuleDefaults.Create(), seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void HerbivoreMovesTowardAnAvailableMateInsteadOfWanderingPastIt()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Herbivore));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesArchetype.Herbivore));
+            var cardinal = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Herbivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: cardinal,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: cardinal,
+                    dietTarget: SpeciesArchetype.Plant,
+                    reproductionPattern: cardinal,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 0f,
+                    maxReproductionGroupSize: 3),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+            Assert.That(next.GetCell(1, 0).Species, Is.EqualTo(SpeciesArchetype.Herbivore));
+            Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Herbivore));
+        }
+
+        [Test]
+        public void PlantsCanWiltAndCreateOpenTiles()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesArchetype.Plant));
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Plant] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    wiltChance: 1f),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
         }
 
         [Test]

@@ -19,9 +19,9 @@ namespace SaltyGame
         [SerializeField, Min(1)] int height = 20;
         [SerializeField] int seed = 12345;
         [SerializeField] SpeciesArchetype playerSpecies = SpeciesArchetype.Herbivore;
-        [SerializeField, Range(0f, 1f)] float plantProbability = 0.25f;
-        [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.1f;
-        [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.04f;
+        [SerializeField, Range(0f, 1f)] float plantProbability = 0.45f;
+        [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.25f;
+        [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.02f;
 
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
@@ -331,26 +331,70 @@ namespace SaltyGame
         Grid<SpeciesCell> CreateInitialGrid(int runSeed)
         {
             var random = new System.Random(runSeed);
-            return new Grid<SpeciesCell>(width, height, (_, _) =>
+            var grid = new Grid<SpeciesCell>(width, height);
+            for (var y = 0; y < height; y++)
             {
-                var roll = random.NextDouble();
-                if (roll < plantProbability)
+                for (var x = 0; x < width; x++)
                 {
-                    return new SpeciesCell(SpeciesArchetype.Plant);
-                }
+                    var roll = random.NextDouble();
+                    SpeciesArchetype species;
+                    if (roll < plantProbability)
+                    {
+                        species = SpeciesArchetype.Plant;
+                    }
+                    else if (roll < plantProbability + herbivoreProbability)
+                    {
+                        species = SpeciesArchetype.Herbivore;
+                    }
+                    else if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
+                    {
+                        species = SpeciesArchetype.Carnivore;
+                    }
+                    else
+                    {
+                        continue;
+                    }
 
-                if (roll < plantProbability + herbivoreProbability)
+                    var sameSpeciesNeighbors = CountNearbySpecies(grid, x, y, species);
+                    var clumpPenalty = sameSpeciesNeighbors > 2
+                        ? 0.75d
+                        : sameSpeciesNeighbors > 0 ? 0.35d : 0d;
+                    if (random.NextDouble() < clumpPenalty)
+                    {
+                        continue;
+                    }
+
+                    grid.SetCell(x, y, new SpeciesCell(
+                        species,
+                        energy: rules[species].StartingEnergy));
+                }
+            }
+
+            return grid;
+        }
+
+        static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesArchetype species)
+        {
+            var count = 0;
+            for (var offsetY = -1; offsetY <= 1; offsetY++)
+            {
+                for (var offsetX = -1; offsetX <= 1; offsetX++)
                 {
-                    return new SpeciesCell(SpeciesArchetype.Herbivore);
-                }
+                    if (offsetX == 0 && offsetY == 0)
+                    {
+                        continue;
+                    }
 
-                if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
-                {
-                    return new SpeciesCell(SpeciesArchetype.Carnivore);
+                    if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
+                        && neighbor.IsOccupied
+                        && neighbor.Species == species)
+                    {
+                        count++;
+                    }
                 }
+            }
 
-                return SpeciesCell.Empty;
-            });
+            return count;
         }
 
         Color GetCellColor(SpeciesCell cell)

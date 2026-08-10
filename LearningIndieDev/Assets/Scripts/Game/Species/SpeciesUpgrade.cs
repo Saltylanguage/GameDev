@@ -74,7 +74,12 @@ namespace SaltyGame
                 rules.DietPattern,
                 rules.DietTarget,
                 rules.ReproductionPattern,
-                rules.ReproductionNeighborCount);
+                rules.ReproductionNeighborCount,
+                rules.ReproductionChance,
+                rules.ReproductionFoodRequired,
+                rules.MaxReproductionGroupSize,
+                rules.StartingEnergy,
+                rules.WiltChance);
         }
     }
 }

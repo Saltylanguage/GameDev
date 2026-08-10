@@ -14,7 +14,12 @@ namespace SaltyGame
             GridPattern dietPattern,
             SpeciesArchetype? dietTarget,
             GridPattern reproductionPattern,
-            int reproductionNeighborCount)
+            int reproductionNeighborCount,
+            float reproductionChance = 0.5f,
+            int reproductionFoodRequired = 0,
+            int maxReproductionGroupSize = 0,
+            int startingEnergy = 0,
+            float wiltChance = 0f)
         {
             if (movementSpeed < 0f)
             {
@@ -36,6 +41,31 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(reproductionNeighborCount), reproductionNeighborCount, "Reproduction neighbor count cannot be negative.");
             }
 
+            if (reproductionChance < 0f || reproductionChance > 1f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(reproductionChance), reproductionChance, "Reproduction chance must be between zero and one.");
+            }
+
+            if (reproductionFoodRequired < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(reproductionFoodRequired), reproductionFoodRequired, "Reproduction food requirement cannot be negative.");
+            }
+
+            if (maxReproductionGroupSize < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxReproductionGroupSize), maxReproductionGroupSize, "Maximum reproduction group size cannot be negative.");
+            }
+
+            if (startingEnergy < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startingEnergy), startingEnergy, "Starting energy cannot be negative.");
+            }
+
+            if (wiltChance < 0f || wiltChance > 1f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(wiltChance), wiltChance, "Wilt chance must be between zero and one.");
+            }
+
             MovementSpeed = movementSpeed;
             MovementPattern = movementPattern ?? throw new ArgumentNullException(nameof(movementPattern));
             AttackPattern = attackPattern ?? throw new ArgumentNullException(nameof(attackPattern));
@@ -46,6 +76,11 @@ namespace SaltyGame
             DietTarget = dietTarget;
             ReproductionPattern = reproductionPattern ?? throw new ArgumentNullException(nameof(reproductionPattern));
             ReproductionNeighborCount = reproductionNeighborCount;
+            ReproductionChance = reproductionChance;
+            ReproductionFoodRequired = reproductionFoodRequired;
+            MaxReproductionGroupSize = maxReproductionGroupSize;
+            StartingEnergy = startingEnergy;
+            WiltChance = wiltChance;
         }
 
         public float MovementSpeed { get; }
@@ -58,5 +93,10 @@ namespace SaltyGame
         public SpeciesArchetype? DietTarget { get; }
         public GridPattern ReproductionPattern { get; }
         public int ReproductionNeighborCount { get; }
+        public float ReproductionChance { get; }
+        public int ReproductionFoodRequired { get; }
+        public int MaxReproductionGroupSize { get; }
+        public int StartingEnergy { get; }
+        public float WiltChance { get; }
     }
 }
