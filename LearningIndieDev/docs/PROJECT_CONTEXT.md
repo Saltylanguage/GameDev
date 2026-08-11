@@ -70,9 +70,17 @@ design questions. Do not silently settle them in foundational grid code.
   preserving compatibility accessors for the original three species.
 - `CellularSimData` now produces a versioned, deterministic SHA-256 fingerprint;
   data-backed runs and results carry it for A/B comparison and replay metadata.
-- Remaining architecture work is custom rule logic and editor/data-asset
-  authoring when concrete use cases activate them; legacy prototype cleanup is
-  lowest priority for now.
+- Alpha offspring is the first focused custom rule: configured species can
+  produce chance-based alpha newborns with health and energy bonuses. Alpha
+  configuration is part of the immutable ruleset and its fingerprint; special
+  qualification and inheritance are still exploratory.
+- `CellularSimDataAsset` is the first Inspector authoring path. It converts
+  serialized scenario values into a fresh immutable `CellularSimData` at run
+  start and is never mutable run state. It currently uses bare/grass terrain
+  defaults; the existing runtime settings UI remains the fastest experiment path.
+- Future custom rule work should stay focused on a concrete mechanic such as
+  sight; editor work should add terrain presets or preview asset selection only
+  when that authoring workflow is needed.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case

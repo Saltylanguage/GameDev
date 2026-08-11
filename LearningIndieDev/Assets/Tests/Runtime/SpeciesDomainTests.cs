@@ -76,6 +76,21 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CellularSimDataAssetCreatesAnIndependentRuntimeSnapshot()
+        {
+            var asset = ScriptableObject.CreateInstance<CellularSimDataAsset>();
+            var first = asset.CreateRuntimeData();
+            var second = asset.CreateRuntimeData();
+
+            Assert.That(first.SpeciesRules.Count, Is.EqualTo(3));
+            Assert.That(first.SpeciesRules.ContainsKey(SpeciesIds.Herbivore), Is.True);
+            Assert.That(second, Is.Not.SameAs(first));
+            Assert.That(second.Fingerprint, Is.EqualTo(first.Fingerprint));
+
+            Object.DestroyImmediate(asset);
+        }
+
+        [Test]
         public void SpeciesRulesPreserveBehaviorValuesAndPatterns()
         {
             var attackPattern = new GridPattern(new[] { Vector2Int.right });
@@ -327,6 +342,59 @@ namespace SaltyGame.Tests
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));
             var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
             Assert.That(withoutFood.GetCell(2, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void AlphaOffspringRulePromotesNewbornCreaturesAndChangesTheRulesetFingerprint()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
+            var carnivoreRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: reproductionPattern,
+                reproductionNeighborCount: 1,
+                reproductionChance: 1f,
+                reproductionFoodRequired: 0,
+                maxReproductionGroupSize: 3,
+                startingEnergy: 2,
+                metabolism: 0);
+            var alphaRule = new AlphaOffspringRule(
+                SpeciesIds.Carnivore,
+                chance: 1f,
+                healthBonus: 2,
+                energyBonus: 3);
+            var data = new CellularSimData(
+                3,
+                1,
+                new Dictionary<SpeciesId, float>(),
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Carnivore] = carnivoreRules,
+                },
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f,
+                alphaOffspringRules: new Dictionary<SpeciesId, AlphaOffspringRule>
+                {
+                    [SpeciesIds.Carnivore] = alphaRule,
+                });
+
+            var next = SpeciesSimulation.Step(source, data, seed: 42);
+            var offspring = next.GetCell(2, 0);
+
+            Assert.That(offspring.IsAlpha, Is.True);
+            Assert.That(offspring.Health, Is.EqualTo(3));
+            Assert.That(offspring.Energy, Is.EqualTo(5));
+            Assert.That(data.WithoutAlphaOffspringRule(SpeciesIds.Carnivore).Fingerprint,
+                Is.Not.EqualTo(data.Fingerprint));
         }
 
         [Test]

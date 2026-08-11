@@ -9,7 +9,9 @@ focused experiment.
 - Alpha offspring: an upgrade grants the species a chance to produce an alpha
   child. Alpha offspring require a special diet or other explicit conditions,
   similar in spirit to *The Isle*'s elder system, and receive significant stat
-  bonuses when the requirements are met.
+  bonuses when the requirements are met. The current prototype implements the
+  chance and starting health/energy bonuses only; qualification is not yet part
+  of the rule.
 - Consider whether alpha status is inherited, earned by the child, or both.
 - Consider whether alpha cells should influence nearby members of their species
   through pack behavior, reproduction priority, or territorial rules.

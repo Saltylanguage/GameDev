@@ -1,38 +1,41 @@
 # Next architecture batch
 
-This note prepares the next higher-risk work without activating speculative
-frameworks before their behavior is defined.
+The first bounded pass of the higher-risk work is now in place. It deliberately
+stops before generalized rule plugins or asset-driven runtime state.
 
 ## CS-04 - Custom rule logic
 
-### Candidate activation
+### Activated prototype
 
-The first likely trigger is **alpha offspring** or **vision/sight**. Both need
-behavior that is more than a scalar value or a fixed built-in simulation stage:
+**Alpha offspring** is the first custom mechanic. It is applied immediately
+after a non-plant offspring is created, before population limiting. The rule
+uses the simulation's seeded random source and changes only that newborn cell.
 
-- Alpha offspring needs conditional child qualification and state/stat changes.
-- Vision needs perception, target selection, and a deterministic movement choice.
+`AlphaOffspringRule` is data owned by `CellularSimData`, not a delegate or a
+runtime callback. Its chance and bonuses affect `CellularSimData.Fingerprint`.
 
-### Required decisions before implementation
+### Deliberate limits
 
-1. Which mechanic is the first real consumer.
-2. Whether the custom behavior runs before or after the built-in stages.
-3. What state it may read and write.
-4. How it receives deterministic randomness.
-5. How the same rule is tested in isolation and in a full run.
+1. Alpha qualification is only a probability in this pass.
+2. Alphas receive health and energy bonuses at birth; status persists on the
+   creature cell through normal simulation updates.
+3. Diet qualification, inheritance, alpha caps, and pack behavior remain open.
+4. Vision/sight should introduce its own focused seam when it has a concrete
+   target-selection rule; it should not be forced into alpha logic.
 
 ### Guardrail
 
-Start with one explicit rule-stage seam for the chosen mechanic. Do not add a
-universal event bus, delegate registry, scripting language, or plugin system.
+Do not add a universal event bus, delegate registry, scripting language, or
+plugin system until at least two real mechanics demonstrably share an interface.
 
 ## CS-06 - Data asset/editor authoring
 
-### Candidate direction
+### Implemented direction
 
-When reusable scenarios become a real workflow, use a read-only Unity
-`ScriptableObject` definition asset that converts into the existing immutable
-`CellularSimData` snapshot at run start.
+`CellularSimDataAsset` is a Unity `ScriptableObject` definition that converts
+to a new immutable `CellularSimData` snapshot when `CreateRuntimeData()` is
+called. It provides Inspector fields for globals, arbitrary species IDs,
+patterns, species rules, and alpha-offspring settings.
 
 Keep these boundaries separate:
 
@@ -43,23 +46,25 @@ CellularSimData (immutable runtime snapshot + fingerprint)
     -> SimulationRunState (mutable run state)
 ```
 
-### Required decisions before implementation
+### Remaining decisions
 
-1. Which scenario fields designers must author in the Inspector.
-2. How species IDs, terrain IDs, and grid-pattern offsets are serialized.
-3. Whether asset values replace or layer over code defaults.
-4. How invalid references and duplicate IDs are reported in the Editor.
-5. How asset changes affect fingerprints and A/B comparison records.
+1. Serialized custom terrain definitions are deferred; the asset currently
+   uses the proven bare/grass defaults.
+2. The preview scene does not yet select scenario assets because its current
+   settings UI is hard-coded to the three prototype species.
+3. Editor-specific validation UX can be added when authored assets become a
+   regular workflow; runtime conversion already validates IDs and rules.
 
 ### Guardrail
 
 Do not expose mutable runtime dictionaries through the asset or use the asset as
-global run state. Preserve the current code-authored path until a scenario asset
-is actually needed by a designer or repeatable experiment workflow.
+global run state. Keep the code-authored path beside the asset path while the
+prototype schema continues to change.
 
 ## Current status
 
 - Ruleset fingerprints and prototype audit are pushed in `97b77bc9`.
 - CS-07 audit found no safe deletion candidate.
-- CS-04 and CS-06 remain intentionally unimplemented until one candidate
-  mechanic and one authoring workflow are selected.
+- CS-04 alpha offspring and CS-06 asset authoring now have bounded first
+  implementations. The next useful experiment is alpha qualification or sight,
+  not generalized frameworks.

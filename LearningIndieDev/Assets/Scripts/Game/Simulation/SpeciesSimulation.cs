@@ -21,7 +21,8 @@ namespace SaltyGame
                 simulationData.SpeciesRules,
                 seed,
                 simulationData.MaxPopulation,
-                simulationData.TerrainDefinitions);
+                simulationData.TerrainDefinitions,
+                simulationData.AlphaOffspringRules);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -29,7 +30,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             int seed,
             int maxPopulation = 0,
-            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null)
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null)
         {
             if (source == null)
             {
@@ -56,7 +58,7 @@ namespace SaltyGame
             ResolveCrowdingStress(next, rules);
             ResolveSeedDrops(next, rules, terrainDefinitions, random);
             ResolveWilt(next, rules, random);
-            ResolveReproduction(next, rules, terrainDefinitions, random);
+            ResolveReproduction(next, rules, terrainDefinitions, alphaOffspringRules, random);
             ResolvePopulationLimit(next, maxPopulation, random);
             return next;
         }
@@ -178,7 +180,7 @@ namespace SaltyGame
                         {
                             var remainingHealth = currentTarget.Health - damage;
                             next.SetCell(targetX, targetY, remainingHealth > 0
-                                ? currentTarget.WithEntity(currentTarget.SpeciesId, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve)
+                                ? currentTarget.WithEntity(currentTarget.SpeciesId, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve, currentTarget.IsAlpha)
                                 : currentTarget.WithoutEntity());
 
                             if (remainingHealth <= 0
@@ -420,7 +422,8 @@ namespace SaltyGame
                 cell.Energy,
                 cell.Age,
                 cell.FoodEaten,
-                cell.FoodReserve));
+                cell.FoodReserve,
+                cell.IsAlpha));
             moved[GetIndex(source, x, y)] = true;
             moved[bestIndex] = true;
             claimed[bestIndex] = true;
@@ -481,7 +484,8 @@ namespace SaltyGame
                     cell.Energy,
                     cell.Age,
                     cell.FoodEaten,
-                    cell.FoodReserve));
+                    cell.FoodReserve,
+                    cell.IsAlpha));
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
@@ -509,7 +513,7 @@ namespace SaltyGame
 
                     var remainingEnergy = cell.Energy - speciesRules.Metabolism;
                     next.SetCell(x, y, remainingEnergy > 0
-                        ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
+                        ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
                         : cell.WithoutEntity());
                 }
             }
@@ -580,7 +584,7 @@ namespace SaltyGame
 
                     var remainingEnergy = cell.Energy - excessMembers * speciesRules.CrowdingEnergyPenalty;
                     next.SetCell(x, y, remainingEnergy > 0
-                        ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve)
+                        ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
                         : cell.WithoutEntity());
                 }
             }
@@ -664,6 +668,7 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
             System.Random random)
         {
             var source = next.Copy();
@@ -732,7 +737,7 @@ namespace SaltyGame
 
                         if (random.NextDouble() <= speciesRules.ReproductionChance)
                         {
-                            next.SetCell(childX, childY, parent.SpeciesId == SpeciesIds.Plant
+                            var offspring = parent.SpeciesId == SpeciesIds.Plant
                                 ? SpeciesCell.FromTerrain(
                                     terrainDefinitions[TerrainIds.Grass],
                                     speciesRules.StartingFoodReserve,
@@ -740,7 +745,14 @@ namespace SaltyGame
                                 : new SpeciesCell(
                                     parent.SpeciesId,
                                     health: 1,
-                                    energy: speciesRules.StartingEnergy));
+                                    energy: speciesRules.StartingEnergy);
+                            if (alphaOffspringRules != null
+                                && alphaOffspringRules.TryGetValue(parent.SpeciesId, out var alphaRule))
+                            {
+                                offspring = alphaRule.Apply(offspring, random);
+                            }
+
+                            next.SetCell(childX, childY, offspring);
                             next.SetCell(x, y, ConsumeReproductionEnergy(
                                 currentParent,
                                 speciesRules.ReproductionFoodRequired));
@@ -778,7 +790,8 @@ namespace SaltyGame
                 cell.Energy + energyValue,
                 cell.Age,
                 cell.FoodEaten + 1,
-                cell.FoodReserve + foodAmount);
+                cell.FoodReserve + foodAmount,
+                cell.IsAlpha);
         }
 
         static bool TryFeedOnPlant(
@@ -853,7 +866,8 @@ namespace SaltyGame
                     cell.Energy - amount,
                     cell.Age,
                     cell.FoodEaten,
-                    cell.FoodReserve);
+                    cell.FoodReserve,
+                    cell.IsAlpha);
             }
 
             var remaining = Math.Max(0f, (cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve) - amount);

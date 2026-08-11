@@ -17,7 +17,8 @@ namespace SaltyGame
             int energy = 0,
             int age = 0,
             int foodEaten = 0,
-            float foodReserve = 0f)
+            float foodReserve = 0f,
+            bool isAlpha = false)
             : this(
                 species,
                 true,
@@ -26,6 +27,7 @@ namespace SaltyGame
                 age,
                 foodEaten,
                 foodReserve,
+                isAlpha,
                 TerrainIds.Bare,
                 terrainEnergy: 0f,
                 isResourceSpecies: species == SpeciesIds.Plant,
@@ -43,6 +45,7 @@ namespace SaltyGame
             int age,
             int foodEaten,
             float foodReserve,
+            bool isAlpha,
             TerrainId terrainId,
             float terrainEnergy,
             bool isResourceSpecies,
@@ -92,6 +95,7 @@ namespace SaltyGame
             Age = age;
             FoodEaten = foodEaten;
             FoodReserve = foodReserve;
+            IsAlpha = isAlpha && isOccupied && !isResourceSpecies;
             this.terrainId = terrainId;
             TerrainEnergy = terrainEnergy;
             this.isResourceSpecies = isResourceSpecies;
@@ -114,6 +118,7 @@ namespace SaltyGame
             0,
             0,
             0f,
+            false,
             TerrainIds.Bare,
             0f,
             isResourceSpecies: false,
@@ -149,6 +154,7 @@ namespace SaltyGame
                 0,
                 0,
                 0f,
+                false,
                 definition.Id,
                 energy,
                 isResourceSpecies: false,
@@ -183,6 +189,7 @@ namespace SaltyGame
         public int Age { get; }
         public int FoodEaten { get; }
         public float FoodReserve { get; }
+        public bool IsAlpha { get; }
 
         public SpeciesCell WithEntity(
             SpeciesId species,
@@ -190,7 +197,8 @@ namespace SaltyGame
             int energy,
             int age,
             int foodEaten,
-            float foodReserve)
+            float foodReserve,
+            bool isAlpha = false)
         {
             return new SpeciesCell(
                 species,
@@ -200,6 +208,7 @@ namespace SaltyGame
                 age,
                 foodEaten,
                 foodReserve,
+                isAlpha,
                 TerrainId,
                 TerrainEnergy,
                 isResourceSpecies: species == SpeciesIds.Plant,
@@ -220,6 +229,7 @@ namespace SaltyGame
                     0,
                     0,
                     0f,
+                false,
                     TerrainId,
                     TerrainEnergy,
                     isResourceSpecies: false,
@@ -237,8 +247,26 @@ namespace SaltyGame
                     Energy,
                     Age,
                     FoodEaten,
-                    FoodReserve)
+                    FoodReserve,
+                    IsAlpha)
                 : Empty;
+        }
+
+        public SpeciesCell WithAlpha(int healthBonus, int energyBonus)
+        {
+            if (!IsCreature || healthBonus < 0 || energyBonus < 0)
+            {
+                return this;
+            }
+
+            return WithEntity(
+                SpeciesId,
+                Health + healthBonus,
+                Energy + energyBonus,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                isAlpha: true);
         }
 
         public SpeciesCell WithTerrainEnergy(float energy)
@@ -256,6 +284,7 @@ namespace SaltyGame
                 Age,
                 FoodEaten,
                 FoodReserve,
+                IsAlpha,
                 TerrainId,
                 energy,
                 isResourceSpecies,

@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v1";
+        public const string Version = "cellular-sim-data-v2";
 
         public static string Create(CellularSimData data)
         {
@@ -45,6 +45,15 @@ namespace SaltyGame
             {
                 Append(canonical, entry.Key.Value);
                 AppendTerrain(canonical, entry.Value);
+            }
+
+            canonical.Append("]alphaOffspring[");
+            foreach (var entry in Sort(data.AlphaOffspringRules))
+            {
+                Append(canonical, entry.Key.Value);
+                Append(canonical, entry.Value.Chance);
+                Append(canonical, entry.Value.HealthBonus);
+                Append(canonical, entry.Value.EnergyBonus);
             }
 
             canonical.Append(']');

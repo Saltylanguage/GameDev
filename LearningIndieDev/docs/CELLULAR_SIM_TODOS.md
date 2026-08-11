@@ -16,9 +16,9 @@ larger plan. Each item has a trigger that should bring it back into scope.
 
 ## Roadmap priority (2026-08-11)
 
-1. **TODO-CS-04 and TODO-CS-06** remain later roadmap work and require a
-   concrete mechanic or authoring workflow to activate them.
-2. **TODO-CS-07** is the lowest-priority item for now.
+1. **TODO-CS-04** is activated by the alpha-offspring prototype.
+2. **TODO-CS-06** now has a first Inspector-authored scenario path.
+3. **TODO-CS-07** is the lowest-priority item for now.
 
 TODO-CS-01, TODO-CS-02, TODO-CS-03, and TODO-CS-05 are complete.
 
@@ -72,16 +72,21 @@ changes the dependency or an experiment provides a stronger trigger.
   is supported for a later definition, but movement-cost slowing is not active
   until a real terrain needs it.
 
-### TODO-CS-04 - Extensible custom rule logic (Later)
+### TODO-CS-04 - Extensible custom rule logic
 
-- [ ] Add composable rule/stage code for mechanics that cannot be represented by
-  data values and patterns alone.
-- Trigger: a new mechanic needs behavior that cannot be expressed by the current
-  simulation stages and parameters.
-- Reason deferred: delegates, serialized callbacks, or a general rule plugin
-  framework would make determinism, testing, and Unity serialization harder.
-- Guardrail: add one focused rule seam for the real mechanic; do not introduce a
-  universal event bus or scripting system.
+- [x] Add the first focused custom mechanic: `AlphaOffspringRule` applies during
+  reproduction, marks a newborn creature as alpha, and adds configured health
+  and energy bonuses.
+- Implementation: alpha rules live in immutable `CellularSimData`, are keyed by
+  `SpeciesId`, use the seeded simulation random source, and are included in the
+  ruleset fingerprint. `SpeciesCell.IsAlpha` is preserved through movement,
+  feeding, damage, metabolism, crowding, and reproduction-cost updates.
+- Boundary: the current prototype is chance plus starting stat bonuses only.
+  Special-diet qualification, inheritance, unique-per-pack limits, and vision
+  remain separate experiments.
+- Guardrail retained: do not introduce a universal event bus, callback registry,
+  scripting language, or general plugin framework until another concrete rule
+  requires a shared abstraction.
 
 ### TODO-CS-05 - Ruleset fingerprints and comparison metadata (Later)
 
@@ -90,23 +95,25 @@ changes the dependency or an experiment provides a stronger trigger.
 - Trigger: we begin systematic A/B experiments, replay bug reports, or saved
   run comparisons.
 - Implementation: `CellularSimData.Fingerprint` uses the versioned
-  `cellular-sim-data-v1` canonical representation and SHA-256. Dictionary
+  `cellular-sim-data-v2` canonical representation and SHA-256. Dictionary
   entries are sorted by stable IDs; numeric values use invariant round-trip
   formatting; patterns preserve offset order. Data-backed runs carry the
   fingerprint into `SimulationRunState` and `SimulationRunResult`.
 - Validation: fingerprints are stable across dictionary insertion order and
   change when scenario data changes. Runtime and test assemblies build cleanly.
 
-### TODO-CS-06 - Data asset/editor authoring (Later)
+### TODO-CS-06 - Data asset/editor authoring
 
-- [ ] Decide whether `CellularSimData` should be authored as a Unity asset,
-  runtime code, or both, with a clear separation between definitions and run
-  state.
-- Trigger: designers need reusable named scenarios, source control-friendly
-  presets, or cross-scene sharing beyond the runtime settings screen.
-- Reason deferred: the current settings UI and plain C# defaults are faster to
-  iterate while the schema is unsettled.
-- Guardrail: do not introduce ScriptableObjects as mutable global runtime state.
+- [x] Add `CellularSimDataAsset`, an Inspector-authored `ScriptableObject` that
+  serializes global values, arbitrary species definitions, grid-pattern offsets,
+  full species rules, and alpha-offspring values.
+- Implementation: `CreateRuntimeData()` validates/converts the serialized values
+  into a new immutable `CellularSimData` snapshot. The asset is not used as
+  mutable run state, and the existing code-authored/settings-UI path remains
+  intact for rapid iteration.
+- Boundary: the first asset path uses the established bare/grass terrain
+  defaults. Add serialized custom terrain and a scene-level scenario selector
+  only when reusable terrain presets become an actual workflow.
 
 ### TODO-CS-07 - Legacy prototype cleanup (Lowest priority)
 
