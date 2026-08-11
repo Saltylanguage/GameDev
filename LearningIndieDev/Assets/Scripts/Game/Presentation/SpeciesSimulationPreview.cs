@@ -524,8 +524,9 @@ namespace SaltyGame
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
                     GUI.color = GetCellColor(run.Cells.GetCell(x, y));
+                    var visualY = run.Cells.Height - 1 - y;
                     GUI.DrawTexture(
-                        new Rect(gridLeft + x * cellSize, gridTop + y * cellSize, cellSize - 1f, cellSize - 1f),
+                        new Rect(gridLeft + x * cellSize, gridTop + visualY * cellSize, cellSize - 1f, cellSize - 1f),
                         Texture2D.whiteTexture);
                 }
             }

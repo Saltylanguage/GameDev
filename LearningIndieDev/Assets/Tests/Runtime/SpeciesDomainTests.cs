@@ -389,6 +389,59 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void MooreMovementTieBreakIsSeededAndNotPatternOrdered()
+        {
+            var source = new Grid<SpeciesCell>(3, 3);
+            source.SetCell(1, 1, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 10));
+            var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
+            {
+                [SpeciesArchetype.Carnivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+
+            var first = SpeciesSimulation.Step(source, rules, seed: 17);
+            var second = SpeciesSimulation.Step(source, rules, seed: 17);
+            var destinations = new HashSet<Vector2Int>();
+            for (var seed = 0; seed < 32; seed++)
+            {
+                var next = SpeciesSimulation.Step(source, rules, seed);
+                for (var y = 0; y < next.Height; y++)
+                {
+                    for (var x = 0; x < next.Width; x++)
+                    {
+                        if (next.GetCell(x, y).IsCreature)
+                        {
+                            destinations.Add(new Vector2Int(x, y));
+                        }
+                    }
+                }
+            }
+
+            for (var y = 0; y < first.Height; y++)
+            {
+                for (var x = 0; x < first.Width; x++)
+                {
+                    Assert.That(
+                        first.GetCell(x, y).IsCreature,
+                        Is.EqualTo(second.GetCell(x, y).IsCreature));
+                }
+            }
+
+            Assert.That(destinations.Count, Is.GreaterThan(1));
+        }
+
+        [Test]
         public void PlantsCanWiltAndCreateOpenTiles()
         {
             var source = new Grid<SpeciesCell>(1, 1);

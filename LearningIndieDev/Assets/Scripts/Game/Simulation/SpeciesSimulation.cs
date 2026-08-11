@@ -37,8 +37,8 @@ namespace SaltyGame
 
             var next = source.Copy();
             var random = new System.Random(seed);
-            ResolveAttacks(source, next, rules);
-            ResolveMovement(source, next, rules);
+            ResolveAttacks(source, next, rules, random);
+            ResolveMovement(source, next, rules, random);
             ResolveMetabolism(next, rules);
             ResolveStarvation(next, rules);
             ResolveCrowdingStress(next, rules);
@@ -85,7 +85,8 @@ namespace SaltyGame
         static void ResolveAttacks(
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
-            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules)
+            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
+            System.Random random)
         {
             for (var y = 0; y < source.Height; y++)
             {
@@ -100,8 +101,11 @@ namespace SaltyGame
                         continue;
                     }
 
-                    foreach (var offset in attackerRules.AttackPattern.Offsets)
+                    var attackPattern = attackerRules.AttackPattern;
+                    var startOffset = attackPattern.Count == 0 ? 0 : random.Next(attackPattern.Count);
+                    for (var offsetIndex = 0; offsetIndex < attackPattern.Count; offsetIndex++)
                     {
+                        var offset = attackPattern.Offsets[(startOffset + offsetIndex) % attackPattern.Count];
                         var targetX = x + offset.x;
                         var targetY = y + offset.y;
                         if (!source.TryGetCell(targetX, targetY, out var target)
@@ -178,7 +182,8 @@ namespace SaltyGame
         static void ResolveMovement(
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
-            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules)
+            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
+            System.Random random)
         {
             var movementPasses = 1;
             foreach (var speciesRules in rules.Values)
@@ -189,7 +194,7 @@ namespace SaltyGame
             for (var pass = 0; pass < movementPasses; pass++)
             {
                 var movementSource = pass == 0 ? source : next.Copy();
-                ResolveMovementPass(movementSource, next, rules, pass);
+                ResolveMovementPass(movementSource, next, rules, pass, random);
             }
         }
 
@@ -197,84 +202,88 @@ namespace SaltyGame
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
-            int movementPass)
+            int movementPass,
+            System.Random random)
         {
             var moved = new bool[source.Count];
             var claimed = new bool[source.Count];
             var plantEnergyValue = rules.TryGetValue(SpeciesArchetype.Plant, out var plantRules)
                 ? plantRules.EnergyValue
                 : 1;
+            var processingOrder = CreateShuffledIndices(source.Count, random);
 
-            for (var y = 0; y < source.Height; y++)
+            for (var orderIndex = 0; orderIndex < processingOrder.Length; orderIndex++)
             {
-                for (var x = 0; x < source.Width; x++)
+                var sourceIndex = processingOrder[orderIndex];
+                var x = sourceIndex % source.Width;
+                var y = sourceIndex / source.Width;
+                var sourceCell = source.GetCell(x, y);
+                var currentCell = next.GetCell(x, y);
+                if (moved[sourceIndex]
+                    || !sourceCell.IsCreature
+                    || !currentCell.IsCreature
+                    || !rules.TryGetValue(sourceCell.Species, out var speciesRules)
+                    || speciesRules.MovementSpeed <= movementPass
+                    || currentCell.Species != sourceCell.Species)
                 {
-                    var sourceIndex = GetIndex(source, x, y);
-                    var sourceCell = source.GetCell(x, y);
-                    var currentCell = next.GetCell(x, y);
-                    if (moved[sourceIndex]
-                        || !sourceCell.IsCreature
-                        || !currentCell.IsCreature
-                        || !rules.TryGetValue(sourceCell.Species, out var speciesRules)
-                        || speciesRules.MovementSpeed <= movementPass
-                        || currentCell.Species != sourceCell.Species)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    if (speciesRules.DietTarget.HasValue
-                        && currentCell.FoodReserve <= sourceCell.FoodReserve
-                        && TryMove(
-                            source,
-                            next,
-                            x,
-                            y,
-                            currentCell,
-                            speciesRules,
-                            speciesRules.DietPattern,
-                            plantEnergyValue,
-                            requireDietTarget: true,
-                            moved,
-                            claimed))
-                    {
-                        continue;
-                    }
-
-                    if (speciesRules.ReproductionNeighborCount > 0
-                        && CountPatternSpeciesNeighbors(
-                            source,
-                            x,
-                            y,
-                            sourceCell.Species,
-                            speciesRules.ReproductionPattern,
-                            excludeX: -1,
-                            excludeY: -1) < speciesRules.ReproductionNeighborCount
-                        && TryMoveTowardMate(
-                            source,
-                            next,
-                            x,
-                            y,
-                            currentCell,
-                            speciesRules,
-                            moved,
-                            claimed))
-                    {
-                        continue;
-                    }
-
-                    TryMove(
+                if (speciesRules.DietTarget.HasValue
+                    && currentCell.FoodReserve <= sourceCell.FoodReserve
+                    && TryMove(
                         source,
                         next,
                         x,
                         y,
                         currentCell,
                         speciesRules,
-                        speciesRules.MovementPattern,
+                        speciesRules.DietPattern,
                         plantEnergyValue,
-                        requireDietTarget: false,
+                        requireDietTarget: true,
                         moved,
-                        claimed);
+                        claimed,
+                        random))
+                {
+                    continue;
                 }
+
+                if (speciesRules.ReproductionNeighborCount > 0
+                    && CountPatternSpeciesNeighbors(
+                        source,
+                        x,
+                        y,
+                        sourceCell.Species,
+                        speciesRules.ReproductionPattern,
+                        excludeX: -1,
+                        excludeY: -1) < speciesRules.ReproductionNeighborCount
+                    && TryMoveTowardMate(
+                        source,
+                        next,
+                        x,
+                        y,
+                        currentCell,
+                        speciesRules,
+                        moved,
+                        claimed,
+                        random))
+                {
+                    continue;
+                }
+
+                TryMove(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    speciesRules.MovementPattern,
+                    plantEnergyValue,
+                    requireDietTarget: false,
+                    moved,
+                    claimed,
+                    random);
             }
         }
 
@@ -289,14 +298,17 @@ namespace SaltyGame
             int plantEnergyValue,
             bool requireDietTarget,
             bool[] moved,
-            bool[] claimed)
+            bool[] claimed,
+            System.Random random)
         {
             var bestX = -1;
             var bestY = -1;
             var bestCrowding = int.MaxValue;
 
-            foreach (var offset in pattern.Offsets)
+            var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
+            for (var offsetIndex = 0; offsetIndex < pattern.Count; offsetIndex++)
             {
+                var offset = pattern.Offsets[(startOffset + offsetIndex) % pattern.Count];
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
                 if (!source.IsInBounds(targetX, targetY))
@@ -396,10 +408,14 @@ namespace SaltyGame
             SpeciesCell cell,
             SpeciesRules speciesRules,
             bool[] moved,
-            bool[] claimed)
+            bool[] claimed,
+            System.Random random)
         {
-            foreach (var offset in speciesRules.MovementPattern.Offsets)
+            var pattern = speciesRules.MovementPattern;
+            var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
+            for (var offsetIndex = 0; offsetIndex < pattern.Count; offsetIndex++)
             {
+                var offset = pattern.Offsets[(startOffset + offsetIndex) % pattern.Count];
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
                 if (!source.IsInBounds(targetX, targetY))
@@ -661,8 +677,11 @@ namespace SaltyGame
                         continue;
                     }
 
-                    foreach (var offset in speciesRules.ReproductionPattern.Offsets)
+                    var reproductionPattern = speciesRules.ReproductionPattern;
+                    var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
+                    for (var offsetIndex = 0; offsetIndex < reproductionPattern.Count; offsetIndex++)
                     {
+                        var offset = reproductionPattern.Offsets[(startOffset + offsetIndex) % reproductionPattern.Count];
                         var childX = x + offset.x;
                         var childY = y + offset.y;
                         if (!source.IsInBounds(childX, childY))
@@ -877,6 +896,25 @@ namespace SaltyGame
         static int GetIndex<T>(Grid<T> grid, int x, int y)
         {
             return x + y * grid.Width;
+        }
+
+        static int[] CreateShuffledIndices(int count, System.Random random)
+        {
+            var indices = new int[count];
+            for (var index = 0; index < count; index++)
+            {
+                indices[index] = index;
+            }
+
+            for (var index = count - 1; index > 0; index--)
+            {
+                var swapIndex = random.Next(index + 1);
+                var temporary = indices[index];
+                indices[index] = indices[swapIndex];
+                indices[swapIndex] = temporary;
+            }
+
+            return indices;
         }
     }
 }
