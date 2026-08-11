@@ -169,7 +169,8 @@ namespace SaltyGame.Tests
                     dietTarget: SpeciesArchetype.Plant,
                     reproductionPattern: EmptyPattern,
                     reproductionNeighborCount: 0,
-                    reproductionChance: 0f),
+                    reproductionChance: 0f,
+                    metabolism: 0),
                 [SpeciesArchetype.Carnivore] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
@@ -181,7 +182,8 @@ namespace SaltyGame.Tests
                     dietTarget: SpeciesArchetype.Herbivore,
                     reproductionPattern: EmptyPattern,
                     reproductionNeighborCount: 0,
-                    reproductionChance: 0f),
+                    reproductionChance: 0f,
+                    metabolism: 0),
             };
 
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
@@ -375,7 +377,8 @@ namespace SaltyGame.Tests
                     reproductionPattern: cardinal,
                     reproductionNeighborCount: 1,
                     reproductionChance: 0f,
-                    maxReproductionGroupSize: 3),
+                    maxReproductionGroupSize: 3,
+                    metabolism: 0),
             };
 
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
@@ -491,10 +494,11 @@ namespace SaltyGame.Tests
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
                 dietPattern: right,
-                dietTarget: SpeciesArchetype.Plant,
-                reproductionPattern: EmptyPattern,
-                reproductionNeighborCount: 0,
-                seedDropChance: 1f);
+                    dietTarget: SpeciesArchetype.Plant,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    seedDropChance: 1f,
+                    metabolism: 0);
             var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
             {
                 [SpeciesArchetype.Plant] = plantRules,
@@ -503,8 +507,8 @@ namespace SaltyGame.Tests
 
             var next = SpeciesSimulation.Step(source, rules, seed: 42);
 
-            Assert.That(next.GetCell(1, 0).Species, Is.EqualTo(SpeciesArchetype.Plant));
-            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(3.25f).Within(0.001f));
+            Assert.That(next.GetCell(1, 0).IsGrass, Is.True);
+            Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(3.25f).Within(0.001f));
         }
 
         [Test]
@@ -523,6 +527,92 @@ namespace SaltyGame.Tests
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
             Assert.That(result.Ticks, Is.EqualTo(2));
             Assert.That(result.CurrencyEarned, Is.EqualTo(result.PlayerPopulation));
+        }
+
+        [Test]
+        public void CellularSimDataEditsReturnNewDataWithoutMutatingOriginal()
+        {
+            var data = new CellularSimData(
+                4,
+                3,
+                new Dictionary<SpeciesArchetype, float>
+                {
+                    [SpeciesArchetype.Plant] = 0.4f,
+                    [SpeciesArchetype.Herbivore] = 0.2f,
+                    [SpeciesArchetype.Carnivore] = 0.1f,
+                },
+                SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f);
+
+            var updated = data
+                .WithStartingProbability(SpeciesArchetype.Herbivore, 0.35f)
+                .WithoutSpecies(SpeciesArchetype.Carnivore);
+
+            Assert.That(data.StartingProbabilities[SpeciesArchetype.Herbivore], Is.EqualTo(0.2f));
+            Assert.That(data.SpeciesRules.ContainsKey(SpeciesArchetype.Carnivore), Is.True);
+            Assert.That(updated.StartingProbabilities[SpeciesArchetype.Herbivore], Is.EqualTo(0.35f));
+            Assert.That(updated.SpeciesRules.ContainsKey(SpeciesArchetype.Carnivore), Is.False);
+        }
+
+        [Test]
+        public void RunnerAcceptsCellularSimDataSnapshot()
+        {
+            var data = new CellularSimData(
+                2,
+                1,
+                new Dictionary<SpeciesArchetype, float>
+                {
+                    [SpeciesArchetype.Plant] = 0f,
+                    [SpeciesArchetype.Herbivore] = 0f,
+                    [SpeciesArchetype.Carnivore] = 0f,
+                },
+                SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 1f,
+                stepInterval: 0.5f);
+            var run = new SimulationRunState(
+                new Grid<SpeciesCell>(data.Width, data.Height),
+                SpeciesArchetype.Herbivore,
+                seed: 10,
+                durationSeconds: data.RunDurationSeconds);
+            var runner = new SpeciesSimulationRunner(run, data);
+
+            Assert.That(runner.StepSeconds, Is.EqualTo(0.5f));
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+        }
+
+        [Test]
+        public void InitialGridFactoryIsDeterministicForTheSameSeedAndData()
+        {
+            var data = new CellularSimData(
+                8,
+                6,
+                new Dictionary<SpeciesArchetype, float>
+                {
+                    [SpeciesArchetype.Plant] = 0.4f,
+                    [SpeciesArchetype.Herbivore] = 0.2f,
+                    [SpeciesArchetype.Carnivore] = 0.1f,
+                },
+                SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f);
+
+            var first = SpeciesInitialGridFactory.Create(data, runSeed: 1234);
+            var second = SpeciesInitialGridFactory.Create(data.Copy(), runSeed: 1234);
+
+            for (var y = 0; y < data.Height; y++)
+            {
+                for (var x = 0; x < data.Width; x++)
+                {
+                    var firstCell = first.GetCell(x, y);
+                    var secondCell = second.GetCell(x, y);
+                    Assert.That(secondCell.IsOccupied, Is.EqualTo(firstCell.IsOccupied));
+                    Assert.That(secondCell.Species, Is.EqualTo(firstCell.Species));
+                    Assert.That(secondCell.Terrain, Is.EqualTo(firstCell.Terrain));
+                    Assert.That(secondCell.TerrainEnergy, Is.EqualTo(firstCell.TerrainEnergy));
+                    Assert.That(secondCell.Energy, Is.EqualTo(firstCell.Energy));
+                }
+            }
         }
 
         static SpeciesRules CreateRules()

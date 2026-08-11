@@ -1,4 +1,3 @@
-#if NOESIS
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Noesis;
@@ -83,4 +82,4 @@ public class BaseViewModel : MonoBehaviour, INotifyPropertyChanged
         }
     }
 }
-#endif
+

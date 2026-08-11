@@ -216,9 +216,9 @@ namespace SaltyGame
             }
 
             tickTimer += Time.deltaTime;
-            while (tickTimer >= stepInterval && runner.Run.Status == SimulationRunStatus.Running)
+            while (tickTimer >= runner.StepSeconds && runner.Run.Status == SimulationRunStatus.Running)
             {
-                tickTimer -= stepInterval;
+                tickTimer -= runner.StepSeconds;
                 runner.AdvanceOneTick();
             }
 
@@ -696,13 +696,14 @@ namespace SaltyGame
                 [playerSpecies] = progression?.CurrentRules ?? rules[playerSpecies],
             };
             rules = currentRules;
+            var simulationData = CreateSimulationData();
 
             var run = new SimulationRunState(
-                CreateInitialGrid(seed + runNumber),
+                SpeciesInitialGridFactory.Create(simulationData, seed + runNumber),
                 playerSpecies,
                 seed + runNumber,
-                runDurationSeconds);
-            runner = new SpeciesSimulationRunner(run, rules, stepInterval, maxPopulation);
+                simulationData.RunDurationSeconds);
+            runner = new SpeciesSimulationRunner(run, simulationData);
             tickTimer = 0f;
             result = default;
             rewardGranted = false;
@@ -1057,132 +1058,22 @@ namespace SaltyGame
             return value.ToString("0.###", CultureInfo.InvariantCulture);
         }
 
-        Grid<SpeciesCell> CreateInitialGrid(int runSeed)
+        CellularSimData CreateSimulationData()
         {
-            var random = new System.Random(runSeed);
-            var grid = new Grid<SpeciesCell>(width, height);
-            var populationCount = 0;
-            for (var y = 0; y < height; y++)
-            {
-                for (var x = 0; x < width; x++)
+            return new CellularSimData(
+                width,
+                height,
+                new Dictionary<SpeciesArchetype, float>
                 {
-                    var roll = random.NextDouble();
-                    SpeciesArchetype species;
-                    if (roll < plantProbability)
-                    {
-                        species = SpeciesArchetype.Plant;
-                    }
-                    else if (roll < plantProbability + herbivoreProbability)
-                    {
-                        species = SpeciesArchetype.Herbivore;
-                    }
-                    else if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
-                    {
-                        species = SpeciesArchetype.Carnivore;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                    if (maxPopulation > 0 && populationCount >= maxPopulation)
-                    {
-                        continue;
-                    }
-
-                    var sameSpeciesNeighbors = CountNearbySpecies(grid, x, y, species);
-                    var clumpPenalty = sameSpeciesNeighbors > 2
-                        ? 0.9d
-                        : sameSpeciesNeighbors > 0 ? 0.65d : 0d;
-                    if (random.NextDouble() < clumpPenalty)
-                    {
-                        continue;
-                    }
-
-                    grid.SetCell(x, y, species == SpeciesArchetype.Plant
-                        ? SpeciesCell.Grass(rules[species].StartingFoodReserve)
-                        : new SpeciesCell(
-                            species,
-                            energy: rules[species].StartingEnergy,
-                            foodReserve: rules[species].StartingFoodReserve));
-                    populationCount++;
-                }
-            }
-
-            var minimumPopulation = Mathf.Min(minPopulation, grid.Count);
-            if (maxPopulation > 0)
-            {
-                minimumPopulation = Mathf.Min(minimumPopulation, maxPopulation);
-            }
-
-            var attempts = 0;
-            while (populationCount < minimumPopulation && attempts++ < grid.Count * 4)
-            {
-                var index = random.Next(grid.Count);
-                var x = index % width;
-                var y = index / width;
-                if (grid.GetCell(x, y).IsCreature || grid.GetCell(x, y).IsPlantResource)
-                {
-                    continue;
-                }
-
-                var species = GetInitialSpecies(random.NextDouble());
-                grid.SetCell(x, y, species == SpeciesArchetype.Plant
-                    ? SpeciesCell.Grass(rules[species].StartingFoodReserve)
-                    : new SpeciesCell(
-                        species,
-                        energy: rules[species].StartingEnergy,
-                        foodReserve: rules[species].StartingFoodReserve));
-                populationCount++;
-            }
-
-            return grid;
-        }
-
-        SpeciesArchetype GetInitialSpecies(double roll)
-        {
-            if (roll < plantProbability)
-            {
-                return SpeciesArchetype.Plant;
-            }
-
-            if (roll < plantProbability + herbivoreProbability)
-            {
-                return SpeciesArchetype.Herbivore;
-            }
-
-            if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
-            {
-                return SpeciesArchetype.Carnivore;
-            }
-
-            return SpeciesArchetype.Plant;
-        }
-
-        static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesArchetype species)
-        {
-            var count = 0;
-            for (var offsetY = -1; offsetY <= 1; offsetY++)
-            {
-                for (var offsetX = -1; offsetX <= 1; offsetX++)
-                {
-                    if (offsetX == 0 && offsetY == 0)
-                    {
-                        continue;
-                    }
-
-                    if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
-                        && ((species == SpeciesArchetype.Plant && neighbor.IsPlantResource)
-                            || (species != SpeciesArchetype.Plant
-                                && neighbor.IsCreature
-                                && neighbor.Species == species)))
-                    {
-                        count++;
-                    }
-                }
-            }
-
-            return count;
+                    [SpeciesArchetype.Plant] = plantProbability,
+                    [SpeciesArchetype.Herbivore] = herbivoreProbability,
+                    [SpeciesArchetype.Carnivore] = carnivoreProbability,
+                },
+                rules,
+                runDurationSeconds,
+                stepInterval,
+                maxPopulation,
+                minPopulation);
         }
 
         Color GetCellColor(SpeciesCell cell)

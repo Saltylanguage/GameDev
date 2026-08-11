@@ -6,12 +6,12 @@ larger plan. Each item has a trigger that should bring it back into scope.
 
 ## Active now
 
-- [ ] Create a first `CellularSimData` aggregate for the current species game:
-  global settings, starting population settings, species rules, terrain data,
-  validation, and a run-start snapshot.
-- [ ] Inject the data snapshot into initial-grid creation and the simulation
-  runner so the same seed can be compared under different rulesets.
-- [ ] Keep runtime state (`Grid`, tick, elapsed time, population history,
+- [x] Create the first `CellularSimData` aggregate for the current species game:
+  global settings, starting population settings, species rules, validation, and
+  copy-on-edit behavior. General terrain data remains deferred in TODO-CS-03.
+- [x] Inject the data snapshot into `SpeciesInitialGridFactory` and the
+  simulation runner so the same seed can be compared under different rulesets.
+- [x] Keep runtime state (`Grid`, tick, elapsed time, population history,
   progression, and currency) outside the scenario data.
 
 ## Deferred until a concrete use case requires it
@@ -100,4 +100,3 @@ larger plan. Each item has a trigger that should bring it back into scope.
   update or close the item here.
 - Do not solve multiple deferred items opportunistically in a balancing or UI
   change unless their dependencies are explicitly recorded.
-

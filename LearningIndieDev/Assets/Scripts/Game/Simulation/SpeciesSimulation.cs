@@ -8,6 +8,19 @@ namespace SaltyGame
     {
         public static Grid<SpeciesCell> Step(
             Grid<SpeciesCell> source,
+            CellularSimData simulationData,
+            int seed)
+        {
+            if (simulationData == null)
+            {
+                throw new ArgumentNullException(nameof(simulationData));
+            }
+
+            return Step(source, simulationData.SpeciesRules, seed, simulationData.MaxPopulation);
+        }
+
+        public static Grid<SpeciesCell> Step(
+            Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
             int seed,
             int maxPopulation = 0)
