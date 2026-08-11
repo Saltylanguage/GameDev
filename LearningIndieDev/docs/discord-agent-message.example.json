@@ -1,0 +1,22 @@
+{
+  "type": "handoff",
+  "actor": "sim",
+  "timestamp": "2026-08-11T12:00:00Z",
+  "task": "terrain-registry-follow-up",
+  "branch": "NF/TerrainIDs",
+  "commit": "7d042f7b",
+  "status": "complete",
+  "changed_files": [
+    "Assets/Scripts/Game/Simulation/CellularSimData.cs"
+  ],
+  "validation": [
+    "git diff --check"
+  ],
+  "risks": [],
+  "next_actions": [],
+  "context_links": [
+    "docs/PROJECT_CONTEXT.md",
+    "docs/WORKING_STATE.md",
+    "docs/CELLULAR_SIM_TODOS.md"
+  ]
+}

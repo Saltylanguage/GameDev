@@ -114,6 +114,12 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
 
 ## Guardrails
 
+- Cross-developer AI collaboration may use Discord as a coordination and
+  handoff layer, but the repository and Markdown context remain authoritative.
+  A shared channel cannot guarantee identical private conversation context or
+  local editor state. The staged integration plan is tracked in
+  [`DISCORD_AGENT_COLLABORATION_TODOS.md`](DISCORD_AGENT_COLLABORATION_TODOS.md).
+
 - Cellular automata is now central product direction, but the exact game loop is
   still exploratory. A high-level pivot does not authorize large speculative
   frameworks before the rules and feedback loop are playable.
