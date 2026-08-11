@@ -160,11 +160,22 @@ namespace SaltyGame
         [Obsolete("Use PlayerSpeciesId instead.")]
         public SpeciesArchetype PlayerSpecies => SpeciesId.ToLegacyArchetype(PlayerSpeciesId);
         public int Seed { get; }
+        public string RulesetFingerprint { get; private set; }
         public float DurationSeconds { get; }
         public float ElapsedSeconds { get; private set; }
         public int Tick { get; private set; }
         public SimulationRunStatus Status { get; private set; }
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
+
+        internal void SetRulesetFingerprint(string fingerprint)
+        {
+            if (string.IsNullOrWhiteSpace(fingerprint))
+            {
+                throw new ArgumentException("Ruleset fingerprint cannot be empty.", nameof(fingerprint));
+            }
+
+            RulesetFingerprint = fingerprint;
+        }
 
         public void Start()
         {
@@ -247,18 +258,25 @@ namespace SaltyGame
 
     public readonly struct SimulationRunResult
     {
-        public SimulationRunResult(int ticks, float durationSeconds, int playerPopulation, int currencyEarned)
+        public SimulationRunResult(
+            int ticks,
+            float durationSeconds,
+            int playerPopulation,
+            int currencyEarned,
+            string rulesetFingerprint = null)
         {
             Ticks = ticks;
             DurationSeconds = durationSeconds;
             PlayerPopulation = playerPopulation;
             CurrencyEarned = currencyEarned;
+            RulesetFingerprint = rulesetFingerprint;
         }
 
         public int Ticks { get; }
         public float DurationSeconds { get; }
         public int PlayerPopulation { get; }
         public int CurrencyEarned { get; }
+        public string RulesetFingerprint { get; }
     }
 
     public static class SimulationRunResults
@@ -282,7 +300,8 @@ namespace SaltyGame
                 run.Tick,
                 run.ElapsedSeconds,
                 playerPopulation,
-                playerPopulation);
+                playerPopulation,
+                run.RulesetFingerprint);
         }
     }
 }

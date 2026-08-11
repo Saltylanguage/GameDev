@@ -155,6 +155,7 @@ namespace SaltyGame
             StepInterval = stepInterval;
             MaxPopulation = maxPopulation;
             MinPopulation = minPopulation;
+            Fingerprint = CellularSimDataFingerprint.Create(this);
         }
 
         [Obsolete("Use the SpeciesId-keyed constructor instead.")]
@@ -211,6 +212,7 @@ namespace SaltyGame
         public float StepInterval { get; }
         public int MaxPopulation { get; }
         public int MinPopulation { get; }
+        public string Fingerprint { get; }
         public IReadOnlyDictionary<SpeciesId, float> StartingProbabilities => startingProbabilities;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> SpeciesRules => speciesRules;
         public IReadOnlyDictionary<TerrainId, TerrainDefinition> TerrainDefinitions => terrainDefinitions;

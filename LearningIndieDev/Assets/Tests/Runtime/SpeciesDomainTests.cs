@@ -720,6 +720,72 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CellularSimDataFingerprintIsStableAcrossDictionaryOrderAndChangesWithRules()
+        {
+            var first = new CellularSimData(
+                4,
+                3,
+                new Dictionary<SpeciesId, float>
+                {
+                    [SpeciesIds.Plant] = 0.4f,
+                    [SpeciesIds.Herbivore] = 0.2f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Plant] = CreateRules(),
+                    [SpeciesIds.Herbivore] = CreateRules(),
+                },
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f,
+                maxPopulation: 20,
+                minPopulation: 2);
+            var reordered = new CellularSimData(
+                4,
+                3,
+                new Dictionary<SpeciesId, float>
+                {
+                    [SpeciesIds.Herbivore] = 0.2f,
+                    [SpeciesIds.Plant] = 0.4f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Herbivore] = CreateRules(),
+                    [SpeciesIds.Plant] = CreateRules(),
+                },
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f,
+                maxPopulation: 20,
+                minPopulation: 2);
+
+            Assert.That(first.Fingerprint, Is.EqualTo(reordered.Fingerprint));
+            Assert.That(first.Fingerprint, Has.Length.EqualTo(64));
+            Assert.That(first.WithStartingProbability(SpeciesIds.Plant, 0.5f).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+        }
+
+        [Test]
+        public void DataBackedRunnerAndResultsCarryRulesetFingerprint()
+        {
+            var data = new CellularSimData(
+                2,
+                1,
+                new Dictionary<SpeciesId, float>(),
+                new Dictionary<SpeciesId, SpeciesRules>(),
+                runDurationSeconds: 1f,
+                stepInterval: 0.5f);
+            var run = new SimulationRunState(
+                new Grid<SpeciesCell>(2, 1),
+                SpeciesIds.Herbivore,
+                seed: 10,
+                durationSeconds: data.RunDurationSeconds);
+            var runner = new SpeciesSimulationRunner(run, data);
+
+            Assert.That(run.RulesetFingerprint, Is.EqualTo(data.Fingerprint));
+            Assert.That(SimulationRunResults.Create(run).RulesetFingerprint,
+                Is.EqualTo(data.Fingerprint));
+        }
+
+        [Test]
         public void RunnerAcceptsCellularSimDataSnapshot()
         {
             var data = new CellularSimData(

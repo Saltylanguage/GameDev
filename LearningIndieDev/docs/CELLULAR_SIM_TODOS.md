@@ -16,9 +16,11 @@ larger plan. Each item has a trigger that should bring it back into scope.
 
 ## Roadmap priority (2026-08-11)
 
-1. **TODO-CS-02 - Generalize population metrics**
-2. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
-3. **TODO-CS-07** is the lowest-priority item for now.
+1. **TODO-CS-04 and TODO-CS-06** remain later roadmap work and require a
+   concrete mechanic or authoring workflow to activate them.
+2. **TODO-CS-07** is the lowest-priority item for now.
+
+TODO-CS-01, TODO-CS-02, TODO-CS-03, and TODO-CS-05 are complete.
 
 The remaining items should be handled in that order unless a concrete use case
 changes the dependency or an experiment provides a stronger trigger.
@@ -83,14 +85,17 @@ changes the dependency or an experiment provides a stronger trigger.
 
 ### TODO-CS-05 - Ruleset fingerprints and comparison metadata (Later)
 
-- [ ] Record a stable ruleset/data fingerprint alongside each run's seed and
+- [x] Record a stable ruleset/data fingerprint alongside each run's seed and
   results.
 - Trigger: we begin systematic A/B experiments, replay bug reports, or saved
   run comparisons.
-- Reason deferred: first establish the data shape and deterministic snapshot
-  behavior; fingerprinting an unstable schema creates misleading identifiers.
-- Required follow-up: use canonical serialized data or an explicitly versioned
-  hash, not process-dependent object hash codes.
+- Implementation: `CellularSimData.Fingerprint` uses the versioned
+  `cellular-sim-data-v1` canonical representation and SHA-256. Dictionary
+  entries are sorted by stable IDs; numeric values use invariant round-trip
+  formatting; patterns preserve offset order. Data-backed runs carry the
+  fingerprint into `SimulationRunState` and `SimulationRunResult`.
+- Validation: fingerprints are stable across dictionary insertion order and
+  change when scenario data changes. Runtime and test assemblies build cleanly.
 
 ### TODO-CS-06 - Data asset/editor authoring (Later)
 
@@ -105,12 +110,14 @@ changes the dependency or an experiment provides a stronger trigger.
 
 ### TODO-CS-07 - Legacy prototype cleanup (Lowest priority)
 
-- [ ] Audit and, where proven unused, remove or further isolate earlier Island
+- [x] Audit and, where proven unused, remove or further isolate earlier Island
   Survivor, cave, and Life prototype paths.
 - Trigger: a dependency/scene/build-settings audit confirms a candidate has no
   active references.
-- Reason deferred: Unity scene references, `.meta` GUIDs, and retained prototype
-  scenes make blind deletion unsafe.
+- Result: no safe deletion candidate was found. The Island Survivor and cellular
+  prototype scenes are enabled and covered by Play Mode tests; cave and Life
+  domain code is covered by runtime tests. The audit is recorded in
+  [`LEGACY_PROTOTYPE_AUDIT.md`](LEGACY_PROTOTYPE_AUDIT.md).
 - Required follow-up: delete in isolated commits and validate both retained
   prototype scenes.
 

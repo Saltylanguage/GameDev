@@ -49,6 +49,7 @@ namespace SaltyGame
             rules = simulationData.SpeciesRules;
             stepSeconds = simulationData.StepInterval;
             maxPopulation = simulationData.MaxPopulation;
+            Run.SetRulesetFingerprint(simulationData.Fingerprint);
         }
 
         public SimulationRunState Run { get; }

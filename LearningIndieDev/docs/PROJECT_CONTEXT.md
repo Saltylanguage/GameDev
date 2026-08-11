@@ -66,9 +66,13 @@ design questions. Do not silently settle them in foundational grid code.
   registry owned by `CellularSimData`. `SpeciesCell` keeps terrain identity and
   occupant identity separate, with passability, movement cost, presentation
   color, and resource metadata available to the simulation.
-- Current implementation priority is now: generalize population metrics.
-  Custom rule logic, ruleset fingerprints, and editor/data-asset authoring are
-  later work; legacy prototype cleanup is lowest priority for now.
+- Population snapshots now use read-only `SpeciesId`-keyed metrics while
+  preserving compatibility accessors for the original three species.
+- `CellularSimData` now produces a versioned, deterministic SHA-256 fingerprint;
+  data-backed runs and results carry it for A/B comparison and replay metadata.
+- Remaining architecture work is custom rule logic and editor/data-asset
+  authoring when concrete use cases activate them; legacy prototype cleanup is
+  lowest priority for now.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case
