@@ -24,7 +24,8 @@ namespace SaltyGame
             float startingFoodReserve = 0f,
             float seedDropChance = 0f,
             int energyValue = 0,
-            int metabolism = 1)
+            int metabolism = 1,
+            SpeciesAwarenessRules awareness = null)
         {
             if (movementSpeed < 0f)
             {
@@ -111,6 +112,7 @@ namespace SaltyGame
             SeedDropChance = seedDropChance;
             EnergyValue = energyValue;
             Metabolism = metabolism;
+            Awareness = awareness ?? SpeciesAwarenessRules.None;
         }
 
         public float MovementSpeed { get; }
@@ -138,5 +140,6 @@ namespace SaltyGame
         public float SeedDropChance { get; }
         public int EnergyValue { get; }
         public int Metabolism { get; }
+        public SpeciesAwarenessRules Awareness { get; }
     }
 }

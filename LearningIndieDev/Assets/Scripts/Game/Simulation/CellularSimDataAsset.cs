@@ -99,6 +99,9 @@ namespace SaltyGame
             [SerializeField, Range(0f, 1f)] internal float seedDropChance;
             [SerializeField, Min(0)] internal int energyValue;
             [SerializeField] internal int metabolism = 1;
+            [Header("Awareness")]
+            [SerializeField, Min(0)] internal int visionRange;
+            [SerializeField, Min(0)] internal int intelligence;
             [Header("Alpha Offspring")]
             [SerializeField, Range(0f, 1f)] internal float alphaChance;
             [SerializeField, Min(0)] internal int alphaHealthBonus;
@@ -126,7 +129,8 @@ namespace SaltyGame
                     startingFoodReserve,
                     seedDropChance,
                     energyValue,
-                    metabolism);
+                    metabolism,
+                    new SpeciesAwarenessRules(visionRange, intelligence));
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -155,6 +159,8 @@ namespace SaltyGame
                     seedDropChance = rules.SeedDropChance,
                     energyValue = rules.EnergyValue,
                     metabolism = rules.Metabolism,
+                    visionRange = rules.Awareness.VisionRange,
+                    intelligence = rules.Awareness.Intelligence,
                 };
             }
 

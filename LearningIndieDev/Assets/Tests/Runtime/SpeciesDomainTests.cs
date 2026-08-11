@@ -398,6 +398,86 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void VisionFindsFoodWithinRangeAndNavigationRoutesAroundBlockedTerrain()
+        {
+            var rock = new TerrainDefinition(
+                new TerrainId("rock"),
+                isPassable: false,
+                movementCost: 1f,
+                providesResource: false,
+                presentationColor: Color.gray);
+            var cells = new Grid<SpeciesCell>(3, 2);
+            cells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore));
+            cells.SetCell(1, 0, SpeciesCell.FromTerrain(rock));
+            cells.SetCell(2, 0, SpeciesCell.Grass(2f));
+            var rules = new SpeciesRules(
+                movementSpeed: 1f,
+                movementPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                dietTarget: SpeciesIds.Plant,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                awareness: new SpeciesAwarenessRules(visionRange: 2));
+
+            Assert.That(SpeciesPerception.TryFindFoodTarget(
+                cells,
+                0,
+                0,
+                rules,
+                new System.Random(5),
+                out var target), Is.True);
+            Assert.That(target.Location, Is.EqualTo(new Vector2Int(2, 0)));
+            Assert.That(SpeciesNavigation.TryFindNextStep(
+                cells,
+                new Vector2Int(0, 0),
+                target.Location,
+                rules.MovementPattern,
+                rules.DietPattern,
+                new System.Random(5),
+                out var nextStep), Is.True);
+            Assert.That(nextStep, Is.EqualTo(new Vector2Int(0, 1)));
+        }
+
+        [Test]
+        public void IntelligencePrioritizesAVisibleMateOverVisibleFoodWhenReadyToReproduce()
+        {
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(1, 0, SpeciesCell.Grass(2f));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 5));
+            source.SetCell(4, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 5));
+            var cardinal = SpeciesRuleDefaults.CreateCardinalPattern();
+            var herbivoreRules = new SpeciesRules(
+                movementSpeed: 1f,
+                movementPattern: cardinal,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: cardinal,
+                dietTarget: SpeciesIds.Plant,
+                reproductionPattern: new GridPattern(new[] { Vector2Int.right }),
+                reproductionNeighborCount: 1,
+                reproductionChance: 1f,
+                reproductionFoodRequired: 1,
+                startingEnergy: 1,
+                metabolism: 0,
+                awareness: new SpeciesAwarenessRules(visionRange: 3, intelligence: 1));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = herbivoreRules,
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(3, 0).SpeciesId, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(next.GetCell(2, 0).IsCreature, Is.False);
+        }
+
+        [Test]
         public void PlantMetabolismAddsEnergyWithoutOccupyingTheTile()
         {
             var source = new Grid<SpeciesCell>(1, 1);
@@ -829,6 +909,10 @@ namespace SaltyGame.Tests
             Assert.That(first.Fingerprint, Has.Length.EqualTo(64));
             Assert.That(first.WithStartingProbability(SpeciesIds.Plant, 0.5f).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(new SpeciesAwarenessRules(visionRange: 1, intelligence: 1))).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
         }
 
         [Test]
@@ -913,7 +997,7 @@ namespace SaltyGame.Tests
             }
         }
 
-        static SpeciesRules CreateRules()
+        static SpeciesRules CreateRules(SpeciesAwarenessRules awareness = null)
         {
             return new SpeciesRules(
                 movementSpeed: 1f,
@@ -925,7 +1009,8 @@ namespace SaltyGame.Tests
                 dietPattern: EmptyPattern,
                 dietTarget: null,
                 reproductionPattern: EmptyPattern,
-                reproductionNeighborCount: 0);
+                reproductionNeighborCount: 0,
+                awareness: awareness);
         }
     }
 }

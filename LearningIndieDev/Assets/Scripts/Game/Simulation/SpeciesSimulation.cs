@@ -134,7 +134,7 @@ namespace SaltyGame
                         var targetY = y + offset.y;
                         if (!source.TryGetCell(targetX, targetY, out var target)
                             || !attackerRules.DietTargetId.HasValue
-                            || !IsDietTarget(target, attackerRules.DietTargetId.Value))
+                            || !SpeciesPerception.IsDietTarget(target, attackerRules.DietTargetId.Value))
                         {
                             continue;
                         }
@@ -253,6 +253,22 @@ namespace SaltyGame
                     continue;
                 }
 
+                if (TryResolveVisionMovement(
+                    source,
+                    next,
+                    x,
+                    y,
+                    sourceCell,
+                    currentCell,
+                    speciesRules,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random))
+                {
+                    continue;
+                }
+
                 if (speciesRules.DietTargetId.HasValue
                     && currentCell.FoodReserve <= sourceCell.FoodReserve
                     && TryMove(
@@ -353,7 +369,7 @@ namespace SaltyGame
                 }
 
                 var isDietTarget = speciesRules.DietTargetId.HasValue
-                    && IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value);
+                    && SpeciesPerception.IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value);
                 if (requireDietTarget && !isDietTarget)
                 {
                     continue;
@@ -397,16 +413,194 @@ namespace SaltyGame
                 return false;
             }
 
-            var bestTarget = source.GetCell(bestX, bestY);
-            var currentTarget = next.GetCell(bestX, bestY);
-            var bestIsDietTarget = speciesRules.DietTargetId.HasValue
-                && IsDietTarget(bestTarget, speciesRules.DietTargetId.Value)
-                && !bestTarget.IsCreature;
-            var bestIndex = GetIndex(source, bestX, bestY);
+            return TryMoveTo(
+                source,
+                next,
+                x,
+                y,
+                cell,
+                speciesRules,
+                bestX,
+                bestY,
+                plantEnergyValue,
+                moved,
+                claimed);
+        }
 
-            if (bestIsDietTarget && bestTarget.SpeciesId == SpeciesIds.Plant)
+        static bool TryResolveVisionMovement(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell sourceCell,
+            SpeciesCell currentCell,
+            SpeciesRules speciesRules,
+            int plantEnergyValue,
+            bool[] moved,
+            bool[] claimed,
+            System.Random random)
+        {
+            if (speciesRules.Awareness.VisionRange <= 0)
             {
-                if (!TryFeedOnPlant(next, bestX, bestY, x, y, cell, speciesRules, plantEnergyValue))
+                return false;
+            }
+
+            var foodTarget = default(SpeciesPerceivedTarget);
+            var hasFood = speciesRules.DietTargetId.HasValue
+                && currentCell.FoodReserve <= sourceCell.FoodReserve
+                && SpeciesPerception.TryFindFoodTarget(source, x, y, speciesRules, random, out foodTarget);
+            var canSeekMate = speciesRules.ReproductionChance > 0f
+                && speciesRules.ReproductionNeighborCount > 0
+                && GetReproductionEnergy(currentCell) > speciesRules.ReproductionFoodRequired
+                && CountPatternSpeciesNeighbors(
+                    source,
+                    x,
+                    y,
+                    currentCell.SpeciesId,
+                    speciesRules.ReproductionPattern,
+                    excludeX: -1,
+                    excludeY: -1) < speciesRules.ReproductionNeighborCount;
+            var mateTarget = default(SpeciesPerceivedTarget);
+            var hasMate = canSeekMate
+                && SpeciesPerception.TryFindMateTarget(
+                    source,
+                    x,
+                    y,
+                    currentCell.SpeciesId,
+                    speciesRules,
+                    random,
+                    out mateTarget);
+            var prioritizeMate = hasMate
+                && speciesRules.Awareness.Intelligence > 0
+                && GetReproductionEnergy(currentCell) > speciesRules.ReproductionFoodRequired;
+
+            if (prioritizeMate
+                && TryMoveTowardPerceivedTarget(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    mateTarget,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random))
+            {
+                return true;
+            }
+
+            if (hasFood
+                && TryMoveTowardPerceivedTarget(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    foodTarget,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random))
+            {
+                return true;
+            }
+
+            return !prioritizeMate
+                && hasMate
+                && TryMoveTowardPerceivedTarget(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    mateTarget,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random);
+        }
+
+        static bool TryMoveTowardPerceivedTarget(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules speciesRules,
+            SpeciesPerceivedTarget target,
+            int plantEnergyValue,
+            bool[] moved,
+            bool[] claimed,
+            System.Random random)
+        {
+            var interactionPattern = target.Intent == SpeciesMovementIntent.Mate
+                ? speciesRules.ReproductionPattern
+                : target.Cell.IsCreature
+                    ? speciesRules.AttackPattern
+                    : speciesRules.DietPattern;
+            if (!SpeciesNavigation.TryFindNextStep(
+                source,
+                new Vector2Int(x, y),
+                target.Location,
+                speciesRules.MovementPattern,
+                interactionPattern,
+                random,
+                out var nextStep))
+            {
+                return false;
+            }
+
+            return TryMoveTo(
+                source,
+                next,
+                x,
+                y,
+                cell,
+                speciesRules,
+                nextStep.x,
+                nextStep.y,
+                plantEnergyValue,
+                moved,
+                claimed);
+        }
+
+        static bool TryMoveTo(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules speciesRules,
+            int targetX,
+            int targetY,
+            int plantEnergyValue,
+            bool[] moved,
+            bool[] claimed)
+        {
+            if (!source.IsInBounds(targetX, targetY))
+            {
+                return false;
+            }
+
+            var targetIndex = GetIndex(source, targetX, targetY);
+            var sourceTarget = source.GetCell(targetX, targetY);
+            var currentTarget = next.GetCell(targetX, targetY);
+            if (claimed[targetIndex]
+                || !sourceTarget.IsPassable
+                || sourceTarget.IsCreature
+                || currentTarget.IsCreature)
+            {
+                return false;
+            }
+
+            if (speciesRules.DietTargetId.HasValue
+                && SpeciesPerception.IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value))
+            {
+                if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue))
                 {
                     return false;
                 }
@@ -415,8 +609,15 @@ namespace SaltyGame
                 return true;
             }
 
+            var crowding = CountNearbySpecies(source, targetX, targetY, cell.SpeciesId, x, y);
+            if (speciesRules.MaxReproductionGroupSize > 0
+                && crowding + 1 > speciesRules.MaxReproductionGroupSize)
+            {
+                return false;
+            }
+
             next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
-            next.SetCell(bestX, bestY, currentTarget.WithEntity(
+            next.SetCell(targetX, targetY, currentTarget.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
                 cell.Energy,
@@ -425,8 +626,8 @@ namespace SaltyGame
                 cell.FoodReserve,
                 cell.IsAlpha));
             moved[GetIndex(source, x, y)] = true;
-            moved[bestIndex] = true;
-            claimed[bestIndex] = true;
+            moved[targetIndex] = true;
+            claimed[targetIndex] = true;
             return true;
         }
 
@@ -833,13 +1034,6 @@ namespace SaltyGame
                         remainingEnergy)
                     : plant.WithoutEntity());
             return true;
-        }
-
-        static bool IsDietTarget(SpeciesCell cell, SpeciesId target)
-        {
-            return target == SpeciesIds.Plant
-                ? cell.IsPlantResource && !cell.IsCreature
-                : cell.IsCreature && cell.SpeciesId == target;
         }
 
         static bool IsSameSpecies(SpeciesCell cell, SpeciesId species)

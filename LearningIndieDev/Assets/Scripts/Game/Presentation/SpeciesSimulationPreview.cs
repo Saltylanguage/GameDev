@@ -67,6 +67,10 @@ namespace SaltyGame
                 EnergyValueText = rules.EnergyValue.ToString(CultureInfo.InvariantCulture);
                 Metabolism = rules.Metabolism;
                 MetabolismText = rules.Metabolism.ToString(CultureInfo.InvariantCulture);
+                VisionRange = rules.Awareness.VisionRange;
+                VisionRangeText = rules.Awareness.VisionRange.ToString(CultureInfo.InvariantCulture);
+                Intelligence = rules.Awareness.Intelligence;
+                IntelligenceText = rules.Awareness.Intelligence.ToString(CultureInfo.InvariantCulture);
                 ReproductionEnabled = rules.ReproductionChance > 0f;
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
@@ -109,6 +113,10 @@ namespace SaltyGame
             public string EnergyValueText;
             public int Metabolism;
             public string MetabolismText;
+            public int VisionRange;
+            public string VisionRangeText;
+            public int Intelligence;
+            public string IntelligenceText;
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
@@ -404,6 +412,8 @@ namespace SaltyGame
             y = DrawIntField(left, y, width, "Maximum group size", ref draft.MaxReproductionGroupSizeText, ref draft.MaxReproductionGroupSize, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Starting energy", ref draft.StartingEnergyText, ref draft.StartingEnergy, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Energy value", ref draft.EnergyValueText, ref draft.EnergyValue, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Vision range", ref draft.VisionRangeText, ref draft.VisionRange, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Intelligence", ref draft.IntelligenceText, ref draft.Intelligence, labelStyle, fieldStyle);
             draft.WiltEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.WiltEnabled, "Wilt enabled", labelStyle);
             y += 48f;
             y = DrawFloatField(left, y, width, "Wilt chance", ref draft.WiltChanceText, ref draft.WiltChance, labelStyle, fieldStyle, 0f, 1f);
@@ -1005,7 +1015,8 @@ namespace SaltyGame
                     startingFoodReserve: draft.StartingFoodReserve,
                     seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f,
                     energyValue: draft.EnergyValue,
-                    metabolism: draft.Metabolism);
+                    metabolism: draft.Metabolism,
+                    awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence));
             }
 
             return result;

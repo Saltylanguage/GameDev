@@ -20,6 +20,9 @@ focused experiment.
 
 - Alpha offspring unlock.
 - Improved sight or a larger `VisionPattern`.
+- Scent as a separate, periodically updated field that creatures query rather
+  than a delayed version of sight. Revisit only as a focused diffusion/
+  information-persistence experiment.
 - Better food efficiency or slower starvation.
 - Stronger crowding tolerance / larger sustainable pack size.
 - Seed dispersal or improved plant propagation.
@@ -43,7 +46,7 @@ focused experiment.
 - Are alpha bonuses inherited by descendants or only applied to the qualifying
   offspring?
 - Should alpha cells be unique, limited per pack, or allowed to compete?
-- Should “sight” be a radius, an arbitrary pattern, or a line-of-sight pattern
+- Should sight be a radius, an arbitrary pattern, or a line-of-sight pattern
   that can be upgraded independently?
 
 ## Experiment reminders

@@ -78,6 +78,22 @@ design questions. Do not silently settle them in foundational grid code.
   serialized scenario values into a fresh immutable `CellularSimData` at run
   start and is never mutable run state. It currently uses bare/grass terrain
   defaults; the existing runtime settings UI remains the fastest experiment path.
+- Species awareness is immutable `SpeciesRules` data: vision is currently a
+  Moore-range `GridPattern`, while intelligence is an initial priority tier.
+  Perception reads a source grid, `SpeciesNavigation` uses seeded breadth-first
+  search over the existing movement pattern, and the simulation applies the
+  chosen one-cell move through its normal claim and crowding rules. This
+  preserves deterministic source/next-grid stepping without embedding
+  pathfinding in `Grid<T>`.
+- The current priority policy is deliberately small: hungry creatures seek
+  visible food; intelligence tier one or higher may prefer a viable visible mate
+  after the reproduction energy threshold is met. It is a prototype policy, not
+  a general AI system. Scent remains deferred because it needs a separate
+  stateful field/diffusion model rather than a delayed sight check.
+- If a future cross-system message mechanism becomes necessary, restrict it to
+  discrete output events after a completed tick. A global bus must not mutate
+  simulation state mid-tick; direct calls remain preferable for a single local
+  consumer.
 - Future custom rule work should stay focused on a concrete mechanic such as
   sight; editor work should add terrain presets or preview asset selection only
   when that authoring workflow is needed.

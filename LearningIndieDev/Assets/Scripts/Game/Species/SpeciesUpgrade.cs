@@ -84,7 +84,8 @@ namespace SaltyGame
                 rules.StartingFoodReserve,
                 rules.SeedDropChance,
                 rules.EnergyValue,
-                rules.Metabolism);
+                rules.Metabolism,
+                rules.Awareness);
         }
     }
 }

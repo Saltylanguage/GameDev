@@ -25,6 +25,22 @@ TODO-CS-01, TODO-CS-02, TODO-CS-03, and TODO-CS-05 are complete.
 The remaining items should be handled in that order unless a concrete use case
 changes the dependency or an experiment provides a stronger trigger.
 
+## Current vision and navigation experiment (2026-08-11)
+
+- [x] Add bounded sight as immutable species-rule data: a non-negative vision
+  range and an initial intelligence tier.
+- [x] Use a reusable Moore-range pattern for sight, read perception exclusively
+  from the movement pass's source grid, and use seeded breadth-first search to
+  choose a legal one-step route toward visible food or a viable mate.
+- [x] Apply the initial priority rule: hungry creatures seek food; a creature
+  with intelligence at least one may prioritize a visible mate once it exceeds
+  its reproduction-food requirement.
+- [ ] Add scent only as a separate, stateful field/diffusion experiment. It must
+  not be treated as delayed vision.
+- [ ] Add simulation event output only when two concrete consumers need the
+  same discrete event. Such output must be observed after a tick, never mutate
+  the simulation through a global bus during the tick.
+
 ## Completed foundational work
 
 ### TODO-CS-01 - Replace enum species identity (Priority 1)
@@ -95,7 +111,7 @@ changes the dependency or an experiment provides a stronger trigger.
 - Trigger: we begin systematic A/B experiments, replay bug reports, or saved
   run comparisons.
 - Implementation: `CellularSimData.Fingerprint` uses the versioned
-  `cellular-sim-data-v2` canonical representation and SHA-256. Dictionary
+  `cellular-sim-data-v3` canonical representation and SHA-256. Dictionary
   entries are sorted by stable IDs; numeric values use invariant round-trip
   formatting; patterns preserve offset order. Data-backed runs carry the
   fingerprint into `SimulationRunState` and `SimulationRunResult`.
