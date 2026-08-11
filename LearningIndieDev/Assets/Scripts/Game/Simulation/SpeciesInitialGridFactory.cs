@@ -73,7 +73,10 @@ namespace SaltyGame
         {
             var rules = data.SpeciesRules[species];
             return species == SpeciesIds.Plant
-                ? SpeciesCell.Grass(rules.StartingFoodReserve)
+                ? SpeciesCell.FromTerrain(
+                    data.TerrainDefinitions[TerrainIds.Grass],
+                    rules.StartingFoodReserve,
+                    SpeciesIds.Plant)
                 : new SpeciesCell(
                     species,
                     energy: rules.StartingEnergy,

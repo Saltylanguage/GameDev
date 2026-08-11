@@ -15,6 +15,8 @@ namespace SaltyGame.Tests
             var cell = SpeciesCell.Empty;
 
             Assert.That(cell.IsOccupied, Is.False);
+            Assert.That(cell.TerrainId, Is.EqualTo(TerrainIds.Bare));
+            Assert.That(cell.IsPassable, Is.True);
         }
 
         [Test]
@@ -25,6 +27,52 @@ namespace SaltyGame.Tests
             Assert.That(grass.IsOccupied, Is.False);
             Assert.That(grass.IsPlantResource, Is.True);
             Assert.That(grass.TerrainEnergy, Is.EqualTo(2f));
+        }
+
+        [Test]
+        public void TerrainDefinitionsSupportAFutureSlowerPassableTerrain()
+        {
+            var sand = new TerrainDefinition(
+                new TerrainId("sand"),
+                isPassable: true,
+                movementCost: 1.5f,
+                providesResource: false,
+                presentationColor: Color.yellow);
+            var cell = SpeciesCell.FromTerrain(sand);
+
+            Assert.That(cell.TerrainId, Is.EqualTo(sand.Id));
+            Assert.That(cell.IsPassable, Is.True);
+            Assert.That(cell.MovementCost, Is.EqualTo(1.5f));
+            Assert.That(cell.IsPlantResource, Is.False);
+        }
+
+        [Test]
+        public void CellularSimDataRetainsCustomTerrainDefinitions()
+        {
+            var definitions = new Dictionary<TerrainId, TerrainDefinition>();
+            foreach (var definition in TerrainDefaults.Create())
+            {
+                definitions.Add(definition.Key, definition.Value);
+            }
+
+            var sand = new TerrainDefinition(
+                new TerrainId("sand"),
+                isPassable: true,
+                movementCost: 1.5f,
+                providesResource: false,
+                presentationColor: Color.yellow);
+            definitions.Add(sand.Id, sand);
+            var data = new CellularSimData(
+                2,
+                2,
+                new Dictionary<SpeciesId, float>(),
+                new Dictionary<SpeciesId, SpeciesRules>(),
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f,
+                terrainDefinitions: definitions);
+
+            Assert.That(data.TerrainDefinitions.ContainsKey(new TerrainId("sand")), Is.True);
+            Assert.That(data.TerrainDefinitions[TerrainIds.Grass].ProvidesResource, Is.True);
         }
 
         [Test]

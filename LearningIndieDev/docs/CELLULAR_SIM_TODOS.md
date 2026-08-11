@@ -16,10 +16,9 @@ larger plan. Each item has a trigger that should bring it back into scope.
 
 ## Roadmap priority (2026-08-11)
 
-1. **TODO-CS-03 - Data-driven terrain registry**
-2. **TODO-CS-02 - Generalize population metrics**
-3. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
-4. **TODO-CS-07** is the lowest-priority item for now.
+1. **TODO-CS-02 - Generalize population metrics**
+2. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
+3. **TODO-CS-07** is the lowest-priority item for now.
 
 The remaining items should be handled in that order unless a concrete use case
 changes the dependency or an experiment provides a stronger trigger.
@@ -53,16 +52,17 @@ changes the dependency or an experiment provides a stronger trigger.
 
 ### TODO-CS-03 - Data-driven terrain registry (Priority 2)
 
-- [ ] Move beyond the current bare/grass assumptions to a terrain definition
+- [x] Move beyond the current bare/grass assumptions to a terrain definition
   registry with stable IDs, color/presentation data, passability, resource
   values, and regrowth settings.
-- Trigger: a second meaningful terrain resource or terrain transformation is
-  needed (for example water, fertile soil, fire, or ice).
-- Reason deferred: current grass and dirt behavior is small and understood;
-  adding a registry now would widen `SpeciesCell` before another terrain proves
-  the need.
-- Required follow-up: define what terrain owns versus what an entity occupies,
-  then migrate rendering, feeding, movement, and snapshots together.
+- Implementation: `TerrainId` and `TerrainDefinition` now live in
+  `CellularSimData`; `SpeciesCell` stores terrain identity separately from its
+  occupant and exposes passability, movement cost, and terrain-resource state.
+  Existing Bare and Grass behavior is preserved, and movement honors terrain
+  passability.
+- Boundary: Sand is not added as gameplay content yet. Its movement-cost shape
+  is supported for a later definition, but movement-cost slowing is not active
+  until a real terrain needs it.
 
 ### TODO-CS-04 - Extensible custom rule logic (Later)
 

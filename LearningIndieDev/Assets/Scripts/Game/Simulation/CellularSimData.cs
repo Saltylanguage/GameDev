@@ -8,6 +8,7 @@ namespace SaltyGame
     {
         readonly IReadOnlyDictionary<SpeciesId, float> startingProbabilities;
         readonly IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
+        readonly IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions;
 
         public CellularSimData(
             int width,
@@ -17,7 +18,8 @@ namespace SaltyGame
             float runDurationSeconds,
             float stepInterval,
             int maxPopulation = 0,
-            int minPopulation = 0)
+            int minPopulation = 0,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null)
         {
             if (width <= 0)
             {
@@ -111,10 +113,44 @@ namespace SaltyGame
                 }
             }
 
+            var configuredTerrainDefinitions = terrainDefinitions ?? TerrainDefaults.Create();
+            var copiedTerrainDefinitions = new Dictionary<TerrainId, TerrainDefinition>(
+                configuredTerrainDefinitions.Count);
+            foreach (var entry in configuredTerrainDefinitions)
+            {
+                if (!entry.Key.IsValid)
+                {
+                    throw new ArgumentException("Terrain definitions cannot use an empty terrain id.", nameof(terrainDefinitions));
+                }
+
+                if (entry.Value == null)
+                {
+                    throw new ArgumentException("Terrain definitions cannot contain null values.", nameof(terrainDefinitions));
+                }
+
+                if (entry.Key != entry.Value.Id)
+                {
+                    throw new ArgumentException(
+                        $"Terrain definition key {entry.Key} does not match definition id {entry.Value.Id}.",
+                        nameof(terrainDefinitions));
+                }
+
+                copiedTerrainDefinitions.Add(entry.Key, entry.Value);
+            }
+
+            if (!copiedTerrainDefinitions.ContainsKey(TerrainIds.Bare)
+                || !copiedTerrainDefinitions.ContainsKey(TerrainIds.Grass))
+            {
+                throw new ArgumentException(
+                    "Terrain definitions must include the bare and grass terrain ids.",
+                    nameof(terrainDefinitions));
+            }
+
             Width = width;
             Height = height;
             this.startingProbabilities = new ReadOnlyDictionary<SpeciesId, float>(copiedProbabilities);
             this.speciesRules = new ReadOnlyDictionary<SpeciesId, SpeciesRules>(copiedRules);
+            this.terrainDefinitions = new ReadOnlyDictionary<TerrainId, TerrainDefinition>(copiedTerrainDefinitions);
             RunDurationSeconds = runDurationSeconds;
             StepInterval = stepInterval;
             MaxPopulation = maxPopulation;
@@ -130,7 +166,8 @@ namespace SaltyGame
             float runDurationSeconds,
             float stepInterval,
             int maxPopulation = 0,
-            int minPopulation = 0)
+            int minPopulation = 0,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null)
             : this(
                 width,
                 height,
@@ -139,7 +176,8 @@ namespace SaltyGame
                 runDurationSeconds,
                 stepInterval,
                 maxPopulation,
-                minPopulation)
+                minPopulation,
+                terrainDefinitions)
         {
         }
 
@@ -152,7 +190,8 @@ namespace SaltyGame
             float runDurationSeconds,
             float stepInterval,
             int maxPopulation = 0,
-            int minPopulation = 0)
+            int minPopulation = 0,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null)
             : this(
                 width,
                 height,
@@ -161,7 +200,8 @@ namespace SaltyGame
                 runDurationSeconds,
                 stepInterval,
                 maxPopulation,
-                minPopulation)
+                minPopulation,
+                terrainDefinitions)
         {
         }
 
@@ -173,6 +213,7 @@ namespace SaltyGame
         public int MinPopulation { get; }
         public IReadOnlyDictionary<SpeciesId, float> StartingProbabilities => startingProbabilities;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> SpeciesRules => speciesRules;
+        public IReadOnlyDictionary<TerrainId, TerrainDefinition> TerrainDefinitions => terrainDefinitions;
 
         public bool TryGetStartingProbability(SpeciesId species, out float probability)
         {
@@ -251,7 +292,8 @@ namespace SaltyGame
                 RunDurationSeconds,
                 StepInterval,
                 MaxPopulation,
-                MinPopulation);
+                MinPopulation,
+                terrainDefinitions);
         }
 
         static Dictionary<SpeciesId, TValue> Copy<TValue>(

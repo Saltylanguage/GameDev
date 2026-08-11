@@ -16,14 +16,20 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(simulationData));
             }
 
-            return Step(source, simulationData.SpeciesRules, seed, simulationData.MaxPopulation);
+            return Step(
+                source,
+                simulationData.SpeciesRules,
+                seed,
+                simulationData.MaxPopulation,
+                simulationData.TerrainDefinitions);
         }
 
         public static Grid<SpeciesCell> Step(
             Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             int seed,
-            int maxPopulation = 0)
+            int maxPopulation = 0,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null)
         {
             if (source == null)
             {
@@ -35,6 +41,12 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(rules));
             }
 
+            terrainDefinitions ??= TerrainDefaults.Create();
+            if (!terrainDefinitions.ContainsKey(TerrainIds.Grass))
+            {
+                throw new ArgumentException("Terrain definitions must include the grass terrain id.", nameof(terrainDefinitions));
+            }
+
             var next = source.Copy();
             var random = new System.Random(seed);
             ResolveAttacks(source, next, rules, random);
@@ -42,9 +54,9 @@ namespace SaltyGame
             ResolveMetabolism(next, rules);
             ResolveStarvation(next, rules);
             ResolveCrowdingStress(next, rules);
-            ResolveSeedDrops(next, rules, random);
+            ResolveSeedDrops(next, rules, terrainDefinitions, random);
             ResolveWilt(next, rules, random);
-            ResolveReproduction(next, rules, random);
+            ResolveReproduction(next, rules, terrainDefinitions, random);
             ResolvePopulationLimit(next, maxPopulation, random);
             return next;
         }
@@ -333,6 +345,11 @@ namespace SaltyGame
                 }
 
                 var sourceTarget = source.GetCell(targetX, targetY);
+                if (!sourceTarget.IsPassable)
+                {
+                    continue;
+                }
+
                 var isDietTarget = speciesRules.DietTargetId.HasValue
                     && IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value);
                 if (requireDietTarget && !isDietTarget)
@@ -435,6 +452,7 @@ namespace SaltyGame
 
                 var targetIndex = GetIndex(source, targetX, targetY);
                 if (claimed[targetIndex]
+                    || !source.GetCell(targetX, targetY).IsPassable
                     || source.GetCell(targetX, targetY).IsCreature
                     || next.GetCell(targetX, targetY).IsCreature)
                 {
@@ -513,10 +531,10 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var grownEnergy = cell.IsGrass
+                    var grownEnergy = cell.IsTerrainResource
                         ? cell.TerrainEnergy - plantRules.Metabolism
                         : cell.FoodReserve - plantRules.Metabolism;
-                    next.SetCell(x, y, cell.IsGrass
+                    next.SetCell(x, y, cell.IsTerrainResource
                         ? cell.WithTerrainEnergy(grownEnergy)
                         : new SpeciesCell(
                             cell.SpeciesId,
@@ -594,6 +612,7 @@ namespace SaltyGame
         static void ResolveSeedDrops(
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
             System.Random random)
         {
             if (!rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
@@ -631,7 +650,10 @@ namespace SaltyGame
                             continue;
                         }
 
-                        next.SetCell(seedX, seedY, SpeciesCell.Grass(plantRules.StartingFoodReserve));
+                        next.SetCell(seedX, seedY, SpeciesCell.FromTerrain(
+                            terrainDefinitions[TerrainIds.Grass],
+                            plantRules.StartingFoodReserve,
+                            SpeciesIds.Plant));
                         break;
                     }
                 }
@@ -641,6 +663,7 @@ namespace SaltyGame
         static void ResolveReproduction(
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
             System.Random random)
         {
             var source = next.Copy();
@@ -710,7 +733,10 @@ namespace SaltyGame
                         if (random.NextDouble() <= speciesRules.ReproductionChance)
                         {
                             next.SetCell(childX, childY, parent.SpeciesId == SpeciesIds.Plant
-                                ? SpeciesCell.Grass(speciesRules.StartingFoodReserve)
+                                ? SpeciesCell.FromTerrain(
+                                    terrainDefinitions[TerrainIds.Grass],
+                                    speciesRules.StartingFoodReserve,
+                                    SpeciesIds.Plant)
                                 : new SpeciesCell(
                                     parent.SpeciesId,
                                     health: 1,
@@ -771,7 +797,7 @@ namespace SaltyGame
                 return false;
             }
 
-            var availableEnergy = plant.IsGrass ? plant.TerrainEnergy : plant.FoodReserve;
+            var availableEnergy = plant.IsTerrainResource ? plant.TerrainEnergy : plant.FoodReserve;
             if (availableEnergy <= 0f)
             {
                 return false;
@@ -780,7 +806,7 @@ namespace SaltyGame
             var consumedEnergy = Math.Min(1f, availableEnergy);
             next.SetCell(eaterX, eaterY, CreateFedCell(eater, eaterRules, energyValue, consumedEnergy));
             var remainingEnergy = availableEnergy - consumedEnergy;
-            next.SetCell(plantX, plantY, plant.IsGrass
+            next.SetCell(plantX, plantY, plant.IsTerrainResource
                 ? remainingEnergy > 0f
                     ? plant.WithTerrainEnergy(remainingEnergy)
                     : plant.WithoutPlantResource()
@@ -814,7 +840,7 @@ namespace SaltyGame
         {
             return cell.IsCreature
                 ? cell.Energy
-                : (int)(cell.IsGrass ? cell.TerrainEnergy : cell.FoodReserve);
+                : (int)(cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve);
         }
 
         static SpeciesCell ConsumeReproductionEnergy(SpeciesCell cell, int amount)
@@ -830,8 +856,8 @@ namespace SaltyGame
                     cell.FoodReserve);
             }
 
-            var remaining = Math.Max(0f, (cell.IsGrass ? cell.TerrainEnergy : cell.FoodReserve) - amount);
-            return cell.IsGrass
+            var remaining = Math.Max(0f, (cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve) - amount);
+            return cell.IsTerrainResource
                 ? cell.WithTerrainEnergy(remaining)
                 : new SpeciesCell(
                     cell.SpeciesId,

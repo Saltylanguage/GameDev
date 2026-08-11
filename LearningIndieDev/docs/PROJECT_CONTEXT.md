@@ -62,8 +62,11 @@ design questions. Do not silently settle them in foundational grid code.
 - `SpeciesId` is now the primary stable identity for species rules, cells,
   simulation, initialization, results, and preview settings. The old
   `SpeciesArchetype` enum remains only as an obsolete compatibility shim.
-- Current implementation priority is now: introduce a data-driven terrain
-  registry, then generalize population metrics.
+- `TerrainId` and `TerrainDefinition` now provide a small data-driven terrain
+  registry owned by `CellularSimData`. `SpeciesCell` keeps terrain identity and
+  occupant identity separate, with passability, movement cost, presentation
+  color, and resource metadata available to the simulation.
+- Current implementation priority is now: generalize population metrics.
   Custom rule logic, ruleset fingerprints, and editor/data-asset authoring are
   later work; legacy prototype cleanup is lowest priority for now.
 - Deferred generalization work and its triggers are tracked in
