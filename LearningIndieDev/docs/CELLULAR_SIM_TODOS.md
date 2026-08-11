@@ -16,26 +16,30 @@ larger plan. Each item has a trigger that should bring it back into scope.
 
 ## Roadmap priority (2026-08-11)
 
-1. **TODO-CS-01 - Replace enum species identity**
-2. **TODO-CS-03 - Data-driven terrain registry**
-3. **TODO-CS-02 - Generalize population metrics**
-4. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
-5. **TODO-CS-07** is the lowest-priority item for now.
+1. **TODO-CS-03 - Data-driven terrain registry**
+2. **TODO-CS-02 - Generalize population metrics**
+3. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
+4. **TODO-CS-07** is the lowest-priority item for now.
 
-The first three items should be handled in that order unless a concrete use
-case changes the dependency or an experiment provides a stronger trigger.
+The remaining items should be handled in that order unless a concrete use case
+changes the dependency or an experiment provides a stronger trigger.
 
-## Deferred until a concrete use case requires it
+## Completed foundational work
 
 ### TODO-CS-01 - Replace enum species identity (Priority 1)
 
-- [ ] Replace `SpeciesArchetype` with stable data-driven species IDs.
+- [x] Replace `SpeciesArchetype` with stable data-driven species IDs.
 - Trigger: the project needs to add or remove a species without changing and
   recompiling the enum and its `switch` statements.
-- Reason deferred: the current three species are code-defined and the enum is
-  the smallest safe representation while the rules are still changing.
-- Required follow-up: migrate species lookup, rendering, population metrics,
-  diet references, UI settings, and save/default data together.
+- Implementation: `SpeciesId` is now the primary identity for rules, cells,
+  simulation, initialization, results, and UI settings. `SpeciesArchetype`
+  remains only as an obsolete compatibility shim so existing callers can
+  migrate incrementally.
+- Boundary: population snapshots still expose the original three aggregate
+  counters; that is intentionally deferred to TODO-CS-02. Resource/terrain
+  semantics still special-case the plant ID until TODO-CS-03.
+
+## Deferred until a concrete use case requires it
 
 ### TODO-CS-02 - Generalize population metrics (Priority 3)
 

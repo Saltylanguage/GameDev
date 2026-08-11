@@ -11,7 +11,7 @@ namespace SaltyGame
     public readonly struct SpeciesCell
     {
         public SpeciesCell(
-            SpeciesArchetype species,
+            SpeciesId species,
             int health = 1,
             int energy = 0,
             int age = 0,
@@ -26,12 +26,13 @@ namespace SaltyGame
                 foodEaten,
                 foodReserve,
                 SpeciesTerrain.Bare,
-                terrainEnergy: 0f)
+                terrainEnergy: 0f,
+                isResourceSpecies: species == SpeciesIds.Plant)
         {
         }
 
         SpeciesCell(
-            SpeciesArchetype species,
+            SpeciesId species,
             bool isOccupied,
             int health,
             int energy,
@@ -39,7 +40,8 @@ namespace SaltyGame
             int foodEaten,
             float foodReserve,
             SpeciesTerrain terrain,
-            float terrainEnergy)
+            float terrainEnergy,
+            bool isResourceSpecies)
         {
             if (health < 0)
             {
@@ -72,7 +74,7 @@ namespace SaltyGame
             }
 
             IsOccupied = isOccupied;
-            Species = species;
+            SpeciesId = species;
             Health = health;
             Energy = energy;
             Age = age;
@@ -80,14 +82,22 @@ namespace SaltyGame
             FoodReserve = foodReserve;
             Terrain = terrain;
             TerrainEnergy = terrainEnergy;
+            this.isResourceSpecies = isResourceSpecies;
         }
+
+        readonly bool isResourceSpecies;
 
         public static SpeciesCell Empty => default;
 
         public static SpeciesCell Grass(float energy)
         {
+            return Grass(SpeciesIds.Plant, energy);
+        }
+
+        public static SpeciesCell Grass(SpeciesId resourceSpecies, float energy)
+        {
             return new SpeciesCell(
-                SpeciesArchetype.Plant,
+                resourceSpecies,
                 false,
                 0,
                 0,
@@ -95,15 +105,18 @@ namespace SaltyGame
                 0,
                 0f,
                 SpeciesTerrain.Grass,
-                energy);
+                energy,
+                isResourceSpecies: true);
         }
 
         public bool IsOccupied { get; }
-        public bool IsCreature => IsOccupied && Species != SpeciesArchetype.Plant;
+        public bool IsCreature => IsOccupied && !isResourceSpecies;
         public bool IsGrass => Terrain == SpeciesTerrain.Grass;
         public bool IsPlantResource => (Terrain == SpeciesTerrain.Grass && TerrainEnergy > 0f)
-            || (IsOccupied && Species == SpeciesArchetype.Plant);
-        public SpeciesArchetype Species { get; }
+            || (IsOccupied && isResourceSpecies);
+        public SpeciesId SpeciesId { get; }
+        [Obsolete("Use SpeciesId instead.")]
+        public SpeciesArchetype Species => SpeciesId.ToLegacyArchetype(SpeciesId);
         public SpeciesTerrain Terrain { get; }
         public float TerrainEnergy { get; }
         public int Health { get; }
@@ -113,7 +126,7 @@ namespace SaltyGame
         public float FoodReserve { get; }
 
         public SpeciesCell WithEntity(
-            SpeciesArchetype species,
+            SpeciesId species,
             int health,
             int energy,
             int age,
@@ -129,13 +142,14 @@ namespace SaltyGame
                 foodEaten,
                 foodReserve,
                 Terrain,
-                TerrainEnergy);
+                TerrainEnergy,
+                isResourceSpecies: species == SpeciesIds.Plant);
         }
 
         public SpeciesCell WithoutEntity()
         {
             return Terrain == SpeciesTerrain.Grass
-                ? Grass(TerrainEnergy)
+                ? Grass(SpeciesIds.Plant, TerrainEnergy)
                 : Empty;
         }
 
@@ -143,7 +157,7 @@ namespace SaltyGame
         {
             return IsCreature
                 ? new SpeciesCell(
-                    Species,
+                    SpeciesId,
                     Health,
                     Energy,
                     Age,
@@ -160,7 +174,7 @@ namespace SaltyGame
             }
 
             return new SpeciesCell(
-                Species,
+                SpeciesId,
                 IsOccupied,
                 Health,
                 Energy,
@@ -168,7 +182,8 @@ namespace SaltyGame
                 FoodEaten,
                 FoodReserve,
                 Terrain,
-                energy);
+                energy,
+                isResourceSpecies);
         }
     }
 }

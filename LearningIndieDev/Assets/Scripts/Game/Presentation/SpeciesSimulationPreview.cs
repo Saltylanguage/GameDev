@@ -52,7 +52,7 @@ namespace SaltyGame
                 BlockPattern = GetPatternPreset(rules.BlockPattern);
                 DietPattern = GetPatternPreset(rules.DietPattern);
                 ReproductionPattern = GetPatternPreset(rules.ReproductionPattern);
-                DietTarget = GetDietTargetOption(rules.DietTarget);
+                DietTarget = GetDietTargetOption(rules.DietTargetId);
                 ReproductionChance = rules.ReproductionChance;
                 ReproductionChanceText = FormatFloat(rules.ReproductionChance);
                 ReproductionNeighborCount = rules.ReproductionNeighborCount;
@@ -145,7 +145,7 @@ namespace SaltyGame
         [SerializeField, Min(1)] int height = 20;
         [SerializeField] int seed = 12345;
         [SerializeField] bool randomizeSeedOnStart = true;
-        [SerializeField] SpeciesArchetype playerSpecies = SpeciesArchetype.Herbivore;
+        [SerializeField] string playerSpeciesKey = "herbivore";
         [SerializeField, Range(0f, 1f)] float plantProbability = 0.4f;
         [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.16f;
         [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.04f;
@@ -169,14 +169,15 @@ namespace SaltyGame
             new SpeciesUpgrade("stronger-block", 5, SpeciesUpgradeType.BlockAmount, 1f),
         };
 
-        IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules;
+        SpeciesId playerSpecies;
+        IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         SpeciesProgression progression;
         SpeciesSimulationRunner runner;
         SimulationRunResult result;
         SpeciesUpgrade selectedUpgrade;
         SpeciesPreviewState previewState;
         string rewardMessage;
-        Dictionary<SpeciesArchetype, SpeciesRuleDraft> ruleDrafts;
+        Dictionary<SpeciesId, SpeciesRuleDraft> ruleDrafts;
         int selectedSettingsSpecies;
         Vector2 settingsScrollPosition;
         float tickTimer;
@@ -203,6 +204,9 @@ namespace SaltyGame
 
         void Awake()
         {
+            playerSpecies = new SpeciesId(string.IsNullOrWhiteSpace(playerSpeciesKey)
+                ? SpeciesIds.Herbivore.Value
+                : playerSpeciesKey);
             ruleDrafts = CreateRuleDrafts(SpeciesRuleDefaults.Create());
             LoadSavedSettings();
             ResetToStart();
@@ -287,7 +291,7 @@ namespace SaltyGame
             }
             else
             {
-                var draft = ruleDrafts[(SpeciesArchetype)(selectedSettingsSpecies - 1)];
+                var draft = ruleDrafts[GetSettingsSpecies(selectedSettingsSpecies)];
                 DrawSettingsLeftColumn(draft, 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
                 DrawSettingsRightColumn(draft, columnWidth + 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
             }
@@ -637,9 +641,9 @@ namespace SaltyGame
                 stepInterval = stepInterval,
                 maxPopulation = maxPopulation,
                 minPopulation = minPopulation,
-                plant = ruleDrafts[SpeciesArchetype.Plant],
-                herbivore = ruleDrafts[SpeciesArchetype.Herbivore],
-                carnivore = ruleDrafts[SpeciesArchetype.Carnivore],
+                plant = ruleDrafts[SpeciesIds.Plant],
+                herbivore = ruleDrafts[SpeciesIds.Herbivore],
+                carnivore = ruleDrafts[SpeciesIds.Carnivore],
             };
 
             PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
@@ -671,9 +675,9 @@ namespace SaltyGame
             stepInterval = Mathf.Max(0.01f, saved.stepInterval);
             maxPopulation = Mathf.Max(0, saved.maxPopulation);
             minPopulation = Mathf.Max(0, saved.minPopulation);
-            ruleDrafts[SpeciesArchetype.Plant] = saved.plant ?? ruleDrafts[SpeciesArchetype.Plant];
-            ruleDrafts[SpeciesArchetype.Herbivore] = saved.herbivore ?? ruleDrafts[SpeciesArchetype.Herbivore];
-            ruleDrafts[SpeciesArchetype.Carnivore] = saved.carnivore ?? ruleDrafts[SpeciesArchetype.Carnivore];
+            ruleDrafts[SpeciesIds.Plant] = saved.plant ?? ruleDrafts[SpeciesIds.Plant];
+            ruleDrafts[SpeciesIds.Herbivore] = saved.herbivore ?? ruleDrafts[SpeciesIds.Herbivore];
+            ruleDrafts[SpeciesIds.Carnivore] = saved.carnivore ?? ruleDrafts[SpeciesIds.Carnivore];
         }
 
         void SyncGlobalSettingTextFields()
@@ -692,7 +696,7 @@ namespace SaltyGame
 
         void PrepareNextRun()
         {
-            var currentRules = new Dictionary<SpeciesArchetype, SpeciesRules>(rules)
+            var currentRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
                 [playerSpecies] = progression?.CurrentRules ?? rules[playerSpecies],
             };
@@ -964,20 +968,20 @@ namespace SaltyGame
             }
         }
 
-        Dictionary<SpeciesArchetype, SpeciesRuleDraft> CreateRuleDrafts(
-            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> sourceRules)
+        Dictionary<SpeciesId, SpeciesRuleDraft> CreateRuleDrafts(
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> sourceRules)
         {
-            return new Dictionary<SpeciesArchetype, SpeciesRuleDraft>
+            return new Dictionary<SpeciesId, SpeciesRuleDraft>
             {
-                [SpeciesArchetype.Plant] = new SpeciesRuleDraft(sourceRules[SpeciesArchetype.Plant]),
-                [SpeciesArchetype.Herbivore] = new SpeciesRuleDraft(sourceRules[SpeciesArchetype.Herbivore]),
-                [SpeciesArchetype.Carnivore] = new SpeciesRuleDraft(sourceRules[SpeciesArchetype.Carnivore]),
+                [SpeciesIds.Plant] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Plant]),
+                [SpeciesIds.Herbivore] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Herbivore]),
+                [SpeciesIds.Carnivore] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Carnivore]),
             };
         }
 
-        IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> CreateRulesFromDrafts()
+        IReadOnlyDictionary<SpeciesId, SpeciesRules> CreateRulesFromDrafts()
         {
-            var result = new Dictionary<SpeciesArchetype, SpeciesRules>();
+            var result = new Dictionary<SpeciesId, SpeciesRules>();
             foreach (var entry in ruleDrafts)
             {
                 var draft = entry.Value;
@@ -1019,39 +1023,44 @@ namespace SaltyGame
             return pattern.Count >= 8 ? PatternPreset.Moore : PatternPreset.Cardinal;
         }
 
-        static SpeciesArchetype? GetDietTarget(DietTargetOption target)
+        static SpeciesId? GetDietTarget(DietTargetOption target)
         {
             switch (target)
             {
                 case DietTargetOption.Plant:
-                    return SpeciesArchetype.Plant;
+                    return SpeciesIds.Plant;
                 case DietTargetOption.Herbivore:
-                    return SpeciesArchetype.Herbivore;
+                    return SpeciesIds.Herbivore;
                 case DietTargetOption.Carnivore:
-                    return SpeciesArchetype.Carnivore;
+                    return SpeciesIds.Carnivore;
                 default:
                     return null;
             }
         }
 
-        static DietTargetOption GetDietTargetOption(SpeciesArchetype? target)
+        static DietTargetOption GetDietTargetOption(SpeciesId? target)
         {
             if (!target.HasValue)
             {
                 return DietTargetOption.None;
             }
 
-            switch (target.Value)
+            if (target.Value == SpeciesIds.Plant)
             {
-                case SpeciesArchetype.Plant:
-                    return DietTargetOption.Plant;
-                case SpeciesArchetype.Herbivore:
-                    return DietTargetOption.Herbivore;
-                case SpeciesArchetype.Carnivore:
-                    return DietTargetOption.Carnivore;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(target), target, "Unknown diet target.");
+                return DietTargetOption.Plant;
             }
+
+            if (target.Value == SpeciesIds.Herbivore)
+            {
+                return DietTargetOption.Herbivore;
+            }
+
+            if (target.Value == SpeciesIds.Carnivore)
+            {
+                return DietTargetOption.Carnivore;
+            }
+
+            throw new ArgumentOutOfRangeException(nameof(target), target, "Unknown diet target.");
         }
 
         static string FormatFloat(float value)
@@ -1064,11 +1073,11 @@ namespace SaltyGame
             return new CellularSimData(
                 width,
                 height,
-                new Dictionary<SpeciesArchetype, float>
+                new Dictionary<SpeciesId, float>
                 {
-                    [SpeciesArchetype.Plant] = plantProbability,
-                    [SpeciesArchetype.Herbivore] = herbivoreProbability,
-                    [SpeciesArchetype.Carnivore] = carnivoreProbability,
+                    [SpeciesIds.Plant] = plantProbability,
+                    [SpeciesIds.Herbivore] = herbivoreProbability,
+                    [SpeciesIds.Carnivore] = carnivoreProbability,
                 },
                 rules,
                 runDurationSeconds,
@@ -1089,16 +1098,36 @@ namespace SaltyGame
                 return emptyColor;
             }
 
-            switch (cell.Species)
+            if (cell.SpeciesId == SpeciesIds.Plant)
             {
-                case SpeciesArchetype.Plant:
-                    return plantColor;
-                case SpeciesArchetype.Herbivore:
-                    return herbivoreColor;
-                case SpeciesArchetype.Carnivore:
-                    return carnivoreColor;
+                return plantColor;
+            }
+
+            if (cell.SpeciesId == SpeciesIds.Herbivore)
+            {
+                return herbivoreColor;
+            }
+
+            if (cell.SpeciesId == SpeciesIds.Carnivore)
+            {
+                return carnivoreColor;
+            }
+
+            return emptyColor;
+        }
+
+        static SpeciesId GetSettingsSpecies(int index)
+        {
+            switch (index)
+            {
+                case 1:
+                    return SpeciesIds.Plant;
+                case 2:
+                    return SpeciesIds.Herbivore;
+                case 3:
+                    return SpeciesIds.Carnivore;
                 default:
-                    throw new ArgumentOutOfRangeException();
+                    throw new ArgumentOutOfRangeException(nameof(index), index, "Unknown species settings tab.");
             }
         }
     }

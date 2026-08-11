@@ -12,7 +12,7 @@ namespace SaltyGame
             GridPattern blockPattern,
             int blockAmount,
             GridPattern dietPattern,
-            SpeciesArchetype? dietTarget,
+            SpeciesId? dietTarget,
             GridPattern reproductionPattern,
             int reproductionNeighborCount,
             float reproductionChance = 0.5f,
@@ -98,7 +98,7 @@ namespace SaltyGame
             BlockPattern = blockPattern ?? throw new ArgumentNullException(nameof(blockPattern));
             BlockAmount = blockAmount;
             DietPattern = dietPattern ?? throw new ArgumentNullException(nameof(dietPattern));
-            DietTarget = dietTarget;
+            DietTargetId = dietTarget;
             ReproductionPattern = reproductionPattern ?? throw new ArgumentNullException(nameof(reproductionPattern));
             ReproductionNeighborCount = reproductionNeighborCount;
             ReproductionChance = reproductionChance;
@@ -120,7 +120,11 @@ namespace SaltyGame
         public GridPattern BlockPattern { get; }
         public int BlockAmount { get; }
         public GridPattern DietPattern { get; }
-        public SpeciesArchetype? DietTarget { get; }
+        public SpeciesId? DietTargetId { get; }
+        [Obsolete("Use DietTargetId instead.")]
+        public SpeciesArchetype? DietTarget => DietTargetId.HasValue
+            ? SpeciesId.ToLegacyArchetype(DietTargetId.Value)
+            : (SpeciesArchetype?)null;
         public GridPattern ReproductionPattern { get; }
         public int ReproductionNeighborCount { get; }
         public float ReproductionChance { get; }

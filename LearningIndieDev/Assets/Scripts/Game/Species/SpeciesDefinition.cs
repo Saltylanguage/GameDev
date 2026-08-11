@@ -4,13 +4,15 @@ namespace SaltyGame
 {
     public sealed class SpeciesDefinition
     {
-        public SpeciesDefinition(SpeciesArchetype archetype, SpeciesRules rules)
+        public SpeciesDefinition(SpeciesId id, SpeciesRules rules)
         {
-            Archetype = archetype;
+            Id = id;
             Rules = rules ?? throw new ArgumentNullException(nameof(rules));
         }
 
-        public SpeciesArchetype Archetype { get; }
+        public SpeciesId Id { get; }
+        [Obsolete("Use Id instead.")]
+        public SpeciesArchetype Archetype => SpeciesId.ToLegacyArchetype(Id);
         public SpeciesRules Rules { get; }
     }
 }

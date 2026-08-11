@@ -20,11 +20,11 @@ namespace SaltyGame
             new Vector2Int(-1, -1), new Vector2Int(0, -1), new Vector2Int(1, -1),
         });
 
-        public static IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> Create()
+        public static IReadOnlyDictionary<SpeciesId, SpeciesRules> Create()
         {
-            return new Dictionary<SpeciesArchetype, SpeciesRules>
+            return new Dictionary<SpeciesId, SpeciesRules>
             {
-                [SpeciesArchetype.Plant] = new SpeciesRules(
+                [SpeciesIds.Plant] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: CardinalPattern,
                     attackPattern: CardinalPattern,
@@ -41,7 +41,7 @@ namespace SaltyGame
                     startingFoodReserve: 3.25f,
                     energyValue: 1,
                     metabolism: -1),
-                [SpeciesArchetype.Herbivore] = new SpeciesRules(
+                [SpeciesIds.Herbivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: CardinalPattern,
                     attackPattern: CardinalPattern,
@@ -49,7 +49,7 @@ namespace SaltyGame
                     blockPattern: CardinalPattern,
                     blockAmount: 0,
                     dietPattern: MoorePattern,
-                    dietTarget: SpeciesArchetype.Plant,
+                    dietTarget: SpeciesIds.Plant,
                     reproductionPattern: MoorePattern,
                     reproductionNeighborCount: 1,
                     reproductionChance: 0.5f,
@@ -60,7 +60,7 @@ namespace SaltyGame
                     seedDropChance: 0.05f,
                     energyValue: 4,
                     metabolism: 1),
-                [SpeciesArchetype.Carnivore] = new SpeciesRules(
+                [SpeciesIds.Carnivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: MoorePattern,
                     attackPattern: MoorePattern,
@@ -68,7 +68,7 @@ namespace SaltyGame
                     blockPattern: CardinalPattern,
                     blockAmount: 0,
                     dietPattern: MoorePattern,
-                    dietTarget: SpeciesArchetype.Herbivore,
+                    dietTarget: SpeciesIds.Herbivore,
                     reproductionPattern: CardinalPattern,
                     reproductionNeighborCount: 1,
                     reproductionChance: 0.4f,

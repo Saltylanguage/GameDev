@@ -609,6 +609,47 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CellularSimDataSupportsCustomSpeciesIds()
+        {
+            var scavenger = new SpeciesId("scavenger");
+            var data = new CellularSimData(
+                3,
+                2,
+                new Dictionary<SpeciesId, float>
+                {
+                    [scavenger] = 1f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [scavenger] = CreateRules(),
+                },
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f);
+
+            var updated = data.WithSpeciesRules(scavenger, CreateRules());
+            var grid = SpeciesInitialGridFactory.Create(updated, runSeed: 123);
+            var occupied = 0;
+            for (var y = 0; y < grid.Height; y++)
+            {
+                for (var x = 0; x < grid.Width; x++)
+                {
+                    var cell = grid.GetCell(x, y);
+                    if (!cell.IsOccupied)
+                    {
+                        continue;
+                    }
+
+                    occupied++;
+                    Assert.That(cell.SpeciesId, Is.EqualTo(scavenger));
+                }
+            }
+
+            Assert.That(occupied, Is.GreaterThan(0));
+            Assert.That(updated.SpeciesRules.ContainsKey(scavenger), Is.True);
+            Assert.That(updated.WithoutSpecies(scavenger).SpeciesRules.ContainsKey(scavenger), Is.False);
+        }
+
+        [Test]
         public void RunnerAcceptsCellularSimDataSnapshot()
         {
             var data = new CellularSimData(

@@ -72,7 +72,7 @@ namespace SaltyGame
                 rules.BlockPattern,
                 blockAmount,
                 rules.DietPattern,
-                rules.DietTarget,
+                rules.DietTargetId,
                 rules.ReproductionPattern,
                 rules.ReproductionNeighborCount,
                 rules.ReproductionChance,

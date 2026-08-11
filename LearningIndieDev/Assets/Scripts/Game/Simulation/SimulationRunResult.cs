@@ -60,18 +60,13 @@ namespace SaltyGame
                         continue;
                     }
 
-                    switch (cell.Species)
+                    if (cell.SpeciesId == SpeciesIds.Herbivore)
                     {
-                        case SpeciesArchetype.Plant:
-                            break;
-                        case SpeciesArchetype.Herbivore:
-                            herbivores++;
-                            break;
-                        case SpeciesArchetype.Carnivore:
-                            carnivores++;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        herbivores++;
+                    }
+                    else if (cell.SpeciesId == SpeciesIds.Carnivore)
+                    {
+                        carnivores++;
                     }
                 }
             }
@@ -92,7 +87,7 @@ namespace SaltyGame
 
         public SimulationRunState(
             Grid<SpeciesCell> cells,
-            SpeciesArchetype playerSpecies,
+            SpeciesId playerSpecies,
             int seed,
             float durationSeconds)
         {
@@ -108,7 +103,7 @@ namespace SaltyGame
 
             initialCells = cells.Copy();
             Cells = cells;
-            PlayerSpecies = playerSpecies;
+            PlayerSpeciesId = playerSpecies;
             Seed = seed;
             DurationSeconds = durationSeconds;
             Status = SimulationRunStatus.Ready;
@@ -120,7 +115,10 @@ namespace SaltyGame
         }
 
         public Grid<SpeciesCell> Cells { get; private set; }
-        public SpeciesArchetype PlayerSpecies { get; }
+        public SpeciesId PlayerSpeciesId { get; }
+
+        [Obsolete("Use PlayerSpeciesId instead.")]
+        public SpeciesArchetype PlayerSpecies => SpeciesId.ToLegacyArchetype(PlayerSpeciesId);
         public int Seed { get; }
         public float DurationSeconds { get; }
         public float ElapsedSeconds { get; private set; }
@@ -233,7 +231,7 @@ namespace SaltyGame
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
                     if (run.Cells.GetCell(x, y).IsCreature
-                        && run.Cells.GetCell(x, y).Species == run.PlayerSpecies)
+                        && run.Cells.GetCell(x, y).SpeciesId == run.PlayerSpeciesId)
                     {
                         playerPopulation++;
                     }

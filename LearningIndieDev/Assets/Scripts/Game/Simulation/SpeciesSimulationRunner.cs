@@ -6,13 +6,13 @@ namespace SaltyGame
     public sealed class SpeciesSimulationRunner
     {
         readonly CellularSimData simulationData;
-        readonly IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules;
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         readonly float stepSeconds;
         readonly int maxPopulation;
 
         public SpeciesSimulationRunner(
             SimulationRunState run,
-            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             float stepSeconds,
             int maxPopulation = 0)
         {
@@ -30,6 +30,16 @@ namespace SaltyGame
             }
 
             this.maxPopulation = maxPopulation;
+        }
+
+        [Obsolete("Use the SpeciesId overload instead.")]
+        public SpeciesSimulationRunner(
+            SimulationRunState run,
+            IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
+            float stepSeconds,
+            int maxPopulation = 0)
+            : this(run, SpeciesIdConversions.FromLegacy(rules), stepSeconds, maxPopulation)
+        {
         }
 
         public SpeciesSimulationRunner(SimulationRunState run, CellularSimData simulationData)

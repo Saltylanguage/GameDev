@@ -69,10 +69,10 @@ namespace SaltyGame
             return grid;
         }
 
-        static SpeciesCell CreateCell(CellularSimData data, SpeciesArchetype species)
+        static SpeciesCell CreateCell(CellularSimData data, SpeciesId species)
         {
             var rules = data.SpeciesRules[species];
-            return species == SpeciesArchetype.Plant
+            return species == SpeciesIds.Plant
                 ? SpeciesCell.Grass(rules.StartingFoodReserve)
                 : new SpeciesCell(
                     species,
@@ -80,7 +80,7 @@ namespace SaltyGame
                     foodReserve: rules.StartingFoodReserve);
         }
 
-        static SpeciesArchetype GetInitialSpecies(double roll, CellularSimData data)
+        static SpeciesId GetInitialSpecies(double roll, CellularSimData data)
         {
             return TryGetInitialSpecies(roll, data, out var species)
                 ? species
@@ -90,61 +90,34 @@ namespace SaltyGame
         static bool TryGetInitialSpecies(
             double roll,
             CellularSimData data,
-            out SpeciesArchetype species)
+            out SpeciesId species)
         {
-            var plantProbability = GetStartingProbability(data, SpeciesArchetype.Plant);
-            var herbivoreProbability = GetStartingProbability(data, SpeciesArchetype.Herbivore);
-            var carnivoreProbability = GetStartingProbability(data, SpeciesArchetype.Carnivore);
-            if (roll < plantProbability)
+            var cumulativeProbability = 0d;
+            foreach (var entry in data.StartingProbabilities)
             {
-                species = SpeciesArchetype.Plant;
-                return true;
-            }
-
-            if (roll < plantProbability + herbivoreProbability)
-            {
-                species = SpeciesArchetype.Herbivore;
-                return true;
-            }
-
-            if (roll < plantProbability + herbivoreProbability + carnivoreProbability)
-            {
-                species = SpeciesArchetype.Carnivore;
-                return true;
+                cumulativeProbability += entry.Value;
+                if (roll < cumulativeProbability)
+                {
+                    species = entry.Key;
+                    return true;
+                }
             }
 
             species = default;
             return false;
         }
 
-        static SpeciesArchetype GetFallbackSpecies(CellularSimData data)
+        static SpeciesId GetFallbackSpecies(CellularSimData data)
         {
-            if (data.SpeciesRules.ContainsKey(SpeciesArchetype.Plant))
+            foreach (var species in data.SpeciesRules.Keys)
             {
-                return SpeciesArchetype.Plant;
-            }
-
-            if (data.SpeciesRules.ContainsKey(SpeciesArchetype.Herbivore))
-            {
-                return SpeciesArchetype.Herbivore;
-            }
-
-            if (data.SpeciesRules.ContainsKey(SpeciesArchetype.Carnivore))
-            {
-                return SpeciesArchetype.Carnivore;
+                return species;
             }
 
             throw new InvalidOperationException("Cellular simulation data must define at least one species.");
         }
 
-        static float GetStartingProbability(CellularSimData data, SpeciesArchetype species)
-        {
-            return data.TryGetStartingProbability(species, out var probability)
-                ? probability
-                : 0f;
-        }
-
-        static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesArchetype species)
+        static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesId species)
         {
             var count = 0;
             for (var offsetY = -1; offsetY <= 1; offsetY++)
@@ -157,10 +130,10 @@ namespace SaltyGame
                     }
 
                     if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
-                        && ((species == SpeciesArchetype.Plant && neighbor.IsPlantResource)
-                            || (species != SpeciesArchetype.Plant
+                        && ((species == SpeciesIds.Plant && neighbor.IsPlantResource)
+                            || (species != SpeciesIds.Plant
                                 && neighbor.IsCreature
-                                && neighbor.Species == species)))
+                                && neighbor.SpeciesId == species)))
                     {
                         count++;
                     }
