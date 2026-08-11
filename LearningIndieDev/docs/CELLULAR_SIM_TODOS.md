@@ -42,13 +42,19 @@ changes the dependency or an experiment provides a stronger trigger.
 
 ### TODO-CS-02 - Generalize population metrics (Priority 3)
 
-- [ ] Replace hardcoded plant/herbivore/carnivore counters in run snapshots with
+- [x] Replace hardcoded plant/herbivore/carnivore counters in run snapshots with
   species-keyed metrics while preserving useful aggregate counts such as empty
   cells.
 - Trigger: a fourth species or species deletion is required, or analysis needs
   arbitrary per-species graphs.
-- Reason deferred: changing the result model before the species identity model
-  would create a temporary abstraction that will likely be replaced.
+- Implementation: `SpeciesPopulationSnapshot.Counts` now stores read-only
+  `SpeciesId` keyed counts, `GetCount` returns zero for missing species, and the
+  existing Plants/Herbivores/Carnivores properties remain compatibility accessors.
+  Resource terrain cells are counted under their resource species, including
+  custom species, while empty cells remain a separate aggregate.
+- Validation: runtime and test assemblies build successfully; coverage includes
+  a custom creature, custom resource species, built-in plant/carnivore cells,
+  and an empty cell.
 
 ### TODO-CS-03 - Data-driven terrain registry (Priority 2)
 

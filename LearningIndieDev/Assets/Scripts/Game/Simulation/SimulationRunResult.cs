@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SaltyGame
 {
@@ -13,70 +14,109 @@ namespace SaltyGame
 
     public readonly struct SpeciesPopulationSnapshot
     {
-        public SpeciesPopulationSnapshot(int tick, int plants, int herbivores, int carnivores, int empty)
+        static readonly IReadOnlyDictionary<SpeciesId, int> EmptyCounts =
+            new ReadOnlyDictionary<SpeciesId, int>(new Dictionary<SpeciesId, int>());
+        readonly IReadOnlyDictionary<SpeciesId, int> counts;
+
+        public SpeciesPopulationSnapshot(
+            int tick,
+            IReadOnlyDictionary<SpeciesId, int> counts,
+            int empty)
         {
+            if (counts == null)
+            {
+                throw new ArgumentNullException(nameof(counts));
+            }
+
+            if (empty < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(empty), empty, "Empty cell count cannot be negative.");
+            }
+
+            var copiedCounts = new Dictionary<SpeciesId, int>(counts.Count);
+            foreach (var entry in counts)
+            {
+                if (!entry.Key.IsValid)
+                {
+                    throw new ArgumentException("Population counts cannot use an empty species id.", nameof(counts));
+                }
+
+                if (entry.Value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(counts), entry.Value, "Population counts cannot be negative.");
+                }
+
+                copiedCounts.Add(entry.Key, entry.Value);
+            }
+
             Tick = tick;
-            Plants = plants;
-            Herbivores = herbivores;
-            Carnivores = carnivores;
+            this.counts = new ReadOnlyDictionary<SpeciesId, int>(copiedCounts);
             Empty = empty;
         }
 
+        [Obsolete("Use the species-id keyed constructor instead.")]
+        public SpeciesPopulationSnapshot(int tick, int plants, int herbivores, int carnivores, int empty)
+            : this(
+                tick,
+                new Dictionary<SpeciesId, int>
+                {
+                    [SpeciesIds.Plant] = plants,
+                    [SpeciesIds.Herbivore] = herbivores,
+                    [SpeciesIds.Carnivore] = carnivores,
+                },
+                empty)
+        {
+        }
+
         public int Tick { get; }
-        public int Plants { get; }
-        public int Herbivores { get; }
-        public int Carnivores { get; }
+        public IReadOnlyDictionary<SpeciesId, int> Counts => counts ?? EmptyCounts;
+        public int Plants => GetCount(SpeciesIds.Plant);
+        public int Herbivores => GetCount(SpeciesIds.Herbivore);
+        public int Carnivores => GetCount(SpeciesIds.Carnivore);
         public int Empty { get; }
+
+        public int GetCount(SpeciesId species)
+        {
+            return counts != null && counts.TryGetValue(species, out var count) ? count : 0;
+        }
 
         public static SpeciesPopulationSnapshot Create(Grid<SpeciesCell> cells, int tick)
         {
-            var plants = 0;
-            var herbivores = 0;
-            var carnivores = 0;
+            if (cells == null)
+            {
+                throw new ArgumentNullException(nameof(cells));
+            }
+
+            var counts = new Dictionary<SpeciesId, int>();
             var empty = 0;
             for (var y = 0; y < cells.Height; y++)
             {
                 for (var x = 0; x < cells.Width; x++)
                 {
                     var cell = cells.GetCell(x, y);
-                    if (!cell.IsPlantResource && !cell.IsCreature)
+                    if (cell.IsCreature)
                     {
-                        empty++;
+                        AddCount(counts, cell.SpeciesId);
                         continue;
                     }
 
                     if (cell.IsPlantResource)
                     {
-                        plants++;
-                    }
-
-                    if (!cell.IsCreature)
-                    {
-                        if (!cell.IsPlantResource)
-                        {
-                            empty++;
-                        }
-
+                        AddCount(counts, cell.SpeciesId.IsValid ? cell.SpeciesId : SpeciesIds.Plant);
                         continue;
                     }
 
-                    if (cell.SpeciesId == SpeciesIds.Herbivore)
-                    {
-                        herbivores++;
-                    }
-                    else if (cell.SpeciesId == SpeciesIds.Carnivore)
-                    {
-                        carnivores++;
-                    }
+                    empty++;
                 }
             }
 
-            return new SpeciesPopulationSnapshot(
-                tick,
-                plants,
-                herbivores,
-                carnivores,
-                empty);
+            return new SpeciesPopulationSnapshot(tick, counts, empty);
+        }
+
+        static void AddCount(Dictionary<SpeciesId, int> counts, SpeciesId species)
+        {
+            counts.TryGetValue(species, out var count);
+            counts[species] = count + 1;
         }
     }
 

@@ -144,6 +144,28 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PopulationSnapshotCountsArbitrarySpeciesAndEmptyCells()
+        {
+            var customSpecies = new SpeciesId("scavenger");
+            var cells = new Grid<SpeciesCell>(6, 1);
+            cells.SetCell(0, 0, new SpeciesCell(customSpecies));
+            cells.SetCell(1, 0, SpeciesCell.Grass(customSpecies, 2f));
+            cells.SetCell(2, 0, SpeciesCell.Grass(2f));
+            cells.SetCell(3, 0, new SpeciesCell(SpeciesIds.Plant));
+            cells.SetCell(4, 0, SpeciesCell.Empty);
+            cells.SetCell(5, 0, new SpeciesCell(SpeciesIds.Carnivore));
+
+            var snapshot = SpeciesPopulationSnapshot.Create(cells, tick: 7);
+
+            Assert.That(snapshot.GetCount(customSpecies), Is.EqualTo(2));
+            Assert.That(snapshot.GetCount(SpeciesIds.Plant), Is.EqualTo(2));
+            Assert.That(snapshot.GetCount(SpeciesIds.Carnivore), Is.EqualTo(1));
+            Assert.That(snapshot.GetCount(SpeciesIds.Herbivore), Is.EqualTo(0));
+            Assert.That(snapshot.Empty, Is.EqualTo(1));
+            Assert.That(snapshot.Counts.ContainsKey(customSpecies), Is.True);
+        }
+
+        [Test]
         public void RunStateCanPauseResumeAndRestart()
         {
             var initialGrid = new Grid<SpeciesCell>(1, 1);
