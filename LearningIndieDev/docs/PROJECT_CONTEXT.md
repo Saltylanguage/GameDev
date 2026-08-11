@@ -59,6 +59,10 @@ design questions. Do not silently settle them in foundational grid code.
   active run's state.
 - Initial-grid creation remains a factory concern; simulation stepping remains a
   domain concern; `Grid<T>` remains a generic data container.
+- Current implementation priority is: replace enum-backed species identity,
+  introduce a data-driven terrain registry, then generalize population metrics.
+  Custom rule logic, ruleset fingerprints, and editor/data-asset authoring are
+  later work; legacy prototype cleanup is lowest priority for now.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   species IDs, a terrain registry, or arbitrary rule plugins until a concrete

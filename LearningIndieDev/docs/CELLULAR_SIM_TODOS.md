@@ -14,9 +14,20 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - [x] Keep runtime state (`Grid`, tick, elapsed time, population history,
   progression, and currency) outside the scenario data.
 
+## Roadmap priority (2026-08-11)
+
+1. **TODO-CS-01 - Replace enum species identity**
+2. **TODO-CS-03 - Data-driven terrain registry**
+3. **TODO-CS-02 - Generalize population metrics**
+4. **TODO-CS-04, TODO-CS-05, and TODO-CS-06** are later roadmap work.
+5. **TODO-CS-07** is the lowest-priority item for now.
+
+The first three items should be handled in that order unless a concrete use
+case changes the dependency or an experiment provides a stronger trigger.
+
 ## Deferred until a concrete use case requires it
 
-### TODO-CS-01 - Replace enum species identity
+### TODO-CS-01 - Replace enum species identity (Priority 1)
 
 - [ ] Replace `SpeciesArchetype` with stable data-driven species IDs.
 - Trigger: the project needs to add or remove a species without changing and
@@ -26,7 +37,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - Required follow-up: migrate species lookup, rendering, population metrics,
   diet references, UI settings, and save/default data together.
 
-### TODO-CS-02 - Generalize population metrics
+### TODO-CS-02 - Generalize population metrics (Priority 3)
 
 - [ ] Replace hardcoded plant/herbivore/carnivore counters in run snapshots with
   species-keyed metrics while preserving useful aggregate counts such as empty
@@ -36,7 +47,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - Reason deferred: changing the result model before the species identity model
   would create a temporary abstraction that will likely be replaced.
 
-### TODO-CS-03 - Data-driven terrain registry
+### TODO-CS-03 - Data-driven terrain registry (Priority 2)
 
 - [ ] Move beyond the current bare/grass assumptions to a terrain definition
   registry with stable IDs, color/presentation data, passability, resource
@@ -49,7 +60,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - Required follow-up: define what terrain owns versus what an entity occupies,
   then migrate rendering, feeding, movement, and snapshots together.
 
-### TODO-CS-04 - Extensible custom rule logic
+### TODO-CS-04 - Extensible custom rule logic (Later)
 
 - [ ] Add composable rule/stage code for mechanics that cannot be represented by
   data values and patterns alone.
@@ -60,7 +71,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - Guardrail: add one focused rule seam for the real mechanic; do not introduce a
   universal event bus or scripting system.
 
-### TODO-CS-05 - Ruleset fingerprints and comparison metadata
+### TODO-CS-05 - Ruleset fingerprints and comparison metadata (Later)
 
 - [ ] Record a stable ruleset/data fingerprint alongside each run's seed and
   results.
@@ -71,7 +82,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
 - Required follow-up: use canonical serialized data or an explicitly versioned
   hash, not process-dependent object hash codes.
 
-### TODO-CS-06 - Data asset/editor authoring
+### TODO-CS-06 - Data asset/editor authoring (Later)
 
 - [ ] Decide whether `CellularSimData` should be authored as a Unity asset,
   runtime code, or both, with a clear separation between definitions and run
@@ -82,7 +93,7 @@ larger plan. Each item has a trigger that should bring it back into scope.
   iterate while the schema is unsettled.
 - Guardrail: do not introduce ScriptableObjects as mutable global runtime state.
 
-### TODO-CS-07 - Legacy prototype cleanup
+### TODO-CS-07 - Legacy prototype cleanup (Lowest priority)
 
 - [ ] Audit and, where proven unused, remove or further isolate earlier Island
   Survivor, cave, and Life prototype paths.
