@@ -59,12 +59,23 @@ flowchart LR
 
 ## Commands
 
-Run these from the Unity project root, `LearningIndieDev`. The explicit execution
-policy keeps the tools usable on machines that block local PowerShell scripts by
-default; it does not change the machine's saved policy.
+Run these from the Unity project root, `LearningIndieDev`:
 
 ```powershell
-# Both Unity test suites. Unity must be closed first.
+# Short front door. Unity must be closed first.
+.\tools\sim.cmd help
+.\tools\sim.cmd test
+.\tools\sim.cmd test -Mode EditMode
+.\tools\sim.cmd run
+.\tools\sim.cmd run -SeedStart 1000 -SeedCount 50
+```
+
+`sim.cmd` launches PowerShell with a process-only execution-policy bypass; it
+does not change the machine's saved policy. It dispatches to the underlying
+commands below when their full options are needed:
+
+```powershell
+# Both Unity test suites.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps1
 
 # One test suite when the change is domain-only or scene/UI-only.
