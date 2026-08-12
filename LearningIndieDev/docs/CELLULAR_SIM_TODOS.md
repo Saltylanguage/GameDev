@@ -47,6 +47,9 @@ changes the dependency or an experiment provides a stronger trigger.
   seeded cellular-simulation reports. The reports record ruleset fingerprints,
   seed ranges, full population histories, and final-population summaries under
   ignored `artifacts/` output.
+- [x] Establish the first reproducible default baseline: seeds 1–20 finish with
+  plants and herbivores extinct in 20/20 runs while carnivores survive in 20/20.
+  This is an observed imbalance to investigate, not an approved target state.
 - [ ] Add visual captures, event-level telemetry, or report charts only when a
   balance/design question needs more than population trajectories. Keep generated
   artifacts outside the repository unless a curated design result is explicitly

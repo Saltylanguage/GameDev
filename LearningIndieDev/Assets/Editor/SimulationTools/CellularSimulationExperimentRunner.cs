@@ -26,22 +26,41 @@ namespace SaltyGame.EditorTools
 
         public static void RunFromCommandLine()
         {
-            var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
-            var outputPath = GetRequiredOutputPath(options.OutputPath);
-            var data = LoadSimulationData(options.ScenarioPath, out var temporaryAsset);
-
             try
             {
-                var report = CreateReport(data, options, outputPath);
-                File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
-                Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath}");
-            }
-            finally
-            {
-                if (temporaryAsset != null)
+                var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
+                var outputPath = GetRequiredOutputPath(options.OutputPath);
+                var data = LoadSimulationData(options.ScenarioPath, out var temporaryAsset);
+
+                try
                 {
-                    UnityEngine.Object.DestroyImmediate(temporaryAsset);
+                    var report = CreateReport(data, options, outputPath);
+                    File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
+                    Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath}");
                 }
+                finally
+                {
+                    if (temporaryAsset != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(temporaryAsset);
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                if (Application.isBatchMode)
+                {
+                    EditorApplication.Exit(1);
+                    return;
+                }
+
+                throw;
+            }
+
+            if (Application.isBatchMode)
+            {
+                EditorApplication.Exit(0);
             }
         }
 

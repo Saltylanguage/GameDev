@@ -52,7 +52,6 @@ $logPath = Join-Path $artifactDirectory 'unity.log'
 $arguments = @(
     '-batchmode',
     '-nographics',
-    '-quit',
     '-projectPath', $project,
     '-executeMethod', 'SaltyGame.EditorTools.CellularSimulationExperimentRunner.RunFromCommandLine',
     '-seedStart', $SeedStart,

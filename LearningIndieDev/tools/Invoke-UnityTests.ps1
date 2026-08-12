@@ -23,7 +23,6 @@ $results = foreach ($platform in $platforms) {
     Invoke-UnityBatch -UnityPath $unity -Arguments @(
         '-batchmode',
         '-nographics',
-        '-quit',
         '-projectPath', $project,
         '-runTests',
         '-testPlatform', $platform,

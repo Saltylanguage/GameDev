@@ -93,9 +93,16 @@ function Invoke-UnityBatch {
         [string[]]$Arguments
     )
 
-    & $UnityPath @Arguments
-    $exitCode = $LASTEXITCODE
-    if ($exitCode -ne 0) {
-        throw "Unity batch command failed with exit code $exitCode. See the command's log file for details."
+    $argumentLine = ($Arguments | ForEach-Object {
+        if ($_ -match '[\s"]') {
+            '"' + $_.Replace('"', '\"') + '"'
+        }
+        else {
+            $_
+        }
+    }) -join ' '
+    $process = Start-Process -FilePath $UnityPath -ArgumentList $argumentLine -Wait -PassThru
+    if ($process.ExitCode -ne 0) {
+        throw "Unity batch command failed with exit code $($process.ExitCode). See the command's log file for details."
     }
 }

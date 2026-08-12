@@ -68,11 +68,22 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Test -Mode EditMode
 .\CellSim.cmd Run
 .\CellSim.cmd Run -SeedCount 50
+.\CellSim.cmd Report
+.\CellSim.cmd Baseline -SeedCount 20
+.\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
 ```
 
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
 commands below when their full options are needed:
+
+| Command | Use it for |
+| --- | --- |
+| `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
+| `CellSim Run` | Generate a JSON report for a seed range. |
+| `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
+| `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
+| `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
 
 ```powershell
 # Both Unity test suites.
@@ -99,10 +110,18 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | --- | --- |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Run-CellularExperiment.ps1` | `report.json` plus the Unity batch log |
+| `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
 The experiment JSON records the schema version, timestamp, scenario asset path,
 seed range, grid settings, player species, ruleset fingerprint, run-level
-results, full population timelines, and final-population summary.
+results, full population timelines, and final-population summary. The generated
+Markdown report adds start/midpoint/end average populations, per-seed outcomes,
+and optional test-suite or comparison summaries.
+
+`CellSim Baseline` combines the normal test suite, a seeded experiment, and a
+readable Markdown analysis into one command. `CellSim Report` analyzes the most
+recent experiment by default; `CellSim Compare` adds population and extinction
+rate deltas against an explicitly selected baseline report.
 
 ## Authoring workflow
 

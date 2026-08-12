@@ -103,6 +103,11 @@ design questions. Do not silently settle them in foundational grid code.
   and final-population summaries. It is intentionally an evidence/automation
   seam rather than a custom editor-to-agent bridge; see
   [`UNITY_SIMULATION_TOOLING.md`](UNITY_SIMULATION_TOOLING.md).
+- `CellSim` is the project-root command surface for this workflow: `Test`,
+  `Run`, `Report`, `Compare`, and `Baseline`. The first 20-seed default baseline
+  is evidence, not target balance: plants and herbivores reached final extinction
+  in every run while carnivores survived all runs. See the dated tooling handoff
+  for exact results before choosing the next balance hypothesis.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case

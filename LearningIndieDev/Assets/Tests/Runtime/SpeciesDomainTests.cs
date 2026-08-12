@@ -214,9 +214,9 @@ namespace SaltyGame.Tests
             var first = SpeciesSimulation.Step(source, rules, seed: 123);
             var second = SpeciesSimulation.Step(source, rules, seed: 123);
 
-            Assert.That(source.GetCell(0, 0).Species, Is.EqualTo(SpeciesArchetype.Herbivore));
-            Assert.That(first.GetCell(0, 0).Species, Is.EqualTo(second.GetCell(0, 0).Species));
-            Assert.That(first.GetCell(1, 0).Species, Is.EqualTo(second.GetCell(1, 0).Species));
+            Assert.That(source.GetCell(0, 0).SpeciesId, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(first.GetCell(0, 0).SpeciesId, Is.EqualTo(second.GetCell(0, 0).SpeciesId));
+            Assert.That(first.GetCell(1, 0).SpeciesId, Is.EqualTo(second.GetCell(1, 0).SpeciesId));
         }
 
         [Test]
