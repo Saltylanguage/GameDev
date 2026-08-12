@@ -94,19 +94,26 @@ namespace SaltyGame
                 for (var x = 0; x < cells.Width; x++)
                 {
                     var cell = cells.GetCell(x, y);
+                    var hasPopulation = false;
                     if (cell.IsCreature)
                     {
                         AddCount(counts, cell.SpeciesId);
-                        continue;
+                        hasPopulation = true;
                     }
 
                     if (cell.IsPlantResource)
                     {
-                        AddCount(counts, cell.SpeciesId.IsValid ? cell.SpeciesId : SpeciesIds.Plant);
-                        continue;
+                        var resourceSpecies = cell.ResourceSpeciesId.IsValid
+                            ? cell.ResourceSpeciesId
+                            : cell.SpeciesId.IsValid ? cell.SpeciesId : SpeciesIds.Plant;
+                        AddCount(counts, resourceSpecies);
+                        hasPopulation = true;
                     }
 
-                    empty++;
+                    if (!hasPopulation)
+                    {
+                        empty++;
+                    }
                 }
             }
 
@@ -124,6 +131,7 @@ namespace SaltyGame
     {
         readonly Grid<SpeciesCell> initialCells;
         readonly List<SpeciesPopulationSnapshot> populationHistory;
+        readonly SpeciesSimulationMetrics metrics;
 
         public SimulationRunState(
             Grid<SpeciesCell> cells,
@@ -152,6 +160,8 @@ namespace SaltyGame
                 SpeciesPopulationSnapshot.Create(cells, tick: 0),
             };
             PopulationHistory = populationHistory;
+            metrics = new SpeciesSimulationMetrics();
+            Metrics = metrics;
         }
 
         public Grid<SpeciesCell> Cells { get; private set; }
@@ -166,6 +176,7 @@ namespace SaltyGame
         public int Tick { get; private set; }
         public SimulationRunStatus Status { get; private set; }
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
+        public SpeciesSimulationMetrics Metrics { get; }
 
         internal void SetRulesetFingerprint(string fingerprint)
         {
@@ -220,6 +231,7 @@ namespace SaltyGame
             Status = SimulationRunStatus.Ready;
             populationHistory.Clear();
             populationHistory.Add(SpeciesPopulationSnapshot.Create(Cells, tick: 0));
+            metrics.Clear();
         }
 
         public void Advance(Grid<SpeciesCell> nextCells, float stepSeconds)

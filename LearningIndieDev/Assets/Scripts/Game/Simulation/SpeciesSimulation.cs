@@ -9,7 +9,8 @@ namespace SaltyGame
         public static Grid<SpeciesCell> Step(
             Grid<SpeciesCell> source,
             CellularSimData simulationData,
-            int seed)
+            int seed,
+            SpeciesSimulationMetrics metrics = null)
         {
             if (simulationData == null)
             {
@@ -22,7 +23,8 @@ namespace SaltyGame
                 seed,
                 simulationData.MaxPopulation,
                 simulationData.TerrainDefinitions,
-                simulationData.AlphaOffspringRules);
+                simulationData.AlphaOffspringRules,
+                metrics);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -31,7 +33,8 @@ namespace SaltyGame
             int seed,
             int maxPopulation = 0,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
-            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null)
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
+            SpeciesSimulationMetrics metrics = null)
         {
             if (source == null)
             {
@@ -51,15 +54,15 @@ namespace SaltyGame
 
             var next = source.Copy();
             var random = new System.Random(seed);
-            ResolveAttacks(source, next, rules, random);
-            ResolveMovement(source, next, rules, random);
+            ResolveAttacks(source, next, rules, random, metrics);
+            ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
-            ResolveStarvation(next, rules);
-            ResolveCrowdingStress(next, rules);
-            ResolveSeedDrops(next, rules, terrainDefinitions, random);
-            ResolveWilt(next, rules, random);
-            ResolveReproduction(next, rules, terrainDefinitions, alphaOffspringRules, random);
-            ResolvePopulationLimit(next, maxPopulation, random);
+            ResolveStarvation(next, rules, metrics);
+            ResolveCrowdingStress(next, rules, metrics);
+            ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics);
+            ResolveWilt(next, rules, random, metrics);
+            ResolveReproduction(next, rules, terrainDefinitions, alphaOffspringRules, random, metrics);
+            ResolvePopulationLimit(next, maxPopulation, random, metrics);
             return next;
         }
 
@@ -68,12 +71,17 @@ namespace SaltyGame
             Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesArchetype, SpeciesRules> rules,
             int seed,
-            int maxPopulation = 0)
+            int maxPopulation = 0,
+            SpeciesSimulationMetrics metrics = null)
         {
-            return Step(source, SpeciesIdConversions.FromLegacy(rules), seed, maxPopulation);
+            return Step(source, SpeciesIdConversions.FromLegacy(rules), seed, maxPopulation, metrics: metrics);
         }
 
-        static void ResolvePopulationLimit(Grid<SpeciesCell> next, int maxPopulation, System.Random random)
+        static void ResolvePopulationLimit(
+            Grid<SpeciesCell> next,
+            int maxPopulation,
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             if (maxPopulation <= 0)
             {
@@ -103,6 +111,7 @@ namespace SaltyGame
                 next.SetCell(x, y, cell.IsPlantResource
                     ? cell.WithoutPlantResource()
                     : cell.WithoutEntity());
+                metrics?.Record(cell.SpeciesId, deaths: 1, populationLimitRemovals: 1);
             }
         }
 
@@ -110,7 +119,8 @@ namespace SaltyGame
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             for (var y = 0; y < source.Height; y++)
             {
@@ -172,16 +182,26 @@ namespace SaltyGame
                                 attackerRules,
                                 rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
                                     ? plantRules.EnergyValue
-                                    : 1);
+                                    : 1,
+                                metrics);
                             break;
                         }
 
                         if (damage > 0 && currentTarget.IsCreature)
                         {
                             var remainingHealth = currentTarget.Health - damage;
+                            metrics?.Record(
+                                attacker.SpeciesId,
+                                damageDealt: Math.Min(damage, currentTarget.Health));
                             next.SetCell(targetX, targetY, remainingHealth > 0
                                 ? currentTarget.WithEntity(currentTarget.SpeciesId, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve, currentTarget.IsAlpha)
                                 : currentTarget.WithoutEntity());
+
+                            if (remainingHealth <= 0)
+                            {
+                                metrics?.Record(target.SpeciesId, deaths: 1);
+                                metrics?.Record(attacker.SpeciesId, combatKills: 1);
+                            }
 
                             if (remainingHealth <= 0
                                 && attackerRules.StartingEnergy > 0
@@ -194,6 +214,7 @@ namespace SaltyGame
                                     rules.TryGetValue(target.SpeciesId, out var foodRules)
                                         ? foodRules.EnergyValue
                                         : 0));
+                                metrics?.Record(attacker.SpeciesId, foodConsumed: 1f);
                             }
                         }
 
@@ -207,7 +228,8 @@ namespace SaltyGame
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var movementPasses = 1;
             foreach (var speciesRules in rules.Values)
@@ -218,7 +240,7 @@ namespace SaltyGame
             for (var pass = 0; pass < movementPasses; pass++)
             {
                 var movementSource = pass == 0 ? source : next.Copy();
-                ResolveMovementPass(movementSource, next, rules, pass, random);
+                ResolveMovementPass(movementSource, next, rules, pass, random, metrics);
             }
         }
 
@@ -227,7 +249,8 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             int movementPass,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var moved = new bool[source.Count];
             var claimed = new bool[source.Count];
@@ -264,7 +287,8 @@ namespace SaltyGame
                     plantEnergyValue,
                     moved,
                     claimed,
-                    random))
+                    random,
+                    metrics))
                 {
                     continue;
                 }
@@ -283,7 +307,8 @@ namespace SaltyGame
                         requireDietTarget: true,
                         moved,
                         claimed,
-                        random))
+                        random,
+                        metrics))
                 {
                     continue;
                 }
@@ -306,7 +331,8 @@ namespace SaltyGame
                         speciesRules,
                         moved,
                         claimed,
-                        random))
+                        random,
+                        metrics))
                 {
                     continue;
                 }
@@ -323,7 +349,8 @@ namespace SaltyGame
                     requireDietTarget: false,
                     moved,
                     claimed,
-                    random);
+                    random,
+                    metrics);
             }
         }
 
@@ -339,7 +366,8 @@ namespace SaltyGame
             bool requireDietTarget,
             bool[] moved,
             bool[] claimed,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var bestX = -1;
             var bestY = -1;
@@ -424,7 +452,8 @@ namespace SaltyGame
                 bestY,
                 plantEnergyValue,
                 moved,
-                claimed);
+                claimed,
+                metrics);
         }
 
         static bool TryResolveVisionMovement(
@@ -438,7 +467,8 @@ namespace SaltyGame
             int plantEnergyValue,
             bool[] moved,
             bool[] claimed,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             if (speciesRules.Awareness.VisionRange <= 0)
             {
@@ -486,7 +516,8 @@ namespace SaltyGame
                     plantEnergyValue,
                     moved,
                     claimed,
-                    random))
+                    random,
+                    metrics))
             {
                 return true;
             }
@@ -503,7 +534,8 @@ namespace SaltyGame
                     plantEnergyValue,
                     moved,
                     claimed,
-                    random))
+                    random,
+                    metrics))
             {
                 return true;
             }
@@ -521,7 +553,8 @@ namespace SaltyGame
                     plantEnergyValue,
                     moved,
                     claimed,
-                    random);
+                    random,
+                    metrics);
         }
 
         static bool TryMoveTowardPerceivedTarget(
@@ -535,7 +568,8 @@ namespace SaltyGame
             int plantEnergyValue,
             bool[] moved,
             bool[] claimed,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var interactionPattern = target.Intent == SpeciesMovementIntent.Mate
                 ? speciesRules.ReproductionPattern
@@ -565,7 +599,8 @@ namespace SaltyGame
                 nextStep.y,
                 plantEnergyValue,
                 moved,
-                claimed);
+                claimed,
+                metrics);
         }
 
         static bool TryMoveTo(
@@ -579,7 +614,8 @@ namespace SaltyGame
             int targetY,
             int plantEnergyValue,
             bool[] moved,
-            bool[] claimed)
+            bool[] claimed,
+            SpeciesSimulationMetrics metrics)
         {
             if (!source.IsInBounds(targetX, targetY))
             {
@@ -600,7 +636,7 @@ namespace SaltyGame
             if (speciesRules.DietTargetId.HasValue
                 && SpeciesPerception.IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value))
             {
-                if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue))
+                if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))
                 {
                     return false;
                 }
@@ -628,6 +664,7 @@ namespace SaltyGame
             moved[GetIndex(source, x, y)] = true;
             moved[targetIndex] = true;
             claimed[targetIndex] = true;
+            metrics?.Record(cell.SpeciesId, movementSteps: 1);
             return true;
         }
 
@@ -640,7 +677,8 @@ namespace SaltyGame
             SpeciesRules speciesRules,
             bool[] moved,
             bool[] claimed,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var pattern = speciesRules.MovementPattern;
             var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
@@ -690,6 +728,7 @@ namespace SaltyGame
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
+                metrics?.Record(cell.SpeciesId, movementSteps: 1);
                 return true;
             }
 
@@ -698,7 +737,8 @@ namespace SaltyGame
 
         static void ResolveStarvation(
             Grid<SpeciesCell> next,
-            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            SpeciesSimulationMetrics metrics)
         {
             for (var y = 0; y < next.Height; y++)
             {
@@ -716,6 +756,10 @@ namespace SaltyGame
                     next.SetCell(x, y, remainingEnergy > 0
                         ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
                         : cell.WithoutEntity());
+                    if (remainingEnergy <= 0)
+                    {
+                        metrics?.Record(cell.SpeciesId, deaths: 1, starvationDeaths: 1);
+                    }
                 }
             }
         }
@@ -754,7 +798,8 @@ namespace SaltyGame
 
         static void ResolveCrowdingStress(
             Grid<SpeciesCell> next,
-            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            SpeciesSimulationMetrics metrics)
         {
             for (var y = 0; y < next.Height; y++)
             {
@@ -787,6 +832,10 @@ namespace SaltyGame
                     next.SetCell(x, y, remainingEnergy > 0
                         ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
                         : cell.WithoutEntity());
+                    if (remainingEnergy <= 0)
+                    {
+                        metrics?.Record(cell.SpeciesId, deaths: 1, crowdingDeaths: 1);
+                    }
                 }
             }
         }
@@ -794,7 +843,8 @@ namespace SaltyGame
         static void ResolveWilt(
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             for (var y = 0; y < next.Height; y++)
             {
@@ -810,6 +860,7 @@ namespace SaltyGame
                     }
 
                     next.SetCell(x, y, cell.WithoutPlantResource());
+                    metrics?.Record(cell.SpeciesId, deaths: 1, wiltDeaths: 1);
                 }
             }
         }
@@ -818,7 +869,8 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             if (!rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
                 || plantRules.StartingFoodReserve <= 0f)
@@ -859,6 +911,7 @@ namespace SaltyGame
                             terrainDefinitions[TerrainIds.Grass],
                             plantRules.StartingFoodReserve,
                             SpeciesIds.Plant));
+                        metrics?.Record(SpeciesIds.Plant, births: 1);
                         break;
                     }
                 }
@@ -870,7 +923,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
-            System.Random random)
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
         {
             var source = next.Copy();
             var claimed = new bool[source.Count];
@@ -958,6 +1012,7 @@ namespace SaltyGame
                                 currentParent,
                                 speciesRules.ReproductionFoodRequired));
                             claimed[childIndex] = true;
+                            metrics?.Record(parent.SpeciesId, births: 1);
                         }
 
                         break;
@@ -1003,7 +1058,8 @@ namespace SaltyGame
             int eaterY,
             SpeciesCell eater,
             SpeciesRules eaterRules,
-            int energyValue)
+            int energyValue,
+            SpeciesSimulationMetrics metrics)
         {
             var plant = next.GetCell(plantX, plantY);
             if (!plant.IsPlantResource)
@@ -1019,6 +1075,7 @@ namespace SaltyGame
 
             var consumedEnergy = Math.Min(1f, availableEnergy);
             next.SetCell(eaterX, eaterY, CreateFedCell(eater, eaterRules, energyValue, consumedEnergy));
+            metrics?.Record(eater.SpeciesId, foodConsumed: consumedEnergy);
             var remainingEnergy = availableEnergy - consumedEnergy;
             next.SetCell(plantX, plantY, plant.IsTerrainResource
                 ? remainingEnergy > 0f
@@ -1033,6 +1090,10 @@ namespace SaltyGame
                         plant.FoodEaten,
                         remainingEnergy)
                     : plant.WithoutEntity());
+            if (remainingEnergy <= 0f)
+            {
+                metrics?.Record(plant.SpeciesId, deaths: 1);
+            }
             return true;
         }
 

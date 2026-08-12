@@ -81,6 +81,26 @@ function Get-SnapshotAtTick {
     return @($Run.populationHistory | Where-Object { $_.tick -eq $Tick } | Select-Object -First 1)
 }
 
+function Get-ActivityValue {
+    param(
+        [object]$Run,
+        [string]$SpeciesId,
+        [string]$Property
+    )
+
+    $entry = @($Run.activity | Where-Object { $_.speciesId -eq $SpeciesId } | Select-Object -First 1)
+    if ($entry.Count -ne 1) {
+        return 0d
+    }
+
+    $propertyValue = $entry[0].PSObject.Properties[$Property]
+    if ($null -eq $propertyValue -or $null -eq $propertyValue.Value) {
+        return 0d
+    }
+
+    return [double]$propertyValue.Value
+}
+
 function Get-Number {
     param([double]$Value)
 
@@ -282,6 +302,68 @@ foreach ($tick in $trajectoryTicks) {
     $trajectoryRows.Add($row.ToArray())
 }
 Add-MarkdownTable -Lines $lines -Headers $trajectoryHeaders.ToArray() -Rows $trajectoryRows.ToArray()
+$lines.Add('')
+$lines.Add('## Average activity per run')
+$lines.Add('')
+$activityRows = [System.Collections.Generic.List[object[]]]::new()
+foreach ($speciesId in $species) {
+    $births = 0d
+    $foodConsumed = 0d
+    $movementSteps = 0d
+    $damageDealt = 0d
+    $combatKills = 0d
+    foreach ($run in @($report.runs)) {
+        $births += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'births')
+        $foodConsumed += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodConsumed')
+        $movementSteps += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'movementSteps')
+        $damageDealt += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'damageDealt')
+        $combatKills += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatKills')
+    }
+
+    $activityRows.Add(@(
+        $speciesId,
+        (Get-Number ($births / [double]$report.seedCount)),
+        (Get-Number ($foodConsumed / [double]$report.seedCount)),
+        (Get-Number ($movementSteps / [double]$report.seedCount)),
+        (Get-Number ($damageDealt / [double]$report.seedCount)),
+        (Get-Number ($combatKills / [double]$report.seedCount))
+    ))
+}
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Births', 'Food consumed', 'Movement steps', 'Damage dealt', 'Combat kills') -Rows $activityRows.ToArray()
+$lines.Add('')
+$lines.Add('Births include successful plant seed drops.')
+$lines.Add('')
+$lines.Add('Food consumed is the resource amount actually withdrawn; one consumed creature counts as one unit.')
+$lines.Add('')
+$lines.Add('## Average mortality per run')
+$lines.Add('')
+$mortalityRows = [System.Collections.Generic.List[object[]]]::new()
+foreach ($speciesId in $species) {
+    $deaths = 0d
+    $starvationDeaths = 0d
+    $crowdingDeaths = 0d
+    $wiltDeaths = 0d
+    $populationLimitRemovals = 0d
+    foreach ($run in @($report.runs)) {
+        $deaths += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'deaths')
+        $starvationDeaths += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'starvationDeaths')
+        $crowdingDeaths += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'crowdingDeaths')
+        $wiltDeaths += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'wiltDeaths')
+        $populationLimitRemovals += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'populationLimitRemovals')
+    }
+
+    $mortalityRows.Add(@(
+        $speciesId,
+        (Get-Number ($deaths / [double]$report.seedCount)),
+        (Get-Number ($starvationDeaths / [double]$report.seedCount)),
+        (Get-Number ($crowdingDeaths / [double]$report.seedCount)),
+        (Get-Number ($wiltDeaths / [double]$report.seedCount)),
+        (Get-Number ($populationLimitRemovals / [double]$report.seedCount))
+    ))
+}
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Deaths', 'Starvation', 'Crowding', 'Wilt', 'Population cap') -Rows $mortalityRows.ToArray()
+$lines.Add('')
+$lines.Add('Death causes are only reported when the current rule resolves that cause directly; the total can include combat and food depletion as well.')
 $lines.Add('')
 $lines.Add('## Per-seed outcomes')
 $lines.Add('')

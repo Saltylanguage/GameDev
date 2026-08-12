@@ -45,15 +45,16 @@ changes the dependency or an experiment provides a stronger trigger.
 
 - [x] Add closed-editor Unity batch commands for Edit Mode/Play Mode tests and
   seeded cellular-simulation reports. The reports record ruleset fingerprints,
-  seed ranges, full population histories, and final-population summaries under
-  ignored `artifacts/` output.
-- [x] Establish the first reproducible default baseline: seeds 1–20 finish with
-  plants and herbivores extinct in 20/20 runs while carnivores survive in 20/20.
-  This is an observed imbalance to investigate, not an approved target state.
-- [ ] Add visual captures, event-level telemetry, or report charts only when a
-  balance/design question needs more than population trajectories. Keep generated
-  artifacts outside the repository unless a curated design result is explicitly
-  chosen for source control.
+  seed ranges, full population histories, final-population summaries, and
+  cumulative per-species activity under ignored `artifacts/` output.
+- [x] Establish the corrected reproducible default baseline: seeds 1–20 finish
+  with herbivores extinct in 20/20 runs, plants surviving in 20/20, and
+  carnivores extinct in 3/20. This is an observed imbalance to investigate, not
+  an approved target state; use the activity-metrics handoff for exact figures.
+- [ ] Add visual captures, per-tick event telemetry, or report charts only when
+  a balance/design question needs more than population trajectories and
+  cumulative activity. Keep generated artifacts outside the repository unless a
+  curated design result is explicitly chosen for source control.
 
 ## Completed foundational work
 

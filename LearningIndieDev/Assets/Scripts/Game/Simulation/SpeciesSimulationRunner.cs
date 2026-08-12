@@ -88,8 +88,8 @@ namespace SaltyGame
             }
 
             var next = simulationData == null
-                ? SpeciesSimulation.Step(Run.Cells, rules, Run.Seed + Run.Tick, maxPopulation)
-                : SpeciesSimulation.Step(Run.Cells, simulationData, Run.Seed + Run.Tick);
+                ? SpeciesSimulation.Step(Run.Cells, rules, Run.Seed + Run.Tick, maxPopulation, metrics: Run.Metrics)
+                : SpeciesSimulation.Step(Run.Cells, simulationData, Run.Seed + Run.Tick, Run.Metrics);
             Run.Advance(next, stepSeconds);
             return true;
         }

@@ -271,10 +271,12 @@ namespace SaltyGame.Tests
                     metabolism: 0),
             };
 
-            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(0, 0).Health, Is.EqualTo(1));
             Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(3));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).DamageDealt, Is.EqualTo(2));
         }
 
         [Test]
@@ -334,10 +336,12 @@ namespace SaltyGame.Tests
                 [SpeciesArchetype.Carnivore] = carnivoreRules,
             };
 
-            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Carnivore));
             Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
 
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));
             var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
@@ -535,6 +539,10 @@ namespace SaltyGame.Tests
             Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
             Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
             Assert.That(next.GetCell(1, 0).IsPlantResource, Is.True);
+            Assert.That(next.GetCell(1, 0).WithoutEntity().SpeciesId, Is.EqualTo(SpeciesIds.Plant));
+            var snapshot = SpeciesPopulationSnapshot.Create(next, tick: 1);
+            Assert.That(snapshot.GetCount(SpeciesIds.Carnivore), Is.EqualTo(1));
+            Assert.That(snapshot.GetCount(SpeciesIds.Plant), Is.EqualTo(1));
         }
 
         [Test]
@@ -558,9 +566,11 @@ namespace SaltyGame.Tests
                     startingEnergy: 1),
             };
 
-            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).StarvationDeaths, Is.EqualTo(1));
         }
 
         [Test]
@@ -681,9 +691,11 @@ namespace SaltyGame.Tests
                     wiltChance: 1f),
             };
 
-            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(0, 0).IsOccupied, Is.False);
+            Assert.That(metrics.GetActivity(SpeciesIds.Plant).WiltDeaths, Is.EqualTo(1));
         }
 
         [Test]
@@ -726,15 +738,20 @@ namespace SaltyGame.Tests
                 [SpeciesArchetype.Herbivore] = herbivoreRules,
             };
 
-            var first = SpeciesSimulation.Step(source, rules, seed: 42);
+            var firstMetrics = new SpeciesSimulationMetrics();
+            var first = SpeciesSimulation.Step(source, rules, seed: 42, metrics: firstMetrics);
             Assert.That(first.GetCell(2, 0).FoodReserve, Is.EqualTo(1.25f).Within(0.001f));
             Assert.That(first.GetCell(1, 0).FoodReserve, Is.EqualTo(1f));
             Assert.That(first.GetCell(3, 0).FoodReserve, Is.EqualTo(1f));
+            Assert.That(firstMetrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.EqualTo(2f));
 
-            var second = SpeciesSimulation.Step(first, rules, seed: 43);
+            var secondMetrics = new SpeciesSimulationMetrics();
+            var second = SpeciesSimulation.Step(first, rules, seed: 43, metrics: secondMetrics);
             Assert.That(second.GetCell(2, 0).IsOccupied, Is.False);
             Assert.That(second.GetCell(1, 0).FoodReserve, Is.EqualTo(2f));
             Assert.That(second.GetCell(3, 0).FoodReserve, Is.EqualTo(1.25f).Within(0.001f));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.EqualTo(1.25f));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Plant).Deaths, Is.EqualTo(1));
         }
 
         [Test]

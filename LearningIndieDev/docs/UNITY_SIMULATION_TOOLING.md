@@ -12,7 +12,7 @@ code used by the game into reviewable test results and JSON experiment reports.
 flowchart LR
     A["CellularSimDataAsset\nInspector-authored scenario"] --> B["Immutable CellularSimData\nrun-start snapshot"]
     B --> C["Seeded initial grid +\nsimulation runner"]
-    C --> D["Population history +\nruleset fingerprint"]
+    C --> D["Population history +\nrun activity + fingerprint"]
     D --> E["Ignored artifacts/\nJSON report or NUnit XML"]
     E --> F["Human review, Codex analysis,\nand focused next experiment"]
 ```
@@ -39,6 +39,9 @@ flowchart LR
   balance from unrelated random runs.
 - Capture the full population history for every known species and each tick,
   plus final minimum, maximum, average, and extinction-rate summaries.
+- Capture per-species run activity: births, food actually consumed, movement,
+  combat damage/kills, total deaths, and directly resolved mortality causes.
+  Plant births include successful seed drops.
 - Use either a `CellularSimDataAsset` in `Assets/` or a fresh default scenario
   snapshot. Neither path mutates active runtime state.
 - Support arbitrary species IDs already defined by `CellularSimData`; reports do
@@ -114,9 +117,10 @@ Each invocation makes a timestamped directory below `artifacts/`:
 
 The experiment JSON records the schema version, timestamp, scenario asset path,
 seed range, grid settings, player species, ruleset fingerprint, run-level
-results, full population timelines, and final-population summary. The generated
-Markdown report adds start/midpoint/end average populations, per-seed outcomes,
-and optional test-suite or comparison summaries.
+results, full population timelines, final-population summary, and per-species
+activity totals. The generated Markdown report adds start/midpoint/end average
+populations, average activity and mortality tables, per-seed outcomes, and
+optional test-suite or comparison summaries.
 
 `CellSim Baseline` combines the normal test suite, a seeded experiment, and a
 readable Markdown analysis into one command. `CellSim Report` analyzes the most

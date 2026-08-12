@@ -49,6 +49,26 @@ The turn cadence, player representation, opposing cell behavior, win/loss
 conditions, economy, rule-combination semantics, and run structure remain open
 design questions. Do not silently settle them in foundational grid code.
 
+## Noesis presentation direction
+
+- Noesis/XAML with ViewModels is the intended presentation stack for menus,
+  HUD, settings, rewards, results, and other player-facing controls.
+- Simulation and domain code remain UI agnostic. A Unity composition/controller
+  layer projects completed simulation state into UI-ready ViewModels and applies
+  player commands through explicit methods; neither `Grid<T>` nor simulation
+  rules reference Noesis, XAML, or Unity UI types.
+- The live cellular board is a high-throughput view, not a conventional list of
+  controls. Compose it through XAML, but render its cells through one dedicated
+  Noesis custom-rendering control backed by a presentation snapshot. This keeps
+  the visual tree small while preserving Noesis styling and overlays.
+- A templated `ItemsControl` is appropriate for paused cell inspection,
+  debugging, and authoring tools. Do not use a `ListBox` or one XAML element per
+  cell as the primary full-screen simulation renderer: its selection/layout
+  overhead and virtualization do not help when every cell is visible.
+- Profile the board in a real Noesis view before optimizing further. Prefer
+  shared resources, solid brushes, and redraws only when a simulation tick or
+  relevant presentation state changes.
+
 ## CellularSimData direction
 
 - The next architecture step is a `CellularSimData` scenario definition that
@@ -100,14 +120,17 @@ design questions. Do not silently settle them in foundational grid code.
 - Unity batch tooling now provides a closed-editor test entry point and a seeded
   `CellularSimData` experiment runner. It emits ignored `artifacts/` reports
   containing scenario path, seed range, ruleset fingerprint, population history,
-  and final-population summaries. It is intentionally an evidence/automation
-  seam rather than a custom editor-to-agent bridge; see
+  final-population summaries, and per-species activity totals (births, food
+  consumed, movement, combat, and directly resolved mortality causes). It is
+  intentionally an evidence/automation seam rather than a custom editor-to-agent bridge; see
   [`UNITY_SIMULATION_TOOLING.md`](UNITY_SIMULATION_TOOLING.md).
 - `CellSim` is the project-root command surface for this workflow: `Test`,
-  `Run`, `Report`, `Compare`, and `Baseline`. The first 20-seed default baseline
-  is evidence, not target balance: plants and herbivores reached final extinction
-  in every run while carnivores survived all runs. See the dated tooling handoff
-  for exact results before choosing the next balance hypothesis.
+  `Run`, `Report`, `Compare`, and `Baseline`. The first population-only baseline
+  was superseded after correcting terrain-resource identity and layered population
+  counts. The current 20-seed default reference still has herbivore extinction
+  in every run, while plants survive every run and carnivores vary substantially;
+  see the newest CellSim telemetry handoff before choosing the next balance
+  hypothesis.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case

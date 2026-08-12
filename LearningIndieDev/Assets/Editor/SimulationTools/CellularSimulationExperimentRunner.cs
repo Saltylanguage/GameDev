@@ -14,7 +14,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 1;
+        const int ReportSchemaVersion = 2;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -122,7 +122,35 @@ namespace SaltyGame.EditorTools
                 playerPopulation = result.PlayerPopulation,
                 currencyEarned = result.CurrencyEarned,
                 populationHistory = CreatePopulationHistory(run.PopulationHistory, species),
+                activity = CreateActivity(run.Metrics, species),
             };
+        }
+
+        static ExperimentSpeciesActivity[] CreateActivity(
+            SpeciesSimulationMetrics metrics,
+            IReadOnlyList<SpeciesId> species)
+        {
+            var activity = new ExperimentSpeciesActivity[species.Count];
+            for (var index = 0; index < species.Count; index++)
+            {
+                var source = metrics.GetActivity(species[index]);
+                activity[index] = new ExperimentSpeciesActivity
+                {
+                    speciesId = species[index].Value,
+                    births = source.Births,
+                    foodConsumed = source.FoodConsumed,
+                    movementSteps = source.MovementSteps,
+                    damageDealt = source.DamageDealt,
+                    combatKills = source.CombatKills,
+                    deaths = source.Deaths,
+                    starvationDeaths = source.StarvationDeaths,
+                    crowdingDeaths = source.CrowdingDeaths,
+                    wiltDeaths = source.WiltDeaths,
+                    populationLimitRemovals = source.PopulationLimitRemovals,
+                };
+            }
+
+            return activity;
         }
 
         static ExperimentPopulationSnapshot[] CreatePopulationHistory(
@@ -301,10 +329,10 @@ namespace SaltyGame.EditorTools
                 if (!int.TryParse(value, out var parsed)
                     || parsed < 0
                     || (!allowZero && parsed == 0)
-                    || parsed > 10000)
+                    || parsed > 1000000)
                 {
                     throw new ArgumentException(
-                        $"'{name}' must be an integer between {(allowZero ? 0 : 1)} and 10000.",
+                        $"'{name}' must be an integer between {(allowZero ? 0 : 1)} and 1000000.",
                         name);
                 }
 
@@ -340,6 +368,7 @@ namespace SaltyGame.EditorTools
             public int playerPopulation;
             public int currencyEarned;
             public ExperimentPopulationSnapshot[] populationHistory;
+            public ExperimentSpeciesActivity[] activity;
         }
 
         [Serializable]
@@ -355,6 +384,22 @@ namespace SaltyGame.EditorTools
         {
             public string speciesId;
             public int population;
+        }
+
+        [Serializable]
+        sealed class ExperimentSpeciesActivity
+        {
+            public string speciesId;
+            public int births;
+            public float foodConsumed;
+            public int movementSteps;
+            public int damageDealt;
+            public int combatKills;
+            public int deaths;
+            public int starvationDeaths;
+            public int crowdingDeaths;
+            public int wiltDeaths;
+            public int populationLimitRemovals;
         }
 
         [Serializable]

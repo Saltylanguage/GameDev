@@ -33,7 +33,8 @@ namespace SaltyGame
                 isResourceSpecies: species == SpeciesIds.Plant,
                 isResourceTerrain: false,
                 isPassable: true,
-                movementCost: 1f)
+                movementCost: 1f,
+                resourceSpeciesId: species == SpeciesIds.Plant ? species : default)
         {
         }
 
@@ -51,7 +52,8 @@ namespace SaltyGame
             bool isResourceSpecies,
             bool isResourceTerrain,
             bool isPassable,
-            float movementCost)
+            float movementCost,
+            SpeciesId resourceSpeciesId = default)
         {
             if (health < 0)
             {
@@ -100,12 +102,14 @@ namespace SaltyGame
             TerrainEnergy = terrainEnergy;
             this.isResourceSpecies = isResourceSpecies;
             this.isResourceTerrain = isResourceTerrain;
+            this.resourceSpeciesId = resourceSpeciesId;
             this.isPassable = isPassable;
             this.movementCost = movementCost;
         }
 
         readonly bool isResourceSpecies;
         readonly bool isResourceTerrain;
+        readonly SpeciesId resourceSpeciesId;
         readonly TerrainId terrainId;
         readonly bool isPassable;
         readonly float movementCost;
@@ -121,10 +125,10 @@ namespace SaltyGame
             false,
             TerrainIds.Bare,
             0f,
-            isResourceSpecies: false,
-            isResourceTerrain: false,
-            isPassable: true,
-            movementCost: 1f);
+                isResourceSpecies: false,
+                isResourceTerrain: false,
+                isPassable: true,
+                movementCost: 1f);
 
         public static SpeciesCell Grass(float energy)
         {
@@ -160,7 +164,8 @@ namespace SaltyGame
                 isResourceSpecies: false,
                 isResourceTerrain: definition.ProvidesResource,
                 isPassable: definition.IsPassable,
-                movementCost: definition.MovementCost);
+                movementCost: definition.MovementCost,
+                resourceSpeciesId: resourceSpecies);
         }
 
         public bool IsOccupied { get; }
@@ -168,6 +173,7 @@ namespace SaltyGame
         public bool IsTerrainResource => isResourceTerrain && TerrainEnergy > 0f;
         public bool IsPlantResource => IsTerrainResource
             || (IsOccupied && isResourceSpecies);
+        public SpeciesId ResourceSpeciesId => isResourceTerrain ? resourceSpeciesId : default;
         public bool IsPassable => !terrainId.IsValid || isPassable;
         public float MovementCost => terrainId.IsValid ? movementCost : 1f;
         public SpeciesId SpeciesId { get; }
@@ -214,7 +220,8 @@ namespace SaltyGame
                 isResourceSpecies: species == SpeciesIds.Plant,
                 isResourceTerrain,
                 IsPassable,
-                MovementCost);
+                MovementCost,
+                resourceSpeciesId: resourceSpeciesId);
         }
 
         public SpeciesCell WithoutEntity()
@@ -222,7 +229,7 @@ namespace SaltyGame
             return TerrainId == TerrainIds.Bare
                 ? Empty
                 : new SpeciesCell(
-                    SpeciesId,
+                    resourceSpeciesId.IsValid ? resourceSpeciesId : SpeciesId,
                     false,
                     0,
                     0,
@@ -235,7 +242,8 @@ namespace SaltyGame
                     isResourceSpecies: false,
                     isResourceTerrain,
                     IsPassable,
-                    MovementCost);
+                    MovementCost,
+                    resourceSpeciesId: resourceSpeciesId);
         }
 
         public SpeciesCell WithoutPlantResource()
@@ -290,7 +298,8 @@ namespace SaltyGame
                 isResourceSpecies,
                 isResourceTerrain,
                 IsPassable,
-                MovementCost);
+                MovementCost,
+                resourceSpeciesId: resourceSpeciesId);
         }
     }
 }
