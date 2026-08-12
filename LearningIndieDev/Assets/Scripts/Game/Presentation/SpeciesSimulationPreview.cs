@@ -169,6 +169,8 @@ namespace SaltyGame
         [SerializeField] Color plantColor = new Color(0.2f, 0.75f, 0.25f);
         [SerializeField] Color herbivoreColor = new Color(0.2f, 0.7f, 1f);
         [SerializeField] Color carnivoreColor = new Color(0.95f, 0.25f, 0.2f);
+        [SerializeField] bool legacyUiEnabled = true;
+        bool noesisUiEnabled;
 
         readonly SpeciesUpgrade[] rewardOptions =
         {
@@ -209,6 +211,29 @@ namespace SaltyGame
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
         public SpeciesPreviewState State => previewState;
+        public int GridWidth => width;
+        public int GridHeight => height;
+        public int BaseSeed => seed;
+        public int MaximumPopulation => maxPopulation;
+        public int MinimumPopulation => minPopulation;
+        public float RunDurationSeconds => runDurationSeconds;
+        public float StepInterval => stepInterval;
+        public float PlantProbability => plantProbability;
+        public float HerbivoreProbability => herbivoreProbability;
+        public float CarnivoreProbability => carnivoreProbability;
+        public bool RandomizeSeedOnStart => randomizeSeedOnStart;
+        public string SettingsMessage => settingsMessage ?? string.Empty;
+        public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
+        public bool LegacyUiEnabled
+        {
+            get => legacyUiEnabled;
+            set => legacyUiEnabled = value;
+        }
+        public bool NoesisUiEnabled
+        {
+            get => noesisUiEnabled;
+            set => noesisUiEnabled = value;
+        }
 
         void Awake()
         {
@@ -546,7 +571,10 @@ namespace SaltyGame
             }
 
             GUI.color = previousColor;
-            DrawControlPanel();
+            if (legacyUiEnabled || previewState == SpeciesPreviewState.Ready)
+            {
+                DrawControlPanel();
+            }
         }
 
         public void StartSimulation()
@@ -565,8 +593,208 @@ namespace SaltyGame
 
                 runner.Start();
                 sessionStarted = true;
+                if (noesisUiEnabled)
+                {
+                    legacyUiEnabled = false;
+                }
                 previewState = SpeciesPreviewState.Running;
             }
+        }
+
+        public void OpenLegacySpeciesEditor()
+        {
+            if (previewState == SpeciesPreviewState.Ready && !sessionStarted)
+            {
+                selectedSettingsSpecies = 1;
+                legacyUiEnabled = true;
+            }
+        }
+
+        public bool TryApplyGlobalSettings(
+            string widthValue,
+            string heightValue,
+            string seedValue,
+            string maximumPopulationValue,
+            string minimumPopulationValue,
+            string runDurationValue,
+            string stepIntervalValue,
+            string plantProbabilityValue,
+            string herbivoreProbabilityValue,
+            string carnivoreProbabilityValue,
+            bool randomizeSeed,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (previewState != SpeciesPreviewState.Ready || sessionStarted)
+            {
+                validationMessage = "Settings can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (!TryParseInt(widthValue, "Grid width", out var parsedWidth)
+                || !TryParseInt(heightValue, "Grid height", out var parsedHeight)
+                || !TryParseInt(seedValue, "Base seed", out var parsedSeed)
+                || !TryParseInt(maximumPopulationValue, "Maximum population", out var parsedMaximumPopulation)
+                || !TryParseInt(minimumPopulationValue, "Minimum population", out var parsedMinimumPopulation)
+                || !TryParseFloat(runDurationValue, "Run duration", out var parsedRunDuration)
+                || !TryParseFloat(stepIntervalValue, "Step interval", out var parsedStepInterval)
+                || !TryParseFloat(plantProbabilityValue, "Plant probability", out var parsedPlantProbability)
+                || !TryParseFloat(herbivoreProbabilityValue, "Herbivore probability", out var parsedHerbivoreProbability)
+                || !TryParseFloat(carnivoreProbabilityValue, "Carnivore probability", out var parsedCarnivoreProbability))
+            {
+                validationMessage = settingsMessage;
+                return false;
+            }
+
+            width = Mathf.Max(1, parsedWidth);
+            height = Mathf.Max(1, parsedHeight);
+            seed = parsedSeed;
+            maxPopulation = Mathf.Max(0, parsedMaximumPopulation);
+            minPopulation = Mathf.Max(0, parsedMinimumPopulation);
+            runDurationSeconds = Mathf.Max(1f, parsedRunDuration);
+            stepInterval = Mathf.Max(0.01f, parsedStepInterval);
+            plantProbability = Mathf.Clamp01(parsedPlantProbability);
+            herbivoreProbability = Mathf.Clamp01(parsedHerbivoreProbability);
+            carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
+            randomizeSeedOnStart = randomizeSeed;
+            settingsMessage = "Global settings applied to the next run.";
+            SyncGlobalSettingTextFields();
+            PrepareNextRun();
+            validationMessage = settingsMessage;
+            return true;
+        }
+
+        public SpeciesRuleEditValues GetSpeciesRuleEditValues(SpeciesId species)
+        {
+            if (!ruleDrafts.TryGetValue(species, out var draft))
+            {
+                throw new ArgumentOutOfRangeException(nameof(species), species, "Unknown species.");
+            }
+
+            return new SpeciesRuleEditValues
+            {
+                MovementEnabled = draft.MovementEnabled,
+                MovementSpeed = FormatFloat(draft.MovementSpeed),
+                MovementPattern = (int)draft.MovementPattern,
+                AttackEnabled = draft.AttackEnabled,
+                AttackAmount = draft.AttackAmount.ToString(CultureInfo.InvariantCulture),
+                AttackPattern = (int)draft.AttackPattern,
+                BlockAmount = draft.BlockAmount.ToString(CultureInfo.InvariantCulture),
+                BlockPattern = (int)draft.BlockPattern,
+                DietTarget = (int)draft.DietTarget,
+                DietPattern = (int)draft.DietPattern,
+                ReproductionPattern = (int)draft.ReproductionPattern,
+                ReproductionEnabled = draft.ReproductionEnabled,
+                ReproductionChance = FormatFloat(draft.ReproductionChance),
+                ReproductionNeighborCount = draft.ReproductionNeighborCount.ToString(CultureInfo.InvariantCulture),
+                ReproductionFoodRequired = draft.ReproductionFoodRequired.ToString(CultureInfo.InvariantCulture),
+                MaxReproductionGroupSize = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture),
+                StartingEnergy = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture),
+                EnergyValue = draft.EnergyValue.ToString(CultureInfo.InvariantCulture),
+                Metabolism = draft.Metabolism.ToString(CultureInfo.InvariantCulture),
+                VisionRange = draft.VisionRange.ToString(CultureInfo.InvariantCulture),
+                Intelligence = draft.Intelligence.ToString(CultureInfo.InvariantCulture),
+                WiltEnabled = draft.WiltEnabled,
+                WiltChance = FormatFloat(draft.WiltChance),
+                CrowdingEnergyPenalty = draft.CrowdingEnergyPenalty.ToString(CultureInfo.InvariantCulture),
+                StartingFoodReserve = FormatFloat(draft.StartingFoodReserve),
+                SeedDropEnabled = draft.SeedDropEnabled,
+                SeedDropChance = FormatFloat(draft.SeedDropChance),
+            };
+        }
+
+        public bool TryApplySpeciesRuleEditValues(
+            SpeciesId species,
+            SpeciesRuleEditValues values,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (previewState != SpeciesPreviewState.Ready || sessionStarted)
+            {
+                validationMessage = "Species rules can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (values == null || !ruleDrafts.TryGetValue(species, out var draft))
+            {
+                validationMessage = "The selected species is not available.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (!TryParseFloat(values.MovementSpeed, "Movement speed", out var movementSpeed)
+                || !TryParseInt(values.AttackAmount, "Attack amount", out var attackAmount)
+                || !TryParseInt(values.BlockAmount, "Block amount", out var blockAmount)
+                || !TryParseFloat(values.ReproductionChance, "Reproduction chance", out var reproductionChance)
+                || !TryParseInt(values.ReproductionNeighborCount, "Nearby mate requirement", out var reproductionNeighborCount)
+                || !TryParseInt(values.ReproductionFoodRequired, "Energy required to mate", out var reproductionFoodRequired)
+                || !TryParseInt(values.MaxReproductionGroupSize, "Maximum group size", out var maxReproductionGroupSize)
+                || !TryParseInt(values.StartingEnergy, "Starting energy", out var startingEnergy)
+                || !TryParseInt(values.EnergyValue, "Energy value", out var energyValue)
+                || !TryParseInt(values.Metabolism, "Metabolism", out var metabolism)
+                || !TryParseInt(values.VisionRange, "Vision range", out var visionRange)
+                || !TryParseInt(values.Intelligence, "Intelligence", out var intelligence)
+                || !TryParseFloat(values.WiltChance, "Wilt chance", out var wiltChance)
+                || !TryParseInt(values.CrowdingEnergyPenalty, "Crowding cost", out var crowdingEnergyPenalty)
+                || !TryParseFloat(values.StartingFoodReserve, "Starting food reserve", out var startingFoodReserve)
+                || !TryParseFloat(values.SeedDropChance, "Seed drop chance", out var seedDropChance))
+            {
+                validationMessage = settingsMessage;
+                return false;
+            }
+
+            draft.MovementEnabled = values.MovementEnabled;
+            draft.MovementSpeed = Mathf.Max(0f, movementSpeed);
+            draft.MovementSpeedText = FormatFloat(draft.MovementSpeed);
+            draft.MovementPattern = (PatternPreset)Mathf.Clamp(values.MovementPattern, 0, 1);
+            draft.AttackEnabled = values.AttackEnabled;
+            draft.AttackAmount = Mathf.Max(0, attackAmount);
+            draft.AttackAmountText = draft.AttackAmount.ToString(CultureInfo.InvariantCulture);
+            draft.AttackPattern = (PatternPreset)Mathf.Clamp(values.AttackPattern, 0, 1);
+            draft.BlockAmount = Mathf.Max(0, blockAmount);
+            draft.BlockAmountText = draft.BlockAmount.ToString(CultureInfo.InvariantCulture);
+            draft.BlockPattern = (PatternPreset)Mathf.Clamp(values.BlockPattern, 0, 1);
+            draft.DietTarget = (DietTargetOption)Mathf.Clamp(values.DietTarget, 0, 3);
+            draft.DietPattern = (PatternPreset)Mathf.Clamp(values.DietPattern, 0, 1);
+            draft.ReproductionPattern = (PatternPreset)Mathf.Clamp(values.ReproductionPattern, 0, 1);
+            draft.ReproductionEnabled = values.ReproductionEnabled;
+            draft.ReproductionChance = Mathf.Clamp01(reproductionChance);
+            draft.ReproductionChanceText = FormatFloat(draft.ReproductionChance);
+            draft.ReproductionNeighborCount = Mathf.Max(0, reproductionNeighborCount);
+            draft.ReproductionNeighborCountText = draft.ReproductionNeighborCount.ToString(CultureInfo.InvariantCulture);
+            draft.ReproductionFoodRequired = Mathf.Max(0, reproductionFoodRequired);
+            draft.ReproductionFoodRequiredText = draft.ReproductionFoodRequired.ToString(CultureInfo.InvariantCulture);
+            draft.MaxReproductionGroupSize = Mathf.Max(0, maxReproductionGroupSize);
+            draft.MaxReproductionGroupSizeText = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
+            draft.StartingEnergy = Mathf.Max(0, startingEnergy);
+            draft.StartingEnergyText = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+            draft.EnergyValue = Mathf.Max(0, energyValue);
+            draft.EnergyValueText = draft.EnergyValue.ToString(CultureInfo.InvariantCulture);
+            draft.Metabolism = Mathf.Max(-1000, metabolism);
+            draft.MetabolismText = draft.Metabolism.ToString(CultureInfo.InvariantCulture);
+            draft.VisionRange = Mathf.Max(0, visionRange);
+            draft.VisionRangeText = draft.VisionRange.ToString(CultureInfo.InvariantCulture);
+            draft.Intelligence = Mathf.Max(0, intelligence);
+            draft.IntelligenceText = draft.Intelligence.ToString(CultureInfo.InvariantCulture);
+            draft.WiltEnabled = values.WiltEnabled;
+            draft.WiltChance = Mathf.Clamp01(wiltChance);
+            draft.WiltChanceText = FormatFloat(draft.WiltChance);
+            draft.CrowdingEnergyPenalty = Mathf.Max(0, crowdingEnergyPenalty);
+            draft.CrowdingEnergyPenaltyText = draft.CrowdingEnergyPenalty.ToString(CultureInfo.InvariantCulture);
+            draft.StartingFoodReserve = Mathf.Max(0f, startingFoodReserve);
+            draft.StartingFoodReserveText = FormatFloat(draft.StartingFoodReserve);
+            draft.SeedDropEnabled = values.SeedDropEnabled;
+            draft.SeedDropChance = Mathf.Clamp01(seedDropChance);
+            draft.SeedDropChanceText = FormatFloat(draft.SeedDropChance);
+
+            rules = CreateRulesFromDrafts();
+            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, rules[playerSpecies]));
+            settingsMessage = $"{species.Value} rules applied to the next run.";
+            PrepareNextRun();
+            validationMessage = settingsMessage;
+            return true;
         }
 
         public void PauseSimulation()
@@ -616,6 +844,50 @@ namespace SaltyGame
             }
         }
 
+        public bool CanPurchaseReward(int rewardIndex)
+        {
+            return previewState == SpeciesPreviewState.Rewards
+                && progression != null
+                && rewardIndex >= 0
+                && rewardIndex < rewardOptions.Length
+                && progression.Currency >= rewardOptions[rewardIndex].Cost;
+        }
+
+        public bool PurchaseReward(int rewardIndex)
+        {
+            if (!CanPurchaseReward(rewardIndex))
+            {
+                return false;
+            }
+
+            var upgrade = rewardOptions[rewardIndex];
+            if (!progression.TryPurchase(upgrade))
+            {
+                return false;
+            }
+
+            selectedUpgrade = upgrade;
+            previewState = SpeciesPreviewState.Results;
+            rewardMessage = string.Empty;
+            return true;
+        }
+
+        public void ContinueWithoutUpgrade()
+        {
+            if (previewState == SpeciesPreviewState.Rewards)
+            {
+                previewState = SpeciesPreviewState.Results;
+            }
+        }
+
+        public void PlayNextSimulation()
+        {
+            if (previewState == SpeciesPreviewState.Results)
+            {
+                PrepareNextRun();
+            }
+        }
+
         public void ResetToStart()
         {
             if (randomizeSeedOnStart)
@@ -633,6 +905,10 @@ namespace SaltyGame
             settingsScrollPosition = Vector2.zero;
             settingsMessage = string.Empty;
             SyncGlobalSettingTextFields();
+            if (noesisUiEnabled)
+            {
+                legacyUiEnabled = false;
+            }
             PrepareNextRun();
         }
 
@@ -884,12 +1160,7 @@ namespace SaltyGame
                 if (GUI.Button(new Rect(cardLeft + 16f, cardTop + 166f, cardWidth - 32f, 56f),
                     $"PURCHASE ({upgrade.Cost})", buttonStyle))
                 {
-                    if (progression.TryPurchase(upgrade))
-                    {
-                        selectedUpgrade = upgrade;
-                        previewState = SpeciesPreviewState.Results;
-                        rewardMessage = string.Empty;
-                    }
+                    PurchaseReward(index);
                 }
 
                 GUI.enabled = true;
@@ -901,7 +1172,7 @@ namespace SaltyGame
             if (GUI.Button(new Rect(panelLeft + 250f, panelTop + 462f, panelWidth - 500f, 56f),
                 "CONTINUE WITHOUT UPGRADE", buttonStyle))
             {
-                previewState = SpeciesPreviewState.Results;
+                ContinueWithoutUpgrade();
             }
 
             if (GUI.Button(new Rect(panelLeft + 250f, panelTop + 540f, panelWidth - 500f, 56f),
@@ -925,7 +1196,7 @@ namespace SaltyGame
             if (GUI.Button(new Rect(panelLeft + 180f, panelTop + 270f, panelWidth - 360f, 88f),
                 "PLAY NEXT SIMULATION", buttonStyle))
             {
-                PrepareNextRun();
+                PlayNextSimulation();
             }
         }
 
@@ -1077,6 +1348,28 @@ namespace SaltyGame
         static string FormatFloat(float value)
         {
             return value.ToString("0.###", CultureInfo.InvariantCulture);
+        }
+
+        bool TryParseInt(string text, string label, out int value)
+        {
+            if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+
+            settingsMessage = $"{label} must be a whole number.";
+            return false;
+        }
+
+        bool TryParseFloat(string text, string label, out float value)
+        {
+            if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            {
+                return true;
+            }
+
+            settingsMessage = $"{label} must be a number.";
+            return false;
         }
 
         CellularSimData CreateSimulationData()

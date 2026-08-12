@@ -68,6 +68,22 @@ design questions. Do not silently settle them in foundational grid code.
 - Profile the board in a real Noesis view before optimizing further. Prefer
   shared resources, solid brushes, and redraws only when a simulation tick or
   relevant presentation state changes.
+- The `CellularAutomataPrototype` scene now composes a Noesis shell through
+  `SpeciesSimulationNoesisHost` and `SpeciesSimulationViewModel`. The shell
+  owns the running, paused, rewards, and results controls, while the existing
+  IMGUI panel remains the fallback authoring surface for species-specific rules.
+- The shell also edits global run settings (grid size, seed mode, population
+  bounds, duration, step interval, and starting probabilities) through an
+  explicit apply command. Settings are validated and applied only before a
+  session starts, so an active run cannot be mutated underneath the simulation.
+- Species-rule authoring remains available through an explicit legacy-panel
+  handoff from the shell; it is hidden during normal Noesis settings flow so
+  the two authoring surfaces do not overlap.
+- The Noesis shell now also edits the complete current species-rule surface:
+  movement, attack, block, diet, reproduction, energy, perception, crowding,
+  wilt, food reserve, and seed-drop settings. The edit contract is plain data
+  and applies only to the next run; it does not expose the private draft or
+  mutate an active simulation.
 
 ## CellularSimData direction
 
