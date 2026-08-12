@@ -1,5 +1,6 @@
 <UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:game="clr-namespace:SaltyGame;assembly=SaltyGame.Runtime">
     <Grid Margin="24">
         <Border HorizontalAlignment="Center"
                 VerticalAlignment="Top"
@@ -25,6 +26,14 @@
             </StackPanel>
         </Border>
 
+        <game:SpeciesSimulationBoard x:Name="SimulationBoard"
+                                     Visibility="{Binding BoardVisibility}"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Width="960"
+                                     Height="600"
+                                     Margin="0,56,0,0"/>
+
         <Border Visibility="{Binding SettingsVisibility}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -38,7 +47,7 @@
                            FontSize="24"
                            HorizontalAlignment="Center"
                            TextWrapping="Wrap"/>
-                <TextBlock Text="Global settings are now available here. Species rule authoring remains on the existing prototype panel while it is migrated."
+                <TextBlock Text="Tune global settings and species rules before starting the next run."
                            Foreground="#FFD9E7F0"
                            FontSize="14"
                            TextWrapping="Wrap"

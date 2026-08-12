@@ -10,6 +10,7 @@ namespace SaltyGame
     public sealed class SpeciesSimulationViewModel : MonoBehaviour, INotifyPropertyChanged
     {
         SpeciesSimulationPreview preview;
+        SpeciesSimulationBoard board;
         SpeciesPreviewState lastState;
         SimulationRunStatus lastRunStatus;
         int lastTick = -1;
@@ -48,6 +49,7 @@ namespace SaltyGame
         Visibility pausedVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
+        Visibility boardVisibility;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -187,6 +189,7 @@ namespace SaltyGame
         public Visibility PausedVisibility => pausedVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
+        public Visibility BoardVisibility => boardVisibility;
 
         public void Initialize(SpeciesSimulationPreview simulationPreview)
         {
@@ -226,6 +229,7 @@ namespace SaltyGame
             if (view != null && view.Content is FrameworkElement content)
             {
                 content.DataContext = this;
+                board = content.FindName("SimulationBoard") as SpeciesSimulationBoard;
             }
 
             Refresh(true);
@@ -261,6 +265,17 @@ namespace SaltyGame
             lastRunStatus = runStatus;
             lastTick = tick;
 
+            if (board == null)
+            {
+                var view = GetComponent<NoesisView>();
+                if (view != null && view.Content is FrameworkElement content)
+                {
+                    board = content.FindName("SimulationBoard") as SpeciesSimulationBoard;
+                }
+            }
+
+            board?.SetGrid(run?.Cells);
+
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
             Set(ref runStatusText, GetRunStatusText(run), nameof(RunStatusText));
             Set(ref runDetailsText, GetRunDetailsText(run), nameof(RunDetailsText));
@@ -293,6 +308,11 @@ namespace SaltyGame
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
+            Set(ref boardVisibility,
+                run == null || state == SpeciesPreviewState.Ready
+                    ? Visibility.Collapsed
+                    : Visibility.Visible,
+                nameof(BoardVisibility));
         }
 
         void ApplySettings()

@@ -211,3 +211,22 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
   can be recreated.
 - Validate traversability and connectivity rather than assuming organic-looking
   output is playable.
+
+## Noesis migration status
+
+- Global settings, species-rule authoring, run controls, rewards, and results are
+  now presented by `SpeciesSimulationShell.xaml` with
+  `SpeciesSimulationViewModel`. The legacy IMGUI species editor remains an
+  explicit fallback only.
+- `SpeciesSimulationBoard` is the first XAML game-board attempt. It is a single
+  `FrameworkElement` custom renderer that receives the current
+  `Grid<SpeciesCell>` and batches all cell rectangles through `DrawingContext`.
+  It intentionally does not create one XAML element per cell.
+- The board is presentation-only: simulation stepping still happens in
+  `SpeciesSimulationPreview`/`SpeciesSimulationRunner`, and the custom control
+  only reads the current grid and invalidates its visual when the tick changes.
+- Elevated Unity validation on 2026-08-12 passed 75/75 Edit Mode tests and 4/4
+  Play Mode tests after the custom board was added. Unity licensing handshake
+  warnings remain machine-environment noise; they did not fail the suites.
+- The same pass completed a 20-seed `CellSim Baseline` for seeds 10100-10119;
+  the ignored report is `artifacts/cellular-experiment-20260812-061503/analysis.md`.
