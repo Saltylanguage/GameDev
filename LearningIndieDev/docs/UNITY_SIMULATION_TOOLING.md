@@ -62,15 +62,15 @@ flowchart LR
 Run these from the Unity project root, `LearningIndieDev`:
 
 ```powershell
-# Short front door. Unity must be closed first.
-.\tools\sim.cmd help
-.\tools\sim.cmd test
-.\tools\sim.cmd test -Mode EditMode
-.\tools\sim.cmd run
-.\tools\sim.cmd run -SeedStart 1000 -SeedCount 50
+# PowerShell (the .\ prefix runs the project-local command).
+.\CellSim.cmd Help
+.\CellSim.cmd Test
+.\CellSim.cmd Test -Mode EditMode
+.\CellSim.cmd Run
+.\CellSim.cmd Run -SeedCount 50
 ```
 
-`sim.cmd` launches PowerShell with a process-only execution-policy bypass; it
+`CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
 commands below when their full options are needed:
 
