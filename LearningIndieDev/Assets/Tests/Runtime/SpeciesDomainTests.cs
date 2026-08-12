@@ -966,6 +966,7 @@ namespace SaltyGame.Tests
         [Test]
         public void InitialGridFactoryIsDeterministicForTheSameSeedAndData()
         {
+            var rules = SpeciesRuleDefaults.Create();
             var data = new CellularSimData(
                 8,
                 6,
@@ -975,12 +976,31 @@ namespace SaltyGame.Tests
                     [SpeciesArchetype.Herbivore] = 0.2f,
                     [SpeciesArchetype.Carnivore] = 0.1f,
                 },
-                SpeciesRuleDefaults.Create(),
+                rules,
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f);
+            var reordered = new CellularSimData(
+                8,
+                6,
+                new Dictionary<SpeciesId, float>
+                {
+                    [SpeciesIds.Carnivore] = 0.1f,
+                    [SpeciesIds.Herbivore] = 0.2f,
+                    [SpeciesIds.Plant] = 0.4f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Carnivore] = rules[SpeciesIds.Carnivore],
+                    [SpeciesIds.Herbivore] = rules[SpeciesIds.Herbivore],
+                    [SpeciesIds.Plant] = rules[SpeciesIds.Plant],
+                },
                 runDurationSeconds: 10f,
                 stepInterval: 0.1f);
 
             var first = SpeciesInitialGridFactory.Create(data, runSeed: 1234);
-            var second = SpeciesInitialGridFactory.Create(data.Copy(), runSeed: 1234);
+            var second = SpeciesInitialGridFactory.Create(reordered, runSeed: 1234);
+
+            Assert.That(reordered.Fingerprint, Is.EqualTo(data.Fingerprint));
 
             for (var y = 0; y < data.Height; y++)
             {
@@ -988,9 +1008,9 @@ namespace SaltyGame.Tests
                 {
                     var firstCell = first.GetCell(x, y);
                     var secondCell = second.GetCell(x, y);
-                    Assert.That(secondCell.IsOccupied, Is.EqualTo(firstCell.IsOccupied));
-                    Assert.That(secondCell.Species, Is.EqualTo(firstCell.Species));
-                    Assert.That(secondCell.Terrain, Is.EqualTo(firstCell.Terrain));
+                    Assert.That(secondCell.IsCreature, Is.EqualTo(firstCell.IsCreature));
+                    Assert.That(secondCell.SpeciesId, Is.EqualTo(firstCell.SpeciesId));
+                    Assert.That(secondCell.TerrainId, Is.EqualTo(firstCell.TerrainId));
                     Assert.That(secondCell.TerrainEnergy, Is.EqualTo(firstCell.TerrainEnergy));
                     Assert.That(secondCell.Energy, Is.EqualTo(firstCell.Energy));
                 }

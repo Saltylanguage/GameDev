@@ -15,6 +15,13 @@ focused experiment.
 - Consider whether alpha status is inherited, earned by the child, or both.
 - Consider whether alpha cells should influence nearby members of their species
   through pack behavior, reproduction priority, or territorial rules.
+- Diet should eventually be a list of target species rather than one target.
+  This enables food-web distinctions such as small carnivores eating insects
+  while large carnivores do not, and grazers or browsers specializing in grass,
+  fruit, nectar, or other plant resources.
+- A species can define a play style or a scenario, not merely an NPC type. For
+  example, bees could need hives and flower nectar to reproduce rapidly, while
+  a flower-focused run could benefit from nearby bees.
 
 ## Upgrade ideas
 
@@ -38,6 +45,49 @@ focused experiment.
   create territory rather than simply blocking births.
 - Plant food could eventually come from moisture, soil quality, or drought
   events instead of a single fixed reserve.
+
+## Technical design questions
+
+- Define the smallest useful species-data model that permits distinctive
+  behaviors and interactions without copying every rule into every species.
+  Favor composable, data-driven rules with focused custom mechanics over a
+  universal behavior-plugin framework.
+- Determine which data belongs to reusable species definitions, which belongs
+  to a scenario, and which is mutable state of an individual cell during a run.
+- Generalize diet only when a second valid diet target makes the list valuable;
+  preserve the simple single-target prototype until then.
+
+## Analytics and player feedback ideas
+
+- Develop a way to identify interactions that are fun, engaging, dynamic, and
+  worth further design time as the content catalogue grows.
+- Later analysis should combine simulation telemetry with player feedback to
+  find patterns around engagement, experimentation, meaningful decisions, and
+  satisfying emergent outcomes. Fun is a latent outcome that can be estimated
+  and calibrated, not treated as unknowable.
+- Do not optimize a single universal fun score. Use a profile of measurable
+  signals: player agency, legibility, tension and recovery, novelty, strategic
+  diversity, and replay intent.
+- Attach player feedback to a precise run: scenario/ruleset fingerprint, seed,
+  upgrades, timeline, and outcome. Useful early prompts include whether choices
+  mattered, whether the result was understandable, and whether the player
+  wanted another run.
+- Use the combined evidence to rank candidate simulations for human design
+  review. Automated search should identify promising hypotheses, while player
+  evidence calibrates whether the measured signals correspond to enjoyment.
+- Guard against Goodhart's Law: a generator can exploit any one target metric.
+  Preserve multiple objectives, run diversity, and human review instead of
+  letting an automated score declare a design fun on its own.
+
+## AI and automation ideas
+
+- Long-term: run bounded batches of experimental cellular-automata rulesets to
+  surface interesting candidate simulations for human review.
+- The experiment harness may eventually support controlled, injectable behavior
+  modifications, but must keep seeds, ruleset fingerprints, and outcome reports
+  reproducible. It should be isolated from the shipping simulation loop.
+- Use automated search to generate and rank hypotheses, not to declare a
+  simulation fun without design review and player evidence.
 
 ## Open questions
 

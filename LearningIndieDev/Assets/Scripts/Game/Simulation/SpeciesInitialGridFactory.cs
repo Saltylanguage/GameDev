@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
@@ -13,13 +14,15 @@ namespace SaltyGame
 
             var random = new Random(runSeed);
             var grid = new Grid<SpeciesCell>(data.Width, data.Height);
+            var startingSpecies = GetSortedSpecies(data.StartingProbabilities);
+            var fallbackSpecies = GetSortedSpecies(data.SpeciesRules);
             var populationCount = 0;
             for (var y = 0; y < data.Height; y++)
             {
                 for (var x = 0; x < data.Width; x++)
                 {
                     var roll = random.NextDouble();
-                    if (!TryGetInitialSpecies(roll, data, out var species))
+                    if (!TryGetInitialSpecies(roll, data, startingSpecies, out var species))
                     {
                         continue;
                     }
@@ -61,7 +64,7 @@ namespace SaltyGame
                     continue;
                 }
 
-                var species = GetInitialSpecies(random.NextDouble(), data);
+                var species = GetInitialSpecies(random.NextDouble(), data, startingSpecies, fallbackSpecies);
                 grid.SetCell(x, y, CreateCell(data, species));
                 populationCount++;
             }
@@ -83,25 +86,30 @@ namespace SaltyGame
                     foodReserve: rules.StartingFoodReserve);
         }
 
-        static SpeciesId GetInitialSpecies(double roll, CellularSimData data)
+        static SpeciesId GetInitialSpecies(
+            double roll,
+            CellularSimData data,
+            IReadOnlyList<SpeciesId> startingSpecies,
+            IReadOnlyList<SpeciesId> fallbackSpecies)
         {
-            return TryGetInitialSpecies(roll, data, out var species)
+            return TryGetInitialSpecies(roll, data, startingSpecies, out var species)
                 ? species
-                : GetFallbackSpecies(data);
+                : GetFallbackSpecies(data, startingSpecies, fallbackSpecies);
         }
 
         static bool TryGetInitialSpecies(
             double roll,
             CellularSimData data,
+            IReadOnlyList<SpeciesId> startingSpecies,
             out SpeciesId species)
         {
             var cumulativeProbability = 0d;
-            foreach (var entry in data.StartingProbabilities)
+            foreach (var speciesId in startingSpecies)
             {
-                cumulativeProbability += entry.Value;
+                cumulativeProbability += data.StartingProbabilities[speciesId];
                 if (roll < cumulativeProbability)
                 {
-                    species = entry.Key;
+                    species = speciesId;
                     return true;
                 }
             }
@@ -110,14 +118,41 @@ namespace SaltyGame
             return false;
         }
 
-        static SpeciesId GetFallbackSpecies(CellularSimData data)
+        static SpeciesId GetFallbackSpecies(
+            CellularSimData data,
+            IReadOnlyList<SpeciesId> startingSpecies,
+            IReadOnlyList<SpeciesId> fallbackSpecies)
         {
-            foreach (var species in data.SpeciesRules.Keys)
+            var fallback = default(SpeciesId);
+            var highestProbability = float.MinValue;
+            foreach (var species in startingSpecies)
             {
-                return species;
+                var probability = data.StartingProbabilities[species];
+                if (probability > highestProbability)
+                {
+                    fallback = species;
+                    highestProbability = probability;
+                }
+            }
+
+            if (fallback.IsValid)
+            {
+                return fallback;
+            }
+
+            if (fallbackSpecies.Count > 0)
+            {
+                return fallbackSpecies[0];
             }
 
             throw new InvalidOperationException("Cellular simulation data must define at least one species.");
+        }
+
+        static List<SpeciesId> GetSortedSpecies<T>(IReadOnlyDictionary<SpeciesId, T> definitions)
+        {
+            var species = new List<SpeciesId>(definitions.Keys);
+            species.Sort((left, right) => string.CompareOrdinal(left.Value, right.Value));
+            return species;
         }
 
         static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesId species)

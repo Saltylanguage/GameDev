@@ -41,6 +41,17 @@ changes the dependency or an experiment provides a stronger trigger.
   same discrete event. Such output must be observed after a tick, never mutate
   the simulation through a global bus during the tick.
 
+## Reproducible experiment tooling (2026-08-11)
+
+- [x] Add closed-editor Unity batch commands for Edit Mode/Play Mode tests and
+  seeded cellular-simulation reports. The reports record ruleset fingerprints,
+  seed ranges, full population histories, and final-population summaries under
+  ignored `artifacts/` output.
+- [ ] Add visual captures, event-level telemetry, or report charts only when a
+  balance/design question needs more than population trajectories. Keep generated
+  artifacts outside the repository unless a curated design result is explicitly
+  chosen for source control.
+
 ## Completed foundational work
 
 ### TODO-CS-01 - Replace enum species identity (Priority 1)

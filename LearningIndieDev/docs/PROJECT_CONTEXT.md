@@ -97,6 +97,12 @@ design questions. Do not silently settle them in foundational grid code.
 - Future custom rule work should stay focused on a concrete mechanic such as
   sight; editor work should add terrain presets or preview asset selection only
   when that authoring workflow is needed.
+- Unity batch tooling now provides a closed-editor test entry point and a seeded
+  `CellularSimData` experiment runner. It emits ignored `artifacts/` reports
+  containing scenario path, seed range, ruleset fingerprint, population history,
+  and final-population summaries. It is intentionally an evidence/automation
+  seam rather than a custom editor-to-agent bridge; see
+  [`UNITY_SIMULATION_TOOLING.md`](UNITY_SIMULATION_TOOLING.md).
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case
