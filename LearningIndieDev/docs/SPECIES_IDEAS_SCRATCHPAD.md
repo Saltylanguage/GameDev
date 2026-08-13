@@ -6,6 +6,11 @@ focused experiment.
 
 ## Cell and species ideas
 
+- Visual direction: use compact, colorized geometric animal glyphs with flat
+  fills and one unmistakable identifying feature per species. Preserve green,
+  blue, and red role colors for plants, herbivores, and carnivores while using
+  silhouette and small accents to distinguish individual species.
+
 - Alpha offspring: an upgrade grants the species a chance to produce an alpha
   child. Alpha offspring require a special diet or other explicit conditions,
   similar in spirit to *The Isle*'s elder system, and receive significant stat
@@ -37,6 +42,20 @@ focused experiment.
 
 ## Emergent-system ideas
 
+- Future possible goal: geometry-directed colony construction through cellular
+  automata. A species or cell type could receive a target shape plus a required
+  material, then use local rules to approximate that geometry from resources
+  available in the world. This could eventually support biologically motivated
+  behavior such as ant colonies excavating tunnels and chambers or beavers
+  gathering wood to construct dams that alter water flow.
+- Start with deliberately simple viability proofs such as constructing a
+  concrete cross or a wooden triangle from an anchored blueprint. Only expand
+  toward decentralized gathering, transport, coordination, repair, and
+  environmentally functional structures if the small experiment produces
+  interesting variation. Open questions include how geometry is encoded, how
+  cells coordinate without global placement control, how imperfect or
+  incomplete builds are evaluated, and whether construction consumes, carries,
+  or transforms nearby resources.
 - Separate perception from movement: visible targets, priority selection, then a
   one-step move or later grid pathfinding.
 - Food reserves should create carrying capacity rather than only acting as a

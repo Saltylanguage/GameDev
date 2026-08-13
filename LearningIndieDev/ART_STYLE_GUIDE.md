@@ -25,3 +25,13 @@ The prototype now uses crisp top-down pixel art inspired by the supplied referen
 This is a first-pass art foundation, not a final asset pipeline. The next useful step is a focused in-game review of scale, contrast, and tile seams; only then should we add animation frames or split jungle foreground pieces.
 
 For the required authoring and preview loop for terrain transitions, see [`docs/TILE_AUTHORING_GUIDE.md`](docs/TILE_AUTHORING_GUIDE.md).
+
+## Cellular simulation species glyphs
+
+The cellular simulation board has a separate iconography direction from the
+retained Island Chores pixel-art slice. Its target is the supplied colorized
+animal reference: flat, geometric silhouettes with strong readability at small
+sizes and a distinctive feature per species. Keep role colors stable (green
+plants, blue herbivores, red carnivores) and use shape/accent differences for
+species identity. Monochrome silhouette references may guide the contour, but
+the colorized reference is the preferred presentation target.

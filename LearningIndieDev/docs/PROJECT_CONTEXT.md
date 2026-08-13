@@ -9,6 +9,11 @@ changes, and do not treat research references as approved implementation work.
 - The project is pivoting toward an iterative roguelike centered primarily on
   cellular automata. The working elevator pitch is **"cellular automata as a
   roguelike."**
+- Broad prototyping is giving way to production planning and a focused vertical
+  slice. The active workstreams are the upgrade-driven core loop, a deliberately
+  small species/scenario roster, separate player and developer experiences,
+  visual direction, audio feedback, and the first persistent roguelike unlock
+  loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - Candidate upgrades act on relative grid positions. Examples include adding
@@ -143,6 +148,25 @@ design questions. Do not silently settle them in foundational grid code.
 - Future custom rule work should stay focused on a concrete mechanic such as
   sight; editor work should add terrain presets or preview asset selection only
   when that authoring workflow is needed.
+
+## Cellular simulation iconography direction
+
+- The preferred species visual language is the supplied colorized reference:
+  bold, compact geometric silhouettes with flat fills, high contrast, and one
+  or two immediately identifiable features per species (ears, antlers, beak,
+  mane, tail, shell, and so on).
+- The monochrome reference sheets are useful for silhouette and pose research;
+  the colorized sheet is the stronger target for in-game presentation.
+- Keep the existing role colors for readability: plants green, herbivores blue,
+  and carnivores red. Species-specific shape and a restrained accent color can
+  provide identity without weakening the role language.
+- Prefer traced or authored vector silhouettes in the Noesis board over generic
+  geometric placeholders. The provided references are raster images, so their
+  paths must be traced or recreated; original vector data is not embedded in
+  the images.
+- The reference set contains animal symbols but no plant symbol. Plant species
+  should use a simple leaf, sprout, or stem family that follows the same bold
+  geometric language rather than borrowing an animal icon.
 - Unity batch tooling now provides a closed-editor test entry point and a seeded
   `CellularSimData` experiment runner. It emits ignored `artifacts/` reports
   containing scenario path, seed range, ruleset fingerprint, population history,
@@ -208,9 +232,11 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
   local editor state. The staged integration plan is tracked in
   [`DISCORD_AGENT_COLLABORATION_TODOS.md`](DISCORD_AGENT_COLLABORATION_TODOS.md).
 
-- Cellular automata is now central product direction, but the exact game loop is
-  still exploratory. A high-level pivot does not authorize large speculative
-  frameworks before the rules and feedback loop are playable.
+- Cellular automata is now the central product direction. The exact player
+  cadence, run-ending conditions, and reward timing must be locked in the
+  production brief before the vertical slice; do not silently settle them in
+  foundational code or build speculative frameworks ahead of the playable
+  upgrade-and-feedback loop.
 - Procedural cave generation remains a useful prototype and possible supporting
   feature; do not assume that cave generation itself is the new core game loop.
 - Do not replace the authored shoreline or jungle entrance with procedural output

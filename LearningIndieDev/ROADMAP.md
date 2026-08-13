@@ -1,77 +1,338 @@
-# Island survival roadmap
+# Cellular Automata Roguelike production roadmap
 
-## Completed
+This roadmap replaces the completed Island Chores prototype roadmap. The
+retained island work remains useful reference material, but current production
+is centered on **cellular automata as a roguelike**.
 
-### Milestone 1 - Prepare for Night
+The roadmap is organized around playable outcomes. Technical systems, content,
+art, audio, and tools are scheduled only when they help reach one of those
+outcomes.
 
-- Gather wood and stone.
-- Build a persistent campfire.
-- Track the first daily objective and reset renewable resources on a new day.
+## Product goal
 
-### Milestone 2 - Eat and Rest
+Deliver a run-based game in which the player develops a species by choosing
+cellular-automata upgrades, watches those rules interact with other species and
+the environment, and earns persistent scenario, species, and upgrade unlocks
+from accomplishments during the run.
 
-- Hunger and energy are explicit, recoverable player needs.
-- Every activity uses one shared, tunable hunger/energy cost model.
-- The campfire cooks two berries into one cooked meal.
-- Eating cooked meals restores more hunger than raw berries.
-- Sleeping at the campfire is the normal route to a new morning; hungry sleep reduces energy recovery.
-- Night now waits for player sleep instead of silently starting a new day.
-- Runtime coverage proves sleeping resets renewable targets and begins the next morning.
-- Play Mode coverage proves Bootstrap can complete the build, cook, eat, and sleep loop in Unity's frame loop.
+Before feature production accelerates, capture the exact player action cadence,
+run-ending conditions, reward cadence, and launch target in a one-page product
+brief. These details remain decisions to make, not assumptions for foundational
+code.
 
-## Current limitations
+## Production principles
 
-- Needs are intentionally forgiving and have no game-over state.
-- One campfire recipe exists; there is no general recipe system.
-- Campfire/sleep presentation remains placeholder-quality.
-- Save/load does not exist yet.
+- Make the upgrade decision and its visible consequence the center of play.
+- Prefer a small roster of distinct species over many lightly differentiated
+  species.
+- Keep simulation runs deterministic and record the seed, scenario, ruleset,
+  and upgrade loadout used for comparisons and bug reports.
+- Separate pleasant player-facing flows from complete developer authoring and
+  diagnostics.
+- Treat art, audio, and causal feedback as simulation readability, not final
+  polish.
+- Add a tool only after a repeated production task identifies its inputs,
+  outputs, and friction. Reuse the existing scenario assets and `CellSim`
+  commands first.
+- Promote research ideas such as colony construction only through bounded
+  experiments after the core loop is proven.
 
-### Milestone 3 - Weather the Storm
+## Parallel workstreams
 
-- Building the campfire advances the objective to a Day 2 storm forecast.
-- The player can build a 4-wood shelter beside the campfire.
-- The shelter marker is deliberately withheld until Night on Day 2, when it blinks above the site as an urgent preparation cue.
-- Sleeping on Day 2 resolves the authored storm: shelter prevents exposure; an open camp loses 25 energy and gains 20 hunger, but remains recoverable.
-- The F3 diagnostics panel now starts hidden, keeping the default game view player-facing.
-- Verification: Edit Mode 17/17 and Play Mode 3/3, including the Bootstrap shelter/storm path.
+### 1. Core loop and upgrades
 
-### Milestone 4 - Tools and specialization
+Define the run cadence and build an upgrade vocabulary from simulation values
+with known behavior. Begin with a small explicit catalog rather than a general
+rule scripting or modifier framework.
 
-- A crude axe is crafted at the campfire for 2 wood and 2 stone with [Q].
-- Once crafted, the HUD shows the tool and future trees take 4 hits instead of 6 and yield 8 wood instead of 4.
-- Manual Unity playtest passed: campfire craft, axe craft, day reset, and improved tree reward all worked.
-- Scope remains deliberately local; no generic item, equipment, or crafting framework was introduced.
+Required outcomes:
 
-### Milestone 5 - Visual foundation
+- Base species rules plus ordered run upgrades produce one immutable,
+  fingerprinted effective ruleset.
+- Each upgrade has a visible effect, valid range, stacking rule, preview, and
+  measurable activation or contribution.
+- Seeded baseline-versus-upgraded comparisons expose dead values, balance
+  cliffs, dominant choices, and interactions.
+- At least three builds create understandable and measurably different play
+  styles in the same scenario.
 
-- Normal play no longer uses floating world-name labels; the F3 panel remains the explicit debug view.
-- The world now uses authored pixel-art atlases, repeated beach/ocean/jungle tiles, a clearer shoreline, and world-Y depth sorting for characters and props.
-- Manual Bootstrap playtests passed for the shoreline composition, time-of-day colors, camp/shelter landmarks, and label-free normal view.
-- The jungle entrance now has a native 3x2 closed/open tile set built from the project canopy and beach pixel language. Its Play Mode visual acceptance remains pending.
+### 2. Species and scenario content
 
-### Milestone 6 - Compact jungle-edge zone
+Co-design species with the upgrade vocabulary. A species earns its place by
+changing which upgrades and strategies are valuable, not merely by having
+different starting numbers.
 
-- Clearing it uses the existing wood-chopping activity: hands take 8 hits for 4 wood; the crude axe takes 4 hits for 8 wood.
-- The interaction marker and context prompt have been manually verified near the jungle edge.
-- Manual verification passed: the cleared edge returns on a new day.
-- The mechanic swaps a closed 3x2 tile set for its matching open route after chopping; confirm the closed, opened, and next-day-reset states in Play Mode.
+Required outcomes:
 
-### Milestone 7 - One survivor with a routine and useful skill
+- Select a vertical-slice roster from the existing authored species rather than
+  balancing the entire library at once.
+- Give each selected species a concise identity: resource relationship,
+  movement or spatial behavior, pressure, strength, weakness, and upgrade
+  affinity.
+- Maintain a small scenario matrix that pressures different strategies without
+  prescribing one solution.
+- Add or remove species from the production roster based on playtest evidence.
 
-- Mara moves between the berry bush in the morning, jungle edge in the afternoon, and camp at night.
-- Once per day, [E] sends Mara scavenging instantly and returns one bonus berry without consuming the player's activity slot.
-- Mara's no-time-cost assignment and bonus berry have been manually verified.
-- Manual verification passed: Mara cycles through the starting point, jungle edge, and campsite; she can be used once per day and resets after rest.
+### 3. Player UI and Dev Lab
 
-## Immediate next step - Close the authored visual slice
+Split the current all-purpose simulation shell into two experiences:
 
-- Run one clean Unity Play Mode check of the closed/open jungle tile states, their next-day reset, and the existing gameplay loop.
-- Keep rejected entrance experiments under local-only `artifacts/`; do not add them to the Unity project.
-- Commit the intentional HUD, world, interaction, test, documentation, and authored-art changes as one coherent slice.
+- **Player UI:** scenario context, readable board, run controls, cell/species
+  inspection, upgrade choices, rewards, and results. It must not expose raw
+  tuning fields.
+- **Dev Lab scene:** scenario and species selection, seed controls, all tuning
+  fields, runtime simulation controls, metrics, and comparison diagnostics.
 
-## Later milestones
+Noesis remains the player-facing presentation stack. Simulation and scenario
+domain code remain independent of both views.
 
-1. Author a proper jungle entrance as a small set of native tiles or a deliberately matched terrain transition, then connect it to the existing jungle-edge state swap
-2. Autonomous camp assignments
-3. Versioned persistence
-4. Presentation and atmosphere polish
+### 4. Art direction and readability
+
+Iterate at actual board scale until terrain, role, species, selection, danger,
+and upgrade effects are readable and visually coherent.
+
+Required outcomes:
+
+- Compare a small number of complete visual directions in context rather than
+  polishing isolated icons.
+- Keep role recognition immediate while making selected species silhouettes
+  distinct.
+- Establish a shared palette, typography, spacing, panel, icon, animation, and
+  effects language for the board and surrounding UI.
+- Lock a vertical-slice direction before producing a large species asset set.
+
+### 5. Audio and simulation feedback
+
+Audio begins during the vertical slice. Dense cellular activity must be
+aggregated, prioritized, and rate-limited so that the simulation does not
+become noise.
+
+Required outcomes:
+
+- Define an audio palette for UI, upgrades, rewards, ambience, and major
+  simulation state changes.
+- Provide clear feedback for selection, confirmation, danger, success, failure,
+  and meaningful rule activation.
+- Test an event-aggregation policy for frequent births, deaths, attacks, and
+  resource events before adding a large sound catalog.
+- Include music and ambience direction in the slice, even if the first assets
+  are temporary.
+
+### 6. Roguelike shell and persistence
+
+Once one run and its rewards are proven, add the surrounding game structure:
+
+- Main menu and continue/new-run flow.
+- Run results and accomplishment evaluation.
+- Persistent unlocks for scenarios, species, and eligible upgrade content.
+- Versioned save data for settings and meta-progression; active-run persistence
+  is a separate decision.
+- A clear next-run flow that demonstrates why the previous run mattered.
+
+### 7. Production tools and quality
+
+Likely use cases include species/scenario authoring, seeded A/B comparisons,
+parameter sweeps, representative replay or visual capture, definition
+validation, and build verification. Implement each only when its repeated
+manual workflow is understood.
+
+Maintain focused tests for deterministic runs, occupancy and resource
+invariants, upgrade application, victory/reward conditions, and save migration.
+Set board-size, tick-time, entity-count, and UI redraw budgets before optimizing.
+
+## Milestones and gates
+
+### M0 - Production definition
+
+Exit criteria:
+
+- A one-page product brief defines player agency, run cadence, victory/defeat,
+  reward timing, persistence, target platform, and explicit non-goals.
+- The vertical-slice species roster, scenario, and intended three build styles
+  are named.
+- The player UI and Dev Lab responsibilities are agreed.
+
+### M1 - Playable upgrade loop
+
+Exit criteria:
+
+- A player can begin a curated scenario, observe the simulation, earn and choose
+  upgrades, see their effects, and reach a result without raw developer fields.
+- The Dev Lab can reproduce the same run and compare its base and upgraded
+  rulesets.
+- A first catalog of roughly 6-10 upgrades includes numeric, spatial,
+  conditional, and tradeoff examples without a generalized plugin framework.
+
+### M2 - Vertical slice
+
+Exit criteria:
+
+- One scenario supports at least three understandable builds across a small,
+  visually distinct species roster.
+- The complete main-menu-to-run-to-reward-to-next-run flow works with versioned
+  meta-progression.
+- Player UI, selected art direction, initial audio language, onboarding, and
+  results presentation are coherent enough for external playtesting.
+- Players can explain what their upgrades changed and the main cause of their
+  outcome.
+
+### M3 - Content alpha
+
+Exit criteria:
+
+- Several scenarios and species create distinct strategic pressures using the
+  proven upgrade grammar and authoring pipeline.
+- No universally correct upgrade path dominates representative seeded runs or
+  structured playtests.
+- Performance and save compatibility meet the agreed production budgets.
+- The feature set is locked; unproven ideas remain research or post-launch
+  candidates.
+
+### M4 - Beta and release preparation
+
+Exit criteria:
+
+- Content is complete and the focus is defects, balance, onboarding,
+  accessibility, input, performance, compatibility, store/platform work, and
+  release operations.
+- Representative runs, save upgrades, and supported hardware have repeatable
+  validation coverage.
+
+## Initial sprint plan
+
+Default cadence is two weeks. Sprint 0 is a shorter planning sprint. Do not put
+calendar dates on later work until owner capacity and the product brief are
+known. Each sprint has one primary playable outcome; exploratory art and audio
+work may run alongside it without displacing that outcome.
+
+### Sprint 0 - Lock the slice
+
+Primary outcome: the team can describe exactly what will be demonstrated by the
+vertical slice.
+
+- Write the one-page product brief.
+- Name one slice scenario, the player species, opposing/supporting roster, three
+  target build styles, run-end conditions, and reward cadence.
+- Inventory existing upgrades and simulation parameters; identify useful ranges
+  and missing telemetry rather than designing a large catalog.
+- Make a screen-flow sketch covering main menu, run, upgrade choice, results,
+  unlock, and next run.
+- Write the Dev Lab use cases and choose the minimum useful controls.
+- Gather a compact art and audio reference board and define evaluation criteria.
+
+Exit: M0 criteria are met and Sprint 1 has no unresolved product-level blocker.
+
+### Sprint 1 - Separate play from authoring
+
+Primary outcome: a player can run the selected scenario without seeing the
+tuning interface.
+
+- Create the Dev Lab scene around the existing runtime settings, scenario
+  assets, board, and diagnostics.
+- Reduce the player scene to scenario context, start/pause/speed controls,
+  essential inspection, and results placeholders.
+- Keep both scenes on the same simulation-domain APIs and immutable run-start
+  data.
+- Establish the first visual and audio spike inside the player scene at actual
+  board scale.
+
+Exit: raw parameters are available in the Dev Lab and absent from normal play;
+the same fixed seed produces the same run in both scenes.
+
+### Sprint 2 - First trustworthy upgrades
+
+Primary outcome: the player makes an upgrade choice whose effect is predictable
+and visible.
+
+- Define explicit application and stacking semantics for the first 6-10
+  upgrades.
+- Record the selected upgrade loadout in the effective ruleset and run result.
+- Add effect previews and the minimum activation/contribution telemetry needed
+  to evaluate the catalog.
+- Cover upgrade application, invalid combinations, and deterministic replay
+  with focused tests.
+
+Exit: at least one numeric, one spatial, one conditional, and one tradeoff
+upgrade can be selected, previewed, observed, and reproduced.
+
+### Sprint 3 - Species/build co-design
+
+Primary outcome: three builds produce distinct strategies rather than only
+different final numbers.
+
+- Select and tune the smallest vertical-slice roster from the existing species
+  assets.
+- Run fixed-seed baselines, parameter sweeps, and representative visual reviews.
+- Remove or revise upgrades that rarely activate, always win, or feel identical.
+- Add tooling only for a comparison task that has become repeatedly expensive.
+
+Exit: three named builds have distinct behavior, strengths, weaknesses, and
+scenario interactions, with both simulation evidence and an in-game review.
+
+### Sprint 4 - Presentation and feedback pass
+
+Primary outcome: a new player can read the board and understand important
+changes without developer explanation.
+
+- Choose and apply the vertical-slice art direction across the board and core
+  player UI.
+- Replace technical labels and forms with player language and progressive
+  disclosure.
+- Implement the initial audio palette and rate-limited simulation feedback.
+- Add upgrade, danger, success, failure, and result feedback using coordinated
+  visual and audio cues.
+
+Exit: a short comprehension playtest can identify species roles, current
+pressure, selected upgrade effect, and run outcome cause.
+
+### Sprint 5 - Roguelike loop
+
+Primary outcome: one completed run changes the choices available in the next.
+
+- Add the main menu and new/continue flow.
+- Evaluate accomplishments in run results.
+- Persist the first scenario, species, or upgrade unlocks in versioned save
+  data.
+- Present earned rewards and return cleanly to the next-run flow.
+
+Exit: a fresh profile can complete a run, earn a defined unlock, restart the
+game, and use that unlock in a subsequent run.
+
+### Sprint 6 - Vertical-slice validation
+
+Primary outcome: an external player can complete and replay the slice without
+developer intervention.
+
+- Run structured onboarding, comprehension, build-diversity, and replay-intent
+  playtests.
+- Fix blockers, causal-feedback failures, dominant choices, save issues, and
+  measured performance problems.
+- Validate representative deterministic runs and supported input/display
+  configurations.
+- Decide which content enters M3 and which ideas remain research.
+
+Exit: M2 criteria are met or the evidence produces a short, prioritized revision
+plan. Do not begin broad content production before this gate.
+
+## Explicitly outside the initial slice
+
+- Polishing every currently authored species.
+- A universal upgrade scripting, modifier, event-bus, or behavior-plugin system.
+- A broad custom tooling suite without demonstrated workflows.
+- Geometry-directed colony construction, ant tunnels, or beaver dams beyond a
+  separately approved viability experiment.
+- Large-scale procedural environment work unrelated to the selected scenario.
+- Final-volume art or audio production before the slice direction is validated.
+
+## Planning rhythm
+
+At each sprint review, record:
+
+- The playable outcome demonstrated.
+- Evidence from seeded runs and human playtests.
+- What changed in the product assumptions.
+- What was cut or deferred.
+- The next sprint's single primary outcome and exit test.
+
+Track implementation tasks outside this document. Update this roadmap only when
+milestone scope, dependencies, or product direction materially changes.
