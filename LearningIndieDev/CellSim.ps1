@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('Help', 'Run', 'Test', 'Report', 'Compare', 'Baseline')]
+    [ValidateSet('Help', 'Run', 'Test', 'Visuals', 'Report', 'Compare', 'Baseline')]
     [string]$Command = 'Help',
     [ValidateSet('EditMode', 'PlayMode', 'All')]
     [string]$Mode = 'All',
@@ -14,6 +14,9 @@ param(
     [string]$BaselinePath,
     [string]$TestArtifactDirectory,
     [string]$OutputPath,
+    [string]$TestFilter,
+    [string]$ReplayReportPath,
+    [int]$ReplaySeed = -1,
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -22,12 +25,15 @@ function Show-Usage {
     @'
 CellSim Help
 CellSim Test [-Mode EditMode|PlayMode|All]
+CellSim Visuals [-TestFilter SaltyGame.PlayModeTests.SomeTest]
+CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-SeedStart 1] [-SeedCount 20] [-ScenarioPath Assets/...]
 CellSim Report [-ReportPath artifacts/.../report.json]
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-ScenarioPath Assets/...]
 
 Unity must be closed before Test or Run.
+Visuals also requires Unity to be closed and a graphics-capable editor run.
 '@ | Write-Output
 }
 
@@ -35,6 +41,9 @@ switch ($Command) {
     'Help' { Show-Usage }
     'Test' {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityTests.ps1') -Mode $Mode -ProjectPath $ProjectPath -UnityPath $UnityPath
+    }
+    'Visuals' {
+        & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
         & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -SeedStart $SeedStart -SeedCount $SeedCount -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -ProjectPath $ProjectPath -UnityPath $UnityPath

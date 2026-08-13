@@ -28,7 +28,7 @@ flowchart LR
 - Detect the project’s Unity version from `ProjectSettings/ProjectVersion.txt`;
   pass `-UnityPath` only when Unity is installed somewhere nonstandard.
 - Keep experimental output outside source control in `artifacts/`, so generated
-  reports never create noisy changes or accidental commits.
+  reports and visual evidence never create noisy changes or accidental commits.
 
 ### Deterministic simulation experiments
 
@@ -56,9 +56,8 @@ flowchart LR
 - Keep the shipping domain code free of editor automation. Batch-only concerns
   live under `Assets/Editor/SimulationTools/`; shell orchestration lives under
   `tools/`.
-- Establish a clean seam for later additions such as screenshot capture,
-  CSV/chart generation, richer event metrics, scenario selectors, and bounded
-  rule-search experiments—without building those systems before they are needed.
+- Capture optional graphics-enabled Play Mode checkpoints for review without
+  changing the normal headless test path.
 
 ## Commands
 
@@ -69,6 +68,8 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Help
 .\CellSim.cmd Test
 .\CellSim.cmd Test -Mode EditMode
+.\CellSim.cmd Visuals
+.\CellSim.cmd Visuals -ReplayReportPath artifacts\cellular-experiment-...\report.json -ReplaySeed 10100
 .\CellSim.cmd Run
 .\CellSim.cmd Run -SeedCount 50
 .\CellSim.cmd Report
@@ -83,6 +84,7 @@ commands below when their full options are needed:
 | Command | Use it for |
 | --- | --- |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
+| `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
 | `CellSim Run` | Generate a JSON report for a seed range. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
@@ -95,6 +97,22 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps
 # One test suite when the change is domain-only or scene/UI-only.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps1 -Mode EditMode
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps1 -Mode PlayMode
+
+# Graphics-enabled prototype checkpoints; Unity must be closed.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
+    -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe'
+
+# Focus the visual run on one test when needed; the default runs all PlayMode tests.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
+    -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe' `
+    -TestFilter 'SaltyGame.PlayModeTests.CavePreviewPlayModeTests.CellularAutomataPrototypeCreatesAndAnimatesTheSpeciesPreview'
+
+# Replay one selected seed from a headless report; Unity must be closed.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
+    -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe' `
+    -ReplayReportPath artifacts\cellular-experiment-...\report.json `
+    -ReplaySeed 10100 `
+    -TestFilter 'SaltyGame.PlayModeTests.CavePreviewPlayModeTests.CellularAutomataPrototypeCreatesAndAnimatesTheSpeciesPreview'
 
 # Twenty default-scenario runs, seeds 1 through 20.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1
@@ -112,6 +130,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | Command | Output |
 | --- | --- |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
+| `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json` plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
@@ -156,10 +175,10 @@ Editing the asset affects a future run, never one that is already underway.
 ## Deliberate limits
 
 This is an execution and evidence spine, not a simulation-engine rewrite. It
-does **not** yet add screenshots, a graphing dashboard, automated fun scoring,
-runtime rule plugins, scent, generalized diet lists, custom terrain asset
-authoring, or a custom Codex-to-Unity communication service. Those should be
-introduced only when a concrete experiment requires them.
+does **not** add a graphing dashboard, automated fun scoring, runtime rule
+plugins, scent, generalized diet lists, custom terrain asset authoring, or a
+custom Codex-to-Unity communication service. Those should be introduced only
+when a concrete experiment requires them.
 
 For current and deferred cellular-simulation work, see
 [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). For the longer-term analytics
