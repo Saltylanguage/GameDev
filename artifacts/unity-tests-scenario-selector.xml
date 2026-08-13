@@ -1,0 +1,510 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="76" result="Passed" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.7212043">
+  <test-suite type="TestSuite" id="1000" name="LearningIndieDev" fullname="LearningIndieDev" runstate="Runnable" testcasecount="76" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.721204" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1087" name="SaltyGame.Tests.dll" fullname="D:/GameDev/GameDev/LearningIndieDev/Library/ScriptAssemblies/SaltyGame.Tests.dll" runstate="Runnable" testcasecount="76" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.713267" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="672" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1088" name="SaltyGame" fullname="SaltyGame" runstate="Runnable" testcasecount="76" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.712119" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1089" name="Tests" fullname="SaltyGame.Tests" runstate="Runnable" testcasecount="76" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.711215" total="76" passed="76" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1001" name="ActivityControllerTests" fullname="SaltyGame.Tests.ActivityControllerTests" classname="SaltyGame.Tests.ActivityControllerTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.031967" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1002" name="ActivityControllerDeliversCompletionRewardToInventory" fullname="SaltyGame.Tests.ActivityControllerTests.ActivityControllerDeliversCompletionRewardToInventory" methodname="ActivityControllerDeliversCompletionRewardToInventory" classname="SaltyGame.Tests.ActivityControllerTests" runstate="Runnable" seed="61374636" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.016050" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1003" name="ActivityControllerRejectsWorkThePlayerCannotAfford" fullname="SaltyGame.Tests.ActivityControllerTests.ActivityControllerRejectsWorkThePlayerCannotAfford" methodname="ActivityControllerRejectsWorkThePlayerCannotAfford" classname="SaltyGame.Tests.ActivityControllerTests" runstate="Runnable" seed="1271318038" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000953" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1004" name="ActivityRulesTests" fullname="SaltyGame.Tests.ActivityRulesTests" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" testcasecount="6" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.008363" total="6" passed="6" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1009" name="ActivitiesReachNightAndSleepStartsTheNextDay" fullname="SaltyGame.Tests.ActivityRulesTests.ActivitiesReachNightAndSleepStartsTheNextDay" methodname="ActivitiesReachNightAndSleepStartsTheNextDay" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="724821689" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.001537" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1008" name="ActivityDefinitionsRejectInvalidValues" fullname="SaltyGame.Tests.ActivityRulesTests.ActivityDefinitionsRejectInvalidValues" methodname="ActivityDefinitionsRejectInvalidValues" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="1628775227" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.003231" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1010" name="CookingCreatesOneMealAfterItsDuration" fullname="SaltyGame.Tests.ActivityRulesTests.CookingCreatesOneMealAfterItsDuration" methodname="CookingCreatesOneMealAfterItsDuration" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="1875748982" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000587" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1006" name="GatheringRewardsMoreBerriesForStrongTiming" fullname="SaltyGame.Tests.ActivityRulesTests.GatheringRewardsMoreBerriesForStrongTiming" methodname="GatheringRewardsMoreBerriesForStrongTiming" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="663095518" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000342" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1007" name="MiningThreeStrongHitsAwardThreeStone" fullname="SaltyGame.Tests.ActivityRulesTests.MiningThreeStrongHitsAwardThreeStone" methodname="MiningThreeStrongHitsAwardThreeStone" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="1250653298" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000304" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1005" name="ThreeStrongHitsCompleteAndAwardThreeWood" fullname="SaltyGame.Tests.ActivityRulesTests.ThreeStrongHitsCompleteAndAwardThreeWood" methodname="ThreeStrongHitsCompleteAndAwardThreeWood" classname="SaltyGame.Tests.ActivityRulesTests" runstate="Runnable" seed="1149197618" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000388" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1011" name="CaveGeneratorTests" fullname="SaltyGame.Tests.CaveGeneratorTests" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" testcasecount="5" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.010500" total="5" passed="5" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1016" name="CaveCellNeighborhoodContainsTheEightSurroundingOffsets" fullname="SaltyGame.Tests.CaveGeneratorTests.CaveCellNeighborhoodContainsTheEightSurroundingOffsets" methodname="CaveCellNeighborhoodContainsTheEightSurroundingOffsets" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" seed="1141095560" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.004481" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1012" name="GenerateProducesTheSameCaveForTheSameSeed" fullname="SaltyGame.Tests.CaveGeneratorTests.GenerateProducesTheSameCaveForTheSameSeed" methodname="GenerateProducesTheSameCaveForTheSameSeed" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" seed="951173530" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.003081" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1013" name="InitialGenerationAlwaysCreatesBoundaryWalls" fullname="SaltyGame.Tests.CaveGeneratorTests.InitialGenerationAlwaysCreatesBoundaryWalls" methodname="InitialGenerationAlwaysCreatesBoundaryWalls" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" seed="413845360" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000398" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1014" name="SimulateStepAppliesTheSuppliedNeighborhoodAndThreshold" fullname="SaltyGame.Tests.CaveGeneratorTests.SimulateStepAppliesTheSuppliedNeighborhoodAndThreshold" methodname="SimulateStepAppliesTheSuppliedNeighborhoodAndThreshold" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" seed="434087303" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000517" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1015" name="SimulateStepDoesNotModifyItsSourceGrid" fullname="SaltyGame.Tests.CaveGeneratorTests.SimulateStepDoesNotModifyItsSourceGrid" methodname="SimulateStepDoesNotModifyItsSourceGrid" classname="SaltyGame.Tests.CaveGeneratorTests" runstate="Runnable" seed="1213349805" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.000358" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1017" name="GameRuntimeTests" fullname="SaltyGame.Tests.GameRuntimeTests" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" testcasecount="8" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.569570" total="8" passed="8" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1020" name="CampfireCooksBerriesAndEatingUsesTheBetterMealValue" fullname="SaltyGame.Tests.GameRuntimeTests.CampfireCooksBerriesAndEatingUsesTheBetterMealValue" methodname="CampfireCooksBerriesAndEatingUsesTheBetterMealValue" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="1216956935" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.101089" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1019" name="CampfireObjectiveConsumesResourcesAndPersists" fullname="SaltyGame.Tests.GameRuntimeTests.CampfireObjectiveConsumesResourcesAndPersists" methodname="CampfireObjectiveConsumesResourcesAndPersists" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="2106091895" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.064715" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1024" name="CrudeAxeCostsResourcesAndImprovesTreeChopping" fullname="SaltyGame.Tests.GameRuntimeTests.CrudeAxeCostsResourcesAndImprovesTreeChopping" methodname="CrudeAxeCostsResourcesAndImprovesTreeChopping" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="1630269994" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.061417" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1018" name="GameRuntimeBuildsTheFirstVerticalSliceAndResetsTargets" fullname="SaltyGame.Tests.GameRuntimeTests.GameRuntimeBuildsTheFirstVerticalSliceAndResetsTargets" methodname="GameRuntimeBuildsTheFirstVerticalSliceAndResetsTargets" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="2139678602" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.067193" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1025" name="JungleEdgeUsesTheAxeAndSurvivorHelpsOncePerDay" fullname="SaltyGame.Tests.GameRuntimeTests.JungleEdgeUsesTheAxeAndSurvivorHelpsOncePerDay" methodname="JungleEdgeUsesTheAxeAndSurvivorHelpsOncePerDay" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="2068108596" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:24Z" duration="0.065630" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1023" name="OpenCampStormHasARecoverableSurvivalCost" fullname="SaltyGame.Tests.GameRuntimeTests.OpenCampStormHasARecoverableSurvivalCost" methodname="OpenCampStormHasARecoverableSurvivalCost" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="705714252" result="Passed" start-time="2026-08-13 02:06:24Z" end-time="2026-08-13 02:06:25Z" duration="0.068029" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1022" name="ShelterBuiltBeforeDayTwoStormPreventsExposureAndResolvesTheScenario" fullname="SaltyGame.Tests.GameRuntimeTests.ShelterBuiltBeforeDayTwoStormPreventsExposureAndResolvesTheScenario" methodname="ShelterBuiltBeforeDayTwoStormPreventsExposureAndResolvesTheScenario" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="1720197589" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.068859" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1021" name="SleepingAtTheBuiltCampfireStartsTheNextMorningAndResetsTargets" fullname="SaltyGame.Tests.GameRuntimeTests.SleepingAtTheBuiltCampfireStartsTheNextMorningAndResetsTargets" methodname="SleepingAtTheBuiltCampfireStartsTheNextMorningAndResetsTargets" classname="SaltyGame.Tests.GameRuntimeTests" runstate="Runnable" seed="56387989" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.068530" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1026" name="GridPatternTests" fullname="SaltyGame.Tests.GridPatternTests" classname="SaltyGame.Tests.GridPatternTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003549" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1028" name="ConstructorCopiesTheSuppliedOffsets" fullname="SaltyGame.Tests.GridPatternTests.ConstructorCopiesTheSuppliedOffsets" methodname="ConstructorCopiesTheSuppliedOffsets" classname="SaltyGame.Tests.GridPatternTests" runstate="Runnable" seed="1427943892" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000801" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1029" name="ConstructorRejectsNullOffsets" fullname="SaltyGame.Tests.GridPatternTests.ConstructorRejectsNullOffsets" methodname="ConstructorRejectsNullOffsets" classname="SaltyGame.Tests.GridPatternTests" runstate="Runnable" seed="903739363" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000414" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1027" name="ConstructorStoresOffsetsInTheirSuppliedOrder" fullname="SaltyGame.Tests.GridPatternTests.ConstructorStoresOffsetsInTheirSuppliedOrder" methodname="ConstructorStoresOffsetsInTheirSuppliedOrder" classname="SaltyGame.Tests.GridPatternTests" runstate="Runnable" seed="1575313913" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000299" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1030" name="GridSimulationTests" fullname="SaltyGame.Tests.GridSimulationTests" classname="SaltyGame.Tests.GridSimulationTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.004545" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1033" name="CellTypesInteractInOneAtomicStep" fullname="SaltyGame.Tests.GridSimulationTests.CellTypesInteractInOneAtomicStep" methodname="CellTypesInteractInOneAtomicStep" classname="SaltyGame.Tests.GridSimulationTests" runstate="Runnable" seed="1529020126" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.002490" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1031" name="InitializationIsDeterministicForASeed" fullname="SaltyGame.Tests.GridSimulationTests.InitializationIsDeterministicForASeed" methodname="InitializationIsDeterministicForASeed" classname="SaltyGame.Tests.GridSimulationTests" runstate="Runnable" seed="569073715" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000607" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1032" name="LifeRulesReadThePreviousGeneration" fullname="SaltyGame.Tests.GridSimulationTests.LifeRulesReadThePreviousGeneration" methodname="LifeRulesReadThePreviousGeneration" classname="SaltyGame.Tests.GridSimulationTests" runstate="Runnable" seed="980493517" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000330" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1034" name="GridTests" fullname="SaltyGame.Tests.GridTests" classname="SaltyGame.Tests.GridTests" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.005938" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1035" name="ConstructorCreatesGridWithExpectedDimensionsAndDefaults" fullname="SaltyGame.Tests.GridTests.ConstructorCreatesGridWithExpectedDimensionsAndDefaults" methodname="ConstructorCreatesGridWithExpectedDimensionsAndDefaults" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="447136364" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000491" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1036" name="CoordinateFactoryInitializesEveryCell" fullname="SaltyGame.Tests.GridTests.CoordinateFactoryInitializesEveryCell" methodname="CoordinateFactoryInitializesEveryCell" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="482303513" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000405" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1044" name="CopyCreatesIndependentGridStorage" fullname="SaltyGame.Tests.GridTests.CopyCreatesIndependentGridStorage" methodname="CopyCreatesIndependentGridStorage" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="2061589261" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000330" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1045" name="CopyFunctionSupportsIndependentReferenceTypeCells" fullname="SaltyGame.Tests.GridTests.CopyFunctionSupportsIndependentReferenceTypeCells" methodname="CopyFunctionSupportsIndependentReferenceTypeCells" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="725867350" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000946" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-suite type="ParameterizedMethod" id="1043" name="DirectAccessThrowsForLocationsOutsideTheGrid" fullname="SaltyGame.Tests.GridTests.DirectAccessThrowsForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001643" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+              <properties />
+              <test-case id="1039" name="DirectAccessThrowsForLocationsOutsideTheGrid(-1,0)" fullname="SaltyGame.Tests.GridTests.DirectAccessThrowsForLocationsOutsideTheGrid(-1,0)" methodname="DirectAccessThrowsForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="1361570435" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000425" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1040" name="DirectAccessThrowsForLocationsOutsideTheGrid(0,-1)" fullname="SaltyGame.Tests.GridTests.DirectAccessThrowsForLocationsOutsideTheGrid(0,-1)" methodname="DirectAccessThrowsForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="1389669455" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000116" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1041" name="DirectAccessThrowsForLocationsOutsideTheGrid(2,0)" fullname="SaltyGame.Tests.GridTests.DirectAccessThrowsForLocationsOutsideTheGrid(2,0)" methodname="DirectAccessThrowsForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="1802138045" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000093" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+              <test-case id="1042" name="DirectAccessThrowsForLocationsOutsideTheGrid(0,2)" fullname="SaltyGame.Tests.GridTests.DirectAccessThrowsForLocationsOutsideTheGrid(0,2)" methodname="DirectAccessThrowsForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="1401268814" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000075" asserts="0">
+                <properties>
+                  <property name="retryIteration" value="0" />
+                  <property name="repeatIteration" value="0" />
+                </properties>
+              </test-case>
+            </test-suite>
+            <test-case id="1037" name="SetCellUpdatesOnlyTheRequestedLocation" fullname="SaltyGame.Tests.GridTests.SetCellUpdatesOnlyTheRequestedLocation" methodname="SetCellUpdatesOnlyTheRequestedLocation" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="40669622" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000316" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1038" name="TryMethodsReturnFalseForLocationsOutsideTheGrid" fullname="SaltyGame.Tests.GridTests.TryMethodsReturnFalseForLocationsOutsideTheGrid" methodname="TryMethodsReturnFalseForLocationsOutsideTheGrid" classname="SaltyGame.Tests.GridTests" runstate="Runnable" seed="1851849243" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000419" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1046" name="SpeciesDomainTests" fullname="SaltyGame.Tests.SpeciesDomainTests" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" testcasecount="36" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.072330" total="36" passed="36" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1063" name="AlphaOffspringRulePromotesNewbornCreaturesAndChangesTheRulesetFingerprint" fullname="SaltyGame.Tests.SpeciesDomainTests.AlphaOffspringRulePromotesNewbornCreaturesAndChangesTheRulesetFingerprint" methodname="AlphaOffspringRulePromotesNewbornCreaturesAndChangesTheRulesetFingerprint" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="2146747873" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.022964" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1062" name="CarnivoreNeedsFoodAndANeighborToReproduce" fullname="SaltyGame.Tests.SpeciesDomainTests.CarnivoreNeedsFoodAndANeighborToReproduce" methodname="CarnivoreNeedsFoodAndANeighborToReproduce" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="195996653" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003941" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1060" name="CarnivoresAttackHerbivoresButHerbivoresDoNotAttackCarnivores" fullname="SaltyGame.Tests.SpeciesDomainTests.CarnivoresAttackHerbivoresButHerbivoresDoNotAttackCarnivores" methodname="CarnivoresAttackHerbivoresButHerbivoresDoNotAttackCarnivores" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="964642086" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000742" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1051" name="CellularSimDataAssetCreatesAnIndependentRuntimeSnapshot" fullname="SaltyGame.Tests.SpeciesDomainTests.CellularSimDataAssetCreatesAnIndependentRuntimeSnapshot" methodname="CellularSimDataAssetCreatesAnIndependentRuntimeSnapshot" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="688239820" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003840" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1076" name="CellularSimDataEditsReturnNewDataWithoutMutatingOriginal" fullname="SaltyGame.Tests.SpeciesDomainTests.CellularSimDataEditsReturnNewDataWithoutMutatingOriginal" methodname="CellularSimDataEditsReturnNewDataWithoutMutatingOriginal" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1137660222" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003028" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1078" name="CellularSimDataFingerprintIsStableAcrossDictionaryOrderAndChangesWithRules" fullname="SaltyGame.Tests.SpeciesDomainTests.CellularSimDataFingerprintIsStableAcrossDictionaryOrderAndChangesWithRules" methodname="CellularSimDataFingerprintIsStableAcrossDictionaryOrderAndChangesWithRules" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1516052144" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001668" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1050" name="CellularSimDataRetainsCustomTerrainDefinitions" fullname="SaltyGame.Tests.SpeciesDomainTests.CellularSimDataRetainsCustomTerrainDefinitions" methodname="CellularSimDataRetainsCustomTerrainDefinitions" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="2087999639" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000637" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1077" name="CellularSimDataSupportsCustomSpeciesIds" fullname="SaltyGame.Tests.SpeciesDomainTests.CellularSimDataSupportsCustomSpeciesIds" methodname="CellularSimDataSupportsCustomSpeciesIds" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1931317569" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003018" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1067" name="CreaturesCanMoveThroughGrassTiles" fullname="SaltyGame.Tests.SpeciesDomainTests.CreaturesCanMoveThroughGrassTiles" methodname="CreaturesCanMoveThroughGrassTiles" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="2119036674" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.003867" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1079" name="DataBackedRunnerAndResultsCarryRulesetFingerprint" fullname="SaltyGame.Tests.SpeciesDomainTests.DataBackedRunnerAndResultsCarryRulesetFingerprint" methodname="DataBackedRunnerAndResultsCarryRulesetFingerprint" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="333493626" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000998" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1047" name="EmptySpeciesCellHasNoOccupant" fullname="SaltyGame.Tests.SpeciesDomainTests.EmptySpeciesCellHasNoOccupant" methodname="EmptySpeciesCellHasNoOccupant" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="985695342" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000399" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1074" name="FedHerbivoresCanDropSeedsIntoEmptyTiles" fullname="SaltyGame.Tests.SpeciesDomainTests.FedHerbivoresCanDropSeedsIntoEmptyTiles" methodname="FedHerbivoresCanDropSeedsIntoEmptyTiles" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1437405379" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000932" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1048" name="GrassIsAResourceButNotAnOccupiedCreatureCell" fullname="SaltyGame.Tests.SpeciesDomainTests.GrassIsAResourceButNotAnOccupiedCreatureCell" methodname="GrassIsAResourceButNotAnOccupiedCreatureCell" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="979808193" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000217" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1070" name="HerbivoreMovesTowardAnAvailableMateInsteadOfWanderingPastIt" fullname="SaltyGame.Tests.SpeciesDomainTests.HerbivoreMovesTowardAnAvailableMateInsteadOfWanderingPastIt" methodname="HerbivoreMovesTowardAnAvailableMateInsteadOfWanderingPastIt" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1357981746" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000941" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1069" name="HerbivoresStarveWhenPlantFoodIsUnavailable" fullname="SaltyGame.Tests.SpeciesDomainTests.HerbivoresStarveWhenPlantFoodIsUnavailable" methodname="HerbivoresStarveWhenPlantFoodIsUnavailable" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="115531739" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000620" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1081" name="InitialGridFactoryIsDeterministicForTheSameSeedAndData" fullname="SaltyGame.Tests.SpeciesDomainTests.InitialGridFactoryIsDeterministicForTheSameSeedAndData" methodname="InitialGridFactoryIsDeterministicForTheSameSeedAndData" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="934783983" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001884" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1065" name="IntelligencePrioritizesAVisibleMateOverVisibleFoodWhenReadyToReproduce" fullname="SaltyGame.Tests.SpeciesDomainTests.IntelligencePrioritizesAVisibleMateOverVisibleFoodWhenReadyToReproduce" methodname="IntelligencePrioritizesAVisibleMateOverVisibleFoodWhenReadyToReproduce" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1190192752" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001420" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1071" name="MooreMovementTieBreakIsSeededAndNotPatternOrdered" fullname="SaltyGame.Tests.SpeciesDomainTests.MooreMovementTieBreakIsSeededAndNotPatternOrdered" methodname="MooreMovementTieBreakIsSeededAndNotPatternOrdered" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1749409877" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001672" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1073" name="PlantFoodReserveFeedsMultipleHerbivoresBeforeBeingConsumed" fullname="SaltyGame.Tests.SpeciesDomainTests.PlantFoodReserveFeedsMultipleHerbivoresBeforeBeingConsumed" methodname="PlantFoodReserveFeedsMultipleHerbivoresBeforeBeingConsumed" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1435059419" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000957" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1066" name="PlantMetabolismAddsEnergyWithoutOccupyingTheTile" fullname="SaltyGame.Tests.SpeciesDomainTests.PlantMetabolismAddsEnergyWithoutOccupyingTheTile" methodname="PlantMetabolismAddsEnergyWithoutOccupyingTheTile" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1579265261" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000379" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1061" name="PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds" fullname="SaltyGame.Tests.SpeciesDomainTests.PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds" methodname="PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="99155133" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000261" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1072" name="PlantsCanWiltAndCreateOpenTiles" fullname="SaltyGame.Tests.SpeciesDomainTests.PlantsCanWiltAndCreateOpenTiles" methodname="PlantsCanWiltAndCreateOpenTiles" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="878286927" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000304" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1056" name="PopulationSnapshotCountsArbitrarySpeciesAndEmptyCells" fullname="SaltyGame.Tests.SpeciesDomainTests.PopulationSnapshotCountsArbitrarySpeciesAndEmptyCells" methodname="PopulationSnapshotCountsArbitrarySpeciesAndEmptyCells" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1952726955" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000453" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1053" name="ProgressionTracksCurrencyAndCanReplaceRules" fullname="SaltyGame.Tests.SpeciesDomainTests.ProgressionTracksCurrencyAndCanReplaceRules" methodname="ProgressionTracksCurrencyAndCanReplaceRules" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1832531842" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000473" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1080" name="RunnerAcceptsCellularSimDataSnapshot" fullname="SaltyGame.Tests.SpeciesDomainTests.RunnerAcceptsCellularSimDataSnapshot" methodname="RunnerAcceptsCellularSimDataSnapshot" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="159387469" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000838" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1075" name="RunnerAdvancesTheRunAndProducesAResult" fullname="SaltyGame.Tests.SpeciesDomainTests.RunnerAdvancesTheRunAndProducesAResult" methodname="RunnerAdvancesTheRunAndProducesAResult" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1159499434" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000827" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1055" name="RunStateAdvancesUntilItsDuration" fullname="SaltyGame.Tests.SpeciesDomainTests.RunStateAdvancesUntilItsDuration" methodname="RunStateAdvancesUntilItsDuration" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="856399570" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000329" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1057" name="RunStateCanPauseResumeAndRestart" fullname="SaltyGame.Tests.SpeciesDomainTests.RunStateCanPauseResumeAndRestart" methodname="RunStateCanPauseResumeAndRestart" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1078590034" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000663" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1082" name="SpeciesRulesKeepTheirAuthoredRoleInTheRulesetFingerprint" fullname="SaltyGame.Tests.SpeciesDomainTests.SpeciesRulesKeepTheirAuthoredRoleInTheRulesetFingerprint" methodname="SpeciesRulesKeepTheirAuthoredRoleInTheRulesetFingerprint" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1948515549" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000611" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1052" name="SpeciesRulesPreserveBehaviorValuesAndPatterns" fullname="SaltyGame.Tests.SpeciesDomainTests.SpeciesRulesPreserveBehaviorValuesAndPatterns" methodname="SpeciesRulesPreserveBehaviorValuesAndPatterns" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1727045237" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000717" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1058" name="SpeciesSimulationIsDeterministicAndDoesNotMutateTheSource" fullname="SaltyGame.Tests.SpeciesDomainTests.SpeciesSimulationIsDeterministicAndDoesNotMutateTheSource" methodname="SpeciesSimulationIsDeterministicAndDoesNotMutateTheSource" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1139289787" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000454" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1059" name="SpeciesSimulationRespectsMaximumPopulation" fullname="SaltyGame.Tests.SpeciesDomainTests.SpeciesSimulationRespectsMaximumPopulation" methodname="SpeciesSimulationRespectsMaximumPopulation" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1216272921" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000437" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1068" name="SpeciesWithDietTargetStarvesWhenEnergyRunsOut" fullname="SaltyGame.Tests.SpeciesDomainTests.SpeciesWithDietTargetStarvesWhenEnergyRunsOut" methodname="SpeciesWithDietTargetStarvesWhenEnergyRunsOut" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1278404179" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000308" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1049" name="TerrainDefinitionsSupportAFutureSlowerPassableTerrain" fullname="SaltyGame.Tests.SpeciesDomainTests.TerrainDefinitionsSupportAFutureSlowerPassableTerrain" methodname="TerrainDefinitionsSupportAFutureSlowerPassableTerrain" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1854017947" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000237" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1054" name="UpgradeConsumesCurrencyAndChangesTheNextRulesSnapshot" fullname="SaltyGame.Tests.SpeciesDomainTests.UpgradeConsumesCurrencyAndChangesTheNextRulesSnapshot" methodname="UpgradeConsumesCurrencyAndChangesTheNextRulesSnapshot" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="244420670" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000558" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1064" name="VisionFindsFoodWithinRangeAndNavigationRoutesAroundBlockedTerrain" fullname="SaltyGame.Tests.SpeciesDomainTests.VisionFindsFoodWithinRangeAndNavigationRoutesAroundBlockedTerrain" methodname="VisionFindsFoodWithinRangeAndNavigationRoutesAroundBlockedTerrain" classname="SaltyGame.Tests.SpeciesDomainTests" runstate="Runnable" seed="1688274297" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000464" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+          </test-suite>
+          <test-suite type="TestFixture" id="1083" name="SurvivalStateTests" fullname="SaltyGame.Tests.SurvivalStateTests" classname="SaltyGame.Tests.SurvivalStateTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.001495" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1084" name="ActivitiesSpendConfiguredEnergyAndIncreaseHunger" fullname="SaltyGame.Tests.SurvivalStateTests.ActivitiesSpendConfiguredEnergyAndIncreaseHunger" methodname="ActivitiesSpendConfiguredEnergyAndIncreaseHunger" classname="SaltyGame.Tests.SurvivalStateTests" runstate="Runnable" seed="437379037" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000259" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1085" name="CookedFoodRestoresMoreHungerThanRawBerries" fullname="SaltyGame.Tests.SurvivalStateTests.CookedFoodRestoresMoreHungerThanRawBerries" methodname="CookedFoodRestoresMoreHungerThanRawBerries" classname="SaltyGame.Tests.SurvivalStateTests" runstate="Runnable" seed="717786243" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000205" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1086" name="SleepingHungryReducesEnergyRecovery" fullname="SaltyGame.Tests.SurvivalStateTests.SleepingHungryReducesEnergyRecovery" methodname="SleepingHungryReducesEnergyRecovery" classname="SaltyGame.Tests.SurvivalStateTests" runstate="Runnable" seed="92585566" result="Passed" start-time="2026-08-13 02:06:25Z" end-time="2026-08-13 02:06:25Z" duration="0.000168" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[Saving results to: C:/Users/joshc/AppData/LocalLow/DefaultCompany/LearningIndieDev\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
