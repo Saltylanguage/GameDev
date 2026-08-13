@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: herbivore
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.HerbivoreSpeciesDefinitionAsset
   id: herbivore
-  startingProbability: 0.16
   movementSpeed: 1.5
   movementPattern:
   - {x: 0, y: 1}
@@ -56,6 +55,7 @@ MonoBehaviour:
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 4
   startingEnergy: 12
+  forageBelowEnergy: 12
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0

@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: wolf
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
   id: wolf
-  startingProbability: 0.003
   movementSpeed: 0.8
   movementPattern:
   - {x: -1, y: 1}
@@ -60,6 +59,7 @@ MonoBehaviour:
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 3
   startingEnergy: 36
+  forageBelowEnergy: 36
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0

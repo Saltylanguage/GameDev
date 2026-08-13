@@ -34,44 +34,49 @@ namespace SaltyGame.EditorTools
 
             var plants = new[]
             {
-                CreatePlant("fern", 0.42f, 20f, 0.01f),
-                CreatePlant("reed", 0.34f, 18f, 0.01f),
+                CreatePlant("fern", 20f, 0.01f),
+                CreatePlant("reed", 18f, 0.01f),
             };
             var herbivores = new[]
             {
-                CreateHerbivore("hare", 0.10f, "fern", 2.2f, 16, 0.25f),
-                CreateHerbivore("deer", 0.08f, "fern", 1.4f, 20, 0.2f),
-                CreateHerbivore("snail", 0.09f, "reed", 0.55f, 10, 0.3f),
-                CreateHerbivore("beetle", 0.09f, "reed", 1.8f, 12, 0.25f),
+                CreateHerbivore("hare", "fern", 2.2f, 16, 0.25f),
+                CreateHerbivore("deer", "fern", 1.4f, 20, 0.2f),
+                CreateHerbivore("snail", "reed", 0.55f, 10, 0.3f),
+                CreateHerbivore("beetle", "reed", 1.8f, 12, 0.25f),
             };
             var carnivores = new[]
             {
-                CreateCarnivore("fox", 0.004f, "hare", 0.8f, 32, 0.02f),
-                CreateCarnivore("wolf", 0.003f, "deer", 0.8f, 36, 0.02f),
-                CreateCarnivore("owl", 0.004f, "snail", 0.9f, 28, 0.02f),
-                CreateCarnivore("stoat", 0.004f, "beetle", 1.0f, 28, 0.02f),
+                CreateCarnivore("fox", "hare", 0.8f, 32, 0.02f),
+                CreateCarnivore("wolf", "deer", 0.8f, 36, 0.02f),
+                CreateCarnivore("owl", "snail", 0.9f, 28, 0.02f),
+                CreateCarnivore("stoat", "beetle", 1.0f, 28, 0.02f),
             };
 
-            CreateScenario("ForestEdge", new SpeciesDefinitionAsset[]
+            CreateScenario("ForestEdge", new[]
             {
-                plants[0], herbivores[0], carnivores[0],
+                Entry(plants[0], 0.42f), Entry(herbivores[0], 0.10f), Entry(carnivores[0], 0.004f),
             });
-            CreateScenario("Wetland", new SpeciesDefinitionAsset[]
+            CreateScenario("Wetland", new[]
             {
-                plants[1], herbivores[2], herbivores[3], carnivores[2], carnivores[3],
+                Entry(plants[1], 0.34f), Entry(herbivores[2], 0.09f),
+                Entry(herbivores[3], 0.09f), Entry(carnivores[2], 0.004f),
+                Entry(carnivores[3], 0.004f),
             });
-            CreateScenario("OpenRange", new SpeciesDefinitionAsset[]
+            CreateScenario("OpenRange", new[]
             {
-                plants[0], plants[1], herbivores[1], herbivores[3], carnivores[1],
+                Entry(plants[0], 0.42f), Entry(plants[1], 0.34f),
+                Entry(herbivores[1], 0.08f), Entry(herbivores[3], 0.09f),
+                Entry(carnivores[1], 0.003f),
             });
 
             // Validation-only scenario: its fingerprint is compared to the legacy defaults.
             var legacyPlant = CreateLegacyPlant();
             var legacyHerbivore = CreateLegacyHerbivore();
             var legacyCarnivore = CreateLegacyCarnivore();
-            CreateScenario("BaselineParity", new SpeciesDefinitionAsset[]
+            CreateScenario("BaselineParity", new[]
             {
-                legacyPlant, legacyHerbivore, legacyCarnivore,
+                Entry(legacyPlant, 0.4f), Entry(legacyHerbivore, 0.16f),
+                Entry(legacyCarnivore, 0.04f),
             });
 
             AssetDatabase.SaveAssets();
@@ -157,21 +162,21 @@ namespace SaltyGame.EditorTools
             }
         }
 
-        static PlantSpeciesDefinitionAsset CreatePlant(string id, float probability, float reserve, float wilt)
+        static PlantSpeciesDefinitionAsset CreatePlant(string id, float reserve, float wilt)
         {
             var asset = GetOrCreate<PlantSpeciesDefinitionAsset>($"{id}.asset");
-            SetCommon(asset, id, probability, 0f, Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0,
+            SetCommon(asset, id, 0f, Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0,
                 Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0.1f, 0, 0, 0, wilt, 0,
-                reserve, 0f, 1, -1, 0, 0f);
+                reserve, 0f, 1, -1, 0);
             return asset;
         }
 
         static PlantSpeciesDefinitionAsset CreateLegacyPlant()
         {
             var asset = GetOrCreate<PlantSpeciesDefinitionAsset>("plant.asset");
-            SetCommon(asset, "plant", 0.4f, 0f, Cardinal(), Cardinal(), 0,
+            SetCommon(asset, "plant", 0f, Cardinal(), Cardinal(), 0,
                 Cardinal(), Cardinal(), 0.1f, 0, 0, 0, 0.003f, 0,
-                3.25f, 0f, 1, -1, 0, 0f);
+                3.25f, 0f, 1, -1, 0);
             Set(asset, "dietPattern", Cardinal());
             Set(asset, "startingEnergy", 0);
             Set(asset, "intelligence", 0);
@@ -181,41 +186,44 @@ namespace SaltyGame.EditorTools
         static HerbivoreSpeciesDefinitionAsset CreateLegacyHerbivore()
         {
             var asset = GetOrCreate<HerbivoreSpeciesDefinitionAsset>("herbivore.asset");
-            SetCommon(asset, "herbivore", 0.16f, 1.5f, Cardinal(), Cardinal(), 1,
+            SetCommon(asset, "herbivore", 1.5f, Cardinal(), Cardinal(), 1,
                 Cardinal(), Moore(), 0.5f, 1, 1, 4, 0f, 1,
-                0f, 0.05f, 4, 1, 5, 0f);
+                0f, 0.05f, 4, 1, 5);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Plant.Value);
             Set(asset, "startingEnergy", 12);
+            Set(asset, "forageBelowEnergy", 12);
             return asset;
         }
 
         static CarnivoreSpeciesDefinitionAsset CreateLegacyCarnivore()
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>("carnivore.asset");
-            SetCommon(asset, "carnivore", 0.04f, 1.5f, Moore(), Moore(), 2,
+            SetCommon(asset, "carnivore", 1.5f, Moore(), Moore(), 2,
                 Cardinal(), Cardinal(), 0.4f, 1, 1, 3, 0f, 1,
-                0f, 0f, 8, 1, 4, 0f);
+                0f, 0f, 8, 1, 4);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Herbivore.Value);
             Set(asset, "startingEnergy", 18);
+            Set(asset, "forageBelowEnergy", 18);
             return asset;
         }
 
         static HerbivoreSpeciesDefinitionAsset CreateHerbivore(
             string id,
-            float probability,
             string dietTarget,
             float speed,
             int energy,
             float reproductionChance)
         {
             var asset = GetOrCreate<HerbivoreSpeciesDefinitionAsset>($"{id}.asset");
-            SetCommon(asset, id, probability, speed, Cardinal(), Array.Empty<Vector2Int>(), 0,
+            SetCommon(asset, id, speed, Cardinal(), Array.Empty<Vector2Int>(), 0,
                 Cardinal(), Moore(), reproductionChance, 1, 1, 4, 0f, 1,
-                0f, 0.05f, 4, 1, 5, 1f);
+                0f, 0.05f, 4, 1, 5);
             Set(asset, "dietTargetId", dietTarget);
             Set(asset, "attackAmount", 1);
+            Set(asset, "startingEnergy", energy);
+            Set(asset, "forageBelowEnergy", energy);
             Set(asset, "visionRange", 5);
             Set(asset, "intelligence", 1);
             return asset;
@@ -223,19 +231,18 @@ namespace SaltyGame.EditorTools
 
         static CarnivoreSpeciesDefinitionAsset CreateCarnivore(
             string id,
-            float probability,
             string dietTarget,
             float speed,
             int energy,
             float reproductionChance)
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>($"{id}.asset");
-            SetCommon(asset, id, probability, speed, Moore(), Moore(), 2,
+            SetCommon(asset, id, speed, Moore(), Moore(), 2,
                 Cardinal(), Cardinal(), reproductionChance, 1, 1, 3, 0f, 1,
-                0f, 0f, 8, 1, 4, 1f);
+                0f, 0f, 8, 1, 4);
             Set(asset, "dietTargetId", dietTarget);
             Set(asset, "startingEnergy", energy);
-            Set(asset, "startingEnergy", energy);
+            Set(asset, "forageBelowEnergy", energy);
             Set(asset, "visionRange", 5);
             Set(asset, "intelligence", 1);
             return asset;
@@ -244,7 +251,6 @@ namespace SaltyGame.EditorTools
         static void SetCommon(
             SpeciesDefinitionAsset asset,
             string id,
-            float probability,
             float speed,
             Vector2Int[] movement,
             Vector2Int[] attack,
@@ -261,11 +267,9 @@ namespace SaltyGame.EditorTools
             float seedDrop,
             int energyValue,
             int metabolism,
-            int vision,
-            float unused)
+            int vision)
         {
             Set(asset, "id", id);
-            Set(asset, "startingProbability", probability);
             Set(asset, "movementSpeed", speed);
             Set(asset, "movementPattern", movement);
             Set(asset, "attackPattern", attack);
@@ -278,7 +282,8 @@ namespace SaltyGame.EditorTools
             Set(asset, "reproductionChance", reproductionChance);
             Set(asset, "reproductionFoodRequired", foodRequired);
             Set(asset, "maxReproductionGroupSize", groupSize);
-            Set(asset, "startingEnergy", 12);
+            Set(asset, "startingEnergy", 0);
+            Set(asset, "forageBelowEnergy", 0);
             Set(asset, "wiltChance", wilt);
             Set(asset, "crowdingEnergyPenalty", crowding);
             Set(asset, "startingFoodReserve", reserve);
@@ -292,7 +297,9 @@ namespace SaltyGame.EditorTools
             Set(asset, "alphaEnergyBonus", 0);
         }
 
-        static ScenarioDefinitionAsset CreateScenario(string id, SpeciesDefinitionAsset[] definitions)
+        static ScenarioDefinitionAsset CreateScenario(
+            string id,
+            ScenarioDefinitionAsset.SpeciesEntry[] definitions)
         {
             var asset = GetOrCreate<ScenarioDefinitionAsset>($"{id}.asset", ScenarioRoot);
             Set(asset, "width", 32);
@@ -303,6 +310,13 @@ namespace SaltyGame.EditorTools
             Set(asset, "minPopulation", 0);
             Set(asset, "species", definitions);
             return asset;
+        }
+
+        static ScenarioDefinitionAsset.SpeciesEntry Entry(
+            SpeciesDefinitionAsset definition,
+            float startingProbability)
+        {
+            return new ScenarioDefinitionAsset.SpeciesEntry(definition, startingProbability);
         }
 
         static Vector2Int[] Cardinal() => new[]
@@ -357,11 +371,13 @@ namespace SaltyGame.EditorTools
                         field.GetArrayElementAtIndex(i).vector2IntValue = vectors[i];
                     }
                     break;
-                case SpeciesDefinitionAsset[] definitions:
+                case ScenarioDefinitionAsset.SpeciesEntry[] definitions:
                     field.arraySize = definitions.Length;
                     for (var i = 0; i < definitions.Length; i++)
                     {
-                        field.GetArrayElementAtIndex(i).objectReferenceValue = definitions[i];
+                        var entry = field.GetArrayElementAtIndex(i);
+                        entry.FindPropertyRelative("definition").objectReferenceValue = definitions[i].Definition;
+                        entry.FindPropertyRelative("startingProbability").floatValue = definitions[i].StartingProbability;
                     }
                     break;
                 default: throw new InvalidOperationException($"Unsupported serialized value type {value?.GetType()}.");

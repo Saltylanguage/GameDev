@@ -14,6 +14,10 @@ changes, and do not treat research references as approved implementation work.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
+- The initial vertical-slice content selection is Forest Edge with hare as the
+  player species, fern as support, fox as opposition, and Trailblazer, Warren,
+  and Gardeners as the three intended builds. The rationale and validation gaps
+  are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - Candidate upgrades act on relative grid positions. Examples include adding
@@ -50,9 +54,11 @@ Keep the early architecture flexible enough to explore:
 - Deterministic simulation where seeds and rule loadouts can reproduce bugs.
 - Clear presentation of which cells a rule reads, writes, attacks, or protects.
 
-The turn cadence, player representation, opposing cell behavior, win/loss
-conditions, economy, rule-combination semantics, and run structure remain open
-design questions. Do not silently settle them in foundational grid code.
+The vertical-slice player agency, phase cadence, win/loss conditions, reward
+timing, persistence boundary, launch target, and non-goals are defined in
+[`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md). Opposing-cell behavior, detailed economy,
+and rule-combination semantics remain open design questions. Do not silently
+settle them in foundational grid code.
 
 ## Noesis presentation direction
 
@@ -122,9 +128,10 @@ design questions. Do not silently settle them in foundational grid code.
 - `SpeciesDefinitionAsset` and `ScenarioDefinitionAsset` now provide the
   reusable authoring pipeline: species assets share one rule surface through
   plant/herbivore/carnivore role subclasses, and scenarios compose three to six
-  species assets into immutable runtime data. The first authored library contains
-  fern, reed, hare, deer, snail, beetle, fox, wolf, owl, and stoat, plus a
-  compatibility-only baseline scenario.
+  species assets into immutable runtime data. Starting probability belongs to
+  each scenario/species entry rather than the reusable species asset. The first
+  authored library contains fern, reed, hare, deer, snail, beetle, fox, wolf,
+  owl, and stoat, plus a compatibility-only baseline scenario.
 - The authored baseline was proven equivalent to the legacy defaults by matching
   the ruleset fingerprint and final grids for deterministic seeds 10100-10104.
   Three 20-seed scenario reports are recorded in the dated handoff journal; they
@@ -136,6 +143,29 @@ design questions. Do not silently settle them in foundational grid code.
   chosen one-cell move through its normal claim and crowding rules. This
   preserves deterministic source/next-grid stepping without embedding
   pathfinding in `Grid<T>`.
+- Movement speed is an expected number of move attempts per tick: its whole
+  portion is guaranteed and its fractional portion is a seeded chance for one
+  additional attempt. The effective speed for a move is divided by the
+  destination terrain's movement cost. Movement speed is included in the v4
+  ruleset fingerprint; terrain movement cost was already fingerprinted.
+- Occupied entities gain one age at the beginning of each tick, so newborns
+  finish their birth tick at age zero. Resource terrain applies its authored
+  regrowth every tick, including while a creature occupies the same cell.
+- Creature and resource layers remain independent through movement, mortality,
+  feeding, reproduction, wilt, and population-limit removal. Depleting a terrain
+  resource sets its energy to zero without erasing the terrain or an occupant;
+  later regrowth can restore the resource layer.
+- Creature hunger is represented by `Energy`. Each species has an authored
+  `ForageBelowEnergy` threshold; creatures only attack or seek their diet target
+  at or below that value. The threshold survives runtime edits and upgrades and
+  is included in the v4 ruleset fingerprint.
+- A creature's `FoodReserve` is finite carried material for seed dispersal, not
+  its hunger state. A successful seed drop consumes one reserve. Creature
+  reproduction similarly conserves ordinary energy: the configured reproduction
+  amount is transferred from the parent to the newborn. Plant propagation and
+  alpha bonuses remain intentional environmental/special-rule energy sources.
+- Rebuilding rules through the runtime editor or an upgrade must preserve the
+  species role. Role is authored identity, not a default inferred by those paths.
 - The current priority policy is deliberately small: hungry creatures seek
   visible food; intelligence tier one or higher may prefer a viable visible mate
   after the reproduction energy threshold is met. It is a prototype policy, not
@@ -232,11 +262,10 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
   local editor state. The staged integration plan is tracked in
   [`DISCORD_AGENT_COLLABORATION_TODOS.md`](DISCORD_AGENT_COLLABORATION_TODOS.md).
 
-- Cellular automata is now the central product direction. The exact player
-  cadence, run-ending conditions, and reward timing must be locked in the
-  production brief before the vertical slice; do not silently settle them in
-  foundational code or build speculative frameworks ahead of the playable
-  upgrade-and-feedback loop.
+- Cellular automata is now the central product direction. Follow the player
+  cadence, run-ending conditions, reward timing, persistence boundary, and
+  target recorded in [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md); revise that brief
+  explicitly when playtest evidence changes a product decision.
 - Procedural cave generation remains a useful prototype and possible supporting
   feature; do not assume that cave generation itself is the new core game loop.
 - Do not replace the authored shoreline or jungle entrance with procedural output

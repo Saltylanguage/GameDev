@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: owl
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
   id: owl
-  startingProbability: 0.004
   movementSpeed: 0.9
   movementPattern:
   - {x: -1, y: 1}
@@ -60,6 +59,7 @@ MonoBehaviour:
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 3
   startingEnergy: 28
+  forageBelowEnergy: 28
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0

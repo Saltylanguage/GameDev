@@ -10,7 +10,6 @@ namespace SaltyGame
     public abstract class SpeciesDefinitionAsset : ScriptableObject
     {
         [SerializeField] string id;
-        [SerializeField, Range(0f, 1f)] float startingProbability;
         [SerializeField, Min(0f)] float movementSpeed;
         [SerializeField] Vector2Int[] movementPattern;
         [SerializeField] Vector2Int[] attackPattern;
@@ -25,6 +24,7 @@ namespace SaltyGame
         [SerializeField, Min(0)] int reproductionFoodRequired;
         [SerializeField, Min(0)] int maxReproductionGroupSize;
         [SerializeField, Min(0)] int startingEnergy;
+        [SerializeField, Min(0)] int forageBelowEnergy;
         [SerializeField, Range(0f, 1f)] float wiltChance;
         [SerializeField, Min(0)] int crowdingEnergyPenalty;
         [SerializeField, Min(0f)] float startingFoodReserve;
@@ -38,7 +38,6 @@ namespace SaltyGame
         [SerializeField, Min(0)] int alphaEnergyBonus;
 
         public SpeciesId Id => new SpeciesId(id);
-        public float StartingProbability => startingProbability;
         public SpeciesRole Role => GetRole();
 
         protected abstract SpeciesRole GetRole();
@@ -67,7 +66,8 @@ namespace SaltyGame
                 energyValue,
                 metabolism,
                 new SpeciesAwarenessRules(visionRange, intelligence),
-                Role);
+                Role,
+                forageBelowEnergy);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

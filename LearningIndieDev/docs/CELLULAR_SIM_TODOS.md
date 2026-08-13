@@ -34,7 +34,7 @@ changes the dependency or an experiment provides a stronger trigger.
   choose a legal one-step route toward visible food or a viable mate.
 - [x] Apply the initial priority rule: hungry creatures seek food; a creature
   with intelligence at least one may prioritize a visible mate once it exceeds
-  its reproduction-food requirement.
+  its reproduction energy-transfer requirement.
 - [ ] Add scent only as a separate, stateful field/diffusion experiment. It must
   not be treated as delayed vision.
 - [ ] Add simulation event output only when two concrete consumers need the
@@ -126,10 +126,12 @@ changes the dependency or an experiment provides a stronger trigger.
 - Trigger: we begin systematic A/B experiments, replay bug reports, or saved
   run comparisons.
 - Implementation: `CellularSimData.Fingerprint` uses the versioned
-  `cellular-sim-data-v3` canonical representation and SHA-256. Dictionary
+  `cellular-sim-data-v4` canonical representation and SHA-256. Dictionary
   entries are sorted by stable IDs; numeric values use invariant round-trip
-  formatting; patterns preserve offset order. Data-backed runs carry the
-  fingerprint into `SimulationRunState` and `SimulationRunResult`.
+  formatting; patterns preserve offset order; movement speed and the forage
+  energy threshold are included.
+  Data-backed runs carry the fingerprint into `SimulationRunState` and
+  `SimulationRunResult`.
 - Validation: fingerprints are stable across dictionary insertion order and
   change when scenario data changes. Runtime and test assemblies build cleanly.
 
@@ -142,6 +144,14 @@ changes the dependency or an experiment provides a stronger trigger.
   into a new immutable `CellularSimData` snapshot. The asset is not used as
   mutable run state, and the existing code-authored/settings-UI path remains
   intact for rapid iteration.
+- Reusable `SpeciesDefinitionAsset` instances own behavior only. Each
+  `ScenarioDefinitionAsset.SpeciesEntry` owns the species reference and its
+  scenario-specific starting probability; existing authored scenarios were
+  migrated without changing their probabilities.
+- Existing cell/terrain fields now have concrete behavior: entity age advances
+  per tick, destination movement cost scales effective movement speed, and
+  resource terrain regrows by `RegrowthPerTick`. Creature/resource layers are
+  preserved independently through lifecycle operations.
 - Boundary: the first asset path uses the established bare/grass terrain
   defaults. Add serialized custom terrain and a scene-level scenario selector
   only when reusable terrain presets become an actual workflow.

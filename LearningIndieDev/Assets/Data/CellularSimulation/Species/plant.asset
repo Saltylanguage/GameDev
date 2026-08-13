@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: plant
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.PlantSpeciesDefinitionAsset
   id: plant
-  startingProbability: 0.4
   movementSpeed: 0
   movementPattern:
   - {x: 0, y: 1}
@@ -48,6 +47,7 @@ MonoBehaviour:
   reproductionFoodRequired: 0
   maxReproductionGroupSize: 0
   startingEnergy: 0
+  forageBelowEnergy: 0
   wiltChance: 0.003
   crowdingEnergyPenalty: 0
   startingFoodReserve: 3.25

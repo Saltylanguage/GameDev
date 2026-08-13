@@ -167,6 +167,7 @@ namespace SaltyGame
         public string ReproductionFoodRequiredText { get => ruleValues.ReproductionFoodRequired; set => SetRule(ref ruleValues.ReproductionFoodRequired, value, nameof(ReproductionFoodRequiredText)); }
         public string MaxReproductionGroupSizeText { get => ruleValues.MaxReproductionGroupSize; set => SetRule(ref ruleValues.MaxReproductionGroupSize, value, nameof(MaxReproductionGroupSizeText)); }
         public string StartingEnergyText { get => ruleValues.StartingEnergy; set => SetRule(ref ruleValues.StartingEnergy, value, nameof(StartingEnergyText)); }
+        public string ForageBelowEnergyText { get => ruleValues.ForageBelowEnergy; set => SetRule(ref ruleValues.ForageBelowEnergy, value, nameof(ForageBelowEnergyText)); }
         public string EnergyValueText { get => ruleValues.EnergyValue; set => SetRule(ref ruleValues.EnergyValue, value, nameof(EnergyValueText)); }
         public string MetabolismText { get => ruleValues.Metabolism; set => SetRule(ref ruleValues.Metabolism, value, nameof(MetabolismText)); }
         public string VisionRangeText { get => ruleValues.VisionRange; set => SetRule(ref ruleValues.VisionRange, value, nameof(VisionRangeText)); }
@@ -447,7 +448,8 @@ namespace SaltyGame
                 nameof(BlockAmountText), nameof(BlockPattern), nameof(DietTarget), nameof(DietPattern),
                 nameof(ReproductionPattern), nameof(ReproductionEnabled), nameof(ReproductionChanceText),
                 nameof(ReproductionNeighborCountText), nameof(ReproductionFoodRequiredText),
-                nameof(MaxReproductionGroupSizeText), nameof(StartingEnergyText), nameof(EnergyValueText),
+                nameof(MaxReproductionGroupSizeText), nameof(StartingEnergyText), nameof(ForageBelowEnergyText),
+                nameof(EnergyValueText),
                 nameof(MetabolismText), nameof(VisionRangeText), nameof(IntelligenceText),
                 nameof(WiltEnabled), nameof(WiltChanceText), nameof(CrowdingEnergyPenaltyText),
                 nameof(StartingFoodReserveText), nameof(SeedDropEnabled), nameof(SeedDropChanceText),

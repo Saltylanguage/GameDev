@@ -194,7 +194,7 @@
                             <TextBox Text="{Binding ReproductionNeighborCountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <TextBlock Text="Energy required to mate" Foreground="White" Width="250" VerticalAlignment="Center"/>
+                            <TextBlock Text="Energy transferred to offspring" Foreground="White" Width="250" VerticalAlignment="Center"/>
                             <TextBox Text="{Binding ReproductionFoodRequiredText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
@@ -204,6 +204,10 @@
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Starting energy" Foreground="White" Width="250" VerticalAlignment="Center"/>
                             <TextBox Text="{Binding StartingEnergyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Forage at or below energy" Foreground="White" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding ForageBelowEnergyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Energy value" Foreground="White" Width="250" VerticalAlignment="Center"/>

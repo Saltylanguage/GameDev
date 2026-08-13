@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: fern
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.PlantSpeciesDefinitionAsset
   id: fern
-  startingProbability: 0.42
   movementSpeed: 0
   movementPattern: []
   attackPattern: []
@@ -36,6 +35,7 @@ MonoBehaviour:
   reproductionFoodRequired: 0
   maxReproductionGroupSize: 0
   startingEnergy: 12
+  forageBelowEnergy: 0
   wiltChance: 0.01
   crowdingEnergyPenalty: 0
   startingFoodReserve: 20

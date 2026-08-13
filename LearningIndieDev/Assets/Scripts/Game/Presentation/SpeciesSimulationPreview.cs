@@ -63,6 +63,8 @@ namespace SaltyGame
                 MaxReproductionGroupSizeText = rules.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
                 StartingEnergy = rules.StartingEnergy;
                 StartingEnergyText = rules.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+                ForageBelowEnergy = rules.ForageBelowEnergy;
+                ForageBelowEnergyText = rules.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
                 EnergyValue = rules.EnergyValue;
                 EnergyValueText = rules.EnergyValue.ToString(CultureInfo.InvariantCulture);
                 Metabolism = rules.Metabolism;
@@ -82,6 +84,7 @@ namespace SaltyGame
                 SeedDropChance = rules.SeedDropChance;
                 SeedDropChanceText = FormatFloat(rules.SeedDropChance);
                 SeedDropEnabled = rules.SeedDropChance > 0f;
+                Role = rules.Role;
             }
 
             public bool MovementEnabled;
@@ -109,6 +112,8 @@ namespace SaltyGame
             public string MaxReproductionGroupSizeText;
             public int StartingEnergy;
             public string StartingEnergyText;
+            public int ForageBelowEnergy;
+            public string ForageBelowEnergyText;
             public int EnergyValue;
             public string EnergyValueText;
             public int Metabolism;
@@ -127,6 +132,7 @@ namespace SaltyGame
             public bool SeedDropEnabled;
             public float SeedDropChance;
             public string SeedDropChanceText;
+            public SpeciesRole Role;
         }
 
         [System.Serializable]
@@ -480,9 +486,10 @@ namespace SaltyGame
             y += 48f;
             y = DrawFloatField(left, y, width, "Reproduction chance", ref draft.ReproductionChanceText, ref draft.ReproductionChance, labelStyle, fieldStyle, 0f, 1f);
             y = DrawIntField(left, y, width, "Nearby mate requirement", ref draft.ReproductionNeighborCountText, ref draft.ReproductionNeighborCount, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Energy required to mate", ref draft.ReproductionFoodRequiredText, ref draft.ReproductionFoodRequired, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Energy transferred to offspring", ref draft.ReproductionFoodRequiredText, ref draft.ReproductionFoodRequired, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Maximum group size", ref draft.MaxReproductionGroupSizeText, ref draft.MaxReproductionGroupSize, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Starting energy", ref draft.StartingEnergyText, ref draft.StartingEnergy, labelStyle, fieldStyle);
+            y = DrawIntField(left, y, width, "Forage at or below energy", ref draft.ForageBelowEnergyText, ref draft.ForageBelowEnergy, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Energy value", ref draft.EnergyValueText, ref draft.EnergyValue, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Vision range", ref draft.VisionRangeText, ref draft.VisionRange, labelStyle, fieldStyle);
             y = DrawIntField(left, y, width, "Intelligence", ref draft.IntelligenceText, ref draft.Intelligence, labelStyle, fieldStyle);
@@ -747,6 +754,7 @@ namespace SaltyGame
                 ReproductionFoodRequired = draft.ReproductionFoodRequired.ToString(CultureInfo.InvariantCulture),
                 MaxReproductionGroupSize = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture),
                 StartingEnergy = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture),
+                ForageBelowEnergy = draft.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture),
                 EnergyValue = draft.EnergyValue.ToString(CultureInfo.InvariantCulture),
                 Metabolism = draft.Metabolism.ToString(CultureInfo.InvariantCulture),
                 VisionRange = draft.VisionRange.ToString(CultureInfo.InvariantCulture),
@@ -785,9 +793,10 @@ namespace SaltyGame
                 || !TryParseInt(values.BlockAmount, "Block amount", out var blockAmount)
                 || !TryParseFloat(values.ReproductionChance, "Reproduction chance", out var reproductionChance)
                 || !TryParseInt(values.ReproductionNeighborCount, "Nearby mate requirement", out var reproductionNeighborCount)
-                || !TryParseInt(values.ReproductionFoodRequired, "Energy required to mate", out var reproductionFoodRequired)
+                || !TryParseInt(values.ReproductionFoodRequired, "Energy transferred to offspring", out var reproductionFoodRequired)
                 || !TryParseInt(values.MaxReproductionGroupSize, "Maximum group size", out var maxReproductionGroupSize)
                 || !TryParseInt(values.StartingEnergy, "Starting energy", out var startingEnergy)
+                || !TryParseInt(values.ForageBelowEnergy, "Forage energy threshold", out var forageBelowEnergy)
                 || !TryParseInt(values.EnergyValue, "Energy value", out var energyValue)
                 || !TryParseInt(values.Metabolism, "Metabolism", out var metabolism)
                 || !TryParseInt(values.VisionRange, "Vision range", out var visionRange)
@@ -826,6 +835,8 @@ namespace SaltyGame
             draft.MaxReproductionGroupSizeText = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
             draft.StartingEnergy = Mathf.Max(0, startingEnergy);
             draft.StartingEnergyText = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+            draft.ForageBelowEnergy = Mathf.Max(0, forageBelowEnergy);
+            draft.ForageBelowEnergyText = draft.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
             draft.EnergyValue = Mathf.Max(0, energyValue);
             draft.EnergyValueText = draft.EnergyValue.ToString(CultureInfo.InvariantCulture);
             draft.Metabolism = Mathf.Max(-1000, metabolism);
@@ -1353,7 +1364,9 @@ namespace SaltyGame
                     seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f,
                     energyValue: draft.EnergyValue,
                     metabolism: draft.Metabolism,
-                    awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence));
+                    awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence),
+                    role: draft.Role,
+                    forageBelowEnergy: draft.ForageBelowEnergy);
             }
 
             return result;

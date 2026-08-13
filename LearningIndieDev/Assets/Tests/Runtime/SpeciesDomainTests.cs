@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void TerrainDefinitionsSupportAFutureSlowerPassableTerrain()
+        public void TerrainDefinitionsRetainSlowerPassableTerrainData()
         {
             var sand = new TerrainDefinition(
                 new TerrainId("sand"),
@@ -44,6 +45,80 @@ namespace SaltyGame.Tests
             Assert.That(cell.IsPassable, Is.True);
             Assert.That(cell.MovementCost, Is.EqualTo(1.5f));
             Assert.That(cell.IsPlantResource, Is.False);
+        }
+
+        [Test]
+        public void TerrainMovementCostReducesTheChanceToEnterSlowTerrain()
+        {
+            var sand = new TerrainDefinition(
+                new TerrainId("sand"),
+                isPassable: true,
+                movementCost: 2f,
+                providesResource: false,
+                presentationColor: Color.yellow);
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+            source.SetCell(1, 0, SpeciesCell.FromTerrain(sand));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: new GridPattern(new[] { Vector2Int.right }),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+            var moved = 0;
+
+            for (var seed = 0; seed < 32; seed++)
+            {
+                moved += SpeciesSimulation.Step(source, rules, seed).GetCell(1, 0).IsCreature ? 1 : 0;
+            }
+
+            Assert.That(moved, Is.GreaterThan(0));
+            Assert.That(moved, Is.LessThan(32));
+        }
+
+        [Test]
+        public void EntitiesAgeAndDepletedResourceTerrainRegrowsEachTick()
+        {
+            var grass = new TerrainDefinition(
+                TerrainIds.Grass,
+                isPassable: true,
+                movementCost: 1f,
+                providesResource: true,
+                presentationColor: Color.green,
+                regrowthPerTick: 0.75f);
+            var terrain = new Dictionary<TerrainId, TerrainDefinition>
+            {
+                [TerrainIds.Bare] = TerrainDefaults.Bare,
+                [TerrainIds.Grass] = grass,
+            };
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, SpeciesCell.FromTerrain(grass, 0f, SpeciesIds.Plant).WithEntity(
+                SpeciesIds.Herbivore,
+                health: 1,
+                energy: 5,
+                age: 2,
+                foodEaten: 0,
+                foodReserve: 0f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = CreateRules(metabolism: 0),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, terrainDefinitions: terrain);
+
+            Assert.That(next.GetCell(0, 0).Age, Is.EqualTo(3));
+            Assert.That(next.GetCell(0, 0).TerrainEnergy, Is.EqualTo(0.75f).Within(0.001f));
+            Assert.That(next.GetCell(0, 0).IsPlantResource, Is.True);
         }
 
         [Test]
@@ -91,6 +166,35 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ScenariosOwnStartingProbabilityForReusableSpeciesAssets()
+        {
+            var species = ScriptableObject.CreateInstance<HerbivoreSpeciesDefinitionAsset>();
+            var sparseScenario = ScriptableObject.CreateInstance<ScenarioDefinitionAsset>();
+            var denseScenario = ScriptableObject.CreateInstance<ScenarioDefinitionAsset>();
+            SetPrivateField(species, "id", "reusable-herbivore");
+            SetPrivateField(sparseScenario, "species", new[]
+            {
+                new ScenarioDefinitionAsset.SpeciesEntry(species, 0.1f),
+            });
+            SetPrivateField(denseScenario, "species", new[]
+            {
+                new ScenarioDefinitionAsset.SpeciesEntry(species, 0.7f),
+            });
+
+            var sparse = sparseScenario.CreateRuntimeData();
+            var dense = denseScenario.CreateRuntimeData();
+
+            Assert.That(sparse.TryGetStartingProbability(species.Id, out var sparseProbability), Is.True);
+            Assert.That(dense.TryGetStartingProbability(species.Id, out var denseProbability), Is.True);
+            Assert.That(sparseProbability, Is.EqualTo(0.1f));
+            Assert.That(denseProbability, Is.EqualTo(0.7f));
+
+            Object.DestroyImmediate(sparseScenario);
+            Object.DestroyImmediate(denseScenario);
+            Object.DestroyImmediate(species);
+        }
+
+        [Test]
         public void SpeciesRulesPreserveBehaviorValuesAndPatterns()
         {
             var attackPattern = new GridPattern(new[] { Vector2Int.right });
@@ -132,7 +236,7 @@ namespace SaltyGame.Tests
         [Test]
         public void UpgradeConsumesCurrencyAndChangesTheNextRulesSnapshot()
         {
-            var rules = CreateRules();
+            var rules = CreateRules(role: SpeciesRole.Carnivore, forageBelowEnergy: 3);
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
             progression.AddCurrency(5);
             var upgrade = new SpeciesUpgrade("faster", 3, SpeciesUpgradeType.MovementSpeed, 0.5f);
@@ -140,6 +244,8 @@ namespace SaltyGame.Tests
             Assert.That(progression.TryPurchase(upgrade), Is.True);
             Assert.That(progression.Currency, Is.EqualTo(2));
             Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(1.5f));
+            Assert.That(progression.CurrentRules.Role, Is.EqualTo(SpeciesRole.Carnivore));
+            Assert.That(progression.CurrentRules.ForageBelowEnergy, Is.EqualTo(3));
         }
 
         [Test]
@@ -280,6 +386,40 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PredatorForagesOnlyAtOrBelowItsEnergyThreshold()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 6));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0,
+                    forageBelowEnergy: 5),
+                [SpeciesIds.Herbivore] = CreateRules(),
+            };
+
+            var satiated = SpeciesSimulation.Step(source, rules, seed: 42);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 5));
+            var hungry = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(satiated.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(hungry.GetCell(1, 0).IsCreature, Is.False);
+        }
+
+        [Test]
         public void PlantsCanGrowWithoutNeighborsWhenTheirGrowthChanceSucceeds()
         {
             var source = new Grid<SpeciesCell>(3, 1);
@@ -315,6 +455,7 @@ namespace SaltyGame.Tests
                 SpeciesArchetype.Carnivore,
                 energy: 3,
                 foodReserve: 1));
+            source.SetCell(2, 0, SpeciesCell.Grass(2f));
             var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
             var carnivoreRules = new SpeciesRules(
                 movementSpeed: 0f,
@@ -330,7 +471,7 @@ namespace SaltyGame.Tests
                 reproductionChance: 1f,
                 reproductionFoodRequired: 1,
                 maxReproductionGroupSize: 3,
-                startingEnergy: 2);
+                startingEnergy: 99);
             var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
             {
                 [SpeciesArchetype.Carnivore] = carnivoreRules,
@@ -340,6 +481,9 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(2, 0).Species, Is.EqualTo(SpeciesArchetype.Carnivore));
+            Assert.That(next.GetCell(2, 0).Energy, Is.EqualTo(1));
+            Assert.That(next.GetCell(2, 0).IsPlantResource, Is.True);
+            Assert.That(next.GetCell(2, 0).TerrainEnergy, Is.EqualTo(2f));
             Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(1));
             Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
 
@@ -546,6 +690,79 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CreatureMovementAndResourceDepletionPreserveBothCellLayers()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, SpeciesCell.Grass(2f).WithEntity(
+                SpeciesIds.Herbivore,
+                health: 1,
+                energy: 5,
+                age: 0,
+                foodEaten: 0,
+                foodReserve: 0f));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: right,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var vacatedGrass = next.GetCell(0, 0);
+            var depletedUnderCreature = SpeciesCell.Grass(2f).WithEntity(
+                SpeciesIds.Herbivore,
+                health: 1,
+                energy: 5,
+                age: 0,
+                foodEaten: 0,
+                foodReserve: 0f).WithoutPlantResource();
+
+            Assert.That(vacatedGrass.IsCreature, Is.False);
+            Assert.That(vacatedGrass.IsPlantResource, Is.True);
+            Assert.That(vacatedGrass.ResourceSpeciesId, Is.EqualTo(SpeciesIds.Plant));
+            Assert.That(depletedUnderCreature.IsCreature, Is.True);
+            Assert.That(depletedUnderCreature.TerrainId, Is.EqualTo(TerrainIds.Grass));
+            Assert.That(depletedUnderCreature.TerrainEnergy, Is.EqualTo(0f));
+            Assert.That(depletedUnderCreature.WithTerrainEnergy(1f).IsPlantResource, Is.True);
+        }
+
+        [Test]
+        public void PopulationLimitCountsCreatureAndResourceLayersSeparately()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, SpeciesCell.Grass(2f).WithEntity(
+                SpeciesIds.Herbivore,
+                health: 1,
+                energy: 5,
+                age: 0,
+                foodEaten: 0,
+                foodReserve: 0f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = CreateRules(metabolism: 0),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, maxPopulation: 1);
+            var snapshot = SpeciesPopulationSnapshot.Create(next, tick: 1);
+
+            Assert.That(
+                snapshot.GetCount(SpeciesIds.Herbivore) + snapshot.GetCount(SpeciesIds.Plant),
+                Is.EqualTo(1));
+            Assert.That(next.GetCell(0, 0).TerrainId, Is.EqualTo(TerrainIds.Grass));
+        }
+
+        [Test]
         public void SpeciesWithDietTargetStarvesWhenEnergyRunsOut()
         {
             var source = new Grid<SpeciesCell>(1, 1);
@@ -670,6 +887,44 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void FractionalMovementSpeedUsesASeededChanceForTheNextMove()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 1.5f,
+                    movementPattern: new GridPattern(new[] { Vector2Int.right }),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+            var oneMoveRuns = 0;
+            var twoMoveRuns = 0;
+
+            for (var seed = 0; seed < 32; seed++)
+            {
+                var metrics = new SpeciesSimulationMetrics();
+                SpeciesSimulation.Step(source, rules, seed, metrics: metrics);
+                var moves = metrics.GetActivity(SpeciesIds.Herbivore).MovementSteps;
+                oneMoveRuns += moves == 1 ? 1 : 0;
+                twoMoveRuns += moves == 2 ? 1 : 0;
+            }
+
+            Assert.That(oneMoveRuns, Is.GreaterThan(0));
+            Assert.That(twoMoveRuns, Is.GreaterThan(0));
+            Assert.That(oneMoveRuns + twoMoveRuns, Is.EqualTo(32));
+        }
+
+        [Test]
         public void PlantsCanWiltAndCreateOpenTiles()
         {
             var source = new Grid<SpeciesCell>(1, 1);
@@ -731,6 +986,7 @@ namespace SaltyGame.Tests
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
                 startingEnergy: 2,
+                forageBelowEnergy: 2,
                 metabolism: 0);
             var rules = new Dictionary<SpeciesArchetype, SpeciesRules>
             {
@@ -797,6 +1053,7 @@ namespace SaltyGame.Tests
 
             Assert.That(next.GetCell(1, 0).IsGrass, Is.True);
             Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(3.25f).Within(0.001f));
+            Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(0f));
         }
 
         [Test]
@@ -929,6 +1186,14 @@ namespace SaltyGame.Tests
             Assert.That(first.WithSpeciesRules(
                     SpeciesIds.Herbivore,
                     CreateRules(new SpeciesAwarenessRules(visionRange: 1, intelligence: 1))).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(movementSpeed: 1.5f)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(forageBelowEnergy: 1)).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
         }
 
@@ -1071,10 +1336,15 @@ namespace SaltyGame.Tests
             Assert.That(plantData.Fingerprint, Is.Not.EqualTo(creatureData.Fingerprint));
         }
 
-        static SpeciesRules CreateRules(SpeciesAwarenessRules awareness = null)
+        static SpeciesRules CreateRules(
+            SpeciesAwarenessRules awareness = null,
+            float movementSpeed = 1f,
+            SpeciesRole role = SpeciesRole.Herbivore,
+            int forageBelowEnergy = 0,
+            int metabolism = 1)
         {
             return new SpeciesRules(
-                movementSpeed: 1f,
+                movementSpeed,
                 movementPattern: EmptyPattern,
                 attackPattern: EmptyPattern,
                 attackAmount: 0,
@@ -1084,7 +1354,27 @@ namespace SaltyGame.Tests
                 dietTarget: null,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
-                awareness: awareness);
+                metabolism: metabolism,
+                awareness: awareness,
+                role: role,
+                forageBelowEnergy: forageBelowEnergy);
+        }
+
+        static void SetPrivateField(object target, string name, object value)
+        {
+            for (var type = target.GetType(); type != null; type = type.BaseType)
+            {
+                var field = type.GetField(name, BindingFlags.Instance | BindingFlags.NonPublic);
+                if (field == null)
+                {
+                    continue;
+                }
+
+                field.SetValue(target, value);
+                return;
+            }
+
+            Assert.Fail($"Field '{name}' was not found on {target.GetType().Name}.");
         }
     }
 }

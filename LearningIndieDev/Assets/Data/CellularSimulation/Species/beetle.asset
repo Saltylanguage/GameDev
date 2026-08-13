@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: beetle
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.HerbivoreSpeciesDefinitionAsset
   id: beetle
-  startingProbability: 0.09
   movementSpeed: 1.8
   movementPattern:
   - {x: 0, y: 1}
@@ -52,6 +51,7 @@ MonoBehaviour:
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 4
   startingEnergy: 12
+  forageBelowEnergy: 12
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0

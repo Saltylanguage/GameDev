@@ -93,6 +93,7 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int reproductionFoodRequired;
             [SerializeField, Min(0)] internal int maxReproductionGroupSize;
             [SerializeField, Min(0)] internal int startingEnergy;
+            [SerializeField, Min(0)] internal int forageBelowEnergy;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
             [SerializeField, Min(0)] internal int crowdingEnergyPenalty;
             [SerializeField, Min(0f)] internal float startingFoodReserve;
@@ -132,7 +133,8 @@ namespace SaltyGame
                     energyValue,
                     metabolism,
                     new SpeciesAwarenessRules(visionRange, intelligence),
-                    role);
+                    role,
+                    forageBelowEnergy);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -155,6 +157,7 @@ namespace SaltyGame
                     reproductionFoodRequired = rules.ReproductionFoodRequired,
                     maxReproductionGroupSize = rules.MaxReproductionGroupSize,
                     startingEnergy = rules.StartingEnergy,
+                    forageBelowEnergy = rules.ForageBelowEnergy,
                     wiltChance = rules.WiltChance,
                     crowdingEnergyPenalty = rules.CrowdingEnergyPenalty,
                     startingFoodReserve = rules.StartingFoodReserve,

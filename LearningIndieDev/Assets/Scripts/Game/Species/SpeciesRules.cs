@@ -26,7 +26,8 @@ namespace SaltyGame
             int energyValue = 0,
             int metabolism = 1,
             SpeciesAwarenessRules awareness = null,
-            SpeciesRole role = SpeciesRole.Herbivore)
+            SpeciesRole role = SpeciesRole.Herbivore,
+            int forageBelowEnergy = 0)
         {
             if (movementSpeed < 0f)
             {
@@ -68,6 +69,11 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(startingEnergy), startingEnergy, "Starting energy cannot be negative.");
             }
 
+            if (forageBelowEnergy < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(forageBelowEnergy), forageBelowEnergy, "Forage energy threshold cannot be negative.");
+            }
+
             if (wiltChance < 0f || wiltChance > 1f)
             {
                 throw new ArgumentOutOfRangeException(nameof(wiltChance), wiltChance, "Wilt chance must be between zero and one.");
@@ -107,6 +113,7 @@ namespace SaltyGame
             ReproductionFoodRequired = reproductionFoodRequired;
             MaxReproductionGroupSize = maxReproductionGroupSize;
             StartingEnergy = startingEnergy;
+            ForageBelowEnergy = forageBelowEnergy;
             WiltChance = wiltChance;
             CrowdingEnergyPenalty = crowdingEnergyPenalty;
             StartingFoodReserve = startingFoodReserve;
@@ -135,6 +142,7 @@ namespace SaltyGame
         public int ReproductionFoodRequired { get; }
         public int MaxReproductionGroupSize { get; }
         public int StartingEnergy { get; }
+        public int ForageBelowEnergy { get; }
         public float WiltChance { get; }
         public int CrowdingEnergyPenalty { get; }
         public int CrowdingCost => CrowdingEnergyPenalty;

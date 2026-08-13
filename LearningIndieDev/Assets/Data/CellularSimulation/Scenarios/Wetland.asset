@@ -19,8 +19,13 @@ MonoBehaviour:
   maxPopulation: 0
   minPopulation: 0
   species:
-  - {fileID: 11400000, guid: 9cc25b58855f8104f90d474579f3b745, type: 2}
-  - {fileID: 11400000, guid: acb2a38e53ddd7349a0926936df65d92, type: 2}
-  - {fileID: 11400000, guid: 07c68cdfd615c374f90315c2d395241b, type: 2}
-  - {fileID: 11400000, guid: dd3fd000de7fcb04088d5b077caae667, type: 2}
-  - {fileID: 11400000, guid: e2322341ad194a3499797be217515983, type: 2}
+  - definition: {fileID: 11400000, guid: 9cc25b58855f8104f90d474579f3b745, type: 2}
+    startingProbability: 0.34
+  - definition: {fileID: 11400000, guid: acb2a38e53ddd7349a0926936df65d92, type: 2}
+    startingProbability: 0.09
+  - definition: {fileID: 11400000, guid: 07c68cdfd615c374f90315c2d395241b, type: 2}
+    startingProbability: 0.09
+  - definition: {fileID: 11400000, guid: dd3fd000de7fcb04088d5b077caae667, type: 2}
+    startingProbability: 0.004
+  - definition: {fileID: 11400000, guid: e2322341ad194a3499797be217515983, type: 2}
+    startingProbability: 0.004

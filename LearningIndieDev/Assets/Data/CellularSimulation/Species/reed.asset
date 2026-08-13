@@ -13,7 +13,6 @@ MonoBehaviour:
   m_Name: reed
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.PlantSpeciesDefinitionAsset
   id: reed
-  startingProbability: 0.34
   movementSpeed: 0
   movementPattern: []
   attackPattern: []
@@ -36,6 +35,7 @@ MonoBehaviour:
   reproductionFoodRequired: 0
   maxReproductionGroupSize: 0
   startingEnergy: 12
+  forageBelowEnergy: 0
   wiltChance: 0.01
   crowdingEnergyPenalty: 0
   startingFoodReserve: 18

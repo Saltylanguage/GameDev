@@ -85,7 +85,9 @@ namespace SaltyGame
                 rules.SeedDropChance,
                 rules.EnergyValue,
                 rules.Metabolism,
-                rules.Awareness);
+                awareness: rules.Awareness,
+                role: rules.Role,
+                forageBelowEnergy: rules.ForageBelowEnergy);
         }
     }
 }

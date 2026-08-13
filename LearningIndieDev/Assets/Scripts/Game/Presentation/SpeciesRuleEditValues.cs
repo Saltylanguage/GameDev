@@ -23,6 +23,7 @@ namespace SaltyGame
         public string ReproductionFoodRequired;
         public string MaxReproductionGroupSize;
         public string StartingEnergy;
+        public string ForageBelowEnergy;
         public string EnergyValue;
         public string Metabolism;
         public string VisionRange;

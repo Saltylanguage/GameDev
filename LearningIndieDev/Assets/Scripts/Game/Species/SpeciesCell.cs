@@ -248,16 +248,12 @@ namespace SaltyGame
 
         public SpeciesCell WithoutPlantResource()
         {
-            return IsCreature
-                ? new SpeciesCell(
-                    SpeciesId,
-                    Health,
-                    Energy,
-                    Age,
-                    FoodEaten,
-                    FoodReserve,
-                    IsAlpha)
-                : Empty;
+            if (isResourceTerrain)
+            {
+                return WithTerrainEnergy(0f);
+            }
+
+            return IsOccupied && isResourceSpecies ? WithoutEntity() : this;
         }
 
         public SpeciesCell WithAlpha(int healthBonus, int energyBonus)
