@@ -45,6 +45,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 48c1cdcb54b84094be779a6399307bcf, type: 3}
   m_Name:
   m_EditorClassIdentifier:
+  scenarioOptions:
+  - {fileID: 11400000, guid: 5d79fd199263e2d40909cea7567a4ce6, type: 2}
+  - {fileID: 11400000, guid: 206fce3dc4215ca4ea82745886382948, type: 2}
+  - {fileID: 11400000, guid: 413061eae5fbb7245aef3a3f7e9be293, type: 2}
+  - {fileID: 11400000, guid: 1e7a1d0d79a389e419c9ace023b1de9d, type: 2}
+  selectedScenarioIndex: -1
 --- !u!114 &100003
 MonoBehaviour:
   m_ObjectHideFlags: 0

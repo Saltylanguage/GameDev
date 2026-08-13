@@ -160,6 +160,10 @@ namespace SaltyGame
         [SerializeField, Min(0)] int maxPopulation;
         [SerializeField, Min(0)] int minPopulation;
 
+        [Header("Authored Scenarios")]
+        [SerializeField] List<ScenarioDefinitionAsset> scenarioOptions = new List<ScenarioDefinitionAsset>();
+        [SerializeField, Min(-1)] int selectedScenarioIndex = -1;
+
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
@@ -222,6 +226,10 @@ namespace SaltyGame
         public float HerbivoreProbability => herbivoreProbability;
         public float CarnivoreProbability => carnivoreProbability;
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
+        public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
+        public IReadOnlyList<ScenarioDefinitionAsset> ScenarioOptions => scenarioOptions;
+        public int SelectedScenarioIndex => selectedScenarioIndex;
+        public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
         public bool LegacyUiEnabled
@@ -235,6 +243,44 @@ namespace SaltyGame
             set => noesisUiEnabled = value;
         }
 
+        public void ConfigureScenarioOptions(IReadOnlyList<ScenarioDefinitionAsset> options, int initialSelection = -1)
+        {
+            scenarioOptions = options == null
+                ? new List<ScenarioDefinitionAsset>()
+                : new List<ScenarioDefinitionAsset>(options);
+            selectedScenarioIndex = Mathf.Clamp(initialSelection, -1, scenarioOptions.Count - 1);
+
+            if (previewState == SpeciesPreviewState.Ready && !sessionStarted)
+            {
+                ResetToStart();
+            }
+        }
+
+        public bool TrySelectScenario(int scenarioIndex, out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (!SettingsEditable)
+            {
+                validationMessage = "Scenarios can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (scenarioIndex < -1 || scenarioIndex >= scenarioOptions.Count)
+            {
+                validationMessage = "The selected scenario is not available.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            selectedScenarioIndex = scenarioIndex;
+            ResetToStart();
+            settingsMessage = SelectedScenario == null
+                ? "Legacy defaults selected."
+                : $"Scenario '{SelectedScenario.name}' selected.";
+            return true;
+        }
+
         void Awake()
         {
             playerSpecies = new SpeciesId(string.IsNullOrWhiteSpace(playerSpeciesKey)
@@ -242,6 +288,7 @@ namespace SaltyGame
                 : playerSpeciesKey);
             ruleDrafts = CreateRuleDrafts(SpeciesRuleDefaults.Create());
             LoadSavedSettings();
+            ApplySelectedScenario();
             ResetToStart();
         }
 
@@ -532,6 +579,11 @@ namespace SaltyGame
 
         void OnGUI()
         {
+            if (noesisUiEnabled)
+            {
+                return;
+            }
+
             var run = Run;
             if (run == null)
             {
@@ -583,7 +635,11 @@ namespace SaltyGame
             {
                 if (!sessionStarted)
                 {
-                    rules = CreateRulesFromDrafts();
+                    if (SelectedScenario == null)
+                    {
+                        rules = CreateRulesFromDrafts();
+                    }
+
                     progression = new SpeciesProgression(new SpeciesDefinition(
                         playerSpecies,
                         rules[playerSpecies]));
@@ -895,7 +951,17 @@ namespace SaltyGame
                 seed = Guid.NewGuid().GetHashCode();
             }
 
+            ApplySelectedScenario();
             rules = CreateRulesFromDrafts();
+            if (SelectedScenario != null)
+            {
+                var authoredData = SelectedScenario.CreateRuntimeData();
+                rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
+                if (!rules.ContainsKey(playerSpecies))
+                {
+                    playerSpecies = FindPlayableSpecies(rules);
+                }
+            }
             progression = new SpeciesProgression(new SpeciesDefinition(
                 playerSpecies,
                 rules[playerSpecies]));
@@ -1374,6 +1440,12 @@ namespace SaltyGame
 
         CellularSimData CreateSimulationData()
         {
+            if (SelectedScenario != null)
+            {
+                var authoredData = SelectedScenario.CreateRuntimeData();
+                return authoredData.WithSpeciesRules(playerSpecies, rules[playerSpecies]);
+            }
+
             return new CellularSimData(
                 width,
                 height,
@@ -1388,6 +1460,55 @@ namespace SaltyGame
                 stepInterval,
                 maxPopulation,
                 minPopulation);
+        }
+
+        void ApplySelectedScenario()
+        {
+            var authoredData = SelectedScenario?.CreateRuntimeData();
+            if (authoredData == null)
+            {
+                return;
+            }
+
+            width = authoredData.Width;
+            height = authoredData.Height;
+            runDurationSeconds = authoredData.RunDurationSeconds;
+            stepInterval = authoredData.StepInterval;
+            maxPopulation = authoredData.MaxPopulation;
+            minPopulation = authoredData.MinPopulation;
+            rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
+            if (!rules.ContainsKey(playerSpecies))
+            {
+                playerSpecies = FindPlayableSpecies(rules);
+                playerSpeciesKey = playerSpecies.Value;
+            }
+        }
+
+        ScenarioDefinitionAsset GetSelectedScenario()
+        {
+            return selectedScenarioIndex >= 0
+                && scenarioOptions != null
+                && selectedScenarioIndex < scenarioOptions.Count
+                ? scenarioOptions[selectedScenarioIndex]
+                : null;
+        }
+
+        static SpeciesId FindPlayableSpecies(IReadOnlyDictionary<SpeciesId, SpeciesRules> definitions)
+        {
+            foreach (var entry in definitions)
+            {
+                if (!entry.Value.IsPlant)
+                {
+                    return entry.Key;
+                }
+            }
+
+            foreach (var entry in definitions)
+            {
+                return entry.Key;
+            }
+
+            throw new InvalidOperationException("The selected scenario does not define any species.");
         }
 
         Color GetCellColor(SpeciesCell cell)

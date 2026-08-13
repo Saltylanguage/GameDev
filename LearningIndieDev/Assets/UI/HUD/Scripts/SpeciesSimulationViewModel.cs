@@ -44,6 +44,8 @@ namespace SaltyGame
         bool canPurchaseAttackUpgrade;
         bool canPurchaseBlockUpgrade;
         bool canPlayNextSimulation;
+        string[] scenarioOptions = Array.Empty<string>();
+        int selectedScenarioIndex;
         Visibility settingsVisibility;
         Visibility runningVisibility;
         Visibility pausedVisibility;
@@ -184,6 +186,32 @@ namespace SaltyGame
         public bool CanPurchaseAttackUpgrade => canPurchaseAttackUpgrade;
         public bool CanPurchaseBlockUpgrade => canPurchaseBlockUpgrade;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
+        public string[] ScenarioOptions => scenarioOptions;
+        public int SelectedScenarioIndex
+        {
+            get => selectedScenarioIndex;
+            set
+            {
+                if (selectedScenarioIndex == value)
+                {
+                    return;
+                }
+
+                selectedScenarioIndex = Mathf.Max(0, value);
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedScenarioIndex)));
+                if (preview == null || !preview.SettingsEditable)
+                {
+                    return;
+                }
+
+                var actualScenarioIndex = selectedScenarioIndex - 1;
+                if (actualScenarioIndex != preview.SelectedScenarioIndex)
+                {
+                    preview.TrySelectScenario(actualScenarioIndex, out _);
+                    Refresh(true);
+                }
+            }
+        }
         public Visibility SettingsVisibility => settingsVisibility;
         public Visibility RunningVisibility => runningVisibility;
         public Visibility PausedVisibility => pausedVisibility;
@@ -194,6 +222,19 @@ namespace SaltyGame
         public void Initialize(SpeciesSimulationPreview simulationPreview)
         {
             preview = simulationPreview ?? throw new ArgumentNullException(nameof(simulationPreview));
+            SyncScenarioOptions();
+            Refresh(true);
+        }
+
+        public void BindToView(NoesisView view)
+        {
+            if (view == null || view.Content == null)
+            {
+                return;
+            }
+
+            view.Content.DataContext = this;
+            board = view.Content.FindName("SimulationBoard") as SpeciesSimulationBoard;
             Refresh(true);
         }
 
@@ -226,11 +267,7 @@ namespace SaltyGame
             LoadRuleValues();
 
             var view = GetComponent<NoesisView>();
-            if (view != null && view.Content is FrameworkElement content)
-            {
-                content.DataContext = this;
-                board = content.FindName("SimulationBoard") as SpeciesSimulationBoard;
-            }
+            BindToView(view);
 
             Refresh(true);
         }
@@ -274,6 +311,7 @@ namespace SaltyGame
                 }
             }
 
+            board?.SetSpeciesRules(preview.ActiveSpeciesRules);
             board?.SetGrid(run?.Cells);
 
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
@@ -309,9 +347,9 @@ namespace SaltyGame
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
             Set(ref boardVisibility,
-                run == null || state == SpeciesPreviewState.Ready
-                    ? Visibility.Collapsed
-                    : Visibility.Visible,
+                state == SpeciesPreviewState.Running
+                    ? Visibility.Visible
+                    : Visibility.Collapsed,
                 nameof(BoardVisibility));
         }
 
@@ -434,6 +472,8 @@ namespace SaltyGame
 
         void SyncSettingsFields()
         {
+            SyncScenarioOptions();
+            Set(ref selectedScenarioIndex, preview.SelectedScenarioIndex + 1, nameof(SelectedScenarioIndex));
             GridWidthText = preview.GridWidth.ToString(CultureInfo.InvariantCulture);
             GridHeightText = preview.GridHeight.ToString(CultureInfo.InvariantCulture);
             BaseSeedText = preview.BaseSeed.ToString(CultureInfo.InvariantCulture);
@@ -445,6 +485,29 @@ namespace SaltyGame
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             CarnivoreProbabilityText = preview.CarnivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
+        }
+
+        void SyncScenarioOptions()
+        {
+            if (preview == null)
+            {
+                return;
+            }
+
+            var authoredScenarios = preview.ScenarioOptions;
+            var names = new string[(authoredScenarios?.Count ?? 0) + 1];
+            names[0] = "Legacy Defaults";
+            for (var index = 0; index < names.Length - 1; index++)
+            {
+                var scenario = authoredScenarios[index];
+                names[index + 1] = scenario == null ? "(Empty Scenario Slot)" : scenario.name;
+            }
+
+            if (scenarioOptions.Length != names.Length)
+            {
+                scenarioOptions = names;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScenarioOptions)));
+            }
         }
 
         static string GetStateTitle(SpeciesPreviewState state)

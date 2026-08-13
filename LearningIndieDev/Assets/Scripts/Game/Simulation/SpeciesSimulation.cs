@@ -180,8 +180,8 @@ namespace SaltyGame
                                 y,
                                 currentAttacker,
                                 attackerRules,
-                                rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
-                                    ? plantRules.EnergyValue
+                                rules.TryGetValue(target.SpeciesId, out var foodRules)
+                                    ? foodRules.EnergyValue
                                     : 1,
                                 metrics);
                             break;
@@ -254,9 +254,7 @@ namespace SaltyGame
         {
             var moved = new bool[source.Count];
             var claimed = new bool[source.Count];
-            var plantEnergyValue = rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
-                ? plantRules.EnergyValue
-                : 1;
+            var plantEnergyValue = GetFirstPlantEnergyValue(rules);
             var processingOrder = CreateShuffledIndices(source.Count, random);
 
             for (var orderIndex = 0; orderIndex < processingOrder.Length; orderIndex++)
@@ -774,7 +772,8 @@ namespace SaltyGame
                 {
                     var cell = next.GetCell(x, y);
                     if (!cell.IsPlantResource
-                        || !rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
+                        || !rules.TryGetValue(cell.SpeciesId, out var plantRules)
+                        || !IsPlantSpecies(cell.SpeciesId, plantRules)
                         || plantRules.Metabolism >= 0)
                     {
                         continue;
@@ -872,11 +871,14 @@ namespace SaltyGame
             System.Random random,
             SpeciesSimulationMetrics metrics)
         {
-            if (!rules.TryGetValue(SpeciesIds.Plant, out var plantRules)
-                || plantRules.StartingFoodReserve <= 0f)
+            var plantEntry = GetFirstPlant(rules);
+            if (!plantEntry.HasValue || plantEntry.Value.Value.StartingFoodReserve <= 0f)
             {
                 return;
             }
+
+            var plantSpecies = plantEntry.Value.Key;
+            var plantRules = plantEntry.Value.Value;
 
             for (var y = 0; y < next.Height; y++)
             {
@@ -910,8 +912,8 @@ namespace SaltyGame
                         next.SetCell(seedX, seedY, SpeciesCell.FromTerrain(
                             terrainDefinitions[TerrainIds.Grass],
                             plantRules.StartingFoodReserve,
-                            SpeciesIds.Plant));
-                        metrics?.Record(SpeciesIds.Plant, births: 1);
+                            plantSpecies));
+                        metrics?.Record(plantSpecies, births: 1);
                         break;
                     }
                 }
@@ -992,11 +994,11 @@ namespace SaltyGame
 
                         if (random.NextDouble() <= speciesRules.ReproductionChance)
                         {
-                            var offspring = parent.SpeciesId == SpeciesIds.Plant
+                            var offspring = IsPlantSpecies(parent.SpeciesId, speciesRules)
                                 ? SpeciesCell.FromTerrain(
                                     terrainDefinitions[TerrainIds.Grass],
                                     speciesRules.StartingFoodReserve,
-                                    SpeciesIds.Plant)
+                                    parent.SpeciesId)
                                 : new SpeciesCell(
                                     parent.SpeciesId,
                                     health: 1,
@@ -1099,9 +1101,36 @@ namespace SaltyGame
 
         static bool IsSameSpecies(SpeciesCell cell, SpeciesId species)
         {
-            return species == SpeciesIds.Plant
-                ? cell.IsPlantResource
-                : cell.IsCreature && cell.SpeciesId == species;
+            return (cell.IsPlantResource || cell.IsCreature) && cell.SpeciesId == species;
+        }
+
+        static int GetFirstPlantEnergyValue(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+        {
+            var entry = GetFirstPlant(rules);
+            return entry.HasValue ? entry.Value.Value.EnergyValue : 1;
+        }
+
+        static KeyValuePair<SpeciesId, SpeciesRules>? GetFirstPlant(
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+        {
+            KeyValuePair<SpeciesId, SpeciesRules>? result = null;
+            foreach (var entry in rules)
+            {
+                if (!IsPlantSpecies(entry.Key, entry.Value)
+                    || (result.HasValue && string.CompareOrdinal(entry.Key.Value, result.Value.Key.Value) >= 0))
+                {
+                    continue;
+                }
+
+                result = entry;
+            }
+
+            return result;
+        }
+
+        static bool IsPlantSpecies(SpeciesId species, SpeciesRules rules)
+        {
+            return rules.IsPlant || species == SpeciesIds.Plant;
         }
 
         static int GetReproductionEnergy(SpeciesCell cell)

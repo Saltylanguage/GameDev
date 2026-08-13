@@ -25,7 +25,8 @@ namespace SaltyGame
             float seedDropChance = 0f,
             int energyValue = 0,
             int metabolism = 1,
-            SpeciesAwarenessRules awareness = null)
+            SpeciesAwarenessRules awareness = null,
+            SpeciesRole role = SpeciesRole.Herbivore)
         {
             if (movementSpeed < 0f)
             {
@@ -113,6 +114,7 @@ namespace SaltyGame
             EnergyValue = energyValue;
             Metabolism = metabolism;
             Awareness = awareness ?? SpeciesAwarenessRules.None;
+            Role = role;
         }
 
         public float MovementSpeed { get; }
@@ -141,5 +143,7 @@ namespace SaltyGame
         public int EnergyValue { get; }
         public int Metabolism { get; }
         public SpeciesAwarenessRules Awareness { get; }
+        public SpeciesRole Role { get; }
+        public bool IsPlant => Role == SpeciesRole.Plant;
     }
 }

@@ -81,6 +81,7 @@ namespace SaltyGame
             Append(builder, rules.SeedDropChance);
             Append(builder, rules.EnergyValue);
             Append(builder, rules.Metabolism);
+            Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
         }

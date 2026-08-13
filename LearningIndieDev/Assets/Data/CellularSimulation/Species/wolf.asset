@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6dc8c8d37aa2456db179a3f374d16515, type: 3}
+  m_Name: wolf
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
+  id: wolf
+  startingProbability: 0.003
+  movementSpeed: 0.8
+  movementPattern:
+  - {x: -1, y: 1}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: -1}
+  - {x: 0, y: -1}
+  - {x: 1, y: -1}
+  attackPattern:
+  - {x: -1, y: 1}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: -1}
+  - {x: 0, y: -1}
+  - {x: 1, y: -1}
+  attackAmount: 2
+  blockPattern:
+  - {x: 0, y: 1}
+  - {x: 1, y: 0}
+  - {x: 0, y: -1}
+  - {x: -1, y: 0}
+  blockAmount: 0
+  dietPattern:
+  - {x: -1, y: 1}
+  - {x: 0, y: 1}
+  - {x: 1, y: 1}
+  - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: -1}
+  - {x: 0, y: -1}
+  - {x: 1, y: -1}
+  dietTargetId: deer
+  reproductionPattern:
+  - {x: 0, y: 1}
+  - {x: 1, y: 0}
+  - {x: 0, y: -1}
+  - {x: -1, y: 0}
+  reproductionNeighborCount: 1
+  reproductionChance: 0.02
+  reproductionFoodRequired: 1
+  maxReproductionGroupSize: 3
+  startingEnergy: 36
+  wiltChance: 0
+  crowdingEnergyPenalty: 1
+  startingFoodReserve: 0
+  seedDropChance: 0
+  energyValue: 8
+  metabolism: 1
+  visionRange: 5
+  intelligence: 1
+  alphaChance: 0
+  alphaHealthBonus: 0
+  alphaEnergyBonus: 0

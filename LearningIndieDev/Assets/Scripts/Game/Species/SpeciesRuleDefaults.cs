@@ -41,7 +41,8 @@ namespace SaltyGame
                     startingFoodReserve: 3.25f,
                     energyValue: 1,
                     metabolism: -1,
-                    awareness: SpeciesAwarenessRules.None),
+                    awareness: SpeciesAwarenessRules.None,
+                    role: SpeciesRole.Plant),
                 [SpeciesIds.Herbivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: CardinalPattern,
@@ -61,7 +62,8 @@ namespace SaltyGame
                     seedDropChance: 0.05f,
                     energyValue: 4,
                     metabolism: 1,
-                    awareness: new SpeciesAwarenessRules(visionRange: 5, intelligence: 1)),
+                    awareness: new SpeciesAwarenessRules(visionRange: 5, intelligence: 1),
+                    role: SpeciesRole.Herbivore),
                 [SpeciesIds.Carnivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: MoorePattern,
@@ -80,7 +82,8 @@ namespace SaltyGame
                     crowdingEnergyPenalty: 1,
                     energyValue: 8,
                     metabolism: 1,
-                    awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1)),
+                    awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1),
+                    role: SpeciesRole.Carnivore),
             };
         }
 

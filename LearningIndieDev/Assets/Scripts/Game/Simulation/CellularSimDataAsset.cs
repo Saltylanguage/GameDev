@@ -106,6 +106,7 @@ namespace SaltyGame
             [SerializeField, Range(0f, 1f)] internal float alphaChance;
             [SerializeField, Min(0)] internal int alphaHealthBonus;
             [SerializeField, Min(0)] internal int alphaEnergyBonus;
+            [SerializeField] internal SpeciesRole role;
 
             internal SpeciesRules CreateRules()
             {
@@ -130,7 +131,8 @@ namespace SaltyGame
                     seedDropChance,
                     energyValue,
                     metabolism,
-                    new SpeciesAwarenessRules(visionRange, intelligence));
+                    new SpeciesAwarenessRules(visionRange, intelligence),
+                    role);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -161,6 +163,7 @@ namespace SaltyGame
                     metabolism = rules.Metabolism,
                     visionRange = rules.Awareness.VisionRange,
                     intelligence = rules.Awareness.Intelligence,
+                    role = rules.Role,
                 };
             }
 

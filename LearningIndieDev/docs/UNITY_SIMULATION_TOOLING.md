@@ -129,7 +129,9 @@ rate deltas against an explicitly selected baseline report.
 
 ## Authoring workflow
 
-`CellularSimDataAsset` is the current Inspector authoring path:
+`CellularSimDataAsset` remains supported as the compact Inspector authoring path.
+For reusable species libraries and multi-species experiments, use
+`ScenarioDefinitionAsset`, which references `SpeciesDefinitionAsset` assets:
 
 1. Create or select a **Salty Game / Cellular Simulation Data** asset.
 2. Configure its global settings and species definitions.

@@ -1034,6 +1034,43 @@ namespace SaltyGame.Tests
             }
         }
 
+        [Test]
+        public void SpeciesRulesKeepTheirAuthoredRoleInTheRulesetFingerprint()
+        {
+            var plant = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                role: SpeciesRole.Plant);
+            var creature = CreateRules();
+
+            var plantData = new CellularSimData(
+                2,
+                2,
+                new Dictionary<SpeciesId, float> { [new SpeciesId("fern")] = 0.5f },
+                new Dictionary<SpeciesId, SpeciesRules> { [new SpeciesId("fern")] = plant },
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f);
+            var creatureData = new CellularSimData(
+                2,
+                2,
+                new Dictionary<SpeciesId, float> { [new SpeciesId("fern")] = 0.5f },
+                new Dictionary<SpeciesId, SpeciesRules> { [new SpeciesId("fern")] = creature },
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f);
+
+            Assert.That(plant.IsPlant, Is.True);
+            Assert.That(creature.IsPlant, Is.False);
+            Assert.That(plantData.Fingerprint, Is.Not.EqualTo(creatureData.Fingerprint));
+        }
+
         static SpeciesRules CreateRules(SpeciesAwarenessRules awareness = null)
         {
             return new SpeciesRules(

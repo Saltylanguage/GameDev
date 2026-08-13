@@ -232,7 +232,7 @@ namespace SaltyGame.EditorTools
             return species != null && speciesIndex < species.Length ? species[speciesIndex].population : 0;
         }
 
-        static CellularSimData LoadSimulationData(string scenarioPath, out CellularSimDataAsset temporaryAsset)
+        static CellularSimData LoadSimulationData(string scenarioPath, out UnityEngine.Object temporaryAsset)
         {
             temporaryAsset = null;
             if (!string.IsNullOrWhiteSpace(scenarioPath))
@@ -242,17 +242,23 @@ namespace SaltyGame.EditorTools
                     throw new ArgumentException("Scenario paths must be Unity project paths beginning with 'Assets/'.", ScenarioPathArgument);
                 }
 
+                var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(scenarioPath);
+                if (scenario != null)
+                {
+                    return scenario.CreateRuntimeData();
+                }
+
                 var asset = AssetDatabase.LoadAssetAtPath<CellularSimDataAsset>(scenarioPath);
                 if (asset == null)
                 {
-                    throw new FileNotFoundException($"No CellularSimDataAsset exists at '{scenarioPath}'.", scenarioPath);
+                    throw new FileNotFoundException($"No supported simulation scenario exists at '{scenarioPath}'.", scenarioPath);
                 }
 
                 return asset.CreateRuntimeData();
             }
 
             temporaryAsset = ScriptableObject.CreateInstance<CellularSimDataAsset>();
-            return temporaryAsset.CreateRuntimeData();
+            return ((CellularSimDataAsset)temporaryAsset).CreateRuntimeData();
         }
 
         static string GetRequiredOutputPath(string outputPath)

@@ -114,6 +114,16 @@ design questions. Do not silently settle them in foundational grid code.
   serialized scenario values into a fresh immutable `CellularSimData` at run
   start and is never mutable run state. It currently uses bare/grass terrain
   defaults; the existing runtime settings UI remains the fastest experiment path.
+- `SpeciesDefinitionAsset` and `ScenarioDefinitionAsset` now provide the
+  reusable authoring pipeline: species assets share one rule surface through
+  plant/herbivore/carnivore role subclasses, and scenarios compose three to six
+  species assets into immutable runtime data. The first authored library contains
+  fern, reed, hare, deer, snail, beetle, fox, wolf, owl, and stoat, plus a
+  compatibility-only baseline scenario.
+- The authored baseline was proven equivalent to the legacy defaults by matching
+  the ruleset fingerprint and final grids for deterministic seeds 10100-10104.
+  Three 20-seed scenario reports are recorded in the dated handoff journal; they
+  are balance experiments, not product-tuned defaults.
 - Species awareness is immutable `SpeciesRules` data: vision is currently a
   Moore-range `GridPattern`, while intelligence is an initial priority tier.
   Perception reads a source grid, `SpeciesNavigation` uses seeded breadth-first

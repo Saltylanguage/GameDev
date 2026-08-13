@@ -1,15 +1,21 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SaltyGame
 {
     public sealed class CellularAutomataPrototypeRuntime : MonoBehaviour
     {
+        [Header("Runtime Scenarios")]
+        [SerializeField] List<ScenarioDefinitionAsset> scenarioOptions = new List<ScenarioDefinitionAsset>();
+        [SerializeField, Min(-1)] int selectedScenarioIndex = -1;
+
         public SpeciesSimulationPreview SpeciesPreview { get; private set; }
 
         void Awake()
         {
             CreateBackgroundCamera();
             SpeciesPreview = gameObject.AddComponent<SpeciesSimulationPreview>();
+            SpeciesPreview.ConfigureScenarioOptions(scenarioOptions, selectedScenarioIndex);
         }
 
         void CreateBackgroundCamera()

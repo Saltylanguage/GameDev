@@ -75,11 +75,11 @@ namespace SaltyGame
         static SpeciesCell CreateCell(CellularSimData data, SpeciesId species)
         {
             var rules = data.SpeciesRules[species];
-            return species == SpeciesIds.Plant
+            return (data.SpeciesRules[species].IsPlant || species == SpeciesIds.Plant)
                 ? SpeciesCell.FromTerrain(
                     data.TerrainDefinitions[TerrainIds.Grass],
                     rules.StartingFoodReserve,
-                    SpeciesIds.Plant)
+                    species)
                 : new SpeciesCell(
                     species,
                     energy: rules.StartingEnergy,
@@ -168,10 +168,8 @@ namespace SaltyGame
                     }
 
                     if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
-                        && ((species == SpeciesIds.Plant && neighbor.IsPlantResource)
-                            || (species != SpeciesIds.Plant
-                                && neighbor.IsCreature
-                                && neighbor.SpeciesId == species)))
+                        && ((neighbor.IsPlantResource || neighbor.IsCreature)
+                            && neighbor.SpeciesId == species))
                     {
                         count++;
                     }
