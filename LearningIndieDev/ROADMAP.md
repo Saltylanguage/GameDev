@@ -246,28 +246,32 @@ vertical slice.
 
 Exit: M0 criteria are met and Sprint 1 has no unresolved product-level blocker.
 
-### Sprint 1 - Separate play from authoring
+### Sprint 1 - Main Menu and UI-only Lab
 
 The discussion-ready execution plan for this sprint is
 [`docs/SPRINT_1_PLAN.md`](docs/SPRINT_1_PLAN.md). It defines committed versus
 stretch scope, work packages, sequencing, risks, and the review demonstration.
 
-Primary outcome: a player can run the selected scenario without seeing the
-tuning interface.
+Primary outcome: a player can launch into Main Menu, navigate an UI-only Lab,
+understand the planned scientific-data/research economy, and prepare a Forest
+Edge + Hare expedition preview.
 
-- Create the Dev Lab scene around the existing runtime settings, scenario
-  assets, board, and diagnostics.
-- Reduce the player scene to scenario context, start/pause/speed controls,
-  essential inspection, and results placeholders.
-- Keep both scenes on the same simulation-domain APIs and immutable run-start
-  data.
-- Establish the first visual and audio spike inside the player scene at actual
-  board scale.
-- Build the UI-only Main Menu and player-facing Lab shell defined by the active
-  delivery plan; keep it distinct from the Dev Lab authoring scene.
+- Establish the Main Menu/Lab screen contract and low-fidelity layouts.
+- Build the Noesis navigation shell for Overview, Research, Species Archive,
+  and Expedition Setup.
+- Present representative scientific-data balances, research states, and Hare
+  mastery without implementing purchases or persistence.
+- Show a complete Forest Edge + Hare expedition summary with a clearly
+  disabled/prototype launch action.
+- Validate navigation, focus, target resolutions, and a Windows development
+  build.
 
-Exit: raw parameters are available in the Dev Lab and absent from normal play;
-the same fixed seed produces the same run in both scenes.
+Exit: the Main Menu → Lab → Expedition Setup preview works end to end, planned
+economy concepts are understandable, and no placeholder is presented as a
+functional purchase or launch.
+
+The previously planned player/Dev Lab separation and real expedition handoff
+remain the next candidate work bucket; they are not committed to Sprint 1.
 
 ### Sprint 2 - First trustworthy upgrades
 
