@@ -16,6 +16,8 @@ namespace SaltyGame
 
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
+        public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
+
         enum PatternPreset
         {
             Cardinal,
@@ -315,6 +317,7 @@ namespace SaltyGame
             if (runner.Run.Status == SimulationRunStatus.Complete && !rewardGranted)
             {
                 result = SimulationRunResults.Create(runner.Run);
+                RunCompleted?.Invoke(this, runner.Run);
                 progression.AddCurrency(result.CurrencyEarned);
                 rewardGranted = true;
                 previewState = SpeciesPreviewState.Rewards;

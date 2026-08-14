@@ -248,6 +248,10 @@ Exit: M0 criteria are met and Sprint 1 has no unresolved product-level blocker.
 
 ### Sprint 1 - Separate play from authoring
 
+The discussion-ready execution plan for this sprint is
+[`docs/SPRINT_1_PLAN.md`](docs/SPRINT_1_PLAN.md). It defines committed versus
+stretch scope, work packages, sequencing, risks, and the review demonstration.
+
 Primary outcome: a player can run the selected scenario without seeing the
 tuning interface.
 

@@ -121,66 +121,9 @@ namespace SaltyGame.EditorTools
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
                 currencyEarned = result.CurrencyEarned,
-                populationHistory = CreatePopulationHistory(run.PopulationHistory, species),
-                activity = CreateActivity(run.Metrics, species),
+                populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
+                activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
             };
-        }
-
-        static ExperimentSpeciesActivity[] CreateActivity(
-            SpeciesSimulationMetrics metrics,
-            IReadOnlyList<SpeciesId> species)
-        {
-            var activity = new ExperimentSpeciesActivity[species.Count];
-            for (var index = 0; index < species.Count; index++)
-            {
-                var source = metrics.GetActivity(species[index]);
-                activity[index] = new ExperimentSpeciesActivity
-                {
-                    speciesId = species[index].Value,
-                    births = source.Births,
-                    foodConsumed = source.FoodConsumed,
-                    movementSteps = source.MovementSteps,
-                    damageDealt = source.DamageDealt,
-                    combatKills = source.CombatKills,
-                    deaths = source.Deaths,
-                    starvationDeaths = source.StarvationDeaths,
-                    crowdingDeaths = source.CrowdingDeaths,
-                    wiltDeaths = source.WiltDeaths,
-                    populationLimitRemovals = source.PopulationLimitRemovals,
-                };
-            }
-
-            return activity;
-        }
-
-        static ExperimentPopulationSnapshot[] CreatePopulationHistory(
-            IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
-            IReadOnlyList<SpeciesId> species)
-        {
-            var snapshots = new ExperimentPopulationSnapshot[populationHistory.Count];
-            for (var index = 0; index < snapshots.Length; index++)
-            {
-                var source = populationHistory[index];
-                var counts = new ExperimentSpeciesPopulation[species.Count];
-                for (var speciesIndex = 0; speciesIndex < species.Count; speciesIndex++)
-                {
-                    var speciesId = species[speciesIndex];
-                    counts[speciesIndex] = new ExperimentSpeciesPopulation
-                    {
-                        speciesId = speciesId.Value,
-                        population = source.GetCount(speciesId),
-                    };
-                }
-
-                snapshots[index] = new ExperimentPopulationSnapshot
-                {
-                    tick = source.Tick,
-                    empty = source.Empty,
-                    species = counts,
-                };
-            }
-
-            return snapshots;
         }
 
         static ExperimentPopulationSummary[] CreateFinalPopulationSummary(
@@ -373,39 +316,8 @@ namespace SaltyGame.EditorTools
             public float durationSeconds;
             public int playerPopulation;
             public int currencyEarned;
-            public ExperimentPopulationSnapshot[] populationHistory;
-            public ExperimentSpeciesActivity[] activity;
-        }
-
-        [Serializable]
-        sealed class ExperimentPopulationSnapshot
-        {
-            public int tick;
-            public int empty;
-            public ExperimentSpeciesPopulation[] species;
-        }
-
-        [Serializable]
-        sealed class ExperimentSpeciesPopulation
-        {
-            public string speciesId;
-            public int population;
-        }
-
-        [Serializable]
-        sealed class ExperimentSpeciesActivity
-        {
-            public string speciesId;
-            public int births;
-            public float foodConsumed;
-            public int movementSteps;
-            public int damageDealt;
-            public int combatKills;
-            public int deaths;
-            public int starvationDeaths;
-            public int crowdingDeaths;
-            public int wiltDeaths;
-            public int populationLimitRemovals;
+            public SimulationPopulationSnapshotRecord[] populationHistory;
+            public SimulationSpeciesActivityRecord[] activity;
         }
 
         [Serializable]
