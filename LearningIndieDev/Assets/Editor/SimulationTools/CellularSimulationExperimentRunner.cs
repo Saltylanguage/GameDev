@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Globalization;
 using SaltyGame;
 using UnityEditor;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 2;
+        const int ReportSchemaVersion = 3;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -22,6 +23,8 @@ namespace SaltyGame.EditorTools
         const string SeedStartArgument = "-seedStart";
         const string SeedCountArgument = "-seedCount";
         const string PlayerSpeciesArgument = "-playerSpeciesId";
+        const string GridWidthArgument = "-gridWidth";
+        const string GridHeightArgument = "-gridHeight";
         const string OutputPathArgument = "-outputPath";
 
         public static void RunFromCommandLine()
@@ -30,13 +33,16 @@ namespace SaltyGame.EditorTools
             {
                 var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
                 var outputPath = GetRequiredOutputPath(options.OutputPath);
-                var data = LoadSimulationData(options.ScenarioPath, out var temporaryAsset);
+                var data = ApplyGridOverrides(
+                    LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
+                    options);
 
                 try
                 {
                     var report = CreateReport(data, options, outputPath);
                     File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
-                    Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath}");
+                    WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
+                    Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
                 }
                 finally
                 {
@@ -87,6 +93,7 @@ namespace SaltyGame.EditorTools
                 createdUtc = DateTime.UtcNow.ToString("O"),
                 scenarioAssetPath = options.ScenarioPath ?? string.Empty,
                 outputPath = outputPath,
+                csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
                 rulesetFingerprint = data.Fingerprint,
                 playerSpeciesId = playerSpecies.Value,
                 seedStart = options.SeedStart,
@@ -175,6 +182,94 @@ namespace SaltyGame.EditorTools
             return species != null && speciesIndex < species.Length ? species[speciesIndex].population : 0;
         }
 
+        static CellularSimData ApplyGridOverrides(CellularSimData data, CommandLineOptions options)
+        {
+            if (options.GridWidth == 0 && options.GridHeight == 0)
+            {
+                return data;
+            }
+
+            return new CellularSimData(
+                options.GridWidth == 0 ? data.Width : options.GridWidth,
+                options.GridHeight == 0 ? data.Height : options.GridHeight,
+                data.StartingProbabilities,
+                data.SpeciesRules,
+                data.RunDurationSeconds,
+                data.StepInterval,
+                data.MaxPopulation,
+                data.MinPopulation,
+                data.TerrainDefinitions,
+                data.AlphaOffspringRules);
+        }
+
+        static void WriteCsv(
+            ExperimentReport report,
+            IReadOnlyList<SpeciesId> species,
+            string outputPath)
+        {
+            var csv = new StringBuilder();
+            var first = true;
+            AppendCsvField(csv, "scenarioAssetPath", ref first);
+            AppendCsvField(csv, "playerSpeciesId", ref first);
+            AppendCsvField(csv, "seed", ref first);
+            AppendCsvField(csv, "gridWidth", ref first);
+            AppendCsvField(csv, "gridHeight", ref first);
+            AppendCsvField(csv, "ticks", ref first);
+            AppendCsvField(csv, "durationSeconds", ref first);
+            AppendCsvField(csv, "playerPopulation", ref first);
+            AppendCsvField(csv, "currencyEarned", ref first);
+            for (var speciesIndex = 0; speciesIndex < species.Count; speciesIndex++)
+            {
+                AppendCsvField(csv, $"{species[speciesIndex].Value}_finalPopulation", ref first);
+            }
+
+            csv.AppendLine();
+            for (var runIndex = 0; runIndex < report.runs.Length; runIndex++)
+            {
+                var run = report.runs[runIndex];
+                first = true;
+                AppendCsvField(csv, report.scenarioAssetPath, ref first);
+                AppendCsvField(csv, report.playerSpeciesId, ref first);
+                AppendCsvField(csv, run.seed, ref first);
+                AppendCsvField(csv, report.gridWidth, ref first);
+                AppendCsvField(csv, report.gridHeight, ref first);
+                AppendCsvField(csv, run.ticks, ref first);
+                AppendCsvField(csv, run.durationSeconds, ref first);
+                AppendCsvField(csv, run.playerPopulation, ref first);
+                AppendCsvField(csv, run.currencyEarned, ref first);
+                for (var speciesIndex = 0; speciesIndex < species.Count; speciesIndex++)
+                {
+                    AppendCsvField(csv, GetFinalPopulation(run, speciesIndex), ref first);
+                }
+
+                csv.AppendLine();
+            }
+
+            File.WriteAllText(outputPath, csv.ToString(), new UTF8Encoding(true));
+        }
+
+        static void AppendCsvField(StringBuilder csv, string value, ref bool first)
+        {
+            if (!first)
+            {
+                csv.Append(',');
+            }
+
+            csv.Append('"').Append((value ?? string.Empty).Replace("\"", "\"\""));
+            csv.Append('"');
+            first = false;
+        }
+
+        static void AppendCsvField(StringBuilder csv, int value, ref bool first)
+        {
+            AppendCsvField(csv, value.ToString(CultureInfo.InvariantCulture), ref first);
+        }
+
+        static void AppendCsvField(StringBuilder csv, float value, ref bool first)
+        {
+            AppendCsvField(csv, value.ToString(CultureInfo.InvariantCulture), ref first);
+        }
+
         static CellularSimData LoadSimulationData(string scenarioPath, out UnityEngine.Object temporaryAsset)
         {
             temporaryAsset = null;
@@ -240,6 +335,8 @@ namespace SaltyGame.EditorTools
             public int SeedStart { get; private set; }
             public int SeedCount { get; private set; }
             public string PlayerSpeciesId { get; private set; }
+            public int GridWidth { get; private set; }
+            public int GridHeight { get; private set; }
             public string OutputPath { get; private set; }
 
             public static CommandLineOptions Parse(string[] arguments)
@@ -250,6 +347,8 @@ namespace SaltyGame.EditorTools
                     SeedStart = GetIntValue(arguments, SeedStartArgument, DefaultSeedStart, allowZero: true),
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
+                    GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
+                    GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
             }
@@ -296,6 +395,7 @@ namespace SaltyGame.EditorTools
             public string createdUtc;
             public string scenarioAssetPath;
             public string outputPath;
+            public string csvOutputPath;
             public string rulesetFingerprint;
             public string playerSpeciesId;
             public int seedStart;

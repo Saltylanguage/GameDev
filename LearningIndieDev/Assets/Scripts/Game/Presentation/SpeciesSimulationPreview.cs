@@ -303,6 +303,40 @@ namespace SaltyGame
             return true;
         }
 
+        public bool TrySetPlayerSpecies(string speciesKey, out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (!SettingsEditable)
+            {
+                validationMessage = "The player species can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(speciesKey))
+            {
+                validationMessage = "A player species is required.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            var selectedSpecies = new SpeciesId(speciesKey.Trim());
+            if (!rules.TryGetValue(selectedSpecies, out var selectedRules) || selectedRules.IsPlant)
+            {
+                validationMessage = $"The selected player species '{speciesKey}' is not playable in this scenario.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            playerSpecies = selectedSpecies;
+            playerSpeciesKey = selectedSpecies.Value;
+            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, selectedRules));
+            PrepareNextRun();
+            settingsMessage = $"Player species '{playerSpecies.Value}' selected.";
+            validationMessage = settingsMessage;
+            return true;
+        }
+
         void Awake()
         {
             playerSpecies = new SpeciesId(string.IsNullOrWhiteSpace(playerSpeciesKey)
@@ -647,7 +681,7 @@ namespace SaltyGame
             }
 
             GUI.color = previousColor;
-            if (legacyUiEnabled || previewState == SpeciesPreviewState.Ready)
+            if (legacyUiEnabled || (previewState == SpeciesPreviewState.Ready && !noesisUiEnabled))
             {
                 DrawControlPanel();
             }
