@@ -117,6 +117,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEv
 # Twenty default-scenario runs, seeds 1 through 20.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1
 
+# 1,000 runs on a 64x64 grid; JSON and Excel-ready CSV are written together.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 1 `
+    -SeedCount 1000 `
+    -GridWidth 64 `
+    -GridHeight 64 `
+    -PlayerSpeciesId hare
+
 # Compare an authored scenario over a controlled seed range.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Simulation/Scenarios/Example.asset `
@@ -131,13 +140,14 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | --- | --- |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
-| `Run-CellularExperiment.ps1` | `report.json` plus the Unity batch log |
+| `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
 The experiment JSON records the schema version, timestamp, scenario asset path,
 seed range, grid settings, player species, ruleset fingerprint, run-level
 results, full population timelines, final-population summary, and per-species
-activity totals. The generated Markdown report adds start/midpoint/end average
+activity totals. The companion CSV contains one row per seed with run metadata
+and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.
 

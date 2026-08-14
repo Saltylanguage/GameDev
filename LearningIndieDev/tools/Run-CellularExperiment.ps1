@@ -5,6 +5,10 @@ param(
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)]
     [int]$SeedCount = 20,
+    [ValidateRange(0, 4096)]
+    [int]$GridWidth = 0,
+    [ValidateRange(0, 4096)]
+    [int]$GridHeight = 0,
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$ProjectPath,
     [string]$UnityPath
@@ -63,6 +67,14 @@ $arguments = @(
 
 if ($null -ne $assetPath) {
     $arguments += @('-scenarioPath', $assetPath)
+}
+
+if ($GridWidth -gt 0) {
+    $arguments += @('-gridWidth', $GridWidth)
+}
+
+if ($GridHeight -gt 0) {
+    $arguments += @('-gridHeight', $GridHeight)
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments
