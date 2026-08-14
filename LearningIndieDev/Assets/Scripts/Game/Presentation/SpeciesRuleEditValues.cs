@@ -23,6 +23,9 @@ namespace SaltyGame
         public string ReproductionFoodRequired;
         public string MaxReproductionGroupSize;
         public string StartingEnergy;
+        public string MaximumEnergy;
+        public string LitterMinimum;
+        public string LitterMaximum;
         public string ForageBelowEnergy;
         public string EnergyValue;
         public string Metabolism;

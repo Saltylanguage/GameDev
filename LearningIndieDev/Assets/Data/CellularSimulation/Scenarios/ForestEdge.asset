@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ForestEdge
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.ScenarioDefinitionAsset
   width: 32
-  height: 20
+  height: 32
   runDurationSeconds: 20
   stepInterval: 0.1
   maxPopulation: 0
@@ -22,6 +22,6 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
     startingProbability: 0.65
   - definition: {fileID: 11400000, guid: 766cb564370608a41bbc5504a556b28a, type: 2}
-    startingProbability: 0.15
+    startingProbability: 0.02
   - definition: {fileID: 11400000, guid: ae99e1a57e5bbdb4cad7e11e4110d588, type: 2}
-    startingProbability: 0.015
+    startingProbability: 0.004

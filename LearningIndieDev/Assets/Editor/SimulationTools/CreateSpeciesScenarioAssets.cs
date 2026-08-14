@@ -39,14 +39,14 @@ namespace SaltyGame.EditorTools
             };
             var herbivores = new[]
             {
-                CreateHerbivore("hare", "plant", 2.2f, 16, 0.25f),
+                CreateHerbivore("hare", "plant", 2.2f, 6, 0.25f),
                 CreateHerbivore("deer", "fern", 1.4f, 20, 0.2f),
                 CreateHerbivore("snail", "reed", 0.55f, 10, 0.3f),
                 CreateHerbivore("beetle", "reed", 1.8f, 12, 0.25f),
             };
             var carnivores = new[]
             {
-                CreateCarnivore("fox", "hare", 0.8f, 32, 0.02f),
+                CreateCarnivore("fox", "hare", 0.8f, 48, 0.02f),
                 CreateCarnivore("wolf", "deer", 0.8f, 36, 0.02f),
                 CreateCarnivore("owl", "snail", 0.9f, 28, 0.02f),
                 CreateCarnivore("stoat", "beetle", 1.0f, 28, 0.02f),
@@ -55,19 +55,19 @@ namespace SaltyGame.EditorTools
             var grass = CreateLegacyPlant();
             CreateScenario("ForestEdge", new[]
             {
-                Entry(grass, 0.65f), Entry(herbivores[0], 0.15f), Entry(carnivores[0], 0.015f),
+                Entry(grass, 0.65f), Entry(herbivores[0], 0.02f), Entry(carnivores[0], 0.004f),
             });
             CreateScenario("Wetland", new[]
             {
-                Entry(plants[1], 0.34f), Entry(herbivores[2], 0.09f),
-                Entry(herbivores[3], 0.09f), Entry(carnivores[2], 0.004f),
+                Entry(plants[1], 0.34f), Entry(herbivores[2], 0.02f),
+                Entry(herbivores[3], 0.02f), Entry(carnivores[2], 0.004f),
                 Entry(carnivores[3], 0.004f),
             });
             CreateScenario("OpenRange", new[]
             {
                 Entry(plants[0], 0.42f), Entry(plants[1], 0.34f),
-                Entry(herbivores[1], 0.08f), Entry(herbivores[3], 0.09f),
-                Entry(carnivores[1], 0.003f),
+                Entry(herbivores[1], 0.02f), Entry(herbivores[3], 0.02f),
+                Entry(carnivores[1], 0.004f),
             });
 
             // Validation-only scenario: its fingerprint is compared to the legacy defaults.
@@ -75,8 +75,8 @@ namespace SaltyGame.EditorTools
             var legacyCarnivore = CreateLegacyCarnivore();
             CreateScenario("BaselineParity", new[]
             {
-                Entry(grass, 0.4f), Entry(legacyHerbivore, 0.16f),
-                Entry(legacyCarnivore, 0.04f),
+                Entry(grass, 0.4f), Entry(legacyHerbivore, 0.02f),
+                Entry(legacyCarnivore, 0.004f),
             });
 
             AssetDatabase.SaveAssets();
@@ -187,12 +187,15 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<HerbivoreSpeciesDefinitionAsset>("herbivore.asset");
             SetCommon(asset, "herbivore", 1.5f, Cardinal(), Cardinal(), 1,
-                Cardinal(), Moore(), 0.5f, 1, 1, 4, 0f, 1,
-                0f, 0.05f, 4, 1, 5);
+                Cardinal(), Moore(), 0.5f, 1, 8, 4, 0f, 1,
+                0f, 0.05f, 8, 1, 5);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Plant.Value);
-            Set(asset, "startingEnergy", 12);
-            Set(asset, "forageBelowEnergy", 12);
+            Set(asset, "startingEnergy", 6);
+            Set(asset, "forageBelowEnergy", 6);
+            Set(asset, "maximumEnergy", 18);
+            Set(asset, "litterMinimum", 1);
+            Set(asset, "litterMaximum", 3);
             return asset;
         }
 
@@ -200,12 +203,13 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>("carnivore.asset");
             SetCommon(asset, "carnivore", 1.5f, Moore(), Moore(), 2,
-                Cardinal(), Cardinal(), 0.4f, 1, 1, 3, 0f, 1,
-                0f, 0f, 8, 1, 4);
+                Cardinal(), Cardinal(), 0.4f, 1, 16, 3, 0f, 1,
+                0f, 0f, 12, 1, 4);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Herbivore.Value);
-            Set(asset, "startingEnergy", 18);
-            Set(asset, "forageBelowEnergy", 18);
+            Set(asset, "startingEnergy", 48);
+            Set(asset, "forageBelowEnergy", 16);
+            Set(asset, "maximumEnergy", 96);
             return asset;
         }
 
@@ -224,6 +228,11 @@ namespace SaltyGame.EditorTools
             Set(asset, "attackAmount", 1);
             Set(asset, "startingEnergy", energy);
             Set(asset, "forageBelowEnergy", energy);
+            Set(asset, "reproductionFoodRequired", 8);
+            Set(asset, "energyValue", 8);
+            Set(asset, "maximumEnergy", 18);
+            Set(asset, "litterMinimum", 1);
+            Set(asset, "litterMaximum", 3);
             Set(asset, "visionRange", 5);
             Set(asset, "intelligence", 1);
             return asset;
@@ -242,7 +251,12 @@ namespace SaltyGame.EditorTools
                 0f, 0f, 8, 1, 4);
             Set(asset, "dietTargetId", dietTarget);
             Set(asset, "startingEnergy", energy);
-            Set(asset, "forageBelowEnergy", energy);
+            Set(asset, "forageBelowEnergy", 16);
+            Set(asset, "reproductionFoodRequired", 16);
+            Set(asset, "energyValue", 12);
+            Set(asset, "maximumEnergy", 96);
+            Set(asset, "litterMinimum", 1);
+            Set(asset, "litterMaximum", 1);
             Set(asset, "visionRange", 5);
             Set(asset, "intelligence", 1);
             return asset;
@@ -303,7 +317,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<ScenarioDefinitionAsset>($"{id}.asset", ScenarioRoot);
             Set(asset, "width", 32);
-            Set(asset, "height", 20);
+            Set(asset, "height", id == "ForestEdge" ? 32 : 20);
             Set(asset, "runDurationSeconds", 20f);
             Set(asset, "stepInterval", 0.1f);
             Set(asset, "maxPopulation", 0);

@@ -69,8 +69,8 @@ namespace SaltyGame
             return new[]
             {
                 SpeciesDefinition.From(SpeciesIds.Plant, 0.4f, defaults[SpeciesIds.Plant]),
-                SpeciesDefinition.From(SpeciesIds.Herbivore, 0.16f, defaults[SpeciesIds.Herbivore]),
-                SpeciesDefinition.From(SpeciesIds.Carnivore, 0.04f, defaults[SpeciesIds.Carnivore]),
+                SpeciesDefinition.From(SpeciesIds.Herbivore, 0.02f, defaults[SpeciesIds.Herbivore]),
+                SpeciesDefinition.From(SpeciesIds.Carnivore, 0.004f, defaults[SpeciesIds.Carnivore]),
             };
         }
 
@@ -103,6 +103,9 @@ namespace SaltyGame
             [Header("Awareness")]
             [SerializeField, Min(0)] internal int visionRange;
             [SerializeField, Min(0)] internal int intelligence;
+            [SerializeField, Min(0)] internal int maximumEnergy;
+            [SerializeField, Min(1)] internal int litterMinimum = 1;
+            [SerializeField, Min(1)] internal int litterMaximum = 1;
             [Header("Alpha Offspring")]
             [SerializeField, Range(0f, 1f)] internal float alphaChance;
             [SerializeField, Min(0)] internal int alphaHealthBonus;
@@ -134,7 +137,10 @@ namespace SaltyGame
                     metabolism,
                     new SpeciesAwarenessRules(visionRange, intelligence),
                     role,
-                    forageBelowEnergy);
+                    forageBelowEnergy,
+                    maximumEnergy,
+                    litterMinimum,
+                    litterMaximum);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -166,6 +172,9 @@ namespace SaltyGame
                     metabolism = rules.Metabolism,
                     visionRange = rules.Awareness.VisionRange,
                     intelligence = rules.Awareness.Intelligence,
+                    maximumEnergy = rules.MaximumEnergy,
+                    litterMinimum = rules.LitterMinimum,
+                    litterMaximum = rules.LitterMaximum,
                     role = rules.Role,
                 };
             }

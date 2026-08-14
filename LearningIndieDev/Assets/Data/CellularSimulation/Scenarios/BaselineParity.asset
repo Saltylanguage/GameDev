@@ -22,6 +22,6 @@ MonoBehaviour:
   - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
     startingProbability: 0.4
   - definition: {fileID: 11400000, guid: 2cf6d86e047c67641ab30a88a66628d7, type: 2}
-    startingProbability: 0.16
+    startingProbability: 0.02
   - definition: {fileID: 11400000, guid: b1c4992483136704eb2666656820fa35, type: 2}
-    startingProbability: 0.04
+    startingProbability: 0.004

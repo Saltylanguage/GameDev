@@ -1,6 +1,6 @@
 # Hare + Fox Iterative Design Treatment
 
-> Status: Experiment / vertical-slice design | Version: 0.1 | Scenario: Forest Edge
+> Status: Experiment / vertical-slice design | Version: 0.2 | Scenario: Forest Edge
 
 ## Treatment premise
 
@@ -236,5 +236,84 @@ defensive system, scent layer, or species-specific exception.
 ## Next treatment step
 
 Implement the minimal hare/fox rules as a coupled balance fixture, then run the
-same treatment against the actual Forest Edge scenario. The next design review
-should use population histories and a few saved snapshots, not intuition alone.
+same treatment against the actual Forest Edge scenario. The execution details
+are tracked in [`HARE_FOX_IMPLEMENTATION_PLAN.md`](HARE_FOX_IMPLEMENTATION_PLAN.md).
+
+## Iteration 0.2 — Coupled playstyle pass
+
+This pass keeps the 0.1 ruleset as the baseline and sharpens what the player is
+actually choosing. The player does not command individual hares or foxes; the
+player chooses which ecological pressure to improve at each reward break.
+
+### Fun target
+
+The pair is successful when the player can make a meaningful forecast, watch the
+ecosystem respond, and recover from a setback through a different choice. The
+core loop should feel like:
+
+> identify pressure -> choose a counterplay -> observe the tradeoff -> adapt
+
+### Locked identities for this iteration
+
+- **Hare:** a mobile, fragile population that can either establish a safe pocket
+  or keep moving between food patches.
+- **Fox:** a patient pressure engine that converts hare concentration into
+  temporary hunting strength, then weakens when the prey frontier disappears.
+- **Grass:** a reliable baseline that keeps the conflict about exposure,
+  settlement, and recovery rather than routine starvation.
+
+### Interaction contract
+
+1. Hare growth must precede meaningful fox growth. Foxes should not dominate
+   before the player has time to recognize the first population wave.
+2. Fox pressure must be spatially legible. A dense hare pocket, route, or edge
+   transition should explain why encounters are increasing.
+3. Hare dispersal must reduce encounter quality, but should carry a cost in food
+   access, reproduction, or recovery time.
+4. Foxes must lose momentum when hare access is interrupted. A successful hunt
+   should extend the fox's active window, not guarantee indefinite growth.
+5. Recovery must remain possible after a pressure wave. The player should be
+   able to identify a comeback route rather than watch an irreversible collapse.
+
+### Design hypotheses for the next evidence pass
+
+| Hypothesis | Evidence required | Decision if false |
+|---|---|---|
+| Settlement and migration are both viable Hare builds | Compare final population, recovery cycles, and route snapshots for Warren vs Trailblazer | Adjust movement or local reproduction before adding mechanics |
+| Foxes create tension through opportunity rather than omniscience | First-hunt timing, target distance, and hunts per fox across fixed seeds | Reduce target persistence/perception before changing attack strength |
+| Gardeners creates a distinct risk/reward loop | Grass recovery, Hare density near cultivated patches, and fox encounter rate | Reduce the patch benefit or add a clearer exposure tradeoff |
+| One fox wave is recoverable | Minimum surviving Hare population and time to positive growth after the trough | Tune fox energy gain and Hare recovery before adding defenses |
+
+### Upgrade treatment for this pass
+
+Use only one defining choice per branch. Do not combine multiple bonuses into a
+single upgrade while the interaction is still being learned.
+
+- **Trailblazer:** improves escape and migration; trades away local stability.
+- **Warren:** improves survival and reproduction in a chosen pocket; loses value
+  when the player must relocate.
+- **Gardeners:** improves grass persistence or recovery; creates a valuable,
+  contestable location for both species.
+- **Tracker:** improves Fox pursuit of visible Hare movement; is inefficient
+  when prey is dispersed.
+- **Ambusher:** improves Fox pressure near edge transitions; is weaker in open
+  ground.
+
+Every upgrade must expose its affected rule, expected interaction, tradeoff, and
+the telemetry that will show whether it mattered.
+
+### Iteration promotion gate
+
+Do not expand the roster or add scent, pack coordination, shelters, or inherited
+traits until a fixed-seed comparison shows that:
+
+- the three Hare branches produce visibly different population histories;
+- Fox pressure is predictable without being deterministic;
+- at least one Hare recovery occurs after a Fox peak;
+- players can explain both a successful hunt and a successful escape; and
+- the main tension comes from interacting populations and geography, not hidden
+  tuning or random failure.
+
+The next implementation pass should therefore change only balance values and
+the minimum upgrade hooks needed to run these comparisons. New species rules
+remain out of scope until the evidence passes this gate.

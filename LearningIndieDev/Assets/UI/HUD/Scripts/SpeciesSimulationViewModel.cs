@@ -32,9 +32,11 @@ namespace SaltyGame
         bool randomizeSeedOnStart;
         bool canEditSettings;
         bool showXamlSettings = true;
+        bool developerMode;
         int selectedRuleSpeciesIndex;
         SpeciesRuleEditValues ruleValues = new SpeciesRuleEditValues();
-        readonly string[] speciesTabs = { "PLANT", "HERBIVORE", "CARNIVORE" };
+        string[] speciesTabs = Array.Empty<string>();
+        SpeciesId[] speciesTabIds = Array.Empty<SpeciesId>();
         bool canStart;
         bool canPause;
         bool canResume;
@@ -132,6 +134,24 @@ namespace SaltyGame
             set => Set(ref randomizeSeedOnStart, value, nameof(RandomizeSeedOnStart));
         }
         public bool CanEditSettings => canEditSettings;
+        public bool DeveloperMode
+        {
+            get => developerMode;
+            set
+            {
+                if (developerMode == value)
+                {
+                    return;
+                }
+
+                developerMode = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeveloperMode)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeveloperSettingsVisibility)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlayerSettingsVisibility)));
+            }
+        }
+        public Visibility DeveloperSettingsVisibility => developerMode ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility PlayerSettingsVisibility => developerMode ? Visibility.Collapsed : Visibility.Visible;
         public string[] SpeciesTabs => speciesTabs;
         public int SelectedRuleSpeciesIndex
         {
@@ -143,13 +163,15 @@ namespace SaltyGame
                     return;
                 }
 
-                selectedRuleSpeciesIndex = Mathf.Clamp(value, 0, speciesTabs.Length - 1);
+                selectedRuleSpeciesIndex = Mathf.Clamp(value, 0, Mathf.Max(0, speciesTabs.Length - 1));
                 LoadRuleValues();
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedRuleSpeciesIndex)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedRuleSpeciesTitle)));
             }
         }
-        public string SelectedRuleSpeciesTitle => speciesTabs[selectedRuleSpeciesIndex] + " RULES";
+        public string SelectedRuleSpeciesTitle => speciesTabs.Length == 0
+            ? "SPECIES RULES"
+            : speciesTabs[selectedRuleSpeciesIndex] + " RULES";
         public bool MovementEnabled { get => ruleValues.MovementEnabled; set => SetRule(ref ruleValues.MovementEnabled, value, nameof(MovementEnabled)); }
         public string MovementSpeedText { get => ruleValues.MovementSpeed; set => SetRule(ref ruleValues.MovementSpeed, value, nameof(MovementSpeedText)); }
         public int MovementPattern { get => ruleValues.MovementPattern; set => SetRule(ref ruleValues.MovementPattern, value, nameof(MovementPattern)); }
@@ -167,6 +189,9 @@ namespace SaltyGame
         public string ReproductionFoodRequiredText { get => ruleValues.ReproductionFoodRequired; set => SetRule(ref ruleValues.ReproductionFoodRequired, value, nameof(ReproductionFoodRequiredText)); }
         public string MaxReproductionGroupSizeText { get => ruleValues.MaxReproductionGroupSize; set => SetRule(ref ruleValues.MaxReproductionGroupSize, value, nameof(MaxReproductionGroupSizeText)); }
         public string StartingEnergyText { get => ruleValues.StartingEnergy; set => SetRule(ref ruleValues.StartingEnergy, value, nameof(StartingEnergyText)); }
+        public string MaximumEnergyText { get => ruleValues.MaximumEnergy; set => SetRule(ref ruleValues.MaximumEnergy, value, nameof(MaximumEnergyText)); }
+        public string LitterMinimumText { get => ruleValues.LitterMinimum; set => SetRule(ref ruleValues.LitterMinimum, value, nameof(LitterMinimumText)); }
+        public string LitterMaximumText { get => ruleValues.LitterMaximum; set => SetRule(ref ruleValues.LitterMaximum, value, nameof(LitterMaximumText)); }
         public string ForageBelowEnergyText { get => ruleValues.ForageBelowEnergy; set => SetRule(ref ruleValues.ForageBelowEnergy, value, nameof(ForageBelowEnergyText)); }
         public string EnergyValueText { get => ruleValues.EnergyValue; set => SetRule(ref ruleValues.EnergyValue, value, nameof(EnergyValueText)); }
         public string MetabolismText { get => ruleValues.Metabolism; set => SetRule(ref ruleValues.Metabolism, value, nameof(MetabolismText)); }
@@ -223,6 +248,7 @@ namespace SaltyGame
         public void Initialize(SpeciesSimulationPreview simulationPreview)
         {
             preview = simulationPreview ?? throw new ArgumentNullException(nameof(simulationPreview));
+            SyncSpeciesTabs();
             SyncScenarioOptions();
             Refresh(true);
         }
@@ -298,6 +324,8 @@ namespace SaltyGame
             {
                 showXamlSettings = true;
             }
+
+            SyncSpeciesTabs();
 
             lastState = state;
             lastRunStatus = runStatus;
@@ -379,7 +407,7 @@ namespace SaltyGame
 
         void ApplySpeciesRules()
         {
-            if (preview == null)
+            if (preview == null || speciesTabIds.Length == 0)
             {
                 return;
             }
@@ -417,7 +445,7 @@ namespace SaltyGame
 
         void LoadRuleValues()
         {
-            if (preview == null)
+            if (preview == null || speciesTabIds.Length == 0)
             {
                 return;
             }
@@ -428,15 +456,61 @@ namespace SaltyGame
 
         SpeciesId GetSpeciesId(int index)
         {
-            switch (index)
+            if (speciesTabIds.Length == 0)
             {
-                case 0:
-                    return SpeciesIds.Plant;
-                case 1:
-                    return SpeciesIds.Herbivore;
-                default:
-                    return SpeciesIds.Carnivore;
+                return SpeciesIds.Herbivore;
             }
+
+            return speciesTabIds[Mathf.Clamp(index, 0, speciesTabIds.Length - 1)];
+        }
+
+        void SyncSpeciesTabs()
+        {
+            if (preview == null || preview.ActiveSpeciesRules == null)
+            {
+                return;
+            }
+
+            var ids = new List<SpeciesId>(preview.ActiveSpeciesRules.Keys);
+            ids.Sort((left, right) => string.CompareOrdinal(left.Value, right.Value));
+            if (ids.Count == speciesTabIds.Length)
+            {
+                var unchanged = true;
+                for (var index = 0; index < ids.Count; index++)
+                {
+                    if (ids[index] != speciesTabIds[index])
+                    {
+                        unchanged = false;
+                        break;
+                    }
+                }
+
+                if (unchanged)
+                {
+                    return;
+                }
+            }
+
+            var previousId = speciesTabIds.Length > 0
+                && selectedRuleSpeciesIndex < speciesTabIds.Length
+                ? speciesTabIds[selectedRuleSpeciesIndex]
+                : default;
+            speciesTabIds = ids.ToArray();
+            speciesTabs = new string[speciesTabIds.Length];
+            selectedRuleSpeciesIndex = 0;
+            for (var index = 0; index < speciesTabIds.Length; index++)
+            {
+                speciesTabs[index] = speciesTabIds[index].Value.ToUpperInvariant();
+                if (speciesTabIds[index] == previousId)
+                {
+                    selectedRuleSpeciesIndex = index;
+                }
+            }
+
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SpeciesTabs)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedRuleSpeciesIndex)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedRuleSpeciesTitle)));
+            LoadRuleValues();
         }
 
         void RaiseRulePropertiesChanged()
@@ -448,7 +522,8 @@ namespace SaltyGame
                 nameof(BlockAmountText), nameof(BlockPattern), nameof(DietTarget), nameof(DietPattern),
                 nameof(ReproductionPattern), nameof(ReproductionEnabled), nameof(ReproductionChanceText),
                 nameof(ReproductionNeighborCountText), nameof(ReproductionFoodRequiredText),
-                nameof(MaxReproductionGroupSizeText), nameof(StartingEnergyText), nameof(ForageBelowEnergyText),
+                nameof(MaxReproductionGroupSizeText), nameof(StartingEnergyText), nameof(MaximumEnergyText),
+                nameof(LitterMinimumText), nameof(LitterMaximumText), nameof(ForageBelowEnergyText),
                 nameof(EnergyValueText),
                 nameof(MetabolismText), nameof(VisionRangeText), nameof(IntelligenceText),
                 nameof(WiltEnabled), nameof(WiltChanceText), nameof(CrowdingEnergyPenaltyText),
@@ -505,7 +580,20 @@ namespace SaltyGame
                 names[index + 1] = scenario == null ? "(Empty Scenario Slot)" : scenario.name;
             }
 
-            if (scenarioOptions.Length != names.Length)
+            var changed = scenarioOptions.Length != names.Length;
+            if (!changed)
+            {
+                for (var index = 0; index < names.Length; index++)
+                {
+                    if (!string.Equals(scenarioOptions[index], names[index], StringComparison.Ordinal))
+                    {
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+
+            if (changed)
             {
                 scenarioOptions = names;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ScenarioOptions)));
@@ -517,7 +605,7 @@ namespace SaltyGame
             switch (state)
             {
                 case SpeciesPreviewState.Ready:
-                    return "SPECIES SETTINGS";
+                    return "EXPEDITION SETUP";
                 case SpeciesPreviewState.Running:
                     return "SIMULATION IN PROGRESS";
                 case SpeciesPreviewState.Paused:

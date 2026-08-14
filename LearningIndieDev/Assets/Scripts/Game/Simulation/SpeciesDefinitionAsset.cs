@@ -33,6 +33,9 @@ namespace SaltyGame
         [SerializeField] int metabolism = 1;
         [SerializeField, Min(0)] int visionRange;
         [SerializeField, Min(0)] int intelligence;
+        [SerializeField, Min(0)] int maximumEnergy;
+        [SerializeField, Min(1)] int litterMinimum = 1;
+        [SerializeField, Min(1)] int litterMaximum = 1;
         [SerializeField, Range(0f, 1f)] float alphaChance;
         [SerializeField, Min(0)] int alphaHealthBonus;
         [SerializeField, Min(0)] int alphaEnergyBonus;
@@ -67,7 +70,10 @@ namespace SaltyGame
                 metabolism,
                 new SpeciesAwarenessRules(visionRange, intelligence),
                 Role,
-                forageBelowEnergy);
+                forageBelowEnergy,
+                maximumEnergy,
+                litterMinimum,
+                litterMaximum);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

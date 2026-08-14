@@ -42,6 +42,10 @@ focused experiment.
 
 ## Emergent-system ideas
 
+- Predator hunting-strategy ideation has been promoted into
+  [`Species Design/HUNTING_STRATEGIES_IDEATION.md`](Species%20Design/HUNTING_STRATEGIES_IDEATION.md).
+  Chase, ambush, and stalking remain experiments rather than committed rules.
+
 - Future possible goal: geometry-directed colony construction through cellular
   automata. A species or cell type could receive a target shape plus a required
   material, then use local rules to approximate that geometry from resources

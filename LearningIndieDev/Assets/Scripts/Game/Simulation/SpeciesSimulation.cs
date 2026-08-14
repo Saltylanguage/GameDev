@@ -1205,8 +1205,24 @@ namespace SaltyGame
 
                     var reproductionPattern = speciesRules.ReproductionPattern;
                     var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
+                    if (random.NextDouble() > speciesRules.ReproductionChance)
+                    {
+                        continue;
+                    }
+
+                    var requestedLitter = speciesRules.IsPlant
+                        ? 1
+                        : random.Next(speciesRules.LitterMinimum, speciesRules.LitterMaximum + 1);
+                    var births = 0;
                     for (var offsetIndex = 0; offsetIndex < reproductionPattern.Count; offsetIndex++)
                     {
+                        if (births >= requestedLitter
+                            || GetReproductionEnergy(currentParent)
+                                < speciesRules.ReproductionFoodRequired * (births + 1))
+                        {
+                            break;
+                        }
+
                         var offset = reproductionPattern.Offsets[(startOffset + offsetIndex) % reproductionPattern.Count];
                         var childX = x + offset.x;
                         var childY = y + offset.y;
@@ -1225,35 +1241,35 @@ namespace SaltyGame
                             continue;
                         }
 
-                        if (random.NextDouble() <= speciesRules.ReproductionChance)
+                        var offspring = parentIsPlant
+                            ? SpeciesCell.FromTerrain(
+                                terrainDefinitions[TerrainIds.Grass],
+                                speciesRules.StartingFoodReserve,
+                                parent.SpeciesId)
+                            : childCell.WithEntity(
+                                parent.SpeciesId,
+                                health: 1,
+                                energy: speciesRules.ReproductionFoodRequired,
+                                age: 0,
+                                foodEaten: 0,
+                                foodReserve: 0f);
+                        if (alphaOffspringRules != null
+                            && alphaOffspringRules.TryGetValue(parent.SpeciesId, out var alphaRule))
                         {
-                            var offspring = parentIsPlant
-                                ? SpeciesCell.FromTerrain(
-                                    terrainDefinitions[TerrainIds.Grass],
-                                    speciesRules.StartingFoodReserve,
-                                    parent.SpeciesId)
-                                : childCell.WithEntity(
-                                    parent.SpeciesId,
-                                    health: 1,
-                                    energy: speciesRules.ReproductionFoodRequired,
-                                    age: 0,
-                                    foodEaten: 0,
-                                    foodReserve: 0f);
-                            if (alphaOffspringRules != null
-                                && alphaOffspringRules.TryGetValue(parent.SpeciesId, out var alphaRule))
-                            {
-                                offspring = alphaRule.Apply(offspring, random);
-                            }
-
-                            next.SetCell(childX, childY, offspring);
-                            next.SetCell(x, y, ConsumeReproductionEnergy(
-                                currentParent,
-                                speciesRules.ReproductionFoodRequired));
-                            claimed[childIndex] = true;
-                            metrics?.Record(parent.SpeciesId, births: 1);
+                            offspring = alphaRule.Apply(offspring, random);
                         }
 
-                        break;
+                        next.SetCell(childX, childY, offspring);
+                        claimed[childIndex] = true;
+                        births++;
+                        metrics?.Record(parent.SpeciesId, births: 1);
+                    }
+
+                    if (births > 0)
+                    {
+                        next.SetCell(x, y, ConsumeReproductionEnergy(
+                            currentParent,
+                            speciesRules.ReproductionFoodRequired * births));
                     }
                 }
             }
@@ -1281,7 +1297,9 @@ namespace SaltyGame
             return cell.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
-                cell.Energy + energyValue,
+                rules.MaximumEnergy > 0
+                    ? Math.Min(rules.MaximumEnergy, cell.Energy + energyValue)
+                    : cell.Energy + energyValue,
                 cell.Age,
                 cell.FoodEaten + 1,
                 cell.FoodReserve + foodAmount,

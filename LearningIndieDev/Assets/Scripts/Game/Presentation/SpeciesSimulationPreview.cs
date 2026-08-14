@@ -54,6 +54,7 @@ namespace SaltyGame
                 BlockPattern = GetPatternPreset(rules.BlockPattern);
                 DietPattern = GetPatternPreset(rules.DietPattern);
                 ReproductionPattern = GetPatternPreset(rules.ReproductionPattern);
+                DietTargetSpecies = rules.DietTargetId;
                 DietTarget = GetDietTargetOption(rules.DietTargetId);
                 ReproductionChance = rules.ReproductionChance;
                 ReproductionChanceText = FormatFloat(rules.ReproductionChance);
@@ -65,6 +66,12 @@ namespace SaltyGame
                 MaxReproductionGroupSizeText = rules.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
                 StartingEnergy = rules.StartingEnergy;
                 StartingEnergyText = rules.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+                MaximumEnergy = rules.MaximumEnergy;
+                MaximumEnergyText = rules.MaximumEnergy.ToString(CultureInfo.InvariantCulture);
+                LitterMinimum = rules.LitterMinimum;
+                LitterMinimumText = rules.LitterMinimum.ToString(CultureInfo.InvariantCulture);
+                LitterMaximum = rules.LitterMaximum;
+                LitterMaximumText = rules.LitterMaximum.ToString(CultureInfo.InvariantCulture);
                 ForageBelowEnergy = rules.ForageBelowEnergy;
                 ForageBelowEnergyText = rules.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
                 EnergyValue = rules.EnergyValue;
@@ -103,6 +110,7 @@ namespace SaltyGame
             public PatternPreset DietPattern;
             public PatternPreset ReproductionPattern;
             public DietTargetOption DietTarget;
+            public SpeciesId? DietTargetSpecies;
             public bool ReproductionEnabled;
             public float ReproductionChance;
             public string ReproductionChanceText;
@@ -114,6 +122,12 @@ namespace SaltyGame
             public string MaxReproductionGroupSizeText;
             public int StartingEnergy;
             public string StartingEnergyText;
+            public int MaximumEnergy;
+            public string MaximumEnergyText;
+            public int LitterMinimum;
+            public string LitterMinimumText;
+            public int LitterMaximum;
+            public string LitterMaximumText;
             public int ForageBelowEnergy;
             public string ForageBelowEnergyText;
             public int EnergyValue;
@@ -158,13 +172,13 @@ namespace SaltyGame
 
         [Header("Grid")]
         [SerializeField, Min(1)] int width = 32;
-        [SerializeField, Min(1)] int height = 20;
+        [SerializeField, Min(1)] int height = 32;
         [SerializeField] int seed = 12345;
         [SerializeField] bool randomizeSeedOnStart = true;
         [SerializeField] string playerSpeciesKey = "herbivore";
         [SerializeField, Range(0f, 1f)] float plantProbability = 0.4f;
-        [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.16f;
-        [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.04f;
+        [SerializeField, Range(0f, 1f)] float herbivoreProbability = 0.02f;
+        [SerializeField, Range(0f, 1f)] float carnivoreProbability = 0.004f;
         [SerializeField, Min(0)] int maxPopulation;
         [SerializeField, Min(0)] int minPopulation;
 
@@ -218,7 +232,7 @@ namespace SaltyGame
         string herbivoreProbabilityText;
         string carnivoreProbabilityText;
 
-        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v2";
+        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
@@ -757,6 +771,9 @@ namespace SaltyGame
                 ReproductionFoodRequired = draft.ReproductionFoodRequired.ToString(CultureInfo.InvariantCulture),
                 MaxReproductionGroupSize = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture),
                 StartingEnergy = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture),
+                MaximumEnergy = draft.MaximumEnergy.ToString(CultureInfo.InvariantCulture),
+                LitterMinimum = draft.LitterMinimum.ToString(CultureInfo.InvariantCulture),
+                LitterMaximum = draft.LitterMaximum.ToString(CultureInfo.InvariantCulture),
                 ForageBelowEnergy = draft.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture),
                 EnergyValue = draft.EnergyValue.ToString(CultureInfo.InvariantCulture),
                 Metabolism = draft.Metabolism.ToString(CultureInfo.InvariantCulture),
@@ -799,6 +816,9 @@ namespace SaltyGame
                 || !TryParseInt(values.ReproductionFoodRequired, "Energy transferred to offspring", out var reproductionFoodRequired)
                 || !TryParseInt(values.MaxReproductionGroupSize, "Maximum group size", out var maxReproductionGroupSize)
                 || !TryParseInt(values.StartingEnergy, "Starting energy", out var startingEnergy)
+                || !TryParseInt(values.MaximumEnergy, "Maximum energy", out var maximumEnergy)
+                || !TryParseInt(values.LitterMinimum, "Minimum litter size", out var litterMinimum)
+                || !TryParseInt(values.LitterMaximum, "Maximum litter size", out var litterMaximum)
                 || !TryParseInt(values.ForageBelowEnergy, "Forage energy threshold", out var forageBelowEnergy)
                 || !TryParseInt(values.EnergyValue, "Energy value", out var energyValue)
                 || !TryParseInt(values.Metabolism, "Metabolism", out var metabolism)
@@ -825,6 +845,7 @@ namespace SaltyGame
             draft.BlockAmountText = draft.BlockAmount.ToString(CultureInfo.InvariantCulture);
             draft.BlockPattern = (PatternPreset)Mathf.Clamp(values.BlockPattern, 0, 1);
             draft.DietTarget = (DietTargetOption)Mathf.Clamp(values.DietTarget, 0, 3);
+            draft.DietTargetSpecies = ResolveDietTargetSpecies(draft.DietTarget);
             draft.DietPattern = (PatternPreset)Mathf.Clamp(values.DietPattern, 0, 1);
             draft.ReproductionPattern = (PatternPreset)Mathf.Clamp(values.ReproductionPattern, 0, 1);
             draft.ReproductionEnabled = values.ReproductionEnabled;
@@ -838,6 +859,12 @@ namespace SaltyGame
             draft.MaxReproductionGroupSizeText = draft.MaxReproductionGroupSize.ToString(CultureInfo.InvariantCulture);
             draft.StartingEnergy = Mathf.Max(0, startingEnergy);
             draft.StartingEnergyText = draft.StartingEnergy.ToString(CultureInfo.InvariantCulture);
+            draft.MaximumEnergy = Mathf.Max(0, maximumEnergy);
+            draft.MaximumEnergyText = draft.MaximumEnergy.ToString(CultureInfo.InvariantCulture);
+            draft.LitterMinimum = Mathf.Max(1, litterMinimum);
+            draft.LitterMinimumText = draft.LitterMinimum.ToString(CultureInfo.InvariantCulture);
+            draft.LitterMaximum = Mathf.Max(draft.LitterMinimum, litterMaximum);
+            draft.LitterMaximumText = draft.LitterMaximum.ToString(CultureInfo.InvariantCulture);
             draft.ForageBelowEnergy = Mathf.Max(0, forageBelowEnergy);
             draft.ForageBelowEnergyText = draft.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
             draft.EnergyValue = Mathf.Max(0, energyValue);
@@ -971,10 +998,11 @@ namespace SaltyGame
             {
                 var authoredData = SelectedScenario.CreateRuntimeData();
                 rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
-                if (!rules.ContainsKey(playerSpecies))
-                {
-                    playerSpecies = FindPlayableSpecies(rules);
-                }
+            if (!rules.ContainsKey(playerSpecies))
+            {
+                playerSpecies = FindPlayableSpecies(rules);
+                playerSpeciesKey = playerSpecies.Value;
+            }
             }
             progression = new SpeciesProgression(new SpeciesDefinition(
                 playerSpecies,
@@ -1007,9 +1035,9 @@ namespace SaltyGame
                 stepInterval = stepInterval,
                 maxPopulation = maxPopulation,
                 minPopulation = minPopulation,
-                plant = ruleDrafts[SpeciesIds.Plant],
-                herbivore = ruleDrafts[SpeciesIds.Herbivore],
-                carnivore = ruleDrafts[SpeciesIds.Carnivore],
+                plant = GetRuleDraftOrDefault(SpeciesIds.Plant),
+                herbivore = GetRuleDraftOrDefault(SpeciesIds.Herbivore),
+                carnivore = GetRuleDraftOrDefault(SpeciesIds.Carnivore),
             };
 
             PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
@@ -1024,7 +1052,16 @@ namespace SaltyGame
                 return;
             }
 
-            var saved = JsonUtility.FromJson<SavedSettings>(PlayerPrefs.GetString(DefaultSettingsKey));
+            SavedSettings saved;
+            try
+            {
+                saved = JsonUtility.FromJson<SavedSettings>(PlayerPrefs.GetString(DefaultSettingsKey));
+            }
+            catch (Exception)
+            {
+                PlayerPrefs.DeleteKey(DefaultSettingsKey);
+                return;
+            }
             if (saved == null)
             {
                 return;
@@ -1041,9 +1078,30 @@ namespace SaltyGame
             stepInterval = Mathf.Max(0.01f, saved.stepInterval);
             maxPopulation = Mathf.Max(0, saved.maxPopulation);
             minPopulation = Mathf.Max(0, saved.minPopulation);
-            ruleDrafts[SpeciesIds.Plant] = saved.plant ?? ruleDrafts[SpeciesIds.Plant];
-            ruleDrafts[SpeciesIds.Herbivore] = saved.herbivore ?? ruleDrafts[SpeciesIds.Herbivore];
-            ruleDrafts[SpeciesIds.Carnivore] = saved.carnivore ?? ruleDrafts[SpeciesIds.Carnivore];
+            // Saved defaults may come from a different scenario. Do not add
+            // canonical species that are not present in the active scenario.
+            if (saved.plant != null && ruleDrafts.ContainsKey(SpeciesIds.Plant))
+            {
+                ruleDrafts[SpeciesIds.Plant] = saved.plant;
+            }
+            if (saved.herbivore != null && ruleDrafts.ContainsKey(SpeciesIds.Herbivore))
+            {
+                ruleDrafts[SpeciesIds.Herbivore] = saved.herbivore;
+            }
+            if (saved.carnivore != null && ruleDrafts.ContainsKey(SpeciesIds.Carnivore))
+            {
+                ruleDrafts[SpeciesIds.Carnivore] = saved.carnivore;
+            }
+        }
+
+        SpeciesRuleDraft GetRuleDraftOrDefault(SpeciesId species)
+        {
+            if (ruleDrafts.TryGetValue(species, out var draft))
+            {
+                return draft;
+            }
+
+            return new SpeciesRuleDraft(SpeciesRuleDefaults.Create()[species]);
         }
 
         void SyncGlobalSettingTextFields()
@@ -1332,12 +1390,15 @@ namespace SaltyGame
         Dictionary<SpeciesId, SpeciesRuleDraft> CreateRuleDrafts(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> sourceRules)
         {
-            return new Dictionary<SpeciesId, SpeciesRuleDraft>
+            var drafts = new Dictionary<SpeciesId, SpeciesRuleDraft>();
+            foreach (var entry in sourceRules)
             {
-                [SpeciesIds.Plant] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Plant]),
-                [SpeciesIds.Herbivore] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Herbivore]),
-                [SpeciesIds.Carnivore] = new SpeciesRuleDraft(sourceRules[SpeciesIds.Carnivore]),
-            };
+                var draft = new SpeciesRuleDraft(entry.Value);
+                draft.DietTarget = GetDietTargetOption(entry.Value.DietTargetId, sourceRules);
+                drafts[entry.Key] = draft;
+            }
+
+            return drafts;
         }
 
         IReadOnlyDictionary<SpeciesId, SpeciesRules> CreateRulesFromDrafts()
@@ -1354,7 +1415,7 @@ namespace SaltyGame
                     blockPattern: GetPattern(draft.BlockPattern),
                     blockAmount: draft.BlockAmount,
                     dietPattern: GetPattern(draft.DietPattern),
-                    dietTarget: GetDietTarget(draft.DietTarget),
+                    dietTarget: draft.DietTargetSpecies ?? ResolveDietTargetSpecies(draft.DietTarget),
                     reproductionPattern: GetPattern(draft.ReproductionPattern),
                     reproductionNeighborCount: draft.ReproductionEnabled ? draft.ReproductionNeighborCount : 0,
                     reproductionChance: draft.ReproductionEnabled ? draft.ReproductionChance : 0f,
@@ -1369,7 +1430,10 @@ namespace SaltyGame
                     metabolism: draft.Metabolism,
                     awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence),
                     role: draft.Role,
-                    forageBelowEnergy: draft.ForageBelowEnergy);
+                    forageBelowEnergy: draft.ForageBelowEnergy,
+                    maximumEnergy: draft.MaximumEnergy,
+                    litterMinimum: draft.LitterMinimum,
+                    litterMaximum: draft.LitterMaximum);
             }
 
             return result;
@@ -1424,7 +1488,69 @@ namespace SaltyGame
                 return DietTargetOption.Carnivore;
             }
 
-            throw new ArgumentOutOfRangeException(nameof(target), target, "Unknown diet target.");
+            return DietTargetOption.None;
+        }
+
+        static DietTargetOption GetDietTargetOption(
+            SpeciesId? target,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> sourceRules)
+        {
+            var option = GetDietTargetOption(target);
+            if (option != DietTargetOption.None || !target.HasValue || sourceRules == null)
+            {
+                return option;
+            }
+
+            if (sourceRules.TryGetValue(target.Value, out var targetRules))
+            {
+                switch (targetRules.Role)
+                {
+                    case SpeciesRole.Plant:
+                        return DietTargetOption.Plant;
+                    case SpeciesRole.Herbivore:
+                        return DietTargetOption.Herbivore;
+                    case SpeciesRole.Carnivore:
+                        return DietTargetOption.Carnivore;
+                }
+            }
+
+            return DietTargetOption.None;
+        }
+
+        SpeciesId? ResolveDietTargetSpecies(DietTargetOption target)
+        {
+            var canonical = GetDietTarget(target);
+            if (canonical.HasValue && ruleDrafts.ContainsKey(canonical.Value))
+            {
+                return canonical;
+            }
+
+            SpeciesRole? role = null;
+            switch (target)
+            {
+                case DietTargetOption.Plant:
+                    role = SpeciesRole.Plant;
+                    break;
+                case DietTargetOption.Herbivore:
+                    role = SpeciesRole.Herbivore;
+                    break;
+                case DietTargetOption.Carnivore:
+                    role = SpeciesRole.Carnivore;
+                    break;
+            }
+
+            if (role.HasValue)
+            {
+                foreach (var entry in ruleDrafts)
+                {
+                    if (entry.Value.Role == role.Value)
+                    {
+                        return entry.Key;
+                    }
+                }
+            }
+
+            return canonical;
         }
 
         static string FormatFloat(float value)
@@ -1493,6 +1619,7 @@ namespace SaltyGame
             maxPopulation = authoredData.MaxPopulation;
             minPopulation = authoredData.MinPopulation;
             rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
+            ruleDrafts = CreateRuleDrafts(rules);
             if (!rules.ContainsKey(playerSpecies))
             {
                 playerSpecies = FindPlayableSpecies(rules);

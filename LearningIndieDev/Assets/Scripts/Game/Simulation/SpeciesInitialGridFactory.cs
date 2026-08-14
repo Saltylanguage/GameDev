@@ -82,7 +82,9 @@ namespace SaltyGame
                     species)
                 : new SpeciesCell(
                     species,
-                    energy: rules.StartingEnergy,
+                    energy: rules.MaximumEnergy > 0
+                        ? Math.Min(rules.MaximumEnergy, rules.StartingEnergy)
+                        : rules.StartingEnergy,
                     foodReserve: rules.StartingFoodReserve);
         }
 

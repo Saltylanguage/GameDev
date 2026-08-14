@@ -224,12 +224,15 @@ Exit criteria:
 
 ## Initial sprint plan
 
-Default cadence is two weeks. Sprint 0 is a shorter planning sprint. Do not put
-calendar dates on later work until owner capacity and the product brief are
-known. Each sprint has one primary playable outcome; exploratory art and audio
-work may run alongside it without displacing that outcome.
+Default cadence is one week with approximately 10 hours per developer. Sprint 0
+is a shorter planning sprint. Each sprint selects one relevant work bucket and
+one primary outcome; exploratory work may run alongside it only when the
+committed exit gate is protected.
 
 ### Sprint 0 - Lock the slice
+
+The August 14–16 closeout is defined in
+[`docs/SPRINT_0_CLOSEOUT_PLAN.md`](docs/SPRINT_0_CLOSEOUT_PLAN.md).
 
 Primary outcome: the team can describe exactly what will be demonstrated by the
 vertical slice.
@@ -252,26 +255,24 @@ The discussion-ready execution plan for this sprint is
 [`docs/SPRINT_1_PLAN.md`](docs/SPRINT_1_PLAN.md). It defines committed versus
 stretch scope, work packages, sequencing, risks, and the review demonstration.
 
-Primary outcome: a player can launch into Main Menu, navigate an UI-only Lab,
-understand the planned scientific-data/research economy, and prepare a Forest
-Edge + Hare expedition preview.
+Primary outcome: a player can launch into Main Menu, enter Lab Overview, and
+inspect one representative Herbivore research project with clear scientific-
+data costs.
 
-- Establish the Main Menu/Lab screen contract and low-fidelity layouts.
-- Build the Noesis navigation shell for Overview, Research, Species Archive,
-  and Expedition Setup.
-- Present representative scientific-data balances, research states, and Hare
-  mastery without implementing purchases or persistence.
-- Show a complete Forest Edge + Hare expedition summary with a clearly
-  disabled/prototype launch action.
-- Validate navigation, focus, target resolutions, and a Windows development
-  build.
+- Establish the Main Menu, Lab Overview, and Research-preview contract.
+- Build the smallest Noesis shell for that route.
+- Present representative Research, Plant, Herbivore, and Carnivore Data.
+- Show one available and one locked/unaffordable Herbivore project without
+  implementing purchases or persistence.
+- Validate Back behavior, focus, target resolutions, and a Windows development
+  build smoke path.
 
-Exit: the Main Menu → Lab → Expedition Setup preview works end to end, planned
+Exit: the Main Menu → Lab Overview → Research preview works end to end, planned
 economy concepts are understandable, and no placeholder is presented as a
-functional purchase or launch.
+functional purchase.
 
-The previously planned player/Dev Lab separation and real expedition handoff
-remain the next candidate work bucket; they are not committed to Sprint 1.
+Full Lab navigation, Species Archive, Expedition Setup, player/Dev Lab
+separation, and the real expedition handoff remain later work buckets.
 
 ### Sprint 2 - First trustworthy upgrades
 

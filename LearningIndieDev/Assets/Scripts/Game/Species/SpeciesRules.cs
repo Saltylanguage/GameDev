@@ -27,7 +27,10 @@ namespace SaltyGame
             int metabolism = 1,
             SpeciesAwarenessRules awareness = null,
             SpeciesRole role = SpeciesRole.Herbivore,
-            int forageBelowEnergy = 0)
+            int forageBelowEnergy = 0,
+            int maximumEnergy = 0,
+            int litterMinimum = 1,
+            int litterMaximum = 1)
         {
             if (movementSpeed < 0f)
             {
@@ -72,6 +75,21 @@ namespace SaltyGame
             if (forageBelowEnergy < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(forageBelowEnergy), forageBelowEnergy, "Forage energy threshold cannot be negative.");
+            }
+
+            if (maximumEnergy < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumEnergy), maximumEnergy, "Maximum energy cannot be negative.");
+            }
+
+            if (litterMinimum < 1)
+            {
+                throw new ArgumentOutOfRangeException(nameof(litterMinimum), litterMinimum, "Minimum litter size must be at least one.");
+            }
+
+            if (litterMaximum < litterMinimum)
+            {
+                throw new ArgumentOutOfRangeException(nameof(litterMaximum), litterMaximum, "Maximum litter size cannot be less than the minimum.");
             }
 
             if (wiltChance < 0f || wiltChance > 1f)
@@ -122,6 +140,9 @@ namespace SaltyGame
             Metabolism = metabolism;
             Awareness = awareness ?? SpeciesAwarenessRules.None;
             Role = role;
+            MaximumEnergy = maximumEnergy;
+            LitterMinimum = litterMinimum;
+            LitterMaximum = litterMaximum;
         }
 
         public float MovementSpeed { get; }
@@ -153,5 +174,8 @@ namespace SaltyGame
         public SpeciesAwarenessRules Awareness { get; }
         public SpeciesRole Role { get; }
         public bool IsPlant => Role == SpeciesRole.Plant;
+        public int MaximumEnergy { get; }
+        public int LitterMinimum { get; }
+        public int LitterMaximum { get; }
     }
 }
