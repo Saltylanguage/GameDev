@@ -591,6 +591,165 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void HareFleesVisibleFoxWhileFoxPursuesVisibleHare()
+        {
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var leftRight = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: leftRight,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: leftRight,
+                    dietTarget: SpeciesIds.Plant,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 8,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 2, intelligence: 1)),
+                [fox] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: right,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: hare,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 8,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 3, intelligence: 1)),
+                [SpeciesIds.Plant] = CreateRules(
+                    movementSpeed: 0f,
+                    role: SpeciesRole.Plant,
+                    metabolism: -1),
+            };
+
+            var fleeing = new Grid<SpeciesCell>(3, 1);
+            fleeing.SetCell(0, 0, SpeciesCell.Grass(2f));
+            fleeing.SetCell(1, 0, new SpeciesCell(hare, energy: 8));
+            fleeing.SetCell(2, 0, new SpeciesCell(fox, energy: 8));
+            var escaped = SpeciesSimulation.Step(fleeing, rules, seed: 11);
+
+            Assert.That(escaped.GetCell(0, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(escaped.GetCell(0, 0).IsTerrainResource, Is.True);
+            Assert.That(escaped.GetCell(2, 0).SpeciesId, Is.EqualTo(fox));
+
+            var pursuing = new Grid<SpeciesCell>(3, 1);
+            pursuing.SetCell(0, 0, new SpeciesCell(fox, energy: 8));
+            pursuing.SetCell(2, 0, new SpeciesCell(hare, energy: 8));
+            var hunted = SpeciesSimulation.Step(pursuing, rules, seed: 11);
+
+            Assert.That(hunted.GetCell(1, 0).SpeciesId, Is.EqualTo(fox));
+            Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
+        }
+
+        [Test]
+        public void HareFoxFixtureStartsWithAmpleGrassAndReciprocalDietRules()
+        {
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var movement = SpeciesRuleDefaults.CreateCardinalPattern();
+            var grassRules = CreateRules(
+                movementSpeed: 0f,
+                role: SpeciesRole.Plant,
+                metabolism: -1);
+            var hareRules = new SpeciesRules(
+                movementSpeed: 2.2f,
+                movementPattern: movement,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: movement,
+                blockAmount: 0,
+                dietPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                dietTarget: SpeciesIds.Plant,
+                reproductionPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                reproductionNeighborCount: 1,
+                reproductionChance: 0.25f,
+                reproductionFoodRequired: 1,
+                maxReproductionGroupSize: 4,
+                startingEnergy: 16,
+                metabolism: 1,
+                awareness: new SpeciesAwarenessRules(visionRange: 5, intelligence: 1),
+                forageBelowEnergy: 16);
+            var foxRules = new SpeciesRules(
+                movementSpeed: 0.8f,
+                movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                attackPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                attackAmount: 2,
+                blockPattern: movement,
+                blockAmount: 0,
+                dietPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                dietTarget: hare,
+                reproductionPattern: movement,
+                reproductionNeighborCount: 1,
+                reproductionChance: 0.02f,
+                reproductionFoodRequired: 1,
+                maxReproductionGroupSize: 3,
+                startingEnergy: 32,
+                energyValue: 8,
+                metabolism: 1,
+                awareness: new SpeciesAwarenessRules(visionRange: 6, intelligence: 1),
+                forageBelowEnergy: 32);
+            var data = new CellularSimData(
+                32,
+                20,
+                new Dictionary<SpeciesId, float>
+                {
+                    [SpeciesIds.Plant] = 0.65f,
+                    [hare] = 0.15f,
+                    [fox] = 0.015f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Plant] = grassRules,
+                    [hare] = hareRules,
+                    [fox] = foxRules,
+                },
+                runDurationSeconds: 20f,
+                stepInterval: 0.1f);
+
+            var grid = SpeciesInitialGridFactory.Create(data, runSeed: 11);
+            var grassCount = 0;
+            var hareCount = 0;
+            var foxCount = 0;
+            for (var y = 0; y < grid.Height; y++)
+            {
+                for (var x = 0; x < grid.Width; x++)
+                {
+                    var cell = grid.GetCell(x, y);
+                    if (cell.IsPlantResource && cell.ResourceSpeciesId == SpeciesIds.Plant)
+                    {
+                        grassCount++;
+                    }
+                    else if (cell.IsCreature && cell.SpeciesId == hare)
+                    {
+                        hareCount++;
+                    }
+                    else if (cell.IsCreature && cell.SpeciesId == fox)
+                    {
+                        foxCount++;
+                    }
+                }
+            }
+
+            Assert.That(grassCount, Is.GreaterThan(hareCount + foxCount));
+            Assert.That(data.StartingProbabilities[SpeciesIds.Plant], Is.GreaterThan(data.StartingProbabilities[hare]));
+            Assert.That(hareRules.DietTargetId, Is.EqualTo(SpeciesIds.Plant));
+            Assert.That(foxRules.DietTargetId, Is.EqualTo(hare));
+        }
+
+        [Test]
         public void IntelligencePrioritizesAVisibleMateOverVisibleFoodWhenReadyToReproduce()
         {
             var source = new Grid<SpeciesCell>(5, 1);

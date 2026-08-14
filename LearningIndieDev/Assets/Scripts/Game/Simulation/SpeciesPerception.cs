@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SaltyGame
@@ -8,6 +9,7 @@ namespace SaltyGame
         Wander,
         Food,
         Mate,
+        Flee,
     }
 
     public readonly struct SpeciesPerceivedTarget
@@ -71,6 +73,55 @@ namespace SaltyGame
                 requireCreature: true,
                 random,
                 out target);
+        }
+
+        public static bool TryFindThreatTarget(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesId species,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            System.Random random,
+            out SpeciesPerceivedTarget target)
+        {
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+
+            if (!rules.TryGetValue(species, out var speciesRules))
+            {
+                target = default;
+                return false;
+            }
+
+            var visionPattern = speciesRules.Awareness.VisionPattern;
+            var bestDistance = int.MaxValue;
+            target = default;
+            foreach (var offset in visionPattern.Offsets)
+            {
+                var targetX = x + offset.x;
+                var targetY = y + offset.y;
+                if (!cells.TryGetCell(targetX, targetY, out var candidate)
+                    || !candidate.IsCreature
+                    || !rules.TryGetValue(candidate.SpeciesId, out var threatRules)
+                    || threatRules.DietTargetId != species)
+                {
+                    continue;
+                }
+
+                var distance = Math.Max(Math.Abs(offset.x), Math.Abs(offset.y));
+                if (distance < bestDistance || (distance == bestDistance && random.Next(2) == 0))
+                {
+                    bestDistance = distance;
+                    target = new SpeciesPerceivedTarget(
+                        SpeciesMovementIntent.Flee,
+                        new Vector2Int(targetX, targetY),
+                        candidate);
+                }
+            }
+
+            return bestDistance != int.MaxValue;
         }
 
         public static bool IsDietTarget(SpeciesCell cell, SpeciesId target)
