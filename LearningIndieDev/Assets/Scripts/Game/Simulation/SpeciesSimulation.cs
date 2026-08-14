@@ -313,6 +313,7 @@ namespace SaltyGame
                     y,
                     currentCell,
                     speciesRules,
+                    rules,
                     movementPass,
                     plantEnergyValue,
                     moved,
@@ -512,6 +513,7 @@ namespace SaltyGame
             int y,
             SpeciesCell currentCell,
             SpeciesRules speciesRules,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             int movementPass,
             int plantEnergyValue,
             bool[] moved,
@@ -522,6 +524,32 @@ namespace SaltyGame
             if (speciesRules.Awareness.VisionRange <= 0)
             {
                 return false;
+            }
+
+            if (SpeciesPerception.TryFindThreatTarget(
+                    source,
+                    x,
+                    y,
+                    currentCell.SpeciesId,
+                    rules,
+                    random,
+                    out var threatTarget)
+                && TryMoveAwayFromThreat(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    threatTarget,
+                    movementPass,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random,
+                    metrics))
+            {
+                return true;
             }
 
             var foodTarget = default(SpeciesPerceivedTarget);
@@ -608,6 +636,78 @@ namespace SaltyGame
                     metrics);
         }
 
+        static bool TryMoveAwayFromThreat(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules speciesRules,
+            SpeciesPerceivedTarget threat,
+            int movementPass,
+            int plantEnergyValue,
+            bool[] moved,
+            bool[] claimed,
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
+        {
+            var currentDistance = Math.Max(
+                Math.Abs(x - threat.Location.x),
+                Math.Abs(y - threat.Location.y));
+            var bestDistance = currentDistance;
+            var bestX = -1;
+            var bestY = -1;
+            var startOffset = speciesRules.MovementPattern.Count == 0
+                ? 0
+                : random.Next(speciesRules.MovementPattern.Count);
+            for (var offsetIndex = 0; offsetIndex < speciesRules.MovementPattern.Count; offsetIndex++)
+            {
+                var offset = speciesRules.MovementPattern.Offsets[
+                    (startOffset + offsetIndex) % speciesRules.MovementPattern.Count];
+                var targetX = x + offset.x;
+                var targetY = y + offset.y;
+                if (!source.IsInBounds(targetX, targetY)
+                    || claimed[GetIndex(source, targetX, targetY)])
+                {
+                    continue;
+                }
+
+                var target = source.GetCell(targetX, targetY);
+                if (!target.IsPassable || target.IsCreature)
+                {
+                    continue;
+                }
+
+                var distance = Math.Max(
+                    Math.Abs(targetX - threat.Location.x),
+                    Math.Abs(targetY - threat.Location.y));
+                if (distance > bestDistance)
+                {
+                    bestDistance = distance;
+                    bestX = targetX;
+                    bestY = targetY;
+                }
+            }
+
+            return bestX >= 0
+                && TryMoveTo(
+                    source,
+                    next,
+                    x,
+                    y,
+                    cell,
+                    speciesRules,
+                    bestX,
+                    bestY,
+                    movementPass,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random,
+                    metrics,
+                    feedOnDietTarget: false);
+        }
+
         static bool TryMoveTowardPerceivedTarget(
             Grid<SpeciesCell> source,
             Grid<SpeciesCell> next,
@@ -671,7 +771,8 @@ namespace SaltyGame
             bool[] moved,
             bool[] claimed,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            bool feedOnDietTarget = true)
         {
             if (!source.IsInBounds(targetX, targetY))
             {
@@ -690,6 +791,7 @@ namespace SaltyGame
             }
 
             if (speciesRules.DietTargetId.HasValue
+                && feedOnDietTarget
                 && SpeciesPerception.IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value))
             {
                 if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))

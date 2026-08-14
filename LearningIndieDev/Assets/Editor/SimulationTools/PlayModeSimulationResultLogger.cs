@@ -1,0 +1,133 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using SaltyGame;
+using UnityEditor;
+using UnityEngine;
+
+namespace SaltyGame.EditorTools
+{
+    /// <summary>Persists the most recent completed preview run for human and agent analysis.</summary>
+    [InitializeOnLoad]
+    public static class PlayModeSimulationResultLogger
+    {
+        const int ReportSchemaVersion = 1;
+        const string JsonFileName = "playmode-last-run.json";
+        const string MarkdownFileName = "playmode-last-run.md";
+
+        static PlayModeSimulationResultLogger()
+        {
+            SpeciesSimulationPreview.RunCompleted += Save;
+        }
+
+        static void Save(SpeciesSimulationPreview preview, SimulationRunState run)
+        {
+            try
+            {
+                var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+                var artifactsDirectory = Path.Combine(projectRoot, "artifacts");
+                Directory.CreateDirectory(artifactsDirectory);
+
+                var report = CreateReport(preview, run);
+                var jsonPath = Path.Combine(artifactsDirectory, JsonFileName);
+                var markdownPath = Path.Combine(artifactsDirectory, MarkdownFileName);
+                File.WriteAllText(jsonPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
+                File.WriteAllText(markdownPath, CreateMarkdown(report), new UTF8Encoding(false));
+                Debug.Log($"[Salty] Saved last Play Mode simulation to {jsonPath}");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+            }
+        }
+
+        static PlayModeRunReport CreateReport(SpeciesSimulationPreview preview, SimulationRunState run)
+        {
+            var species = SimulationReportSerialization.GetSpecies(run.PopulationHistory);
+
+            return new PlayModeRunReport
+            {
+                schemaVersion = ReportSchemaVersion,
+                createdUtc = DateTime.UtcNow.ToString("O"),
+                scenarioAssetPath = preview.SelectedScenario == null
+                    ? string.Empty
+                    : AssetDatabase.GetAssetPath(preview.SelectedScenario),
+                scenarioName = preview.SelectedScenario == null
+                    ? "Runtime Defaults"
+                    : preview.SelectedScenario.name,
+                playerSpeciesId = run.PlayerSpeciesId.Value,
+                seed = run.Seed,
+                ticks = run.Tick,
+                durationSeconds = run.ElapsedSeconds,
+                gridWidth = run.Cells.Width,
+                gridHeight = run.Cells.Height,
+                rulesetFingerprint = run.RulesetFingerprint,
+                finalPlayerPopulation = SimulationRunResults.Create(run).PlayerPopulation,
+                populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
+                activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
+            };
+        }
+
+        static string CreateMarkdown(PlayModeRunReport report)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine("# Last Play Mode Simulation");
+            builder.AppendLine();
+            builder.AppendLine($"- Scenario: `{report.scenarioName}`");
+            builder.AppendLine($"- Seed: `{report.seed}`");
+            builder.AppendLine($"- Grid: `{report.gridWidth} x {report.gridHeight}`");
+            builder.AppendLine($"- Duration: `{report.durationSeconds:0.###}s` / `{report.ticks}` ticks");
+            builder.AppendLine($"- Player species: `{report.playerSpeciesId}`");
+            builder.AppendLine($"- Final player population: `{report.finalPlayerPopulation}`");
+            builder.AppendLine($"- Ruleset fingerprint: `{report.rulesetFingerprint}`");
+            builder.AppendLine();
+            builder.AppendLine("## Final populations");
+            builder.AppendLine();
+            builder.AppendLine("| Species | Final population |");
+            builder.AppendLine("|---|---:|");
+            var finalSnapshot = report.populationHistory[report.populationHistory.Length - 1];
+            for (var index = 0; index < finalSnapshot.species.Length; index++)
+            {
+                var entry = finalSnapshot.species[index];
+                builder.AppendLine($"| {entry.speciesId} | {entry.population} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("## Activity");
+            builder.AppendLine();
+            builder.AppendLine("| Species | Births | Food | Movement | Kills | Deaths | Starvation |");
+            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|");
+            for (var index = 0; index < report.activity.Length; index++)
+            {
+                var entry = report.activity[index];
+                builder.AppendLine(
+                    $"| {entry.speciesId} | {entry.births} | {entry.foodConsumed:0.###} | "
+                    + $"{entry.movementSteps} | {entry.combatKills} | {entry.deaths} | {entry.starvationDeaths} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("The JSON file beside this report contains the full per-tick population history.");
+            return builder.ToString();
+        }
+
+        [Serializable]
+        sealed class PlayModeRunReport
+        {
+            public int schemaVersion;
+            public string createdUtc;
+            public string scenarioAssetPath;
+            public string scenarioName;
+            public string playerSpeciesId;
+            public int seed;
+            public int ticks;
+            public float durationSeconds;
+            public int gridWidth;
+            public int gridHeight;
+            public string rulesetFingerprint;
+            public int finalPlayerPopulation;
+            public SimulationPopulationSnapshotRecord[] populationHistory;
+            public SimulationSpeciesActivityRecord[] activity;
+        }
+    }
+}

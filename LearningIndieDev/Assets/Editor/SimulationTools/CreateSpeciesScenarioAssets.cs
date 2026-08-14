@@ -39,7 +39,7 @@ namespace SaltyGame.EditorTools
             };
             var herbivores = new[]
             {
-                CreateHerbivore("hare", "fern", 2.2f, 16, 0.25f),
+                CreateHerbivore("hare", "plant", 2.2f, 16, 0.25f),
                 CreateHerbivore("deer", "fern", 1.4f, 20, 0.2f),
                 CreateHerbivore("snail", "reed", 0.55f, 10, 0.3f),
                 CreateHerbivore("beetle", "reed", 1.8f, 12, 0.25f),
@@ -52,9 +52,10 @@ namespace SaltyGame.EditorTools
                 CreateCarnivore("stoat", "beetle", 1.0f, 28, 0.02f),
             };
 
+            var grass = CreateLegacyPlant();
             CreateScenario("ForestEdge", new[]
             {
-                Entry(plants[0], 0.42f), Entry(herbivores[0], 0.10f), Entry(carnivores[0], 0.004f),
+                Entry(grass, 0.65f), Entry(herbivores[0], 0.15f), Entry(carnivores[0], 0.015f),
             });
             CreateScenario("Wetland", new[]
             {
@@ -70,12 +71,11 @@ namespace SaltyGame.EditorTools
             });
 
             // Validation-only scenario: its fingerprint is compared to the legacy defaults.
-            var legacyPlant = CreateLegacyPlant();
             var legacyHerbivore = CreateLegacyHerbivore();
             var legacyCarnivore = CreateLegacyCarnivore();
             CreateScenario("BaselineParity", new[]
             {
-                Entry(legacyPlant, 0.4f), Entry(legacyHerbivore, 0.16f),
+                Entry(grass, 0.4f), Entry(legacyHerbivore, 0.16f),
                 Entry(legacyCarnivore, 0.04f),
             });
 

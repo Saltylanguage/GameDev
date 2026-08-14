@@ -20,6 +20,13 @@ run-ending conditions, reward cadence, and launch target in a one-page product
 brief. These details remain decisions to make, not assumptions for foundational
 code.
 
+The active player-shell delivery sequence, including Main Menu, the Lab home
+base, profile persistence, scientific data, permanent research, branching run
+upgrades, and species mastery, is defined in
+[`docs/MAIN_MENU_LAB_DELIVERY_PLAN.md`](docs/MAIN_MENU_LAB_DELIVERY_PLAN.md).
+That plan supplies the implementation epics, dependency order, and workflow;
+this roadmap remains the product-level milestone source of truth.
+
 ## Production principles
 
 - Make the upgrade decision and its visible consequence the center of play.
@@ -123,11 +130,26 @@ Required outcomes:
 Once one run and its rewards are proven, add the surrounding game structure:
 
 - Main menu and continue/new-run flow.
+- A player-facing Lab home base with Overview, Research, Species Archive, and
+  Expedition Setup surfaces.
 - Run results and accomplishment evaluation.
 - Persistent unlocks for scenarios, species, and eligible upgrade content.
 - Versioned save data for settings and meta-progression; active-run persistence
   is a separate decision.
 - A clear next-run flow that demonstrates why the previous run mattered.
+
+Future progression will use scientific data collected from meaningful simulation
+observations. Players may spend it on current-run evolution or bank it for
+permanent research in the Lab, including ecological data categories and
+species-specific mastery. This direction is defined in
+[`docs/SCIENTIFIC_DATA_ECONOMY.md`](docs/SCIENTIFIC_DATA_ECONOMY.md) and remains
+deferred until the vertical-slice upgrade loop establishes earning rates,
+spending pressure, and useful permanent unlocks.
+
+Permanent Lab progression will use Plant, Herbivore, and Carnivore research
+trees, while upgrades selected during a run form temporary branching paths that
+produce distinct playstyles. See
+[`docs/UPGRADE_SYSTEM_DIRECTION.md`](docs/UPGRADE_SYSTEM_DIRECTION.md).
 
 ### 7. Production tools and quality
 
@@ -162,6 +184,8 @@ Exit criteria:
   rulesets.
 - A first catalog of roughly 6-10 upgrades includes numeric, spatial,
   conditional, and tradeoff examples without a generalized plugin framework.
+- The UI-only Main Menu and Lab shell demonstrates the intended home-base and
+  expedition flow with representative data.
 
 ### M2 - Vertical slice
 
@@ -222,22 +246,32 @@ vertical slice.
 
 Exit: M0 criteria are met and Sprint 1 has no unresolved product-level blocker.
 
-### Sprint 1 - Separate play from authoring
+### Sprint 1 - Main Menu and UI-only Lab
 
-Primary outcome: a player can run the selected scenario without seeing the
-tuning interface.
+The discussion-ready execution plan for this sprint is
+[`docs/SPRINT_1_PLAN.md`](docs/SPRINT_1_PLAN.md). It defines committed versus
+stretch scope, work packages, sequencing, risks, and the review demonstration.
 
-- Create the Dev Lab scene around the existing runtime settings, scenario
-  assets, board, and diagnostics.
-- Reduce the player scene to scenario context, start/pause/speed controls,
-  essential inspection, and results placeholders.
-- Keep both scenes on the same simulation-domain APIs and immutable run-start
-  data.
-- Establish the first visual and audio spike inside the player scene at actual
-  board scale.
+Primary outcome: a player can launch into Main Menu, navigate an UI-only Lab,
+understand the planned scientific-data/research economy, and prepare a Forest
+Edge + Hare expedition preview.
 
-Exit: raw parameters are available in the Dev Lab and absent from normal play;
-the same fixed seed produces the same run in both scenes.
+- Establish the Main Menu/Lab screen contract and low-fidelity layouts.
+- Build the Noesis navigation shell for Overview, Research, Species Archive,
+  and Expedition Setup.
+- Present representative scientific-data balances, research states, and Hare
+  mastery without implementing purchases or persistence.
+- Show a complete Forest Edge + Hare expedition summary with a clearly
+  disabled/prototype launch action.
+- Validate navigation, focus, target resolutions, and a Windows development
+  build.
+
+Exit: the Main Menu → Lab → Expedition Setup preview works end to end, planned
+economy concepts are understandable, and no placeholder is presented as a
+functional purchase or launch.
+
+The previously planned player/Dev Lab separation and real expedition handoff
+remain the next candidate work bucket; they are not committed to Sprint 1.
 
 ### Sprint 2 - First trustworthy upgrades
 

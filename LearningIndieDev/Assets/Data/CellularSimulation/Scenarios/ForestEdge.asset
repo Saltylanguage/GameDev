@@ -19,9 +19,9 @@ MonoBehaviour:
   maxPopulation: 0
   minPopulation: 0
   species:
-  - definition: {fileID: 11400000, guid: 6b2e3912feda2f747b3d96b729e19f44, type: 2}
-    startingProbability: 0.42
+  - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
+    startingProbability: 0.65
   - definition: {fileID: 11400000, guid: 766cb564370608a41bbc5504a556b28a, type: 2}
-    startingProbability: 0.1
+    startingProbability: 0.15
   - definition: {fileID: 11400000, guid: ae99e1a57e5bbdb4cad7e11e4110d588, type: 2}
-    startingProbability: 0.004
+    startingProbability: 0.015

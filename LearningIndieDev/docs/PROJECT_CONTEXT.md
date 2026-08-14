@@ -6,6 +6,17 @@ changes, and do not treat research references as approved implementation work.
 
 ## Current game direction
 
+- The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)
+  and [`TDD_TEMPLATE.md`](TDD_TEMPLATE.md). Use them to capture player-facing
+  decisions separately from implementation contracts; completed sections should
+  replace placeholders rather than becoming a second set of informal notes.
+- The first coupled species treatment is [`HARE_FOX_ITERATIVE_TREATMENT.md`](HARE_FOX_ITERATIVE_TREATMENT.md);
+  use it as the working design reference for the Forest Edge hare/fox balance
+  fixture until the interaction experiments produce evidence for promotion.
+- The repeatable shorthand for this workflow is **Species Design Treatment** or
+  **Iterate Species Design**; [`SPECIES_DESIGN_TREATMENT_TEMPLATE.md`](SPECIES_DESIGN_TREATMENT_TEMPLATE.md)
+  is the reusable treatment format.
+
 - The project is pivoting toward an iterative roguelike centered primarily on
   cellular automata. The working elevator pitch is **"cellular automata as a
   roguelike."**

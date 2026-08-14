@@ -29,6 +29,11 @@ flowchart LR
   pass `-UnityPath` only when Unity is installed somewhere nonstandard.
 - Keep experimental output outside source control in `artifacts/`, so generated
   reports and visual evidence never create noisy changes or accidental commits.
+- A completed `SpeciesSimulationPreview` Play Mode run now automatically writes
+  `artifacts/playmode-last-run.json` and `artifacts/playmode-last-run.md`. The
+  JSON keeps the full per-tick population history, ruleset fingerprint, seed,
+  scenario path, and per-species activity; the Markdown is the quick human/agent
+  summary.
 
 ### Deterministic simulation experiments
 
