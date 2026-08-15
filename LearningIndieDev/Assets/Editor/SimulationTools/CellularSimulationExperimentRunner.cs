@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 3;
+        const int ReportSchemaVersion = 4;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -26,6 +26,47 @@ namespace SaltyGame.EditorTools
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string OutputPathArgument = "-outputPath";
+
+        [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
+        public static void RunFsmTestHarness()
+        {
+            var scenarioPath = "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset";
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(scenarioPath);
+            if (scenario == null)
+            {
+                throw new FileNotFoundException($"FSM test scenario was not found at '{scenarioPath}'.");
+            }
+
+            var playerSpecies = new SpeciesId("hare");
+            var predatorSpecies = new SpeciesId("fox");
+            var criteria = new SimulationTestCriteria(
+                minimumFinalPlayerRatio: 1.2f,
+                maximumFinalPlayerRatio: 1.5f,
+                expectedInitialPlayerPopulation: 22,
+                maximumAllowedFinalExtinctions: 0,
+                minimumPlayerStateTransitions: 1,
+                expectedInitialPopulations: new Dictionary<SpeciesId, int>
+                {
+                    [playerSpecies] = 22,
+                    [predatorSpecies] = 4,
+                });
+            var testCase = new SimulationTestCase(
+                "Forest Edge FSM balance",
+                scenario.CreateRuntimeData(),
+                playerSpecies,
+                seedStart: 1001,
+                seedCount: 20,
+                criteria);
+            var report = SimulationTestHarness.Run(testCase);
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            var artifactsPath = Path.Combine(projectRoot, "artifacts");
+            Directory.CreateDirectory(artifactsPath);
+            var jsonPath = Path.Combine(artifactsPath, "fsm-test-report.json");
+            var markdownPath = Path.Combine(artifactsPath, "fsm-test-report.md");
+            File.WriteAllText(jsonPath, JsonUtility.ToJson(CreateHarnessReport(report), true), new UTF8Encoding(false));
+            File.WriteAllText(markdownPath, CreateHarnessMarkdown(report), new UTF8Encoding(false));
+            Debug.Log($"[Salty] FSM test harness completed: {report.PassedRuns}/{report.Runs.Count} runs passed. Report: {markdownPath}");
+        }
 
         public static void RunFromCommandLine()
         {
@@ -130,6 +171,8 @@ namespace SaltyGame.EditorTools
                 currencyEarned = result.CurrencyEarned,
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
+                behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
+                behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
             };
         }
 
@@ -199,7 +242,8 @@ namespace SaltyGame.EditorTools
                 data.MaxPopulation,
                 data.MinPopulation,
                 data.TerrainDefinitions,
-                data.AlphaOffspringRules);
+                data.AlphaOffspringRules,
+                data.StartingPopulations);
         }
 
         static void WriteCsv(
@@ -246,6 +290,72 @@ namespace SaltyGame.EditorTools
             }
 
             File.WriteAllText(outputPath, csv.ToString(), new UTF8Encoding(true));
+        }
+
+        static FsmHarnessReport CreateHarnessReport(SimulationTestReport report)
+        {
+            var runs = new FsmHarnessRun[report.Runs.Count];
+            for (var index = 0; index < runs.Length; index++)
+            {
+                var source = report.Runs[index];
+                runs[index] = new FsmHarnessRun
+                {
+                    seed = source.Seed,
+                    initialPlayerPopulation = source.InitialPlayerPopulation,
+                    finalPlayerPopulation = source.FinalPlayerPopulation,
+                    peakPlayerPopulation = source.PeakPlayerPopulation,
+                    playerStateTransitions = source.PlayerStateTransitions,
+                    passed = source.Passed,
+                    failures = new List<string>(source.Failures).ToArray(),
+                };
+            }
+
+            return new FsmHarnessReport
+            {
+                schemaVersion = 1,
+                createdUtc = DateTime.UtcNow.ToString("O"),
+                testName = report.TestCase.Name,
+                rulesetFingerprint = report.TestCase.Data.Fingerprint,
+                passed = report.Passed,
+                passedRuns = report.PassedRuns,
+                failedRuns = report.FailedRuns,
+                aggregateFailures = new List<string>(report.Failures).ToArray(),
+                runs = runs,
+            };
+        }
+
+        static string CreateHarnessMarkdown(SimulationTestReport report)
+        {
+            var builder = new StringBuilder();
+            builder.AppendLine($"# {report.TestCase.Name}");
+            builder.AppendLine();
+            builder.AppendLine($"- Passed: `{report.Passed}`");
+            builder.AppendLine($"- Runs: `{report.PassedRuns}/{report.Runs.Count}`");
+            builder.AppendLine($"- Ruleset fingerprint: `{report.TestCase.Data.Fingerprint}`");
+            builder.AppendLine();
+            builder.AppendLine("| Seed | Initial | Final | Peak | State transitions | Result | Failure |");
+            builder.AppendLine("|---:|---:|---:|---:|---:|---|---|");
+            foreach (var run in report.Runs)
+            {
+                var failure = run.Failures.Count == 0
+                    ? string.Empty
+                    : string.Join("; ", run.Failures).Replace("|", "\\|");
+                builder.AppendLine(
+                    $"| {run.Seed} | {run.InitialPlayerPopulation} | {run.FinalPlayerPopulation} | "
+                    + $"{run.PeakPlayerPopulation} | {run.PlayerStateTransitions} | {(run.Passed ? "PASS" : "FAIL")} | {failure} |");
+            }
+
+            if (report.Failures.Count > 0)
+            {
+                builder.AppendLine();
+                builder.AppendLine("## Aggregate failures");
+                foreach (var failure in report.Failures)
+                {
+                    builder.AppendLine($"- {failure}");
+                }
+            }
+
+            return builder.ToString();
         }
 
         static void AppendCsvField(StringBuilder csv, string value, ref bool first)
@@ -418,6 +528,8 @@ namespace SaltyGame.EditorTools
             public int currencyEarned;
             public SimulationPopulationSnapshotRecord[] populationHistory;
             public SimulationSpeciesActivityRecord[] activity;
+            public SimulationSpeciesBehaviorRecord[] behavior;
+            public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
         }
 
         [Serializable]
@@ -429,6 +541,32 @@ namespace SaltyGame.EditorTools
             public float averageFinalPopulation;
             public int extinctFinalRuns;
             public float finalExtinctionRate;
+        }
+
+        [Serializable]
+        sealed class FsmHarnessReport
+        {
+            public int schemaVersion;
+            public string createdUtc;
+            public string testName;
+            public string rulesetFingerprint;
+            public bool passed;
+            public int passedRuns;
+            public int failedRuns;
+            public string[] aggregateFailures;
+            public FsmHarnessRun[] runs;
+        }
+
+        [Serializable]
+        sealed class FsmHarnessRun
+        {
+            public int seed;
+            public int initialPlayerPopulation;
+            public int finalPlayerPopulation;
+            public int peakPlayerPopulation;
+            public int playerStateTransitions;
+            public bool passed;
+            public string[] failures;
         }
     }
 }

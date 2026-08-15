@@ -26,10 +26,55 @@ namespace SaltyGame.EditorTools
                     crowdingDeaths = source.CrowdingDeaths,
                     wiltDeaths = source.WiltDeaths,
                     populationLimitRemovals = source.PopulationLimitRemovals,
+                    stateTransitions = metrics.GetStateTransitions(species[index]),
                 };
             }
 
             return activity;
+        }
+
+        public static SimulationSpeciesBehaviorRecord[] CreateBehavior(
+            SpeciesSimulationMetrics metrics,
+            IReadOnlyList<SpeciesId> species)
+        {
+            var records = new List<SimulationSpeciesBehaviorRecord>();
+            foreach (var speciesId in species)
+            {
+                foreach (SpeciesBehaviorState state in System.Enum.GetValues(typeof(SpeciesBehaviorState)))
+                {
+                    records.Add(new SimulationSpeciesBehaviorRecord
+                    {
+                        speciesId = speciesId.Value,
+                        state = state.ToString(),
+                        ticks = metrics.GetStateTicks(speciesId, state),
+                    });
+                }
+            }
+
+            return records.ToArray();
+        }
+
+        public static SimulationSpeciesBehaviorTransitionRecord[] CreateBehaviorTransitions(
+            SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.BehaviorTransitions;
+            var records = new SimulationSpeciesBehaviorTransitionRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var transition = source[index];
+                records[index] = new SimulationSpeciesBehaviorTransitionRecord
+                {
+                    speciesId = transition.Species.Value,
+                    entityId = transition.EntityId,
+                    age = transition.Age,
+                    x = transition.X,
+                    y = transition.Y,
+                    previousState = transition.PreviousState.ToString(),
+                    currentState = transition.CurrentState.ToString(),
+                };
+            }
+
+            return records;
         }
 
         public static SimulationPopulationSnapshotRecord[] CreatePopulationHistory(
@@ -110,5 +155,26 @@ namespace SaltyGame.EditorTools
         public int crowdingDeaths;
         public int wiltDeaths;
         public int populationLimitRemovals;
+        public int stateTransitions;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesBehaviorRecord
+    {
+        public string speciesId;
+        public string state;
+        public int ticks;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesBehaviorTransitionRecord
+    {
+        public string speciesId;
+        public long entityId;
+        public int age;
+        public int x;
+        public int y;
+        public string previousState;
+        public string currentState;
     }
 }

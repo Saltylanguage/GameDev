@@ -13,8 +13,12 @@ namespace SaltyGame
         {
             [SerializeField] SpeciesDefinitionAsset definition;
             [SerializeField, Range(0f, 1f)] float startingProbability;
+            [SerializeField, Min(0)] int startingPopulation;
 
-            public SpeciesEntry(SpeciesDefinitionAsset definition, float startingProbability)
+            public SpeciesEntry(
+                SpeciesDefinitionAsset definition,
+                float startingProbability,
+                int startingPopulation = 0)
             {
                 if (startingProbability < 0f || startingProbability > 1f)
                 {
@@ -24,12 +28,22 @@ namespace SaltyGame
                         "Starting probability must be between zero and one.");
                 }
 
+                if (startingPopulation < 0)
+                {
+                    throw new ArgumentOutOfRangeException(
+                        nameof(startingPopulation),
+                        startingPopulation,
+                        "Starting population cannot be negative.");
+                }
+
                 this.definition = definition;
                 this.startingProbability = startingProbability;
+                this.startingPopulation = startingPopulation;
             }
 
             public SpeciesDefinitionAsset Definition => definition;
             public float StartingProbability => startingProbability;
+            public int StartingPopulation => startingPopulation;
         }
 
         [SerializeField, Min(1)] int width = 32;
@@ -50,6 +64,7 @@ namespace SaltyGame
             }
 
             var probabilities = new Dictionary<SpeciesId, float>(species.Length);
+            var startingPopulations = new Dictionary<SpeciesId, int>();
             var rules = new Dictionary<SpeciesId, SpeciesRules>(species.Length);
             var alphaRules = new Dictionary<SpeciesId, AlphaOffspringRule>();
             foreach (var entry in species)
@@ -62,6 +77,10 @@ namespace SaltyGame
                 var definition = entry.Definition;
                 var id = definition.Id;
                 probabilities.Add(id, entry.StartingProbability);
+                if (entry.StartingPopulation > 0)
+                {
+                    startingPopulations.Add(id, entry.StartingPopulation);
+                }
                 rules.Add(id, definition.CreateRules());
                 if (definition.TryCreateAlphaRule(out var alphaRule))
                 {
@@ -78,7 +97,8 @@ namespace SaltyGame
                 stepInterval,
                 maxPopulation,
                 minPopulation,
-                alphaOffspringRules: alphaRules);
+                alphaOffspringRules: alphaRules,
+                startingPopulations: startingPopulations);
         }
     }
 }

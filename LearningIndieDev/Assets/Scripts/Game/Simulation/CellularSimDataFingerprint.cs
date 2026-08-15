@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v4";
+        public const string Version = "cellular-sim-data-v5";
 
         public static string Create(CellularSimData data)
         {
@@ -28,6 +28,13 @@ namespace SaltyGame
 
             canonical.Append("probabilities[");
             foreach (var entry in Sort(data.StartingProbabilities))
+            {
+                Append(canonical, entry.Key.Value);
+                Append(canonical, entry.Value);
+            }
+
+            canonical.Append("startingPopulations[");
+            foreach (var entry in Sort(data.StartingPopulations))
             {
                 Append(canonical, entry.Key.Value);
                 Append(canonical, entry.Value);

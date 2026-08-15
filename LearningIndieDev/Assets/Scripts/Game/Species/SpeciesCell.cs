@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 
 namespace SaltyGame
 {
@@ -34,7 +35,10 @@ namespace SaltyGame
                 isResourceTerrain: false,
                 isPassable: true,
                 movementCost: 1f,
-                resourceSpeciesId: species == SpeciesIds.Plant ? species : default)
+                resourceSpeciesId: species == SpeciesIds.Plant ? species : default,
+                behaviorState: SpeciesBehaviorState.Wandering,
+                behaviorStateTicks: 0,
+                entityId: species == SpeciesIds.Plant ? 0L : AllocateEntityId())
         {
         }
 
@@ -53,7 +57,10 @@ namespace SaltyGame
             bool isResourceTerrain,
             bool isPassable,
             float movementCost,
-            SpeciesId resourceSpeciesId = default)
+            SpeciesId resourceSpeciesId = default,
+            SpeciesBehaviorState behaviorState = SpeciesBehaviorState.Wandering,
+            int behaviorStateTicks = 0,
+            long entityId = 0)
         {
             if (health < 0)
             {
@@ -90,6 +97,14 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(movementCost), movementCost, "Movement cost must be greater than zero.");
             }
 
+            if (behaviorStateTicks < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(behaviorStateTicks),
+                    behaviorStateTicks,
+                    "Behavior state ticks cannot be negative.");
+            }
+
             IsOccupied = isOccupied;
             SpeciesId = species;
             Health = health;
@@ -105,6 +120,11 @@ namespace SaltyGame
             this.resourceSpeciesId = resourceSpeciesId;
             this.isPassable = isPassable;
             this.movementCost = movementCost;
+            BehaviorState = behaviorState;
+            BehaviorStateTicks = behaviorStateTicks;
+            EntityId = isOccupied && !isResourceSpecies
+                ? entityId > 0 ? entityId : AllocateEntityId()
+                : 0L;
         }
 
         readonly bool isResourceSpecies;
@@ -113,6 +133,12 @@ namespace SaltyGame
         readonly TerrainId terrainId;
         readonly bool isPassable;
         readonly float movementCost;
+        static long nextEntityId;
+
+        static long AllocateEntityId()
+        {
+            return Interlocked.Increment(ref nextEntityId);
+        }
 
         public static SpeciesCell Empty => new SpeciesCell(
             default,
@@ -177,6 +203,7 @@ namespace SaltyGame
         public bool IsPassable => !terrainId.IsValid || isPassable;
         public float MovementCost => terrainId.IsValid ? movementCost : 1f;
         public SpeciesId SpeciesId { get; }
+        public long EntityId { get; }
 
         [Obsolete("Use SpeciesId instead.")]
         public SpeciesArchetype Species => SpeciesId.ToLegacyArchetype(SpeciesId);
@@ -196,6 +223,8 @@ namespace SaltyGame
         public int FoodEaten { get; }
         public float FoodReserve { get; }
         public bool IsAlpha { get; }
+        public SpeciesBehaviorState BehaviorState { get; }
+        public int BehaviorStateTicks { get; }
 
         public SpeciesCell WithEntity(
             SpeciesId species,
@@ -204,8 +233,14 @@ namespace SaltyGame
             int age,
             int foodEaten,
             float foodReserve,
-            bool isAlpha = false)
+            bool isAlpha = false,
+            long entityId = 0)
         {
+            var resolvedEntityId = entityId > 0
+                ? entityId
+                : IsCreature && SpeciesId == species
+                    ? EntityId
+                    : AllocateEntityId();
             return new SpeciesCell(
                 species,
                 true,
@@ -221,7 +256,38 @@ namespace SaltyGame
                 isResourceTerrain,
                 IsPassable,
                 MovementCost,
-                resourceSpeciesId: resourceSpeciesId);
+                resourceSpeciesId: resourceSpeciesId,
+                behaviorState: BehaviorState,
+                behaviorStateTicks: BehaviorStateTicks,
+                entityId: resolvedEntityId);
+        }
+
+        public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
+        {
+            if (!IsCreature)
+            {
+                return this;
+            }
+
+            return new SpeciesCell(
+                SpeciesId,
+                true,
+                Health,
+                Energy,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                IsAlpha,
+                TerrainId,
+                TerrainEnergy,
+                isResourceSpecies,
+                isResourceTerrain,
+                IsPassable,
+                MovementCost,
+                resourceSpeciesId,
+                state,
+                ticks,
+                EntityId);
         }
 
         public SpeciesCell WithoutEntity()
@@ -295,7 +361,10 @@ namespace SaltyGame
                 isResourceTerrain,
                 IsPassable,
                 MovementCost,
-                resourceSpeciesId: resourceSpeciesId);
+                resourceSpeciesId: resourceSpeciesId,
+                behaviorState: BehaviorState,
+                behaviorStateTicks: BehaviorStateTicks,
+                entityId: EntityId);
         }
     }
 }

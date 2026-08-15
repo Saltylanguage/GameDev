@@ -216,6 +216,11 @@ settle them in foundational grid code.
   consumed, movement, combat, and directly resolved mortality causes). It is
   intentionally an evidence/automation seam rather than a custom editor-to-agent bridge; see
   [`UNITY_SIMULATION_TOOLING.md`](UNITY_SIMULATION_TOOLING.md).
+- The serious research program for turning this evidence seam into an
+  auditable AI-assisted ecology laboratory is defined in
+  [`Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md`](Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md).
+  It is proposed research, not an approved replacement for the production
+  roadmap; promotion requires reproducible evidence and a human decision.
 - `CellSim` is the project-root command surface for this workflow: `Test`,
   `Run`, `Report`, `Compare`, and `Baseline`. The first population-only baseline
   was superseded after correcting terrain-resource identity and layered population

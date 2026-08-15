@@ -1,0 +1,19 @@
+{
+  "description": "Alert-only studio policy checks for local Codex actions.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^(Bash|apply_patch|Edit|Write|mcp__.*)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "pwsh -NoProfile -File \"$(git rev-parse --show-toplevel)/.codex/hooks/studio_policy.ps1\"",
+            "command_windows": "powershell -NoProfile -ExecutionPolicy Bypass -File \"$(git rev-parse --show-toplevel)/.codex/hooks/studio_policy.ps1\"",
+            "timeout": 10,
+            "statusMessage": "Checking studio policy (alert-only)"
+          }
+        ]
+      }
+    ]
+  }
+}

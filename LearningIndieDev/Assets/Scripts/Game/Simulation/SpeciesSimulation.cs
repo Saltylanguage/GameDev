@@ -6,6 +6,47 @@ namespace SaltyGame
 {
     public static class SpeciesSimulation
     {
+        internal static string FormatTrackedEntityId(SpeciesId species, long entityId)
+        {
+            var value = species.Value;
+            return string.IsNullOrEmpty(value)
+                ? $"#{entityId}"
+                : $"{char.ToUpperInvariant(value[0])}{value.Substring(1)}#{entityId}";
+        }
+
+        static SpeciesCell MarkCreatureDead(
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesSimulationMetrics metrics)
+        {
+            var cell = next.GetCell(x, y);
+            if (!cell.IsCreature)
+            {
+                return cell;
+            }
+
+            var dead = cell.WithBehaviorState(SpeciesBehaviorState.Dead, ticks: 1);
+            next.SetCell(x, y, dead);
+            metrics?.RecordState(cell.SpeciesId, SpeciesBehaviorState.Dead, transitioned: true);
+            if (metrics != null && metrics.IsTrackedBehaviorCell(cell.SpeciesId, x, y))
+            {
+                metrics.RecordTrackedTransition(
+                    cell.SpeciesId,
+                    cell.EntityId,
+                    cell.Age,
+                    x,
+                    y,
+                    cell.BehaviorState,
+                    SpeciesBehaviorState.Dead);
+                Debug.Log(
+                    $"[FSM][Tracked] {FormatTrackedEntityId(cell.SpeciesId, cell.EntityId)} age {cell.Age} at ({x},{y}) "
+                    + $"Previous: {cell.BehaviorState}, Current: {SpeciesBehaviorState.Dead}");
+            }
+
+            return dead;
+        }
+
         public static Grid<SpeciesCell> Step(
             Grid<SpeciesCell> source,
             CellularSimData simulationData,
@@ -55,6 +96,7 @@ namespace SaltyGame
             var next = source.Copy();
             var random = new System.Random(seed);
             ResolveAging(next);
+            SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
             ResolveAttacks(source, next, rules, random, metrics);
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
@@ -120,7 +162,7 @@ namespace SaltyGame
                     ? cell.SpeciesId
                     : GetResourceSpeciesId(cell);
                 next.SetCell(x, y, population.IsCreature
-                    ? cell.WithoutEntity()
+                    ? MarkCreatureDead(next, x, y, metrics).WithoutEntity()
                     : cell.WithoutPlantResource());
                 metrics?.Record(removedSpecies, deaths: 1, populationLimitRemovals: 1);
             }
@@ -141,6 +183,7 @@ namespace SaltyGame
                     if (!attacker.IsCreature
                         || !rules.TryGetValue(attacker.SpeciesId, out var attackerRules)
                         || attackerRules.AttackAmount <= 0
+                        || next.GetCell(x, y).BehaviorState != SpeciesBehaviorState.Attacking
                         || !ShouldForage(attacker, attackerRules)
                         || !next.GetCell(x, y).IsCreature)
                     {
@@ -205,9 +248,25 @@ namespace SaltyGame
                             metrics?.Record(
                                 attacker.SpeciesId,
                                 damageDealt: Math.Min(damage, currentTarget.Health));
-                            next.SetCell(targetX, targetY, remainingHealth > 0
-                                ? currentTarget.WithEntity(currentTarget.SpeciesId, remainingHealth, currentTarget.Energy, currentTarget.Age, currentTarget.FoodEaten, currentTarget.FoodReserve, currentTarget.IsAlpha)
-                                : currentTarget.WithoutEntity());
+                            if (remainingHealth > 0)
+                            {
+                                next.SetCell(targetX, targetY, currentTarget.WithEntity(
+                                    currentTarget.SpeciesId,
+                                    remainingHealth,
+                                    currentTarget.Energy,
+                                    currentTarget.Age,
+                                    currentTarget.FoodEaten,
+                                    currentTarget.FoodReserve,
+                                    currentTarget.IsAlpha));
+                            }
+                            else
+                            {
+                                next.SetCell(targetX, targetY, MarkCreatureDead(
+                                    next,
+                                    targetX,
+                                    targetY,
+                                    metrics).WithoutEntity());
+                            }
 
                             if (remainingHealth <= 0)
                             {
@@ -225,7 +284,9 @@ namespace SaltyGame
                                     attackerRules,
                                     rules.TryGetValue(target.SpeciesId, out var foodRules)
                                         ? foodRules.EnergyValue
-                                        : 0));
+                                        : 0).WithBehaviorState(
+                                            SpeciesBehaviorState.Eating,
+                                            Math.Max(1, currentAttacker.BehaviorStateTicks)));
                                 metrics?.Record(attacker.SpeciesId, foodConsumed: 1f);
                             }
                         }
@@ -303,6 +364,13 @@ namespace SaltyGame
                     || currentCell.SpeciesId != sourceCell.SpeciesId
                     || speciesRules.MovementSpeed <= 0f)
                 {
+                    continue;
+                }
+
+                if (currentCell.BehaviorState == SpeciesBehaviorState.Sleeping
+                    || currentCell.BehaviorState == SpeciesBehaviorState.Attacking)
+                {
+                    moved[sourceIndex] = true;
                     continue;
                 }
 
@@ -557,7 +625,7 @@ namespace SaltyGame
                 && SpeciesPerception.TryFindFoodTarget(source, x, y, speciesRules, random, out foodTarget);
             var canSeekMate = speciesRules.ReproductionChance > 0f
                 && speciesRules.ReproductionNeighborCount > 0
-                && GetReproductionEnergy(currentCell) > speciesRules.ReproductionFoodRequired
+                && HasReproductionEnergy(currentCell, speciesRules)
                 && CountPatternSpeciesNeighbors(
                     source,
                     x,
@@ -578,7 +646,7 @@ namespace SaltyGame
                     out mateTarget);
             var prioritizeMate = hasMate
                 && speciesRules.Awareness.Intelligence > 0
-                && GetReproductionEnergy(currentCell) > speciesRules.ReproductionFoodRequired;
+                && HasReproductionEnergy(currentCell, speciesRules);
 
             if (prioritizeMate
                 && TryMoveTowardPerceivedTarget(
@@ -827,7 +895,8 @@ namespace SaltyGame
                 cell.Age,
                 cell.FoodEaten,
                 cell.FoodReserve,
-                cell.IsAlpha));
+                cell.IsAlpha,
+                entityId: cell.EntityId).WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
             moved[GetIndex(source, x, y)] = true;
             moved[targetIndex] = true;
             claimed[targetIndex] = true;
@@ -901,7 +970,8 @@ namespace SaltyGame
                     cell.Age,
                     cell.FoodEaten,
                     cell.FoodReserve,
-                    cell.IsAlpha));
+                    cell.IsAlpha,
+                    entityId: cell.EntityId).WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
@@ -974,7 +1044,7 @@ namespace SaltyGame
                     var remainingEnergy = cell.Energy - speciesRules.Metabolism;
                     next.SetCell(x, y, remainingEnergy > 0
                         ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
-                        : cell.WithoutEntity());
+                        : MarkCreatureDead(next, x, y, metrics).WithoutEntity());
                     if (remainingEnergy <= 0)
                     {
                         metrics?.Record(cell.SpeciesId, deaths: 1, starvationDeaths: 1);
@@ -1052,7 +1122,7 @@ namespace SaltyGame
                     var remainingEnergy = cell.Energy - excessMembers * speciesRules.CrowdingEnergyPenalty;
                     next.SetCell(x, y, remainingEnergy > 0
                         ? cell.WithEntity(cell.SpeciesId, cell.Health, remainingEnergy, cell.Age, cell.FoodEaten, cell.FoodReserve, cell.IsAlpha)
-                        : cell.WithoutEntity());
+                        : MarkCreatureDead(next, x, y, metrics).WithoutEntity());
                     if (remainingEnergy <= 0)
                     {
                         metrics?.Record(cell.SpeciesId, deaths: 1, crowdingDeaths: 1);
@@ -1176,7 +1246,7 @@ namespace SaltyGame
 
                     var currentParent = next.GetCell(x, y);
                     if (currentParent.SpeciesId != parent.SpeciesId
-                        || GetReproductionEnergy(currentParent) <= speciesRules.ReproductionFoodRequired
+                        || !HasReproductionEnergy(currentParent, speciesRules)
                         || speciesRules.ReproductionChance <= 0f)
                     {
                         continue;
@@ -1334,8 +1404,18 @@ namespace SaltyGame
                 return false;
             }
 
-            var consumedEnergy = Math.Min(1f, availableEnergy);
-            next.SetCell(eaterX, eaterY, CreateFedCell(eater, eaterRules, energyValue, consumedEnergy));
+            // A plant's energy value also defines the size of each grazing bite.
+            // With regrowth at one unit per tick, this makes dense grazing
+            // locally self-limiting instead of giving every nearby hare a free
+            // full-energy feed every tick.
+            var consumedEnergy = Math.Min(Math.Max(1, energyValue), availableEnergy);
+            next.SetCell(
+                eaterX,
+                eaterY,
+                CreateFedCell(eater, eaterRules, energyValue, consumedEnergy)
+                    .WithBehaviorState(
+                        SpeciesBehaviorState.Eating,
+                        Math.Max(1, eater.BehaviorStateTicks)));
             metrics?.Record(eater.SpeciesId, foodConsumed: consumedEnergy);
             var remainingEnergy = availableEnergy - consumedEnergy;
             next.SetCell(plantX, plantY, plant.IsTerrainResource
@@ -1402,6 +1482,15 @@ namespace SaltyGame
             return cell.IsCreature
                 ? cell.Energy
                 : (int)(cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve);
+        }
+
+        static bool HasReproductionEnergy(SpeciesCell cell, SpeciesRules rules)
+        {
+            var minimumEnergy = rules.Role == SpeciesRole.Carnivore
+                && rules.MaximumEnergy > 0
+                ? Math.Max(rules.ReproductionFoodRequired, rules.MaximumEnergy / 2)
+                : rules.ReproductionFoodRequired;
+            return GetReproductionEnergy(cell) > minimumEnergy;
         }
 
         static SpeciesCell ConsumeReproductionEnergy(SpeciesCell cell, int amount)
@@ -1513,6 +1602,178 @@ namespace SaltyGame
             }
 
             return indices;
+        }
+    }
+}
+
+namespace SaltyGame
+{
+    /// <summary>
+    /// Chooses a creature's short-term behavior state. It never mutates world
+    /// rules; SpeciesSimulation remains responsible for resolving actions.
+    /// </summary>
+    public static class SpeciesBehaviorSystem
+    {
+        const int SleepAfterIdleTicks = 10;
+        const int SleepDurationTicks = 8;
+
+        public static void Update(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            System.Random random,
+            SpeciesSimulationMetrics metrics = null)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+
+            if (random == null)
+            {
+                throw new ArgumentNullException(nameof(random));
+            }
+
+            if (source.Width != next.Width || source.Height != next.Height)
+            {
+                throw new ArgumentException("The source and next grids must have matching dimensions.", nameof(next));
+            }
+
+            metrics?.BeginBehaviorTracking(source);
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (!cell.IsCreature || !rules.TryGetValue(cell.SpeciesId, out var speciesRules))
+                    {
+                        continue;
+                    }
+
+                    var state = ChooseState(source, x, y, cell, speciesRules, rules, random);
+                    var transitioned = state != cell.BehaviorState;
+                    var stateTicks = !transitioned
+                        ? cell.BehaviorStateTicks + 1
+                        : 1;
+                    if (transitioned && metrics != null && metrics.IsTrackedBehaviorCell(cell.SpeciesId, x, y))
+                    {
+                        metrics.RecordTrackedTransition(
+                            cell.SpeciesId,
+                            cell.EntityId,
+                            cell.Age,
+                            x,
+                            y,
+                            cell.BehaviorState,
+                            state);
+                        Debug.Log(
+                            $"[FSM][Tracked] {SpeciesSimulation.FormatTrackedEntityId(cell.SpeciesId, cell.EntityId)} age {cell.Age} at ({x},{y}) "
+                            + $"Previous: {cell.BehaviorState}, Current: {state}");
+                    }
+                    next.SetCell(x, y, next.GetCell(x, y).WithBehaviorState(state, stateTicks));
+                    metrics?.RecordState(cell.SpeciesId, state, transitioned);
+                }
+            }
+        }
+
+        static SpeciesBehaviorState ChooseState(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules speciesRules,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            System.Random random)
+        {
+            if (SpeciesPerception.TryFindThreatTarget(
+                    cells,
+                    x,
+                    y,
+                    cell.SpeciesId,
+                    rules,
+                    random,
+                    out _))
+            {
+                return SpeciesBehaviorState.Fleeing;
+            }
+
+            if (cell.BehaviorState == SpeciesBehaviorState.Sleeping
+                && cell.BehaviorStateTicks < SleepDurationTicks)
+            {
+                return SpeciesBehaviorState.Sleeping;
+            }
+
+            if (ShouldForage(cell, speciesRules)
+                && SpeciesPerception.TryFindFoodTarget(
+                    cells,
+                    x,
+                    y,
+                    speciesRules,
+                    random,
+                    out var food))
+            {
+                return IsAdjacent(x, y, food.Location)
+                    ? food.Cell.IsCreature
+                        ? SpeciesBehaviorState.Attacking
+                        : SpeciesBehaviorState.Eating
+                    : SpeciesBehaviorState.Hunting;
+            }
+
+            if (speciesRules.ReproductionChance > 0f
+                && HasReproductionEnergy(cell, speciesRules)
+                && SpeciesPerception.TryFindMateTarget(
+                    cells,
+                    x,
+                    y,
+                    cell.SpeciesId,
+                    speciesRules,
+                    random,
+                    out _))
+            {
+                return SpeciesBehaviorState.Mating;
+            }
+
+            if (cell.BehaviorState == SpeciesBehaviorState.Fleeing)
+            {
+                return SpeciesBehaviorState.Wandering;
+            }
+
+            if (cell.BehaviorState == SpeciesBehaviorState.Wandering
+                && cell.BehaviorStateTicks >= SleepAfterIdleTicks
+                && random.NextDouble() < 0.02d)
+            {
+                return SpeciesBehaviorState.Sleeping;
+            }
+
+            return SpeciesBehaviorState.Wandering;
+        }
+
+        static bool HasReproductionEnergy(SpeciesCell cell, SpeciesRules rules)
+        {
+            var minimumEnergy = rules.Role == SpeciesRole.Carnivore
+                && rules.MaximumEnergy > 0
+                ? Math.Max(rules.ReproductionFoodRequired, rules.MaximumEnergy / 2)
+                : rules.ReproductionFoodRequired;
+            return cell.Energy > minimumEnergy;
+        }
+
+        static bool ShouldForage(SpeciesCell cell, SpeciesRules rules)
+        {
+            return rules.DietTargetId.HasValue && cell.Energy <= rules.ForageBelowEnergy;
+        }
+
+        static bool IsAdjacent(int x, int y, Vector2Int target)
+        {
+            return Math.Max(Math.Abs(target.x - x), Math.Abs(target.y - y)) <= 1;
         }
     }
 }

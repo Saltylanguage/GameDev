@@ -31,6 +31,18 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CreatureEntityIdsAreUniqueAndSurviveStateUpdates()
+        {
+            var first = new SpeciesCell(SpeciesIds.Herbivore);
+            var second = new SpeciesCell(SpeciesIds.Herbivore);
+
+            Assert.That(first.EntityId, Is.GreaterThan(0));
+            Assert.That(second.EntityId, Is.Not.EqualTo(first.EntityId));
+            Assert.That(first.WithBehaviorState(SpeciesBehaviorState.Hunting).EntityId, Is.EqualTo(first.EntityId));
+            Assert.That(SpeciesCell.Empty.EntityId, Is.EqualTo(0));
+        }
+
+        [Test]
         public void TerrainDefinitionsRetainSlowerPassableTerrainData()
         {
             var sand = new TerrainDefinition(
@@ -498,6 +510,7 @@ namespace SaltyGame.Tests
             var source = new Grid<SpeciesCell>(3, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
             source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var parentId = source.GetCell(0, 0).EntityId;
             var reproductionPattern = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
             var carnivoreRules = new SpeciesRules(
                 movementSpeed: 0f,
@@ -541,6 +554,7 @@ namespace SaltyGame.Tests
             Assert.That(offspring.IsAlpha, Is.True);
             Assert.That(offspring.Health, Is.EqualTo(3));
             Assert.That(offspring.Energy, Is.EqualTo(5));
+            Assert.That(offspring.EntityId, Is.Not.EqualTo(parentId));
             Assert.That(data.WithoutAlphaOffspringRule(SpeciesIds.Carnivore).Fingerprint,
                 Is.Not.EqualTo(data.Fingerprint));
         }
@@ -1534,6 +1548,233 @@ namespace SaltyGame.Tests
             }
 
             Assert.Fail($"Field '{name}' was not found on {target.GetType().Name}.");
+        }
+    }
+}
+
+namespace SaltyGame.Tests
+{
+    [TestFixture]
+    public sealed class SpeciesBehaviorTests
+    {
+        [Test]
+        public void BehaviorSystemChoosesEatingForAdjacentFood()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(
+                SpeciesIds.Herbivore,
+                energy: 6,
+                age: 0));
+            source.SetCell(1, 0, SpeciesCell.Grass(8f));
+            var next = source.Copy();
+            var metrics = new SpeciesSimulationMetrics();
+
+            SpeciesBehaviorSystem.Update(
+                source,
+                next,
+                rules,
+                new System.Random(7),
+                metrics);
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Eating));
+            Assert.That(metrics.GetStateTicks(SpeciesIds.Herbivore, SpeciesBehaviorState.Eating), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void DeadStateIsRecordedBeforeStarvedCreatureIsRemoved()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 1));
+            var metrics = new SpeciesSimulationMetrics();
+
+            var next = SpeciesSimulation.Step(
+                source,
+                SpeciesRuleDefaults.Create(),
+                seed: 11,
+                metrics: metrics);
+
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(metrics.GetStateTicks(SpeciesIds.Herbivore, SpeciesBehaviorState.Dead), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ExplicitStartingPopulationRemainsStableAcrossSeeds()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var probabilities = new Dictionary<SpeciesId, float>
+            {
+                [SpeciesIds.Plant] = 0f,
+                [SpeciesIds.Herbivore] = 0f,
+                [SpeciesIds.Carnivore] = 0f,
+            };
+            var startingPopulations = new Dictionary<SpeciesId, int>
+            {
+                [SpeciesIds.Herbivore] = 2,
+                [SpeciesIds.Carnivore] = 1,
+            };
+            var data = new CellularSimData(
+                8,
+                8,
+                probabilities,
+                rules,
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f,
+                startingPopulations: startingPopulations);
+
+            foreach (var seed in new[] { 1, 2, 3, 4 })
+            {
+                var grid = SpeciesInitialGridFactory.Create(data, seed);
+                var snapshot = SpeciesPopulationSnapshot.Create(grid, 0);
+                Assert.That(snapshot.GetCount(SpeciesIds.Herbivore), Is.EqualTo(2));
+                Assert.That(snapshot.GetCount(SpeciesIds.Carnivore), Is.EqualTo(1));
+            }
+        }
+
+        [Test]
+        public void SimulationTestHarnessReportsExpectedInitialPopulation()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var probabilities = new Dictionary<SpeciesId, float>
+            {
+                [SpeciesIds.Plant] = 0.5f,
+                [SpeciesIds.Herbivore] = 0f,
+                [SpeciesIds.Carnivore] = 0f,
+            };
+            var startingPopulations = new Dictionary<SpeciesId, int>
+            {
+                [SpeciesIds.Herbivore] = 1,
+            };
+            var data = new CellularSimData(
+                8,
+                8,
+                probabilities,
+                rules,
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f,
+                startingPopulations: startingPopulations);
+            var testCase = new SimulationTestCase(
+                "explicit starting population",
+                data,
+                SpeciesIds.Herbivore,
+                seedStart: 10,
+                seedCount: 2,
+                new SimulationTestCriteria(
+                    expectedInitialPlayerPopulation: 1,
+                    minimumPlayerStateTransitions: 0));
+
+            var report = SimulationTestHarness.Run(testCase);
+
+            Assert.That(report.Runs, Has.Count.EqualTo(2));
+            Assert.That(report.Runs[0].InitialPlayerPopulation, Is.EqualTo(1));
+            Assert.That(report.Runs[1].InitialPlayerPopulation, Is.EqualTo(1));
+            Assert.That(report.Failures, Is.Empty);
+        }
+
+        [Test]
+        public void BehaviorSystemChoosesHuntingForVisibleFood()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 6));
+            source.SetCell(2, 0, SpeciesCell.Grass(8f));
+
+            var next = source.Copy();
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(4));
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Hunting));
+        }
+
+        [Test]
+        public void BehaviorSystemChoosesAttackingForAdjacentPrey()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 6));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 6));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(5));
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Attacking));
+        }
+
+        [Test]
+        public void BehaviorSystemChoosesFleeingWhenThreatIsVisible()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 6));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 6));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(6));
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Fleeing));
+        }
+
+        [Test]
+        public void BehaviorSystemChoosesMatingForAnEnergizedPair()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 17));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 17));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(7));
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+        }
+
+        [Test]
+        public void SleepingStatePersistsForItsConfiguredDuration()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(
+                0,
+                0,
+                new SpeciesCell(SpeciesIds.Herbivore, energy: 17)
+                    .WithBehaviorState(SpeciesBehaviorState.Sleeping, ticks: 1));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(8));
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Sleeping));
+            Assert.That(next.GetCell(0, 0).BehaviorStateTicks, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void MovementPreservesBehaviorState()
+        {
+            var movement = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: movement,
+                    attackPattern: movement,
+                    attackAmount: 0,
+                    blockPattern: movement,
+                    blockAmount: 0,
+                    dietPattern: movement,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new Vector2Int[0]),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    role: SpeciesRole.Herbivore),
+            };
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 1));
+            var entityId = source.GetCell(0, 0).EntityId;
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 9);
+
+            Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(1, 0).EntityId, Is.EqualTo(entityId));
+            Assert.That(next.GetCell(1, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Wandering));
+            Assert.That(next.GetCell(1, 0).BehaviorStateTicks, Is.EqualTo(1));
         }
     }
 }

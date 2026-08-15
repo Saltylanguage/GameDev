@@ -8,6 +8,7 @@ namespace SaltyGame
     {
         readonly IReadOnlyDictionary<SpeciesId, float> startingProbabilities;
         readonly IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
+        readonly IReadOnlyDictionary<SpeciesId, int> startingPopulations;
         readonly IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions;
         readonly IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules;
 
@@ -21,7 +22,8 @@ namespace SaltyGame
             int maxPopulation = 0,
             int minPopulation = 0,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
-            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null)
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
+            IReadOnlyDictionary<SpeciesId, int> startingPopulations = null)
         {
             if (width <= 0)
             {
@@ -115,6 +117,50 @@ namespace SaltyGame
                 }
             }
 
+            var copiedStartingPopulations = new Dictionary<SpeciesId, int>();
+            if (startingPopulations != null)
+            {
+                foreach (var entry in startingPopulations)
+                {
+                    if (!copiedRules.ContainsKey(entry.Key))
+                    {
+                        throw new ArgumentException(
+                            $"Starting population is configured for undefined species {entry.Key}.",
+                            nameof(startingPopulations));
+                    }
+
+                    if (entry.Value < 0)
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            nameof(startingPopulations),
+                            entry.Value,
+                            "Starting populations cannot be negative.");
+                    }
+
+                    copiedStartingPopulations.Add(entry.Key, entry.Value);
+                }
+            }
+
+            var totalStartingPopulation = 0L;
+            foreach (var entry in copiedStartingPopulations)
+            {
+                totalStartingPopulation += entry.Value;
+            }
+
+            if (totalStartingPopulation > (long)width * height)
+            {
+                throw new ArgumentException(
+                    "Configured starting populations cannot exceed the grid capacity.",
+                    nameof(startingPopulations));
+            }
+
+            if (maxPopulation > 0 && totalStartingPopulation > maxPopulation)
+            {
+                throw new ArgumentException(
+                    "Configured starting populations cannot exceed the scenario maximum population.",
+                    nameof(startingPopulations));
+            }
+
             var configuredTerrainDefinitions = terrainDefinitions ?? TerrainDefaults.Create();
             var copiedTerrainDefinitions = new Dictionary<TerrainId, TerrainDefinition>(
                 configuredTerrainDefinitions.Count);
@@ -170,6 +216,7 @@ namespace SaltyGame
             Height = height;
             this.startingProbabilities = new ReadOnlyDictionary<SpeciesId, float>(copiedProbabilities);
             this.speciesRules = new ReadOnlyDictionary<SpeciesId, SpeciesRules>(copiedRules);
+            this.startingPopulations = new ReadOnlyDictionary<SpeciesId, int>(copiedStartingPopulations);
             this.terrainDefinitions = new ReadOnlyDictionary<TerrainId, TerrainDefinition>(copiedTerrainDefinitions);
             this.alphaOffspringRules = new ReadOnlyDictionary<SpeciesId, AlphaOffspringRule>(copiedAlphaOffspringRules);
             RunDurationSeconds = runDurationSeconds;
@@ -235,6 +282,7 @@ namespace SaltyGame
         public int MinPopulation { get; }
         public string Fingerprint { get; }
         public IReadOnlyDictionary<SpeciesId, float> StartingProbabilities => startingProbabilities;
+        public IReadOnlyDictionary<SpeciesId, int> StartingPopulations => startingPopulations;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> SpeciesRules => speciesRules;
         public IReadOnlyDictionary<TerrainId, TerrainDefinition> TerrainDefinitions => terrainDefinitions;
         public IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> AlphaOffspringRules => alphaOffspringRules;
@@ -253,7 +301,7 @@ namespace SaltyGame
 
             var updatedRules = Copy(speciesRules);
             updatedRules[species] = rules;
-            return CreateUpdated(startingProbabilities, updatedRules, alphaOffspringRules);
+            return CreateUpdated(startingProbabilities, updatedRules, alphaOffspringRules, startingPopulations);
         }
 
         public CellularSimData WithSpecies(
@@ -270,7 +318,7 @@ namespace SaltyGame
             updatedRules[species] = rules;
             var updatedProbabilities = Copy(startingProbabilities);
             updatedProbabilities[species] = startingProbability;
-            return CreateUpdated(updatedProbabilities, updatedRules, alphaOffspringRules);
+            return CreateUpdated(updatedProbabilities, updatedRules, alphaOffspringRules, startingPopulations);
         }
 
         public CellularSimData WithoutSpecies(SpeciesId species)
@@ -285,7 +333,9 @@ namespace SaltyGame
             updatedProbabilities.Remove(species);
             var updatedAlphaRules = Copy(alphaOffspringRules);
             updatedAlphaRules.Remove(species);
-            return CreateUpdated(updatedProbabilities, updatedRules, updatedAlphaRules);
+            var updatedStartingPopulations = Copy(startingPopulations);
+            updatedStartingPopulations.Remove(species);
+            return CreateUpdated(updatedProbabilities, updatedRules, updatedAlphaRules, updatedStartingPopulations);
         }
 
         public CellularSimData WithStartingProbability(SpeciesId species, float probability)
@@ -298,7 +348,7 @@ namespace SaltyGame
 
             var updatedProbabilities = Copy(startingProbabilities);
             updatedProbabilities[species] = probability;
-            return CreateUpdated(updatedProbabilities, speciesRules, alphaOffspringRules);
+            return CreateUpdated(updatedProbabilities, speciesRules, alphaOffspringRules, startingPopulations);
         }
 
         public CellularSimData WithAlphaOffspringRule(AlphaOffspringRule rule)
@@ -316,26 +366,27 @@ namespace SaltyGame
 
             var updatedAlphaRules = Copy(alphaOffspringRules);
             updatedAlphaRules[rule.Species] = rule;
-            return CreateUpdated(startingProbabilities, speciesRules, updatedAlphaRules);
+            return CreateUpdated(startingProbabilities, speciesRules, updatedAlphaRules, startingPopulations);
         }
 
         public CellularSimData WithoutAlphaOffspringRule(SpeciesId species)
         {
             var updatedAlphaRules = Copy(alphaOffspringRules);
             return updatedAlphaRules.Remove(species)
-                ? CreateUpdated(startingProbabilities, speciesRules, updatedAlphaRules)
+                ? CreateUpdated(startingProbabilities, speciesRules, updatedAlphaRules, startingPopulations)
                 : this;
         }
 
         public CellularSimData Copy()
         {
-            return CreateUpdated(startingProbabilities, speciesRules, alphaOffspringRules);
+            return CreateUpdated(startingProbabilities, speciesRules, alphaOffspringRules, startingPopulations);
         }
 
         CellularSimData CreateUpdated(
             IReadOnlyDictionary<SpeciesId, float> updatedProbabilities,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> updatedRules,
-            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> updatedAlphaOffspringRules)
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> updatedAlphaOffspringRules,
+            IReadOnlyDictionary<SpeciesId, int> updatedStartingPopulations)
         {
             return new CellularSimData(
                 Width,
@@ -347,7 +398,8 @@ namespace SaltyGame
                 MaxPopulation,
                 MinPopulation,
                 terrainDefinitions,
-                updatedAlphaOffspringRules);
+                updatedAlphaOffspringRules,
+                updatedStartingPopulations);
         }
 
         static Dictionary<SpeciesId, TValue> Copy<TValue>(

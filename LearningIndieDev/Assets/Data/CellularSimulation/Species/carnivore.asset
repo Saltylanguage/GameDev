@@ -55,18 +55,18 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 1
-  reproductionChance: 0.5
+  reproductionChance: 0.03
   reproductionFoodRequired: 16
   maxReproductionGroupSize: 3
   startingEnergy: 48
-  forageBelowEnergy: 48
+  forageBelowEnergy: 16
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0
   seedDropChance: 0
   energyValue: 12
   metabolism: 1
-  visionRange: 6
+  visionRange: 4
   intelligence: 1
   maximumEnergy: 96
   litterMinimum: 1

@@ -12,7 +12,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 1;
+        const int ReportSchemaVersion = 3;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -66,6 +66,8 @@ namespace SaltyGame.EditorTools
                 finalPlayerPopulation = SimulationRunResults.Create(run).PlayerPopulation,
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
+                behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
+                behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
             };
         }
 
@@ -96,18 +98,48 @@ namespace SaltyGame.EditorTools
             builder.AppendLine();
             builder.AppendLine("## Activity");
             builder.AppendLine();
-            builder.AppendLine("| Species | Births | Food | Movement | Kills | Deaths | Starvation |");
-            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|");
+            builder.AppendLine("| Species | Births | Food | Movement | Kills | Deaths | Starvation | State transitions |");
+            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|");
             for (var index = 0; index < report.activity.Length; index++)
             {
                 var entry = report.activity[index];
                 builder.AppendLine(
                     $"| {entry.speciesId} | {entry.births} | {entry.foodConsumed:0.###} | "
-                    + $"{entry.movementSteps} | {entry.combatKills} | {entry.deaths} | {entry.starvationDeaths} |");
+                    + $"{entry.movementSteps} | {entry.combatKills} | {entry.deaths} | {entry.starvationDeaths} | "
+                    + $"{entry.stateTransitions} |");
             }
 
             builder.AppendLine();
-            builder.AppendLine("The JSON file beside this report contains the full per-tick population history.");
+            builder.AppendLine("## Behavior states");
+            builder.AppendLine();
+            builder.AppendLine("| Species | State | Ticks |");
+            builder.AppendLine("|---|---|---:|");
+            for (var index = 0; index < report.behavior.Length; index++)
+            {
+                var entry = report.behavior[index];
+                if (entry.ticks == 0)
+                {
+                    continue;
+                }
+
+                builder.AppendLine($"| {entry.speciesId} | {entry.state} | {entry.ticks} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("## Tracked FSM transitions");
+            builder.AppendLine();
+            builder.AppendLine("| Species | Entity | Age | Position | Previous | Current |");
+            builder.AppendLine("|---|---:|---:|---|---|---|");
+            for (var index = 0; index < report.behaviorTransitions.Length; index++)
+            {
+                var entry = report.behaviorTransitions[index];
+                builder.AppendLine(
+                    $"| {entry.speciesId} | {entry.entityId} | {entry.age} | ({entry.x},{entry.y}) | "
+                    + $"{entry.previousState} | {entry.currentState} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("The JSON file beside this report contains the full per-tick population history and tracked entity transitions.");
             return builder.ToString();
         }
 
@@ -128,6 +160,8 @@ namespace SaltyGame.EditorTools
             public int finalPlayerPopulation;
             public SimulationPopulationSnapshotRecord[] populationHistory;
             public SimulationSpeciesActivityRecord[] activity;
+            public SimulationSpeciesBehaviorRecord[] behavior;
+            public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
         }
     }
 }
