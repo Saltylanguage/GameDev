@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.1  
+**Version:** 1.2  
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -39,6 +39,62 @@ enthusiasm.
 
 The broader predictive change-impact direction is captured in the companion
 [Predictive Change Impact Analysis Research Brief](CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md).
+
+## Canonical program model
+
+This document is the canonical source of truth for the research program. The
+source readings, change-impact brief, experiment packages, reports, analyses,
+and templates linked from it are supporting records; they should not introduce
+an independent protocol or contradict a decision recorded here.
+
+The current operating model extends the five-stage evidence chain into a
+repeatable knowledge loop:
+
+```text
+Experiment
+    -> Run
+    -> Report
+    -> Analysis
+    -> Evidence dataset
+    -> Candidate change-impact prediction
+    -> Range/intervention validation
+    -> Human Decision
+    -> accepted or rejected knowledge
+    -> next bounded Experiment
+```
+
+The dataset is not a replacement for the original artifacts. It is a derived,
+lineage-preserving index that lets humans and AI compare reports, accumulate
+patterns, and generate new testable hypotheses. A prediction may become more
+trusted through replicated validation and human confirmation, but no model
+should silently rewrite the evidence, the acceptance criteria, or the human
+design intent.
+
+## Current research synthesis
+
+The initial change-impact reading pass supports the following working rules:
+
+- Keep structural dependencies, historical couplings, runtime deltas,
+  sensitivity results, and human design interpretation as separate evidence
+  layers.
+- Define impact ground truth before measuring prediction: output, tolerance,
+  time window, and comparison scope.
+- Return **Not currently testable** for unsupported concepts and
+  **Underdetermined** when instrumentation or coverage cannot distinguish
+  plausible outcomes.
+- Use staged budgets: broad screening, paired intervention runs, then joint
+  designs or metamodels when interaction questions justify them.
+- Track freshness against build, ruleset, telemetry schema, scenario, input
+  coverage, and evidence date; stale findings require revalidation.
+- Measure false positives as well as false negatives. A noisy report can be as
+  harmful as a missed impact if it creates false confidence or review burden.
+- Keep model prediction separate from judgments about fun, balance, quality,
+  agency, or commercial value.
+- Treat determinism as an experimental advantage, not proof: coverage and
+  held-out validation still determine whether a prediction earns promotion.
+
+The article-specific evidence, limitations, and deductions remain in [Change
+Impact Analysis Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md).
 
 ## What makes the opportunity interesting
 
@@ -226,6 +282,25 @@ Archive
 Only the human decision can promote a rule, upgrade, event, telemetry change,
 or workflow change. AI must not self-promote its own recommendation.
 
+#### Minimal decision record
+
+Human review should remain concise enough that it is consistently completed.
+The minimum record is:
+
+```text
+Decision: Accept | Reject | Revise and rerun | Inconclusive | Promote | Archive
+Key Observation: one sentence describing the decisive human observation
+Evidence References: report, analysis, replay, or playtest IDs
+Scope: what the decision does and does not authorize
+```
+
+Optional reviewer, date, follow-up, expiry, and decision-authority metadata may
+be added when useful. `Key Observation` replaces a free-form rationale: it is a
+human signal for later analysis, not a substitute for the underlying evidence.
+Accepted and rejected decisions are valuable labels for future study, but a
+human decision is a governance gate. It can veto promotion or action without
+pretending that the empirical result itself is false.
+
 ## Predictive change-impact and intervention contract
 
 The long-term research target is not an assistant that merely sounds confident
@@ -261,6 +336,8 @@ This layer is derived from controlled runs and may state:
 - Evidence IDs, report paths, and replay or test candidates.
 - Whether the claim is correlational, mechanistically supported, or causally
   supported by a follow-up intervention.
+- Whether the relationship is range-invariant, regime-dependent, or unresolved
+  across the requested feasible range.
 
 ### Layer B - Human-owned interpretation
 
@@ -276,14 +353,15 @@ commercially acceptable.
 Change-impact ID
 Change request and intervention
 Baseline and comparison scope
-Feature type, model component, and supported range
+Feature type, model component, and validated range coverage
 Outcome type, metric, and time window
 Effect size and outcome distribution
 Held-out validation evidence
 Direct dependency and affected-artifact set
 Confidence and calibration status
 Supported / Not currently testable / Underdetermined
-Out-of-range warning
+Range status: Range-invariant / Regime-dependent / Unresolved
+Coverage or out-of-distribution warning, when applicable
 Human threshold and severity rubric, if applicable
 Evidence IDs and replay/test candidates
 Human decision and follow-up
@@ -305,15 +383,18 @@ The following is a generalized form, not an unverified claim about the current
 simulation:
 
 > Under baseline B, applying intervention I changes outcome O over time window
-> T by effect E across N held-out runs. The result is valid only within range R,
-> has confidence C, and crosses threshold Q under rubric version V. Any outcome
-> outside R is out-of-distribution. If the requested feature is absent from the
-> model, the result must instead say **Not currently testable** and identify the
-> required model extension.
+> T by effect E across N held-out runs. Across the requested feasible range the
+> relationship is **range-invariant**, or the report identifies the tested
+> **regimes and thresholds** where the effect changes. Confidence is C and the
+> result crosses threshold Q under rubric version V. If coverage is insufficient
+> to establish either form of generalization, the result is **Unresolved** rather
+> than a high-confidence prediction. If the requested feature is absent from
+> the model, the result must instead say **Not currently testable** and identify
+> the required model extension.
 
-The final report must include the values, sample size, effect, uncertainty, valid
-range, capability state, and evidence links. A severity number without its
-rubric is not a research result.
+The final report must include the values, sample size, effect, uncertainty,
+tested range coverage, range status, capability state, and evidence links. A
+severity number without its rubric is not a research result.
 
 ### Confidence and severity rules
 
@@ -325,9 +406,16 @@ rubric is not a research result.
 - The initial severity rubric should consider population damage, likelihood,
   persistence, player recovery options, impact on meaningful choices, and
   reversibility.
-- Findings outside the observed parameter or scenario range must be marked
-  out-of-distribution and should trigger a new experiment rather than silent
-  extrapolation.
+- Range generalization is a validation gate, not a permanent excuse for a
+  narrow prediction. A high-accuracy prediction should replicate across the
+  requested feasible range, aside from statistical outliers.
+- A systematic threshold, phase transition, or other contiguous behavior
+  change is not an outlier. Report it as a regime-dependent, piecewise
+  prediction with the boundary and uncertainty.
+- If the requested range has not been covered well enough to distinguish
+  range-invariant behavior from regime dependence, mark the result
+  **Unresolved** and run the missing coverage before making a high-confidence
+  statement. Do not silently extrapolate.
 
 The following is a proposed starting rubric and remains subject to human design
 approval and later calibration:
@@ -339,6 +427,35 @@ approval and later calibration:
 | 3/5 | Significant effect; a strategy, species, or pacing target is impaired but recoverable. |
 | 4/5 | Major effect; a viable strategy is frequently invalidated or a cascade is difficult to recover from. |
 | 5/5 | Critical systemic effect; the scenario or intended player agency is effectively destroyed. |
+
+### Causal-status rules
+
+The assistant may use stronger causal language only as the evidence earns it:
+
+| Status | Minimum meaning |
+|---|---|
+| Observed association | Variables move together in the recorded reports; no intervention claim. |
+| Mechanistically consistent | Telemetry and timing fit a proposed mechanism, but alternatives remain. |
+| Causal evidence supported within model scope | A pre-specified intervention, same-seed baseline, replicated runs, and a measurable effect support the proposed mechanism. |
+| Robust causal relationship within validated range | The intervention survives held-out seeds/scenarios and range coverage, with no credible competing explanation in the instrumented model. |
+| Unresolved | Evidence, telemetry, or range coverage cannot distinguish the alternatives. |
+
+These statuses describe the supplied model and instrumented scope only. They do
+not establish a model-independent or real-world law. Multi-variable claims
+require a design that can separate interaction effects (for example, a
+factorial comparison), not merely a simultaneous before/after change.
+
+### Recursive improvement (stretch)
+
+The evidence loop may eventually run recursively: accepted evidence updates a
+prediction registry, the registry proposes the next bounded experiment, and a
+headless job evaluates it on a safe feature branch. This is an optional stretch
+goal, not permission for autonomous production changes. The recursive lane
+requires an isolated branch/sandbox, fixed compute and experiment budgets,
+immutable provenance, rollback, unchanged human-owned criteria, and an explicit
+human decision before any promotion. Early iterations should be described as
+updating or calibrating the impact model; “training” is only appropriate once a
+separate model-training design has been approved.
 
 ## Experimental design rules
 
@@ -391,8 +508,8 @@ AI must not, without explicit human approval:
 - Modify the baseline after seeing the result.
 - Choose the success criteria after the experiment runs.
 - Treat a correlation as a proven cause.
-- Treat a result outside its tested range as a valid prediction without an
-  out-of-distribution warning.
+- Present an unresolved or regime-dependent range result as a single
+  range-invariant prediction.
 - Declare that a change is balanced or engaging solely from simulation output.
 - Assign an unexplained severity score or use confidence language as a
   substitute for replication and calibration.
@@ -463,9 +580,9 @@ initial example may use fox speed and fox reproduction, but the experiment
 contract must remain domain-neutral: the same method should work for any
 supported feature and output. Measure the requested outcome over a named time
 window, preserve direct dependency and affected-artifact evidence, and reserve
-seeds or a second scenario for validation. Include capability state,
-out-of-range warnings, uncertainty, and a severity score only after applying an
-approved human rubric.
+seeds or a second scenario for validation. Include capability state, range
+status, causal status, coverage warnings, and uncertainty. Add a severity score
+only after applying an approved human rubric.
 
 **Success:** The assistant predicts the direction and approximate regime of the
 effect on held-out runs, reports uncertainty and limits, rejects unsupported
@@ -585,6 +702,23 @@ portfolio grows. Generated run artifacts remain under the existing ignored
 `artifacts/` path. Accepted findings should link to the relevant roadmap item,
 design document, code change, and report bundle.
 
+The derived knowledge store should keep these layers separate and traceable:
+
+1. **Raw evidence:** immutable run outputs and factual reports.
+2. **Normalized evidence:** comparable metrics, events, fingerprints, and
+   feature/outcome records extracted from reports.
+3. **Analysis:** AI or human interpretations, with model/prompt/version
+   provenance and explicit uncertainty.
+4. **Prediction registry:** candidate and validated change-impact records,
+   including range status, causal status, calibration, and freshness.
+5. **Human decision ledger:** compact decisions and `Key Observation` entries,
+   linked to the evidence they reviewed.
+
+Derived layers may be rebuilt, but must never replace the source artifacts.
+Every record needs lineage to its parent IDs, schema/version metadata, and a
+clear stale or superseded state when the model, telemetry, or acceptance
+criteria change.
+
 Every research bundle should preserve:
 
 - The original hypothesis and success criteria.
@@ -593,8 +727,8 @@ Every research bundle should preserve:
 - Raw machine-readable outputs.
 - Human-readable report.
 - AI analysis version and provenance.
-- Change-impact records with valid ranges, uncertainty, calibration status, and
-  held-out validation evidence.
+- Change-impact records with tested range coverage, range status, uncertainty,
+  causal status, calibration status, and held-out validation evidence.
 - Design thresholds and severity rubric version used for interpretation.
 - Human decision and follow-up action.
 
@@ -606,7 +740,9 @@ Every research bundle should preserve:
 | Fixed seeds hide real variation | Use explicit seed ranges and boundary/replay cases |
 | Correlation is mistaken for an impact or cause | Use factorial sweeps, controlled interventions, and held-out validation |
 | A regime change is hidden by averages | Record distributions, thresholds, and spatial metrics |
-| The assistant extrapolates beyond known data | Require valid-range metadata and out-of-distribution warnings |
+| The assistant overgeneralizes across a range | Require range-coverage metadata; distinguish range-invariant, regime-dependent, and unresolved results |
+| A model or telemetry change invalidates old predictions | Fingerprint the model/schema and mark affected records stale until revalidated |
+| Human decisions become untraceable labels | Store a compact decision, one-sentence Key Observation, scope, and evidence references |
 | Severity appears precise but has no shared meaning | Version a human-owned severity rubric and calibrate it against review |
 | Balance or engagement is inferred from ecology alone | Separate ecological claims from design thresholds and playtests |
 | Telemetry becomes noisy or expensive | Add fields only for a named question; measure report usefulness |
@@ -617,6 +753,17 @@ Every research bundle should preserve:
 | Players see diagnostics instead of a game | Translate accepted findings into readable feedback and choices |
 
 ## First execution plan
+
+### Current program state
+
+- The initial source-reading pass for change-impact analysis is captured in
+  [Change Impact Analysis Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md).
+- The EX-001 package contains a matching historical report pair, but the
+  current-code rerun and replay gate remain open.
+- EX-002 (herbivore collapse attribution) remains the next experiment after
+  the EX-001 human decision; it has not been started.
+- CIA-001 and EX-007 remain proposed research work, not validated predictive
+  capability.
 
 The first research package should be small enough to complete without blocking
 the current production lane:
@@ -630,11 +777,6 @@ the current production lane:
    experiment.
 7. Create EX-002 only after EX-001's reproducibility gate is understood.
 
-The current EX-001 package contains a matching historical report pair, but its
-current-code rerun and replay gate remain open. Do not treat the historical pair
-as permission to make interaction or balance claims until the current-code
-decision is recorded.
-
 This first package should avoid new simulation mechanics, generalized AI
 frameworks, dashboards, or autonomous code changes. It is a trust-building
 experiment for the evidence spine.
@@ -645,8 +787,10 @@ Research findings may be promoted to production only when:
 
 - The result has a reproducible run or a documented reason it cannot be.
 - The report and analysis are complete.
-- Any change-impact claim has a stated valid range, uncertainty, capability
-  state, and held-out validation evidence.
+- Any change-impact claim has tested range coverage, a range status, uncertainty,
+  capability state, causal status, and held-out validation evidence. A
+  range-invariant claim must demonstrate replication across the requested
+  feasible range; otherwise it must be regime-dependent or unresolved.
 - A human decision owner accepts the finding.
 - The change has a bounded implementation scope.
 - A follow-up test or playtest is named.
@@ -687,3 +831,4 @@ rule.
 |---|---|---|
 | 1.0 | 2026-08-15 | Initial research program and experiment protocol. |
 | 1.1 | 2026-08-15 | Added generalized predictive change impact, calibrated risk statements, capability gates, and EX-007. |
+| 1.2 | 2026-08-15 | Consolidated the evidence-to-prediction loop, human decision record, causal/range validation policy, recursive stretch guardrails, and current program state. |

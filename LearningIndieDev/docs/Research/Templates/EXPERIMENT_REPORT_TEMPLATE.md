@@ -58,4 +58,7 @@ canonical normalized hash was calculated. Never omit unexplained differences.
 **Decision:** Pending  
 **Owner:**  
 **Date:**  
+**Key Observation:** One sentence describing the decisive human observation.  
+**Evidence References:**  
+**Scope:** What this decision does and does not authorize.  
 **Follow-up:**

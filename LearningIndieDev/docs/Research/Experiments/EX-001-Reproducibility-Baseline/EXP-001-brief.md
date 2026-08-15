@@ -5,7 +5,7 @@
 scenario asset, ruleset fingerprint, and run configuration?  
 **Stage:** Instrument trust  
 **Decision owner:** Human design owner  
-**Status:** Provisional evidence captured; fresh current-code execution pending
+**Status:** Accepted current-code baseline; current authored configuration recorded
 
 ## Hypothesis
 
@@ -22,14 +22,15 @@ including population histories and final summaries.
 | Player species | `hare` |
 | Seed start | `10100` |
 | Seed count | `20` (`10100` through `10119`) |
-| Grid | `32 x 20` |
+| Grid | `32 x 32` |
 | Duration | `20.0` seconds |
 | Step interval | `0.10000000149011612` seconds |
 | Expected ruleset fingerprint for captured pair | `90efffe28fbfb7d65573e03e8f206c7d34c32c41422995970174d884a078f93f` |
 
-The captured pair predates the current runner schema. A fresh execution must
-record the current schema and fingerprint rather than assuming the values above
-remain current.
+The archived schema-2 pair predates the current authored ForestEdge scenario and
+recorded a 32 x 20 grid. The current experiment source of truth is the authored
+scenario asset, which defines 32 x 32; current reports and replays must record
+that value and the current schema/fingerprint.
 
 ## Run protocol
 

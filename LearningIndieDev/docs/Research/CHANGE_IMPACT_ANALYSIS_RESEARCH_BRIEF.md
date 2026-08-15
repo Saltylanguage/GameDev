@@ -1,9 +1,16 @@
 # Predictive Change Impact Analysis - Research Brief
 
 **Status:** Exploratory research brief  
-**Version:** 1.0  
+**Version:** 1.1  
 **Created:** 2026-08-15  
 **Relationship to the ecology lab plan:** Proposed adjacent capability; not yet an approved implementation project
+
+The [AI-Assisted Ecology Laboratory Research Plan](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md)
+is canonical. This brief preserves the focused change-impact research question,
+literature signals, and CIA-001 proposal; it does not define a separate
+protocol.
+
+The first source pass is logged in [Predictive Change Impact Analysis - Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md), with each article kept separate from project-level deductions.
 
 ## Scope correction
 
@@ -92,13 +99,14 @@ Every prediction should preserve:
 - Change-impact ID.
 - Natural-language request and executable intervention.
 - Baseline, comparison scope, and controlled variables.
-- Feature type, model component, and supported range.
+- Feature type, model component, and tested range coverage.
 - Outcome type, metric, and time window.
 - Direct dependencies and affected artifacts.
 - Effect size, distribution, and uncertainty.
 - Seed/scenario/build coverage and held-out validation.
 - Confidence and calibration status.
-- Out-of-range or unsupported-feature warnings.
+- Range status (range-invariant, regime-dependent, or unresolved), plus
+  coverage/out-of-distribution or unsupported-feature warnings where applicable.
 - Human thresholds and severity rubric, if applicable.
 - Evidence IDs, replay/test candidates, and human decision.
 
@@ -125,8 +133,10 @@ ecological answer.
 ### General output statement
 
 > Under baseline B, intervention I changes outcome O over time window T by
-> effect E across N held-out runs. The result is valid only within range R, has
-> confidence C, and crosses threshold Q under rubric V.
+> effect E across N held-out runs. Across the requested feasible range the
+> relationship is range-invariant, or the report identifies the regimes and
+> thresholds where the effect changes. Confidence is C and it crosses threshold
+> Q under rubric V; insufficient coverage is reported as unresolved.
 
 ## Research questions
 
@@ -158,8 +168,8 @@ two-variable change. For each:
 4. Use a small sensitivity/interaction search only if the paired result is
    insufficient to explain the change.
 5. Hold out seeds or a scenario for validation.
-6. Produce a change-impact report with capability state, uncertainty, valid
-   range, and evidence links.
+6. Produce a change-impact report with capability state, uncertainty, tested
+   range coverage/status, causal status, and evidence links.
 7. Record a human decision before changing production design or model code.
 
 This study should begin only after EX-001's current-code reproducibility and
@@ -174,8 +184,11 @@ example proves generality.
   claim about fun, balance, safety, or commercial value.
 - An unsupported variable is a model-design question, not an invitation to
   hallucinate a result.
-- Results outside the tested range require an out-of-distribution warning and a
-  new experiment.
+- Range generalization is a validation gate. A high-accuracy result should
+  replicate across the requested feasible range, aside from statistical
+  outliers. Systematic thresholds are regime changes, not outliers; report
+  them piecewise. Insufficient coverage is unresolved and requires a new
+  experiment before a high-confidence claim.
 - AI may propose and analyze; a human approves model extensions, thresholds,
   design decisions, and promotion.
 
@@ -191,3 +204,4 @@ example proves generality.
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-08-15 | Initial scope correction and literature-oriented research brief. |
+| 1.1 | 2026-08-15 | Aligned the supporting brief with the canonical plan's range-generalization and causal-status policy. |

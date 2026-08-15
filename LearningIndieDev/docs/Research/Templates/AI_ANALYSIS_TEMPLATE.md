@@ -50,5 +50,7 @@ require a human decision and a bounded follow-up test.
 **Decision:** Pending  
 **Owner:**  
 **Date:**  
-**Rationale:**  
+**Key Observation:** One sentence describing the decisive human observation.  
+**Evidence References:**  
+**Scope:** What this decision does and does not authorize.  
 **Follow-up experiment or implementation:**

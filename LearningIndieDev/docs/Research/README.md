@@ -7,10 +7,22 @@ Research documents are not automatically approved implementation work. Each
 program must identify its question, evidence protocol, decision owner, and
 promotion gate before it becomes a production commitment.
 
-## Programs
+## Canonical program document
 
-- [AI-Assisted Ecology Laboratory Research Plan](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md)
-- [Predictive Change Impact Analysis Research Brief](CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md)
+Use the [AI-Assisted Ecology Laboratory Research Plan](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md)
+as the single source of truth for the current thesis, protocol, prediction
+contract, human-decision rules, experiment portfolio, and roadmap. Supporting
+documents should link back here and may provide detail or evidence, but should
+not redefine the program.
+
+## Research paper draft
+
+- [Toward an Auditable AI-Assisted Ecology Laboratory](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md) - working paper grounded in the current implementation and EX-001 evidence.
+
+## Supporting records
+
+- [Predictive Change Impact Analysis Research Brief](CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md) - focused research brief and open questions.
+- [Change Impact Analysis Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md) - article-by-article notes and deductions.
 
 ## Experiment packages
 

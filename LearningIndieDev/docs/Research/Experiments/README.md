@@ -1,5 +1,9 @@
 # Experiment packages
 
+The [AI-Assisted Ecology Laboratory Research Plan](../AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md)
+is the canonical definition of this protocol. These packages are execution
+records, not a second research plan.
+
 Each package follows the studio evidence protocol:
 
 ```text
