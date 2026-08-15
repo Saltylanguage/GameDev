@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "mode": "alert-only",
+  "rules": [
+    {
+      "id": "destructive-git",
+      "guideline": "SG-002",
+      "severity": "high",
+      "tools": ["Bash"],
+      "patterns": [
+        "\\bgit\\s+reset\\s+--hard\\b",
+        "\\bgit\\s+clean\\s+-[a-z]*f",
+        "\\bgit\\s+checkout\\s+--\\b",
+        "\\bgit\\s+restore\\s+--source\\b",
+        "\\b(?:rm|del)\\s+-?[^\\r\\n]*\\b(?:-r|-rf|/s)\\b",
+        "\\bRemove-Item\\b[^\\r\\n]*\\b(?:-Recurse|-Force)\\b"
+      ],
+      "message": "Destructive Git or filesystem action detected. SG-002 requires a reversible alternative or explicit approval."
+    },
+    {
+      "id": "external-git-side-effect",
+      "guideline": "SG-002",
+      "severity": "high",
+      "tools": ["Bash"],
+      "patterns": [
+        "\\bgit\\s+push\\b",
+        "\\bgit\\s+merge\\b",
+        "\\bgit\\s+branch\\s+-D\\b",
+        "\\bgh\\s+pr\\s+(create|merge)\\b"
+      ],
+      "message": "Shared Git or release-side effect detected. Confirm scope, target, and approval before proceeding."
+    },
+    {
+      "id": "dependency-or-network-change",
+      "guideline": "SG-002",
+      "severity": "medium",
+      "tools": ["Bash"],
+      "patterns": [
+        "\\b(?:npm|pnpm|yarn|pip|dotnet)\\s+(?:install|add)\\b",
+        "\\b(?:winget|choco)\\s+install\\b",
+        "\\b(?:curl|wget|Invoke-WebRequest|git\\s+clone)\\b"
+      ],
+      "message": "Dependency or network activity detected. SG-002 recommends approval and visible dependency/network scope."
+    },
+    {
+      "id": "shared-unity-asset",
+      "guideline": "SG-002",
+      "severity": "medium",
+      "tools": ["Bash", "apply_patch", "Edit", "Write"],
+      "patterns": [
+        "(?:^|[\\s/])Assets/[^\\r\\n]*\\.(?:unity|prefab|asset|inputactions)(?:\\.meta)?\\b",
+        "(?:^|[\\s/])ProjectSettings/"
+      ],
+      "message": "Shared or serialized Unity asset detected. Check ownership, preserve GUIDs and serialized fields, and verify the impact."
+    },
+    {
+      "id": "external-communication",
+      "guideline": "SG-002",
+      "severity": "high",
+      "tools": ["Bash", "mcp__.*"],
+      "patterns": [
+        "\\b(?:send|post|publish|upload|email|slack|trello|discord)\\b",
+        "\\b(?:git\\s+push|gh\\s+pr)\\b"
+      ],
+      "message": "External communication or transmission detected. Confirm destination, content, and user authorization."
+    },
+    {
+      "id": "secret-like-content",
+      "guideline": "SG-002",
+      "severity": "high",
+      "tools": ["Bash", "apply_patch", "Edit", "Write", "mcp__.*"],
+      "patterns": [
+        "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+        "\\b(?:sk|ghp|github_pat|xoxb|AKIA)[A-Za-z0-9_-]{12,}\\b",
+        "\\b(?:OPENAI_API_KEY|AWS_SECRET_ACCESS_KEY|PASSWORD|TOKEN)\\s*=\\s*[^$<{\\s][^\\r\\n]*"
+      ],
+      "message": "Secret-like content detected. Stop and redact credentials before continuing or transmitting data."
+    }
+  ]
+}

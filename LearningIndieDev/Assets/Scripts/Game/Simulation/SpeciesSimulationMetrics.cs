@@ -2,6 +2,47 @@ using System.Collections.Generic;
 
 namespace SaltyGame
 {
+    public enum SpeciesBehaviorState
+    {
+        Wandering,
+        Hunting,
+        Eating,
+        Mating,
+        Sleeping,
+        Attacking,
+        Fleeing,
+        Dead,
+    }
+
+    public readonly struct SpeciesBehaviorTransition
+    {
+        internal SpeciesBehaviorTransition(
+            SpeciesId species,
+            long entityId,
+            int age,
+            int x,
+            int y,
+            SpeciesBehaviorState previousState,
+            SpeciesBehaviorState currentState)
+        {
+            Species = species;
+            EntityId = entityId;
+            Age = age;
+            X = x;
+            Y = y;
+            PreviousState = previousState;
+            CurrentState = currentState;
+        }
+
+        public SpeciesId Species { get; }
+        public long EntityId { get; }
+        public int Age { get; }
+        public int X { get; }
+        public int Y { get; }
+        public SpeciesBehaviorState PreviousState { get; }
+        public SpeciesBehaviorState CurrentState { get; }
+    }
+
     public readonly struct SpeciesSimulationActivity
     {
         internal SpeciesSimulationActivity(
@@ -69,6 +110,14 @@ namespace SaltyGame
     {
         readonly Dictionary<SpeciesId, SpeciesSimulationActivity> activityBySpecies =
             new Dictionary<SpeciesId, SpeciesSimulationActivity>();
+        readonly Dictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>> stateTicksBySpecies =
+            new Dictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>>();
+        readonly Dictionary<SpeciesId, int> stateTransitionsBySpecies =
+            new Dictionary<SpeciesId, int>();
+        readonly Dictionary<SpeciesId, TrackedBehaviorCell> trackedBehaviorCells =
+            new Dictionary<SpeciesId, TrackedBehaviorCell>();
+        readonly List<SpeciesBehaviorTransition> behaviorTransitions =
+            new List<SpeciesBehaviorTransition>();
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -77,9 +126,193 @@ namespace SaltyGame
                 : default;
         }
 
+        public int GetStateTicks(SpeciesId species, SpeciesBehaviorState state)
+        {
+            return stateTicksBySpecies.TryGetValue(species, out var stateTicks)
+                && stateTicks.TryGetValue(state, out var ticks)
+                ? ticks
+                : 0;
+        }
+
+        public int GetStateTransitions(SpeciesId species)
+        {
+            return stateTransitionsBySpecies.TryGetValue(species, out var transitions)
+                ? transitions
+                : 0;
+        }
+
+        public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
+
         public void Clear()
         {
             activityBySpecies.Clear();
+            stateTicksBySpecies.Clear();
+            stateTransitionsBySpecies.Clear();
+            trackedBehaviorCells.Clear();
+            behaviorTransitions.Clear();
+        }
+
+        internal void BeginBehaviorTracking(Grid<SpeciesCell> source)
+        {
+            var liveSpecies = new HashSet<SpeciesId>();
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (cell.IsCreature)
+                    {
+                        liveSpecies.Add(cell.SpeciesId);
+                    }
+                }
+            }
+
+            foreach (var species in liveSpecies)
+            {
+                if (!trackedBehaviorCells.TryGetValue(species, out var tracked)
+                    || !TryFindTrackedCell(source, species, tracked.EntityId, out tracked))
+                {
+                    tracked = FindYoungestCell(source, species);
+                }
+
+                trackedBehaviorCells[species] = tracked;
+            }
+
+            var extinctSpecies = new List<SpeciesId>();
+            foreach (var tracked in trackedBehaviorCells)
+            {
+                if (!liveSpecies.Contains(tracked.Key))
+                {
+                    extinctSpecies.Add(tracked.Key);
+                }
+            }
+
+            foreach (var species in extinctSpecies)
+            {
+                trackedBehaviorCells.Remove(species);
+            }
+        }
+
+        internal bool IsTrackedBehaviorCell(SpeciesId species, int x, int y)
+        {
+            return trackedBehaviorCells.TryGetValue(species, out var tracked)
+                && tracked.X == x
+                && tracked.Y == y;
+        }
+
+        internal void RecordTrackedTransition(
+            SpeciesId species,
+            long entityId,
+            int age,
+            int x,
+            int y,
+            SpeciesBehaviorState previousState,
+            SpeciesBehaviorState currentState)
+        {
+            if (species.IsValid)
+            {
+                behaviorTransitions.Add(new SpeciesBehaviorTransition(
+                    species,
+                    entityId,
+                    age,
+                    x,
+                    y,
+                    previousState,
+                    currentState));
+            }
+        }
+
+        static bool TryFindTrackedCell(
+            Grid<SpeciesCell> source,
+            SpeciesId species,
+            long entityId,
+            out TrackedBehaviorCell tracked)
+        {
+            tracked = default;
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (!cell.IsCreature
+                        || cell.SpeciesId != species
+                        || cell.EntityId != entityId)
+                    {
+                        continue;
+                    }
+
+                    tracked = new TrackedBehaviorCell(x, y, cell.EntityId, cell.Age);
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        static TrackedBehaviorCell FindYoungestCell(Grid<SpeciesCell> source, SpeciesId species)
+        {
+            var found = false;
+            var youngest = default(TrackedBehaviorCell);
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (!cell.IsCreature || cell.SpeciesId != species)
+                    {
+                        continue;
+                    }
+
+                    if (!found || cell.Age < youngest.Age)
+                    {
+                        youngest = new TrackedBehaviorCell(x, y, cell.EntityId, cell.Age);
+                        found = true;
+                    }
+                }
+            }
+
+            return youngest;
+        }
+
+        readonly struct TrackedBehaviorCell
+        {
+            public TrackedBehaviorCell(int x, int y, long entityId, int age)
+            {
+                X = x;
+                Y = y;
+                EntityId = entityId;
+                Age = age;
+            }
+
+            public int X { get; }
+            public int Y { get; }
+            public long EntityId { get; }
+            public int Age { get; }
+        }
+
+        internal void RecordState(
+            SpeciesId species,
+            SpeciesBehaviorState state,
+            bool transitioned)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            if (!stateTicksBySpecies.TryGetValue(species, out var stateTicks))
+            {
+                stateTicks = new Dictionary<SpeciesBehaviorState, int>();
+                stateTicksBySpecies.Add(species, stateTicks);
+            }
+
+            stateTicks.TryGetValue(state, out var ticks);
+            stateTicks[state] = ticks + 1;
+            if (transitioned)
+            {
+                stateTransitionsBySpecies.TryGetValue(species, out var transitions);
+                stateTransitionsBySpecies[species] = transitions + 1;
+            }
         }
 
         internal void Record(

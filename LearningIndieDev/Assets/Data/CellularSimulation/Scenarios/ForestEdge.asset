@@ -21,7 +21,10 @@ MonoBehaviour:
   species:
   - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
     startingProbability: 0.65
+    startingPopulation: 0
   - definition: {fileID: 11400000, guid: 766cb564370608a41bbc5504a556b28a, type: 2}
-    startingProbability: 0.02
+    startingProbability: 0
+    startingPopulation: 22
   - definition: {fileID: 11400000, guid: ae99e1a57e5bbdb4cad7e11e4110d588, type: 2}
-    startingProbability: 0.004
+    startingProbability: 0
+    startingPopulation: 4

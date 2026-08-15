@@ -27,6 +27,13 @@ namespace SaltyGame
                         continue;
                     }
 
+                    // Explicit starting populations are placed after the weighted
+                    // pass so their counts remain deterministic for authored scenarios.
+                    if (data.StartingPopulations.ContainsKey(species))
+                    {
+                        continue;
+                    }
+
                     if (data.MaxPopulation > 0 && populationCount >= data.MaxPopulation)
                     {
                         continue;
@@ -45,6 +52,8 @@ namespace SaltyGame
                     populationCount++;
                 }
             }
+
+            PlaceExplicitStartingPopulations(data, grid, random, ref populationCount);
 
             var minimumPopulation = Math.Min(data.MinPopulation, grid.Count);
             if (data.MaxPopulation > 0)
@@ -70,6 +79,67 @@ namespace SaltyGame
             }
 
             return grid;
+        }
+
+        static void PlaceExplicitStartingPopulations(
+            CellularSimData data,
+            Grid<SpeciesCell> grid,
+            Random random,
+            ref int populationCount)
+        {
+            if (data.StartingPopulations.Count == 0)
+            {
+                return;
+            }
+
+            var indices = CreateShuffledIndices(grid.Count, random);
+            foreach (var species in GetSortedSpecies(data.StartingPopulations))
+            {
+                var requested = data.StartingPopulations[species];
+                if (!data.SpeciesRules.TryGetValue(species, out var rules))
+                {
+                    throw new InvalidOperationException(
+                        $"Starting population is configured for undefined species {species}.");
+                }
+
+                var placed = 0;
+                for (var index = 0; index < indices.Length && placed < requested; index++)
+                {
+                    if (data.MaxPopulation > 0 && populationCount >= data.MaxPopulation)
+                    {
+                        break;
+                    }
+
+                    var cellIndex = indices[index];
+                    var x = cellIndex % grid.Width;
+                    var y = cellIndex / grid.Width;
+                    var cell = grid.GetCell(x, y);
+                    if (cell.IsCreature || (cell.IsOccupied && !cell.IsTerrainResource))
+                    {
+                        continue;
+                    }
+
+                    var energy = rules.MaximumEnergy > 0
+                        ? Math.Min(rules.MaximumEnergy, rules.StartingEnergy)
+                        : rules.StartingEnergy;
+                    grid.SetCell(x, y, cell.WithEntity(
+                        species,
+                        health: 1,
+                        energy,
+                        age: 0,
+                        foodEaten: 0,
+                        foodReserve: 0f));
+                    placed++;
+                    populationCount++;
+                }
+
+                if (placed < requested)
+                {
+                    throw new InvalidOperationException(
+                        $"Could not place the configured starting population for {species}. "
+                        + $"Requested {requested}, placed {placed}.");
+                }
+            }
         }
 
         static SpeciesCell CreateCell(CellularSimData data, SpeciesId species)
@@ -179,6 +249,25 @@ namespace SaltyGame
             }
 
             return count;
+        }
+
+        static int[] CreateShuffledIndices(int count, Random random)
+        {
+            var indices = new int[count];
+            for (var index = 0; index < count; index++)
+            {
+                indices[index] = index;
+            }
+
+            for (var index = count - 1; index > 0; index--)
+            {
+                var swapIndex = random.Next(index + 1);
+                var value = indices[index];
+                indices[index] = indices[swapIndex];
+                indices[swapIndex] = value;
+            }
+
+            return indices;
         }
     }
 }

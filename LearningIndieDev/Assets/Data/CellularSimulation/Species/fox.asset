@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: fox
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
   id: fox
-  movementSpeed: 0.8
+  movementSpeed: 1
   movementPattern:
   - {x: -1, y: 1}
   - {x: 0, y: 1}
@@ -55,20 +55,20 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 1
-  reproductionChance: 0.02
-  reproductionFoodRequired: 16
+  reproductionChance: 0.03
+  reproductionFoodRequired: 80
   maxReproductionGroupSize: 3
-  startingEnergy: 48
-  forageBelowEnergy: 16
+  startingEnergy: 120
+  forageBelowEnergy: 120
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0
   seedDropChance: 0
   energyValue: 12
   metabolism: 1
-  visionRange: 5
+  visionRange: 6
   intelligence: 1
-  maximumEnergy: 96
+  maximumEnergy: 240
   litterMinimum: 1
   litterMaximum: 1
   alphaChance: 0

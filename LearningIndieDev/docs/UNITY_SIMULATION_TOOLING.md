@@ -32,8 +32,8 @@ flowchart LR
 - A completed `SpeciesSimulationPreview` Play Mode run now automatically writes
   `artifacts/playmode-last-run.json` and `artifacts/playmode-last-run.md`. The
   JSON keeps the full per-tick population history, ruleset fingerprint, seed,
-  scenario path, and per-species activity; the Markdown is the quick human/agent
-  summary.
+  scenario path, per-species activity, behavior-state ticks, and tracked
+  entity transitions; the Markdown is the quick human/agent summary.
 
 ### Deterministic simulation experiments
 
@@ -160,6 +160,31 @@ optional test-suite or comparison summaries.
 readable Markdown analysis into one command. `CellSim Report` analyzes the most
 recent experiment by default; `CellSim Compare` adds population and extinction
 rate deltas against an explicitly selected baseline report.
+
+## FSM behavior harness
+
+Creature behavior is evaluated once per simulation tick by
+`SpeciesBehaviorSystem`. The state is persisted on each creature cell, so the
+same state survives aging, movement, feeding, and other cell-copy operations.
+The initial state layer contains Wandering, Hunting, Eating, Mating, Sleeping,
+Attacking, Fleeing, and Dead. Existing movement/attack resolvers remain the
+action executors; the FSM supplies the short-term decision and telemetry
+boundary. Each creature cell carries a persistent `EntityId`, which survives
+movement and state updates, is replaced for offspring, and is logged on tracked
+transitions. Death paths emit `Previous -> Dead` before the cell is cleared.
+
+The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
+range and checks initial composition, final player-population ratio, allowed
+extinctions, and minimum state transitions. The Unity Editor menu command
+`Salty Game > Simulation > Run FSM Test Harness` runs the Forest Edge fixture
+over 20 fixed seeds and writes:
+
+- `artifacts/fsm-test-report.json` for machine-readable per-seed results;
+- `artifacts/fsm-test-report.md` for a compact human-readable table.
+
+The same behavior telemetry is included in batch experiment reports and saved
+Play Mode reports, so a failing population result can be correlated with state
+usage instead of inferred from the final count alone.
 
 ## Authoring workflow
 
