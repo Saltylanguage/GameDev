@@ -51,7 +51,7 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: 1, y: -1}
   reproductionNeighborCount: 1
-  reproductionChance: 0.5
+  reproductionChance: 0.35
   reproductionFoodRequired: 8
   maxReproductionGroupSize: 4
   startingEnergy: 6
@@ -66,7 +66,7 @@ MonoBehaviour:
   intelligence: 1
   maximumEnergy: 18
   litterMinimum: 1
-  litterMaximum: 3
+  litterMaximum: 2
   alphaChance: 0
   alphaHealthBonus: 0
   alphaEnergyBonus: 0

@@ -17,6 +17,8 @@ namespace SaltyGame
         Geometry herbivorePath;
         Geometry carnivorePath;
         MatrixTransform[] vectorTransforms;
+        SpeciesId playerSpecies;
+        Pen playerSpeciesOutline;
 
         public void SetSpeciesRules(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
         {
@@ -27,6 +29,17 @@ namespace SaltyGame
         public void SetGrid(Grid<SpeciesCell> grid)
         {
             cells = grid;
+            InvalidateVisual();
+        }
+
+        public void SetPlayerSpecies(SpeciesId species)
+        {
+            if (playerSpecies == species)
+            {
+                return;
+            }
+
+            playerSpecies = species;
             InvalidateVisual();
         }
 
@@ -68,8 +81,24 @@ namespace SaltyGame
                     {
                         DrawSpeciesVector(context, cell, cellRect, y * cells.Width + x);
                     }
+
+                    if (cell.IsCreature && cell.SpeciesId == playerSpecies)
+                    {
+                        DrawPlayerSpeciesOutline(context, cellRect, cellSize);
+                    }
                 }
             }
+        }
+
+        void DrawPlayerSpeciesOutline(DrawingContext context, Rect cellRect, float cellSize)
+        {
+            if (playerSpeciesOutline == null)
+            {
+                playerSpeciesOutline = new Pen { Brush = Brushes.Gold };
+            }
+
+            playerSpeciesOutline.Thickness = Math.Max(1f, cellSize * 0.09f);
+            context.DrawRectangle(null, playerSpeciesOutline, cellRect);
         }
 
         void DrawSpeciesVector(DrawingContext context, SpeciesCell cell, Rect cellRect, int cellIndex)

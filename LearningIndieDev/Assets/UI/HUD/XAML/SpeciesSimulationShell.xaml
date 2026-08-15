@@ -21,6 +21,23 @@
                            FontSize="18"
                            HorizontalAlignment="Center"
                            Margin="0,4,0,0"/>
+                <TextBlock Text="{Binding ScenarioText}"
+                           Foreground="#FFD9E7F0"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           Margin="0,4,0,0"/>
+                <TextBlock Text="{Binding PlayerSpeciesText}"
+                           Foreground="#FFFFD27D"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0,2,0,0"/>
+                <TextBlock Text="{Binding RosterText}"
+                           Foreground="#FFD9E7F0"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           Margin="0,2,0,0"/>
                 <TextBlock Text="{Binding CurrencyText}"
                            Foreground="#FFD9E7F0"
                            FontSize="14"
@@ -79,6 +96,19 @@
                                   Width="300"
                                   Height="34"/>
                     </StackPanel>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <TextBlock Text="Player species" Foreground="White" Width="250" VerticalAlignment="Center"/>
+                        <ComboBox ItemsSource="{Binding PlayerSpeciesOptions}"
+                                  SelectedIndex="{Binding SelectedPlayerSpeciesIndex, Mode=TwoWay}"
+                                  IsEnabled="{Binding CanEditSettings}"
+                                  Width="300"
+                                  Height="34"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding RosterText}"
+                               Foreground="#FFD9E7F0"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,4"/>
                 </StackPanel>
                 <ScrollViewer Height="270"
                               Visibility="{Binding DeveloperSettingsVisibility}"

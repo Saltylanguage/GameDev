@@ -187,7 +187,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<HerbivoreSpeciesDefinitionAsset>("herbivore.asset");
             SetCommon(asset, "herbivore", 1.5f, Cardinal(), Cardinal(), 1,
-                Cardinal(), Moore(), 0.5f, 1, 8, 4, 0f, 1,
+                Cardinal(), Moore(), 0.35f, 1, 8, 4, 0f, 1,
                 0f, 0.05f, 8, 1, 5);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Plant.Value);
@@ -195,7 +195,7 @@ namespace SaltyGame.EditorTools
             Set(asset, "forageBelowEnergy", 6);
             Set(asset, "maximumEnergy", 18);
             Set(asset, "litterMinimum", 1);
-            Set(asset, "litterMaximum", 3);
+            Set(asset, "litterMaximum", 2);
             return asset;
         }
 
@@ -203,12 +203,12 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>("carnivore.asset");
             SetCommon(asset, "carnivore", 1.5f, Moore(), Moore(), 2,
-                Cardinal(), Cardinal(), 0.4f, 1, 16, 3, 0f, 1,
-                0f, 0f, 12, 1, 4);
+                Cardinal(), Cardinal(), 0.5f, 1, 16, 3, 0f, 1,
+                0f, 0f, 12, 1, 6);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Herbivore.Value);
             Set(asset, "startingEnergy", 48);
-            Set(asset, "forageBelowEnergy", 16);
+            Set(asset, "forageBelowEnergy", 48);
             Set(asset, "maximumEnergy", 96);
             return asset;
         }

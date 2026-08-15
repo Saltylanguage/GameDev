@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Text;
 using Noesis;
 using UnityEngine;
 
@@ -37,6 +38,9 @@ namespace SaltyGame
         SpeciesRuleEditValues ruleValues = new SpeciesRuleEditValues();
         string[] speciesTabs = Array.Empty<string>();
         SpeciesId[] speciesTabIds = Array.Empty<SpeciesId>();
+        string[] playerSpeciesOptions = Array.Empty<string>();
+        SpeciesId[] playerSpeciesIds = Array.Empty<SpeciesId>();
+        int selectedPlayerSpeciesIndex;
         bool canStart;
         bool canPause;
         bool canResume;
@@ -48,6 +52,10 @@ namespace SaltyGame
         bool canPlayNextSimulation;
         string[] scenarioOptions = Array.Empty<string>();
         int selectedScenarioIndex;
+        string scenarioText;
+        string playerSpeciesText;
+        string rosterText;
+        readonly StringBuilder rosterTextBuilder = new StringBuilder();
         Visibility settingsVisibility;
         Visibility runningVisibility;
         Visibility pausedVisibility;
@@ -77,6 +85,9 @@ namespace SaltyGame
         public string RunStatusText => runStatusText;
         public string RunDetailsText => runDetailsText;
         public string CurrencyText => currencyText;
+        public string ScenarioText => scenarioText;
+        public string PlayerSpeciesText => playerSpeciesText;
+        public string RosterText => rosterText;
         public string SettingsMessage => settingsMessage;
         public string GridWidthText
         {
@@ -213,6 +224,7 @@ namespace SaltyGame
         public bool CanPurchaseBlockUpgrade => canPurchaseBlockUpgrade;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
         public string[] ScenarioOptions => scenarioOptions;
+        public string[] PlayerSpeciesOptions => playerSpeciesOptions;
         public int SelectedScenarioIndex
         {
             get => selectedScenarioIndex;
@@ -236,6 +248,27 @@ namespace SaltyGame
                     preview.TrySelectScenario(actualScenarioIndex, out _);
                     Refresh(true);
                 }
+            }
+        }
+        public int SelectedPlayerSpeciesIndex
+        {
+            get => selectedPlayerSpeciesIndex;
+            set
+            {
+                if (selectedPlayerSpeciesIndex == value)
+                {
+                    return;
+                }
+
+                selectedPlayerSpeciesIndex = Mathf.Clamp(value, 0, Mathf.Max(0, playerSpeciesIds.Length - 1));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedPlayerSpeciesIndex)));
+                if (preview == null || !preview.SettingsEditable || playerSpeciesIds.Length == 0)
+                {
+                    return;
+                }
+
+                preview.TrySetPlayerSpecies(playerSpeciesIds[selectedPlayerSpeciesIndex].Value, out _);
+                Refresh(true);
             }
         }
         public Visibility SettingsVisibility => settingsVisibility;
@@ -341,6 +374,7 @@ namespace SaltyGame
             }
 
             board?.SetSpeciesRules(preview.ActiveSpeciesRules);
+            board?.SetPlayerSpecies(preview.PlayerSpecies);
             board?.SetGrid(run?.Cells);
 
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
@@ -349,6 +383,7 @@ namespace SaltyGame
             Set(ref currencyText, preview.Progression == null
                 ? "Currency: 0"
                 : $"Currency: {preview.Progression.Currency}", nameof(CurrencyText));
+            SyncScenarioPresentation(run);
             if (force || state == SpeciesPreviewState.Ready)
             {
                 SyncSettingsFields();
@@ -550,6 +585,7 @@ namespace SaltyGame
         void SyncSettingsFields()
         {
             SyncScenarioOptions();
+            SyncPlayerSpeciesOptions();
             Set(ref selectedScenarioIndex, preview.SelectedScenarioIndex + 1, nameof(SelectedScenarioIndex));
             GridWidthText = preview.GridWidth.ToString(CultureInfo.InvariantCulture);
             GridHeightText = preview.GridHeight.ToString(CultureInfo.InvariantCulture);
@@ -562,6 +598,78 @@ namespace SaltyGame
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             CarnivoreProbabilityText = preview.CarnivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
+        }
+
+        void SyncPlayerSpeciesOptions()
+        {
+            var availableSpecies = preview.PlayableSpecies;
+            playerSpeciesIds = new SpeciesId[availableSpecies.Count];
+            playerSpeciesOptions = new string[availableSpecies.Count];
+            var selectedIndex = 0;
+            for (var index = 0; index < availableSpecies.Count; index++)
+            {
+                var species = availableSpecies[index];
+                playerSpeciesIds[index] = species;
+                playerSpeciesOptions[index] = FormatSpeciesName(species);
+                if (species == preview.PlayerSpecies)
+                {
+                    selectedIndex = index;
+                }
+            }
+
+            Set(ref selectedPlayerSpeciesIndex, selectedIndex, nameof(SelectedPlayerSpeciesIndex));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlayerSpeciesOptions)));
+        }
+
+        void SyncScenarioPresentation(SimulationRunState run)
+        {
+            Set(ref scenarioText,
+                preview.SelectedScenario == null
+                    ? "Scenario: Legacy Defaults"
+                    : $"Scenario: {preview.SelectedScenario.name}",
+                nameof(ScenarioText));
+            Set(ref playerSpeciesText,
+                $"Player species: {FormatSpeciesName(preview.PlayerSpecies)}",
+                nameof(PlayerSpeciesText));
+            Set(ref rosterText, BuildRosterText(run), nameof(RosterText));
+        }
+
+        string BuildRosterText(SimulationRunState run)
+        {
+            rosterTextBuilder.Clear();
+            rosterTextBuilder.Append("Roster: ");
+            var roster = preview.RosterSpecies;
+            var population = run != null && run.PopulationHistory.Count > 0
+                ? run.PopulationHistory[run.PopulationHistory.Count - 1]
+                : default;
+
+            for (var index = 0; index < roster.Count; index++)
+            {
+                if (index > 0)
+                {
+                    rosterTextBuilder.Append("  •  ");
+                }
+
+                var species = roster[index];
+                rosterTextBuilder.Append(FormatSpeciesName(species));
+                if (run != null)
+                {
+                    rosterTextBuilder.Append(' ');
+                    rosterTextBuilder.Append(population.GetCount(species));
+                }
+
+                if (species == preview.PlayerSpecies)
+                {
+                    rosterTextBuilder.Append(" (YOU)");
+                }
+            }
+
+            return rosterTextBuilder.ToString();
+        }
+
+        static string FormatSpeciesName(SpeciesId species)
+        {
+            return species.Value.Replace('-', ' ').ToUpperInvariant();
         }
 
         void SyncScenarioOptions()
