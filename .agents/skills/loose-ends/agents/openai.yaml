@@ -1,0 +1,4 @@
+interface:
+  display_name: "LooseEnds"
+  short_description: "Review project loose ends and documentation gaps"
+  default_prompt: "Show me my Loose Ends using the project protocol."
