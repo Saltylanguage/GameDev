@@ -107,6 +107,9 @@ settle them in foundational grid code.
   wilt, food reserve, and seed-drop settings. The edit contract is plain data
   and applies only to the next run; it does not expose the private draft or
   mutate an active simulation.
+- The cellular species preview uses the Noesis shell as its single runtime UI
+  path. The former IMGUI board/settings fallback has been removed, so terrain
+  and species presentation cannot silently diverge between two renderers.
 
 ## CellularSimData direction
 
@@ -202,13 +205,18 @@ settle them in foundational grid code.
 - Keep the existing role colors for readability: plants green, herbivores blue,
   and carnivores red. Species-specific shape and a restrained accent color can
   provide identity without weakening the role language.
-- Prefer traced or authored vector silhouettes in the Noesis board over generic
-  geometric placeholders. The provided references are raster images, so their
-  paths must be traced or recreated; original vector data is not embedded in
-  the images.
-- The reference set contains animal symbols but no plant symbol. Plant species
-  should use a simple leaf, sprout, or stem family that follows the same bold
-  geometric language rather than borrowing an animal icon.
+- The Noesis board now consumes transparent raster atlases derived from the
+  supplied animal and terrain references instead of the previous hard-coded
+  vector silhouettes. The atlas build is deterministic and preserves the
+  source's compact, high-contrast visual language.
+- Terrain presentation is separate from simulation state: `TerrainTileResolver`
+  derives a four-cardinal-neighbor mask at render time and selects one of the
+  16 variants for the grass or desert family. Neighbor masks and atlas indices
+  do not belong in `SpeciesCell` or `CellularSimData`.
+- The reference set contains animal symbols but no dedicated plant symbol.
+  Plant-resource terrain currently uses the grass tile family; add a dedicated
+  plant atlas before displaying a separate plant glyph rather than borrowing an
+  animal icon. See [`CELLULAR_SPRITE_TILING_PLAN.md`](CELLULAR_SPRITE_TILING_PLAN.md).
 - Unity batch tooling now provides a closed-editor test entry point and a seeded
   `CellularSimData` experiment runner. It emits ignored `artifacts/` reports
   containing scenario path, seed range, ruleset fingerprint, population history,

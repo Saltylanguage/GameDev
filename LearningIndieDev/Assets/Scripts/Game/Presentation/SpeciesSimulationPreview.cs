@@ -190,14 +190,6 @@ namespace SaltyGame
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
 
-        [Header("Colors")]
-        [SerializeField] Color emptyColor = new Color(0.35f, 0.2f, 0.1f);
-        [SerializeField] Color plantColor = new Color(0.2f, 0.75f, 0.25f);
-        [SerializeField] Color herbivoreColor = new Color(0.2f, 0.7f, 1f);
-        [SerializeField] Color carnivoreColor = new Color(0.95f, 0.25f, 0.2f);
-        [SerializeField] bool legacyUiEnabled = true;
-        bool noesisUiEnabled;
-
         readonly SpeciesUpgrade[] rewardOptions =
         {
             new SpeciesUpgrade("faster-movement", 5, SpeciesUpgradeType.MovementSpeed, 0.5f),
@@ -214,25 +206,11 @@ namespace SaltyGame
         SpeciesPreviewState previewState;
         string rewardMessage;
         Dictionary<SpeciesId, SpeciesRuleDraft> ruleDrafts;
-        readonly List<SpeciesId> rosterSpecies = new List<SpeciesId>();
-        readonly List<SpeciesId> playableSpecies = new List<SpeciesId>();
-        int selectedSettingsSpecies;
-        Vector2 settingsScrollPosition;
         float tickTimer;
         int runNumber;
         bool rewardGranted;
         bool sessionStarted;
         string settingsMessage;
-        string widthText;
-        string heightText;
-        string seedText;
-        string maxPopulationText;
-        string minPopulationText;
-        string runDurationText;
-        string stepIntervalText;
-        string plantProbabilityText;
-        string herbivoreProbabilityText;
-        string carnivoreProbabilityText;
 
         const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
@@ -252,24 +230,10 @@ namespace SaltyGame
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
         public IReadOnlyList<ScenarioDefinitionAsset> ScenarioOptions => scenarioOptions;
-        public IReadOnlyList<SpeciesId> RosterSpecies => rosterSpecies;
-        public IReadOnlyList<SpeciesId> PlayableSpecies => playableSpecies;
-        public SpeciesId PlayerSpecies => playerSpecies;
         public int SelectedScenarioIndex => selectedScenarioIndex;
         public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
-        public bool LegacyUiEnabled
-        {
-            get => legacyUiEnabled;
-            set => legacyUiEnabled = value;
-        }
-        public bool NoesisUiEnabled
-        {
-            get => noesisUiEnabled;
-            set => noesisUiEnabled = value;
-        }
-
         public void ConfigureScenarioOptions(IReadOnlyList<ScenarioDefinitionAsset> options, int initialSelection = -1)
         {
             scenarioOptions = options == null
@@ -377,321 +341,6 @@ namespace SaltyGame
             }
         }
 
-        void DrawSettingsPanel(float panelLeft, float panelTop, float panelWidth, float panelHeight, GUIStyle buttonStyle)
-        {
-            GUI.Label(new Rect(panelLeft + 24f, panelTop + 82f, panelWidth - 48f, 48f),
-                "Configure each species. Changes apply when you start the simulation.",
-                new GUIStyle(GUI.skin.label)
-                {
-                    fontSize = 30,
-                    alignment = TextAnchor.MiddleCenter,
-                });
-
-            var speciesNames = new[] { "GLOBAL", "PLANT", "HERBIVORE", "CARNIVORE" };
-            var speciesTabStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 28,
-                fixedHeight = 56f,
-            };
-            selectedSettingsSpecies = GUI.SelectionGrid(
-                new Rect(panelLeft + 24f, panelTop + 138f, panelWidth - 48f, 56f),
-                selectedSettingsSpecies,
-                speciesNames,
-                4,
-                speciesTabStyle);
-
-            var scrollRect = new Rect(
-                panelLeft + 24f,
-                panelTop + 208f,
-                panelWidth - 48f,
-                panelHeight - 278f);
-            var contentWidth = panelWidth - 72f;
-            settingsScrollPosition = GUI.BeginScrollView(
-                scrollRect,
-                settingsScrollPosition,
-                new Rect(0f, 0f, contentWidth, 760f));
-
-            var labelStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 30,
-                alignment = TextAnchor.MiddleLeft,
-            };
-            var fieldStyle = new GUIStyle(GUI.skin.textField)
-            {
-                fontSize = 30,
-                alignment = TextAnchor.MiddleLeft,
-            };
-            var optionStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 24,
-                fixedHeight = 44f,
-            };
-            var columnWidth = contentWidth * 0.5f;
-            if (selectedSettingsSpecies == 0)
-            {
-                DrawGlobalSettingsPanel(contentWidth, labelStyle, fieldStyle, optionStyle);
-            }
-            else
-            {
-                var draft = ruleDrafts[GetSettingsSpecies(selectedSettingsSpecies)];
-                DrawSettingsLeftColumn(draft, 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
-                DrawSettingsRightColumn(draft, columnWidth + 12f, columnWidth, labelStyle, fieldStyle, optionStyle);
-            }
-            GUI.EndScrollView();
-
-            var startButtonTop = panelTop + panelHeight - 82f;
-            if (selectedSettingsSpecies == 0)
-            {
-                GUI.Label(new Rect(panelLeft + 24f, panelTop + panelHeight - 190f, panelWidth - 48f, 34f),
-                    settingsMessage ?? string.Empty,
-                    new GUIStyle(GUI.skin.label)
-                    {
-                        fontSize = 24,
-                        alignment = TextAnchor.MiddleCenter,
-                    });
-                var saveButtonStyle = new GUIStyle(buttonStyle)
-                {
-                    fontSize = 28,
-                };
-                if (GUI.Button(
-                    new Rect(panelLeft + 180f, panelTop + panelHeight - 146f, panelWidth - 360f, 56f),
-                    "SAVE CURRENT SETTINGS AS DEFAULT",
-                    saveButtonStyle))
-                {
-                    SaveCurrentSettingsAsDefault();
-                }
-
-                startButtonTop = panelTop + panelHeight - 82f;
-            }
-
-            if (GUI.Button(
-                new Rect(panelLeft + 180f, startButtonTop, panelWidth - 360f, 64f),
-                "START SIMULATION",
-                buttonStyle))
-            {
-                StartSimulation();
-            }
-        }
-
-        void DrawGlobalSettingsPanel(
-            float contentWidth,
-            GUIStyle labelStyle,
-            GUIStyle fieldStyle,
-            GUIStyle optionStyle)
-        {
-            var left = 12f;
-            var fieldWidth = contentWidth - 24f;
-            var y = 8f;
-            y = DrawIntField(left, y, fieldWidth, "Grid width", ref widthText, ref width, labelStyle, fieldStyle, minimum: 1);
-            y = DrawIntField(left, y, fieldWidth, "Grid height", ref heightText, ref height, labelStyle, fieldStyle, minimum: 1);
-            y = DrawIntField(left, y, fieldWidth, "Base seed", ref seedText, ref seed, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, fieldWidth, "Maximum population (0 = unlimited)", ref maxPopulationText, ref maxPopulation, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, fieldWidth, "Minimum starting population", ref minPopulationText, ref minPopulation, labelStyle, fieldStyle);
-            y = DrawFloatField(left, y, fieldWidth, "Run duration (seconds)", ref runDurationText, ref runDurationSeconds, labelStyle, fieldStyle, 1f);
-            y = DrawFloatField(left, y, fieldWidth, "Step interval (seconds)", ref stepIntervalText, ref stepInterval, labelStyle, fieldStyle, 0.01f);
-
-            GUI.Label(new Rect(left, y, fieldWidth - 280f, 40f), "Seed mode", labelStyle);
-            var randomMode = GUI.SelectionGrid(
-                new Rect(left + fieldWidth - 270f, y, 260f, 44f),
-                randomizeSeedOnStart ? 1 : 0,
-                new[] { "Deterministic", "Random" },
-                2,
-                optionStyle);
-            randomizeSeedOnStart = randomMode == 1;
-            y += 48f;
-
-            y = DrawFloatField(left, y, fieldWidth, "Initial plant chance", ref plantProbabilityText, ref plantProbability, labelStyle, fieldStyle, 0f, 1f);
-            y = DrawFloatField(left, y, fieldWidth, "Initial herbivore chance", ref herbivoreProbabilityText, ref herbivoreProbability, labelStyle, fieldStyle, 0f, 1f);
-            DrawFloatField(left, y, fieldWidth, "Initial carnivore chance", ref carnivoreProbabilityText, ref carnivoreProbability, labelStyle, fieldStyle, 0f, 1f);
-        }
-
-        void DrawSettingsLeftColumn(
-            SpeciesRuleDraft draft,
-            float left,
-            float width,
-            GUIStyle labelStyle,
-            GUIStyle fieldStyle,
-            GUIStyle optionStyle)
-        {
-            var y = 8f;
-            draft.MovementEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.MovementEnabled, "Movement enabled", labelStyle);
-            y += 48f;
-            y = DrawFloatField(left, y, width, "Movement speed", ref draft.MovementSpeedText, ref draft.MovementSpeed, labelStyle, fieldStyle);
-            y = DrawPatternField(left, y, width, "Movement pattern", ref draft.MovementPattern, labelStyle, optionStyle);
-            draft.AttackEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.AttackEnabled, "Attack enabled", labelStyle);
-            y += 48f;
-            y = DrawIntField(left, y, width, "Attack amount", ref draft.AttackAmountText, ref draft.AttackAmount, labelStyle, fieldStyle);
-            y = DrawPatternField(left, y, width, "Attack pattern", ref draft.AttackPattern, labelStyle, optionStyle);
-            y = DrawIntField(left, y, width, "Block amount", ref draft.BlockAmountText, ref draft.BlockAmount, labelStyle, fieldStyle);
-            y = DrawPatternField(left, y, width, "Block pattern", ref draft.BlockPattern, labelStyle, optionStyle);
-            y = DrawDietTargetField(left, y, width, draft, labelStyle, optionStyle);
-            y = DrawPatternField(left, y, width, "Diet pattern", ref draft.DietPattern, labelStyle, optionStyle);
-            DrawPatternField(left, y, width, "Reproduction pattern", ref draft.ReproductionPattern, labelStyle, optionStyle);
-        }
-
-        void DrawSettingsRightColumn(
-            SpeciesRuleDraft draft,
-            float left,
-            float width,
-            GUIStyle labelStyle,
-            GUIStyle fieldStyle,
-            GUIStyle optionStyle)
-        {
-            var y = 8f;
-            draft.ReproductionEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.ReproductionEnabled, "Reproduction enabled", labelStyle);
-            y += 48f;
-            y = DrawFloatField(left, y, width, "Reproduction chance", ref draft.ReproductionChanceText, ref draft.ReproductionChance, labelStyle, fieldStyle, 0f, 1f);
-            y = DrawIntField(left, y, width, "Nearby mate requirement", ref draft.ReproductionNeighborCountText, ref draft.ReproductionNeighborCount, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Energy transferred to offspring", ref draft.ReproductionFoodRequiredText, ref draft.ReproductionFoodRequired, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Maximum group size", ref draft.MaxReproductionGroupSizeText, ref draft.MaxReproductionGroupSize, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Starting energy", ref draft.StartingEnergyText, ref draft.StartingEnergy, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Forage at or below energy", ref draft.ForageBelowEnergyText, ref draft.ForageBelowEnergy, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Energy value", ref draft.EnergyValueText, ref draft.EnergyValue, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Vision range", ref draft.VisionRangeText, ref draft.VisionRange, labelStyle, fieldStyle);
-            y = DrawIntField(left, y, width, "Intelligence", ref draft.IntelligenceText, ref draft.Intelligence, labelStyle, fieldStyle);
-            draft.WiltEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.WiltEnabled, "Wilt enabled", labelStyle);
-            y += 48f;
-            y = DrawFloatField(left, y, width, "Wilt chance", ref draft.WiltChanceText, ref draft.WiltChance, labelStyle, fieldStyle, 0f, 1f);
-            y = DrawIntField(left, y, width, "Metabolism (- adds)", ref draft.MetabolismText, ref draft.Metabolism, labelStyle, fieldStyle, minimum: -1000);
-            y = DrawIntField(left, y, width, "Crowding cost", ref draft.CrowdingEnergyPenaltyText, ref draft.CrowdingEnergyPenalty, labelStyle, fieldStyle);
-            y = DrawFloatField(left, y, width, "Starting food reserve", ref draft.StartingFoodReserveText, ref draft.StartingFoodReserve, labelStyle, fieldStyle);
-            draft.SeedDropEnabled = GUI.Toggle(new Rect(left, y, width, 40f), draft.SeedDropEnabled, "Seed drops enabled", labelStyle);
-            y += 48f;
-            DrawFloatField(left, y, width, "Seed drop chance", ref draft.SeedDropChanceText, ref draft.SeedDropChance, labelStyle, fieldStyle, 0f, 1f);
-        }
-
-        static float DrawFloatField(
-            float left,
-            float top,
-            float width,
-            string label,
-            ref string text,
-            ref float value,
-            GUIStyle labelStyle,
-            GUIStyle fieldStyle,
-            float minimum = 0f,
-            float maximum = float.MaxValue)
-        {
-            GUI.Label(new Rect(left, top, width - 190f, 40f), label, labelStyle);
-            text = GUI.TextField(new Rect(left + width - 180f, top, 170f, 40f), text, fieldStyle);
-            if (float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed))
-            {
-                value = Mathf.Clamp(parsed, minimum, maximum);
-            }
-
-            return top + 48f;
-        }
-
-        static float DrawIntField(
-            float left,
-            float top,
-            float width,
-            string label,
-            ref string text,
-            ref int value,
-            GUIStyle labelStyle,
-            GUIStyle fieldStyle,
-            int minimum = 0)
-        {
-            GUI.Label(new Rect(left, top, width - 190f, 40f), label, labelStyle);
-            text = GUI.TextField(new Rect(left + width - 180f, top, 170f, 40f), text, fieldStyle);
-            if (int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed))
-            {
-                value = Mathf.Max(minimum, parsed);
-            }
-
-            return top + 48f;
-        }
-
-        static float DrawPatternField(
-            float left,
-            float top,
-            float width,
-            string label,
-            ref PatternPreset value,
-            GUIStyle labelStyle,
-            GUIStyle optionStyle)
-        {
-            GUI.Label(new Rect(left, top, width - 280f, 40f), label, labelStyle);
-            value = (PatternPreset)GUI.SelectionGrid(
-                new Rect(left + width - 270f, top, 260f, 40f),
-                (int)value,
-                new[] { "Cardinal", "Moore" },
-                2,
-                optionStyle);
-            return top + 48f;
-        }
-
-        static float DrawDietTargetField(
-            float left,
-            float top,
-            float width,
-            SpeciesRuleDraft draft,
-            GUIStyle labelStyle,
-            GUIStyle optionStyle)
-        {
-            GUI.Label(new Rect(left, top, width - 280f, 40f), "Diet target", labelStyle);
-            draft.DietTarget = (DietTargetOption)GUI.SelectionGrid(
-                new Rect(left + width - 270f, top, 260f, 88f),
-                (int)draft.DietTarget,
-                new[] { "None", "Plant", "Herbivore", "Carnivore" },
-                2,
-                optionStyle);
-            return top + 96f;
-        }
-
-        void OnGUI()
-        {
-            if (noesisUiEnabled)
-            {
-                return;
-            }
-
-            var run = Run;
-            if (run == null)
-            {
-                return;
-            }
-
-            const float padding = 16f;
-            const float headerHeight = 52f;
-            var cellSize = Mathf.Min(
-                (Screen.width - padding * 2f) / run.Cells.Width,
-                (Screen.height - padding * 2f - headerHeight) / run.Cells.Height);
-            var gridWidth = run.Cells.Width * cellSize;
-            var gridHeight = run.Cells.Height * cellSize;
-            var gridLeft = (Screen.width - gridWidth) * 0.5f;
-            var gridTop = headerHeight + (Screen.height - headerHeight - gridHeight) * 0.5f;
-
-            var headerStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = 24,
-                alignment = TextAnchor.MiddleCenter,
-            };
-            GUI.Label(new Rect(padding, padding, Screen.width - padding * 2f, 32f),
-                $"Species Run {runNumber}  |  Seed: {run.Seed}  |  {run.Status}  |  {run.ElapsedSeconds:0.0}/{run.DurationSeconds:0.0}s  |  Currency: {progression.Currency}",
-                headerStyle);
-
-            var previousColor = GUI.color;
-            for (var y = 0; y < run.Cells.Height; y++)
-            {
-                for (var x = 0; x < run.Cells.Width; x++)
-                {
-                    GUI.color = GetCellColor(run.Cells.GetCell(x, y));
-                    var visualY = run.Cells.Height - 1 - y;
-                    GUI.DrawTexture(
-                        new Rect(gridLeft + x * cellSize, gridTop + visualY * cellSize, cellSize - 1f, cellSize - 1f),
-                        Texture2D.whiteTexture);
-                }
-            }
-
-            GUI.color = previousColor;
-            if (legacyUiEnabled || (previewState == SpeciesPreviewState.Ready && !noesisUiEnabled))
-            {
-                DrawControlPanel();
-            }
-        }
-
         public void StartSimulation()
         {
             if (runner != null && runner.Run.Status == SimulationRunStatus.Ready)
@@ -712,20 +361,7 @@ namespace SaltyGame
 
                 runner.Start();
                 sessionStarted = true;
-                if (noesisUiEnabled)
-                {
-                    legacyUiEnabled = false;
-                }
                 previewState = SpeciesPreviewState.Running;
-            }
-        }
-
-        public void OpenLegacySpeciesEditor()
-        {
-            if (previewState == SpeciesPreviewState.Ready && !sessionStarted)
-            {
-                selectedSettingsSpecies = 1;
-                legacyUiEnabled = true;
             }
         }
 
@@ -778,7 +414,6 @@ namespace SaltyGame
             carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
             randomizeSeedOnStart = randomizeSeed;
             settingsMessage = "Global settings applied to the next run.";
-            SyncGlobalSettingTextFields();
             PrepareNextRun();
             validationMessage = settingsMessage;
             return true;
@@ -1037,26 +672,18 @@ namespace SaltyGame
             {
                 var authoredData = SelectedScenario.CreateRuntimeData();
                 rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
-                if (!rules.ContainsKey(playerSpecies))
-                {
-                    playerSpecies = FindPlayableSpecies(rules);
-                    playerSpeciesKey = playerSpecies.Value;
-                }
+            if (!rules.ContainsKey(playerSpecies))
+            {
+                playerSpecies = FindPlayableSpecies(rules);
+                playerSpeciesKey = playerSpecies.Value;
             }
-            SyncRosterSpecies();
+            }
             progression = new SpeciesProgression(new SpeciesDefinition(
                 playerSpecies,
                 rules[playerSpecies]));
             runNumber = 0;
             sessionStarted = false;
-            selectedSettingsSpecies = 0;
-            settingsScrollPosition = Vector2.zero;
             settingsMessage = string.Empty;
-            SyncGlobalSettingTextFields();
-            if (noesisUiEnabled)
-            {
-                legacyUiEnabled = false;
-            }
             PrepareNextRun();
         }
 
@@ -1144,20 +771,6 @@ namespace SaltyGame
             return new SpeciesRuleDraft(SpeciesRuleDefaults.Create()[species]);
         }
 
-        void SyncGlobalSettingTextFields()
-        {
-            widthText = width.ToString(CultureInfo.InvariantCulture);
-            heightText = height.ToString(CultureInfo.InvariantCulture);
-            seedText = seed.ToString(CultureInfo.InvariantCulture);
-            maxPopulationText = maxPopulation.ToString(CultureInfo.InvariantCulture);
-            minPopulationText = minPopulation.ToString(CultureInfo.InvariantCulture);
-            runDurationText = FormatFloat(runDurationSeconds);
-            stepIntervalText = FormatFloat(stepInterval);
-            plantProbabilityText = FormatFloat(plantProbability);
-            herbivoreProbabilityText = FormatFloat(herbivoreProbability);
-            carnivoreProbabilityText = FormatFloat(carnivoreProbability);
-        }
-
         void PrepareNextRun()
         {
             var currentRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
@@ -1180,251 +793,6 @@ namespace SaltyGame
             rewardMessage = string.Empty;
             previewState = SpeciesPreviewState.Ready;
             runNumber++;
-        }
-
-        void DrawControlPanel()
-        {
-            var simulationControlsVisible = previewState == SpeciesPreviewState.Running
-                || previewState == SpeciesPreviewState.Paused;
-            var panelWidth = simulationControlsVisible
-                ? Mathf.Min(560f, Screen.width - 32f)
-                : Mathf.Min(1200f, Screen.width - 32f);
-            var settingsVisible = previewState == SpeciesPreviewState.Ready && !sessionStarted;
-            var panelHeight = settingsVisible
-                ? Mathf.Min(1100f, Screen.height - 24f)
-                : previewState == SpeciesPreviewState.Rewards
-                    ? 640f
-                    : simulationControlsVisible
-                        ? 300f
-                        : 380f;
-            var panelLeft = simulationControlsVisible
-                ? Screen.width - panelWidth - 24f
-                : (Screen.width - panelWidth) * 0.5f;
-            var panelTop = simulationControlsVisible
-                ? Screen.height - panelHeight - 24f
-                : (Screen.height - panelHeight) * 0.5f;
-            var panelRect = new Rect(panelLeft, panelTop, panelWidth, panelHeight);
-            var titleStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = simulationControlsVisible ? 28 : 44,
-                alignment = TextAnchor.MiddleCenter,
-            };
-            var defaultBodyFontSize = GUI.skin.label.fontSize > 0 ? GUI.skin.label.fontSize : 12;
-            var bodyStyle = new GUIStyle(GUI.skin.label)
-            {
-                fontSize = defaultBodyFontSize * 2,
-                alignment = TextAnchor.MiddleCenter,
-                wordWrap = true,
-            };
-            var buttonStyle = new GUIStyle(GUI.skin.button)
-            {
-                fontSize = 40,
-                fixedHeight = 88f,
-            };
-            var simulationBodyStyle = new GUIStyle(bodyStyle)
-            {
-                fontSize = 22,
-            };
-            var simulationButtonStyle = new GUIStyle(buttonStyle)
-            {
-                fontSize = 22,
-                fixedHeight = 48f,
-            };
-            var cardButtonStyle = new GUIStyle(buttonStyle)
-            {
-                fontSize = 28,
-                fixedHeight = 52f,
-            };
-
-            GUI.Box(panelRect, GUIContent.none);
-            GUI.Label(new Rect(panelLeft + 20f, panelTop + 16f, panelWidth - 40f, 64f),
-                GetPanelTitle(), titleStyle);
-
-            switch (previewState)
-            {
-                case SpeciesPreviewState.Ready:
-                    if (settingsVisible)
-                    {
-                        DrawSettingsPanel(panelLeft, panelTop, panelWidth, panelHeight, buttonStyle);
-                    }
-                    else
-                    {
-                        GUI.Label(new Rect(panelLeft + 40f, panelTop + 92f, panelWidth - 80f, 64f),
-                            "Your species is ready for the next simulation.", bodyStyle);
-                        if (GUI.Button(new Rect(panelLeft + 180f, panelTop + 190f, panelWidth - 360f, 88f),
-                            "START NEXT SIMULATION", buttonStyle))
-                        {
-                            StartSimulation();
-                        }
-                    }
-
-                    break;
-                case SpeciesPreviewState.Running:
-                    DrawSimulationControls(panelLeft, panelTop, panelWidth, simulationBodyStyle, simulationButtonStyle, paused: false);
-                    break;
-                case SpeciesPreviewState.Paused:
-                    DrawSimulationControls(panelLeft, panelTop, panelWidth, simulationBodyStyle, simulationButtonStyle, paused: true);
-                    break;
-                case SpeciesPreviewState.Rewards:
-                    DrawRewardPanel(panelLeft, panelTop, panelWidth, bodyStyle, cardButtonStyle);
-                    break;
-                case SpeciesPreviewState.Results:
-                    DrawResultsPanel(panelLeft, panelTop, panelWidth, bodyStyle, buttonStyle);
-                    break;
-            }
-        }
-
-        void DrawSimulationControls(
-            float panelLeft,
-            float panelTop,
-            float panelWidth,
-            GUIStyle bodyStyle,
-            GUIStyle buttonStyle,
-            bool paused)
-        {
-            GUI.Label(new Rect(panelLeft + 16f, panelTop + 58f, panelWidth - 32f, 40f),
-                paused ? "The simulation is paused." : "The ecosystem is evolving...", bodyStyle);
-
-            if (GUI.Button(
-                new Rect(panelLeft + 24f, panelTop + 106f, panelWidth - 48f, 48f),
-                paused ? "RESUME SIMULATION" : "PAUSE SIMULATION",
-                buttonStyle))
-            {
-                if (paused)
-                {
-                    ResumeSimulation();
-                }
-                else
-                {
-                    PauseSimulation();
-                }
-            }
-
-            if (GUI.Button(
-                new Rect(panelLeft + 24f, panelTop + 162f, panelWidth - 48f, 48f),
-                "RESTART SIMULATION",
-                buttonStyle))
-            {
-                RestartSimulation();
-            }
-
-            if (GUI.Button(
-                new Rect(panelLeft + 24f, panelTop + 218f, panelWidth - 48f, 48f),
-                "STOP AND EDIT SETTINGS",
-                buttonStyle))
-            {
-                StopSimulation();
-            }
-        }
-
-        void DrawRewardPanel(float panelLeft, float panelTop, float panelWidth, GUIStyle bodyStyle, GUIStyle buttonStyle)
-        {
-            GUI.Label(new Rect(panelLeft + 30f, panelTop + 82f, panelWidth - 60f, 42f),
-                $"Run reward: +{result.CurrencyEarned} currency  |  Choose one upgrade", bodyStyle);
-
-            var cardWidth = (panelWidth - 56f) / rewardOptions.Length;
-            for (var index = 0; index < rewardOptions.Length; index++)
-            {
-                var upgrade = rewardOptions[index];
-                var cardLeft = panelLeft + 14f + index * (cardWidth + 14f);
-                var cardTop = panelTop + 148f;
-                GUI.Box(new Rect(cardLeft, cardTop, cardWidth, 230f), GUIContent.none);
-                GUI.Label(new Rect(cardLeft + 12f, cardTop + 14f, cardWidth - 24f, 56f),
-                    GetUpgradeTitle(upgrade), bodyStyle);
-                GUI.Label(new Rect(cardLeft + 12f, cardTop + 76f, cardWidth - 24f, 76f),
-                    GetUpgradeDescription(upgrade), bodyStyle);
-
-                GUI.enabled = progression.Currency >= upgrade.Cost;
-                if (GUI.Button(new Rect(cardLeft + 16f, cardTop + 166f, cardWidth - 32f, 56f),
-                    $"PURCHASE ({upgrade.Cost})", buttonStyle))
-                {
-                    PurchaseReward(index);
-                }
-
-                GUI.enabled = true;
-            }
-
-            GUI.Label(new Rect(panelLeft + 20f, panelTop + 400f, panelWidth - 40f, 42f),
-                string.IsNullOrEmpty(rewardMessage) ? "Select an upgrade to apply it to your species." : rewardMessage,
-                bodyStyle);
-            if (GUI.Button(new Rect(panelLeft + 250f, panelTop + 462f, panelWidth - 500f, 56f),
-                "CONTINUE WITHOUT UPGRADE", buttonStyle))
-            {
-                ContinueWithoutUpgrade();
-            }
-
-            if (GUI.Button(new Rect(panelLeft + 250f, panelTop + 540f, panelWidth - 500f, 56f),
-                "RESET TO SETTINGS", buttonStyle))
-            {
-                ResetToStart();
-            }
-        }
-
-        void DrawResultsPanel(float panelLeft, float panelTop, float panelWidth, GUIStyle bodyStyle, GUIStyle buttonStyle)
-        {
-            var updateText = selectedUpgrade == null
-                ? "No upgrade selected this run."
-                : $"Applied: {GetUpgradeTitle(selectedUpgrade)}";
-            GUI.Label(new Rect(panelLeft + 30f, panelTop + 92f, panelWidth - 60f, 48f), updateText, bodyStyle);
-            GUI.Label(new Rect(panelLeft + 30f, panelTop + 154f, panelWidth - 60f, 100f),
-                $"Movement: {progression.CurrentRules.MovementSpeed:0.0}    "
-                + $"Attack: {progression.CurrentRules.AttackAmount}    "
-                + $"Block: {progression.CurrentRules.BlockAmount}\n"
-                + $"Currency remaining: {progression.Currency}", bodyStyle);
-            if (GUI.Button(new Rect(panelLeft + 180f, panelTop + 270f, panelWidth - 360f, 88f),
-                "PLAY NEXT SIMULATION", buttonStyle))
-            {
-                PlayNextSimulation();
-            }
-        }
-
-        string GetPanelTitle()
-        {
-            switch (previewState)
-            {
-                case SpeciesPreviewState.Ready:
-                    return sessionStarted ? "SPECIES SIMULATION" : "SPECIES SETTINGS";
-                case SpeciesPreviewState.Running:
-                    return "SIMULATION IN PROGRESS";
-                case SpeciesPreviewState.Paused:
-                    return "SIMULATION PAUSED";
-                case SpeciesPreviewState.Rewards:
-                    return "CHOOSE YOUR REWARD";
-                case SpeciesPreviewState.Results:
-                    return "SPECIES UPDATE";
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        static string GetUpgradeTitle(SpeciesUpgrade upgrade)
-        {
-            switch (upgrade.Type)
-            {
-                case SpeciesUpgradeType.MovementSpeed:
-                    return "Swift Cells";
-                case SpeciesUpgradeType.AttackAmount:
-                    return "Sharper Cells";
-                case SpeciesUpgradeType.BlockAmount:
-                    return "Hardier Cells";
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-        }
-
-        static string GetUpgradeDescription(SpeciesUpgrade upgrade)
-        {
-            switch (upgrade.Type)
-            {
-                case SpeciesUpgradeType.MovementSpeed:
-                    return "+0.5 movement speed";
-                case SpeciesUpgradeType.AttackAmount:
-                    return "+1 attack amount";
-                case SpeciesUpgradeType.BlockAmount:
-                    return "+1 block amount";
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
         }
 
         Dictionary<SpeciesId, SpeciesRuleDraft> CreateRuleDrafts(
@@ -1667,38 +1035,6 @@ namespace SaltyGame
             }
         }
 
-        void SyncRosterSpecies()
-        {
-            rosterSpecies.Clear();
-            playableSpecies.Clear();
-
-            if (SelectedScenario != null)
-            {
-                foreach (var entry in SelectedScenario.Species)
-                {
-                    if (entry?.Definition != null)
-                    {
-                        rosterSpecies.Add(entry.Definition.Id);
-                    }
-                }
-            }
-            else if (rules != null)
-            {
-                foreach (var entry in rules)
-                {
-                    rosterSpecies.Add(entry.Key);
-                }
-            }
-
-            foreach (var species in rosterSpecies)
-            {
-                if (rules != null && rules.TryGetValue(species, out var speciesRules) && !speciesRules.IsPlant)
-                {
-                    playableSpecies.Add(species);
-                }
-            }
-        }
-
         ScenarioDefinitionAsset GetSelectedScenario()
         {
             return selectedScenarioIndex >= 0
@@ -1726,49 +1062,5 @@ namespace SaltyGame
             throw new InvalidOperationException("The selected scenario does not define any species.");
         }
 
-        Color GetCellColor(SpeciesCell cell)
-        {
-            if (cell.IsPlantResource && !cell.IsCreature)
-            {
-                return plantColor;
-            }
-
-            if (!cell.IsCreature)
-            {
-                return emptyColor;
-            }
-
-            if (cell.SpeciesId == SpeciesIds.Plant)
-            {
-                return plantColor;
-            }
-
-            if (cell.SpeciesId == SpeciesIds.Herbivore)
-            {
-                return herbivoreColor;
-            }
-
-            if (cell.SpeciesId == SpeciesIds.Carnivore)
-            {
-                return carnivoreColor;
-            }
-
-            return emptyColor;
-        }
-
-        static SpeciesId GetSettingsSpecies(int index)
-        {
-            switch (index)
-            {
-                case 1:
-                    return SpeciesIds.Plant;
-                case 2:
-                    return SpeciesIds.Herbivore;
-                case 3:
-                    return SpeciesIds.Carnivore;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(index), index, "Unknown species settings tab.");
-            }
-        }
     }
 }
