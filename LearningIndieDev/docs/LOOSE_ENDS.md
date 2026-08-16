@@ -168,6 +168,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Result:** The Forest Edge matrix reproduced across two current-code runs
   for seeds 10100–10119. Representative seed 10102 and boundary seed 10116
   replayed with 4/4 Play Mode evidence tests passing and matching source player
-  populations. The archived 32 x 20 report is retained as historical evidence,
-  while the live authored configuration is consistently 32 x 32; no balance or
-  causal claim was promoted.
+  populations. The superseded 32 x 20 report's provenance facts remain in the
+  current EX-001 record, but its source artifact was removed; the live authored
+  configuration is consistently 32 x 32. No balance or causal claim was
+  promoted.

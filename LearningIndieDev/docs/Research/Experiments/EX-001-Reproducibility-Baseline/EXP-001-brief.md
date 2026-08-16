@@ -27,10 +27,11 @@ including population histories and final summaries.
 | Step interval | `0.10000000149011612` seconds |
 | Expected ruleset fingerprint for captured pair | `90efffe28fbfb7d65573e03e8f206c7d34c32c41422995970174d884a078f93f` |
 
-The archived schema-2 pair predates the current authored ForestEdge scenario and
-recorded a 32 x 20 grid. The current experiment source of truth is the authored
-scenario asset, which defines 32 x 32; current reports and replays must record
-that value and the current schema/fingerprint.
+The superseded schema-2 pair predates the current authored ForestEdge scenario
+and recorded a 32 x 20 grid. Its source artifacts were removed after the facts
+were transferred to the current EX-001 record. The current experiment source of
+truth is the authored scenario asset, which defines 32 x 32; current reports and
+replays must record that value and the current schema/fingerprint.
 
 ## Run protocol
 

@@ -9,6 +9,10 @@ param(
     [int]$GridWidth = 0,
     [ValidateRange(0, 4096)]
     [int]$GridHeight = 0,
+    [ValidateRange(0, 1000000)]
+    [double]$RunDurationSeconds = 0,
+    [ValidateRange(0, 1000000)]
+    [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$ProjectPath,
     [string]$UnityPath
@@ -75,6 +79,14 @@ if ($GridWidth -gt 0) {
 
 if ($GridHeight -gt 0) {
     $arguments += @('-gridHeight', $GridHeight)
+}
+
+if ($RunDurationSeconds -gt 0) {
+    $arguments += @('-runDurationSeconds', $RunDurationSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+}
+
+if ($StepIntervalSeconds -gt 0) {
+    $arguments += @('-stepIntervalSeconds', $StepIntervalSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments

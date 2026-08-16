@@ -77,6 +77,56 @@ namespace SaltyGame.EditorTools
             return records;
         }
 
+        public static SimulationSpeciesTrackedBehaviorRecord[] CreateTrackedBehavior(
+            SpeciesSimulationMetrics metrics,
+            IReadOnlyList<SpeciesId> species)
+        {
+            var records = new List<SimulationSpeciesTrackedBehaviorRecord>();
+            foreach (var speciesId in species)
+            {
+                if (!metrics.TryGetTrackedBehavior(speciesId, out var tracked))
+                {
+                    continue;
+                }
+
+                records.Add(new SimulationSpeciesTrackedBehaviorRecord
+                {
+                    speciesId = tracked.Species.Value,
+                    entityId = tracked.EntityId,
+                    age = tracked.Age,
+                    x = tracked.X,
+                    y = tracked.Y,
+                    state = tracked.State.ToString(),
+                    stateTicks = tracked.StateTicks,
+                });
+            }
+
+            return records.ToArray();
+        }
+
+        public static SimulationSpeciesDeathRecord[] CreateDeathEvents(SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.DeathEvents;
+            var records = new SimulationSpeciesDeathRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var death = source[index];
+                records[index] = new SimulationSpeciesDeathRecord
+                {
+                    speciesId = death.Species.Value,
+                    entityId = death.EntityId,
+                    age = death.Age,
+                    x = death.X,
+                    y = death.Y,
+                    tick = death.Tick,
+                    cause = death.Cause.ToString(),
+                    isCreature = death.IsCreature,
+                };
+            }
+
+            return records;
+        }
+
         public static SimulationPopulationSnapshotRecord[] CreatePopulationHistory(
             IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
             IReadOnlyList<SpeciesId> species)
@@ -176,5 +226,30 @@ namespace SaltyGame.EditorTools
         public int y;
         public string previousState;
         public string currentState;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesTrackedBehaviorRecord
+    {
+        public string speciesId;
+        public long entityId;
+        public int age;
+        public int x;
+        public int y;
+        public string state;
+        public int stateTicks;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesDeathRecord
+    {
+        public string speciesId;
+        public long entityId;
+        public int age;
+        public int x;
+        public int y;
+        public int tick;
+        public string cause;
+        public bool isCreature;
     }
 }

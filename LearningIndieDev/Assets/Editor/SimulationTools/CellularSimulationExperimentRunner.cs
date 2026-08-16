@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 4;
+        const int ReportSchemaVersion = 5;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -25,6 +25,8 @@ namespace SaltyGame.EditorTools
         const string PlayerSpeciesArgument = "-playerSpeciesId";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
+        const string RunDurationArgument = "-runDurationSeconds";
+        const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
@@ -74,7 +76,7 @@ namespace SaltyGame.EditorTools
             {
                 var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
                 var outputPath = GetRequiredOutputPath(options.OutputPath);
-                var data = ApplyGridOverrides(
+                var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
                     options);
 
@@ -173,6 +175,8 @@ namespace SaltyGame.EditorTools
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
                 behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
+                trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
+                deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
             };
         }
 
@@ -225,11 +229,15 @@ namespace SaltyGame.EditorTools
             return species != null && speciesIndex < species.Length ? species[speciesIndex].population : 0;
         }
 
-        static CellularSimData ApplyGridOverrides(CellularSimData data, CommandLineOptions options)
+        static CellularSimData ApplyOverrides(CellularSimData data, CommandLineOptions options)
         {
             if (options.GridWidth == 0 && options.GridHeight == 0)
             {
-                return data;
+                return options.RunDurationSeconds == 0f && options.StepIntervalSeconds == 0f
+                    ? data
+                    : data.WithRunWindow(
+                        options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
+                        options.StepIntervalSeconds == 0f ? data.StepInterval : options.StepIntervalSeconds);
             }
 
             return new CellularSimData(
@@ -237,8 +245,8 @@ namespace SaltyGame.EditorTools
                 options.GridHeight == 0 ? data.Height : options.GridHeight,
                 data.StartingProbabilities,
                 data.SpeciesRules,
-                data.RunDurationSeconds,
-                data.StepInterval,
+                options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
+                options.StepIntervalSeconds == 0f ? data.StepInterval : options.StepIntervalSeconds,
                 data.MaxPopulation,
                 data.MinPopulation,
                 data.TerrainDefinitions,
@@ -447,6 +455,8 @@ namespace SaltyGame.EditorTools
             public string PlayerSpeciesId { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
+            public float RunDurationSeconds { get; private set; }
+            public float StepIntervalSeconds { get; private set; }
             public string OutputPath { get; private set; }
 
             public static CommandLineOptions Parse(string[] arguments)
@@ -459,6 +469,8 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
+                    RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
+                    StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
             }
@@ -491,6 +503,28 @@ namespace SaltyGame.EditorTools
                 {
                     throw new ArgumentException(
                         $"'{name}' must be an integer between {(allowZero ? 0 : 1)} and 1000000.",
+                        name);
+                }
+
+                return parsed;
+            }
+
+            static float GetFloatValue(IReadOnlyList<string> arguments, string name)
+            {
+                var value = GetOptionalValue(arguments, name);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return 0f;
+                }
+
+                if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsed)
+                    || float.IsNaN(parsed)
+                    || float.IsInfinity(parsed)
+                    || parsed <= 0f
+                    || parsed > 1000000f)
+                {
+                    throw new ArgumentException(
+                        $"'{name}' must be a finite number greater than zero and no greater than 1000000.",
                         name);
                 }
 
@@ -530,6 +564,8 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesActivityRecord[] activity;
             public SimulationSpeciesBehaviorRecord[] behavior;
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
+            public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
+            public SimulationSpeciesDeathRecord[] deathEvents;
         }
 
         [Serializable]

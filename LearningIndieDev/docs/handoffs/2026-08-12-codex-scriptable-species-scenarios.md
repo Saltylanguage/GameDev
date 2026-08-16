@@ -33,7 +33,7 @@ ignored; these are the paths for review:
 
 | Scenario | Player | Player survival | Other final populations | Report |
 | --- | --- | ---: | --- | --- |
-| ForestEdge | hare | 20/20 (100%) | fern 23.4 avg; fox 5.15 avg, 15% extinct | `artifacts/cellular-experiment-20260812-212556/analysis.md` |
+| ForestEdge | hare | 20/20 (100%) | fern 23.4 avg; fox 5.15 avg, 15% extinct | Superseded schema-2 artifact; source removed after current-code evidence was recorded |
 | Wetland | snail | 20/20 (100%) | beetle 246.9 avg; reed 13.65 avg; owl/stoat 5% extinct | `artifacts/cellular-experiment-20260812-211950/analysis.md` |
 | OpenRange | deer | 20/20 (100%) | beetle 174.25 avg; fern 87 avg; wolf 20% extinct | `artifacts/cellular-experiment-20260812-212058/analysis.md` |
 

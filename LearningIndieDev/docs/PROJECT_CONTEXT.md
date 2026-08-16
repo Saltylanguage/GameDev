@@ -224,10 +224,10 @@ settle them in foundational grid code.
 - `CellSim` is the project-root command surface for this workflow: `Test`,
   `Run`, `Report`, `Compare`, and `Baseline`. The first population-only baseline
   was superseded after correcting terrain-resource identity and layered population
-  counts. The current 20-seed default reference still has herbivore extinction
-  in every run, while plants survive every run and carnivores vary substantially;
-  see the newest CellSim telemetry handoff before choosing the next balance
-  hypothesis.
+  counts. The current schema-4 BaselineParity reference over seeds 10100-10119
+  averaged 10.25 final herbivores with one extinction; its recorded herbivore
+  deaths were predominantly starvation deaths. Treat the older schema-2
+  all-extinction result as superseded, not current balance evidence.
 - Deferred generalization work and its triggers are tracked in
   [`CELLULAR_SIM_TODOS.md`](CELLULAR_SIM_TODOS.md). Do not introduce dynamic
   terrain registries or arbitrary rule plugins until a concrete use case

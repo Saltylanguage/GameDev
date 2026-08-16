@@ -32,8 +32,9 @@ flowchart LR
 - A completed `SpeciesSimulationPreview` Play Mode run now automatically writes
   `artifacts/playmode-last-run.json` and `artifacts/playmode-last-run.md`. The
   JSON keeps the full per-tick population history, ruleset fingerprint, seed,
-  scenario path, per-species activity, behavior-state ticks, and tracked
-  entity transitions; the Markdown is the quick human/agent summary.
+  scenario path, per-species activity, behavior-state ticks, tracked entity
+  transitions, and per-death cause events; the Markdown is the quick
+  human/agent summary.
 
 ### Deterministic simulation experiments
 
@@ -77,6 +78,7 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Visuals -ReplayReportPath artifacts\cellular-experiment-...\report.json -ReplaySeed 10100
 .\CellSim.cmd Run
 .\CellSim.cmd Run -SeedCount 50
+.\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
@@ -90,7 +92,7 @@ commands below when their full options are needed:
 | --- | --- |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
 | `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range. |
+| `CellSim Run` | Generate a JSON report for a seed range; `-RunDurationSeconds` and `-StepIntervalSeconds` override the run window without changing the authored scenario asset. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
@@ -148,10 +150,12 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The experiment JSON records the schema version, timestamp, scenario asset path,
-seed range, grid settings, player species, ruleset fingerprint, run-level
-results, full population timelines, final-population summary, and per-species
-activity totals. The companion CSV contains one row per seed with run metadata
+The current experiment JSON schema is `5`. It records the schema version, timestamp, scenario asset path,
+seed range, grid settings, run window, player species, ruleset fingerprint,
+run-level results, full population timelines, final-population summary,
+per-species activity totals, tracked FSM entity snapshots, and tracked state
+transitions, plus per-death events with proximate cause, entity/resource
+identity, tick, age, and position. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.
@@ -171,7 +175,10 @@ Attacking, Fleeing, and Dead. Existing movement/attack resolvers remain the
 action executors; the FSM supplies the short-term decision and telemetry
 boundary. Each creature cell carries a persistent `EntityId`, which survives
 movement and state updates, is replaced for offspring, and is logged on tracked
-transitions. Death paths emit `Previous -> Dead` before the cell is cleared.
+transitions. Death paths emit `Previous -> Dead` before the cell is cleared and
+append a structured `deathEvents` record at the removal point. This is
+proximate-cause telemetry, not yet root-cause attribution: resource history and
+attacker links remain future instrumentation.
 
 The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
 range and checks initial composition, final player-population ratio, allowed

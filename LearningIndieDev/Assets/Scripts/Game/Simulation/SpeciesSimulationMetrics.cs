@@ -14,6 +14,49 @@ namespace SaltyGame
         Dead,
     }
 
+    public enum SpeciesDeathCause
+    {
+        Unknown,
+        Combat,
+        Starvation,
+        Crowding,
+        Wilt,
+        PopulationLimit,
+        ResourceConsumed,
+    }
+
+    public readonly struct SpeciesDeathEvent
+    {
+        internal SpeciesDeathEvent(
+            SpeciesId species,
+            long entityId,
+            int age,
+            int x,
+            int y,
+            int tick,
+            SpeciesDeathCause cause,
+            bool isCreature)
+        {
+            Species = species;
+            EntityId = entityId;
+            Age = age;
+            X = x;
+            Y = y;
+            Tick = tick;
+            Cause = cause;
+            IsCreature = isCreature;
+        }
+
+        public SpeciesId Species { get; }
+        public long EntityId { get; }
+        public int Age { get; }
+        public int X { get; }
+        public int Y { get; }
+        public int Tick { get; }
+        public SpeciesDeathCause Cause { get; }
+        public bool IsCreature { get; }
+    }
+
     public readonly struct SpeciesBehaviorTransition
     {
         internal SpeciesBehaviorTransition(
@@ -41,6 +84,35 @@ namespace SaltyGame
         public int Y { get; }
         public SpeciesBehaviorState PreviousState { get; }
         public SpeciesBehaviorState CurrentState { get; }
+    }
+
+    public readonly struct SpeciesTrackedBehavior
+    {
+        internal SpeciesTrackedBehavior(
+            SpeciesId species,
+            long entityId,
+            int age,
+            int x,
+            int y,
+            SpeciesBehaviorState state,
+            int stateTicks)
+        {
+            Species = species;
+            EntityId = entityId;
+            Age = age;
+            X = x;
+            Y = y;
+            State = state;
+            StateTicks = stateTicks;
+        }
+
+        public SpeciesId Species { get; }
+        public long EntityId { get; }
+        public int Age { get; }
+        public int X { get; }
+        public int Y { get; }
+        public SpeciesBehaviorState State { get; }
+        public int StateTicks { get; }
     }
 
     public readonly struct SpeciesSimulationActivity
@@ -116,8 +188,13 @@ namespace SaltyGame
             new Dictionary<SpeciesId, int>();
         readonly Dictionary<SpeciesId, TrackedBehaviorCell> trackedBehaviorCells =
             new Dictionary<SpeciesId, TrackedBehaviorCell>();
+        readonly Dictionary<SpeciesId, SpeciesTrackedBehavior> trackedBehaviors =
+            new Dictionary<SpeciesId, SpeciesTrackedBehavior>();
         readonly List<SpeciesBehaviorTransition> behaviorTransitions =
             new List<SpeciesBehaviorTransition>();
+        readonly List<SpeciesDeathEvent> deathEvents =
+            new List<SpeciesDeathEvent>();
+        int currentTick = -1;
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -142,6 +219,12 @@ namespace SaltyGame
         }
 
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
+        public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
+
+        public bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior)
+        {
+            return trackedBehaviors.TryGetValue(species, out behavior);
+        }
 
         public void Clear()
         {
@@ -149,7 +232,15 @@ namespace SaltyGame
             stateTicksBySpecies.Clear();
             stateTransitionsBySpecies.Clear();
             trackedBehaviorCells.Clear();
+            trackedBehaviors.Clear();
             behaviorTransitions.Clear();
+            deathEvents.Clear();
+            currentTick = -1;
+        }
+
+        internal void BeginTick(int tick)
+        {
+            currentTick = tick;
         }
 
         internal void BeginBehaviorTracking(Grid<SpeciesCell> source)
@@ -176,6 +267,15 @@ namespace SaltyGame
                 }
 
                 trackedBehaviorCells[species] = tracked;
+                var cell = source.GetCell(tracked.X, tracked.Y);
+                trackedBehaviors[species] = new SpeciesTrackedBehavior(
+                    species,
+                    tracked.EntityId,
+                    cell.Age,
+                    tracked.X,
+                    tracked.Y,
+                    cell.BehaviorState,
+                    cell.BehaviorStateTicks);
             }
 
             var extinctSpecies = new List<SpeciesId>();
@@ -211,6 +311,14 @@ namespace SaltyGame
         {
             if (species.IsValid)
             {
+                trackedBehaviors[species] = new SpeciesTrackedBehavior(
+                    species,
+                    entityId,
+                    age,
+                    x,
+                    y,
+                    currentState,
+                    stateTicks: 1);
                 behaviorTransitions.Add(new SpeciesBehaviorTransition(
                     species,
                     entityId,
@@ -344,6 +452,39 @@ namespace SaltyGame
                 crowdingDeaths,
                 wiltDeaths,
                 populationLimitRemovals);
+        }
+
+        internal void RecordDeath(
+            SpeciesCell cell,
+            int x,
+            int y,
+            SpeciesDeathCause cause,
+            int populationLimitRemovals = 0)
+        {
+            var species = cell.IsPlantResource && !cell.IsCreature
+                ? (cell.ResourceSpeciesId.IsValid ? cell.ResourceSpeciesId : cell.SpeciesId)
+                : cell.SpeciesId;
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            Record(
+                species,
+                deaths: 1,
+                starvationDeaths: cause == SpeciesDeathCause.Starvation ? 1 : 0,
+                crowdingDeaths: cause == SpeciesDeathCause.Crowding ? 1 : 0,
+                wiltDeaths: cause == SpeciesDeathCause.Wilt ? 1 : 0,
+                populationLimitRemovals: populationLimitRemovals);
+            deathEvents.Add(new SpeciesDeathEvent(
+                species,
+                cell.EntityId,
+                cell.Age,
+                x,
+                y,
+                currentTick,
+                cause,
+                cell.IsCreature));
         }
     }
 }

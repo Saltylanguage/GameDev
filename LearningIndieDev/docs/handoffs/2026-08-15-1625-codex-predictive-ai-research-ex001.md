@@ -13,8 +13,9 @@
 The Predictive AI research project has started as a documented, human-governed
 change-impact program. Its first instrument-trust experiment, EX-001, is
 complete and accepted as a current-code reproducibility baseline. The live
-ForestEdge source of truth is 32 x 32; the older 32 x 20 schema-2 artifact is
-retained as archival evidence only.
+ForestEdge source of truth is 32 x 32; the older 32 x 20 schema-2 provenance
+facts are retained in the current EX-001 record, while the superseded source
+artifact was removed.
 
 ## Changes
 

@@ -87,6 +87,7 @@ namespace SaltyGame
                 return false;
             }
 
+            Run.Metrics.BeginTick(Run.Tick + 1);
             var next = simulationData == null
                 ? SpeciesSimulation.Step(Run.Cells, rules, Run.Seed + Run.Tick, maxPopulation, metrics: Run.Metrics)
                 : SpeciesSimulation.Step(Run.Cells, simulationData, Run.Seed + Run.Tick, Run.Metrics);

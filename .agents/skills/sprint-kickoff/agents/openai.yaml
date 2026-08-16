@@ -1,0 +1,4 @@
+interface:
+  display_name: "Sprint Kickoff"
+  short_description: "Manage sprint transitions and carryovers"
+  default_prompt: "Use $sprint-kickoff to audit, start, close, or carry work between sprints."

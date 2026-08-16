@@ -12,7 +12,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 3;
+        const int ReportSchemaVersion = 4;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -68,6 +68,8 @@ namespace SaltyGame.EditorTools
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
                 behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
+                trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
+                deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
             };
         }
 
@@ -139,7 +141,33 @@ namespace SaltyGame.EditorTools
             }
 
             builder.AppendLine();
-            builder.AppendLine("The JSON file beside this report contains the full per-tick population history and tracked entity transitions.");
+            builder.AppendLine("## Tracked FSM entities");
+            builder.AppendLine();
+            builder.AppendLine("| Species | Entity | Age | Position | State | State ticks |");
+            builder.AppendLine("|---|---:|---:|---|---|---:|");
+            for (var index = 0; index < report.trackedBehavior.Length; index++)
+            {
+                var entry = report.trackedBehavior[index];
+                builder.AppendLine(
+                    $"| {entry.speciesId} | {entry.entityId} | {entry.age} | ({entry.x},{entry.y}) | "
+                    + $"{entry.state} | {entry.stateTicks} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("## Death events");
+            builder.AppendLine();
+            builder.AppendLine("| Tick | Species | Entity | Creature | Age | Position | Cause |");
+            builder.AppendLine("|---:|---|---:|---|---:|---|---|");
+            for (var index = 0; index < report.deathEvents.Length; index++)
+            {
+                var entry = report.deathEvents[index];
+                builder.AppendLine(
+                    $"| {entry.tick} | {entry.speciesId} | {entry.entityId} | {entry.isCreature} | {entry.age} | "
+                    + $"({entry.x},{entry.y}) | {entry.cause} |");
+            }
+
+            builder.AppendLine();
+            builder.AppendLine("The JSON file beside this report contains the full per-tick population history, tracked entity transitions, and death events.");
             return builder.ToString();
         }
 
@@ -162,6 +190,8 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesActivityRecord[] activity;
             public SimulationSpeciesBehaviorRecord[] behavior;
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
+            public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
+            public SimulationSpeciesDeathRecord[] deathEvents;
         }
     }
 }
