@@ -31,7 +31,6 @@ namespace SaltyGame
         string carnivoreProbabilityText;
         bool randomizeSeedOnStart;
         bool canEditSettings;
-        bool showXamlSettings = true;
         bool developerMode;
         int selectedRuleSpeciesIndex;
         SpeciesRuleEditValues ruleValues = new SpeciesRuleEditValues();
@@ -70,7 +69,6 @@ namespace SaltyGame
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
         public DelegateCommand ApplySettingsCommand { get; private set; }
         public DelegateCommand SaveSettingsCommand { get; private set; }
-        public DelegateCommand EditSpeciesRulesCommand { get; private set; }
         public DelegateCommand ApplySpeciesRulesCommand { get; private set; }
 
         public string StateTitle => stateTitle;
@@ -280,7 +278,6 @@ namespace SaltyGame
             PlayNextSimulationCommand = new DelegateCommand(() => preview?.PlayNextSimulation());
             ApplySettingsCommand = new DelegateCommand(ApplySettings);
             SaveSettingsCommand = new DelegateCommand(SaveSettings);
-            EditSpeciesRulesCommand = new DelegateCommand(EditSpeciesRules);
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
         }
 
@@ -318,11 +315,6 @@ namespace SaltyGame
             if (!force && state == lastState && runStatus == lastRunStatus && tick == lastTick)
             {
                 return;
-            }
-
-            if (state == SpeciesPreviewState.Ready && lastState != SpeciesPreviewState.Ready)
-            {
-                showXamlSettings = true;
             }
 
             SyncSpeciesTabs();
@@ -367,7 +359,7 @@ namespace SaltyGame
             Set(ref canPlayNextSimulation, state == SpeciesPreviewState.Results, nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
-                state == SpeciesPreviewState.Ready && showXamlSettings
+                state == SpeciesPreviewState.Ready
                     ? Visibility.Visible
                     : Visibility.Collapsed,
                 nameof(SettingsVisibility));
@@ -428,18 +420,6 @@ namespace SaltyGame
             }
 
             preview.SaveCurrentSettingsAsDefault();
-            Refresh(true);
-        }
-
-        void EditSpeciesRules()
-        {
-            if (preview == null || !preview.SettingsEditable)
-            {
-                return;
-            }
-
-            preview.OpenLegacySpeciesEditor();
-            showXamlSettings = false;
             Refresh(true);
         }
 

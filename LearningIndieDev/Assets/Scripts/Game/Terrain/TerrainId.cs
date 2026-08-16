@@ -58,5 +58,8 @@ namespace SaltyGame
     {
         public static readonly TerrainId Bare = new TerrainId("bare");
         public static readonly TerrainId Grass = new TerrainId("grass");
+        // Renderer-ready family for Terrain_01's second 16-tile set. It is
+        // intentionally not part of the default simulation terrain registry yet.
+        public static readonly TerrainId Desert = new TerrainId("desert");
     }
 }

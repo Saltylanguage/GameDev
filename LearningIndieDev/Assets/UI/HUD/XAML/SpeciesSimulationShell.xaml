@@ -321,12 +321,6 @@
                             Width="100"
                             Height="42"/>
                 </StackPanel>
-                <Button Content="EDIT SPECIES RULES (LEGACY PANEL)"
-                        Visibility="{Binding DeveloperSettingsVisibility}"
-                        Command="{Binding EditSpeciesRulesCommand}"
-                        IsEnabled="{Binding CanEditSettings}"
-                        Height="38"
-                        Margin="0,10,0,0"/>
             </StackPanel>
             </ScrollViewer>
         </Border>

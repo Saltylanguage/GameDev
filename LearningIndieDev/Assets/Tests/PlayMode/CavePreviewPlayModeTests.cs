@@ -21,8 +21,6 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(runtime, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview, Is.Not.Null);
-            runtime.SpeciesPreview.LegacyUiEnabled = false;
-            runtime.SpeciesPreview.NoesisUiEnabled = true;
             Assert.That(runtime.SpeciesPreview.Run, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
 

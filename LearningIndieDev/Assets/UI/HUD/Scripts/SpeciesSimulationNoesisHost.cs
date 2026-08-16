@@ -39,8 +39,6 @@ namespace SaltyGame
                 viewModel = camera.gameObject.AddComponent<SpeciesSimulationViewModel>();
             }
 
-            preview.NoesisUiEnabled = true;
-            preview.LegacyUiEnabled = false;
             viewModel.Initialize(preview);
             viewModel.BindToView(view);
         }
