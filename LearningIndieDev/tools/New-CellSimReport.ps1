@@ -363,7 +363,7 @@ foreach ($speciesId in $species) {
 }
 Add-MarkdownTable -Lines $lines -Headers @('Species', 'Deaths', 'Starvation', 'Crowding', 'Wilt', 'Population cap') -Rows $mortalityRows.ToArray()
 $lines.Add('')
-$lines.Add('Death causes are only reported when the current rule resolves that cause directly; the total can include combat and food depletion as well.')
+$lines.Add('The JSON report also contains one `deathEvents` record per resolved removal, including proximate cause, tick, position, and entity/resource identity. Root-cause links such as preceding resource state or attacker identity are not inferred.')
 $lines.Add('')
 $lines.Add('## Per-seed outcomes')
 $lines.Add('')

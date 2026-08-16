@@ -20,3 +20,5 @@ into the documentation tree.
 ## Packages
 
 - [EX-001 - Reproducibility Baseline](EX-001-Reproducibility-Baseline/README.md)
+- [EX-001B - Cross-Scenario Determinism](EX-001B-Cross-Scenario-Determinism/README.md)
+- [EX-002 - Herbivore Collapse Attribution](EX-002-Herbivore-Collapse-Attribution/README.md)

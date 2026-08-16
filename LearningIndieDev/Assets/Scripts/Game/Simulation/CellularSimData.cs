@@ -382,6 +382,22 @@ namespace SaltyGame
             return CreateUpdated(startingProbabilities, speciesRules, alphaOffspringRules, startingPopulations);
         }
 
+        public CellularSimData WithRunWindow(float runDurationSeconds, float stepInterval)
+        {
+            return new CellularSimData(
+                Width,
+                Height,
+                startingProbabilities,
+                speciesRules,
+                runDurationSeconds,
+                stepInterval,
+                MaxPopulation,
+                MinPopulation,
+                terrainDefinitions,
+                alphaOffspringRules,
+                startingPopulations);
+        }
+
         CellularSimData CreateUpdated(
             IReadOnlyDictionary<SpeciesId, float> updatedProbabilities,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> updatedRules,

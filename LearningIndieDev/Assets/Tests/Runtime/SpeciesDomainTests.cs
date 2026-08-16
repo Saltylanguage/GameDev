@@ -1582,6 +1582,30 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void BehaviorMetricsExposeTheTrackedEntitySnapshot()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 6));
+            source.SetCell(1, 0, SpeciesCell.Grass(8f));
+            var next = source.Copy();
+            var metrics = new SpeciesSimulationMetrics();
+
+            SpeciesBehaviorSystem.Update(
+                source,
+                next,
+                SpeciesRuleDefaults.Create(),
+                new System.Random(7),
+                metrics);
+
+            Assert.That(metrics.TryGetTrackedBehavior(SpeciesIds.Herbivore, out var tracked), Is.True);
+            Assert.That(tracked.EntityId, Is.EqualTo(source.GetCell(0, 0).EntityId));
+            Assert.That(tracked.Species, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(tracked.X, Is.EqualTo(0));
+            Assert.That(tracked.Y, Is.EqualTo(0));
+            Assert.That(tracked.State, Is.EqualTo(SpeciesBehaviorState.Eating));
+        }
+
+        [Test]
         public void DeadStateIsRecordedBeforeStarvedCreatureIsRemoved()
         {
             var source = new Grid<SpeciesCell>(1, 1);
@@ -1596,6 +1620,30 @@ namespace SaltyGame.Tests
 
             Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
             Assert.That(metrics.GetStateTicks(SpeciesIds.Herbivore, SpeciesBehaviorState.Dead), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void DeathTelemetryCapturesStarvationCauseAndEntityContext()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 1, age: 4));
+            var metrics = new SpeciesSimulationMetrics();
+
+            SpeciesSimulation.Step(
+                source,
+                SpeciesRuleDefaults.Create(),
+                seed: 11,
+                metrics: metrics);
+
+            Assert.That(metrics.DeathEvents, Has.Count.EqualTo(1));
+            var death = metrics.DeathEvents[0];
+            Assert.That(death.Species, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(death.EntityId, Is.EqualTo(source.GetCell(0, 0).EntityId));
+            Assert.That(death.Age, Is.EqualTo(4));
+            Assert.That(death.X, Is.EqualTo(0));
+            Assert.That(death.Y, Is.EqualTo(0));
+            Assert.That(death.Cause, Is.EqualTo(SpeciesDeathCause.Starvation));
+            Assert.That(death.IsCreature, Is.True);
         }
 
         [Test]

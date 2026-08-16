@@ -1,6 +1,6 @@
 # Predictive AI: An Auditable Change-Impact Research Program
 
-**Draft status:** Research paper draft v0.2  
+**Draft status:** Research paper draft v0.4<br>
 **Date:** 2026-08-15  
 **Project:** LearningIndieDev  
 **Research area:** Predictive AI, deterministic simulation, evidence systems, and human-governed design decisions
@@ -32,9 +32,9 @@ tracking, headless automated test tooling, standardized simulation report templa
 and replay metadata. The first current-code EX-001 launch failed during Unity
 startup; after the cache/permission issue was resolved, the schema-4 matrix ran
 twice with matching payloads and selected replays. This gives the project a
-current reproducibility result while retaining the old 32 x 20 report as
-archival evidence; the live authored ForestEdge configuration is now consistently
-32 x 32.
+current reproducibility result while retaining the old 32 x 20 provenance facts
+only; the superseded source artifacts were removed and the live authored
+ForestEdge configuration is now consistently 32 x 32.
 
 ## 1. The project in one sentence
 
@@ -232,7 +232,7 @@ The current foundation includes:
 - deterministic seeded initialization and stepping;
 - versioned ruleset fingerprints;
 - movement, terrain-cost, resource, forage, reproduction, alpha-offspring, and
-  mortality telemetry;
+  mortality telemetry, including schema-5 per-death cause events;
 - population histories and per-species activity summaries;
 - tracked finite-state behavior transitions and death-path logging;
 - headless `CellSim` commands for tests and seeded experiment runs;
@@ -261,9 +261,11 @@ current checkout, another machine, or another scenario will reproduce.
 ### Full histories are more valuable than final counts
 
 Population trajectories, activity, mortality, and behavior-state telemetry
-provide diagnostic context that final populations cannot. They still may not
-identify a unique cause; causal claims require interventions designed to separate
-plausible mechanisms.
+provide diagnostic context that final populations cannot. The new per-death
+events preserve proximate cause, species/resource identity, entity ID when
+available, tick, age, and position. They still do not identify a unique root
+cause; causal claims require interventions designed to separate plausible
+mechanisms and may need preceding resource-state or attacker-link telemetry.
 
 ### Provenance must survive tool and schema changes
 
@@ -296,13 +298,35 @@ Those are descriptive observations and useful replay candidates, not balance or
 causal conclusions.
 
 The current-code gate now passes for the authored 32 x 32 configuration. The
-archived schema-2 brief and report recorded 32 x 20; those artifacts remain
-historical and are not treated as the live configuration. The case study thus
-demonstrates both sides of the program: simulation evidence can be strong when
-artifacts match, and governance must stop a prediction until the current
-instrument has run.
+superseded schema-2 brief and report recorded 32 x 20; their provenance facts
+were transferred to the EX-001 record and source artifacts were removed. The
+case study thus demonstrates both sides of the program: simulation evidence can
+be strong when artifacts match, and governance must stop a prediction until the
+current instrument has run.
 
-## 11. Evaluation program
+## 11. EX-001B as a generalization check
+
+EX-001B extends the reproducibility question across the currently authored
+scenario library without changing the simulation mechanics. ForestEdge (32 x
+32), OpenRange (32 x 20), and Wetland (32 x 20) each reproduced their complete
+20-seed matrix on a second run, with matching ruleset fingerprints, normalized
+run-payload hashes, and final-summary hashes. The pairs used different species
+rosters and scenario fingerprints, so this is stronger evidence than repeating
+ForestEdge alone.
+
+The extension now covers all four authored scenario assets. The current evidence
+supports reproducibility across those four tested scenarios, not all scenarios or
+all cellular automata. It also demonstrates an operational lesson: a rejected
+player-species input and a nonzero Unity wrapper status must remain visible as
+setup/environment anomalies rather than being mistaken for simulation
+divergence.
+
+The human design owner accepted EX-001B on 2026-08-15 as a bounded
+reproducibility result. This acceptance authorizes the next causal experiment,
+EX-002, but does not authorize universal cellular-automata claims, ecological
+finding transfer, or claims that the simulation is correct or balanced.
+
+## 12. Evaluation program
 
 The wider research program must answer ten questions:
 
@@ -328,7 +352,7 @@ The staged evaluation path is:
 6. test translation into player-facing explanations;
 7. promote only the tooling and findings that earn human approval.
 
-## 12. Risks, limits, and guardrails
+## 13. Risks, limits, and guardrails
 
 The main risks are false confidence, stale evidence, hidden instrumentation
 gaps, confounding in multi-variable changes, overfitting to Forest Edge, and
@@ -350,7 +374,7 @@ The guardrails are therefore substantive:
 The project also avoids claiming technical, research, or intellectual-property
 novelty without a separate literature, prior-art, and legal review.
 
-## 13. Roadmap and success criteria
+## 14. Roadmap and success criteria
 
 The near-term success criterion is not a polished prediction dashboard. It is a
 working, reviewable loop in which a human can identify the question, reproduce
@@ -365,10 +389,11 @@ The next milestones are:
 - add replay/state comparison for selected seeds;
 - define held-out and range-coverage budgets;
 - measure prediction calibration and analyst workflow value;
-- test one cross-scenario or cross-feature generalization;
+- proceed to EX-002 and test additional cross-scenario or cross-feature
+  generalization after the causal baseline is documented;
 - only then consider a prediction registry or safe recursive experiment lane.
 
-## 14. Conclusion
+## 15. Conclusion
 
 Predictive AI is best understood as a governed research and development
 workflow, not a single model. Its value would come from connecting bounded
@@ -387,7 +412,6 @@ intervention, and human decision at a time.
 - [Predictive Change Impact Analysis Research Brief](CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md)
 - [Change Impact Analysis Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md)
 - [EX-001 experiment brief](Experiments/EX-001-Reproducibility-Baseline/EXP-001-brief.md)
-- [EX-001 historical factual report](Experiments/EX-001-Reproducibility-Baseline/RPT-RUN-001-0001-0020.md)
 - [EX-001 current-code execution attempt](Experiments/EX-001-Reproducibility-Baseline/RPT-RUN-001-0003-0020.md)
 - [EX-001 current-code paired evidence](Experiments/EX-001-Reproducibility-Baseline/RPT-RUN-001-0004-0020.md)
 - [Unity simulation tooling](../UNITY_SIMULATION_TOOLING.md)

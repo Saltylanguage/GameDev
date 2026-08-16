@@ -138,6 +138,16 @@ ecological answer.
 > thresholds where the effect changes. Confidence is C and it crosses threshold
 > Q under rubric V; insufficient coverage is reported as unresolved.
 
+### Simulation-defined collapse
+
+“Collapse” is a domain-provided state, not a synonym for extinction. A cell type
+is collapsed when its current rules and state leave no practical path to increase
+its population. The path may require a mate, a free destination, a resource,
+an activation condition, or another rule-specific prerequisite. Some collapses
+are intentional and desirable, such as a completed construction system. The
+research workflow records the adapter's rule, observation window, and evidence;
+it does not infer desirability or hard-code ecology-specific causes.
+
 ## Research questions
 
 - Can natural-language change requests be compiled into safe, explicit

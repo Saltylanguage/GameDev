@@ -158,13 +158,15 @@ namespace SaltyGame
                 var x = population.CellIndex % next.Width;
                 var y = population.CellIndex / next.Width;
                 var cell = next.GetCell(x, y);
-                var removedSpecies = population.IsCreature
-                    ? cell.SpeciesId
-                    : GetResourceSpeciesId(cell);
                 next.SetCell(x, y, population.IsCreature
                     ? MarkCreatureDead(next, x, y, metrics).WithoutEntity()
                     : cell.WithoutPlantResource());
-                metrics?.Record(removedSpecies, deaths: 1, populationLimitRemovals: 1);
+                metrics?.RecordDeath(
+                    cell,
+                    x,
+                    y,
+                    SpeciesDeathCause.PopulationLimit,
+                    populationLimitRemovals: 1);
             }
         }
 
@@ -270,7 +272,11 @@ namespace SaltyGame
 
                             if (remainingHealth <= 0)
                             {
-                                metrics?.Record(target.SpeciesId, deaths: 1);
+                                metrics?.RecordDeath(
+                                    currentTarget,
+                                    targetX,
+                                    targetY,
+                                    SpeciesDeathCause.Combat);
                                 metrics?.Record(attacker.SpeciesId, combatKills: 1);
                             }
 
@@ -1047,7 +1053,7 @@ namespace SaltyGame
                         : MarkCreatureDead(next, x, y, metrics).WithoutEntity());
                     if (remainingEnergy <= 0)
                     {
-                        metrics?.Record(cell.SpeciesId, deaths: 1, starvationDeaths: 1);
+                        metrics?.RecordDeath(cell, x, y, SpeciesDeathCause.Starvation);
                     }
                 }
             }
@@ -1125,7 +1131,7 @@ namespace SaltyGame
                         : MarkCreatureDead(next, x, y, metrics).WithoutEntity());
                     if (remainingEnergy <= 0)
                     {
-                        metrics?.Record(cell.SpeciesId, deaths: 1, crowdingDeaths: 1);
+                        metrics?.RecordDeath(cell, x, y, SpeciesDeathCause.Crowding);
                     }
                 }
             }
@@ -1152,7 +1158,7 @@ namespace SaltyGame
                     }
 
                     next.SetCell(x, y, cell.WithoutPlantResource());
-                    metrics?.Record(plantSpecies, deaths: 1, wiltDeaths: 1);
+                    metrics?.RecordDeath(cell, x, y, SpeciesDeathCause.Wilt);
                 }
             }
         }
@@ -1433,7 +1439,7 @@ namespace SaltyGame
                     : plant.WithoutEntity());
             if (remainingEnergy <= 0f)
             {
-                metrics?.Record(plant.SpeciesId, deaths: 1);
+                metrics?.RecordDeath(plant, plantX, plantY, SpeciesDeathCause.ResourceConsumed);
             }
             return true;
         }

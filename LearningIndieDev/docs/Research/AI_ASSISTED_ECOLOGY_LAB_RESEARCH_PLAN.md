@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.2  
+**Version:** 1.6<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -541,19 +541,52 @@ instrument.
 
 The working package is documented in [EX-001 - Reproducibility Baseline](Experiments/EX-001-Reproducibility-Baseline/README.md).
 
+### EX-001B - Cross-scenario determinism extension
+
+**Question:** Does the shared simulation engine reproduce identical
+machine-readable outcomes when each currently authored scenario is repeated with
+identical inputs?
+
+**Method:** Repeat the same schema-4 seed range for ForestEdge, OpenRange,
+Wetland, and BaselineParity using each scenario's authored grid and player
+species. Compare ruleset fingerprints, complete run payloads, population
+histories, and final summaries within each scenario pair.
+
+**Success:** Every included scenario pair matches after generated metadata is
+excluded, and any environment or scenario-specific limitation is explicit.
+
+**Scope boundary:** A pass supports reproducibility across the tested authored
+scenarios only. It does not prove that all cellular automata are deterministic or
+that ecological findings transfer between scenarios.
+
+The working package is documented in [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md). All four authored scenarios have complete matching pairs, and the human design owner accepted the bounded reproducibility result. EX-002 is the next causal experiment.
+
 ### EX-002 - Herbivore collapse attribution
 
-**Question:** Can the evidence spine explain why herbivores collapse in the
-current reference scenario?
+**Question:** Can the evidence spine identify and causally test a simulation's
+rule-defined collapse state, using herbivore decline or extinction in current
+BaselineParity as the first concrete adapter?
 
-**Method:** Use the existing reports and telemetry to identify candidate causes
-such as starvation, movement pressure, predation, reproduction limits, or
-terrain/resource identity. Include spatial measures where movement or regional
-confinement may be part of the failure. Select a small number of controlled
-interventions and rerun the same seed range.
+**Method:** Have the simulation adapter define when a cell type no longer has a
+practical rule-governed path to increase its population. This may be extinction,
+an unmatched mating requirement, an unavailable growth destination, or another
+domain-specific condition; it may be desired rather than harmful. Use the
+current BaselineParity reports and telemetry to test candidate causes such as
+starvation, movement pressure, predation, reproduction limits, or
+terrain/resource identity. The accepted ForestEdge result remains the
+instrument-trust reference; BaselineParity is the first concrete adapter.
 
-**Success:** A causal explanation is supported by changed evidence in a follow-up
-experiment, not just by a plausible narrative.
+**Success:** A causal explanation is supported by changed same-seed evidence in a
+follow-up intervention, with the adapter's collapse rule, endpoint, validated
+range, and remaining instrument gaps recorded. A plausible narrative alone is
+insufficient, and no ecology-specific rule is promoted as universal.
+
+**Readiness note:** The EX-002 brief records the intervention-surface gap and
+now integrates schema-5 run-window, tracked-FSM, and per-death-cause telemetry.
+The existing aggregate BaselineParity result remains pre-telemetry evidence; a
+same-seed schema-5 rerun is still required. Unity batch startup failure observed
+during initial characterization blocks that rerun, so no causal run should be
+treated as started until the blocker is resolved.
 
 ### EX-003 - AI recommendation validity
 
@@ -673,7 +706,7 @@ per sprint; increase capacity only when a gate earns it.
 | Phase | Approx. effort | Focus | Exit gate |
 |---|---:|---|---|
 | P0 - Frame the program | 1 sprint / 4-6 hours | IDs, hypotheses, rubric, ownership, report templates | EX-001 brief and decision protocol accepted |
-| P1 - Trust the instrument | 1-2 sprints / 10-20 hours | Reproducibility, fingerprints, replay, telemetry gaps | EX-001 passes or known limits are explicit |
+| P1 - Trust the instrument | 1-2 sprints / 10-20 hours | Reproducibility, cross-scenario coverage, fingerprints, replay, telemetry gaps | EX-001/EX-001B pass or known limits are explicit |
 | P2 - Diagnose outcomes | 1-2 sprints / 10-20 hours | Herbivore collapse, spatial diagnostics, and causal follow-ups | EX-002 has evidence-backed explanation |
 | P3 - Bound AI discovery | 2-3 sprints / 20-30 hours | AI hypotheses, change-impact maps, thresholds, calibration, and human approval | EX-003/EX-007 meet held-out prediction and false-cause gates |
 | P4 - Translate to design | 1-2 sprints / 10-20 hours | Upgrades, events, explanations, curator metrics | EX-004/EX-005 produce accepted design candidates |
@@ -758,10 +791,13 @@ Every research bundle should preserve:
 
 - The initial source-reading pass for change-impact analysis is captured in
   [Change Impact Analysis Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md).
-- The EX-001 package contains a matching historical report pair, but the
-  current-code rerun and replay gate remain open.
-- EX-002 (herbivore collapse attribution) remains the next experiment after
-  the EX-001 human decision; it has not been started.
+- EX-001 is accepted as a current-code ForestEdge reproducibility baseline.
+- EX-001B has an accepted bounded reproducibility result for matching
+  current-code pairs across ForestEdge, OpenRange, Wetland, and BaselineParity.
+- EX-002 (BaselineParity herbivore decline/extinction attribution) is the next
+  causal experiment; its design has started, but execution is blocked by the
+  current Unity batch startup failure and the need to approve an intervention
+  surface.
 - CIA-001 and EX-007 remain proposed research work, not validated predictive
   capability.
 
@@ -775,7 +811,9 @@ the current production lane:
 5. Generate the SG-001 report bundle and a separate AI analysis.
 6. Record a human decision: pass, identify an instrument gap, or revise the
    experiment.
-7. Create EX-002 only after EX-001's reproducibility gate is understood.
+7. Record and review the accepted EX-001B cross-scenario extension.
+8. Create EX-002 using BaselineParity as the herbivore reference and ForestEdge
+   as the instrument-trust baseline.
 
 This first package should avoid new simulation mechanics, generalized AI
 frameworks, dashboards, or autonomous code changes. It is a trust-building
@@ -832,3 +870,9 @@ rule.
 | 1.0 | 2026-08-15 | Initial research program and experiment protocol. |
 | 1.1 | 2026-08-15 | Added generalized predictive change impact, calibrated risk statements, capability gates, and EX-007. |
 | 1.2 | 2026-08-15 | Consolidated the evidence-to-prediction loop, human decision record, causal/range validation policy, recursive stretch guardrails, and current program state. |
+| 1.3 | 2026-08-15 | Added EX-001B cross-scenario determinism coverage and recorded its completed four-scenario evidence pending human decision. |
+| 1.4 | 2026-08-15 | Recorded human acceptance of EX-001B as a bounded four-scenario reproducibility result and advanced EX-002 as the next causal experiment. |
+| 1.5 | 2026-08-15 | Corrected EX-002 to use current schema-4 BaselineParity for herbivore attribution, defined the initial causal contract, and recorded the intervention/tooling blockers. |
+| 1.6 | 2026-08-15 | Generalized collapse as a simulation-defined loss of practical growth capacity, added run-window and tracked-FSM telemetry seams, and kept desirability separate from collapse detection. |
+| 1.7 | 2026-08-15 | Added schema-5 per-death telemetry with proximate cause, entity/resource identity, tick, age, and position; documented the remaining root-cause attribution gap. |
+| 1.8 | 2026-08-15 | Integrated death telemetry into EX-002 and reclassified the schema-4 aggregate BaselineParity numbers as pre-telemetry evidence pending a same-seed schema-5 rerun. |
