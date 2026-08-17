@@ -1,7 +1,7 @@
 <UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:game="clr-namespace:SaltyGame">
-    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+    <Viewbox Stretch="Uniform" StretchDirection="Both">
     <Grid Width="1280"
           Height="720"
           Margin="24">
@@ -33,9 +33,9 @@
                                      Visibility="{Binding BoardVisibility}"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
-                                     Width="1150"
-                                     Height="600"
-                                     Margin="0,72,0,0"/>
+                                     Width="1240"
+                                     Height="660"
+                                     Margin="0,56,0,0"/>
 
         <Border Visibility="{Binding SettingsVisibility}"
                 HorizontalAlignment="Center"

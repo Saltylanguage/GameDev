@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Globalization;
 using Noesis;
 using UnityEngine;
+using UnityEngine.U2D;
 
 namespace SaltyGame
 {
@@ -11,6 +12,17 @@ namespace SaltyGame
     {
         SpeciesSimulationPreview preview;
         SpeciesSimulationBoard board;
+        SpriteAtlas animalSpriteAtlas;
+        SpriteAtlas terrainSpriteAtlas;
+        Sprite foxSpeciesSprite;
+        Sprite rabbitSpeciesSprite;
+        TextureSource animalTextureSource;
+        TextureSource terrainTextureSource;
+        TextureSource foxTextureSource;
+        TextureSource rabbitTextureSource;
+        CroppedBitmap[] animalSprites;
+        CroppedBitmap[] terrainTiles;
+        bool warnedMissingAtlases;
         SpeciesPreviewState lastState;
         SimulationRunStatus lastRunStatus;
         int lastTick = -1;
@@ -243,9 +255,15 @@ namespace SaltyGame
         public Visibility ResultsVisibility => resultsVisibility;
         public Visibility BoardVisibility => boardVisibility;
 
-        public void Initialize(SpeciesSimulationPreview simulationPreview)
+        public void Initialize(
+            SpeciesSimulationPreview simulationPreview,
+            SpriteAtlas animalAtlas = null,
+            SpriteAtlas terrainAtlas = null,
+            Sprite foxSprite = null,
+            Sprite rabbitSprite = null)
         {
             preview = simulationPreview ?? throw new ArgumentNullException(nameof(simulationPreview));
+            SetSpriteVisuals(animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
             SyncSpeciesTabs();
             SyncScenarioOptions();
             Refresh(true);
@@ -260,7 +278,167 @@ namespace SaltyGame
 
             view.Content.DataContext = this;
             board = view.Content.FindName("SimulationBoard") as SpeciesSimulationBoard;
+            board?.SetSpriteVisuals(animalSprites, terrainTiles);
             Refresh(true);
+        }
+
+        public void SetSpriteVisuals(
+            SpriteAtlas animals,
+            SpriteAtlas terrain,
+            Sprite fox,
+            Sprite rabbit)
+        {
+            if (animalSpriteAtlas == animals
+                && terrainSpriteAtlas == terrain
+                && foxSpeciesSprite == fox
+                && rabbitSpeciesSprite == rabbit
+                && (animalSprites != null || terrainTiles != null || warnedMissingAtlases))
+            {
+                return;
+            }
+
+            animalSpriteAtlas = animals;
+            terrainSpriteAtlas = terrain;
+            foxSpeciesSprite = fox;
+            rabbitSpeciesSprite = rabbit;
+            animalTextureSource = null;
+            terrainTextureSource = null;
+            foxTextureSource = null;
+            rabbitTextureSource = null;
+            animalSprites = null;
+            terrainTiles = null;
+            warnedMissingAtlases = false;
+            PrepareSpriteVisuals();
+            board?.SetSpriteVisuals(animalSprites, terrainTiles);
+        }
+
+        void PrepareSpriteVisuals()
+        {
+            if (terrainSpriteAtlas == null
+                || (animalSpriteAtlas == null && foxSpeciesSprite == null && rabbitSpeciesSprite == null))
+            {
+                if (!warnedMissingAtlases)
+                {
+                    Debug.LogWarning(
+                        "SpeciesSimulationViewModel requires Terrain_01 and either animal atlas or fox/rabbit sprites.");
+                    warnedMissingAtlases = true;
+                }
+
+                return;
+            }
+
+            animalSprites = foxSpeciesSprite != null || rabbitSpeciesSprite != null
+                ? CreateSpeciesSprites()
+                : CreateSprites(animalSpriteAtlas, 8, 4, out animalTextureSource);
+            terrainTiles = CreateSprites(terrainSpriteAtlas, 32, 4, out terrainTextureSource);
+            if (animalSprites == null || terrainTiles == null)
+            {
+                animalSprites = null;
+                terrainTiles = null;
+                warnedMissingAtlases = true;
+            }
+        }
+
+        CroppedBitmap[] CreateSpeciesSprites()
+        {
+            var sprites = new CroppedBitmap[8];
+            if (foxSpeciesSprite != null)
+            {
+                sprites[1] = CreateSprite(foxSpeciesSprite, out foxTextureSource);
+            }
+
+            if (rabbitSpeciesSprite != null)
+            {
+                sprites[5] = CreateSprite(rabbitSpeciesSprite, out rabbitTextureSource);
+            }
+
+            return sprites;
+        }
+
+        static CroppedBitmap CreateSprite(Sprite sprite, out TextureSource textureSource)
+        {
+            textureSource = new TextureSource(sprite.texture);
+            return new CroppedBitmap(textureSource, GetSourceRect(sprite));
+        }
+
+        static CroppedBitmap[] CreateSprites(
+            SpriteAtlas atlas,
+            int count,
+            int columns,
+            out TextureSource textureSource)
+        {
+            textureSource = null;
+            var packedSprites = new Sprite[atlas.spriteCount];
+            atlas.GetSprites(packedSprites);
+            if (packedSprites.Length == 0)
+            {
+                Debug.LogWarning($"SpriteAtlas '{atlas.name}' contains no sprites.");
+                return null;
+            }
+
+            Array.Sort(packedSprites, CompareSpritesBySourcePosition);
+            textureSource = new TextureSource(packedSprites[0].texture);
+            if (packedSprites.Length == 1)
+            {
+                return CreateSprites(textureSource, GetSourceRect(packedSprites[0]), count, columns);
+            }
+
+            if (packedSprites.Length < count)
+            {
+                Debug.LogWarning(
+                    $"SpriteAtlas '{atlas.name}' contains {packedSprites.Length} sprites; expected at least {count}.");
+                return null;
+            }
+
+            var sprites = new CroppedBitmap[count];
+            for (var index = 0; index < count; index++)
+            {
+                sprites[index] = new CroppedBitmap(textureSource, GetSourceRect(packedSprites[index]));
+            }
+
+            return sprites;
+        }
+
+        static CroppedBitmap[] CreateSprites(
+            TextureSource source,
+            Int32Rect sourceRect,
+            int count,
+            int columns)
+        {
+            var sprites = new CroppedBitmap[count];
+            var tileWidth = sourceRect.Width / columns;
+            var tileHeight = sourceRect.Height / ((count + columns - 1) / columns);
+            for (var index = 0; index < count; index++)
+            {
+                sprites[index] = new CroppedBitmap(
+                    source,
+                    new Int32Rect(
+                        sourceRect.X + (index % columns) * tileWidth,
+                        sourceRect.Y + (index / columns) * tileHeight,
+                        tileWidth,
+                        tileHeight));
+            }
+
+            return sprites;
+        }
+
+        static Int32Rect GetSourceRect(Sprite sprite)
+        {
+            var rect = sprite.packed && sprite.packingMode == SpritePackingMode.Rectangle
+                ? sprite.textureRect
+                : sprite.rect;
+            var scale = sprite.spriteAtlasTextureScale;
+            return new Int32Rect(
+                (int)(rect.x * scale),
+                sprite.texture.height - (int)((rect.y + rect.height) * scale),
+                (int)(rect.width * scale),
+                (int)(rect.height * scale));
+        }
+
+        static int CompareSpritesBySourcePosition(Sprite left, Sprite right)
+        {
+            var y = right.rect.y.CompareTo(left.rect.y);
+            return y != 0 ? y : left.rect.x.CompareTo(right.rect.x);
         }
 
         void Awake()

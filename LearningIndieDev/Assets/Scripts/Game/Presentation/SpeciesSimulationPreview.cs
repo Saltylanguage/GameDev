@@ -993,7 +993,9 @@ namespace SaltyGame
             if (SelectedScenario != null)
             {
                 var authoredData = SelectedScenario.CreateRuntimeData();
-                return authoredData.WithSpeciesRules(playerSpecies, rules[playerSpecies]);
+                return authoredData
+                    .WithGridSize(width, height)
+                    .WithSpeciesRules(playerSpecies, rules[playerSpecies]);
             }
 
             return new CellularSimData(
