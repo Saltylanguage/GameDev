@@ -4,13 +4,15 @@
 
 - `tools/Build-CellularSpriteSheets.ps1` converts the supplied reference sheets
   into transparent, nearest-neighbor atlases at 128 pixels per tile.
-- `Assets/Resources/CellularArt/Animals_01_SpriteSheet.png` is a 4x2 animal
-  atlas. The board maps stable species IDs to atlas indices and falls back by
-  role (carnivore or herbivore) for newly authored species.
-- `Assets/Resources/CellularArt/Terrain_01_SpriteSheet.png` is a 4x8 atlas:
-  grass variants occupy rows 0-3 and desert variants rows 4-7. The current
-  board uses the grass half for grass and temporarily maps bare terrain to the
-  desert half until a dedicated bare-ground atlas is authored.
+- Animal presentation is now scene-wired through a `SpriteAtlas` packed from
+  `Assets/Art/Species/Animals/Standardized/32/`; standardized exports also
+  exist under `Standardized/64/` and `Standardized/128/`. The board receives
+  the atlas and direct sprite inputs through `SpeciesSimulationNoesisHost`;
+  it no longer loads animal sheets from `Resources`.
+- `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` is a 4x8 atlas: grass
+  variants occupy rows 0-3 and desert variants rows 4-7. The current board uses
+  the grass half for grass and temporarily maps bare terrain to the desert half
+  until a dedicated bare-ground atlas is authored.
 - `TerrainTileResolver` computes a four-cardinal-neighbor bit mask from the
   simulation grid. It is presentation-only: it reads the immutable cell state
   and never changes simulation rules or determinism. The same mask table is
@@ -42,14 +44,19 @@ presentation boundary and keep the 16 base variants as the fallback.
 
 ## Remaining validation and art work
 
-1. Open the preview and cellular prototype in Unity at gameplay scale. If an
+1. Update `TerrainTilePreviewWindow` from the deleted `Resources` path to the
+   current terrain asset/SpriteAtlas, then run all 16 masks in Unity.
+2. Verify stable species mapping and merge direct Fox/Rabbit overrides with the
+   atlas fallback, or explicitly scope the scene to those two species and test
+   every authored species that can appear.
+3. Open the preview and cellular prototype in Unity at gameplay scale. If an
    edge or corner is wrong, adjust only `GrassAtlasIndexByMask`.
-2. Replace the temporary bare-to-desert mapping with an authored bare-ground
+4. Replace the temporary bare-to-desert mapping with an authored bare-ground
    tileset when that art is available.
-3. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
+5. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
    until then, plant-resource terrain is represented by grass and avoids an
    unrelated animal icon.
-4. Add a Play Mode screenshot check once Unity is available in the development
+6. Add a Play Mode screenshot check once Unity is available in the development
    environment. This should verify atlas loading, terrain seams, and icon scale
    in the actual Noesis view rather than only in the editor preview.
 
