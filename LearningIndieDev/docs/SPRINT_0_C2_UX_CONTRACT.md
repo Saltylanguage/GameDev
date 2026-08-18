@@ -1,6 +1,6 @@
 # Sprint 0 C2 — UX Contract and Low-Fidelity Layouts
 
-> Status: Executed | Date: 2026-08-18 | Scope: Sprint 1 UI-only shell
+> Status: Ready for review | Date: 2026-08-18 | Scope: Sprint 1 UI-only shell
 
 This is the C2 contract for the first player-facing route. It narrows the
 broader Main Menu/Lab delivery plan to the smallest demonstrable Sprint 1
@@ -14,6 +14,21 @@ Launch -> Main Menu -> Lab Overview -> Research preview
 
 The UI uses representative data only. It does not spend currency, persist a
 profile, launch a simulation, or expose Dev Lab controls.
+
+## Relationship to the player-facing overview
+
+The broader [Player-Facing Screen Flow - Sprint 0](https://www.figma.com/board/EWP1aKrjnMu9FUHifMHd5H/Player-Facing-Screen-Flow---Sprint-0)
+FigJam board remains the product-level overview. C2 is the intentionally smaller
+Sprint 1 implementation slice, not a replacement for that overview.
+
+| Overview destination | C2 treatment |
+| --- | --- |
+| Main Menu -> Profile Picker / New Profile | Deferred. C2 starts at Main Menu with representative profile text only. |
+| `LAB OS` | Represented by `Lab Overview` in this contract. |
+| `Genetic Lab` | Represented only by the initial `Research preview`; Gene Splicer and Scenario Editor remain deferred. |
+| `Ecology Simulator` | Deferred. C2 does not launch a simulation or expose Expedition Setup. |
+| `Records` and `Badges` | Deferred from the Sprint 1 shell. |
+| Settings, Credits, and Quit | Settings and Credits are prototype placeholders; Quit is defined as a bounded confirmation overlay below. |
 
 ## Screen contract
 
@@ -31,6 +46,15 @@ Purpose: provide a calm entry point with one obvious next action.
 
 `Esc` on Main Menu opens the same quit confirmation. No data bar appears here;
 currency is introduced in the Lab where it has a purpose.
+
+#### Quit confirmation overlay
+
+- `Quit` or `Esc` on Main Menu opens a modal asking whether to quit to desktop.
+- `Cancel` closes the overlay and restores focus to the invoking `Quit` action.
+- `Quit to Desktop` exits the desktop application.
+- `Back` or `Esc` closes the overlay before any page-level Back behavior runs.
+- The overlay does not ask to save or select a profile; persistence and profiles
+  are outside C2.
 
 ### Lab Overview
 
@@ -58,7 +82,7 @@ pretending that purchases are wired.
 
 | Element | State and behavior |
 | --- | --- |
-| Research tabs | Plant, Herbivore, Carnivore. Herbivore is selected; the other tabs are visible and content-light. |
+| Research tabs | Plant, Herbivore, Carnivore. Herbivore is selected and interactive; Plant and Carnivore remain visible but disabled and labeled `Prototype — later sprint`. |
 | Project list | Two fixture cards: one available/affordable and one locked/unaffordable. |
 | Selected project panel | Shows type, cost, prerequisite, benefit, current balance, and explicit representative-data notice. |
 | `Purchase` | Disabled and labeled `Prototype preview — no balance mutation`. |
@@ -101,7 +125,7 @@ order is retained at both target resolutions.
 
 ```text
 +--------------------------------------------------------------------------------+
-| [Bio Os]  Forest Edge study                         [Profile] [Quit]            |
+| [LAB OS]  Forest Edge study                                  [Quit]            |
 +--------------------------------------------------------------------------------+
 |                                                                                |
 |                         MAIN MENU                                              |
@@ -151,6 +175,20 @@ and the Lab content becomes a stacked layout:
 
 ```text
 +------------------------------------------------------------------------+
+| LAB OS  Forest Edge study                                      [Quit]  |
++------------------------------------------------------------------------+
+|                            MAIN MENU                                  |
+|                     Cellular automata as a roguelike                 |
+|                                                                        |
+|                            [ ENTER LAB ]                              |
+|                      [ Settings — Prototype ]                        |
+|                      [ Credits  — Prototype ]                        |
+|                            [ Quit ]                                   |
++------------------------------------------------------------------------+
+```
+
+```text
++------------------------------------------------------------------------+
 | [Back] Lab Overview   Research 120  Plant 36  Herbivore 48  Carnivore 12 |
 +------------------------------------------------------------------------+
 | Forest Edge study · Hare focus                                         |
@@ -161,6 +199,28 @@ and the Lab content becomes a stacked layout:
 | Archive [Prototype]   Expedition [Prototype]                           |
 |                                                                        |
 | [ Back to Main Menu ]                                                   |
++------------------------------------------------------------------------+
+```
+
+```text
++------------------------------------------------------------------------+
+| [Back] Research | Research 120 | Plant 36 | Herbivore 48 | Carnivore 12 |
++------------------------------------------------------------------------+
+| [Plant - Prototype] [HERBIVORE] [Carnivore - Prototype]                |
+|                                                                        |
+| [Available] Forage Route Mapping                                      |
+| [Locked] Predator Avoidance Field Notes                               |
+|                                                                        |
+| SELECTED PROJECT                                                       |
+| Forage Route Mapping                                                   |
+| Type: Herbivore research                                               |
+| Cost: 10 Research + 20 Herbivore Data                                 |
+| Prerequisite: none                                                     |
+| Benefit: food-search route preview                                    |
+| Current balance: Research 120; Herbivore 48                            |
+| [Purchase - Prototype preview - disabled]                             |
+| Representative data                                                   |
+| [ Back to Lab ]                                                        |
 +------------------------------------------------------------------------+
 ```
 
@@ -182,13 +242,17 @@ or hidden Back action is acceptable.
    color change alone is insufficient.
 8. Keyboard order follows reading order. Mouse activation and keyboard
    activation invoke the same command.
-9. Disabled controls remain reachable for explanation, but cannot mutate state.
+9. Disabled controls remain visible with an explicit reason and cannot mutate
+   state. They may be reachable in keyboard order for explanation; if the UI
+   toolkit does not focus disabled controls, the adjacent explanation text is
+   the reachable element instead.
 10. Selecting an available or locked project never changes the fixture balances.
 
 ## Acceptance evidence
 
 - The Sprint 1 route is fixed to Main Menu → Lab Overview → Research preview.
-- Every active Sprint 1 action has a destination and a Back path.
+- Every active navigation action has a destination and a Back path; the Quit
+  overlay has explicit Cancel and Quit to Desktop outcomes.
 - Disabled, locked, prerequisite, and unaffordable states have explicit text.
 - Currency type, cost, prerequisite, and benefit are readable without color
   alone.
@@ -196,10 +260,13 @@ or hidden Back action is acceptable.
 - Player Lab responsibilities are separated from Dev Lab authoring controls.
 - The fixture is bounded and deterministic; it is not a persistence or wallet
   implementation.
+- The C2 route is a mapped subset of the broader player-facing overview;
+  deferred destinations are not silently removed from the product direction.
 
 ## Deferred decisions
 
 - Final typography, color palette, art motifs, and audio feedback.
 - Actual research purchase behavior and data settlement.
-- Full Species Archive, Expedition Setup, profiles, persistence, and saves.
+- Full Species Archive, Expedition Setup, Profile Picker / New Profile, Records,
+  Badges, full Genetic Lab tooling, Ecology Simulator, persistence, and saves.
 - General navigation framework or reusable UI component library.
