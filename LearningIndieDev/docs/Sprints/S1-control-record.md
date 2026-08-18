@@ -46,8 +46,9 @@ automatically committed to new scope.
 
 ## Board disposition
 
-- The four cards above are the complete Sprint 1 commitment and remain in
-  `🎯 Upcoming Work` until kickoff promotes them to the active execution list.
+- The four cards above are the complete Sprint 1 commitment and were promoted
+  from `🎯 Upcoming Work` to `🛠️ In Progress` at the 2026-08-18 kickoff. Their
+  owners, estimates, acceptance evidence, and Aug 30 due dates are unchanged.
 - `Sprint 1 - Separate the player UI from the Dev Lab scene` (Trello 30) is
   retained but moved to `🗂️ Backlog & Ideas`: it is explicitly deferred by
   `SPRINT_1_PLAN.md` and lacks the metadata required for sprint commitment.
