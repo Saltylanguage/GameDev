@@ -7,8 +7,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-08-15
-- Report state: Findings recorded; no P0 blockers found
+- Last reviewed: 2026-08-17
+- Report state: Fresh review after `4f04f4b2`; no P0 blockers; art validation and simulation/research blockers remain
 
 ## Triage rules
 
@@ -22,20 +22,22 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - **Status:** Still open.
 - **Evidence:** `artifacts/playmode-last-run.md` and `.json`; the latest 32x32,
-  200-tick run moved Hare from 22 to 57, Fox from 4 to 3, and Plant from 314
-  to 684. The current Hare target is approximately 26–33 final population,
-  with Foxes remaining relevant but viable.
+  200-tick run ended at Fox 5, Hare 19, and Plant 902. The current Hare target
+  is approximately 26–33 final population, with Foxes remaining relevant but
+  viable. This is a single unpaired seed, so it is a tuning signal rather than
+  a balance conclusion.
 - **Next action:** Run fixed-seed comparisons that reduce Hare reproduction
   throughput and establish a meaningful regional Grass carrying limit before
   expanding the roster.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-002 — Fox mating intent is not producing offspring
+### P1-002 — Fox mating reliability is not established
 
-- **Status:** Still open.
-- **Evidence:** The same report records 236 Fox Mating ticks, 5 kills, 1
-  starvation death, and 0 Fox births.
+- **Status:** Partially improved; still open.
+- **Evidence:** The latest report records 1 Fox birth, 322 Fox Mating ticks,
+  6 kills, and a final Fox population of 5. The earlier zero-birth result is
+  historical; one birth does not establish reliable reproduction.
 - **Next action:** Add eligible-mating, blocked-mating, and successful-mating
   metrics so energy, adjacency, timing, and chance failures can be separated
   before tuning values.
@@ -45,9 +47,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-003 — Eating state telemetry is undercounted for Foxes
 
 - **Status:** New finding from the latest report review.
-- **Evidence:** Fox activity records 5 food events, while aggregate Fox Eating
-  ticks are zero; tracked transition history still references Eating around
-  attack resolution.
+- **Evidence:** Fox activity records 6 food events, while the aggregate table
+  still has no Fox Eating row; tracked transition history references
+  Hunting → Attacking → Eating → Wandering around attack resolution.
 - **Next action:** Distinguish FSM decision ticks from resolver-applied action
   states, or record action states after attack/feeding resolution. Add a
   regression assertion for the report fields.
@@ -79,18 +81,69 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
-### P1-007 — Research source pass and local skill files are uncommitted
+### P1-006 — Editor smart-tiling preview references a deleted asset
 
-- **Status:** New/uncommitted working-tree state.
-- **Evidence:** `git status` shows a modified
-  `docs/Research/CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md`, untracked
-  `docs/Research/CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md`, and untracked
-  `.agents/skills/loose-ends/`.
-- **Next action:** Decide whether the research source pass belongs in the next
-  commit; either complete and commit the LooseEnds skill package or keep it
-  explicitly local-only. Do not discard either without an ownership decision.
-- **Likely owner:** Repository maintainer.
+- **Status:** New finding from the art-pipeline review.
+- **Evidence:** `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10`
+  still points at `Assets/Resources/CellularArt/Terrain_01_SpriteSheet.png`.
+  That path is absent; the current asset is
+  `Assets/Art/Terrain/Terrain_01_SpriteSheet.png`.
+- **Next action:** Update the preview to the current asset/SpriteAtlas model,
+  then run the 16-mask preview and record visual evidence.
+- **Likely owner:** Presentation/art owner.
 - **Confidence:** High.
+
+### P1-007 — Species sprite fallback can omit non-Fox/Rabbit species
+
+- **Status:** New finding from the art-pipeline review.
+- **Evidence:** `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs:330-332`
+  skips the atlas fallback whenever either direct Fox or Rabbit sprite override
+  is present. `CreateSpeciesSprites()` only fills the Fox and Rabbit slots,
+  while the scene wires both overrides and an animal atlas. Other authored
+  species can therefore receive null sprite entries.
+- **Next action:** Merge direct overrides with atlas fallback, or explicitly
+  scope the scene to those species and add a test covering every authored
+  species.
+- **Likely owner:** Presentation owner.
+- **Confidence:** High.
+
+### P1-008 — Art/presentation commit lacks post-commit runtime acceptance
+
+- **Status:** New finding; implementation is committed and pushed, acceptance
+  is still open.
+- **Evidence:** Commit `4f04f4b2` standardized the art/SpriteAtlas pipeline and
+  scene wiring. No Unity screenshots or gameplay-scale visual checks exist
+  after that commit; the relay health check only reports `OK` with zero relay
+  processes when Unity is not active.
+- **Next action:** Open the preview and `CellularAutomataPrototype` in Unity,
+  capture gameplay-scale screenshots, and verify atlas loading, terrain seams,
+  and species icon scale.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-009 — EX-002 schema-5 execution remains blocked by Unity startup failure
+
+- **Status:** Still open.
+- **Evidence:** `docs/Research/Experiments/EX-002-Herbivore-Collapse-Attribution/README.md`
+  records integrated schema-5 death telemetry but no factual report because
+  Unity batch startup fails before writing artifacts.
+- **Next action:** Repair the Unity startup/cache issue, run the same-seed
+  schema-5 control, verify death events against aggregate activity, then run
+  the declared intervention matrix.
+- **Likely owner:** Simulation/tooling owner.
+- **Confidence:** High.
+
+### P1-010 — Sprint 1 readiness/control record is not formally closed
+
+- **Status:** Planning readiness is still open.
+- **Evidence:** `docs/SPRINT_1_PLAN.md` remains a Discussion draft for
+  August 17–23, while `docs/SPRINT_KICKOFF_WORKFLOW.md` requires a durable
+  sprint control record with owners, acceptance, and carry-over decisions.
+- **Next action:** Confirm the Trello sprint control record, owners, acceptance
+  checks, and cut order; record the kickoff/closeout state before treating the
+  sprint as active execution.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** Medium-high.
 
 ### P2-001 — Discord collaboration proof remains unassigned
 
@@ -121,9 +174,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** `LearningIndieDev/AGENTS.md` contains a duplicated Studio
   Guidelines instruction. The historical 2026-08-14 Play Mode handoff still
   says full execution is pending even though a newer Play Mode artifact exists.
-- **Next action:** Remove the duplicate instruction and add a newer handoff when
-  the next material simulation/reporting change is made; preserve the old note
-  as history.
+- **Next action:** Remove the duplicate instruction and preserve old handoffs as
+  history while adding newer notes when status changes.
 - **Likely owner:** Repository maintainer.
 - **Confidence:** High.
 
@@ -150,8 +202,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** Commit `ff59da90`; Studio Guidelines, research plan, experiment
   templates, baseline package, and project-context links.
 - **Result:** The evidence workflow is documented. EX-001 is now accepted using
-  the authored 32 x 32 ForestEdge configuration; the uncommitted source-reading
-  pass remains open separately above.
+  the authored 32 x 32 ForestEdge configuration. The source-reading pass is
+  tracked and committed; EX-002 execution remains separately blocked above.
 
 ### R-004 — Play Mode result persistence
 
@@ -172,3 +224,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   current EX-001 record, but its source artifact was removed; the live authored
   configuration is consistently 32 x 32. No balance or causal claim was
   promoted.
+
+### R-006 — Research source pass and local skill files are now tracked
+
+- **Evidence:** `git ls-files` includes
+  `docs/Research/CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md` and
+  `.agents/skills/loose-ends/**`; the branch is clean.
+- **Result:** The previous uncommitted-working-tree finding is resolved. Future
+  changes to the source-reading package should be handled as normal commits.
+
+### R-007 — Art/presentation working-tree batch is committed and pushed
+
+- **Evidence:** Commit `4f04f4b2` is present on
+  `codex/cellular-sprite-tiling` and the branch is synchronized with origin.
+- **Result:** Standardized art exports, SpriteAtlas assets, scene wiring, and
+  relay-health tooling are shared. Runtime visual acceptance remains open as
+  P1-008.

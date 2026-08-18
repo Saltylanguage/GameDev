@@ -1,11 +1,16 @@
 using Noesis;
 using UnityEngine;
+using UnityEngine.U2D;
 
 namespace SaltyGame
 {
     public sealed class SpeciesSimulationNoesisHost : MonoBehaviour
     {
         [SerializeField] NoesisXaml xaml;
+        [SerializeField] SpriteAtlas animalAtlas;
+        [SerializeField] SpriteAtlas terrainAtlas;
+        [SerializeField] Sprite foxSprite;
+        [SerializeField] Sprite rabbitSprite;
         [SerializeField] bool enableNoesisUi = true;
 
         void Start()
@@ -39,7 +44,7 @@ namespace SaltyGame
                 viewModel = camera.gameObject.AddComponent<SpeciesSimulationViewModel>();
             }
 
-            viewModel.Initialize(preview);
+            viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
             viewModel.BindToView(view);
         }
     }

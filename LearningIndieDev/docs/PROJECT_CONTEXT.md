@@ -306,8 +306,9 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
 
 - Global settings, species-rule authoring, run controls, rewards, and results are
   now presented by `SpeciesSimulationShell.xaml` with
-  `SpeciesSimulationViewModel`. The legacy IMGUI species editor remains an
-  explicit fallback only.
+  `SpeciesSimulationViewModel`. The former IMGUI species editor is no longer
+  part of the runtime path; older handoffs that describe it as a fallback are
+  historical.
 - `SpeciesSimulationBoard` is the first XAML game-board attempt. It is a single
   `FrameworkElement` custom renderer that receives the current
   `Grid<SpeciesCell>` and batches all cell rectangles through `DrawingContext`.

@@ -12,10 +12,7 @@ namespace SaltyGame
     /// </summary>
     public sealed class SpeciesSimulationBoard : FrameworkElement
     {
-        const int AtlasTileSize = 128;
         const int TerrainFamilyTileOffset = 16;
-        const string AnimalAtlasResource = "CellularArt/Animals_01_SpriteSheet";
-        const string TerrainAtlasResource = "CellularArt/Terrain_01_SpriteSheet";
 
         static readonly Dictionary<SpeciesId, int> AnimalAtlasIndexBySpecies =
             new Dictionary<SpeciesId, int>
@@ -32,13 +29,20 @@ namespace SaltyGame
 
         Grid<SpeciesCell> cells;
         IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
-        TextureSource animalAtlas;
-        TextureSource terrainAtlas;
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] terrainTiles;
-        SpeciesId playerSpecies;
-        Pen playerSpeciesOutline;
-        bool warnedMissingAtlases;
+
+        public void SetSpriteVisuals(CroppedBitmap[] animals, CroppedBitmap[] terrain)
+        {
+            if (ReferenceEquals(animalSprites, animals) && ReferenceEquals(terrainTiles, terrain))
+            {
+                return;
+            }
+
+            animalSprites = animals;
+            terrainTiles = terrain;
+            InvalidateVisual();
+        }
 
         public void SetSpeciesRules(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
         {
@@ -74,7 +78,6 @@ namespace SaltyGame
                 return;
             }
 
-            EnsureSpriteAtlases();
             var cellSize = Math.Min(width / cells.Width, height / cells.Height);
             var boardWidth = cellSize * cells.Width;
             var boardHeight = cellSize * cells.Height;
@@ -145,35 +148,16 @@ namespace SaltyGame
                 return;
             }
 
-            if (animalSprites == null)
+            var index = GetAnimalAtlasIndex(cell);
+            if (animalSprites == null
+                || index < 0
+                || index >= animalSprites.Length
+                || animalSprites[index] == null)
             {
                 return;
             }
 
-            context.DrawImage(animalSprites[GetAnimalAtlasIndex(cell)], cellRect);
-        }
-
-        void EnsureSpriteAtlases()
-        {
-            if (animalSprites != null || warnedMissingAtlases)
-            {
-                return;
-            }
-
-            var animalTexture = UnityEngine.Resources.Load<Texture2D>(AnimalAtlasResource);
-            var terrainTexture = UnityEngine.Resources.Load<Texture2D>(TerrainAtlasResource);
-            if (animalTexture == null || terrainTexture == null)
-            {
-                warnedMissingAtlases = true;
-                Debug.LogWarning(
-                    $"SpeciesSimulationBoard could not load '{AnimalAtlasResource}' or '{TerrainAtlasResource}'.");
-                return;
-            }
-
-            animalAtlas = new TextureSource(animalTexture);
-            terrainAtlas = new TextureSource(terrainTexture);
-            animalSprites = CreateSprites(animalAtlas, 8, 4);
-            terrainTiles = CreateSprites(terrainAtlas, 32, 4);
+            context.DrawImage(animalSprites[index], cellRect);
         }
 
         static bool TryGetTerrainFamilyOffset(TerrainId terrainId, out int offset)
@@ -194,23 +178,6 @@ namespace SaltyGame
 
             offset = 0;
             return false;
-        }
-
-        static CroppedBitmap[] CreateSprites(BitmapSource source, int count, int columns)
-        {
-            var sprites = new CroppedBitmap[count];
-            for (var index = 0; index < count; index++)
-            {
-                sprites[index] = new CroppedBitmap(
-                    source,
-                    new Int32Rect(
-                        (index % columns) * AtlasTileSize,
-                        (index / columns) * AtlasTileSize,
-                        AtlasTileSize,
-                        AtlasTileSize));
-            }
-
-            return sprites;
         }
 
         int GetAnimalAtlasIndex(SpeciesCell cell)

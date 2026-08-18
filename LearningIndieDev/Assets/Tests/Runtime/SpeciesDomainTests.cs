@@ -1274,6 +1274,31 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CellularSimDataCanResizeAnAuthoredGridWithoutChangingRules()
+        {
+            var data = new CellularSimData(
+                4,
+                3,
+                new Dictionary<SpeciesId, float>
+                {
+                    [SpeciesIds.Herbivore] = 0.5f,
+                },
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Herbivore] = CreateRules(),
+                },
+                runDurationSeconds: 10f,
+                stepInterval: 0.1f);
+
+            var resized = data.WithGridSize(9, 7);
+
+            Assert.That(resized.Width, Is.EqualTo(9));
+            Assert.That(resized.Height, Is.EqualTo(7));
+            Assert.That(resized.SpeciesRules[SpeciesIds.Herbivore], Is.SameAs(data.SpeciesRules[SpeciesIds.Herbivore]));
+            Assert.That(resized.StartingProbabilities[SpeciesIds.Herbivore], Is.EqualTo(0.5f));
+        }
+
+        [Test]
         public void CellularSimDataSupportsCustomSpeciesIds()
         {
             var scavenger = new SpeciesId("scavenger");
