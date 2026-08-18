@@ -31,6 +31,8 @@ namespace SaltyGame
         IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] terrainTiles;
+        SpeciesId playerSpecies;
+        Pen playerSpeciesOutline;
 
         public void SetSpriteVisuals(CroppedBitmap[] animals, CroppedBitmap[] terrain)
         {
