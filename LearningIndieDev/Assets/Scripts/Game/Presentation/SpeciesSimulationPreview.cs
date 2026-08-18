@@ -198,6 +198,8 @@ namespace SaltyGame
         };
 
         SpeciesId playerSpecies;
+        readonly List<SpeciesId> rosterSpecies = new List<SpeciesId>();
+        readonly List<SpeciesId> playableSpecies = new List<SpeciesId>();
         IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         SpeciesProgression progression;
         SpeciesSimulationRunner runner;
@@ -230,6 +232,9 @@ namespace SaltyGame
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
         public IReadOnlyList<ScenarioDefinitionAsset> ScenarioOptions => scenarioOptions;
+        public IReadOnlyList<SpeciesId> RosterSpecies => rosterSpecies;
+        public IReadOnlyList<SpeciesId> PlayableSpecies => playableSpecies;
+        public SpeciesId PlayerSpecies => playerSpecies;
         public int SelectedScenarioIndex => selectedScenarioIndex;
         public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
@@ -672,12 +677,13 @@ namespace SaltyGame
             {
                 var authoredData = SelectedScenario.CreateRuntimeData();
                 rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
-            if (!rules.ContainsKey(playerSpecies))
-            {
-                playerSpecies = FindPlayableSpecies(rules);
-                playerSpeciesKey = playerSpecies.Value;
+                if (!rules.ContainsKey(playerSpecies))
+                {
+                    playerSpecies = FindPlayableSpecies(rules);
+                    playerSpeciesKey = playerSpecies.Value;
+                }
             }
-            }
+            SyncRosterSpecies();
             progression = new SpeciesProgression(new SpeciesDefinition(
                 playerSpecies,
                 rules[playerSpecies]));
@@ -1042,6 +1048,40 @@ namespace SaltyGame
                 && selectedScenarioIndex < scenarioOptions.Count
                 ? scenarioOptions[selectedScenarioIndex]
                 : null;
+        }
+
+        void SyncRosterSpecies()
+        {
+            rosterSpecies.Clear();
+            playableSpecies.Clear();
+
+            if (SelectedScenario != null)
+            {
+                foreach (var entry in SelectedScenario.Species)
+                {
+                    if (entry?.Definition != null)
+                    {
+                        rosterSpecies.Add(entry.Definition.Id);
+                    }
+                }
+            }
+            else if (rules != null)
+            {
+                foreach (var entry in rules)
+                {
+                    rosterSpecies.Add(entry.Key);
+                }
+            }
+
+            foreach (var species in rosterSpecies)
+            {
+                if (rules != null
+                    && rules.TryGetValue(species, out var speciesRules)
+                    && !speciesRules.IsPlant)
+                {
+                    playableSpecies.Add(species);
+                }
+            }
         }
 
         static SpeciesId FindPlayableSpecies(IReadOnlyDictionary<SpeciesId, SpeciesRules> definitions)

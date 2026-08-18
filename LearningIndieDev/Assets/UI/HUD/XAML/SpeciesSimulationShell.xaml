@@ -1,6 +1,8 @@
 <UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:game="clr-namespace:SaltyGame">
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:game="clr-namespace:SaltyGame"
+             xmlns:noesis="clr-namespace:NoesisApp;assembly=Noesis.NoesisGUI">
     <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
     <Grid Width="1280"
           Height="720"
@@ -46,13 +48,27 @@
             </StackPanel>
         </Border>
 
-        <game:SpeciesSimulationBoard x:Name="SimulationBoard"
-                                     Visibility="{Binding BoardVisibility}"
-                                     HorizontalAlignment="Center"
-                                     VerticalAlignment="Center"
-                                     Width="1150"
-                                     Height="600"
-                                     Margin="0,72,0,0"/>
+        <Grid Visibility="{Binding BoardVisibility}"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              Width="1150"
+              Height="600"
+              Margin="0,72,0,0"
+              ClipToBounds="True">
+            <game:SpeciesSimulationBoard x:Name="SimulationBoard"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"
+                                         Width="1150"
+                                         Height="600">
+                <b:Interaction.Behaviors>
+                    <noesis:TranslateZoomRotateBehavior SupportedGestures="Translate,Scale"
+                                                         MinimumScale="0.75"
+                                                         MaximumScale="4"
+                                                         WheelSensitivity="0.15"
+                                                         ConstrainToParentBounds="True"/>
+                </b:Interaction.Behaviors>
+            </game:SpeciesSimulationBoard>
+        </Grid>
 
         <Border Visibility="{Binding SettingsVisibility}"
                 HorizontalAlignment="Center"
