@@ -224,8 +224,8 @@ Exit criteria:
 
 ## Initial sprint plan
 
-Default cadence is one week with approximately 10 hours per developer. Sprint 0
-is a shorter planning sprint. Each sprint selects one relevant work bucket and
+Default cadence is two weeks with approximately 20 hours per developer. Sprint
+0 was a shorter planning sprint. Each sprint selects one relevant work bucket and
 one primary outcome; exploratory work may run alongside it only when the
 committed exit gate is protected.
 

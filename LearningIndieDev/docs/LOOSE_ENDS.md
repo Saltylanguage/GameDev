@@ -138,13 +138,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-010 — Sprint 1 readiness/control record is not formally closed
 
-- **Status:** Planning readiness is still open.
-- **Evidence:** `docs/SPRINT_1_PLAN.md` remains a Discussion draft for
-  August 17–23, while `docs/SPRINT_KICKOFF_WORKFLOW.md` requires a durable
-  sprint control record with owners, acceptance, and carry-over decisions.
-- **Next action:** Confirm the Trello sprint control record, owners, acceptance
-  checks, and cut order; record the kickoff/closeout state before treating the
-  sprint as active execution.
+- **Status:** Resolved; the active control record and execution plan are now
+  durable and aligned to the two-week project cadence.
+- **Evidence:** `docs/Sprints/S1-control-record.md` and the Trello S1 control
+  card record the August 17–30 window, owners, acceptance checks, cut order,
+  and 40-hour planning capacity (20 hours committed).
+- **Next action:** Keep the control record and Trello dates synchronized at the
+  next sprint review.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
