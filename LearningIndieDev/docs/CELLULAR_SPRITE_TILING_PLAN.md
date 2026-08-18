@@ -19,6 +19,9 @@
   shared by the runtime board, tests, and the editor preview window.
 - The species preview no longer has a legacy IMGUI board or settings fallback;
   the Noesis shell is now the single runtime presentation path.
+- `TerrainTilePreviewWindow` loads the current terrain sheet from
+  `Assets/Art/Terrain`, and animal atlas entries are resolved by stable sprite
+  names before optional Fox/Rabbit scene overrides are layered on top.
 
 ## Smart-tiling model
 
@@ -44,19 +47,15 @@ presentation boundary and keep the 16 base variants as the fallback.
 
 ## Remaining validation and art work
 
-1. Update `TerrainTilePreviewWindow` from the deleted `Resources` path to the
-   current terrain asset/SpriteAtlas, then run all 16 masks in Unity.
-2. Verify stable species mapping and merge direct Fox/Rabbit overrides with the
-   atlas fallback, or explicitly scope the scene to those two species and test
-   every authored species that can appear.
-3. Open the preview and cellular prototype in Unity at gameplay scale. If an
+1. Open the preview and cellular prototype in Unity at gameplay scale and test
+   every authored species that can appear. If an
    edge or corner is wrong, adjust only `GrassAtlasIndexByMask`.
-4. Replace the temporary bare-to-desert mapping with an authored bare-ground
+2. Replace the temporary bare-to-desert mapping with an authored bare-ground
    tileset when that art is available.
-5. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
+3. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
    until then, plant-resource terrain is represented by grass and avoids an
    unrelated animal icon.
-6. Add a Play Mode screenshot check once Unity is available in the development
+4. Add a Play Mode screenshot check once Unity is available in the development
    environment. This should verify atlas loading, terrain seams, and icon scale
    in the actual Noesis view rather than only in the editor preview.
 
