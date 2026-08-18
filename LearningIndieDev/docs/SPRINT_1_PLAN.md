@@ -1,6 +1,11 @@
 # Sprint 1 Plan — Main Menu and Lab Foundation
 
-> Status: Discussion draft | Dates: August 17–23, 2026 | Cadence: one week | Team: Josh + Sim
+> Status: Authoritative execution plan | Dates: August 17–23, 2026 | Cadence: one week | Team: Josh + Sim
+
+This document is the authoritative execution plan for Sprint 1. Product-level
+direction remains in `PROJECT_CONTEXT.md` and `ROADMAP.md`; the Sprint 0
+closeout document remains the source for Sprint 1 preconditions and exit-gate
+decisions.
 
 ## Sprint goal
 
