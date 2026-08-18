@@ -1,6 +1,6 @@
 # Sprint 0 Closeout Plan — Make Sprint 1 Ready
 
-> Status: Discussion draft | Dates: August 14–16, 2026 | Team: Josh + Sim
+> Status: C1–C3 executed; C4 remaining | Dates: August 14–16, 2026 | Team: Josh + Sim
 
 ## Closeout goal
 

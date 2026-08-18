@@ -7,7 +7,7 @@ namespace SaltyGame.EditorTools
     /// <summary>Shows every smart-tiling mask against the authored terrain atlas.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainAtlasPath = "Assets/Resources/CellularArt/Terrain_01_SpriteSheet.png";
+        const string TerrainAtlasPath = "Assets/Art/Terrain/Terrain_01_SpriteSheet.png";
         const int AtlasColumns = 4;
         const int AtlasRows = 8;
         const int DesertAtlasOffset = 16;
