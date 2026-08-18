@@ -7,8 +7,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-08-17
-- Report state: Fresh review after `4f04f4b2`; no P0 blockers; art validation and simulation/research blockers remain
+- Last reviewed: 2026-08-18
+- Report state: Fresh review at `178093f`; no P0 blockers; the working tree
+  contains active presentation and JSON/CSV editor-tool work, while art
+  acceptance and EX-002 execution remain open
 
 ## Triage rules
 
@@ -81,29 +83,29 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
-### P1-006 — Editor smart-tiling preview references a deleted asset
+### P1-006 — Editor smart-tiling preview path fix awaits validation
 
-- **Status:** New finding from the art-pipeline review.
-- **Evidence:** `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10`
-  still points at `Assets/Resources/CellularArt/Terrain_01_SpriteSheet.png`.
-  That path is absent; the current asset is
-  `Assets/Art/Terrain/Terrain_01_SpriteSheet.png`.
-- **Next action:** Update the preview to the current asset/SpriteAtlas model,
-  then run the 16-mask preview and record visual evidence.
+- **Status:** Local fix implemented; validation and integration remain open.
+- **Evidence:** The uncommitted change in
+  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` now points at
+  `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` instead of the deleted
+  Resources path. No 16-mask preview evidence or commit records acceptance yet.
+- **Next action:** Run the 16-mask preview, record visual evidence, and include
+  the fix in a focused reviewed commit.
 - **Likely owner:** Presentation/art owner.
 - **Confidence:** High.
 
-### P1-007 — Species sprite fallback can omit non-Fox/Rabbit species
+### P1-007 — Species sprite fallback fix awaits validation
 
-- **Status:** New finding from the art-pipeline review.
-- **Evidence:** `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs:330-332`
-  skips the atlas fallback whenever either direct Fox or Rabbit sprite override
-  is present. `CreateSpeciesSprites()` only fills the Fox and Rabbit slots,
-  while the scene wires both overrides and an animal atlas. Other authored
-  species can therefore receive null sprite entries.
-- **Next action:** Merge direct overrides with atlas fallback, or explicitly
-  scope the scene to those species and add a test covering every authored
-  species.
+- **Status:** Local fix implemented; validation and integration remain open.
+- **Evidence:** The uncommitted change in
+  `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs` now builds the complete
+  named animal set from the atlas and then applies direct Fox/Rabbit overrides.
+  The working tree has no focused presentation regression test or recorded
+  runtime acceptance for this behavior.
+- **Next action:** Add or run coverage for every authored species, verify the
+  scene with direct overrides present, and include the fix in a focused
+  reviewed commit.
 - **Likely owner:** Presentation owner.
 - **Confidence:** High.
 
@@ -127,9 +129,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** `docs/Research/Experiments/EX-002-Herbivore-Collapse-Attribution/README.md`
   records integrated schema-5 death telemetry but no factual report because
   Unity batch startup fails before writing artifacts.
-- **Next action:** Repair the Unity startup/cache issue, run the same-seed
-  schema-5 control, verify death events against aggregate activity, then run
-  the declared intervention matrix.
+- **Next action:** Repair the Unity startup/cache issue; predeclare the collapse
+  endpoint and approve the versioned intervention surface; run the same-seed
+  schema-5 control; verify death events against aggregate activity; then run
+  the matched-seed intervention matrix and held-out check.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -144,6 +147,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   sprint as active execution.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
+
+### P1-011 — Active JSON/CSV editor-tool batch lacks a durable handoff and acceptance record
+
+- **Status:** New; implementation and tests are present locally but the work
+  package is uncommitted and its integration state is not recorded.
+- **Evidence:** The working tree adds
+  `Assets/Editor/EditorTools/JsonCsvConverter/`, Editor tests, two new assembly
+  definitions, a direct `com.unity.nuget.newtonsoft-json` dependency, and
+  generated solution entries. No current handoff identifies the owner,
+  intended research workflow, test result, or commit boundary for this batch.
+- **Next action:** Confirm ownership and intended scope, run the new Editor test
+  assembly in Unity, review the package change, and record a focused handoff or
+  commit before mixing it with the presentation fixes.
+- **Likely owner:** Current editor-tool author + repository maintainer.
+- **Confidence:** High.
 
 ### P2-001 — Discord collaboration proof remains unassigned
 
@@ -177,6 +195,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Next action:** Remove the duplicate instruction and preserve old handoffs as
   history while adding newer notes when status changes.
 - **Likely owner:** Repository maintainer.
+- **Confidence:** High.
+
+### P2-004 — Research paper contains a stale instrument-readiness statement
+
+- **Status:** New documentation inconsistency; not blocking the experiment.
+- **Evidence:** `docs/Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md` says
+  under “What is implemented so far” that current-code reproducibility is still
+  needed, while its later EX-001/EX-001B sections and the accepted experiment
+  packages record that the current-code reproducibility gates passed.
+- **Next action:** Update the implementation summary to distinguish completed
+  current-code reproducibility from the still-open causal, calibration, and
+  workflow-value gates.
+- **Likely owner:** Research documentation maintainer.
 - **Confidence:** High.
 
 ## Resolved items
