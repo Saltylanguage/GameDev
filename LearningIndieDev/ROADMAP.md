@@ -27,6 +27,11 @@ upgrades, and species mastery, is defined in
 That plan supplies the implementation epics, dependency order, and workflow;
 this roadmap remains the product-level milestone source of truth.
 
+The draft horizon for turning the next themes into two-week sprint outcomes is
+captured in [`docs/FUTURE_SPRINT_ROADMAP.md`](docs/FUTURE_SPRINT_ROADMAP.md).
+It is a planning aid rather than a committed backlog and explicitly keeps
+iteration tooling off the critical path for feature work.
+
 ## Production principles
 
 - Make the upgrade decision and its visible consequence the center of play.
