@@ -13,6 +13,7 @@ namespace SaltyGame.EditorTools
             for (var index = 0; index < species.Count; index++)
             {
                 var source = metrics.GetActivity(species[index]);
+                var reproduction = metrics.GetReproductionActivity(species[index]);
                 activity[index] = new SimulationSpeciesActivityRecord
                 {
                     speciesId = species[index].Value,
@@ -27,6 +28,14 @@ namespace SaltyGame.EditorTools
                     wiltDeaths = source.WiltDeaths,
                     populationLimitRemovals = source.PopulationLimitRemovals,
                     stateTransitions = metrics.GetStateTransitions(species[index]),
+                    reproductionCandidates = reproduction.Candidates,
+                    reproductionBlockedEnergy = reproduction.BlockedEnergy,
+                    reproductionBlockedMateRequirement = reproduction.BlockedMateRequirement,
+                    reproductionBlockedGroupLimit = reproduction.BlockedGroupLimit,
+                    reproductionFailedChanceRoll = reproduction.FailedChanceRoll,
+                    reproductionBlockedNoBirthLocation = reproduction.BlockedNoBirthLocation,
+                    reproductionSuccessfulAttempts = reproduction.SuccessfulAttempts,
+                    reproductionReconciled = reproduction.IsReconciled,
                 };
             }
 
@@ -206,6 +215,14 @@ namespace SaltyGame.EditorTools
         public int wiltDeaths;
         public int populationLimitRemovals;
         public int stateTransitions;
+        public int reproductionCandidates;
+        public int reproductionBlockedEnergy;
+        public int reproductionBlockedMateRequirement;
+        public int reproductionBlockedGroupLimit;
+        public int reproductionFailedChanceRoll;
+        public int reproductionBlockedNoBirthLocation;
+        public int reproductionSuccessfulAttempts;
+        public bool reproductionReconciled;
     }
 
     [System.Serializable]

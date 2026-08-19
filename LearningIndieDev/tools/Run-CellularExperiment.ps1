@@ -1,7 +1,6 @@
 [CmdletBinding()]
 param(
     [string]$ScenarioPath,
-    [ValidateRange(0, 1000000)]
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)]
     [int]$SeedCount = 20,

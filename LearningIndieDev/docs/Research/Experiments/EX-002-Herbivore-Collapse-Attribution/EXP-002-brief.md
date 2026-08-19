@@ -6,7 +6,7 @@ cell type's collapse state, using herbivore decline in BaselineParity as the
 first concrete adapter?  
 **Stage:** Causal attribution  
 **Decision owner:** Human design owner  
-**Status:** Schema-5 death telemetry integrated; execution blocked by Unity batch startup failure
+**Status:** Schema-6 instrument validated on a repeatable Forest Edge control; full EX-002 execution remains open
 
 ## Collapse contract
 
@@ -41,7 +41,7 @@ The schema-2 reports showing universal herbivore extinction are superseded and
 their source artifacts were removed after the provenance facts were transferred
 to the current EX-001 record. They are not valid current-code outcome evidence.
 The existing schema-4 BaselineParity pair is the pre-telemetry-extension
-baseline for this experiment. The first post-change run will emit schema 5 and
+baseline for this experiment. The first post-change run will emit schema 6 and
 must preserve the same simulation inputs before it is treated as a replacement
 baseline.
 
@@ -66,7 +66,8 @@ BaselineParity collapse observation.
 
 ## Death telemetry integration and result boundary
 
-The EX-002 instrument now emits a schema-5 `deathEvents` array for each run.
+Schema 5 introduced the EX-002 `deathEvents` array for each run; schema 6
+retains it and adds the reproduction funnel.
 Each event records the species or resource identity, entity ID when available,
 age, position, tick, creature/resource flag, and proximate cause. The existing
 aggregate activity counters remain in the report for continuity and cross-checks.
@@ -74,13 +75,15 @@ aggregate activity counters remain in the report for continuity and cross-checks
 The table above is therefore retained as **pre-telemetry baseline evidence**.
 Its starvation/crowding totals are valid aggregate observations from the schema-4
 report, but the report contains no per-event entity, location, or tick data and
-must not be backfilled. A schema-5 same-seed rerun is required to produce the
+must not be backfilled. A schema-6 same-seed rerun is required to produce the
 instrumented EX-002 baseline. Until that rerun succeeds, the experiment result is:
 
 - **Observed:** BaselineParity shows a candidate starvation-dominant proximate
   mortality pattern in aggregate data.
-- **Instrumented per-death result:** Pending; no schema-5 report has been
-  generated because Unity batch startup still fails.
+- **Instrumented per-death result:** A schema-6 Forest Edge control now exists
+  at `artifacts/cellular-experiment-20260818-200811/report.json` (repeated at
+  `artifacts/cellular-experiment-20260818-200842/report.json`). These are
+  instrumentation checks, not the declared EX-002 BaselineParity result.
 - **Causal conclusion:** Not supported.
 
 ## CellSim run and report API

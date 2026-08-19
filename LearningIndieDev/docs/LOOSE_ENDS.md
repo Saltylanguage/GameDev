@@ -36,13 +36,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-002 — Fox mating reliability is not established
 
-- **Status:** Partially improved; still open.
-- **Evidence:** The latest report records 1 Fox birth, 322 Fox Mating ticks,
-  6 kills, and a final Fox population of 5. The earlier zero-birth result is
-  historical; one birth does not establish reliable reproduction.
-- **Next action:** Add eligible-mating, blocked-mating, and successful-mating
-  metrics so energy, adjacency, timing, and chance failures can be separated
-  before tuning values.
+- **Status:** Diagnostic validated; a balance/rule decision remains open.
+- **Evidence:** Unity Edit Mode produced 126/134 passing tests in
+  `artifacts/unity-tests-20260818-200450/EditMode-results.xml`; all six new
+  reproduction-funnel tests passed. The eight failures are pre-existing
+  movement/combat/telemetry expectations unrelated to the funnel. The repeated
+  schema-6 Forest Edge replay at seed `-877772592` is identical across
+  `artifacts/cellular-experiment-20260818-200811/report.json` and
+  `artifacts/cellular-experiment-20260818-200842/report.json`: 810 Fox
+  candidates classify as 410 energy blocks, 341 mate blocks, 2 group-limit
+  blocks, 56 chance-roll failures, 0 no-location blocks, and 1 successful
+  attempt; reconciliation is true. The dominant gates are insufficient energy
+  (50.6%) and missing mate (42.1%), not birth-space availability.
+- **Next action:** Do not change balance values from this single seed. Use the
+  gate split to predeclare the P1-001 intervention candidates, then run the
+  matched multi-seed EX-002 control/intervention matrix.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -123,16 +131,18 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-009 — EX-002 schema-5 execution remains blocked by Unity startup failure
+### P1-009 — EX-002 instrumented execution remains open after startup recovery
 
-- **Status:** Still open.
-- **Evidence:** `docs/Research/Experiments/EX-002-Herbivore-Collapse-Attribution/README.md`
-  records integrated schema-5 death telemetry but no factual report because
-  Unity batch startup fails before writing artifacts.
-- **Next action:** Repair the Unity startup/cache issue; predeclare the collapse
-  endpoint and approve the versioned intervention surface; run the same-seed
-  schema-5 control; verify death events against aggregate activity; then run
-  the matched-seed intervention matrix and held-out check.
+- **Status:** Still open; Unity batch execution is now available with elevated
+  licensing access.
+- **Evidence:** The schema-6 Forest Edge control artifacts above include death
+  events and the reproduction funnel, proving the report path works after the
+  licensing restart. The full EX-002 BaselineParity control, intervention
+  matrix, and held-out check have not yet been run.
+- **Next action:** Predeclare the collapse endpoint and approved intervention
+  surface; run the same-seed schema-6 BaselineParity control; verify death
+  events against aggregate activity; then run the matched-seed intervention
+  matrix and held-out check.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 

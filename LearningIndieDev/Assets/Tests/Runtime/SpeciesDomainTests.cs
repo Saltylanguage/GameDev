@@ -498,10 +498,119 @@ namespace SaltyGame.Tests
             Assert.That(next.GetCell(2, 0).TerrainEnergy, Is.EqualTo(2f));
             Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(1));
             Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(2));
+            Assert.That(reproduction.SuccessfulAttempts, Is.EqualTo(1));
+            Assert.That(reproduction.BlockedNoBirthLocation, Is.EqualTo(1));
+            Assert.That(reproduction.IsReconciled, Is.True);
 
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));
             var withoutFood = SpeciesSimulation.Step(source, rules, seed: 42);
             Assert.That(withoutFood.GetCell(2, 0).IsOccupied, Is.False);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsInsufficientEnergy()
+        {
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(reproductionFoodRequired: 1),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(1));
+            Assert.That(reproduction.BlockedEnergy, Is.EqualTo(1));
+            Assert.That(reproduction.IsReconciled, Is.True);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsMissingMate()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(reproductionNeighborCount: 1),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(1));
+            Assert.That(reproduction.BlockedMateRequirement, Is.EqualTo(1));
+            Assert.That(reproduction.IsReconciled, Is.True);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsGroupLimit()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(
+                    reproductionNeighborCount: 1,
+                    maxReproductionGroupSize: 2),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(2));
+            Assert.That(reproduction.BlockedGroupLimit, Is.EqualTo(2));
+            Assert.That(reproduction.IsReconciled, Is.True);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsFailedChanceRoll()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(reproductionChance: 0.000001f),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(1));
+            Assert.That(reproduction.FailedChanceRoll, Is.EqualTo(1));
+            Assert.That(reproduction.IsReconciled, Is.True);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsUnavailableBirthLocation()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(reproductionNeighborCount: 1),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(2));
+            Assert.That(reproduction.BlockedNoBirthLocation, Is.EqualTo(2));
+            Assert.That(reproduction.IsReconciled, Is.True);
+        }
+
+        [Test]
+        public void ReproductionFunnelRecordsOneSuccessfulAttemptForMultipleBirths()
+        {
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 5));
+            var metrics = StepWithReproductionMetrics(
+                source,
+                CreateReproductionRules(
+                    reproductionFoodRequired: 1,
+                    litterMinimum: 2,
+                    litterMaximum: 2),
+                seed: 42);
+
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(reproduction.Candidates, Is.EqualTo(1));
+            Assert.That(reproduction.SuccessfulAttempts, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(2));
+            Assert.That(reproduction.IsReconciled, Is.True);
         }
 
         [Test]
@@ -1556,6 +1665,50 @@ namespace SaltyGame.Tests
                 awareness: awareness,
                 role: role,
                 forageBelowEnergy: forageBelowEnergy);
+        }
+
+        static SpeciesSimulationMetrics StepWithReproductionMetrics(
+            Grid<SpeciesCell> source,
+            SpeciesRules reproductionRules,
+            int seed)
+        {
+            var metrics = new SpeciesSimulationMetrics();
+            SpeciesSimulation.Step(
+                source,
+                new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Carnivore] = reproductionRules,
+                },
+                seed,
+                metrics: metrics);
+            return metrics;
+        }
+
+        static SpeciesRules CreateReproductionRules(
+            int reproductionNeighborCount = 0,
+            float reproductionChance = 1f,
+            int reproductionFoodRequired = 0,
+            int maxReproductionGroupSize = 0,
+            int litterMinimum = 1,
+            int litterMaximum = 1)
+        {
+            return new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                reproductionNeighborCount: reproductionNeighborCount,
+                reproductionChance: reproductionChance,
+                reproductionFoodRequired: reproductionFoodRequired,
+                maxReproductionGroupSize: maxReproductionGroupSize,
+                metabolism: 0,
+                litterMinimum: litterMinimum,
+                litterMaximum: litterMaximum);
         }
 
         static void SetPrivateField(object target, string name, object value)

@@ -582,9 +582,10 @@ range, and remaining instrument gaps recorded. A plausible narrative alone is
 insufficient, and no ecology-specific rule is promoted as universal.
 
 **Readiness note:** The EX-002 brief records the intervention-surface gap and
-now integrates schema-5 run-window, tracked-FSM, and per-death-cause telemetry.
-The existing aggregate BaselineParity result remains pre-telemetry evidence; a
-same-seed schema-5 rerun is still required. Unity batch startup failure observed
+integrates the schema-5 run-window, tracked-FSM, and per-death-cause telemetry;
+schema 6 retains those fields and adds a reconciled reproduction funnel. The
+existing aggregate BaselineParity result remains pre-telemetry evidence; a
+same-seed schema-6 rerun is still required. Unity batch startup failure observed
 during initial characterization blocks that rerun, so no causal run should be
 treated as started until the blocker is resolved.
 
@@ -876,3 +877,4 @@ rule.
 | 1.6 | 2026-08-15 | Generalized collapse as a simulation-defined loss of practical growth capacity, added run-window and tracked-FSM telemetry seams, and kept desirability separate from collapse detection. |
 | 1.7 | 2026-08-15 | Added schema-5 per-death telemetry with proximate cause, entity/resource identity, tick, age, and position; documented the remaining root-cause attribution gap. |
 | 1.8 | 2026-08-15 | Integrated death telemetry into EX-002 and reclassified the schema-4 aggregate BaselineParity numbers as pre-telemetry evidence pending a same-seed schema-5 rerun. |
+| 1.9 | 2026-08-18 | Added schema-6 reproduction-funnel outcomes while retaining schema-5 death telemetry; advanced the pending instrumented EX-002 baseline to a same-seed schema-6 rerun. |
