@@ -23,6 +23,42 @@ namespace SaltyGame
             "Animals_01_Elephant",
         };
 
+        static readonly string[] TerrainSpriteNames =
+        {
+            "Terrain_01_Grass_00",
+            "Terrain_01_Grass_01",
+            "Terrain_01_Grass_02",
+            "Terrain_01_Grass_03",
+            "Terrain_01_Grass_04",
+            "Terrain_01_Grass_05",
+            "Terrain_01_Grass_06",
+            "Terrain_01_Grass_07",
+            "Terrain_01_Grass_08",
+            "Terrain_01_Grass_09",
+            "Terrain_01_Grass_10",
+            "Terrain_01_Grass_11",
+            "Terrain_01_Grass_12",
+            "Terrain_01_Grass_13",
+            "Terrain_01_Grass_14",
+            "Terrain_01_Grass_15",
+            "Terrain_01_Desert_00",
+            "Terrain_01_Desert_01",
+            "Terrain_01_Desert_02",
+            "Terrain_01_Desert_03",
+            "Terrain_01_Desert_04",
+            "Terrain_01_Desert_05",
+            "Terrain_01_Desert_06",
+            "Terrain_01_Desert_07",
+            "Terrain_01_Desert_08",
+            "Terrain_01_Desert_09",
+            "Terrain_01_Desert_10",
+            "Terrain_01_Desert_11",
+            "Terrain_01_Desert_12",
+            "Terrain_01_Desert_13",
+            "Terrain_01_Desert_14",
+            "Terrain_01_Desert_15",
+        };
+
         SpeciesSimulationPreview preview;
         SpeciesSimulationBoard board;
         SpriteAtlas animalSpriteAtlas;
@@ -373,7 +409,7 @@ namespace SaltyGame
             }
 
             animalSprites = CreateSpeciesSprites();
-            terrainTiles = CreateSprites(terrainSpriteAtlas, 32, 4, out terrainTextureSource);
+            terrainTiles = CreateTerrainAtlasSprites(terrainSpriteAtlas, out terrainTextureSource);
             if (animalSprites == null || terrainTiles == null)
             {
                 animalSprites = null;
@@ -441,6 +477,49 @@ namespace SaltyGame
                     return null;
                 }
 
+                sprites[index] = new CroppedBitmap(textureSource, GetSourceRect(matchingSprite));
+            }
+
+            return sprites;
+        }
+
+        static CroppedBitmap[] CreateTerrainAtlasSprites(
+            SpriteAtlas atlas,
+            out TextureSource textureSource)
+        {
+            textureSource = null;
+            var packedSprites = new Sprite[atlas.spriteCount];
+            atlas.GetSprites(packedSprites);
+            if (packedSprites.Length == 0)
+            {
+                Debug.LogWarning($"SpriteAtlas '{atlas.name}' contains no terrain sprites.");
+                return null;
+            }
+
+            var sprites = new CroppedBitmap[TerrainSpriteNames.Length];
+            for (var index = 0; index < TerrainSpriteNames.Length; index++)
+            {
+                Sprite matchingSprite = null;
+                for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
+                {
+                    if (string.Equals(
+                        packedSprites[spriteIndex].name,
+                        TerrainSpriteNames[index],
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        matchingSprite = packedSprites[spriteIndex];
+                        break;
+                    }
+                }
+
+                if (matchingSprite == null)
+                {
+                    Debug.LogWarning(
+                        $"SpriteAtlas '{atlas.name}' is missing terrain sprite '{TerrainSpriteNames[index]}'.");
+                    return null;
+                }
+
+                textureSource ??= new TextureSource(matchingSprite.texture);
                 sprites[index] = new CroppedBitmap(textureSource, GetSourceRect(matchingSprite));
             }
 
