@@ -245,9 +245,10 @@ The current foundation includes:
   program.
 
 These are implementation capabilities, not proof that the full research thesis
-has succeeded. The project still needs current-code reproducibility, causal
-intervention studies, held-out validation, calibration measurements, and
-workflow-value evaluation.
+has succeeded. Current-code reproducibility is accepted for the authored
+ForestEdge baseline and the bounded EX-001B cross-scenario check; the project
+still needs causal intervention studies, held-out validation, calibration
+measurements, and workflow-value evaluation.
 
 ## 9. What has been learned so far
 

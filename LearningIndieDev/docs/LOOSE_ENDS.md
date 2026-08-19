@@ -80,14 +80,18 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-005 — Player-facing shell and Dev Lab split lack acceptance evidence
 
-- **Status:** Still open; planning is recorded but implementation readiness is
-  not yet demonstrated.
-- **Evidence:** `docs/SPRINT_0_CLOSEOUT_PLAN.md` and `docs/SPRINT_1_PLAN.md`
-  remain discussion drafts. The Main Menu → Lab → Research route, target
-  resolution checks, and separate Dev Lab responsibilities have no recorded
-  acceptance result.
-- **Next action:** Close S0.C1–S0.C4, confirm MainMenu scene readiness, then
-  implement the smallest S1 shell with the stated smoke and focus checks.
+- **Status:** Partially resolved; the bounded shell and route smoke are accepted,
+  while the Windows development-build gate and broader Dev Lab split remain
+  follow-up work.
+- **Evidence:** `a90bf5f` implements the Main Menu → Lab → Research shell;
+  `d5ad141` adds the route smoke test. The Play Mode evidence passes at
+  1280×720 (`artifacts/visual-evidence-20260818-210020/PlayMode-results.xml`)
+  and 1920×1080
+  (`artifacts/visual-evidence-20260818-210108/PlayMode-results.xml`).
+  `docs/SPRINT_1_PLAN.md` still requires the Windows development-build review
+  before the sprint exit gate is closed.
+- **Next action:** Keep the remaining Windows-build/final review acceptance on
+  the S1 verification card; do not reopen the completed shell implementation.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
@@ -161,16 +165,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-011 — Active JSON/CSV editor-tool batch lacks a durable handoff and acceptance record
 
-- **Status:** New; implementation and tests are present locally but the work
-  package is uncommitted and its integration state is not recorded.
-- **Evidence:** The working tree adds
-  `Assets/Editor/EditorTools/JsonCsvConverter/`, Editor tests, two new assembly
-  definitions, a direct `com.unity.nuget.newtonsoft-json` dependency, and
-  generated solution entries. No current handoff identifies the owner,
-  intended research workflow, test result, or commit boundary for this batch.
-- **Next action:** Confirm ownership and intended scope, run the new Editor test
-  assembly in Unity, review the package change, and record a focused handoff or
-  commit before mixing it with the presentation fixes.
+- **Status:** Resolved; the tool, handoff, commit boundary, and focused tests are
+  now recorded.
+- **Evidence:** Commit `029f2a7` contains the JSON/CSV converter, editor test
+  assembly, package dependency, and README. The current Edit Mode artifact
+  `artifacts/unity-tests-20260818-200450/EditMode-results.xml` reports
+  `SaltyGame.Editor.Tests.dll` 24/24 passed, including `JsonCsvConverterTests`.
+- **Next action:** Leave this out of the active sprint unless a measured,
+  evidence-backed tooling outcome is explicitly promoted at sprint review.
 - **Likely owner:** Current editor-tool author + repository maintainer.
 - **Confidence:** High.
 
@@ -199,25 +201,26 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-003 — Documentation hygiene items remain
 
-- **Status:** Cleanup needed, not blocking.
-- **Evidence:** `LearningIndieDev/AGENTS.md` contains a duplicated Studio
-  Guidelines instruction. The historical 2026-08-14 Play Mode handoff still
-  says full execution is pending even though a newer Play Mode artifact exists.
-- **Next action:** Remove the duplicate instruction and preserve old handoffs as
-  history while adding newer notes when status changes.
+- **Status:** Mostly resolved; the duplicated guidance line has been removed.
+- **Evidence:** `LearningIndieDev/AGENTS.md` now contains one Studio Guidelines
+  instruction. The historical 2026-08-14 Play Mode handoff still says full
+  execution is pending, but it is retained as history and superseded by newer
+  artifacts and handoffs.
+- **Next action:** Leave the historical handoff intact; add newer notes when
+  status changes rather than rewriting history.
 - **Likely owner:** Repository maintainer.
 - **Confidence:** High.
 
 ### P2-004 — Research paper contains a stale instrument-readiness statement
 
-- **Status:** New documentation inconsistency; not blocking the experiment.
+- **Status:** Resolved; the implementation summary now reflects the accepted
+  reproducibility gates.
 - **Evidence:** `docs/Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md` says
   under “What is implemented so far” that current-code reproducibility is still
   needed, while its later EX-001/EX-001B sections and the accepted experiment
   packages record that the current-code reproducibility gates passed.
-- **Next action:** Update the implementation summary to distinguish completed
-  current-code reproducibility from the still-open causal, calibration, and
-  workflow-value gates.
+- **Next action:** Preserve the remaining causal, calibration, and workflow-
+  value boundaries in future research edits.
 - **Likely owner:** Research documentation maintainer.
 - **Confidence:** High.
 
