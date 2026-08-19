@@ -8,9 +8,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-08-18
-- Report state: Fresh review at `178093f`; no P0 blockers; the working tree
-  contains active presentation and JSON/CSV editor-tool work, while art
-  acceptance and EX-002 execution remain open
+- Report state: Sprint 1 shell and Fox instrumentation are now isolated in
+  focused commits; Main Menu smoke passed, while one existing preview defect,
+  art acceptance, and the EX-002 intervention matrix remain open
 
 ## Triage rules
 
@@ -36,13 +36,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-002 — Fox mating reliability is not established
 
-- **Status:** Partially improved; still open.
-- **Evidence:** The latest report records 1 Fox birth, 322 Fox Mating ticks,
-  6 kills, and a final Fox population of 5. The earlier zero-birth result is
-  historical; one birth does not establish reliable reproduction.
-- **Next action:** Add eligible-mating, blocked-mating, and successful-mating
-  metrics so energy, adjacency, timing, and chance failures can be separated
-  before tuning values.
+- **Status:** Diagnostic validated; a balance/rule decision remains open.
+- **Evidence:** Unity Edit Mode produced 126/134 passing tests in
+  `artifacts/unity-tests-20260818-200450/EditMode-results.xml`; all six new
+  reproduction-funnel tests passed. The eight failures are pre-existing
+  movement/combat/telemetry expectations unrelated to the funnel. The repeated
+  schema-6 Forest Edge replay at seed `-877772592` is identical across
+  `artifacts/cellular-experiment-20260818-200811/report.json` and
+  `artifacts/cellular-experiment-20260818-200842/report.json`: 810 Fox
+  candidates classify as 410 energy blocks, 341 mate blocks, 2 group-limit
+  blocks, 56 chance-roll failures, 0 no-location blocks, and 1 successful
+  attempt; reconciliation is true. The dominant gates are insufficient energy
+  (50.6%) and missing mate (42.1%), not birth-space availability.
+- **Next action:** Do not change balance values from this single seed. Use the
+  gate split to predeclare the P1-001 intervention candidates, then run the
+  matched multi-seed EX-002 control/intervention matrix.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -72,24 +80,29 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-005 — Player-facing shell and Dev Lab split lack acceptance evidence
 
-- **Status:** Still open; planning is recorded but implementation readiness is
-  not yet demonstrated.
-- **Evidence:** `docs/SPRINT_0_CLOSEOUT_PLAN.md` and `docs/SPRINT_1_PLAN.md`
-  remain discussion drafts. The Main Menu → Lab → Research route, target
-  resolution checks, and separate Dev Lab responsibilities have no recorded
-  acceptance result.
-- **Next action:** Close S0.C1–S0.C4, confirm MainMenu scene readiness, then
-  implement the smallest S1 shell with the stated smoke and focus checks.
+- **Status:** Partially resolved; the bounded shell and route smoke are accepted,
+  while the Windows development-build gate and broader Dev Lab split remain
+  follow-up work.
+- **Evidence:** `a90bf5f` implements the Main Menu → Lab → Research shell;
+  `d5ad141` adds the route smoke test. The Play Mode evidence passes at
+  1280×720 (`artifacts/visual-evidence-20260818-210020/PlayMode-results.xml`)
+  and 1920×1080
+  (`artifacts/visual-evidence-20260818-210108/PlayMode-results.xml`).
+  `docs/SPRINT_1_PLAN.md` still requires the Windows development-build review
+  before the sprint exit gate is closed.
+- **Next action:** Keep the remaining Windows-build/final review acceptance on
+  the S1 verification card; do not reopen the completed shell implementation.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
 ### P1-006 — Editor smart-tiling preview path fix awaits validation
 
-- **Status:** Local fix implemented; validation and integration remain open.
-- **Evidence:** The uncommitted change in
-  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` now points at
+- **Status:** Committed; visual validation remains open.
+- **Evidence:** Commit `6bdf6af` points
+  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` at
   `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` instead of the deleted
-  Resources path. No 16-mask preview evidence or commit records acceptance yet.
+  Resources path. No 16-mask preview evidence or runtime screenshot records
+  acceptance yet.
 - **Next action:** Run the 16-mask preview, record visual evidence, and include
   the fix in a focused reviewed commit.
 - **Likely owner:** Presentation/art owner.
@@ -97,15 +110,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-007 — Species sprite fallback fix awaits validation
 
-- **Status:** Local fix implemented; validation and integration remain open.
-- **Evidence:** The uncommitted change in
-  `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs` now builds the complete
-  named animal set from the atlas and then applies direct Fox/Rabbit overrides.
-  The working tree has no focused presentation regression test or recorded
-  runtime acceptance for this behavior.
-- **Next action:** Add or run coverage for every authored species, verify the
-  scene with direct overrides present, and include the fix in a focused
-  reviewed commit.
+- **Status:** Committed; runtime validation found a separate atlas defect.
+- **Evidence:** Commit `6bdf6af` builds the complete named animal set from the
+  atlas and then applies direct Fox/Rabbit overrides. The full Play Mode run
+  `artifacts/unity-tests-20260818-210144/PlayMode-results.xml` is 4/5 because
+  the existing cellular preview throws a Noesis texture-source exception at
+  `SpeciesSimulationViewModel.CreateAnimalAtlasSprites`.
+- **Next action:** Repair or guard the atlas texture-source creation, then add
+  focused presentation coverage for every authored species.
 - **Likely owner:** Presentation owner.
 - **Confidence:** High.
 
@@ -123,43 +135,44 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-009 — EX-002 schema-5 execution remains blocked by Unity startup failure
+### P1-009 — EX-002 control complete; intervention matrix remains open
 
-- **Status:** Still open.
-- **Evidence:** `docs/Research/Experiments/EX-002-Herbivore-Collapse-Attribution/README.md`
-  records integrated schema-5 death telemetry but no factual report because
-  Unity batch startup fails before writing artifacts.
-- **Next action:** Repair the Unity startup/cache issue; predeclare the collapse
-  endpoint and approve the versioned intervention surface; run the same-seed
-  schema-5 control; verify death events against aggregate activity; then run
-  the matched-seed intervention matrix and held-out check.
+- **Status:** Control complete; intervention matrix and held-out check remain
+  open.
+- **Evidence:** Paired schema-6 BaselineParity controls over seeds 10100–10119
+  are deterministic:
+  `artifacts/cellular-experiment-20260818-210354/report.json` and
+  `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
+  contain death events; creature death-event counts reconcile with aggregate
+  activity. Final herbivore population is min 0, max 37, average 10.25, with
+  one extinct run. No intervention values were changed.
+- **Next action:** Predeclare the collapse endpoint and approved intervention
+  surface; run the matched-seed intervention matrix and held-out check.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
 ### P1-010 — Sprint 1 readiness/control record is not formally closed
 
-- **Status:** Planning readiness is still open.
-- **Evidence:** `docs/SPRINT_1_PLAN.md` remains a Discussion draft for
-  August 17–23, while `docs/SPRINT_KICKOFF_WORKFLOW.md` requires a durable
-  sprint control record with owners, acceptance, and carry-over decisions.
-- **Next action:** Confirm the Trello sprint control record, owners, acceptance
-  checks, and cut order; record the kickoff/closeout state before treating the
-  sprint as active execution.
+- **Status:** Resolved; the active control record and execution plan are now
+  durable and aligned to the two-week project cadence.
+- **Evidence:** `docs/Sprints/S1-control-record.md` and the Trello S1 control
+  card record the August 17–30 window, owners, acceptance checks, cut order,
+  and 40-hour planning capacity (20 hours committed).
+- **Next action:** Keep the control record and Trello dates synchronized at the
+  next sprint review.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
 ### P1-011 — Active JSON/CSV editor-tool batch lacks a durable handoff and acceptance record
 
-- **Status:** New; implementation and tests are present locally but the work
-  package is uncommitted and its integration state is not recorded.
-- **Evidence:** The working tree adds
-  `Assets/Editor/EditorTools/JsonCsvConverter/`, Editor tests, two new assembly
-  definitions, a direct `com.unity.nuget.newtonsoft-json` dependency, and
-  generated solution entries. No current handoff identifies the owner,
-  intended research workflow, test result, or commit boundary for this batch.
-- **Next action:** Confirm ownership and intended scope, run the new Editor test
-  assembly in Unity, review the package change, and record a focused handoff or
-  commit before mixing it with the presentation fixes.
+- **Status:** Resolved; the tool, handoff, commit boundary, and focused tests are
+  now recorded.
+- **Evidence:** Commit `029f2a7` contains the JSON/CSV converter, editor test
+  assembly, package dependency, and README. The current Edit Mode artifact
+  `artifacts/unity-tests-20260818-200450/EditMode-results.xml` reports
+  `SaltyGame.Editor.Tests.dll` 24/24 passed, including `JsonCsvConverterTests`.
+- **Next action:** Leave this out of the active sprint unless a measured,
+  evidence-backed tooling outcome is explicitly promoted at sprint review.
 - **Likely owner:** Current editor-tool author + repository maintainer.
 - **Confidence:** High.
 
@@ -188,25 +201,26 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-003 — Documentation hygiene items remain
 
-- **Status:** Cleanup needed, not blocking.
-- **Evidence:** `LearningIndieDev/AGENTS.md` contains a duplicated Studio
-  Guidelines instruction. The historical 2026-08-14 Play Mode handoff still
-  says full execution is pending even though a newer Play Mode artifact exists.
-- **Next action:** Remove the duplicate instruction and preserve old handoffs as
-  history while adding newer notes when status changes.
+- **Status:** Mostly resolved; the duplicated guidance line has been removed.
+- **Evidence:** `LearningIndieDev/AGENTS.md` now contains one Studio Guidelines
+  instruction. The historical 2026-08-14 Play Mode handoff still says full
+  execution is pending, but it is retained as history and superseded by newer
+  artifacts and handoffs.
+- **Next action:** Leave the historical handoff intact; add newer notes when
+  status changes rather than rewriting history.
 - **Likely owner:** Repository maintainer.
 - **Confidence:** High.
 
 ### P2-004 — Research paper contains a stale instrument-readiness statement
 
-- **Status:** New documentation inconsistency; not blocking the experiment.
+- **Status:** Resolved; the implementation summary now reflects the accepted
+  reproducibility gates.
 - **Evidence:** `docs/Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md` says
   under “What is implemented so far” that current-code reproducibility is still
   needed, while its later EX-001/EX-001B sections and the accepted experiment
   packages record that the current-code reproducibility gates passed.
-- **Next action:** Update the implementation summary to distinguish completed
-  current-code reproducibility from the still-open causal, calibration, and
-  workflow-value gates.
+- **Next action:** Preserve the remaining causal, calibration, and workflow-
+  value boundaries in future research edits.
 - **Likely owner:** Research documentation maintainer.
 - **Confidence:** High.
 

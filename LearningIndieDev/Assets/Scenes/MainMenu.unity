@@ -353,7 +353,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29355477be96127469aed699dd82b4be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Noesis.NoesisGUI::NoesisView
-  _xaml: {fileID: -8414808784256213763, guid: 0aa0f04f58fbe284c8b1d6e09d4079b1, type: 3}
+  _xaml: {fileID: -8414808784256213763, guid: 3c17c7e4f80f4f67a2b6b6f6f1ec8c30, type: 3}
   _texture: {fileID: 0}
   _isPPAAEnabled: 0
   _tessellationMaxPixelError: 0.4
@@ -427,9 +427,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1292116709}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 10d33c0421ecb1b4ebaf4aa4ed149092, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ab6b0f3a0c34d3a9d7e2a1b8c6f4e52, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BaseViewModel
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.MainMenuViewModel
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

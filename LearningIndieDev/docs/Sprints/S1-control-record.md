@@ -1,6 +1,6 @@
 # Sprint 1 Control Record — Main Menu and Lab Foundation
 
-> Status: Active | Start: 2026-08-17 | End: 2026-08-23
+> Status: Active | Start: 2026-08-17 | End: 2026-08-30
 
 This is the durable Sprint 1 control record produced by S0.C4. The
 authoritative execution detail remains in
@@ -14,9 +14,9 @@ identity, capacity, ownership, checkpoints, and board disposition.
 | Sprint ID | S1 |
 | Status | Active |
 | Start | 2026-08-17 |
-| End | 2026-08-23 |
+| End | 2026-08-30 |
 | Goal | Launch → Main Menu → Lab Overview → Research preview using representative UI data. |
-| Capacity | Josh 10h; Sim 10h; 20h total including reserve. |
+| Capacity | Josh 20h; Sim 20h; 40h two-week capacity. The committed S1 scope remains 20h including reserve; extra capacity is uncommitted. |
 | Exit criteria | Windows development-build review route works with keyboard/mouse, visible focus, deterministic Back behavior, representative balances/projects, both target resolutions, and recorded smoke evidence. |
 
 ## Committed task register
@@ -28,14 +28,16 @@ identity, capacity, ownership, checkpoints, and board disposition.
 | S1.3 Verification and review (Trello 53) | Josh (2h) | Sim (1h) | 3h | S1.1 and S1.2 | Back/focus/mouse/keyboard and both resolutions checked; Play Mode and Windows smoke attempted; tests and diff check recorded. |
 | Integration reserve (Trello 54) | Josh (2h) | Sim (1h) | 3h | S1.1/S1.2 findings | Used only for bounded Unity/Noesis repair, defects, review changes, or coordination; hours and evidence logged; never stretch-feature capacity. |
 
-**Total:** Josh 10h, Sim 10h, 20h committed including reserve.
+**Committed total:** Josh 10h, Sim 10h, 20h including reserve. The two-week
+planning capacity is Josh 20h and Sim 20h; the additional capacity is not
+automatically committed to new scope.
 
 ## Review cadence
 
-- **Midweek checkpoint:** Thursday, 2026-08-20. Demonstrate Main Menu → Lab
+- **Mid-sprint checkpoint:** Thursday, 2026-08-27. Demonstrate Main Menu → Lab
   Overview, compare actual hours with remaining shell work, and apply the
   documented cut order if the route is unstable.
-- **Final review:** Sunday, 2026-08-23. Run the full review route, record
+- **Final review:** Sunday, 2026-08-30. Run the full review route, record
   accepted work, cuts, defects, and unresolved follow-up.
 - **Cut order:** secondary Main Menu actions; second research project; Lab
   content beyond the data bar and Research entry; Build Settings promotion
@@ -44,8 +46,9 @@ identity, capacity, ownership, checkpoints, and board disposition.
 
 ## Board disposition
 
-- The four cards above are the complete Sprint 1 commitment and remain in
-  `🎯 Upcoming Work` until kickoff promotes them to the active execution list.
+- The four cards above are the complete Sprint 1 commitment and were promoted
+  from `🎯 Upcoming Work` to `🛠️ In Progress` at the 2026-08-18 kickoff. Their
+  owners, estimates, acceptance evidence, and Aug 30 due dates are unchanged.
 - `Sprint 1 - Separate the player UI from the Dev Lab scene` (Trello 30) is
   retained but moved to `🗂️ Backlog & Ideas`: it is explicitly deferred by
   `SPRINT_1_PLAN.md` and lacks the metadata required for sprint commitment.

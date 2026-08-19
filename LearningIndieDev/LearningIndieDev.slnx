@@ -4,6 +4,8 @@
   <Project Path="SaltyGame.Runtime.csproj" />
   <Project Path="SaltyGame.Tests.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
+  <Project Path="SaltyGame.JsonCsv.Editor.csproj" />
   <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="SaltyGame.PlayMode.Tests.csproj" />
+  <Project Path="SaltyGame.Editor.Tests.csproj" />
 </Solution>
