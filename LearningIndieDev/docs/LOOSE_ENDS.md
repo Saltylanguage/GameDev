@@ -8,9 +8,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-08-18
-- Report state: Fresh review at `178093f`; no P0 blockers; the working tree
-  contains active presentation and JSON/CSV editor-tool work, while art
-  acceptance and EX-002 execution remain open
+- Report state: Sprint 1 shell and Fox instrumentation are now isolated in
+  focused commits; Main Menu smoke passed, while one existing preview defect,
+  art acceptance, and the EX-002 intervention matrix remain open
 
 ## Triage rules
 
@@ -93,11 +93,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-006 — Editor smart-tiling preview path fix awaits validation
 
-- **Status:** Local fix implemented; validation and integration remain open.
-- **Evidence:** The uncommitted change in
-  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` now points at
+- **Status:** Committed; visual validation remains open.
+- **Evidence:** Commit `6bdf6af` points
+  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` at
   `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` instead of the deleted
-  Resources path. No 16-mask preview evidence or commit records acceptance yet.
+  Resources path. No 16-mask preview evidence or runtime screenshot records
+  acceptance yet.
 - **Next action:** Run the 16-mask preview, record visual evidence, and include
   the fix in a focused reviewed commit.
 - **Likely owner:** Presentation/art owner.
@@ -105,15 +106,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-007 — Species sprite fallback fix awaits validation
 
-- **Status:** Local fix implemented; validation and integration remain open.
-- **Evidence:** The uncommitted change in
-  `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs` now builds the complete
-  named animal set from the atlas and then applies direct Fox/Rabbit overrides.
-  The working tree has no focused presentation regression test or recorded
-  runtime acceptance for this behavior.
-- **Next action:** Add or run coverage for every authored species, verify the
-  scene with direct overrides present, and include the fix in a focused
-  reviewed commit.
+- **Status:** Committed; runtime validation found a separate atlas defect.
+- **Evidence:** Commit `6bdf6af` builds the complete named animal set from the
+  atlas and then applies direct Fox/Rabbit overrides. The full Play Mode run
+  `artifacts/unity-tests-20260818-210144/PlayMode-results.xml` is 4/5 because
+  the existing cellular preview throws a Noesis texture-source exception at
+  `SpeciesSimulationViewModel.CreateAnimalAtlasSprites`.
+- **Next action:** Repair or guard the atlas texture-source creation, then add
+  focused presentation coverage for every authored species.
 - **Likely owner:** Presentation owner.
 - **Confidence:** High.
 
@@ -131,18 +131,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-009 — EX-002 instrumented execution remains open after startup recovery
+### P1-009 — EX-002 control complete; intervention matrix remains open
 
-- **Status:** Still open; Unity batch execution is now available with elevated
-  licensing access.
-- **Evidence:** The schema-6 Forest Edge control artifacts above include death
-  events and the reproduction funnel, proving the report path works after the
-  licensing restart. The full EX-002 BaselineParity control, intervention
-  matrix, and held-out check have not yet been run.
+- **Status:** Control complete; intervention matrix and held-out check remain
+  open.
+- **Evidence:** Paired schema-6 BaselineParity controls over seeds 10100–10119
+  are deterministic:
+  `artifacts/cellular-experiment-20260818-210354/report.json` and
+  `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
+  contain death events; creature death-event counts reconcile with aggregate
+  activity. Final herbivore population is min 0, max 37, average 10.25, with
+  one extinct run. No intervention values were changed.
 - **Next action:** Predeclare the collapse endpoint and approved intervention
-  surface; run the same-seed schema-6 BaselineParity control; verify death
-  events against aggregate activity; then run the matched-seed intervention
-  matrix and held-out check.
+  surface; run the matched-seed intervention matrix and held-out check.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 

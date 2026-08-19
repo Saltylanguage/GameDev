@@ -795,10 +795,9 @@ Every research bundle should preserve:
 - EX-001 is accepted as a current-code ForestEdge reproducibility baseline.
 - EX-001B has an accepted bounded reproducibility result for matching
   current-code pairs across ForestEdge, OpenRange, Wetland, and BaselineParity.
-- EX-002 (BaselineParity herbivore decline/extinction attribution) is the next
-  causal experiment; its design has started, but execution is blocked by the
-  current Unity batch startup failure and the need to approve an intervention
-  surface.
+- EX-002 (BaselineParity herbivore decline/extinction attribution) now has a
+  paired deterministic schema-6 control over seeds 10100–10119. Its matched
+  intervention matrix remains gated on an approved intervention surface.
 - CIA-001 and EX-007 remain proposed research work, not validated predictive
   capability.
 

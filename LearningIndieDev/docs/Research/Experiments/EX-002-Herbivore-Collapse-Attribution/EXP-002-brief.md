@@ -6,7 +6,7 @@ cell type's collapse state, using herbivore decline in BaselineParity as the
 first concrete adapter?  
 **Stage:** Causal attribution  
 **Decision owner:** Human design owner  
-**Status:** Schema-6 instrument validated on a repeatable Forest Edge control; full EX-002 execution remains open
+**Status:** Schema-6 BaselineParity control validated deterministically; full EX-002 execution remains open
 
 ## Collapse contract
 
@@ -75,15 +75,17 @@ aggregate activity counters remain in the report for continuity and cross-checks
 The table above is therefore retained as **pre-telemetry baseline evidence**.
 Its starvation/crowding totals are valid aggregate observations from the schema-4
 report, but the report contains no per-event entity, location, or tick data and
-must not be backfilled. A schema-6 same-seed rerun is required to produce the
-instrumented EX-002 baseline. Until that rerun succeeds, the experiment result is:
+must not be backfilled. A schema-6 same-seed rerun was required to produce the
+instrumented EX-002 baseline. The paired control now exists; until the
+intervention matrix and held-out check succeed, the experiment result is:
 
 - **Observed:** BaselineParity shows a candidate starvation-dominant proximate
   mortality pattern in aggregate data.
-- **Instrumented per-death result:** A schema-6 Forest Edge control now exists
-  at `artifacts/cellular-experiment-20260818-200811/report.json` (repeated at
-  `artifacts/cellular-experiment-20260818-200842/report.json`). These are
-  instrumentation checks, not the declared EX-002 BaselineParity result.
+- **Instrumented per-death result:** Paired schema-6 BaselineParity controls
+  exist at `artifacts/cellular-experiment-20260818-210354/report.json` and
+  `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
+  contain death events, and creature event counts reconcile with aggregate
+  activity. These are control results, not a causal intervention conclusion.
 - **Causal conclusion:** Not supported.
 
 ## CellSim run and report API
