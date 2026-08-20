@@ -1,3 +1,4 @@
+using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 
@@ -23,6 +24,9 @@ namespace SaltyGame.Tests
         public void LegacyRosterOffersOnlyCreatureSpeciesForPlayerSelection()
         {
             var preview = root.AddComponent<SpeciesSimulationPreview>();
+            typeof(SpeciesSimulationPreview)
+                .GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(preview, null);
 
             Assert.That(preview.RosterSpecies, Is.EqualTo(new[]
             {
@@ -41,6 +45,9 @@ namespace SaltyGame.Tests
         public void PlayerSelectionRejectsPlantsAndPreparesTheSelectedCreature()
         {
             var preview = root.AddComponent<SpeciesSimulationPreview>();
+            typeof(SpeciesSimulationPreview)
+                .GetMethod("Awake", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(preview, null);
 
             Assert.That(preview.TrySetPlayerSpecies(SpeciesIds.Plant.Value, out var plantMessage), Is.False);
             Assert.That(plantMessage, Does.Contain("not playable"));

@@ -61,7 +61,7 @@
                                          Width="1240"
                                          Height="660">
                 <b:Interaction.Behaviors>
-                    <noesis:TranslateZoomRotateBehavior SupportedGestures="Translate,Scale"
+                    <noesis:TranslateZoomRotateBehavior SupportedGestures="All"
                                                          MinimumScale="0.75"
                                                          MaximumScale="4"
                                                          WheelSensitivity="0.15"

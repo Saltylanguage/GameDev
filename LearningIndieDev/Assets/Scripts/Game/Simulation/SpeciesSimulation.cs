@@ -367,8 +367,7 @@ namespace SaltyGame
                     || !sourceCell.IsCreature
                     || !currentCell.IsCreature
                     || !rules.TryGetValue(sourceCell.SpeciesId, out var speciesRules)
-                    || currentCell.SpeciesId != sourceCell.SpeciesId
-                    || speciesRules.MovementSpeed <= 0f)
+                    || currentCell.SpeciesId != sourceCell.SpeciesId)
                 {
                     continue;
                 }
@@ -601,14 +600,15 @@ namespace SaltyGame
             }
 
             if (SpeciesPerception.TryFindThreatTarget(
-                    source,
-                    x,
-                    y,
-                    currentCell.SpeciesId,
-                    rules,
-                    random,
-                    out var threatTarget)
-                && TryMoveAwayFromThreat(
+                source,
+                x,
+                y,
+                currentCell.SpeciesId,
+                rules,
+                random,
+                out var threatTarget))
+            {
+                if (TryMoveAwayFromThreat(
                     source,
                     next,
                     x,
@@ -622,7 +622,11 @@ namespace SaltyGame
                     claimed,
                     random,
                     metrics))
-            {
+                {
+                    return true;
+                }
+
+                moved[GetIndex(source, x, y)] = true;
                 return true;
             }
 
