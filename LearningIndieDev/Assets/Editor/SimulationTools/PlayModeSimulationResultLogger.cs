@@ -12,7 +12,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 5;
+        const int ReportSchemaVersion = 6;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -100,13 +100,14 @@ namespace SaltyGame.EditorTools
             builder.AppendLine();
             builder.AppendLine("## Activity");
             builder.AppendLine();
-            builder.AppendLine("| Species | Births | Food | Movement | Kills | Deaths | Starvation | State transitions |");
-            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|");
+            builder.AppendLine("| Species | Births | Food | Food attempts | Food successes | Food failures | Movement | Kills | Deaths | Starvation | State transitions |");
+            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|");
             for (var index = 0; index < report.activity.Length; index++)
             {
                 var entry = report.activity[index];
                 builder.AppendLine(
                     $"| {entry.speciesId} | {entry.births} | {entry.foodConsumed:0.###} | "
+                    + $"{entry.foodActionAttempts} | {entry.foodActionSuccesses} | {entry.foodActionFailures} | "
                     + $"{entry.movementSteps} | {entry.combatKills} | {entry.deaths} | {entry.starvationDeaths} | "
                     + $"{entry.stateTransitions} |");
             }

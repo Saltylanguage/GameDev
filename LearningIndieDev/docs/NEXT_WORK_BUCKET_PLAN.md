@@ -21,9 +21,12 @@ wallet, save system, or permanent progression.
   gate on Trello card 53.
 - Keep the existing Main Menu/Lab shell as the presentation entry point; do not
   reopen completed cards 51 or 52.
-- Resolve the current Noesis atlas texture-source defect enough to run the
-  upgrade preview at gameplay scale, or record a bounded fallback using the
-  existing presentation path.
+- Keep the graphics-capable Noesis atlas path as the accepted preview surface;
+  the generic nographics texture failure is an environment boundary, not an
+  S2 entry blocker.
+- Validate the current Fox food-action telemetry fix before promoting balance
+  evidence; do not treat the new counters as accepted until an unlocked Unity
+  run reconciles them.
 - Keep Forest Edge balance and Fox reproduction findings as evidence inputs;
   do not rebalance from a single seed.
 
@@ -31,16 +34,30 @@ wallet, save system, or permanent progression.
 
 ### S2.1 — Upgrade contract and boundary (4h)
 
-Define and record:
+The current `SpeciesUpgrade`/`SpeciesProgression` path is a real, testable
+per-run mechanic for movement speed, attack amount, and block amount. The
+three reward buttons are therefore under-presented implementations, not empty
+placeholders; they still lack a durable player-facing contract and result
+summary. Keep this narrow catalog path and do not introduce a generic modifier
+framework.
+
+Define and record for each upgrade:
 
 - stable upgrade IDs and an ordered loadout representation;
+- player-facing name and description;
+- affected mechanic/stat, magnitude/value, and valid range;
+- tradeoff or cost, eligibility/preconditions, and persistence/duration scope;
+- result-summary representation that explains what changed and what the next
+  run will inherit;
 - the boundary between temporary per-run upgrades and permanent Lab research;
 - effect grammar for numeric, spatial, conditional, and tradeoff changes;
 - cost/prerequisite fields, stacking and exclusion rules, and preview text;
 - the immutable run-start snapshot and fingerprint implications.
 
-Acceptance: a short design/TDD note and focused data tests make the boundary
-unambiguous without introducing save/load or a generalized plugin framework.
+Acceptance: this plan and focused data tests make the boundary unambiguous
+without introducing save/load or a generalized plugin framework. Results must
+be able to identify the selected upgrade, its applied value, and its scope even
+before the final UX copy is implemented.
 
 ### S2.2 — First catalog slice (8h)
 
@@ -83,14 +100,33 @@ Acceptance: paired baseline/upgrade runs use the same seed and report the
 Acceptance: evidence separates implementation correctness from balance claims;
 no single-seed result is promoted as a product conclusion.
 
+## Next evidence lane — Forest Edge baseline before balance tuning
+
+After the S1 build gate and telemetry validation are accepted, run a matched
+Forest Edge experiment before changing balance values:
+
+- 20 fixed seeds for the baseline, using the current authored scenario and
+  player species; repeat the same 20 seeds for each single upgrade/control arm.
+- Hold grid dimensions, duration, step interval, scenario fingerprint, and
+  starting roster constant. Record the ordered loadout and effective ruleset
+  fingerprint for every run.
+- Capture final and peak populations, collapse/zero-population rate, births,
+  deaths by cause, food consumed, food-action attempts/successes/failures,
+  combat kills, state ticks/transitions, and reproduction reconciliation.
+- Re-run any selected arm on five held-out seeds before promoting an effect
+  direction. Derive acceptance thresholds from the baseline distribution;
+  do not invent a target population or success threshold in advance.
+- Require fixed-seed replay equality, attempts = successes + failures, death
+  event/activity reconciliation, and no baseline regression before discussing
+  balance or roster expansion.
+
 ## Reserve and parallel lanes
 
 Keep a 3-hour integration reserve for Unity/Noesis defects, review changes, and
 test repair. Tooling may consume part of the reserve only when it removes a
-measured repeated friction and retains a manual fallback. The Fox eating-state
-telemetry fix and the EX-002 intervention matrix remain parallel evidence lanes;
-they are not prerequisites for the first catalog unless their results change an
-upgrade decision.
+measured repeated friction and retains a manual fallback. The bounded EX-002
+intervention matrix remains a parallel evidence lane; its historical schema-6
+reports are not invalidated by the new schema-7 telemetry.
 
 ## Explicitly out of scope
 

@@ -102,8 +102,8 @@ inform the comparison but cannot approve the style.
 - `docs/TILE_AUTHORING_GUIDE.md` is the asset-authoring contract.
 - `docs/CELLULAR_SPRITE_TILING_PLAN.md` defines the current 16-mask resolver and
   known temporary mappings.
-- P1-006, P1-007, and P1-008 in `docs/LOOSE_ENDS.md` are the current validation
-  and atlas defects this lane closes.
+- P1-006, P1-007, and P1-008 in `docs/LOOSE_ENDS.md` are resolved evidence
+  records for this lane; reopen them only for a new visual regression.
 - Existing Unity `ProjectSettings` edits are unrelated and must not be folded
   into this lane without explicit review.
 

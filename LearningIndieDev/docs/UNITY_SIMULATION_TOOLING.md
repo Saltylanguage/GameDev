@@ -156,10 +156,13 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The current experiment JSON schema is `6`. It records the schema version, timestamp, scenario asset path,
+The current experiment JSON schema is `7`. Historical schema-6 EX-002 reports
+remain valid for their bounded matrix; new outputs record the schema version,
+timestamp, scenario asset path,
 seed range, grid settings, run window, player species, ruleset fingerprint,
 run-level results, full population timelines, final-population summary,
-per-species activity totals and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
+per-species activity totals, resolver food-action attempts/successes/failures,
+and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
 identity, tick, age, and position. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
@@ -193,7 +196,9 @@ Schema 6 therefore records a separate resolver funnel. A candidate is one live
 parent with reproduction enabled when `ResolveReproduction` evaluates it, and
 exactly one outcome is recorded. A successful attempt creates at least one
 offspring; the existing births counter remains separate because a successful
-attempt may create a litter.
+attempt may create a litter. Schema 7 also separates behavior-state food
+intent from resolver food actions; food attempts must reconcile exactly as
+successes plus failures.
 
 The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
 range and checks initial composition, final player-population ratio, allowed

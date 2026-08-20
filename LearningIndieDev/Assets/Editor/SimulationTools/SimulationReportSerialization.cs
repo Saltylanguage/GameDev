@@ -19,6 +19,9 @@ namespace SaltyGame.EditorTools
                     speciesId = species[index].Value,
                     births = source.Births,
                     foodConsumed = source.FoodConsumed,
+                    foodActionAttempts = source.FoodActionAttempts,
+                    foodActionSuccesses = source.FoodActionSuccesses,
+                    foodActionFailures = source.FoodActionFailures,
                     movementSteps = source.MovementSteps,
                     damageDealt = source.DamageDealt,
                     combatKills = source.CombatKills,
@@ -206,6 +209,9 @@ namespace SaltyGame.EditorTools
         public string speciesId;
         public int births;
         public float foodConsumed;
+        public int foodActionAttempts;
+        public int foodActionSuccesses;
+        public int foodActionFailures;
         public int movementSteps;
         public int damageDealt;
         public int combatKills;

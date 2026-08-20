@@ -65,7 +65,8 @@ Acceptance:
 - The review route is navigable at both target resolutions.
 - XAML and ViewModels contain no wallet, persistence, or simulation logic.
 - Existing scene references and GUIDs remain intact.
-- `MainMenu.unity` becomes the first Build Settings scene only after its smoke path passes.
+- `MainMenu.unity` is now the first Build Settings scene; S1 closure still
+  requires the Windows smoke path to prove the promotion is safe.
 
 ### S1.2 — Herbivore research preview
 
@@ -153,7 +154,7 @@ If 20 hours is insufficient, cut in this order:
 1. Main Menu secondary actions beyond Enter Lab.
 2. The second research project, retaining one complete project preview.
 3. Lab Overview content beyond the data bar and Research entry.
-4. Build Settings promotion, while retaining a direct-scene smoke check.
+4. Secondary Main Menu content, while retaining the Build Settings smoke gate.
 
 Do not cut deterministic Back behavior, visible focus, currency clarity, target-resolution checks, or basic verification.
 

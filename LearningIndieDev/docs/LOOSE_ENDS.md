@@ -7,10 +7,11 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-08-18
-- Report state: Sprint 1 shell and Fox instrumentation are now isolated in
-  focused commits; Main Menu smoke passed, while one existing preview defect,
-  art acceptance, and the EX-002 intervention matrix remain open
+- Last reviewed: 2026-08-20
+- Report state: the pushed audit/art evidence is reconciled; the remaining S1
+  gate is a fresh current-HEAD Windows build/launch smoke, while Fox action
+  telemetry has a focused fix awaiting Unity validation after the license
+  service blocked two headless retries
 
 ## Triage rules
 
@@ -54,15 +55,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-### P1-003 — Eating state telemetry is undercounted for Foxes
+### P1-003 — Fox eating/action telemetry needs current-HEAD validation
 
-- **Status:** New finding from the latest report review.
-- **Evidence:** Fox activity records 6 food events, while the aggregate table
-  still has no Fox Eating row; tracked transition history references
-  Hunting → Attacking → Eating → Wandering around attack resolution.
-- **Next action:** Distinguish FSM decision ticks from resolver-applied action
-  states, or record action states after attack/feeding resolution. Add a
-  regression assertion for the report fields.
+- **Status:** Implementation corrected; Unity validation remains pending because
+  the `LicenseClient-bevin` IPC service blocked two headless retries after the
+  Editor lock was cleared.
+- **Evidence:** `SpeciesSimulationMetrics` now distinguishes behavior-decision
+  ticks from resolver food-action attempts, successes, and failures. Predation
+  and plant feeding both record the action result; focused domain regressions
+  cover successful and blocked predation plus plant feeding. Existing schema-6
+  EX-002 artifacts remain historical; new experiment output is schema 7.
+- **Next action:** Close Unity safely, rerun the focused EditMode/PlayMode
+  suites once licensing is healthy, and regenerate one current Forest Edge
+  report to verify attempts = successes + failures.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -95,44 +100,54 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
-### P1-006 — Editor smart-tiling preview path fix awaits validation
+### P1-006 — Editor smart-tiling preview path fix
 
-- **Status:** Committed; visual validation remains open.
-- **Evidence:** Commit `6bdf6af` points
-  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` at
-  `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` instead of the deleted
-  Resources path. No 16-mask preview evidence or runtime screenshot records
-  acceptance yet.
-- **Next action:** Run the 16-mask preview, record visual evidence, and include
-  the fix in a focused reviewed commit.
+- **Status:** Resolved and evidenced.
+- **Evidence:** Commit `771ca50` is pushed. The 16-mask preview artifacts are
+  `artifacts/editor-smart-tiling-20260820-023512/grass-16-masks.png` and
+  `desert-16-masks.png`, with `mapping.txt` documenting the mask mapping.
+- **Next action:** Keep the artifact paths attached to the completed Trello 67
+  record; do not reopen this finding without a new visual regression.
 - **Likely owner:** Presentation/art owner.
 - **Confidence:** High.
 
-### P1-007 — Species sprite fallback fix awaits validation
+### P1-007 — Species sprite fallback fix
 
-- **Status:** Committed; runtime validation found a separate atlas defect.
-- **Evidence:** Commit `6bdf6af` builds the complete named animal set from the
-  atlas and then applies direct Fox/Rabbit overrides. The full Play Mode run
-  `artifacts/unity-tests-20260818-210144/PlayMode-results.xml` is 4/5 because
-  the existing cellular preview throws a Noesis texture-source exception at
-  `SpeciesSimulationViewModel.CreateAnimalAtlasSprites`.
-- **Next action:** Repair or guard the atlas texture-source creation, then add
-  focused presentation coverage for every authored species.
+- **Status:** Resolved for the graphics-capable runtime path.
+- **Evidence:** Commit `024ea86` is pushed. The authoritative graphics-capable
+  PlayMode artifact `artifacts/visual-evidence-20260820-025530/PlayMode-results.xml`
+  passes 6/6, including the species-presentation coverage. The generic
+  nographics run remains 4/6 only because Noesis cannot create native textures
+  without a graphics device.
+- **Next action:** Preserve the explicit nographics limitation; do not treat it
+  as a product regression.
 - **Likely owner:** Presentation owner.
 - **Confidence:** High.
 
-### P1-008 — Art/presentation commit lacks post-commit runtime acceptance
+### P1-008 — Art/presentation runtime acceptance
 
-- **Status:** New finding; implementation is committed and pushed, acceptance
-  is still open.
-- **Evidence:** Commit `4f04f4b2` standardized the art/SpriteAtlas pipeline and
-  scene wiring. No Unity screenshots or gameplay-scale visual checks exist
-  after that commit; the relay health check only reports `OK` with zero relay
-  processes when Unity is not active.
-- **Next action:** Open the preview and `CellularAutomataPrototype` in Unity,
-  capture gameplay-scale screenshots, and verify atlas loading, terrain seams,
-  and species icon scale.
-- **Likely owner:** Josh + Sim.
+- **Status:** Resolved for the bounded runtime-art acceptance; product UX polish
+  remains a separate open concern.
+- **Evidence:** The pushed art/presentation commits are covered by the graphics
+  PlayMode 6/6 artifact above and screenshots `01-settings.png` through
+  `04-results.png` in `artifacts/visual-evidence-20260820-025530/`.
+- **Next action:** Track label overlap and generic reward/results presentation
+  under the upgrade/results work; do not reopen this completed art finding.
+
+### P1-012 — Embedded Noesis editor analytics requires a release decision
+
+- **Status:** Open security/privacy decision; not a player-build code path.
+- **Evidence:** The embedded vendor package's Editor-only assembly calls
+  `GoogleAnalyticsHelper.Install` from `NoesisUpdater` when the package version
+  changes. The helper sends a `unity_install` event to Google Analytics and
+  contains a committed credential. The Editor asmdef includes only `Editor`, so
+  the code is not compiled into the Windows player; the Editor can still make
+  the network request during package installation/update.
+- **Next action:** Obtain vendor/project approval to disable or update the
+  telemetry through a supported package mechanism, then rotate the credential
+  if it is genuine. Do not patch the embedded vendor package casually or copy
+  the value into project documentation.
+- **Likely owner:** Repository maintainer + vendor/license owner.
 - **Confidence:** High.
 
 ### P1-009 — EX-002 intervention matrix and held-out check
@@ -286,5 +301,6 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** Commit `4f04f4b2` is present on
   `codex/cellular-sprite-tiling` and the branch is synchronized with origin.
 - **Result:** Standardized art exports, SpriteAtlas assets, scene wiring, and
-  relay-health tooling are shared. Runtime visual acceptance remains open as
-  P1-008.
+  relay-health tooling are shared. Graphics-capable runtime-art acceptance is
+  resolved; remaining label/reward readability work belongs to the upgrade/UI
+  lane.

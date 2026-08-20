@@ -293,8 +293,16 @@ namespace SaltyGame
                                         : 0).WithBehaviorState(
                                             SpeciesBehaviorState.Eating,
                                             Math.Max(1, currentAttacker.BehaviorStateTicks)));
-                                metrics?.Record(attacker.SpeciesId, foodConsumed: 1f);
+                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: true, consumedAmount: 1f);
                             }
+                            else
+                            {
+                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
+                            }
+                        }
+                        else
+                        {
+                            metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
                         }
 
                         break;
@@ -1434,12 +1442,14 @@ namespace SaltyGame
             var plant = next.GetCell(plantX, plantY);
             if (!plant.IsPlantResource)
             {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
                 return false;
             }
 
             var availableEnergy = plant.IsTerrainResource ? plant.TerrainEnergy : plant.FoodReserve;
             if (availableEnergy <= 0f)
             {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
                 return false;
             }
 
@@ -1455,7 +1465,7 @@ namespace SaltyGame
                     .WithBehaviorState(
                         SpeciesBehaviorState.Eating,
                         Math.Max(1, eater.BehaviorStateTicks)));
-            metrics?.Record(eater.SpeciesId, foodConsumed: consumedEnergy);
+            metrics?.RecordFoodAction(eater.SpeciesId, successful: true, consumedAmount: consumedEnergy);
             var remainingEnergy = availableEnergy - consumedEnergy;
             next.SetCell(plantX, plantY, plant.IsTerrainResource
                 ? remainingEnergy > 0f

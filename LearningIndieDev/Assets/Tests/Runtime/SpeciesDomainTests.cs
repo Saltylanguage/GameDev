@@ -408,6 +408,113 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void SuccessfulPredationRecordsFoodActionSeparatelyFromBehaviorDecision()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 2,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    energyValue: 4,
+                    metabolism: 0),
+            };
+
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+            var activity = metrics.GetActivity(SpeciesIds.Carnivore);
+
+            Assert.That(next.GetCell(1, 0).IsOccupied, Is.False);
+            Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(1f));
+            Assert.That(activity.CombatKills, Is.EqualTo(1));
+            Assert.That(activity.FoodConsumed, Is.EqualTo(1f));
+            Assert.That(activity.FoodActionAttempts, Is.EqualTo(1));
+            Assert.That(activity.FoodActionSuccesses, Is.EqualTo(1));
+            Assert.That(activity.FoodActionFailures, Is.EqualTo(0));
+            Assert.That(activity.FoodActionAttempts, Is.EqualTo(
+                activity.FoodActionSuccesses + activity.FoodActionFailures));
+            Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Attacking), Is.EqualTo(1));
+            Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Eating), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BlockedPredationRecordsAFailedFoodActionWithoutFoodConsumed()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+            var activity = metrics.GetActivity(SpeciesIds.Carnivore);
+
+            Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(2));
+            Assert.That(activity.FoodConsumed, Is.EqualTo(0f));
+            Assert.That(activity.FoodActionAttempts, Is.EqualTo(1));
+            Assert.That(activity.FoodActionSuccesses, Is.EqualTo(0));
+            Assert.That(activity.FoodActionFailures, Is.EqualTo(1));
+        }
+
+        [Test]
         public void PredatorForagesOnlyAtOrBelowItsEnergyThreshold()
         {
             var source = new Grid<SpeciesCell>(2, 1);
@@ -1296,6 +1403,9 @@ namespace SaltyGame.Tests
             Assert.That(first.GetCell(1, 0).FoodReserve, Is.EqualTo(1f));
             Assert.That(first.GetCell(3, 0).FoodReserve, Is.EqualTo(1f));
             Assert.That(firstMetrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.EqualTo(2f));
+            Assert.That(firstMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionAttempts, Is.EqualTo(2));
+            Assert.That(firstMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses, Is.EqualTo(2));
+            Assert.That(firstMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures, Is.EqualTo(0));
 
             var secondMetrics = new SpeciesSimulationMetrics();
             var second = SpeciesSimulation.Step(first, rules, seed: 43, metrics: secondMetrics);
@@ -1304,6 +1414,14 @@ namespace SaltyGame.Tests
                 second.GetCell(1, 0).FoodReserve + second.GetCell(3, 0).FoodReserve,
                 Is.EqualTo(3.25f).Within(0.001f));
             Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.EqualTo(1.25f));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionAttempts, Is.EqualTo(2));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses, Is.EqualTo(1));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures, Is.EqualTo(1));
+            Assert.That(
+                secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionAttempts,
+                Is.EqualTo(
+                    secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses
+                    + secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures));
             Assert.That(secondMetrics.GetActivity(SpeciesIds.Plant).Deaths, Is.EqualTo(1));
         }
 

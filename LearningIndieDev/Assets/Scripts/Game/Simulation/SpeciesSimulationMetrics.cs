@@ -181,6 +181,9 @@ namespace SaltyGame
         internal SpeciesSimulationActivity(
             int births,
             float foodConsumed,
+            int foodActionAttempts,
+            int foodActionSuccesses,
+            int foodActionFailures,
             int movementSteps,
             int damageDealt,
             int combatKills,
@@ -192,6 +195,9 @@ namespace SaltyGame
         {
             Births = births;
             FoodConsumed = foodConsumed;
+            FoodActionAttempts = foodActionAttempts;
+            FoodActionSuccesses = foodActionSuccesses;
+            FoodActionFailures = foodActionFailures;
             MovementSteps = movementSteps;
             DamageDealt = damageDealt;
             CombatKills = combatKills;
@@ -204,6 +210,9 @@ namespace SaltyGame
 
         public int Births { get; }
         public float FoodConsumed { get; }
+        public int FoodActionAttempts { get; }
+        public int FoodActionSuccesses { get; }
+        public int FoodActionFailures { get; }
         public int MovementSteps { get; }
         public int DamageDealt { get; }
         public int CombatKills { get; }
@@ -216,6 +225,9 @@ namespace SaltyGame
         internal SpeciesSimulationActivity Add(
             int births = 0,
             float foodConsumed = 0f,
+            int foodActionAttempts = 0,
+            int foodActionSuccesses = 0,
+            int foodActionFailures = 0,
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
@@ -228,6 +240,9 @@ namespace SaltyGame
             return new SpeciesSimulationActivity(
                 Births + births,
                 FoodConsumed + foodConsumed,
+                FoodActionAttempts + foodActionAttempts,
+                FoodActionSuccesses + foodActionSuccesses,
+                FoodActionFailures + foodActionFailures,
                 MovementSteps + movementSteps,
                 DamageDealt + damageDealt,
                 CombatKills + combatKills,
@@ -498,6 +513,9 @@ namespace SaltyGame
             SpeciesId species,
             int births = 0,
             float foodConsumed = 0f,
+            int foodActionAttempts = 0,
+            int foodActionSuccesses = 0,
+            int foodActionFailures = 0,
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
@@ -515,6 +533,9 @@ namespace SaltyGame
             activityBySpecies[species] = GetActivity(species).Add(
                 births,
                 foodConsumed,
+                foodActionAttempts,
+                foodActionSuccesses,
+                foodActionFailures,
                 movementSteps,
                 damageDealt,
                 combatKills,
@@ -523,6 +544,21 @@ namespace SaltyGame
                 crowdingDeaths,
                 wiltDeaths,
                 populationLimitRemovals);
+        }
+
+        internal void RecordFoodAction(
+            SpeciesId species,
+            bool successful,
+            float consumedAmount = 0f)
+        {
+            // Behavior-state ticks describe the pre-resolution decision. These
+            // counters describe the resolver outcome and must reconcile.
+            Record(
+                species,
+                foodConsumed: consumedAmount,
+                foodActionAttempts: 1,
+                foodActionSuccesses: successful ? 1 : 0,
+                foodActionFailures: successful ? 0 : 1);
         }
 
         internal void RecordReproductionOutcome(

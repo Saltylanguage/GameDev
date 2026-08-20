@@ -73,18 +73,23 @@ the important current pressure without developer explanation.
   hierarchy during running, paused, reward, and results states.
 - Record defects and fix the smallest presentation seam responsible.
 
-**Blocker:** Unity 6000.4.6f1 licensing/startup is currently unavailable in this
-environment. No visual work should be called accepted until these captures exist.
+**Status:** The previous licensing/startup blocker is stale. Graphics-capable
+runtime evidence now exists in `artifacts/visual-evidence-20260820-025530/`;
+fresh current-HEAD build/launch validation is still pending because two
+headless retries stalled on the `LicenseClient-bevin` IPC service after the
+Editor lock was cleared. Do not call the S1 gate closed until that validation
+is recorded.
 
 ## Phase 1 — Make the simulation truth trustworthy
 
 ### 1.1 Forest Edge balance and rules
 
-- Restore Unity batch/editor validation.
-- Run the schema-6 reproduction-funnel tests and the known Forest Edge seed.
+- Restore a healthy Unity licensing/validation surface and run the focused
+  simulation tests plus the known Forest Edge seed.
 - Reconcile candidate, energy, mate, group-limit, chance, no-space, and success
   counters against births.
-- Fix Fox Eating/action telemetry so resolver-applied actions appear in reports.
+- Validate the Fox eating/action telemetry fix: reports now separate resolver
+  attempts, successes, and failures from pre-resolution behavior-state ticks.
 - Run fixed-seed base comparisons before changing balance values.
 - Establish a meaningful regional Fern carrying limit and compare Hare outcomes
   against the vertical-slice target.
@@ -170,16 +175,18 @@ and see/use that unlock on the next run.
 
 ### 5.1 CellSim and report pipeline
 
-- Repair Unity licensing/startup and rerun focused tests.
-- Accept schema-6 report output only after reproduction and action telemetry
-  reconcile with the simulation.
+- Rerun focused Unity tests and the current-HEAD Windows smoke once the Editor
+  is safely closed and the license service accepts the batch client.
+- Accept current schema-7 report output only after reproduction and food-action
+  telemetry reconcile with the simulation. Historical schema-6 EX-002 reports
+  remain valid evidence for their bounded experiment window.
 - Keep JSON/CSV factual exports separate from presentation and dashboard ideas.
 - Validate the committed JSON/CSV editor converter and assign its owner.
 
 ### 5.2 Predictive ecology research
 
-- Complete EX-002 same-seed schema-6 control.
-- Run one declared single-mechanism intervention and held-out check.
+- Preserve the completed bounded EX-002 schema-6 matrix and its held-out check;
+  do not rerun or broaden it without a new protocol.
 - Keep causal claims, calibration, and workflow-value claims separate from the
   already accepted reproducibility evidence.
 
@@ -235,8 +242,11 @@ the following are true:
 
 ## Current blockers
 
-1. Unity 6000.4.6f1 licensing/startup prevents runtime, Play Mode, and visual
-   acceptance checks.
-2. The working tree currently contains local Unity ProjectSettings changes;
-   preserve and review those changes separately before integration.
-3. Sprint 1 still needs a durable kickoff/control record.
+1. The Editor lock is cleared, but the Unity license service refused the
+   `LicenseClient-bevin` IPC connection during two headless retries, so the
+   fresh current-HEAD Windows build/launch smoke and changed-test rerun remain
+   pending. This is an environment gate, not a source-test result.
+2. The S1 control record exists and the Build Settings now put `MainMenu.unity`
+   first; card 53 still needs the fresh player-launch evidence before closure.
+3. The embedded Noesis editor analytics path requires a vendor/project privacy
+   decision before release; it is editor-only and not compiled into the player.
