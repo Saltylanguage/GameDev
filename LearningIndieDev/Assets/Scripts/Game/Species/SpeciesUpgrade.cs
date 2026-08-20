@@ -93,4 +93,31 @@ namespace SaltyGame
                 litterMaximum: rules.LitterMaximum);
         }
     }
+
+    public static class SpeciesUpgradeCatalog
+    {
+        public const string FasterMovementId = "faster-movement";
+        public const string StrongerAttackId = "stronger-attack";
+        public const string StrongerBlockId = "stronger-block";
+
+        public static SpeciesUpgrade Create(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Upgrade id cannot be empty.", nameof(id));
+            }
+
+            switch (id)
+            {
+                case FasterMovementId:
+                    return new SpeciesUpgrade(FasterMovementId, 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
+                case StrongerAttackId:
+                    return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
+                case StrongerBlockId:
+                    return new SpeciesUpgrade(StrongerBlockId, 5, SpeciesUpgradeType.BlockAmount, 1f);
+                default:
+                    throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
+            }
+        }
+    }
 }

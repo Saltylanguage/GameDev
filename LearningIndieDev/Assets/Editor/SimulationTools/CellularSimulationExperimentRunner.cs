@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 7;
+        const int ReportSchemaVersion = 8;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -23,6 +23,8 @@ namespace SaltyGame.EditorTools
         const string SeedStartArgument = "-seedStart";
         const string SeedCountArgument = "-seedCount";
         const string PlayerSpeciesArgument = "-playerSpeciesId";
+        const string UpgradeIdArgument = "-upgradeId";
+        const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string RunDurationArgument = "-runDurationSeconds";
@@ -79,6 +81,7 @@ namespace SaltyGame.EditorTools
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
                     options);
+                data = ApplyLoadout(data, options);
 
                 try
                 {
@@ -124,6 +127,7 @@ namespace SaltyGame.EditorTools
             }
 
             var species = GetSortedSpecies(data.SpeciesRules);
+            var upgrade = GetOptionalUpgrade(options.UpgradeId);
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
@@ -139,6 +143,10 @@ namespace SaltyGame.EditorTools
                 csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
                 rulesetFingerprint = data.Fingerprint,
                 playerSpeciesId = playerSpecies.Value,
+                upgradeId = options.UpgradeId,
+                upgradeType = upgrade == null ? string.Empty : upgrade.Type.ToString(),
+                upgradeValue = upgrade == null ? 0f : upgrade.Value,
+                orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = data.Width,
@@ -252,6 +260,33 @@ namespace SaltyGame.EditorTools
                 data.TerrainDefinitions,
                 data.AlphaOffspringRules,
                 data.StartingPopulations);
+        }
+
+        static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
+        {
+            var upgrade = GetOptionalUpgrade(options.UpgradeId);
+            if (upgrade == null)
+            {
+                return data;
+            }
+
+            var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
+            if (!data.SpeciesRules.TryGetValue(playerSpecies, out var rules))
+            {
+                throw new ArgumentException(
+                    $"Scenario does not define the requested player species '{options.PlayerSpeciesId}'.",
+                    PlayerSpeciesArgument);
+            }
+
+            return data.WithSpeciesRules(playerSpecies, upgrade.Apply(rules));
+        }
+
+        static SpeciesUpgrade GetOptionalUpgrade(string upgradeId)
+        {
+            return string.IsNullOrWhiteSpace(upgradeId)
+                || string.Equals(upgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                ? null
+                : SpeciesUpgradeCatalog.Create(upgradeId);
         }
 
         static void WriteCsv(
@@ -453,6 +488,7 @@ namespace SaltyGame.EditorTools
             public int SeedStart { get; private set; }
             public int SeedCount { get; private set; }
             public string PlayerSpeciesId { get; private set; }
+            public string UpgradeId { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -467,6 +503,7 @@ namespace SaltyGame.EditorTools
                     SeedStart = GetIntValue(arguments, SeedStartArgument, DefaultSeedStart, allowZero: true, allowSigned: true),
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
+                    UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
@@ -549,6 +586,10 @@ namespace SaltyGame.EditorTools
             public string csvOutputPath;
             public string rulesetFingerprint;
             public string playerSpeciesId;
+            public string upgradeId;
+            public string upgradeType;
+            public float upgradeValue;
+            public string[] orderedLoadout;
             public int seedStart;
             public int seedCount;
             public int gridWidth;

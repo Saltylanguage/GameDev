@@ -192,9 +192,9 @@ namespace SaltyGame
 
         readonly SpeciesUpgrade[] rewardOptions =
         {
-            new SpeciesUpgrade("faster-movement", 5, SpeciesUpgradeType.MovementSpeed, 0.5f),
-            new SpeciesUpgrade("stronger-attack", 5, SpeciesUpgradeType.AttackAmount, 1f),
-            new SpeciesUpgrade("stronger-block", 5, SpeciesUpgradeType.BlockAmount, 1f),
+            SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId),
+            SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId),
+            SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerBlockId),
         };
 
         SpeciesId playerSpecies;

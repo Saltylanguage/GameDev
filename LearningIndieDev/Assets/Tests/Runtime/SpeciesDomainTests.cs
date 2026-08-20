@@ -269,6 +269,16 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void UpgradeCatalogProvidesStableFasterMovementDefinition()
+        {
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
+
+            Assert.That(upgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.FasterMovementId));
+            Assert.That(upgrade.Type, Is.EqualTo(SpeciesUpgradeType.MovementSpeed));
+            Assert.That(upgrade.Value, Is.EqualTo(0.5f));
+        }
+
+        [Test]
         public void RunStateAdvancesUntilItsDuration()
         {
             var initialGrid = new Grid<SpeciesCell>(2, 2);

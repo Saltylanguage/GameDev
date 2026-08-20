@@ -13,6 +13,7 @@ param(
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
+    [string]$UpgradeId = 'none',
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -64,6 +65,7 @@ $arguments = @(
     '-seedStart', $SeedStart,
     '-seedCount', $SeedCount,
     '-playerSpeciesId', $PlayerSpeciesId,
+    '-upgradeId', $UpgradeId,
     '-outputPath', $reportPath,
     '-logFile', $logPath
 )
