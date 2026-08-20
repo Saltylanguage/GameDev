@@ -1,4 +1,6 @@
 using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
 
 namespace SaltyGame.Tests
 {
@@ -63,6 +65,24 @@ namespace SaltyGame.Tests
             Assert.That(
                 TerrainTileResolver.ResolveTerrainTileIndex(cells, 1, 1, TerrainIds.Desert),
                 Is.EqualTo(5));
+        }
+
+        [Test]
+        public void EditorSmartTilingPreviewLoadsTheAuthoredTerrainSheet()
+        {
+            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(
+                "Assets/Art/Terrain/Terrain_01_SpriteSheet.png");
+
+            Assert.That(atlas, Is.Not.Null);
+            Assert.That(atlas.width % 4, Is.EqualTo(0));
+            Assert.That(atlas.height % 8, Is.EqualTo(0));
+            Assert.That(atlas.width / 4, Is.EqualTo(128));
+            Assert.That(atlas.height / 8, Is.EqualTo(128));
+
+            for (var mask = 0; mask < TerrainTileResolver.VariantCount; mask++)
+            {
+                Assert.That(TerrainTileResolver.ResolveGrassAtlasIndex(mask), Is.InRange(0, 15));
+            }
         }
 
         static Grid<SpeciesCell> CreateCells(int neighborMask)
