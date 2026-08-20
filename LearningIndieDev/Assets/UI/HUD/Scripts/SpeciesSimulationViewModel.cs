@@ -454,7 +454,14 @@ namespace SaltyGame
                 return null;
             }
 
-            textureSource = new TextureSource(packedSprites[0].texture);
+            var atlasTexture = FindAtlasTexture(packedSprites);
+            if (atlasTexture == null)
+            {
+                Debug.LogWarning($"SpriteAtlas '{atlas.name}' has no runtime texture source.");
+                return null;
+            }
+
+            textureSource = new TextureSource(atlasTexture);
             var sprites = new CroppedBitmap[AnimalSpriteNames.Length];
             for (var index = 0; index < AnimalSpriteNames.Length; index++)
             {
@@ -470,7 +477,7 @@ namespace SaltyGame
                     }
                 }
 
-                if (matchingSprite == null)
+                if (matchingSprite == null || matchingSprite.texture == null)
                 {
                     Debug.LogWarning(
                         $"SpriteAtlas '{atlas.name}' is missing species sprite '{AnimalSpriteNames[index]}'.");
@@ -481,6 +488,19 @@ namespace SaltyGame
             }
 
             return sprites;
+        }
+
+        static Texture2D FindAtlasTexture(Sprite[] packedSprites)
+        {
+            for (var index = 0; index < packedSprites.Length; index++)
+            {
+                if (packedSprites[index] != null && packedSprites[index].texture != null)
+                {
+                    return packedSprites[index].texture;
+                }
+            }
+
+            return null;
         }
 
         static CroppedBitmap[] CreateTerrainAtlasSprites(
@@ -502,8 +522,8 @@ namespace SaltyGame
                 Sprite matchingSprite = null;
                 for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
                 {
-                    if (string.Equals(
-                        packedSprites[spriteIndex].name,
+                    if (packedSprites[spriteIndex] != null
+                        && packedSprites[spriteIndex].name.StartsWith(
                         TerrainSpriteNames[index],
                         StringComparison.OrdinalIgnoreCase))
                     {
