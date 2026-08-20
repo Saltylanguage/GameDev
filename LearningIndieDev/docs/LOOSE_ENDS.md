@@ -9,8 +9,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - Last reviewed: 2026-08-20
 - Report state: the current-head S1 build/launch, telemetry validation, and
-  schema-7 Forest Edge baseline are reconciled. Remaining work is the held-out
-  upgrade/results gate and the Noesis analytics privacy decision.
+  schema-7 Forest Edge control plus held-out baseline are reconciled. Remaining
+  work is the matched upgrade/results gate and the Noesis analytics privacy
+  decision.
 
 ## Triage rules
 
@@ -28,10 +29,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/cellular-experiment-20260820-123724/analysis.md`). Hare final
   population is 12–46 (27.15 average), Fox is 0–4 (2.40 average; 2/20 extinct
   final runs), and Plant is 736–931 (840 average). This establishes the
-  distribution without promoting a balance target.
-- **Next action:** Run fixed-seed comparisons that reduce Hare reproduction
-  throughput and establish a meaningful regional Grass carrying limit before
-  expanding the roster.
+  distribution without promoting a balance target. The held-out control at
+  `artifacts/cellular-experiment-20260820-154509/report.json` (analysis:
+  `artifacts/cellular-experiment-20260820-154509/analysis.md`) completed all
+  five seeds with zero reconciliation mismatches; Hare was 14–27 (20.80
+  average), Fox 3–4 (3.40 average), and Plant 831–920 (884.60 average), all
+  within the control envelope.
+- **Next action:** Run the matched upgrade/control arms that reduce Hare
+  reproduction throughput and establish a meaningful regional Grass carrying
+  limit before expanding the roster.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -67,8 +73,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/unity-tests-20260820-101018/` and
   `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
   artifacts remain historical; new experiment output is schema 7.
-- **Next action:** Use the reconciled report as the baseline control, then run
-  the held-out and single-upgrade arms before changing balance values.
+- **Next action:** Use the reconciled control and held-out reports, then run
+  the single-upgrade arms before changing balance values.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 

@@ -106,6 +106,11 @@ The S1 build gate, telemetry validation, and the 20-seed Forest Edge control are
 accepted. The control report is
 `artifacts/cellular-experiment-20260820-123724/report.json` with analysis at
 `artifacts/cellular-experiment-20260820-123724/analysis.md`.
+The five-seed held-out control is also accepted at
+`artifacts/cellular-experiment-20260820-154509/report.json` with analysis at
+`artifacts/cellular-experiment-20260820-154509/analysis.md`; its final
+populations remained within the control envelope and its food counters
+reconciled across all runs.
 
 Continue the matched Forest Edge experiment before changing balance values:
 
@@ -117,9 +122,10 @@ Continue the matched Forest Edge experiment before changing balance values:
 - Capture final and peak populations, collapse/zero-population rate, births,
   deaths by cause, food consumed, food-action attempts/successes/failures,
   combat kills, state ticks/transitions, and reproduction reconciliation.
-- Re-run any selected arm on five held-out seeds before promoting an effect
-  direction. Derive acceptance thresholds from the baseline distribution;
-  do not invent a target population or success threshold in advance.
+- Re-run each selected upgrade arm on five held-out seeds before promoting an
+  effect direction. Derive acceptance thresholds from the baseline
+  distribution; do not invent a target population or success threshold in
+  advance.
 - Require fixed-seed replay equality, attempts = successes + failures, death
   event/activity reconciliation, and no baseline regression before discussing
   balance or roster expansion.
