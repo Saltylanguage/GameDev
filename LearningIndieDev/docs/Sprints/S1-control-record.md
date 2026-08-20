@@ -67,3 +67,8 @@ automatically committed to new scope.
 - The shared preflight now bounds the licensing handshake and preserves a probe
   log. Keep the exact build/launch evidence on Trello card 53; do not reopen
   the completed Main Menu repair because of the prior environment failure.
+- The current schema-7 Forest Edge control completed over seeds `10100`–`10119`
+  with player species `hare`, authored grid `32 x 32`, and 20-second runs.
+  Report: `artifacts/cellular-experiment-20260820-123724/report.json`;
+  analysis: `artifacts/cellular-experiment-20260820-123724/analysis.md`.
+  All 20 runs reconciled food-action attempts as successes plus failures.

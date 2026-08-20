@@ -102,8 +102,12 @@ no single-seed result is promoted as a product conclusion.
 
 ## Next evidence lane — Forest Edge baseline before balance tuning
 
-After the S1 build gate and telemetry validation are accepted, run a matched
-Forest Edge experiment before changing balance values:
+The S1 build gate, telemetry validation, and the 20-seed Forest Edge control are
+accepted. The control report is
+`artifacts/cellular-experiment-20260820-123724/report.json` with analysis at
+`artifacts/cellular-experiment-20260820-123724/analysis.md`.
+
+Continue the matched Forest Edge experiment before changing balance values:
 
 - 20 fixed seeds for the baseline, using the current authored scenario and
   player species; repeat the same 20 seeds for each single upgrade/control arm.

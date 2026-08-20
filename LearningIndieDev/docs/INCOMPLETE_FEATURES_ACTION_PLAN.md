@@ -243,5 +243,7 @@ the following are true:
 
 1. The embedded Noesis editor analytics path requires a vendor/project privacy
    decision before release; it is editor-only and not compiled into the player.
-2. A current schema-7 Forest Edge report and held-out baseline remain before
-   balance changes are promoted.
+2. The schema-7 Forest Edge baseline is now recorded at
+   `artifacts/cellular-experiment-20260820-123724/report.json`; a held-out
+   baseline and matched upgrade/control arms remain before balance changes are
+   promoted.

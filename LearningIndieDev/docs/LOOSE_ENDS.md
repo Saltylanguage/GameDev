@@ -8,9 +8,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-08-20
-- Report state: the current-head S1 build/launch and telemetry validation are
-  reconciled. Remaining work is the schema-7 Forest Edge baseline, upgrade/
-  results readiness, and the Noesis analytics privacy decision.
+- Report state: the current-head S1 build/launch, telemetry validation, and
+  schema-7 Forest Edge baseline are reconciled. Remaining work is the held-out
+  upgrade/results gate and the Noesis analytics privacy decision.
 
 ## Triage rules
 
@@ -23,11 +23,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-001 — Forest Edge balance is outside the vertical-slice target
 
 - **Status:** Still open.
-- **Evidence:** `artifacts/playmode-last-run.md` and `.json`; the latest 32x32,
-  200-tick run ended at Fox 5, Hare 19, and Plant 902. The current Hare target
-  is approximately 26–33 final population, with Foxes remaining relevant but
-  viable. This is a single unpaired seed, so it is a tuning signal rather than
-  a balance conclusion.
+- **Evidence:** The current schema-7 20-seed baseline is recorded at
+  `artifacts/cellular-experiment-20260820-123724/report.json` (analysis:
+  `artifacts/cellular-experiment-20260820-123724/analysis.md`). Hare final
+  population is 12–46 (27.15 average), Fox is 0–4 (2.40 average; 2/20 extinct
+  final runs), and Plant is 736–931 (840 average). This establishes the
+  distribution without promoting a balance target.
 - **Next action:** Run fixed-seed comparisons that reduce Hare reproduction
   throughput and establish a meaningful regional Grass carrying limit before
   expanding the roster.
@@ -56,9 +57,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-003 — Fox eating/action telemetry needs a current Forest Edge report
 
-- **Status:** Implementation and current-head Unity validation resolved; the
-  preflight now prevents the prior licensing hang. A current schema-7 Forest
-  Edge report is still needed for experiment-level evidence.
+- **Status:** Resolved for the current baseline report; the preflight prevents
+  the prior licensing hang.
 - **Evidence:** `SpeciesSimulationMetrics` now distinguishes behavior-decision
   ticks from resolver food-action attempts, successes, and failures. Predation
   and plant feeding both record the action result; focused domain regressions
@@ -67,8 +67,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/unity-tests-20260820-101018/` and
   `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
   artifacts remain historical; new experiment output is schema 7.
-- **Next action:** Generate one current Forest Edge schema-7 report and verify
-  attempts = successes + failures across its runs.
+- **Next action:** Use the reconciled report as the baseline control, then run
+  the held-out and single-upgrade arms before changing balance values.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
