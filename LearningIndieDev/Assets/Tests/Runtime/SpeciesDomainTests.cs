@@ -430,7 +430,8 @@ namespace SaltyGame.Tests
                     reproductionChance: 0f,
                     startingEnergy: 1,
                     forageBelowEnergy: 5,
-                    metabolism: 0),
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
                 [SpeciesIds.Herbivore] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
@@ -487,7 +488,8 @@ namespace SaltyGame.Tests
                     reproductionChance: 0f,
                     startingEnergy: 1,
                     forageBelowEnergy: 5,
-                    metabolism: 0),
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
                 [SpeciesIds.Herbivore] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
@@ -1415,8 +1417,8 @@ namespace SaltyGame.Tests
                 Is.EqualTo(3.25f).Within(0.001f));
             Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.EqualTo(1.25f));
             Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionAttempts, Is.EqualTo(2));
-            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses, Is.EqualTo(1));
-            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures, Is.EqualTo(1));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses, Is.EqualTo(2));
+            Assert.That(secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures, Is.EqualTo(0));
             Assert.That(
                 secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionAttempts,
                 Is.EqualTo(

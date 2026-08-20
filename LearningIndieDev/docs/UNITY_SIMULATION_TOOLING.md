@@ -151,6 +151,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 
 | Command | Output |
 | --- | --- |
+| `Test-UnityPreflight.ps1` | Lock/process cleanup, entitlement check, bounded licensing probe, and a preserved probe log |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
@@ -168,6 +169,21 @@ identity, tick, age, and position. The companion CSV contains one row per seed w
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.
+
+Every Unity batch entry point runs the same preflight before doing project work:
+it refuses an active Editor/Unity process, removes only a stale project-local
+`Temp/UnityLockfile` when no Unity process exists, verifies a local entitlement
+file, and runs a bounded headless licensing probe. A probe timeout or unstable
+`LicenseClient-*` handshake fails fast with its log path instead of leaving a
+test or build hung indefinitely. Run the standalone check before manual builds:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-UnityPreflight.ps1
+```
+
+The project uses Unity `6000.4.6f1`; the tooling also resolves the installed
+`F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe` location automatically when the
+Hub-default path is absent.
 
 `CellSim Baseline` combines the normal test suite, a seeded experiment, and a
 readable Markdown analysis into one command. `CellSim Report` analyzes the most
