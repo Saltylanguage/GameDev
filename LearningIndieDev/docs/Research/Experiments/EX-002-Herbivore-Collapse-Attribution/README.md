@@ -1,7 +1,7 @@
 # EX-002 - Herbivore collapse attribution
 
 **Experiment ID:** `EXP-002`  
-**Status:** Schema-6 BaselineParity control validated deterministically; the full EX-002 matrix remains open
+**Status:** Bounded schema-6 intervention matrix and held-out check complete; causal claims remain scoped to BaselineParity and the tested window
 **Decision owner:** Human design owner  
 **Reference scenario:** `Assets/Data/CellularSimulation/Scenarios/BaselineParity.asset`
 
@@ -16,11 +16,11 @@ extinction in its pre-telemetry-extension 20-seed EX-001B pair.
 
 - [Experiment brief](EXP-002-brief.md)
 
-The paired schema-6 BaselineParity control is now recorded at
+The paired schema-6 BaselineParity control is recorded at
 `artifacts/cellular-experiment-20260818-210354/report.json` and
-`artifacts/cellular-experiment-20260818-210443/report.json`. The factual
-causal report and separate analysis must still wait for the declared
-intervention matrix and held-out check.
+`artifacts/cellular-experiment-20260818-210443/report.json`. The committed
+intervention matrix and held-out check are recorded in
+`docs/handoffs/2026-08-20-0255-codex-ex002-intervention-matrix.md`.
 
 ## Current interpretation boundary
 
@@ -30,5 +30,8 @@ schema-4 report contains aggregate death counts only; it cannot be retroactively
 converted into per-entity death events. Schema 5 introduced the required death
 event stream; schema 6 retains it and adds the reproduction funnel. The paired
 schema-6 control verifies the event stream before intervention analysis.
-Nothing currently establishes that starvation is the root cause, that the rules
-are unbalanced, or that the result transfers to other scenarios.
+The energy-relief arm supports a bounded effect on final herbivore population
+under BaselineParity; the predation-relief arm is neutral because combat kills
+are zero and carnivores go extinct in the tested window. Nothing establishes
+that starvation is the sole root cause, that the rules are globally balanced,
+or that the result transfers to other scenarios.

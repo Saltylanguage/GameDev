@@ -135,19 +135,22 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-009 — EX-002 control complete; intervention matrix remains open
+### P1-009 — EX-002 intervention matrix and held-out check
 
-- **Status:** Control complete; intervention matrix and held-out check remain
-  open.
+- **Status:** Resolved for the bounded BaselineParity experiment window.
 - **Evidence:** Paired schema-6 BaselineParity controls over seeds 10100–10119
   are deterministic:
   `artifacts/cellular-experiment-20260818-210354/report.json` and
   `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
   contain death events; creature death-event counts reconcile with aggregate
-  activity. Final herbivore population is min 0, max 37, average 10.25, with
-  one extinct run. No intervention values were changed.
-- **Next action:** Predeclare the collapse endpoint and approved intervention
-  surface; run the matched-seed intervention matrix and held-out check.
+  activity. The committed matrix and held-out evidence are recorded in
+  `docs/handoffs/2026-08-20-0255-codex-ex002-intervention-matrix.md` with
+  distinct fingerprints for both intervention arms. The energy-relief arm
+  improves the declared endpoint in both ranges; the predation-relief arm is
+  neutral because combat kills are zero and carnivores go extinct.
+- **Next action:** Preserve the causal boundary: do not generalize beyond
+  BaselineParity, the tested 20-second window, and the declared seed ranges
+  without new instrumentation and a new protocol.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
