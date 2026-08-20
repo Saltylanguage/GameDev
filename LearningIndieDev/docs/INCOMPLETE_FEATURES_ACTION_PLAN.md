@@ -245,5 +245,6 @@ the following are true:
    decision before release; it is editor-only and not compiled into the player.
 2. The schema-7 Forest Edge control and held-out baseline are now recorded at
    `artifacts/cellular-experiment-20260820-123724/report.json` and
-   `artifacts/cellular-experiment-20260820-154509/report.json`; matched
-   upgrade/control arms remain before balance changes are promoted.
+   `artifacts/cellular-experiment-20260820-154509/report.json`. The schema-8
+   `faster-movement` matched arm is complete, but its held-out sign reversal
+   prevents promotion; further upgrade/control evidence remains required.

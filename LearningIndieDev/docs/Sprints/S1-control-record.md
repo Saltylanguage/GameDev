@@ -59,7 +59,8 @@ automatically committed to new scope.
 
 - Graphics-capable PlayMode evidence passes 6/6, while the generic nographics
   failures are a known Noesis native-texture boundary. Current-head EditMode
-  passes 139/139.
+  passes 140/140 after the shared upgrade catalog and experiment-runner
+  plumbing change.
 - Build Settings put `MainMenu.unity` first. The current-head Windows
   development build succeeded and the player stayed alive for a 15-second
   startup smoke; artifacts are under

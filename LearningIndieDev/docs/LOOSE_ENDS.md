@@ -34,10 +34,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/cellular-experiment-20260820-154509/analysis.md`) completed all
   five seeds with zero reconciliation mismatches; Hare was 14–27 (20.80
   average), Fox 3–4 (3.40 average), and Plant 831–920 (884.60 average), all
-  within the control envelope.
-- **Next action:** Run the matched upgrade/control arms that reduce Hare
-  reproduction throughput and establish a meaningful regional Grass carrying
-  limit before expanding the roster.
+  within the control envelope. The matched schema-8 `faster-movement` arm is
+  recorded at `artifacts/cellular-experiment-20260820-160818/report.json`
+  (20 seeds) and its held-out check at
+  `artifacts/cellular-experiment-20260820-161029/report.json` (5 seeds). The
+  paired 20-seed Hare delta was −5.30 average, while the held-out delta was
+  +9.60; this sign reversal is descriptive evidence, not a promotion result.
+- **Next action:** Keep balance changes blocked, choose the next predeclared
+  upgrade/control arm, and investigate the faster-movement sign reversal
+  before expanding the roster.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -69,10 +74,11 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   ticks from resolver food-action attempts, successes, and failures. Predation
   and plant feeding both record the action result; focused domain regressions
   cover successful and blocked predation plus plant feeding. Current-head
-  EditMode is 139/139 and graphics-capable PlayMode is 6/6 in
-  `artifacts/unity-tests-20260820-101018/` and
+  EditMode is 140/140 and graphics-capable PlayMode is 6/6 in
+  `artifacts/unity-tests-20260820-160709/` and
   `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
-  artifacts remain historical; new experiment output is schema 7.
+  artifacts remain historical; new arm output is schema 8 with loadout
+  metadata.
 - **Next action:** Use the reconciled control and held-out reports, then run
   the single-upgrade arms before changing balance values.
 - **Likely owner:** Simulation/tooling owner.

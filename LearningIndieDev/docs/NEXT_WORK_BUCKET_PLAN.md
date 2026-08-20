@@ -24,9 +24,10 @@ wallet, save system, or permanent progression.
 - Keep the graphics-capable Noesis atlas path as the accepted preview surface;
   the generic nographics texture failure is an environment boundary, not an
   S2 entry blocker.
-- Current-head EditMode (139/139) and graphics-capable PlayMode (6/6) validate
-  the Fox food-action implementation; do not promote balance evidence until a
-  schema-7 Forest Edge run reconciles the counters across its seeds.
+- Current-head EditMode (140/140) and graphics-capable PlayMode (6/6) validate
+  the Fox food-action implementation and upgrade catalog plumbing; do not
+  promote balance evidence from the faster-movement arm because its held-out
+  direction reverses.
 - Keep Forest Edge balance and Fox reproduction findings as evidence inputs;
   do not rebalance from a single seed.
 
@@ -111,6 +112,14 @@ The five-seed held-out control is also accepted at
 `artifacts/cellular-experiment-20260820-154509/analysis.md`; its final
 populations remained within the control envelope and its food counters
 reconciled across all runs.
+The paired schema-8 `faster-movement` arm used the same 20 seeds and is
+recorded at `artifacts/cellular-experiment-20260820-160818/report.json` with
+analysis at `artifacts/cellular-experiment-20260820-160818/analysis.md`.
+Its held-out check is
+`artifacts/cellular-experiment-20260820-161029/report.json` with analysis at
+`artifacts/cellular-experiment-20260820-161029/analysis.md`. The 20-seed Hare
+delta was −5.30 average, but the held-out delta was +9.60, so the effect is
+not promoted.
 
 Continue the matched Forest Edge experiment before changing balance values:
 
@@ -123,9 +132,10 @@ Continue the matched Forest Edge experiment before changing balance values:
   deaths by cause, food consumed, food-action attempts/successes/failures,
   combat kills, state ticks/transitions, and reproduction reconciliation.
 - Re-run each selected upgrade arm on five held-out seeds before promoting an
-  effect direction. Derive acceptance thresholds from the baseline
-  distribution; do not invent a target population or success threshold in
-  advance.
+  effect direction. The faster-movement arm has completed this check and is
+  retained as descriptive evidence only because its effect sign reverses.
+  Derive acceptance thresholds from the baseline distribution; do not invent a
+  target population or success threshold in advance.
 - Require fixed-seed replay equality, attempts = successes + failures, death
   event/activity reconciliation, and no baseline regression before discussing
   balance or roster expansion.
