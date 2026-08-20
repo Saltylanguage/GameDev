@@ -73,19 +73,18 @@ the important current pressure without developer explanation.
   hierarchy during running, paused, reward, and results states.
 - Record defects and fix the smallest presentation seam responsible.
 
-**Status:** The previous licensing/startup blocker is stale. Graphics-capable
-runtime evidence now exists in `artifacts/visual-evidence-20260820-025530/`;
-fresh current-HEAD build/launch validation is still pending because two
-headless retries stalled on the `LicenseClient-bevin` IPC service after the
-Editor lock was cleared. Do not call the S1 gate closed until that validation
-is recorded.
+**Status:** The previous licensing/startup blocker is resolved. The shared
+Unity preflight now verifies the local entitlement, cleans only a stale lock,
+and bounds the licensing probe. Current-head graphics PlayMode is 6/6,
+EditMode is 139/139, and the Windows development build launched for a bounded
+15-second smoke in `artifacts/audit-windows-build-current-20260820-101211/`.
 
 ## Phase 1 — Make the simulation truth trustworthy
 
 ### 1.1 Forest Edge balance and rules
 
-- Restore a healthy Unity licensing/validation surface and run the focused
-  simulation tests plus the known Forest Edge seed.
+- Use the shared Unity preflight and run the focused simulation tests plus the
+  known Forest Edge seed.
 - Reconcile candidate, energy, mate, group-limit, chance, no-space, and success
   counters against births.
 - Validate the Fox eating/action telemetry fix: reports now separate resolver
@@ -175,11 +174,11 @@ and see/use that unlock on the next run.
 
 ### 5.1 CellSim and report pipeline
 
-- Rerun focused Unity tests and the current-HEAD Windows smoke once the Editor
-  is safely closed and the license service accepts the batch client.
-- Accept current schema-7 report output only after reproduction and food-action
-  telemetry reconcile with the simulation. Historical schema-6 EX-002 reports
-  remain valid evidence for their bounded experiment window.
+- Current-head focused tests and Windows smoke are complete; retain their
+  preflight/test/build logs as evidence. Accept current schema-7 report output
+  only after reproduction and food-action telemetry reconcile with the
+  simulation. Historical schema-6 EX-002 reports remain valid evidence for
+  their bounded experiment window.
 - Keep JSON/CSV factual exports separate from presentation and dashboard ideas.
 - Validate the committed JSON/CSV editor converter and assign its owner.
 
@@ -242,11 +241,7 @@ the following are true:
 
 ## Current blockers
 
-1. The Editor lock is cleared, but the Unity license service refused the
-   `LicenseClient-bevin` IPC connection during two headless retries, so the
-   fresh current-HEAD Windows build/launch smoke and changed-test rerun remain
-   pending. This is an environment gate, not a source-test result.
-2. The S1 control record exists and the Build Settings now put `MainMenu.unity`
-   first; card 53 still needs the fresh player-launch evidence before closure.
-3. The embedded Noesis editor analytics path requires a vendor/project privacy
+1. The embedded Noesis editor analytics path requires a vendor/project privacy
    decision before release; it is editor-only and not compiled into the player.
+2. A current schema-7 Forest Edge report and held-out baseline remain before
+   balance changes are promoted.

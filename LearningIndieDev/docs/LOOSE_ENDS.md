@@ -8,10 +8,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-08-20
-- Report state: the pushed audit/art evidence is reconciled; the remaining S1
-  gate is a fresh current-HEAD Windows build/launch smoke, while Fox action
-  telemetry has a focused fix awaiting Unity validation after the license
-  service blocked two headless retries
+- Report state: the current-head S1 build/launch and telemetry validation are
+  reconciled. Remaining work is the schema-7 Forest Edge baseline, upgrade/
+  results readiness, and the Noesis analytics privacy decision.
 
 ## Triage rules
 
@@ -55,19 +54,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-### P1-003 — Fox eating/action telemetry needs current-HEAD validation
+### P1-003 — Fox eating/action telemetry needs a current Forest Edge report
 
-- **Status:** Implementation corrected; Unity validation remains pending because
-  the `LicenseClient-bevin` IPC service blocked two headless retries after the
-  Editor lock was cleared.
+- **Status:** Implementation and current-head Unity validation resolved; the
+  preflight now prevents the prior licensing hang. A current schema-7 Forest
+  Edge report is still needed for experiment-level evidence.
 - **Evidence:** `SpeciesSimulationMetrics` now distinguishes behavior-decision
   ticks from resolver food-action attempts, successes, and failures. Predation
   and plant feeding both record the action result; focused domain regressions
-  cover successful and blocked predation plus plant feeding. Existing schema-6
-  EX-002 artifacts remain historical; new experiment output is schema 7.
-- **Next action:** Close Unity safely, rerun the focused EditMode/PlayMode
-  suites once licensing is healthy, and regenerate one current Forest Edge
-  report to verify attempts = successes + failures.
+  cover successful and blocked predation plus plant feeding. Current-head
+  EditMode is 139/139 and graphics-capable PlayMode is 6/6 in
+  `artifacts/unity-tests-20260820-101018/` and
+  `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
+  artifacts remain historical; new experiment output is schema 7.
+- **Next action:** Generate one current Forest Edge schema-7 report and verify
+  attempts = successes + failures across its runs.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -85,18 +86,17 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-005 — Player-facing shell and Dev Lab split lack acceptance evidence
 
-- **Status:** Partially resolved; the bounded shell and route smoke are accepted,
-  while the Windows development-build gate and broader Dev Lab split remain
-  follow-up work.
+- **Status:** Windows development-build and launch smoke are now resolved for
+  the bounded shell; the broader Dev Lab split remains follow-up work.
 - **Evidence:** `a90bf5f` implements the Main Menu → Lab → Research shell;
   `d5ad141` adds the route smoke test. The Play Mode evidence passes at
   1280×720 (`artifacts/visual-evidence-20260818-210020/PlayMode-results.xml`)
   and 1920×1080
   (`artifacts/visual-evidence-20260818-210108/PlayMode-results.xml`).
-  `docs/SPRINT_1_PLAN.md` still requires the Windows development-build review
-  before the sprint exit gate is closed.
-- **Next action:** Keep the remaining Windows-build/final review acceptance on
-  the S1 verification card; do not reopen the completed shell implementation.
+  `artifacts/audit-windows-build-current-20260820-101211/` contains the fresh
+  successful build and 15-second player startup log; graphics PlayMode is 6/6.
+- **Next action:** Move the bounded build/launch evidence through the S1
+  verification card; keep broader Dev Lab separation out of this gate.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 

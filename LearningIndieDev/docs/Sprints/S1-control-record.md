@@ -57,13 +57,13 @@ automatically committed to new scope.
 
 ## Current gate
 
-- Graphics-capable PlayMode evidence passes, while the generic nographics
-  failures are a known Noesis native-texture boundary. A fresh headless retry
-  reached assembly reload but then stalled on the `LicenseClient-bevin` IPC
-  service after the Editor lock was cleared.
-- Build Settings now put `MainMenu.unity` first. The remaining S1 acceptance is
-  a fresh current-HEAD Windows development-build launch smoke with keyboard/
-  mouse route and both target resolutions; keep this on Trello card 53.
-- Card 62 should describe this concrete build/launch gate; the licensing IPC
-  issue is an environment prerequisite, not a product regression or a reason
-  to reopen the completed Main Menu repair.
+- Graphics-capable PlayMode evidence passes 6/6, while the generic nographics
+  failures are a known Noesis native-texture boundary. Current-head EditMode
+  passes 139/139.
+- Build Settings put `MainMenu.unity` first. The current-head Windows
+  development build succeeded and the player stayed alive for a 15-second
+  startup smoke; artifacts are under
+  `artifacts/audit-windows-build-current-20260820-101211/`.
+- The shared preflight now bounds the licensing handshake and preserves a probe
+  log. Keep the exact build/launch evidence on Trello card 53; do not reopen
+  the completed Main Menu repair because of the prior environment failure.

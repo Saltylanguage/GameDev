@@ -24,9 +24,9 @@ wallet, save system, or permanent progression.
 - Keep the graphics-capable Noesis atlas path as the accepted preview surface;
   the generic nographics texture failure is an environment boundary, not an
   S2 entry blocker.
-- Validate the current Fox food-action telemetry fix before promoting balance
-  evidence; do not treat the new counters as accepted until an unlocked Unity
-  run reconciles them.
+- Current-head EditMode (139/139) and graphics-capable PlayMode (6/6) validate
+  the Fox food-action implementation; do not promote balance evidence until a
+  schema-7 Forest Edge run reconciles the counters across its seeds.
 - Keep Forest Edge balance and Fox reproduction findings as evidence inputs;
   do not rebalance from a single seed.
 
