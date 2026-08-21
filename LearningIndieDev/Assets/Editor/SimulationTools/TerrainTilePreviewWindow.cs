@@ -7,7 +7,7 @@ namespace SaltyGame.EditorTools
     /// <summary>Shows every smart-tiling mask against the authored terrain atlas.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainAtlasPath = "Assets/Resources/CellularArt/Terrain_01_SpriteSheet.png";
+        const string TerrainAtlasPath = "Assets/Art/Terrain/Terrain_01_SpriteSheet.png";
         const int AtlasColumns = 4;
         const int AtlasRows = 8;
         const int DesertAtlasOffset = 16;
@@ -34,8 +34,9 @@ namespace SaltyGame.EditorTools
         {
             EditorGUILayout.LabelField("Terrain smart-tiling preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Each tile is selected from the four cardinal neighbors: N=1, E=2, S=4, W=8. "
-                + "The preview uses the same lookup table as the runtime board.",
+                "Runtime terrain masks include cardinal and diagonal neighbors. "
+                + "This preview shows the current 16 cardinal atlas variants; open diagonal corners "
+                + "remain on the documented atlas fallback until diagonal art is authored.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
