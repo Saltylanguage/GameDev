@@ -20,6 +20,7 @@ namespace SaltyGame
     public static class SpeciesSimulation
     {
         public const int FixedRateDiagnosticPeriodTicks = 3;
+        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
 
         public static bool DoesOpposedRollHit(
             int attackRoll,
@@ -77,7 +78,8 @@ namespace SaltyGame
             int seed,
             SpeciesSimulationMetrics metrics = null,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
-            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             if (simulationData == null)
             {
@@ -93,7 +95,8 @@ namespace SaltyGame
                 simulationData.AlphaOffspringRules,
                 metrics,
                 combatResolutionMode,
-                attackOpportunityMode);
+                attackOpportunityMode,
+                experimentalOptions);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -105,7 +108,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
             SpeciesSimulationMetrics metrics = null,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
-            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             if (source == null)
             {
@@ -125,7 +129,7 @@ namespace SaltyGame
 
             var next = source.Copy();
             var random = new System.Random(seed);
-            PrepareStep(source, next, rules, random, metrics);
+            PrepareStep(source, next, rules, random, metrics, experimentalOptions);
             return CompleteStep(
                 source,
                 next,
@@ -138,7 +142,8 @@ namespace SaltyGame
                 combatResolutionMode,
                 attackOpportunityMode,
                 seed,
-                forcedOpportunity: null);
+                forcedOpportunity: null,
+                experimentalOptions: experimentalOptions);
         }
 
         public static SpeciesPairedStepResult StepPaired(
@@ -266,9 +271,11 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             ResolveAging(next);
+            ResolveAttackCooldowns(next, experimentalOptions);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
         }
 
@@ -284,7 +291,8 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode,
             SpeciesAttackOpportunityMode attackOpportunityMode,
             int seed,
-            SpeciesAttackOpportunity? forcedOpportunity)
+            SpeciesAttackOpportunity? forcedOpportunity,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             ResolveAttacks(
                 source,
@@ -295,7 +303,8 @@ namespace SaltyGame
                 combatResolutionMode,
                 attackOpportunityMode,
                 seed,
-                forcedOpportunity);
+                forcedOpportunity,
+                experimentalOptions);
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
             ResolveTerrainRegrowth(next, terrainDefinitions);
@@ -377,7 +386,8 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode,
             SpeciesAttackOpportunityMode attackOpportunityMode,
             int seed,
-            SpeciesAttackOpportunity? forcedOpportunity)
+            SpeciesAttackOpportunity? forcedOpportunity,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
             var paired = attackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
@@ -430,6 +440,13 @@ namespace SaltyGame
                         || !rules.TryGetValue(attacker.SpeciesId, out var attackerRules)
                         || attackerRules.AttackAmount <= 0
                         || !next.GetCell(x, y).IsCreature)
+                    {
+                        continue;
+                    }
+
+                    if (experimentalOptions != null
+                        && attacker.SpeciesId == FoxSpeciesId
+                        && next.GetCell(x, y).AttackCooldownTicksRemaining > 0)
                     {
                         continue;
                     }
@@ -621,6 +638,8 @@ namespace SaltyGame
                             }
                             metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
                         }
+
+                        ApplyFoxAttackCooldown(next, x, y, experimentalOptions);
 
                         break;
                     }
@@ -1737,6 +1756,50 @@ namespace SaltyGame
             }
 
             return false;
+        }
+
+        static void ResolveAttackCooldowns(
+            Grid<SpeciesCell> next,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            if (experimentalOptions == null || !experimentalOptions.HasFoxAttackCooldown)
+            {
+                return;
+            }
+
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature
+                        && cell.SpeciesId == FoxSpeciesId
+                        && cell.AttackCooldownTicksRemaining > 0)
+                    {
+                        next.SetCell(x, y, cell.WithAttackCooldown(
+                            cell.AttackCooldownTicksRemaining - 1));
+                    }
+                }
+            }
+        }
+
+        static void ApplyFoxAttackCooldown(
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            if (experimentalOptions == null || !experimentalOptions.HasFoxAttackCooldown)
+            {
+                return;
+            }
+
+            var attacker = next.GetCell(x, y);
+            if (attacker.IsCreature && attacker.SpeciesId == FoxSpeciesId)
+            {
+                next.SetCell(x, y, attacker.WithAttackCooldown(
+                    experimentalOptions.FoxAttackCooldownTicks));
+            }
         }
 
         static void ResolveAging(Grid<SpeciesCell> next)

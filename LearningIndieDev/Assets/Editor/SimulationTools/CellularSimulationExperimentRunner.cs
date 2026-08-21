@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 12;
+        const int ReportSchemaVersion = 13;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -34,6 +34,8 @@ namespace SaltyGame.EditorTools
         const string DefaultCombatMode = "legacy-fixed-damage";
         const string AttackOpportunityModeArgument = "-attackOpportunityMode";
         const string DefaultAttackOpportunityMode = "natural";
+        const string ExperimentalFeaturesArgument = "-experimentalFeatures";
+        const string FoxAttackCooldownTicksArgument = "-foxAttackCooldownTicks";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -85,12 +87,13 @@ namespace SaltyGame.EditorTools
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
                     options);
+                var experimentalOptions = GetExperimentalOptions(options);
 
                 try
                 {
                     var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
-                        ? CreatePairedReport(data, options, outputPath)
-                        : CreateReport(ApplyLoadout(data, options), options, outputPath);
+                        ? CreatePairedReport(data, options, outputPath, experimentalOptions)
+                        : CreateReport(ApplyLoadout(data, options), options, outputPath, experimentalOptions);
                     File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
@@ -121,7 +124,11 @@ namespace SaltyGame.EditorTools
             }
         }
 
-        static ExperimentReport CreateReport(CellularSimData data, CommandLineOptions options, string outputPath)
+        static ExperimentReport CreateReport(
+            CellularSimData data,
+            CommandLineOptions options,
+            string outputPath,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
             if (!data.SpeciesRules.ContainsKey(playerSpecies))
@@ -142,7 +149,8 @@ namespace SaltyGame.EditorTools
                     options.SeedStart + index,
                     species,
                     options.CombatResolutionMode,
-                    options.AttackOpportunityMode);
+                    options.AttackOpportunityMode,
+                    experimentalOptions);
             }
 
             return new ExperimentReport
@@ -160,6 +168,8 @@ namespace SaltyGame.EditorTools
                 orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
+                experimentalFeatures = experimentalOptions.FeatureId,
+                foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = data.Width,
@@ -177,7 +187,8 @@ namespace SaltyGame.EditorTools
             int seed,
             IReadOnlyList<SpeciesId> species,
             SpeciesCombatResolutionMode combatResolutionMode,
-            SpeciesAttackOpportunityMode attackOpportunityMode)
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
@@ -185,7 +196,8 @@ namespace SaltyGame.EditorTools
                 run,
                 data,
                 combatResolutionMode,
-                attackOpportunityMode);
+                attackOpportunityMode,
+                experimentalOptions);
             while (runner.AdvanceOneTick())
             {
             }
@@ -205,7 +217,8 @@ namespace SaltyGame.EditorTools
         static ExperimentReport CreatePairedReport(
             CellularSimData data,
             CommandLineOptions options,
-            string outputPath)
+            string outputPath,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             if (!string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
                 && !string.Equals(options.UpgradeId, "stronger-block-2", StringComparison.Ordinal))
@@ -252,6 +265,8 @@ namespace SaltyGame.EditorTools
                 orderedLoadout = options.UpgradeId == DefaultUpgradeId ? new string[0] : new[] { options.UpgradeId },
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
+                experimentalFeatures = experimentalOptions.FeatureId,
+                foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = selectedData.Width,
@@ -410,6 +425,41 @@ namespace SaltyGame.EditorTools
                 data.TerrainDefinitions,
                 data.AlphaOffspringRules,
                 data.StartingPopulations);
+        }
+
+        static SpeciesExperimentalOptions GetExperimentalOptions(CommandLineOptions options)
+        {
+            if (!string.IsNullOrEmpty(options.ExperimentalFeatures)
+                && !string.Equals(
+                    options.ExperimentalFeatures,
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"'{ExperimentalFeaturesArgument}' must be empty or '{SpeciesExperimentalOptions.BevExperimentalFeaturesId}'.",
+                    ExperimentalFeaturesArgument);
+            }
+
+            var experimentalOptions = new SpeciesExperimentalOptions(
+                options.ExperimentalFeatures,
+                options.FoxAttackCooldownTicks);
+            if (experimentalOptions.HasFoxAttackCooldown
+                && options.CombatResolutionMode != SpeciesCombatResolutionMode.OpposedRoll)
+            {
+                throw new ArgumentException(
+                    $"'{FoxAttackCooldownTicksArgument}' requires '{CombatModeArgument}' opposed-roll.",
+                    FoxAttackCooldownTicksArgument);
+            }
+
+            if (experimentalOptions.HasFoxAttackCooldown
+                && options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic)
+            {
+                throw new ArgumentException(
+                    $"'{FoxAttackCooldownTicksArgument}' is not supported by paired lockstep diagnostic mode.",
+                    FoxAttackCooldownTicksArgument);
+            }
+
+            return experimentalOptions;
         }
 
         static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
@@ -649,6 +699,8 @@ namespace SaltyGame.EditorTools
             public string UpgradeId { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
+            public string ExperimentalFeatures { get; private set; }
+            public int FoxAttackCooldownTicks { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -668,6 +720,12 @@ namespace SaltyGame.EditorTools
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
                     AttackOpportunityMode = ParseAttackOpportunityMode(
                         GetOptionalValue(arguments, AttackOpportunityModeArgument) ?? DefaultAttackOpportunityMode),
+                    ExperimentalFeatures = GetOptionalValue(arguments, ExperimentalFeaturesArgument) ?? string.Empty,
+                    FoxAttackCooldownTicks = GetIntValue(
+                        arguments,
+                        FoxAttackCooldownTicksArgument,
+                        0,
+                        allowZero: true),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
@@ -795,6 +853,8 @@ namespace SaltyGame.EditorTools
             public string[] orderedLoadout;
             public string combatResolutionMode;
             public string attackOpportunityMode;
+            public string experimentalFeatures;
+            public int foxAttackCooldownTicks;
             public int seedStart;
             public int seedCount;
             public int gridWidth;

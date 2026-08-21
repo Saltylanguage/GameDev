@@ -60,7 +60,8 @@ namespace SaltyGame
             SpeciesId resourceSpeciesId = default,
             SpeciesBehaviorState behaviorState = SpeciesBehaviorState.Wandering,
             int behaviorStateTicks = 0,
-            long entityId = 0)
+            long entityId = 0,
+            int attackCooldownTicksRemaining = 0)
         {
             if (health < 0)
             {
@@ -105,6 +106,14 @@ namespace SaltyGame
                     "Behavior state ticks cannot be negative.");
             }
 
+            if (attackCooldownTicksRemaining < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(attackCooldownTicksRemaining),
+                    attackCooldownTicksRemaining,
+                    "Attack cooldown ticks cannot be negative.");
+            }
+
             IsOccupied = isOccupied;
             SpeciesId = species;
             Health = health;
@@ -122,6 +131,7 @@ namespace SaltyGame
             this.movementCost = movementCost;
             BehaviorState = behaviorState;
             BehaviorStateTicks = behaviorStateTicks;
+            AttackCooldownTicksRemaining = attackCooldownTicksRemaining;
             EntityId = isOccupied && !isResourceSpecies
                 ? entityId > 0 ? entityId : AllocateEntityId()
                 : 0L;
@@ -225,6 +235,7 @@ namespace SaltyGame
         public bool IsAlpha { get; }
         public SpeciesBehaviorState BehaviorState { get; }
         public int BehaviorStateTicks { get; }
+        public int AttackCooldownTicksRemaining { get; }
 
         public SpeciesCell WithEntity(
             SpeciesId species,
@@ -259,7 +270,8 @@ namespace SaltyGame
                 resourceSpeciesId: resourceSpeciesId,
                 behaviorState: BehaviorState,
                 behaviorStateTicks: BehaviorStateTicks,
-                entityId: resolvedEntityId);
+                entityId: resolvedEntityId,
+                attackCooldownTicksRemaining: AttackCooldownTicksRemaining);
         }
 
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
@@ -287,7 +299,42 @@ namespace SaltyGame
                 resourceSpeciesId,
                 state,
                 ticks,
-                EntityId);
+                EntityId,
+                AttackCooldownTicksRemaining);
+        }
+
+        public SpeciesCell WithAttackCooldown(int ticks)
+        {
+            if (ticks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ticks), ticks, "Attack cooldown ticks cannot be negative.");
+            }
+
+            if (!IsCreature)
+            {
+                return this;
+            }
+
+            return new SpeciesCell(
+                SpeciesId,
+                true,
+                Health,
+                Energy,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                IsAlpha,
+                TerrainId,
+                TerrainEnergy,
+                isResourceSpecies,
+                isResourceTerrain,
+                IsPassable,
+                MovementCost,
+                resourceSpeciesId,
+                BehaviorState,
+                BehaviorStateTicks,
+                EntityId,
+                ticks);
         }
 
         public SpeciesCell WithoutEntity()
@@ -364,7 +411,8 @@ namespace SaltyGame
                 resourceSpeciesId: resourceSpeciesId,
                 behaviorState: BehaviorState,
                 behaviorStateTicks: BehaviorStateTicks,
-                entityId: EntityId);
+                entityId: EntityId,
+                attackCooldownTicksRemaining: AttackCooldownTicksRemaining);
         }
     }
 }

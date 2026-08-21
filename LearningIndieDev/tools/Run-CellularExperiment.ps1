@@ -18,6 +18,9 @@ param(
     [string]$CombatMode = 'legacy-fixed-damage',
     [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
     [string]$AttackOpportunityMode = 'natural',
+    [string]$ExperimentalFeatures = '',
+    [ValidateRange(0, 1000000)]
+    [int]$FoxAttackCooldownTicks = 0,
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -94,6 +97,14 @@ if ($RunDurationSeconds -gt 0) {
 
 if ($StepIntervalSeconds -gt 0) {
     $arguments += @('-stepIntervalSeconds', $StepIntervalSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ExperimentalFeatures)) {
+    $arguments += @('-experimentalFeatures', $ExperimentalFeatures)
+}
+
+if ($FoxAttackCooldownTicks -gt 0) {
+    $arguments += @('-foxAttackCooldownTicks', $FoxAttackCooldownTicks)
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments

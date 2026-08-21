@@ -642,6 +642,87 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void BevExperimentalFoxCooldownBlocksOnlyFollowUpAttacks()
+        {
+            var fox = new SpeciesId("fox");
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(fox, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(hare, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: hare,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: left,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+            var experimental = new SpeciesExperimentalOptions(
+                SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                foxAttackCooldownTicks: 2);
+
+            var firstMetrics = new SpeciesSimulationMetrics();
+            var first = SpeciesSimulation.Step(
+                source,
+                rules,
+                seed: 42,
+                metrics: firstMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: experimental);
+            Assert.That(first.GetCell(0, 0).AttackCooldownTicksRemaining, Is.EqualTo(2));
+            Assert.That(firstMetrics.GetActivity(fox).CombatAttempts, Is.EqualTo(1));
+
+            var secondMetrics = new SpeciesSimulationMetrics();
+            var second = SpeciesSimulation.Step(
+                first,
+                rules,
+                seed: 43,
+                metrics: secondMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: experimental);
+            Assert.That(second.GetCell(0, 0).AttackCooldownTicksRemaining, Is.EqualTo(1));
+            Assert.That(secondMetrics.GetActivity(fox).CombatAttempts, Is.EqualTo(0));
+            Assert.That(second.GetCell(1, 0).Health, Is.EqualTo(first.GetCell(1, 0).Health));
+
+            var thirdMetrics = new SpeciesSimulationMetrics();
+            var third = SpeciesSimulation.Step(
+                second,
+                rules,
+                seed: 44,
+                metrics: thirdMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: experimental);
+            Assert.That(third.GetCell(0, 0).AttackCooldownTicksRemaining, Is.EqualTo(2));
+            Assert.That(thirdMetrics.GetActivity(fox).CombatAttempts, Is.EqualTo(1));
+        }
+
+        [Test]
         public void FixedRateDiagnosticOpportunityIsDeterministicAndUpgradeIndependent()
         {
             var source = new Grid<SpeciesCell>(2, 1);
