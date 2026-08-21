@@ -289,6 +289,15 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void UpgradeCatalogSupportsBlockSweepValues()
+        {
+            var upgrade = SpeciesUpgradeCatalog.Create("stronger-block-10");
+
+            Assert.That(upgrade.Type, Is.EqualTo(SpeciesUpgradeType.BlockAmount));
+            Assert.That(upgrade.Value, Is.EqualTo(10f));
+        }
+
+        [Test]
         public void RunStateAdvancesUntilItsDuration()
         {
             var initialGrid = new Grid<SpeciesCell>(2, 2);

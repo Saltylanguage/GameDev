@@ -119,6 +119,15 @@ namespace SaltyGame
                 case StrongerBlockTwoId:
                     return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 default:
+                    const string blockSweepPrefix = "stronger-block-";
+                    if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
+                        && int.TryParse(id.Substring(blockSweepPrefix.Length), out var blockBonus)
+                        && blockBonus >= 3
+                        && blockBonus <= 10)
+                    {
+                        return new SpeciesUpgrade(id, 5, SpeciesUpgradeType.BlockAmount, blockBonus);
+                    }
+
                     throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
             }
         }
