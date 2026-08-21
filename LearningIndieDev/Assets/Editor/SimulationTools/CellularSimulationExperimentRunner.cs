@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 11;
+        const int ReportSchemaVersion = 12;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -85,11 +85,12 @@ namespace SaltyGame.EditorTools
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
                     options);
-                data = ApplyLoadout(data, options);
 
                 try
                 {
-                    var report = CreateReport(data, options, outputPath);
+                    var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
+                        ? CreatePairedReport(data, options, outputPath)
+                        : CreateReport(ApplyLoadout(data, options), options, outputPath);
                     File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
@@ -189,10 +190,138 @@ namespace SaltyGame.EditorTools
             {
             }
 
+            return CreateExperimentRun(
+                run,
+                species,
+                new ExperimentOpportunityControl
+                {
+                    scheduled = run.Metrics.ControlledOpportunityScheduled,
+                    eligible = run.Metrics.ControlledOpportunityEligible,
+                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
+                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
+                });
+        }
+
+        static ExperimentReport CreatePairedReport(
+            CellularSimData data,
+            CommandLineOptions options,
+            string outputPath)
+        {
+            if (!string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                && !string.Equals(options.UpgradeId, "stronger-block-2", StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    "Paired lockstep diagnostic mode requires upgradeId 'none' or 'stronger-block-2'.",
+                    UpgradeIdArgument);
+            }
+
+            var baselineData = ApplyLoadout(data, options.PlayerSpeciesId, DefaultUpgradeId);
+            var blockPlusTwoData = ApplyLoadout(data, options.PlayerSpeciesId, "stronger-block-2");
+            var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
+            var species = GetSortedSpecies(data.SpeciesRules);
+            var selectedRuns = new ExperimentRun[options.SeedCount];
+            for (var index = 0; index < options.SeedCount; index++)
+            {
+                var paired = RunPairedSimulation(
+                    baselineData,
+                    blockPlusTwoData,
+                    playerSpecies,
+                    options.SeedStart + index,
+                    species,
+                    options.CombatResolutionMode);
+                selectedRuns[index] = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                    ? paired.Baseline
+                    : paired.BlockPlusTwo;
+            }
+
+            var selectedData = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                ? baselineData
+                : blockPlusTwoData;
+            return new ExperimentReport
+            {
+                schemaVersion = ReportSchemaVersion,
+                createdUtc = DateTime.UtcNow.ToString("O"),
+                scenarioAssetPath = options.ScenarioPath ?? string.Empty,
+                outputPath = outputPath,
+                csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
+                rulesetFingerprint = selectedData.Fingerprint,
+                playerSpeciesId = playerSpecies.Value,
+                upgradeId = options.UpgradeId,
+                upgradeType = GetOptionalUpgrade(options.UpgradeId)?.Type.ToString() ?? string.Empty,
+                upgradeValue = GetOptionalUpgrade(options.UpgradeId)?.Value ?? 0f,
+                orderedLoadout = options.UpgradeId == DefaultUpgradeId ? new string[0] : new[] { options.UpgradeId },
+                combatResolutionMode = options.CombatResolutionMode.ToString(),
+                attackOpportunityMode = options.AttackOpportunityMode.ToString(),
+                seedStart = options.SeedStart,
+                seedCount = options.SeedCount,
+                gridWidth = selectedData.Width,
+                gridHeight = selectedData.Height,
+                runDurationSeconds = selectedData.RunDurationSeconds,
+                stepIntervalSeconds = selectedData.StepInterval,
+                runs = selectedRuns,
+                finalPopulationSummary = CreateFinalPopulationSummary(selectedRuns, species),
+            };
+        }
+
+        static PairedExperimentRuns RunPairedSimulation(
+            CellularSimData baselineData,
+            CellularSimData blockPlusTwoData,
+            SpeciesId playerSpecies,
+            int seed,
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode)
+        {
+            var initialGrid = SpeciesInitialGridFactory.Create(baselineData, seed);
+            var baselineRun = new SimulationRunState(initialGrid.Copy(), playerSpecies, seed, baselineData.RunDurationSeconds);
+            var blockPlusTwoRun = new SimulationRunState(initialGrid.Copy(), playerSpecies, seed, blockPlusTwoData.RunDurationSeconds);
+            var runner = new SpeciesPairedSimulationRunner(
+                baselineRun,
+                baselineData,
+                blockPlusTwoRun,
+                blockPlusTwoData,
+                combatResolutionMode);
+            while (runner.AdvanceOneTick())
+            {
+            }
+
+            return new PairedExperimentRuns
+            {
+                Baseline = CreateExperimentRun(baselineRun, species, CreatePairedOpportunityControl(runner.OpportunityControl)),
+                BlockPlusTwo = CreateExperimentRun(blockPlusTwoRun, species, CreatePairedOpportunityControl(runner.OpportunityControl)),
+            };
+        }
+
+        static ExperimentOpportunityControl CreatePairedOpportunityControl(
+            SpeciesPairedOpportunityControl control)
+        {
+            return new ExperimentOpportunityControl
+            {
+                scheduled = control.Scheduled,
+                baselineValid = control.BaselineValid,
+                blockPlusTwoValid = control.BlockPlusTwoValid,
+                commonValid = control.CommonValid,
+                baselineOnly = control.BaselineOnly,
+                blockPlusTwoOnly = control.BlockPlusTwoOnly,
+                baselineCandidateCount = control.BaselineCandidateCount,
+                blockPlusTwoCandidateCount = control.BlockPlusTwoCandidateCount,
+                commonCandidateCount = control.CommonCandidateCount,
+                unionCandidateCount = control.UnionCandidateCount,
+                pairedAttempts = control.PairedAttempts,
+                pairedMismatches = control.PairedMismatches,
+                unfulfilledInvalidated = control.Invalidated,
+                pairedOpportunityIds = new List<string>(control.PairedOpportunityIds).ToArray(),
+            };
+        }
+
+        static ExperimentRun CreateExperimentRun(
+            SimulationRunState run,
+            IReadOnlyList<SpeciesId> species,
+            ExperimentOpportunityControl opportunityControl)
+        {
             var result = SimulationRunResults.Create(run);
             return new ExperimentRun
             {
-                seed = seed,
+                seed = run.Seed,
                 ticks = result.Ticks,
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
@@ -204,13 +333,7 @@ namespace SaltyGame.EditorTools
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
                 combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
-                opportunityControl = new ExperimentOpportunityControl
-                {
-                    scheduled = run.Metrics.ControlledOpportunityScheduled,
-                    eligible = run.Metrics.ControlledOpportunityEligible,
-                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
-                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
-                },
+                opportunityControl = opportunityControl,
             };
         }
 
@@ -290,17 +413,25 @@ namespace SaltyGame.EditorTools
 
         static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
         {
-            var upgrade = GetOptionalUpgrade(options.UpgradeId);
+            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeId);
+        }
+
+        static CellularSimData ApplyLoadout(
+            CellularSimData data,
+            string playerSpeciesId,
+            string upgradeId)
+        {
+            var upgrade = GetOptionalUpgrade(upgradeId);
             if (upgrade == null)
             {
                 return data;
             }
 
-            var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
+            var playerSpecies = new SpeciesId(playerSpeciesId);
             if (!data.SpeciesRules.TryGetValue(playerSpecies, out var rules))
             {
                 throw new ArgumentException(
-                    $"Scenario does not define the requested player species '{options.PlayerSpeciesId}'.",
+                    $"Scenario does not define the requested player species '{playerSpeciesId}'.",
                     PlayerSpeciesArgument);
             }
 
@@ -573,8 +704,13 @@ namespace SaltyGame.EditorTools
                     return SpeciesAttackOpportunityMode.FixedRateDiagnostic;
                 }
 
+                if (string.Equals(value, "paired-lockstep-diagnostic", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
+                }
+
                 throw new ArgumentException(
-                    $"'{AttackOpportunityModeArgument}' must be 'natural' or 'fixed-rate-diagnostic'.",
+                    $"'{AttackOpportunityModeArgument}' must be 'natural', 'fixed-rate-diagnostic', or 'paired-lockstep-diagnostic'.",
                     AttackOpportunityModeArgument);
             }
 
@@ -693,6 +829,24 @@ namespace SaltyGame.EditorTools
             public int eligible;
             public int unfulfilledNoTarget;
             public int unfulfilledInvalidated;
+            public int baselineValid;
+            public int blockPlusTwoValid;
+            public int commonValid;
+            public int baselineOnly;
+            public int blockPlusTwoOnly;
+            public int baselineCandidateCount;
+            public int blockPlusTwoCandidateCount;
+            public int commonCandidateCount;
+            public int unionCandidateCount;
+            public int pairedAttempts;
+            public int pairedMismatches;
+            public string[] pairedOpportunityIds;
+        }
+
+        sealed class PairedExperimentRuns
+        {
+            public ExperimentRun Baseline;
+            public ExperimentRun BlockPlusTwo;
         }
 
         [Serializable]

@@ -283,26 +283,75 @@ $scheduledOpportunities = 0d
 $eligibleOpportunities = 0d
 $unfulfilledNoTarget = 0d
 $unfulfilledInvalidated = 0d
+$baselineValidOpportunities = 0d
+$blockPlusTwoValidOpportunities = 0d
+$commonValidOpportunities = 0d
+$baselineOnlyOpportunities = 0d
+$blockPlusTwoOnlyOpportunities = 0d
+$pairedAttempts = 0d
+$pairedMismatches = 0d
+$baselineCandidateContacts = 0d
+$blockPlusTwoCandidateContacts = 0d
+$commonCandidateContacts = 0d
+$unionCandidateContacts = 0d
 foreach ($run in @($report.runs)) {
     $scheduledOpportunities += Get-OpportunityControlValue -Run $run -Property 'scheduled'
     $eligibleOpportunities += Get-OpportunityControlValue -Run $run -Property 'eligible'
     $unfulfilledNoTarget += Get-OpportunityControlValue -Run $run -Property 'unfulfilledNoTarget'
     $unfulfilledInvalidated += Get-OpportunityControlValue -Run $run -Property 'unfulfilledInvalidated'
+    $baselineValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'baselineValid'
+    $blockPlusTwoValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoValid'
+    $commonValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'commonValid'
+    $baselineOnlyOpportunities += Get-OpportunityControlValue -Run $run -Property 'baselineOnly'
+    $blockPlusTwoOnlyOpportunities += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoOnly'
+    $pairedAttempts += Get-OpportunityControlValue -Run $run -Property 'pairedAttempts'
+    $pairedMismatches += Get-OpportunityControlValue -Run $run -Property 'pairedMismatches'
+    $baselineCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'baselineCandidateCount'
+    $blockPlusTwoCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoCandidateCount'
+    $commonCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'commonCandidateCount'
+    $unionCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'unionCandidateCount'
 }
 if ($scheduledOpportunities -gt 0) {
     $lines.Add('## Controlled opportunity exposure')
     $lines.Add('')
-    $controlRows = [System.Collections.Generic.List[object[]]]::new()
-    $controlRows.Add(@(
-        $scheduledOpportunities,
-        $eligibleOpportunities,
-        $unfulfilledNoTarget,
-        $unfulfilledInvalidated,
-        (($scheduledOpportunities - $eligibleOpportunities) -eq ($unfulfilledNoTarget + $unfulfilledInvalidated))
-    ))
-    Add-MarkdownTable -Lines $lines -Headers @('Scheduled', 'Eligible', 'Unfulfilled: no target', 'Unfulfilled: invalidated', 'Reconciled') -Rows $controlRows.ToArray()
-    $lines.Add('')
-    $lines.Add('Scheduled slots are deterministic fixed-rate diagnostic exposure; eligible slots had a live Fox-to-diet-target candidate in the current arm. Unfulfilled slots are never silently counted as attack attempts.')
+    if ($report.attackOpportunityMode -eq 'PairedLockstepDiagnostic') {
+        $pairRows = [System.Collections.Generic.List[object[]]]::new()
+        $pairRows.Add(@(
+            $baselineValidOpportunities,
+            $blockPlusTwoValidOpportunities,
+            $commonValidOpportunities,
+            $baselineOnlyOpportunities,
+            $blockPlusTwoOnlyOpportunities,
+            $pairedAttempts,
+            $pairedMismatches,
+            (($commonValidOpportunities -eq $pairedAttempts) -and ($pairedMismatches -eq 0))
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Baseline valid', 'Block+2 valid', 'Common valid', 'Baseline-only', 'Block+2-only', 'Paired attempts', 'Mismatches', 'Reconciled') -Rows $pairRows.ToArray()
+        $commonCandidateFraction = if ($unionCandidateContacts -eq 0) { 0d } else { $commonCandidateContacts / $unionCandidateContacts }
+        $candidateRows = [System.Collections.Generic.List[object[]]]::new()
+        $candidateRows.Add(@(
+            $baselineCandidateContacts,
+            $blockPlusTwoCandidateContacts,
+            $commonCandidateContacts,
+            $unionCandidateContacts,
+            $commonCandidateFraction
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Baseline candidate contacts', 'Block+2 candidate contacts', 'Common candidate contacts', 'Union candidate contacts', 'Common / union') -Rows $candidateRows.ToArray()
+        $lines.Add('Paired lockstep uses coordinate/species/contact identities and executes one shared common contact slot in both worlds. Candidate-contact counts quantify the intersection censoring separately from the exact paired-attempt gate.')
+    }
+    else {
+        $controlRows = [System.Collections.Generic.List[object[]]]::new()
+        $controlRows.Add(@(
+            $scheduledOpportunities,
+            $eligibleOpportunities,
+            $unfulfilledNoTarget,
+            $unfulfilledInvalidated,
+            (($scheduledOpportunities - $eligibleOpportunities) -eq ($unfulfilledNoTarget + $unfulfilledInvalidated))
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Scheduled', 'Eligible', 'Unfulfilled: no target', 'Unfulfilled: invalidated', 'Reconciled') -Rows $controlRows.ToArray()
+        $lines.Add('')
+        $lines.Add('Scheduled slots are deterministic fixed-rate diagnostic exposure; eligible slots had a live Fox-to-diet-target candidate in the current arm. Unfulfilled slots are never silently counted as attack attempts.')
+    }
     $lines.Add('')
 }
 $lines.Add('## Final population summary')

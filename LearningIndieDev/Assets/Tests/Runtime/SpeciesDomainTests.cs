@@ -679,6 +679,84 @@ namespace SaltyGame.Tests
             Assert.That(upgrade.GetCell(1, 0).IsCreature, Is.True);
         }
 
+        [Test]
+        public void PairedOpportunityIntersectionUsesStableContactIdentity()
+        {
+            var a = new SpeciesAttackOpportunity(
+                SpeciesIds.Carnivore, 0, 0, SpeciesIds.Herbivore, 1, 0, Vector2Int.right);
+            var b = new SpeciesAttackOpportunity(
+                SpeciesIds.Carnivore, 1, 0, SpeciesIds.Herbivore, 2, 0, Vector2Int.right);
+            var c = new SpeciesAttackOpportunity(
+                SpeciesIds.Carnivore, 2, 0, SpeciesIds.Herbivore, 3, 0, Vector2Int.right);
+            var d = new SpeciesAttackOpportunity(
+                SpeciesIds.Carnivore, 3, 0, SpeciesIds.Herbivore, 4, 0, Vector2Int.right);
+            var e = new SpeciesAttackOpportunity(
+                SpeciesIds.Carnivore, 4, 0, SpeciesIds.Herbivore, 5, 0, Vector2Int.right);
+            var baselineOnly = new List<SpeciesAttackOpportunity>();
+            var blockPlusTwoOnly = new List<SpeciesAttackOpportunity>();
+
+            var common = SpeciesAttackOpportunity.Intersect(
+                new[] { a, b, c, d },
+                new[] { b, c, d, e },
+                baselineOnly,
+                blockPlusTwoOnly);
+
+            Assert.That(common, Is.EqualTo(new[] { b, c, d }));
+            Assert.That(baselineOnly, Is.EqualTo(new[] { a }));
+            Assert.That(blockPlusTwoOnly, Is.EqualTo(new[] { e }));
+        }
+
+        [Test]
+        public void PairedLockstepExecutesTheCommonOpportunityInBothArms()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var baselineMetrics = new SpeciesSimulationMetrics();
+            var blockPlusTwoMetrics = new SpeciesSimulationMetrics();
+
+            var result = SpeciesSimulation.StepPaired(
+                source,
+                CreateControlledOpportunityRules(right, left, blockAmount: 0),
+                source.Copy(),
+                CreateControlledOpportunityRules(right, left, blockAmount: 2),
+                seed: 10200,
+                baselineMaxPopulation: 0,
+                blockPlusTwoMaxPopulation: 0,
+                baselineTerrainDefinitions: TerrainDefaults.Create(),
+                blockPlusTwoTerrainDefinitions: TerrainDefaults.Create(),
+                baselineAlphaOffspringRules: null,
+                blockPlusTwoAlphaOffspringRules: null,
+                baselineMetrics: baselineMetrics,
+                blockPlusTwoMetrics: blockPlusTwoMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                out var baselineNext,
+                out var blockPlusTwoNext,
+                out var pairedOpportunityId);
+
+            Assert.That(result.BaselineValid, Is.EqualTo(1));
+            Assert.That(result.BlockPlusTwoValid, Is.EqualTo(1));
+            Assert.That(result.CommonValid, Is.EqualTo(1));
+            Assert.That(result.BaselineOnly, Is.Zero);
+            Assert.That(result.BlockPlusTwoOnly, Is.Zero);
+            Assert.That(result.PairedAttemptExecuted, Is.True);
+            Assert.That(result.Invalidated, Is.False);
+            Assert.That(pairedOpportunityId, Does.Contain("carnivore@0,0->herbivore@1,0"));
+            Assert.That(
+                baselineMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts,
+                Is.EqualTo(1));
+            Assert.That(
+                blockPlusTwoMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts,
+                Is.EqualTo(1));
+            Assert.That(
+                baselineMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts,
+                Is.EqualTo(blockPlusTwoMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts));
+            Assert.That(baselineNext.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(blockPlusTwoNext.GetCell(0, 0).IsCreature, Is.True);
+        }
+
         static Dictionary<SpeciesId, SpeciesRules> CreateControlledOpportunityRules(
             GridPattern attackPattern,
             GridPattern blockPattern,

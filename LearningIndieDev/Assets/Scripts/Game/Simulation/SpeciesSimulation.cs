@@ -14,6 +14,7 @@ namespace SaltyGame
     {
         Natural,
         FixedRateDiagnostic,
+        PairedLockstepDiagnostic,
     }
 
     public static class SpeciesSimulation
@@ -124,9 +125,173 @@ namespace SaltyGame
 
             var next = source.Copy();
             var random = new System.Random(seed);
+            PrepareStep(source, next, rules, random, metrics);
+            return CompleteStep(
+                source,
+                next,
+                rules,
+                terrainDefinitions,
+                alphaOffspringRules,
+                maxPopulation,
+                random,
+                metrics,
+                combatResolutionMode,
+                attackOpportunityMode,
+                seed,
+                forcedOpportunity: null);
+        }
+
+        public static SpeciesPairedStepResult StepPaired(
+            Grid<SpeciesCell> baselineSource,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> baselineRules,
+            Grid<SpeciesCell> blockPlusTwoSource,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> blockPlusTwoRules,
+            int seed,
+            int baselineMaxPopulation,
+            int blockPlusTwoMaxPopulation,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> baselineTerrainDefinitions,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> blockPlusTwoTerrainDefinitions,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> baselineAlphaOffspringRules,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> blockPlusTwoAlphaOffspringRules,
+            SpeciesSimulationMetrics baselineMetrics,
+            SpeciesSimulationMetrics blockPlusTwoMetrics,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            out Grid<SpeciesCell> baselineNext,
+            out Grid<SpeciesCell> blockPlusTwoNext,
+            out string pairedOpportunityId)
+        {
+            if (baselineSource == null || blockPlusTwoSource == null)
+            {
+                throw new ArgumentNullException(nameof(baselineSource));
+            }
+
+            if (baselineRules == null || blockPlusTwoRules == null)
+            {
+                throw new ArgumentNullException(nameof(baselineRules));
+            }
+
+            baselineNext = baselineSource.Copy();
+            blockPlusTwoNext = blockPlusTwoSource.Copy();
+            var baselineRandom = new System.Random(seed);
+            var blockPlusTwoRandom = new System.Random(seed);
+            PrepareStep(baselineSource, baselineNext, baselineRules, baselineRandom, baselineMetrics);
+            PrepareStep(blockPlusTwoSource, blockPlusTwoNext, blockPlusTwoRules, blockPlusTwoRandom, blockPlusTwoMetrics);
+
+            var result = BuildPairedStepResult(
+                baselineSource,
+                baselineRules,
+                blockPlusTwoSource,
+                blockPlusTwoRules,
+                seed,
+                out var selectedOpportunity,
+                out pairedOpportunityId);
+            var executable = selectedOpportunity.HasValue
+                && IsOpportunityValidForAttack(
+                    baselineSource,
+                    baselineNext,
+                    baselineRules,
+                    selectedOpportunity.Value)
+                && IsOpportunityValidForAttack(
+                    blockPlusTwoSource,
+                    blockPlusTwoNext,
+                    blockPlusTwoRules,
+                    selectedOpportunity.Value);
+            if (!executable && selectedOpportunity.HasValue)
+            {
+                result = new SpeciesPairedStepResult(
+                    result.Scheduled,
+                    result.BaselineValid,
+                    result.BlockPlusTwoValid,
+                    result.CommonValid,
+                    result.BaselineOnly,
+                    result.BlockPlusTwoOnly,
+                    result.BaselineCandidateCount,
+                    result.BlockPlusTwoCandidateCount,
+                    result.CommonCandidateCount,
+                    pairedAttemptExecuted: false,
+                    invalidated: true);
+                pairedOpportunityId = null;
+            }
+            else if (executable)
+            {
+                result = new SpeciesPairedStepResult(
+                    result.Scheduled,
+                    result.BaselineValid,
+                    result.BlockPlusTwoValid,
+                    result.CommonValid,
+                    result.BaselineOnly,
+                    result.BlockPlusTwoOnly,
+                    result.BaselineCandidateCount,
+                    result.BlockPlusTwoCandidateCount,
+                    result.CommonCandidateCount,
+                    pairedAttemptExecuted: true,
+                    invalidated: false);
+            }
+
+            baselineNext = CompleteStep(
+                baselineSource,
+                baselineNext,
+                baselineRules,
+                baselineTerrainDefinitions,
+                baselineAlphaOffspringRules,
+                baselineMaxPopulation,
+                baselineRandom,
+                baselineMetrics,
+                combatResolutionMode,
+                SpeciesAttackOpportunityMode.PairedLockstepDiagnostic,
+                seed,
+                forcedOpportunity: executable ? selectedOpportunity : null);
+            blockPlusTwoNext = CompleteStep(
+                blockPlusTwoSource,
+                blockPlusTwoNext,
+                blockPlusTwoRules,
+                blockPlusTwoTerrainDefinitions,
+                blockPlusTwoAlphaOffspringRules,
+                blockPlusTwoMaxPopulation,
+                blockPlusTwoRandom,
+                blockPlusTwoMetrics,
+                combatResolutionMode,
+                SpeciesAttackOpportunityMode.PairedLockstepDiagnostic,
+                seed,
+                forcedOpportunity: executable ? selectedOpportunity : null);
+            return result;
+        }
+
+        static void PrepareStep(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
+        {
             ResolveAging(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
-            ResolveAttacks(source, next, rules, random, metrics, combatResolutionMode, attackOpportunityMode, seed);
+        }
+
+        static Grid<SpeciesCell> CompleteStep(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
+            int maxPopulation,
+            System.Random random,
+            SpeciesSimulationMetrics metrics,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            int seed,
+            SpeciesAttackOpportunity? forcedOpportunity)
+        {
+            ResolveAttacks(
+                source,
+                next,
+                rules,
+                random,
+                metrics,
+                combatResolutionMode,
+                attackOpportunityMode,
+                seed,
+                forcedOpportunity);
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
             ResolveTerrainRegrowth(next, terrainDefinitions);
@@ -207,14 +372,28 @@ namespace SaltyGame
             SpeciesSimulationMetrics metrics,
             SpeciesCombatResolutionMode combatResolutionMode,
             SpeciesAttackOpportunityMode attackOpportunityMode,
-            int seed)
+            int seed,
+            SpeciesAttackOpportunity? forcedOpportunity)
         {
             var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
+            var paired = attackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
             var controlledX = -1;
             var controlledY = -1;
             var controlledTargetX = -1;
             var controlledTargetY = -1;
-            if (controlled)
+            if (paired)
+            {
+                if (!forcedOpportunity.HasValue)
+                {
+                    return;
+                }
+
+                controlledX = forcedOpportunity.Value.AttackerX;
+                controlledY = forcedOpportunity.Value.AttackerY;
+                controlledTargetX = forcedOpportunity.Value.TargetX;
+                controlledTargetY = forcedOpportunity.Value.TargetY;
+            }
+            else if (controlled)
             {
                 if (!IsFixedRateDiagnosticTick(seed))
                 {
@@ -251,7 +430,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    if (controlled
+                    if (controlled || paired
                         ? x != controlledX || y != controlledY
                         : next.GetCell(x, y).BehaviorState != SpeciesBehaviorState.Attacking
                             || !ShouldForage(attacker, attackerRules))
@@ -260,7 +439,7 @@ namespace SaltyGame
                     }
 
                     var attackPattern = attackerRules.AttackPattern;
-                    var startOffset = controlled || attackPattern.Count == 0
+                    var startOffset = controlled || paired || attackPattern.Count == 0
                         ? 0
                         : random.Next(attackPattern.Count);
                     for (var offsetIndex = 0; offsetIndex < attackPattern.Count; offsetIndex++)
@@ -268,7 +447,7 @@ namespace SaltyGame
                         var offset = attackPattern.Offsets[(startOffset + offsetIndex) % attackPattern.Count];
                         var targetX = x + offset.x;
                         var targetY = y + offset.y;
-                        if (controlled
+                        if ((controlled || paired)
                             && (targetX != controlledTargetX || targetY != controlledTargetY))
                         {
                             continue;
@@ -291,7 +470,7 @@ namespace SaltyGame
                             && (!next.TryGetCell(targetX, targetY, out currentTarget)
                                 || !currentTarget.IsCreature))
                         {
-                            if (controlled)
+                            if (controlled || paired)
                             {
                                 metrics?.RecordControlledOpportunityUnfulfilledInvalidated();
                                 return;
@@ -450,16 +629,70 @@ namespace SaltyGame
             return seed % FixedRateDiagnosticPeriodTicks == 0;
         }
 
-        static bool TryFindControlledOpportunity(
-            Grid<SpeciesCell> source,
-            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+        static SpeciesPairedStepResult BuildPairedStepResult(
+            Grid<SpeciesCell> baselineSource,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> baselineRules,
+            Grid<SpeciesCell> blockPlusTwoSource,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> blockPlusTwoRules,
             int seed,
-            out int attackerX,
-            out int attackerY,
-            out int targetX,
-            out int targetY)
+            out SpeciesAttackOpportunity? selectedOpportunity,
+            out string pairedOpportunityId)
         {
-            var candidates = new List<(int AttackerX, int AttackerY, int TargetX, int TargetY)>();
+            selectedOpportunity = null;
+            pairedOpportunityId = null;
+            if (!IsFixedRateDiagnosticTick(seed))
+            {
+                return new SpeciesPairedStepResult(
+                    scheduled: false,
+                    baselineValid: 0,
+                    blockPlusTwoValid: 0,
+                    commonValid: 0,
+                    baselineOnly: 0,
+                    blockPlusTwoOnly: 0,
+                    baselineCandidateCount: 0,
+                    blockPlusTwoCandidateCount: 0,
+                    commonCandidateCount: 0,
+                    pairedAttemptExecuted: false,
+                    invalidated: false);
+            }
+
+            var baselineCandidates = EnumerateAttackOpportunities(baselineSource, baselineRules);
+            var blockPlusTwoCandidates = EnumerateAttackOpportunities(blockPlusTwoSource, blockPlusTwoRules);
+            var baselineOnly = new List<SpeciesAttackOpportunity>();
+            var blockPlusTwoOnly = new List<SpeciesAttackOpportunity>();
+            var common = SpeciesAttackOpportunity.Intersect(
+                baselineCandidates,
+                blockPlusTwoCandidates,
+                baselineOnly,
+                blockPlusTwoOnly);
+            if (common.Count > 0)
+            {
+                selectedOpportunity = common[Math.Abs(seed / FixedRateDiagnosticPeriodTicks) % common.Count];
+                pairedOpportunityId = selectedOpportunity.Value.Identity;
+            }
+
+            var hasBaselineCandidate = baselineCandidates.Count > 0;
+            var hasBlockPlusTwoCandidate = blockPlusTwoCandidates.Count > 0;
+            var hasCommonCandidate = common.Count > 0;
+            return new SpeciesPairedStepResult(
+                scheduled: true,
+                baselineValid: hasBaselineCandidate ? 1 : 0,
+                blockPlusTwoValid: hasBlockPlusTwoCandidate ? 1 : 0,
+                commonValid: hasCommonCandidate ? 1 : 0,
+                baselineOnly: hasBaselineCandidate && !hasCommonCandidate ? 1 : 0,
+                blockPlusTwoOnly: hasBlockPlusTwoCandidate && !hasCommonCandidate ? 1 : 0,
+                baselineCandidateCount: baselineCandidates.Count,
+                blockPlusTwoCandidateCount: blockPlusTwoCandidates.Count,
+                commonCandidateCount: common.Count,
+                pairedAttemptExecuted: false,
+                invalidated: false);
+        }
+
+        static IReadOnlyList<SpeciesAttackOpportunity> EnumerateAttackOpportunities(
+            Grid<SpeciesCell> source,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+        {
+            var candidates = new List<SpeciesAttackOpportunity>();
             for (var y = 0; y < source.Height; y++)
             {
                 for (var x = 0; x < source.Width; x++)
@@ -486,10 +719,69 @@ namespace SaltyGame
                             continue;
                         }
 
-                        candidates.Add((x, y, candidateX, candidateY));
+                        candidates.Add(new SpeciesAttackOpportunity(
+                            attacker.SpeciesId,
+                            x,
+                            y,
+                            candidate.SpeciesId,
+                            candidateX,
+                            candidateY,
+                            offset));
                     }
                 }
             }
+
+            return candidates;
+        }
+
+        static bool IsOpportunityValidForAttack(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            SpeciesAttackOpportunity opportunity)
+        {
+            if (!source.TryGetCell(opportunity.AttackerX, opportunity.AttackerY, out var attacker)
+                || !attacker.IsCreature
+                || attacker.SpeciesId != opportunity.AttackerSpecies
+                || !next.TryGetCell(opportunity.AttackerX, opportunity.AttackerY, out var currentAttacker)
+                || !currentAttacker.IsCreature
+                || currentAttacker.SpeciesId != opportunity.AttackerSpecies
+                || !source.TryGetCell(opportunity.TargetX, opportunity.TargetY, out var target)
+                || !target.IsCreature
+                || target.SpeciesId != opportunity.TargetSpecies
+                || !rules.TryGetValue(opportunity.AttackerSpecies, out var attackerRules)
+                || !attackerRules.DietTargetId.HasValue
+                || !SpeciesPerception.IsDietTarget(target, attackerRules.DietTargetId.Value)
+                || !next.TryGetCell(opportunity.TargetX, opportunity.TargetY, out var currentTarget)
+                || !currentTarget.IsCreature
+                || !rules.ContainsKey(opportunity.TargetSpecies))
+            {
+                return false;
+            }
+
+            foreach (var offset in attackerRules.AttackPattern.Offsets)
+            {
+                if (offset == opportunity.Offset
+                    && opportunity.AttackerX + offset.x == opportunity.TargetX
+                    && opportunity.AttackerY + offset.y == opportunity.TargetY)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        static bool TryFindControlledOpportunity(
+            Grid<SpeciesCell> source,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            int seed,
+            out int attackerX,
+            out int attackerY,
+            out int targetX,
+            out int targetY)
+        {
+            var candidates = EnumerateAttackOpportunities(source, rules);
 
             if (candidates.Count > 0)
             {

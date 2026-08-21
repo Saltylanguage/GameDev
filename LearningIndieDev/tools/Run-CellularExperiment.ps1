@@ -16,7 +16,7 @@ param(
     [string]$UpgradeId = 'none',
     [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
     [string]$CombatMode = 'legacy-fixed-damage',
-    [ValidateSet('natural', 'fixed-rate-diagnostic')]
+    [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
     [string]$AttackOpportunityMode = 'natural',
     [string]$ProjectPath,
     [string]$UnityPath

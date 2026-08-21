@@ -72,7 +72,11 @@ function Get-Summary {
     param([object]$Report)
     $fox = [ordered]@{ opportunities = 0d; attempts = 0d; hits = 0d; blocked = 0d; damage = 0d; nonlethal = 0d; lethal = 0d; starvation = 0d; start = 0d; final = 0d; extinct = 0 }
     $hare = [ordered]@{ totalDeaths = 0d; combatDeaths = 0d; starvationDeaths = 0d; otherDeaths = 0d; mean = 0d; auc = 0d; final = 0d }
-    $control = [ordered]@{ scheduled = 0d; eligible = 0d; noTarget = 0d; invalidated = 0d }
+    $control = [ordered]@{
+        scheduled = 0d; baselineValid = 0d; blockPlusTwoValid = 0d; commonValid = 0d
+        baselineOnly = 0d; blockPlusTwoOnly = 0d; pairedAttempts = 0d; mismatches = 0d; invalidated = 0d
+        baselineCandidateCount = 0d; blockPlusTwoCandidateCount = 0d; commonCandidateCount = 0d; unionCandidateCount = 0d
+    }
     foreach ($run in @($Report.runs)) {
         $foxActivity = Get-Activity -Run $run -SpeciesId 'fox'
         $hareActivity = Get-Activity -Run $run -SpeciesId 'hare'
@@ -98,8 +102,17 @@ function Get-Summary {
         $hare.auc += $hareTrajectory.Auc
         $hare.final += $hareTrajectory.Final
         $control.scheduled += Get-Control $run 'scheduled'
-        $control.eligible += Get-Control $run 'eligible'
-        $control.noTarget += Get-Control $run 'unfulfilledNoTarget'
+        $control.baselineValid += Get-Control $run 'baselineValid'
+        $control.blockPlusTwoValid += Get-Control $run 'blockPlusTwoValid'
+        $control.commonValid += Get-Control $run 'commonValid'
+        $control.baselineOnly += Get-Control $run 'baselineOnly'
+        $control.blockPlusTwoOnly += Get-Control $run 'blockPlusTwoOnly'
+        $control.baselineCandidateCount += Get-Control $run 'baselineCandidateCount'
+        $control.blockPlusTwoCandidateCount += Get-Control $run 'blockPlusTwoCandidateCount'
+        $control.commonCandidateCount += Get-Control $run 'commonCandidateCount'
+        $control.unionCandidateCount += Get-Control $run 'unionCandidateCount'
+        $control.pairedAttempts += Get-Control $run 'pairedAttempts'
+        $control.mismatches += Get-Control $run 'pairedMismatches'
         $control.invalidated += Get-Control $run 'unfulfilledInvalidated'
     }
 
@@ -134,7 +147,7 @@ function Format-Rate { param([double]$Value) return ((100d * $Value).ToString('0
 $baseline = Read-Report $BaselinePath
 $trial = Read-Report $TrialPath
 if ($baseline.seedStart -ne $trial.seedStart -or $baseline.seedCount -ne $trial.seedCount) { throw 'Baseline and trial seed ranges differ.' }
-if ($baseline.attackOpportunityMode -ne 'FixedRateDiagnostic' -or $trial.attackOpportunityMode -ne 'FixedRateDiagnostic') { throw 'Both reports must use FixedRateDiagnostic.' }
+if ($baseline.attackOpportunityMode -ne 'PairedLockstepDiagnostic' -or $trial.attackOpportunityMode -ne 'PairedLockstepDiagnostic') { throw 'Both reports must use PairedLockstepDiagnostic.' }
 
 $base = Get-Summary $baseline
 $arm = Get-Summary $trial
@@ -149,13 +162,22 @@ $lines.Add('## Exposure control')
 $lines.Add('')
 Add-Table $lines @('Metric', 'Baseline', 'Block +2', 'Delta') @(
     @('Scheduled slots', $base.Control.scheduled, $arm.Control.scheduled, ($arm.Control.scheduled - $base.Control.scheduled)),
-    @('Eligible opportunities', $base.Control.eligible, $arm.Control.eligible, ($arm.Control.eligible - $base.Control.eligible)),
-    @('Executed attempts', $base.Fox.attempts, $arm.Fox.attempts, ($arm.Fox.attempts - $base.Fox.attempts)),
-    @('Unfulfilled: no target', $base.Control.noTarget, $arm.Control.noTarget, ($arm.Control.noTarget - $base.Control.noTarget)),
-    @('Unfulfilled: invalidated', $base.Control.invalidated, $arm.Control.invalidated, ($arm.Control.invalidated - $base.Control.invalidated))
+    @('Baseline-valid opportunities', $base.Control.baselineValid, $arm.Control.baselineValid, ($arm.Control.baselineValid - $base.Control.baselineValid)),
+    @('Block+2-valid opportunities', $base.Control.blockPlusTwoValid, $arm.Control.blockPlusTwoValid, ($arm.Control.blockPlusTwoValid - $base.Control.blockPlusTwoValid)),
+    @('Common valid opportunities', $base.Control.commonValid, $arm.Control.commonValid, ($arm.Control.commonValid - $base.Control.commonValid)),
+    @('Baseline-only opportunities', $base.Control.baselineOnly, $arm.Control.baselineOnly, ($arm.Control.baselineOnly - $base.Control.baselineOnly)),
+    @('Block+2-only opportunities', $base.Control.blockPlusTwoOnly, $arm.Control.blockPlusTwoOnly, ($arm.Control.blockPlusTwoOnly - $base.Control.blockPlusTwoOnly)),
+    @('Baseline candidate contacts', $base.Control.baselineCandidateCount, $arm.Control.baselineCandidateCount, ($arm.Control.baselineCandidateCount - $base.Control.baselineCandidateCount)),
+    @('Block+2 candidate contacts', $base.Control.blockPlusTwoCandidateCount, $arm.Control.blockPlusTwoCandidateCount, ($arm.Control.blockPlusTwoCandidateCount - $base.Control.blockPlusTwoCandidateCount)),
+    @('Common candidate contacts', $base.Control.commonCandidateCount, $arm.Control.commonCandidateCount, ($arm.Control.commonCandidateCount - $base.Control.commonCandidateCount)),
+    @('Union candidate contacts', $base.Control.unionCandidateCount, $arm.Control.unionCandidateCount, ($arm.Control.unionCandidateCount - $base.Control.unionCandidateCount)),
+    @('Paired baseline attempts', $base.Control.pairedAttempts, $arm.Control.pairedAttempts, ($arm.Control.pairedAttempts - $base.Control.pairedAttempts)),
+    @('Paired Block+2 attempts', $base.Control.pairedAttempts, $arm.Control.pairedAttempts, ($arm.Control.pairedAttempts - $base.Control.pairedAttempts)),
+    @('Paired mismatches', $base.Control.mismatches, $arm.Control.mismatches, ($arm.Control.mismatches - $base.Control.mismatches)),
+    @('Invalidated common slots', $base.Control.invalidated, $arm.Control.invalidated, ($arm.Control.invalidated - $base.Control.invalidated))
 )
 $lines.Add('')
-$lines.Add('Scheduled slots are exactly paired by seed because the fixed scheduler uses the seed-derived tick schedule. Eligible and executed exposure remains state-dependent and is reported separately.')
+$lines.Add('The paired runner intersects abstract contact identities at each scheduled tick. One deterministic common contact slot is resolved in both worlds; baseline-only and Block+2-only slots are excluded from the causal sample. Candidate-contact counts are retained separately to quantify intersection censoring.')
 $lines.Add('')
 $lines.Add('## Opposed-roll and mortality conversion')
 $lines.Add('')
@@ -199,9 +221,13 @@ for ($index = 0; $index -lt $baseRuns.Count; $index++) {
         $b.seed,
         (Get-Control $b 'scheduled'),
         (Get-Control $t 'scheduled'),
-        (Get-Control $b 'eligible'),
-        (Get-Control $t 'eligible'),
-        ((Get-Value $ta 'combatAttempts') - (Get-Value $ba 'combatAttempts')),
+        (Get-Control $b 'baselineValid'),
+        (Get-Control $b 'blockPlusTwoValid'),
+        (Get-Control $b 'commonValid'),
+        (Get-Control $b 'baselineOnly'),
+        (Get-Control $b 'blockPlusTwoOnly'),
+        (Get-Control $b 'pairedAttempts'),
+        (Get-Control $b 'pairedMismatches'),
         (Format-Rate ($trialHitRate - $baseHitRate)),
         ($th.Combat - $bh.Combat),
         ($th.Starvation - $bh.Starvation),
@@ -210,9 +236,9 @@ for ($index = 0; $index -lt $baseRuns.Count; $index++) {
         (Format-Number ($tt.Final - $bt.Final))
     ))
 }
-Add-Table $lines @('Seed', 'Base sched.', 'Trial sched.', 'Base eligible', 'Trial eligible', 'Delta attempts', 'Delta hit rate', 'Delta Fox deaths', 'Delta starvation', 'Delta mean Hare', 'Delta Hare AUC', 'Delta final Hare') $pairRows.ToArray()
+Add-Table $lines @('Seed', 'Base sched.', 'Trial sched.', 'Base valid', 'Block+2 valid', 'Common', 'Base-only', 'Block+2-only', 'Paired attempts', 'Mismatches', 'Delta hit rate', 'Delta Fox deaths', 'Delta starvation', 'Delta mean Hare', 'Delta Hare AUC', 'Delta final Hare') $pairRows.ToArray()
 $lines.Add('')
-$lines.Add('The controlled mode is accepted as isolated only if scheduled exposure is paired and residual eligible/attempt differences are small enough to be bounded. This report does not silently treat scheduled slots as executed attacks.')
+$lines.Add('SC-1 passes only when paired attempts match exactly for every seed and paired mismatches remain zero. Scheduled equality alone is not treated as exposure isolation.')
 $lines.Add('')
 
 $outputDirectory = Split-Path -Parent $OutputPath
