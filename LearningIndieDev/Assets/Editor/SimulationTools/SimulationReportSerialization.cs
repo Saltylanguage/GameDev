@@ -139,6 +139,31 @@ namespace SaltyGame.EditorTools
             return records;
         }
 
+        public static SimulationSpeciesCombatRollRecord[] CreateCombatRolls(SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.CombatRollEvents;
+            var records = new SimulationSpeciesCombatRollRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var roll = source[index];
+                records[index] = new SimulationSpeciesCombatRollRecord
+                {
+                    attackerSpeciesId = roll.AttackerSpecies.Value,
+                    targetSpeciesId = roll.TargetSpecies.Value,
+                    tick = roll.Tick,
+                    attackRoll = roll.AttackRoll,
+                    attackModifier = roll.AttackModifier,
+                    blockRoll = roll.BlockRoll,
+                    blockModifier = roll.BlockModifier,
+                    attackTotal = roll.AttackRoll + roll.AttackModifier,
+                    blockTotal = roll.BlockRoll + roll.BlockModifier,
+                    hit = roll.Hit,
+                };
+            }
+
+            return records;
+        }
+
         public static SimulationPopulationSnapshotRecord[] CreatePopulationHistory(
             IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
             IReadOnlyList<SpeciesId> species)
@@ -274,5 +299,20 @@ namespace SaltyGame.EditorTools
         public int tick;
         public string cause;
         public bool isCreature;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesCombatRollRecord
+    {
+        public string attackerSpeciesId;
+        public string targetSpeciesId;
+        public int tick;
+        public int attackRoll;
+        public int attackModifier;
+        public int blockRoll;
+        public int blockModifier;
+        public int attackTotal;
+        public int blockTotal;
+        public bool hit;
     }
 }

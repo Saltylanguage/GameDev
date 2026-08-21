@@ -118,6 +118,38 @@ namespace SaltyGame
         public bool IsCreature { get; }
     }
 
+    public readonly struct SpeciesCombatRollEvent
+    {
+        internal SpeciesCombatRollEvent(
+            SpeciesId attackerSpecies,
+            SpeciesId targetSpecies,
+            int tick,
+            int attackRoll,
+            int attackModifier,
+            int blockRoll,
+            int blockModifier,
+            bool hit)
+        {
+            AttackerSpecies = attackerSpecies;
+            TargetSpecies = targetSpecies;
+            Tick = tick;
+            AttackRoll = attackRoll;
+            AttackModifier = attackModifier;
+            BlockRoll = blockRoll;
+            BlockModifier = blockModifier;
+            Hit = hit;
+        }
+
+        public SpeciesId AttackerSpecies { get; }
+        public SpeciesId TargetSpecies { get; }
+        public int Tick { get; }
+        public int AttackRoll { get; }
+        public int AttackModifier { get; }
+        public int BlockRoll { get; }
+        public int BlockModifier { get; }
+        public bool Hit { get; }
+    }
+
     public readonly struct SpeciesBehaviorTransition
     {
         internal SpeciesBehaviorTransition(
@@ -272,6 +304,8 @@ namespace SaltyGame
             new List<SpeciesBehaviorTransition>();
         readonly List<SpeciesDeathEvent> deathEvents =
             new List<SpeciesDeathEvent>();
+        readonly List<SpeciesCombatRollEvent> combatRollEvents =
+            new List<SpeciesCombatRollEvent>();
         int currentTick = -1;
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
@@ -305,6 +339,7 @@ namespace SaltyGame
 
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
+        public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
 
         public bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior)
         {
@@ -321,6 +356,7 @@ namespace SaltyGame
             trackedBehaviors.Clear();
             behaviorTransitions.Clear();
             deathEvents.Clear();
+            combatRollEvents.Clear();
             currentTick = -1;
         }
 
@@ -559,6 +595,26 @@ namespace SaltyGame
                 foodActionAttempts: 1,
                 foodActionSuccesses: successful ? 1 : 0,
                 foodActionFailures: successful ? 0 : 1);
+        }
+
+        internal void RecordCombatRoll(
+            SpeciesId attackerSpecies,
+            SpeciesId targetSpecies,
+            int attackRoll,
+            int attackModifier,
+            int blockRoll,
+            int blockModifier,
+            bool hit)
+        {
+            combatRollEvents.Add(new SpeciesCombatRollEvent(
+                attackerSpecies,
+                targetSpecies,
+                currentTick,
+                attackRoll,
+                attackModifier,
+                blockRoll,
+                blockModifier,
+                hit));
         }
 
         internal void RecordReproductionOutcome(

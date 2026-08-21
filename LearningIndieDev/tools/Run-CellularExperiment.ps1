@@ -14,6 +14,8 @@ param(
     [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$UpgradeId = 'none',
+    [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
+    [string]$CombatMode = 'legacy-fixed-damage',
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -66,6 +68,7 @@ $arguments = @(
     '-seedCount', $SeedCount,
     '-playerSpeciesId', $PlayerSpeciesId,
     '-upgradeId', $UpgradeId,
+    '-combatMode', $CombatMode,
     '-outputPath', $reportPath,
     '-logFile', $logPath
 )

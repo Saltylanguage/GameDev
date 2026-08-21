@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 8;
+        const int ReportSchemaVersion = 9;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -30,6 +30,8 @@ namespace SaltyGame.EditorTools
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
+        const string CombatModeArgument = "-combatMode";
+        const string DefaultCombatMode = "legacy-fixed-damage";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -131,7 +133,12 @@ namespace SaltyGame.EditorTools
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
-                runs[index] = RunSimulation(data, playerSpecies, options.SeedStart + index, species);
+                runs[index] = RunSimulation(
+                    data,
+                    playerSpecies,
+                    options.SeedStart + index,
+                    species,
+                    options.CombatResolutionMode);
             }
 
             return new ExperimentReport
@@ -147,6 +154,7 @@ namespace SaltyGame.EditorTools
                 upgradeType = upgrade == null ? string.Empty : upgrade.Type.ToString(),
                 upgradeValue = upgrade == null ? 0f : upgrade.Value,
                 orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
+                combatResolutionMode = options.CombatResolutionMode.ToString(),
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = data.Width,
@@ -162,11 +170,12 @@ namespace SaltyGame.EditorTools
             CellularSimData data,
             SpeciesId playerSpecies,
             int seed,
-            IReadOnlyList<SpeciesId> species)
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
-            var runner = new SpeciesSimulationRunner(run, data);
+            var runner = new SpeciesSimulationRunner(run, data, combatResolutionMode);
             while (runner.AdvanceOneTick())
             {
             }
@@ -185,6 +194,7 @@ namespace SaltyGame.EditorTools
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
+                combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
             };
         }
 
@@ -489,6 +499,7 @@ namespace SaltyGame.EditorTools
             public int SeedCount { get; private set; }
             public string PlayerSpeciesId { get; private set; }
             public string UpgradeId { get; private set; }
+            public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -504,12 +515,31 @@ namespace SaltyGame.EditorTools
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
+                    CombatResolutionMode = ParseCombatResolutionMode(
+                        GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
+            }
+
+            static SpeciesCombatResolutionMode ParseCombatResolutionMode(string value)
+            {
+                if (string.Equals(value, "legacy-fixed-damage", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesCombatResolutionMode.LegacyFixedDamage;
+                }
+
+                if (string.Equals(value, "opposed-roll", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesCombatResolutionMode.OpposedRoll;
+                }
+
+                throw new ArgumentException(
+                    $"'{CombatModeArgument}' must be 'legacy-fixed-damage' or 'opposed-roll'.",
+                    CombatModeArgument);
             }
 
             static string GetOptionalValue(IReadOnlyList<string> arguments, string name)
@@ -590,6 +620,7 @@ namespace SaltyGame.EditorTools
             public string upgradeType;
             public float upgradeValue;
             public string[] orderedLoadout;
+            public string combatResolutionMode;
             public int seedStart;
             public int seedCount;
             public int gridWidth;
@@ -614,6 +645,7 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
             public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
             public SimulationSpeciesDeathRecord[] deathEvents;
+            public SimulationSpeciesCombatRollRecord[] combatRolls;
         }
 
         [Serializable]

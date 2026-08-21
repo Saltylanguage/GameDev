@@ -4,8 +4,23 @@ using UnityEngine;
 
 namespace SaltyGame
 {
+    public enum SpeciesCombatResolutionMode
+    {
+        LegacyFixedDamage,
+        OpposedRoll,
+    }
+
     public static class SpeciesSimulation
     {
+        public static bool DoesOpposedRollHit(
+            int attackRoll,
+            int attackModifier,
+            int blockRoll,
+            int blockModifier)
+        {
+            return attackRoll + attackModifier > blockRoll + blockModifier;
+        }
+
         internal static string FormatTrackedEntityId(SpeciesId species, long entityId)
         {
             var value = species.Value;
@@ -51,7 +66,8 @@ namespace SaltyGame
             Grid<SpeciesCell> source,
             CellularSimData simulationData,
             int seed,
-            SpeciesSimulationMetrics metrics = null)
+            SpeciesSimulationMetrics metrics = null,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
         {
             if (simulationData == null)
             {
@@ -65,7 +81,8 @@ namespace SaltyGame
                 simulationData.MaxPopulation,
                 simulationData.TerrainDefinitions,
                 simulationData.AlphaOffspringRules,
-                metrics);
+                metrics,
+                combatResolutionMode);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -75,7 +92,8 @@ namespace SaltyGame
             int maxPopulation = 0,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
-            SpeciesSimulationMetrics metrics = null)
+            SpeciesSimulationMetrics metrics = null,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
         {
             if (source == null)
             {
@@ -97,7 +115,7 @@ namespace SaltyGame
             var random = new System.Random(seed);
             ResolveAging(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
-            ResolveAttacks(source, next, rules, random, metrics);
+            ResolveAttacks(source, next, rules, random, metrics, combatResolutionMode);
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
             ResolveTerrainRegrowth(next, terrainDefinitions);
@@ -175,7 +193,8 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            SpeciesCombatResolutionMode combatResolutionMode)
         {
             for (var y = 0; y < source.Height; y++)
             {
@@ -215,10 +234,40 @@ namespace SaltyGame
                         }
 
                         var damage = attackerRules.AttackAmount;
-                        if (rules.TryGetValue(target.SpeciesId, out var targetRules)
-                            && ContainsOffset(targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y)))
+                        SpeciesRules targetRules = null;
+                        var hasDirectionalBlock = target.IsCreature
+                            && rules.TryGetValue(target.SpeciesId, out targetRules)
+                            && ContainsOffset(targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y));
+                        if (hasDirectionalBlock)
                         {
-                            damage = Math.Max(0, damage - targetRules.BlockAmount);
+                            if (combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll)
+                            {
+                                // ponytail: reuse authored attack/block values as temporary roll modifiers;
+                                // split damage and modifier stats when balance data needs that distinction.
+                                var attackRoll = random.Next(1, 21);
+                                var blockRoll = random.Next(1, 21);
+                                var hit = DoesOpposedRollHit(
+                                    attackRoll,
+                                    attackerRules.AttackAmount,
+                                    blockRoll,
+                                    targetRules.BlockAmount);
+                                metrics?.RecordCombatRoll(
+                                    attacker.SpeciesId,
+                                    target.SpeciesId,
+                                    attackRoll,
+                                    attackerRules.AttackAmount,
+                                    blockRoll,
+                                    targetRules.BlockAmount,
+                                    hit);
+                                if (!hit)
+                                {
+                                    damage = 0;
+                                }
+                            }
+                            else
+                            {
+                                damage = Math.Max(0, damage - targetRules.BlockAmount);
+                            }
                         }
 
                         var currentAttacker = next.GetCell(x, y);

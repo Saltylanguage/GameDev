@@ -539,6 +539,91 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void OpposedRollUsesTheHigherTotalAndDefenderWinsTies()
+        {
+            Assert.That(SpeciesSimulation.DoesOpposedRollHit(15, 2, 14, 0), Is.True);
+            Assert.That(SpeciesSimulation.DoesOpposedRollHit(10, 2, 12, 0), Is.False);
+            Assert.That(SpeciesSimulation.DoesOpposedRollHit(12, 0, 10, 2), Is.False);
+        }
+
+        [Test]
+        public void OpposedRollModeRecordsSeededRollsWithoutChangingLegacyDefault()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 2,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: left,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+
+            var legacyMetrics = new SpeciesSimulationMetrics();
+            var legacy = SpeciesSimulation.Step(source, rules, seed: 42, metrics: legacyMetrics);
+            Assert.That(legacy.GetCell(1, 0).Health, Is.EqualTo(1));
+            Assert.That(legacyMetrics.CombatRollEvents, Is.Empty);
+
+            var opposedMetrics = new SpeciesSimulationMetrics();
+            var opposed = SpeciesSimulation.Step(
+                source,
+                rules,
+                seed: 42,
+                metrics: opposedMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll);
+            var replayMetrics = new SpeciesSimulationMetrics();
+            var replay = SpeciesSimulation.Step(
+                source,
+                rules,
+                seed: 42,
+                metrics: replayMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll);
+
+            Assert.That(opposedMetrics.CombatRollEvents.Count, Is.EqualTo(1));
+            var roll = opposedMetrics.CombatRollEvents[0];
+            var replayRoll = replayMetrics.CombatRollEvents[0];
+            Assert.That(roll.AttackRoll, Is.InRange(1, 20));
+            Assert.That(roll.BlockRoll, Is.InRange(1, 20));
+            Assert.That(roll.Hit, Is.EqualTo(SpeciesSimulation.DoesOpposedRollHit(
+                roll.AttackRoll,
+                roll.AttackModifier,
+                roll.BlockRoll,
+                roll.BlockModifier)));
+            Assert.That(replay.GetCell(1, 0).Health, Is.EqualTo(opposed.GetCell(1, 0).Health));
+            Assert.That(replayRoll.AttackRoll, Is.EqualTo(roll.AttackRoll));
+            Assert.That(replayRoll.BlockRoll, Is.EqualTo(roll.BlockRoll));
+            Assert.That(replayRoll.Hit, Is.EqualTo(roll.Hit));
+        }
+
+        [Test]
         public void BlockedPredationRecordsAFailedFoodActionWithoutFoodConsumed()
         {
             var source = new Grid<SpeciesCell>(2, 1);
