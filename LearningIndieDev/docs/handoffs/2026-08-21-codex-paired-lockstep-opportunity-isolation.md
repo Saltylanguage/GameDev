@@ -115,7 +115,8 @@ starting populations until that censoring question is answered.
 ## Repository state
 
 - Branch: `BevBranch`.
-- The implementation, tests, report tooling, design record, and this handoff
-  are local changes ready for commit/push review.
+- Implementation commit: `24922ef` (`Add paired lockstep opportunity isolation`).
+- Working tree was clean after the commit; origin comparison and push status
+  are recorded separately below after the final local verification.
 - No Trello card was moved; Card 59 remains In Progress and Card 29 remains
   Backlog & Ideas.
