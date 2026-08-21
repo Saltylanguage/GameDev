@@ -58,3 +58,14 @@ confound mortality.
 - Required runs: `80`
 - No balance, damage, reproduction, resource, capacity, or starting-population
   changes are part of this experiment.
+
+## First-pass control correction
+
+The initial implementation always selected the first valid contact. Its 80-run
+check (`cellular-experiment-20260821-013330` through `013509`) overrepresented
+unblocked diagonal contacts: calibration produced no Block+2 hit-rate change.
+Those runs are retained as a failed control check and are not ecological
+evidence. The scheduler was corrected before the accepted rerun to select a
+seed-indexed candidate across the full valid-contact set, so authored cardinal
+and diagonal contacts are exposed without using arm outcomes. The corrected
+implementation must be rerun across all 80 seeds.

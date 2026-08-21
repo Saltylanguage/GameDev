@@ -225,6 +225,7 @@ namespace SaltyGame
                 if (!TryFindControlledOpportunity(
                     source,
                     rules,
+                    seed,
                     out controlledX,
                     out controlledY,
                     out controlledTargetX,
@@ -452,11 +453,13 @@ namespace SaltyGame
         static bool TryFindControlledOpportunity(
             Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            int seed,
             out int attackerX,
             out int attackerY,
             out int targetX,
             out int targetY)
         {
+            var candidates = new List<(int AttackerX, int AttackerY, int TargetX, int TargetY)>();
             for (var y = 0; y < source.Height; y++)
             {
                 for (var x = 0; x < source.Width; x++)
@@ -483,13 +486,19 @@ namespace SaltyGame
                             continue;
                         }
 
-                        attackerX = x;
-                        attackerY = y;
-                        targetX = candidateX;
-                        targetY = candidateY;
-                        return true;
+                        candidates.Add((x, y, candidateX, candidateY));
                     }
                 }
+            }
+
+            if (candidates.Count > 0)
+            {
+                var selected = candidates[Math.Abs(seed / FixedRateDiagnosticPeriodTicks) % candidates.Count];
+                attackerX = selected.AttackerX;
+                attackerY = selected.AttackerY;
+                targetX = selected.TargetX;
+                targetY = selected.TargetY;
+                return true;
             }
 
             attackerX = -1;
