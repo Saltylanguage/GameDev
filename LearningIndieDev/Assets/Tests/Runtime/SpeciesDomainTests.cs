@@ -707,6 +707,14 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void OpportunityStrataClassifyEveryValidityCombination()
+        {
+            Assert.That(SpeciesOpportunityStrata.Classify(true, true), Is.EqualTo(SpeciesOpportunityStrata.Common));
+            Assert.That(SpeciesOpportunityStrata.Classify(true, false), Is.EqualTo(SpeciesOpportunityStrata.BaselineOnly));
+            Assert.That(SpeciesOpportunityStrata.Classify(false, true), Is.EqualTo(SpeciesOpportunityStrata.BlockOnly));
+        }
+
+        [Test]
         public void PairedLockstepExecutesTheCommonOpportunityInBothArms()
         {
             var source = new Grid<SpeciesCell>(2, 1);
@@ -716,6 +724,7 @@ namespace SaltyGame.Tests
             var left = new GridPattern(new[] { Vector2Int.left });
             var baselineMetrics = new SpeciesSimulationMetrics();
             var blockPlusTwoMetrics = new SpeciesSimulationMetrics();
+            var opportunityObservations = new List<SpeciesPairedOpportunityObservation>();
 
             var result = SpeciesSimulation.StepPaired(
                 source,
@@ -734,7 +743,9 @@ namespace SaltyGame.Tests
                 combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
                 out var baselineNext,
                 out var blockPlusTwoNext,
-                out var pairedOpportunityId);
+                out var pairedOpportunityId,
+                opportunityObservations,
+                tick: 1);
 
             Assert.That(result.BaselineValid, Is.EqualTo(1));
             Assert.That(result.BlockPlusTwoValid, Is.EqualTo(1));
@@ -744,6 +755,10 @@ namespace SaltyGame.Tests
             Assert.That(result.PairedAttemptExecuted, Is.True);
             Assert.That(result.Invalidated, Is.False);
             Assert.That(pairedOpportunityId, Does.Contain("carnivore@0,0->herbivore@1,0"));
+            Assert.That(opportunityObservations, Has.Count.EqualTo(1));
+            Assert.That(opportunityObservations[0].stratum, Is.EqualTo(SpeciesOpportunityStrata.Common));
+            Assert.That(opportunityObservations[0].baseline.present, Is.True);
+            Assert.That(opportunityObservations[0].blockPlusTwo.present, Is.True);
             Assert.That(
                 baselineMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts,
                 Is.EqualTo(1));

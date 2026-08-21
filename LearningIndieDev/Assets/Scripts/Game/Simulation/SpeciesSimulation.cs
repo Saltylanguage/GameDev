@@ -158,7 +158,9 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode,
             out Grid<SpeciesCell> baselineNext,
             out Grid<SpeciesCell> blockPlusTwoNext,
-            out string pairedOpportunityId)
+            out string pairedOpportunityId,
+            IList<SpeciesPairedOpportunityObservation> opportunityObservations = null,
+            int tick = 0)
         {
             if (baselineSource == null || blockPlusTwoSource == null)
             {
@@ -183,6 +185,8 @@ namespace SaltyGame
                 blockPlusTwoSource,
                 blockPlusTwoRules,
                 seed,
+                tick,
+                opportunityObservations,
                 out var selectedOpportunity,
                 out pairedOpportunityId);
             var executable = selectedOpportunity.HasValue
@@ -635,6 +639,8 @@ namespace SaltyGame
             Grid<SpeciesCell> blockPlusTwoSource,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> blockPlusTwoRules,
             int seed,
+            int tick,
+            IList<SpeciesPairedOpportunityObservation> opportunityObservations,
             out SpeciesAttackOpportunity? selectedOpportunity,
             out string pairedOpportunityId)
         {
@@ -665,6 +671,14 @@ namespace SaltyGame
                 blockPlusTwoCandidates,
                 baselineOnly,
                 blockPlusTwoOnly);
+            AppendOpportunityObservations(
+                baselineSource,
+                blockPlusTwoSource,
+                baselineCandidates,
+                blockPlusTwoCandidates,
+                seed,
+                tick,
+                opportunityObservations);
             if (common.Count > 0)
             {
                 selectedOpportunity = common[Math.Abs(seed / FixedRateDiagnosticPeriodTicks) % common.Count];
@@ -686,6 +700,242 @@ namespace SaltyGame
                 commonCandidateCount: common.Count,
                 pairedAttemptExecuted: false,
                 invalidated: false);
+        }
+
+        static void AppendOpportunityObservations(
+            Grid<SpeciesCell> baselineSource,
+            Grid<SpeciesCell> blockPlusTwoSource,
+            IReadOnlyList<SpeciesAttackOpportunity> baselineCandidates,
+            IReadOnlyList<SpeciesAttackOpportunity> blockPlusTwoCandidates,
+            int seed,
+            int tick,
+            IList<SpeciesPairedOpportunityObservation> observations)
+        {
+            if (observations == null)
+            {
+                return;
+            }
+
+            var baselineSummary = CountOpportunityPopulation(baselineSource);
+            var blockPlusTwoSummary = CountOpportunityPopulation(blockPlusTwoSource);
+            var blockRemaining = new Dictionary<SpeciesAttackOpportunity, int>();
+            foreach (var opportunity in blockPlusTwoCandidates)
+            {
+                blockRemaining.TryGetValue(opportunity, out var count);
+                blockRemaining[opportunity] = count + 1;
+            }
+
+            var baselineOccurrences = new Dictionary<SpeciesAttackOpportunity, int>();
+            foreach (var opportunity in baselineCandidates)
+            {
+                baselineOccurrences.TryGetValue(opportunity, out var occurrence);
+                baselineOccurrences[opportunity] = occurrence + 1;
+                blockRemaining.TryGetValue(opportunity, out var blockCount);
+                var common = blockCount > 0;
+                if (common)
+                {
+                    blockRemaining[opportunity] = blockCount - 1;
+                }
+
+                AddOpportunityObservation(
+                    observations,
+                    baselineSource,
+                    blockPlusTwoSource,
+                    baselineSummary,
+                    blockPlusTwoSummary,
+                    opportunity,
+                    seed,
+                    tick,
+                    occurrence,
+                    SpeciesOpportunityStrata.Classify(true, common));
+            }
+
+            foreach (var opportunity in blockPlusTwoCandidates)
+            {
+                blockRemaining.TryGetValue(opportunity, out var remaining);
+                if (remaining <= 0)
+                {
+                    continue;
+                }
+
+                blockRemaining[opportunity] = remaining - 1;
+                baselineOccurrences.TryGetValue(opportunity, out var occurrence);
+                AddOpportunityObservation(
+                    observations,
+                    baselineSource,
+                    blockPlusTwoSource,
+                    baselineSummary,
+                    blockPlusTwoSummary,
+                    opportunity,
+                    seed,
+                    tick,
+                    occurrence,
+                    SpeciesOpportunityStrata.BlockOnly);
+                baselineOccurrences[opportunity] = occurrence + 1;
+            }
+        }
+
+        static void AddOpportunityObservation(
+            IList<SpeciesPairedOpportunityObservation> observations,
+            Grid<SpeciesCell> baselineSource,
+            Grid<SpeciesCell> blockPlusTwoSource,
+            OpportunityPopulationSummary baselineSummary,
+            OpportunityPopulationSummary blockPlusTwoSummary,
+            SpeciesAttackOpportunity opportunity,
+            int seed,
+            int tick,
+            int occurrence,
+            string stratum)
+        {
+            var baselineState = CaptureOpportunityState(
+                baselineSource,
+                baselineSummary,
+                opportunity,
+                stratum != SpeciesOpportunityStrata.BlockOnly);
+            var blockPlusTwoState = CaptureOpportunityState(
+                blockPlusTwoSource,
+                blockPlusTwoSummary,
+                opportunity,
+                stratum != SpeciesOpportunityStrata.BaselineOnly);
+            observations.Add(new SpeciesPairedOpportunityObservation
+            {
+                seed = seed,
+                tick = tick,
+                occurrence = occurrence,
+                identity = opportunity.Identity,
+                eventId = $"{tick}:{opportunity.Identity}:{occurrence}",
+                stratum = stratum,
+                baseline = baselineState,
+                blockPlusTwo = blockPlusTwoState,
+            });
+        }
+
+        static SpeciesOpportunityState CaptureOpportunityState(
+            Grid<SpeciesCell> source,
+            OpportunityPopulationSummary summary,
+            SpeciesAttackOpportunity opportunity,
+            bool present)
+        {
+            if (!present
+                || !source.TryGetCell(opportunity.AttackerX, opportunity.AttackerY, out var attacker)
+                || !source.TryGetCell(opportunity.TargetX, opportunity.TargetY, out var target))
+            {
+                return new SpeciesOpportunityState();
+            }
+
+            return new SpeciesOpportunityState
+            {
+                present = attacker.IsCreature && target.IsCreature,
+                attackerSpecies = attacker.SpeciesId.Value,
+                targetSpecies = target.SpeciesId.Value,
+                attackerX = opportunity.AttackerX,
+                attackerY = opportunity.AttackerY,
+                targetX = opportunity.TargetX,
+                targetY = opportunity.TargetY,
+                attackerEntityId = attacker.EntityId,
+                targetEntityId = target.EntityId,
+                attackerHealth = attacker.Health,
+                attackerEnergy = attacker.Energy,
+                attackerAge = attacker.Age,
+                attackerFoodReserve = attacker.FoodReserve,
+                attackerIsAlpha = attacker.IsAlpha,
+                attackerBehaviorState = attacker.BehaviorState.ToString(),
+                targetHealth = target.Health,
+                targetEnergy = target.Energy,
+                targetAge = target.Age,
+                targetFoodReserve = target.FoodReserve,
+                targetIsAlpha = target.IsAlpha,
+                terrainId = attacker.TerrainId.Value,
+                terrainEnergy = attacker.TerrainEnergy,
+                harePopulation = summary.HarePopulation,
+                foxPopulation = summary.FoxPopulation,
+                plantPopulation = summary.PlantPopulation,
+                localHareDensity = CountLocalSpecies(source, opportunity.AttackerX, opportunity.AttackerY, "hare"),
+                localFoxDensity = CountLocalSpecies(source, opportunity.AttackerX, opportunity.AttackerY, "fox"),
+                localPlantResourceDensity = CountLocalPlantResources(source, opportunity.AttackerX, opportunity.AttackerY),
+            };
+        }
+
+        readonly struct OpportunityPopulationSummary
+        {
+            public OpportunityPopulationSummary(int harePopulation, int foxPopulation, int plantPopulation)
+            {
+                HarePopulation = harePopulation;
+                FoxPopulation = foxPopulation;
+                PlantPopulation = plantPopulation;
+            }
+
+            public int HarePopulation { get; }
+            public int FoxPopulation { get; }
+            public int PlantPopulation { get; }
+        }
+
+        static OpportunityPopulationSummary CountOpportunityPopulation(Grid<SpeciesCell> source)
+        {
+            var hare = 0;
+            var fox = 0;
+            var plant = 0;
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (cell.IsCreature && string.Equals(cell.SpeciesId.Value, "hare", StringComparison.Ordinal))
+                    {
+                        hare++;
+                    }
+                    else if (cell.IsCreature && string.Equals(cell.SpeciesId.Value, "fox", StringComparison.Ordinal))
+                    {
+                        fox++;
+                    }
+
+                    if (cell.IsPlantResource)
+                    {
+                        plant++;
+                    }
+                }
+            }
+
+            return new OpportunityPopulationSummary(hare, fox, plant);
+        }
+
+        static int CountLocalSpecies(
+            Grid<SpeciesCell> source,
+            int centerX,
+            int centerY,
+            string species)
+        {
+            var count = 0;
+            for (var y = Math.Max(0, centerY - 1); y <= Math.Min(source.Height - 1, centerY + 1); y++)
+            {
+                for (var x = Math.Max(0, centerX - 1); x <= Math.Min(source.Width - 1, centerX + 1); x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (cell.IsCreature && string.Equals(cell.SpeciesId.Value, species, StringComparison.Ordinal))
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        static int CountLocalPlantResources(Grid<SpeciesCell> source, int centerX, int centerY)
+        {
+            var count = 0;
+            for (var y = Math.Max(0, centerY - 1); y <= Math.Min(source.Height - 1, centerY + 1); y++)
+            {
+                for (var x = Math.Max(0, centerX - 1); x <= Math.Min(source.Width - 1, centerX + 1); x++)
+                {
+                    if (source.GetCell(x, y).IsPlantResource)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
         }
 
         static IReadOnlyList<SpeciesAttackOpportunity> EnumerateAttackOpportunities(

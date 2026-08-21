@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
@@ -66,6 +67,7 @@ namespace SaltyGame
             BaselineRun.Metrics.BeginTick(baselineTick);
             BlockPlusTwoRun.Metrics.BeginTick(blockPlusTwoTick);
             var seed = BaselineRun.Seed + BaselineRun.Tick;
+            var observations = new List<SpeciesPairedOpportunityObservation>();
             var result = SpeciesSimulation.StepPaired(
                 BaselineRun.Cells,
                 baselineData.SpeciesRules,
@@ -83,8 +85,10 @@ namespace SaltyGame
                 CombatResolutionMode,
                 out var baselineNext,
                 out var blockPlusTwoNext,
-                out var pairedOpportunityId);
-            OpportunityControl.Add(result, pairedOpportunityId);
+                out var pairedOpportunityId,
+                opportunityObservations: observations,
+                tick: baselineTick);
+            OpportunityControl.Add(result, pairedOpportunityId, observations);
             BaselineRun.Advance(baselineNext, baselineData.StepInterval);
             BlockPlusTwoRun.Advance(blockPlusTwoNext, blockPlusTwoData.StepInterval);
             return true;

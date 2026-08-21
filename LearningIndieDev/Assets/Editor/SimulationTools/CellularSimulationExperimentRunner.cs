@@ -310,6 +310,7 @@ namespace SaltyGame.EditorTools
                 pairedMismatches = control.PairedMismatches,
                 unfulfilledInvalidated = control.Invalidated,
                 pairedOpportunityIds = new List<string>(control.PairedOpportunityIds).ToArray(),
+                opportunityAudit = new List<SpeciesPairedOpportunityObservation>(control.OpportunityObservations).ToArray(),
             };
         }
 
@@ -841,6 +842,7 @@ namespace SaltyGame.EditorTools
             public int pairedAttempts;
             public int pairedMismatches;
             public string[] pairedOpportunityIds;
+            public SpeciesPairedOpportunityObservation[] opportunityAudit;
         }
 
         sealed class PairedExperimentRuns

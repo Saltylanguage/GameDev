@@ -133,6 +133,69 @@ namespace SaltyGame
         }
     }
 
+    public static class SpeciesOpportunityStrata
+    {
+        public const string Common = "COMMON";
+        public const string BaselineOnly = "BASELINE_ONLY";
+        public const string BlockOnly = "BLOCK_ONLY";
+
+        public static string Classify(bool baselineValid, bool blockPlusTwoValid)
+        {
+            if (baselineValid && blockPlusTwoValid)
+            {
+                return Common;
+            }
+
+            return baselineValid ? BaselineOnly : BlockOnly;
+        }
+    }
+
+    [Serializable]
+    public sealed class SpeciesOpportunityState
+    {
+        public bool present;
+        public string attackerSpecies;
+        public string targetSpecies;
+        public int attackerX;
+        public int attackerY;
+        public int targetX;
+        public int targetY;
+        public long attackerEntityId;
+        public long targetEntityId;
+        public int attackerHealth;
+        public int attackerEnergy;
+        public int attackerAge;
+        public float attackerFoodReserve;
+        public bool attackerIsAlpha;
+        public string attackerBehaviorState;
+        public int targetHealth;
+        public int targetEnergy;
+        public int targetAge;
+        public float targetFoodReserve;
+        public bool targetIsAlpha;
+        public string terrainId;
+        public float terrainEnergy;
+        public int harePopulation;
+        public int foxPopulation;
+        public int plantPopulation;
+        public int localHareDensity;
+        public int localFoxDensity;
+        public int localPlantResourceDensity;
+    }
+
+    [Serializable]
+    public sealed class SpeciesPairedOpportunityObservation
+    {
+        public int seed;
+        public int tick;
+        public int occurrence;
+        public string eventId;
+        public string identity;
+        public string stratum;
+        public SpeciesOpportunityState baseline;
+        public SpeciesOpportunityState blockPlusTwo;
+    }
+
     public readonly struct SpeciesPairedStepResult
     {
         internal SpeciesPairedStepResult(
@@ -178,6 +241,8 @@ namespace SaltyGame
     public sealed class SpeciesPairedOpportunityControl
     {
         readonly List<string> pairedOpportunityIds = new List<string>();
+        readonly List<SpeciesPairedOpportunityObservation> opportunityObservations =
+            new List<SpeciesPairedOpportunityObservation>();
 
         public int Scheduled { get; private set; }
         public int BaselineValid { get; private set; }
@@ -194,8 +259,12 @@ namespace SaltyGame
         public int UnionValid => BaselineValid + BlockPlusTwoValid - CommonValid;
         public int UnionCandidateCount => BaselineCandidateCount + BlockPlusTwoCandidateCount - CommonCandidateCount;
         public IReadOnlyList<string> PairedOpportunityIds => pairedOpportunityIds;
+        public IReadOnlyList<SpeciesPairedOpportunityObservation> OpportunityObservations => opportunityObservations;
 
-        internal void Add(SpeciesPairedStepResult result, string pairedOpportunityId)
+        internal void Add(
+            SpeciesPairedStepResult result,
+            string pairedOpportunityId,
+            IReadOnlyList<SpeciesPairedOpportunityObservation> observations = null)
         {
             Scheduled += result.Scheduled ? 1 : 0;
             BaselineValid += result.BaselineValid;
@@ -212,6 +281,11 @@ namespace SaltyGame
             if (result.PairedAttemptExecuted && !string.IsNullOrEmpty(pairedOpportunityId))
             {
                 pairedOpportunityIds.Add(pairedOpportunityId);
+            }
+
+            if (observations != null)
+            {
+                opportunityObservations.AddRange(observations);
             }
         }
     }
