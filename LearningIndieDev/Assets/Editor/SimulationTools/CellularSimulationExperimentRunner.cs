@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 5;
+        const int ReportSchemaVersion = 6;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -464,7 +464,7 @@ namespace SaltyGame.EditorTools
                 return new CommandLineOptions
                 {
                     ScenarioPath = GetOptionalValue(arguments, ScenarioPathArgument),
-                    SeedStart = GetIntValue(arguments, SeedStartArgument, DefaultSeedStart, allowZero: true),
+                    SeedStart = GetIntValue(arguments, SeedStartArgument, DefaultSeedStart, allowZero: true, allowSigned: true),
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
@@ -488,7 +488,12 @@ namespace SaltyGame.EditorTools
                 return null;
             }
 
-            static int GetIntValue(IReadOnlyList<string> arguments, string name, int defaultValue, bool allowZero)
+            static int GetIntValue(
+                IReadOnlyList<string> arguments,
+                string name,
+                int defaultValue,
+                bool allowZero,
+                bool allowSigned = false)
             {
                 var value = GetOptionalValue(arguments, name);
                 if (string.IsNullOrWhiteSpace(value))
@@ -497,12 +502,14 @@ namespace SaltyGame.EditorTools
                 }
 
                 if (!int.TryParse(value, out var parsed)
-                    || parsed < 0
+                    || (!allowSigned && parsed < 0)
                     || (!allowZero && parsed == 0)
-                    || parsed > 1000000)
+                    || (!allowSigned && parsed > 1000000))
                 {
                     throw new ArgumentException(
-                        $"'{name}' must be an integer between {(allowZero ? 0 : 1)} and 1000000.",
+                        allowSigned
+                            ? $"'{name}' must be a signed 32-bit integer{(allowZero ? string.Empty : " other than zero")}."
+                            : $"'{name}' must be an integer between {(allowZero ? 0 : 1)} and 1000000.",
                         name);
                 }
 

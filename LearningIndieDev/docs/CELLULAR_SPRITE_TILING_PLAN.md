@@ -20,6 +20,9 @@
   fallback, while open diagonal corners are reported for the next art pass.
 - The species preview no longer has a legacy IMGUI board or settings fallback;
   the Noesis shell is now the single runtime presentation path.
+- `TerrainTilePreviewWindow` loads the current terrain sheet from
+  `Assets/Art/Terrain`, and animal atlas entries are resolved by stable sprite
+  names before optional Fox/Rabbit scene overrides are layered on top.
 
 ## Smart-tiling model
 
@@ -49,21 +52,21 @@ silently treat those states as fully connected when evaluating new art.
 
 ## Remaining validation and art work
 
-1. Update `TerrainTilePreviewWindow` from the deleted `Resources` path to the
-   current terrain asset/SpriteAtlas, then run all 16 masks in Unity.
-2. Verify stable species mapping and merge direct Fox/Rabbit overrides with the
-   atlas fallback, or explicitly scope the scene to those two species and test
-   every authored species that can appear.
+1. Open the preview and cellular prototype in Unity at gameplay scale. Run all
+   16 masks, test every authored species, and verify the current terrain asset
+   and SpriteAtlas wiring. If an edge or corner is wrong, adjust only the
+   presentation lookup/overlay seam.
+2. Verify stable species mapping and the direct Fox/Rabbit scene overrides
+   layered over the atlas fallback, or explicitly scope the scene to those two
+   species and test every authored species that can appear.
 3. Author and wire diagonal corner variants (a 47/48-state blob atlas or an
    equivalent corner-overlay solution), then update the resolver's art seam.
-4. Open the preview and cellular prototype in Unity at gameplay scale. If an
-   edge or corner is wrong, adjust only the presentation lookup/overlay seam.
-5. Replace the temporary bare-to-desert mapping with an authored bare-ground
+4. Replace the temporary bare-to-desert mapping with an authored bare-ground
    tileset when that art is available.
-6. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
+5. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
    until then, plant-resource terrain is represented by grass and avoids an
    unrelated animal icon.
-7. Add a Play Mode screenshot check once Unity is available in the development
+6. Add a Play Mode screenshot check once Unity is available in the development
    environment. This should verify atlas loading, terrain seams, and icon scale
    in the actual Noesis view rather than only in the editor preview.
 

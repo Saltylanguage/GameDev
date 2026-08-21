@@ -10,6 +10,18 @@ namespace SaltyGame
 {
     public sealed class SpeciesSimulationViewModel : MonoBehaviour, INotifyPropertyChanged
     {
+        static readonly string[] AnimalSpriteNames =
+        {
+            "Animals_01_Wolf",
+            "Animals_01_Fox",
+            "Animals_01_Eagle",
+            "Animals_01_Shark",
+            "Animals_01_Deer",
+            "Animals_01_Rabbit",
+            "Animals_01_Cow",
+            "Animals_01_Elephant",
+        };
+
         SpeciesSimulationPreview preview;
         SpeciesSimulationBoard board;
         SpriteAtlas animalSpriteAtlas;
@@ -327,9 +339,7 @@ namespace SaltyGame
                 return;
             }
 
-            animalSprites = foxSpeciesSprite != null || rabbitSpeciesSprite != null
-                ? CreateSpeciesSprites()
-                : CreateSprites(animalSpriteAtlas, 8, 4, out animalTextureSource);
+            animalSprites = CreateSpeciesSprites();
             terrainTiles = CreateSprites(terrainSpriteAtlas, 32, 4, out terrainTextureSource);
             if (animalSprites == null || terrainTiles == null)
             {
@@ -341,7 +351,14 @@ namespace SaltyGame
 
         CroppedBitmap[] CreateSpeciesSprites()
         {
-            var sprites = new CroppedBitmap[8];
+            var sprites = animalSpriteAtlas == null
+                ? new CroppedBitmap[8]
+                : CreateAnimalAtlasSprites(animalSpriteAtlas, out animalTextureSource);
+            if (sprites == null)
+            {
+                return null;
+            }
+
             if (foxSpeciesSprite != null)
             {
                 sprites[1] = CreateSprite(foxSpeciesSprite, out foxTextureSource);
@@ -350,6 +367,48 @@ namespace SaltyGame
             if (rabbitSpeciesSprite != null)
             {
                 sprites[5] = CreateSprite(rabbitSpeciesSprite, out rabbitTextureSource);
+            }
+
+            return sprites;
+        }
+
+        static CroppedBitmap[] CreateAnimalAtlasSprites(
+            SpriteAtlas atlas,
+            out TextureSource textureSource)
+        {
+            textureSource = null;
+            var packedSprites = new Sprite[atlas.spriteCount];
+            atlas.GetSprites(packedSprites);
+            if (packedSprites.Length == 0)
+            {
+                Debug.LogWarning($"SpriteAtlas '{atlas.name}' contains no sprites.");
+                return null;
+            }
+
+            textureSource = new TextureSource(packedSprites[0].texture);
+            var sprites = new CroppedBitmap[AnimalSpriteNames.Length];
+            for (var index = 0; index < AnimalSpriteNames.Length; index++)
+            {
+                Sprite matchingSprite = null;
+                for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
+                {
+                    if (packedSprites[spriteIndex].name.StartsWith(
+                        AnimalSpriteNames[index],
+                        StringComparison.OrdinalIgnoreCase))
+                    {
+                        matchingSprite = packedSprites[spriteIndex];
+                        break;
+                    }
+                }
+
+                if (matchingSprite == null)
+                {
+                    Debug.LogWarning(
+                        $"SpriteAtlas '{atlas.name}' is missing species sprite '{AnimalSpriteNames[index]}'.");
+                    return null;
+                }
+
+                sprites[index] = new CroppedBitmap(textureSource, GetSourceRect(matchingSprite));
             }
 
             return sprites;

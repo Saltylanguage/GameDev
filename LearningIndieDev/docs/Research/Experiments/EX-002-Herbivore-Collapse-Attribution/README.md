@@ -1,7 +1,7 @@
 # EX-002 - Herbivore collapse attribution
 
 **Experiment ID:** `EXP-002`  
-**Status:** Schema-5 death telemetry integrated; execution blocked by Unity batch startup failure  
+**Status:** Schema-6 BaselineParity control validated deterministically; the full EX-002 matrix remains open
 **Decision owner:** Human design owner  
 **Reference scenario:** `Assets/Data/CellularSimulation/Scenarios/BaselineParity.asset`
 
@@ -16,15 +16,19 @@ extinction in its pre-telemetry-extension 20-seed EX-001B pair.
 
 - [Experiment brief](EXP-002-brief.md)
 
-The factual report and separate analysis must be added only after the Unity
-batch failure is resolved and the controlled intervention matrix is approved.
+The paired schema-6 BaselineParity control is now recorded at
+`artifacts/cellular-experiment-20260818-210354/report.json` and
+`artifacts/cellular-experiment-20260818-210443/report.json`. The factual
+causal report and separate analysis must still wait for the declared
+intervention matrix and held-out check.
 
 ## Current interpretation boundary
 
 The existing evidence supports a proximate starvation signal in BaselineParity,
 not a complete causal explanation or a universal collapse detector. The prior
 schema-4 report contains aggregate death counts only; it cannot be retroactively
-converted into per-entity death events. The first schema-5 rerun must verify the
-event stream before the baseline is treated as the EX-002 instrumented result.
+converted into per-entity death events. Schema 5 introduced the required death
+event stream; schema 6 retains it and adds the reproduction funnel. The paired
+schema-6 control verifies the event stream before intervention analysis.
 Nothing currently establishes that starvation is the root cause, that the rules
 are unbalanced, or that the result transfers to other scenarios.

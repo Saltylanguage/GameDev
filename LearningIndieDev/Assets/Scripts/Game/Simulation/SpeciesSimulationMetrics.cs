@@ -25,6 +25,67 @@ namespace SaltyGame
         ResourceConsumed,
     }
 
+    public enum SpeciesReproductionOutcome
+    {
+        BlockedEnergy,
+        BlockedMateRequirement,
+        BlockedGroupLimit,
+        FailedChanceRoll,
+        BlockedNoBirthLocation,
+        SuccessfulAttempt,
+    }
+
+    public readonly struct SpeciesReproductionActivity
+    {
+        internal SpeciesReproductionActivity(
+            int candidates,
+            int blockedEnergy,
+            int blockedMateRequirement,
+            int blockedGroupLimit,
+            int failedChanceRoll,
+            int blockedNoBirthLocation,
+            int successfulAttempts)
+        {
+            Candidates = candidates;
+            BlockedEnergy = blockedEnergy;
+            BlockedMateRequirement = blockedMateRequirement;
+            BlockedGroupLimit = blockedGroupLimit;
+            FailedChanceRoll = failedChanceRoll;
+            BlockedNoBirthLocation = blockedNoBirthLocation;
+            SuccessfulAttempts = successfulAttempts;
+        }
+
+        public int Candidates { get; }
+        public int BlockedEnergy { get; }
+        public int BlockedMateRequirement { get; }
+        public int BlockedGroupLimit { get; }
+        public int FailedChanceRoll { get; }
+        public int BlockedNoBirthLocation { get; }
+        public int SuccessfulAttempts { get; }
+
+        public int ClassifiedCandidates =>
+            BlockedEnergy
+            + BlockedMateRequirement
+            + BlockedGroupLimit
+            + FailedChanceRoll
+            + BlockedNoBirthLocation
+            + SuccessfulAttempts;
+
+        public bool IsReconciled => Candidates == ClassifiedCandidates;
+
+        internal SpeciesReproductionActivity Add(SpeciesReproductionOutcome outcome)
+        {
+            return new SpeciesReproductionActivity(
+                Candidates + 1,
+                BlockedEnergy + (outcome == SpeciesReproductionOutcome.BlockedEnergy ? 1 : 0),
+                BlockedMateRequirement + (outcome == SpeciesReproductionOutcome.BlockedMateRequirement ? 1 : 0),
+                BlockedGroupLimit + (outcome == SpeciesReproductionOutcome.BlockedGroupLimit ? 1 : 0),
+                FailedChanceRoll + (outcome == SpeciesReproductionOutcome.FailedChanceRoll ? 1 : 0),
+                BlockedNoBirthLocation + (outcome == SpeciesReproductionOutcome.BlockedNoBirthLocation ? 1 : 0),
+                SuccessfulAttempts + (outcome == SpeciesReproductionOutcome.SuccessfulAttempt ? 1 : 0));
+        }
+    }
+
     public readonly struct SpeciesDeathEvent
     {
         internal SpeciesDeathEvent(
@@ -182,6 +243,8 @@ namespace SaltyGame
     {
         readonly Dictionary<SpeciesId, SpeciesSimulationActivity> activityBySpecies =
             new Dictionary<SpeciesId, SpeciesSimulationActivity>();
+        readonly Dictionary<SpeciesId, SpeciesReproductionActivity> reproductionBySpecies =
+            new Dictionary<SpeciesId, SpeciesReproductionActivity>();
         readonly Dictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>> stateTicksBySpecies =
             new Dictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>>();
         readonly Dictionary<SpeciesId, int> stateTransitionsBySpecies =
@@ -199,6 +262,13 @@ namespace SaltyGame
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
             return activityBySpecies.TryGetValue(species, out var activity)
+                ? activity
+                : default;
+        }
+
+        public SpeciesReproductionActivity GetReproductionActivity(SpeciesId species)
+        {
+            return reproductionBySpecies.TryGetValue(species, out var activity)
                 ? activity
                 : default;
         }
@@ -229,6 +299,7 @@ namespace SaltyGame
         public void Clear()
         {
             activityBySpecies.Clear();
+            reproductionBySpecies.Clear();
             stateTicksBySpecies.Clear();
             stateTransitionsBySpecies.Clear();
             trackedBehaviorCells.Clear();
@@ -452,6 +523,18 @@ namespace SaltyGame
                 crowdingDeaths,
                 wiltDeaths,
                 populationLimitRemovals);
+        }
+
+        internal void RecordReproductionOutcome(
+            SpeciesId species,
+            SpeciesReproductionOutcome outcome)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            reproductionBySpecies[species] = GetReproductionActivity(species).Add(outcome);
         }
 
         internal void RecordDeath(

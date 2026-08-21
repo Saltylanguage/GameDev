@@ -46,8 +46,10 @@ flowchart LR
 - Capture the full population history for every known species and each tick,
   plus final minimum, maximum, average, and extinction-rate summaries.
 - Capture per-species run activity: births, food actually consumed, movement,
-  combat damage/kills, total deaths, and directly resolved mortality causes.
-  Plant births include successful seed drops.
+  combat damage/kills, total deaths, directly resolved mortality causes, and a
+  reconciled reproduction funnel. The funnel classifies each reproduction
+  candidate once as energy-, mate-, group-, chance-, or space-blocked, or as a
+  successful attempt. Plant births include successful seed drops.
 - Use either a `CellularSimDataAsset` in `Assets/` or a fresh default scenario
   snapshot. Neither path mutates active runtime state.
 - Support arbitrary species IDs already defined by `CellularSimData`; reports do
@@ -96,6 +98,10 @@ commands below when their full options are needed:
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
+
+`CellSim Run` accepts signed 32-bit seeds, including negative seeds retained in
+older diagnostic reports, so an individual historical run can be replayed
+without remapping its seed.
 
 ```powershell
 # Both Unity test suites.
@@ -150,14 +156,14 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The current experiment JSON schema is `5`. It records the schema version, timestamp, scenario asset path,
+The current experiment JSON schema is `6`. It records the schema version, timestamp, scenario asset path,
 seed range, grid settings, run window, player species, ruleset fingerprint,
 run-level results, full population timelines, final-population summary,
-per-species activity totals, tracked FSM entity snapshots, and tracked state
+per-species activity totals and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
 identity, tick, age, and position. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
-populations, average activity and mortality tables, per-seed outcomes, and
+populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.
 
 `CellSim Baseline` combines the normal test suite, a seeded experiment, and a
@@ -179,6 +185,15 @@ transitions. Death paths emit `Previous -> Dead` before the cell is cleared and
 append a structured `deathEvents` record at the removal point. This is
 proximate-cause telemetry, not yet root-cause attribution: resource history and
 attacker links remain future instrumentation.
+
+Mating behavior ticks represent decision-phase intent; they are not
+reproduction attempts. Reproduction is resolved later in the tick, after
+movement, metabolism, starvation, and crowding may have changed eligibility.
+Schema 6 therefore records a separate resolver funnel. A candidate is one live
+parent with reproduction enabled when `ResolveReproduction` evaluates it, and
+exactly one outcome is recorded. A successful attempt creates at least one
+offspring; the existing births counter remains separate because a successful
+attempt may create a litter.
 
 The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
 range and checks initial composition, final player-population ratio, allowed

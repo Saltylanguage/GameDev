@@ -335,6 +335,57 @@ $lines.Add('Births include successful plant seed drops.')
 $lines.Add('')
 $lines.Add('Food consumed is the resource amount actually withdrawn; one consumed creature counts as one unit.')
 $lines.Add('')
+$lines.Add('## Average reproduction funnel per run')
+$lines.Add('')
+$reproductionRows = [System.Collections.Generic.List[object[]]]::new()
+foreach ($speciesId in $species) {
+    $candidates = 0d
+    $blockedEnergy = 0d
+    $blockedMate = 0d
+    $blockedGroup = 0d
+    $failedChance = 0d
+    $blockedNoSpace = 0d
+    $successfulAttempts = 0d
+    $births = 0d
+    $allRunsReconciled = $true
+    foreach ($run in @($report.runs)) {
+        $candidateValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionCandidates'
+        $energyValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionBlockedEnergy'
+        $mateValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionBlockedMateRequirement'
+        $groupValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionBlockedGroupLimit'
+        $chanceValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionFailedChanceRoll'
+        $spaceValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionBlockedNoBirthLocation'
+        $successValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionSuccessfulAttempts'
+        $candidates += $candidateValue
+        $blockedEnergy += $energyValue
+        $blockedMate += $mateValue
+        $blockedGroup += $groupValue
+        $failedChance += $chanceValue
+        $blockedNoSpace += $spaceValue
+        $successfulAttempts += $successValue
+        $births += Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'births'
+        if ($candidateValue -ne ($energyValue + $mateValue + $groupValue + $chanceValue + $spaceValue + $successValue)) {
+            $allRunsReconciled = $false
+        }
+    }
+
+    $reproductionRows.Add(@(
+        $speciesId,
+        (Get-Number ($candidates / [double]$report.seedCount)),
+        (Get-Number ($blockedEnergy / [double]$report.seedCount)),
+        (Get-Number ($blockedMate / [double]$report.seedCount)),
+        (Get-Number ($blockedGroup / [double]$report.seedCount)),
+        (Get-Number ($failedChance / [double]$report.seedCount)),
+        (Get-Number ($blockedNoSpace / [double]$report.seedCount)),
+        (Get-Number ($successfulAttempts / [double]$report.seedCount)),
+        (Get-Number ($births / [double]$report.seedCount)),
+        $allRunsReconciled
+    ))
+}
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Candidates', 'Energy', 'Mate', 'Group cap', 'Chance', 'No space', 'Successes', 'Births', 'Reconciled') -Rows $reproductionRows.ToArray()
+$lines.Add('')
+$lines.Add('Each reproduction candidate is classified once by the first resolver gate that prevents offspring, or as a successful attempt when at least one birth is created. Mating behavior ticks are decision intent and are not expected to equal candidate evaluations.')
+$lines.Add('')
 $lines.Add('## Average mortality per run')
 $lines.Add('')
 $mortalityRows = [System.Collections.Generic.List[object[]]]::new()

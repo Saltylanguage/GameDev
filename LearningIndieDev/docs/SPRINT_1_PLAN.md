@@ -1,6 +1,11 @@
 # Sprint 1 Plan — Main Menu and Lab Foundation
 
-> Status: Discussion draft | Dates: August 17–23, 2026 | Cadence: one week | Team: Josh + Sim
+> Status: Active; authoritative execution plan | Dates: August 17–30, 2026 | Cadence: two weeks | Team: Josh + Sim
+
+This document is the authoritative execution plan for Sprint 1. Product-level
+direction remains in `PROJECT_CONTEXT.md` and `ROADMAP.md`; the Sprint 0
+closeout document remains the source for Sprint 1 preconditions and exit-gate
+decisions.
 
 ## Sprint goal
 
@@ -16,9 +21,9 @@ The Lab introduces the experimental-biology theme and scientific-data economy us
 
 | Contributor | Capacity | Primary responsibility |
 | --- | ---: | --- |
-| Josh | 10 hours | Product decisions, UX review, Unity scene integration, playtesting, acceptance. |
-| Sim | 10 hours | Noesis/XAML/ViewModel implementation, representative data, navigation, tests. |
-| **Total** | **20 hours** | Includes a 3-hour integration/uncertainty reserve. |
+| Josh | 20 hours | Product decisions, UX review, Unity scene integration, playtesting, acceptance. |
+| Sim | 20 hours | Noesis/XAML/ViewModel implementation, representative data, navigation, tests. |
+| **Total** | **40 hours** | Two-week planning capacity. The committed S1 scope remains 20 hours including a 3-hour integration/uncertainty reserve; extra capacity is uncommitted. |
 
 Sprint 0 supplies the screen contract, wireframes, representative-data definition, and technical readiness conclusion. If those inputs are incomplete, re-estimate before committing rather than silently consuming the reserve.
 
@@ -106,35 +111,40 @@ Reserved for Unity/Noesis scene repair, review changes, coordination, and defect
 | Integration reserve | 2h | 1h | 3h |
 | **Total** | **10h** | **10h** | **20h** |
 
-## Week schedule
+## Two-week schedule
 
 ### Monday, August 17 — kickoff
 
 - Confirm actual availability and Sprint 0 inputs.
 - Assign tasks and begin the Main Menu/Lab shell.
 
-### Tuesday–Wednesday — shell implementation
+### Tuesday, August 18 – Wednesday, August 19 — shell implementation
 
 - Complete the known navigation states, focus behavior, and target layouts.
 - Integrate representative data only through the agreed presentation fixture.
 
-### Thursday, August 20 — midweek checkpoint
+### Thursday, August 20 – Wednesday, August 26 — integration and research preview
+
+- Continue the shell implementation and begin the research-preview states.
+- Keep representative data bounded to the agreed presentation fixture.
+
+### Thursday, August 27 — mid-sprint checkpoint
 
 - Demonstrate Main Menu → Lab Overview.
 - Compare hours used with remaining work.
 - Apply the cut order if the shell is not stable.
 
-### Friday–Saturday — research preview and integration
+### Friday, August 28 – Saturday, August 29 — final integration and verification
 
 - Complete the two project states and selected-project preview.
 - Stop starting features before final verification.
 - Run Play Mode, target-resolution, and build smoke checks.
 
-### Sunday, August 23 — review and retrospective
+### Sunday, August 30 — review and retrospective
 
 - Run the sprint demonstration.
 - Record actual hours, accepted work, cuts, defects, and planning lessons.
-- Choose the next one-week bucket from evidence.
+- Choose the next two-week bucket from evidence.
 
 ## Cut order
 

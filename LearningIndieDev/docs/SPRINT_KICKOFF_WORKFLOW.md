@@ -3,7 +3,7 @@
 **Status:** Approved workflow design; implementation is the project-local
 `sprint-kickoff` skill and its Trello board convention.
 
-This workflow uses the project's one-week cadence and approximately 10 hours
+This workflow uses the project's two-week cadence and approximately 20 hours
 per developer. It separates work selected for the next sprint from work planned
 for the current sprint but not yet started.
 
@@ -34,7 +34,7 @@ Status: Planned | Active | Closed
 Start: YYYY-MM-DD
 End: YYYY-MM-DD
 Goal: one primary outcome
-Capacity: Josh 10h; Sim 10h
+Capacity: Josh 20h; Sim 20h
 Exit criteria: observable review gate
 ```
 

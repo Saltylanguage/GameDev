@@ -1252,9 +1252,16 @@ namespace SaltyGame
 
                     var currentParent = next.GetCell(x, y);
                     if (currentParent.SpeciesId != parent.SpeciesId
-                        || !HasReproductionEnergy(currentParent, speciesRules)
                         || speciesRules.ReproductionChance <= 0f)
                     {
+                        continue;
+                    }
+
+                    if (!HasReproductionEnergy(currentParent, speciesRules))
+                    {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.BlockedEnergy);
                         continue;
                     }
 
@@ -1272,10 +1279,20 @@ namespace SaltyGame
                         }
                     }
 
-                    if (sameSpeciesNeighbors < speciesRules.ReproductionNeighborCount
-                        || (speciesRules.MaxReproductionGroupSize > 0
-                            && sameSpeciesNeighbors + 1 >= speciesRules.MaxReproductionGroupSize))
+                    if (sameSpeciesNeighbors < speciesRules.ReproductionNeighborCount)
                     {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.BlockedMateRequirement);
+                        continue;
+                    }
+
+                    if (speciesRules.MaxReproductionGroupSize > 0
+                        && sameSpeciesNeighbors + 1 >= speciesRules.MaxReproductionGroupSize)
+                    {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.BlockedGroupLimit);
                         continue;
                     }
 
@@ -1283,6 +1300,9 @@ namespace SaltyGame
                     var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
                     if (random.NextDouble() > speciesRules.ReproductionChance)
                     {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.FailedChanceRoll);
                         continue;
                     }
 
@@ -1343,9 +1363,18 @@ namespace SaltyGame
 
                     if (births > 0)
                     {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.SuccessfulAttempt);
                         next.SetCell(x, y, ConsumeReproductionEnergy(
                             currentParent,
                             speciesRules.ReproductionFoodRequired * births));
+                    }
+                    else
+                    {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.BlockedNoBirthLocation);
                     }
                 }
             }

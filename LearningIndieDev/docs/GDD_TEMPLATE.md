@@ -1,26 +1,27 @@
-# [Game title] - Game Design Document
+# [Bio OS] (placeholder) - Game Design Document
 
-> Status: Draft | Owner: [name/team] | Last updated: [YYYY-MM-DD] | Decision horizon: [prototype / vertical slice / alpha / release]
+> Status: Draft | Owner: [Josh Campbell] | Last updated: [2026-08-18] | Decision horizon: [prototype / vertical slice / alpha / release]
 
 ## How to use this document
 
-This is the product/design source of truth. Keep it focused on player experience, rules, content, and decisions. Every section should distinguish **Committed**, **Experimental**, and **Open Question** content. Link implementation details to the TDD instead of duplicating them.
+This is the product/design source of truth. Keep it focused on player experience, rules, content, and decisions. Every section should distinguish **Committed**, **Experimental**, and **Open Question** content Link implementation details to the TDD instead of duplicating them.
 
 ## 1. Product definition
 
 ### Elevator pitch
-
-[One or two sentences.]
+Bio Os is an ecology simulation game that follows the trends of incremental games, with roguelike features and a cute, pixelated aesthetic.  Players focus on collecting and understanding different species and their interactions with each other in an ecosystem to discover emergent behavior based on cellular a automata engine 
 
 ### Player promise
-
 [What the player repeatedly gets to do, feel, and master.]
+The player will follow a rapid game loop where they make a decision, see the results of the new simulation, get evaluated and awarded currency (or penalty), return to the ecology lab, spend their currency on upgrades and new features, and run another simluation. As players understand the interactions within an ecosystem and unlock new upgrades and species/biome features they will master the ability to create successful species and balanced ecologies.
+
 
 ### Design pillars
 
-1. **[Pillar]** - [Why it matters and how the game proves it.]
-2. **[Pillar]** - [Why it matters and how the game proves it.]
-3. **[Pillar]** - [Why it matters and how the game proves it.]
+1. **[Collection]** - Simulations collect data, data is used to collect new upgrades and species.  The entire game is about collecting a data set that is displayed in a cute and beautiful visual representation.
+2. **[Legible ecological asymmetry]** - Species should create distinct ecological problems or opportunities, not merely have larger numbers.
+3. **[Planning and progression across runs]** - Upgrades should change what players want to establish for future runs, rather than provide only immediate bonuses.
+4. **[Visible cause and effect]** - Players should be able to explain successful strategies through terrain, resources, behavior, and population pressure.
 
 ### Non-goals
 
@@ -29,17 +30,24 @@ This is the product/design source of truth. Keep it focused on player experience
 
 ## 2. Core game loop
 
-1. [Player action]
-2. [Simulation response]
-3. [Player interpretation/decision]
-4. [Reward, risk, or progression]
+1.Player decisions (species selection, upgrades, settings)
+2. Player Starts the simulation
+3. Simulation Runs
+4. Results screen
+5. Player Decision (continue/end)
+6. if continue -> select upgrade. else go back to step 1.
+7. Run next simulation
 
 ### Moment-to-moment cadence
 
-- Run start: [state and choices]
-- Active phase: [what changes each tick/turn]
-- Decision points: [when the player acts]
-- Run end: [success/failure and reward]
+- Run start: [player selects which type of run and hit start]
+  
+- Active phase:
+- [cellular automata ecological simulation runs during this phase.  Currency is accrued during this phae as well]
+  
+- Decision points:- [selecting a species to simulate, selecting a biome, selecting upgrades, choosing when to end the run]
+  
+- Run end: [Species collapse, player either ends run because they think the run will be a bad result, or they reach the time cap.]
 
 ## 3. Player agency and controls
 
@@ -51,10 +59,10 @@ This is the product/design source of truth. Keep it focused on player experience
 
 ### Control contract
 
-- Primary input: [keyboard/controller/mouse/touch]
-- Pause/speed controls: [behavior]
-- Undo/retry rules: [behavior]
-- Accessibility requirements: [requirements]
+- Primary input: [keyboard/mouse]
+- Pause/speed controls: [Pausing, stopping ,restarting, speeding up & slowing down interval]
+- Undo/retry rules: [none? maybe one per run? purchaseable? ]
+- Accessibility requirements: [color blind mode, dyslexic font, support peripherals, epilepsy warning]
 
 ## 4. Simulation model
 
@@ -66,7 +74,7 @@ This is the product/design source of truth. Keep it focused on player experience
 
 [Numbered order of aging, perception, movement, feeding, combat, reproduction, regrowth, metrics, and presentation snapshot.]
 
-### Species contract
+### Species contract - link to another document. there are too many species to keep here conveniently.
 
 For each species, define:
 
@@ -77,7 +85,7 @@ For each species, define:
 - Reproduction: [conditions and cost]
 - Distinctive interaction: [what makes it worth adding]
 
-## 5. Progression and upgrades
+## 5. Progression and upgrades - link to 2 documents here. (one for permanent upgrades, and one for per-run upgrades)
 
 ### In-run progression
 

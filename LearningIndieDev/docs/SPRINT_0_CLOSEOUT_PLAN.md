@@ -1,6 +1,6 @@
 # Sprint 0 Closeout Plan — Make Sprint 1 Ready
 
-> Status: Discussion draft | Dates: August 14–16, 2026 | Team: Josh + Sim
+> Status: C1–C4 executed | Dates: August 14–16, 2026 | Team: Josh + Sim
 
 ## Closeout goal
 
@@ -83,7 +83,8 @@ Acceptance:
 
 **Effort:** 1 hour — Josh 0.5, Sim 0.5
 
-- Confirm the August 17–23 sprint window and 10-hour availability each.
+- Confirm the active Sprint 1 window and per-developer availability in the
+  durable control record.
 - Split committed work into tasks no larger than roughly 2–4 hours.
 - Assign an owner and reviewer to each task.
 - Agree on the midweek checkpoint and final review time.
