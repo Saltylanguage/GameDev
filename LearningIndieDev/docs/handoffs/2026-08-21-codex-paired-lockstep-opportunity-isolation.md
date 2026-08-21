@@ -117,7 +117,7 @@ starting populations until that censoring question is answered.
 - Branch: `BevBranch`.
 - Implementation commit: `24922ef` (`Add paired lockstep opportunity isolation`).
 - The handoff and branch-state metadata are committed on `BevBranch`.
-- `origin/BevBranch` remains `ab5fc89`; local `HEAD` is six commits ahead. No
-  push was performed; the user can push `BevBranch` when ready.
+- `origin/BevBranch` remains `ab5fc89`; local `HEAD` contains the committed
+  audit work and is not pushed. The user can push `BevBranch` when ready.
 - No Trello card was moved; Card 59 remains In Progress and Card 29 remains
   Backlog & Ideas.
