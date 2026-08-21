@@ -121,8 +121,8 @@ using the censored intersection as the sole sample.
 
 ## Repository and Trello
 
-- Branch began at `6a38264`; telemetry and analysis changes are local and
-  uncommitted at handoff time.
+- Branch began at `6a38264`; telemetry, analysis, and handoff changes are
+  committed in `051c247`.
 - `origin/BevBranch` remains `ab5fc89`; no push or history rewrite performed.
 - Card 59 remains In Progress and Card 29 remains Backlog & Ideas. The final
   representativeness comment is a follow-up to the already-posted paired result,
