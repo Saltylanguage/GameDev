@@ -25,6 +25,13 @@ namespace SaltyGame.EditorTools
                     movementSteps = source.MovementSteps,
                     damageDealt = source.DamageDealt,
                     combatKills = source.CombatKills,
+                    combatOpportunities = source.CombatOpportunities,
+                    combatAttempts = source.CombatAttempts,
+                    combatHits = source.CombatHits,
+                    combatBlocked = source.CombatBlocked,
+                    combatDamageApplications = source.CombatDamageApplications,
+                    combatNonLethalHits = source.CombatNonLethalHits,
+                    combatLethalHits = source.CombatLethalHits,
                     deaths = source.Deaths,
                     starvationDeaths = source.StarvationDeaths,
                     crowdingDeaths = source.CrowdingDeaths,
@@ -240,6 +247,13 @@ namespace SaltyGame.EditorTools
         public int movementSteps;
         public int damageDealt;
         public int combatKills;
+        public int combatOpportunities;
+        public int combatAttempts;
+        public int combatHits;
+        public int combatBlocked;
+        public int combatDamageApplications;
+        public int combatNonLethalHits;
+        public int combatLethalHits;
         public int deaths;
         public int starvationDeaths;
         public int crowdingDeaths;

@@ -608,6 +608,15 @@ namespace SaltyGame.Tests
                 combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll);
 
             Assert.That(opposedMetrics.CombatRollEvents.Count, Is.EqualTo(1));
+            var opposedActivity = opposedMetrics.GetActivity(SpeciesIds.Carnivore);
+            Assert.That(opposedActivity.CombatOpportunities, Is.EqualTo(1));
+            Assert.That(opposedActivity.CombatAttempts, Is.EqualTo(1));
+            Assert.That(
+                opposedActivity.CombatHits + opposedActivity.CombatBlocked,
+                Is.EqualTo(opposedActivity.CombatAttempts));
+            Assert.That(
+                opposedActivity.CombatDamageApplications,
+                Is.EqualTo(opposedActivity.CombatNonLethalHits + opposedActivity.CombatLethalHits));
             var roll = opposedMetrics.CombatRollEvents[0];
             var replayRoll = replayMetrics.CombatRollEvents[0];
             Assert.That(roll.AttackRoll, Is.InRange(1, 20));

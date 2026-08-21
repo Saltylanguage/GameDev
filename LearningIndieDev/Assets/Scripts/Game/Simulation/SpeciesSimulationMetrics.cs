@@ -219,6 +219,13 @@ namespace SaltyGame
             int movementSteps,
             int damageDealt,
             int combatKills,
+            int combatOpportunities,
+            int combatAttempts,
+            int combatHits,
+            int combatBlocked,
+            int combatDamageApplications,
+            int combatNonLethalHits,
+            int combatLethalHits,
             int deaths,
             int starvationDeaths,
             int crowdingDeaths,
@@ -233,6 +240,13 @@ namespace SaltyGame
             MovementSteps = movementSteps;
             DamageDealt = damageDealt;
             CombatKills = combatKills;
+            CombatOpportunities = combatOpportunities;
+            CombatAttempts = combatAttempts;
+            CombatHits = combatHits;
+            CombatBlocked = combatBlocked;
+            CombatDamageApplications = combatDamageApplications;
+            CombatNonLethalHits = combatNonLethalHits;
+            CombatLethalHits = combatLethalHits;
             Deaths = deaths;
             StarvationDeaths = starvationDeaths;
             CrowdingDeaths = crowdingDeaths;
@@ -248,6 +262,13 @@ namespace SaltyGame
         public int MovementSteps { get; }
         public int DamageDealt { get; }
         public int CombatKills { get; }
+        public int CombatOpportunities { get; }
+        public int CombatAttempts { get; }
+        public int CombatHits { get; }
+        public int CombatBlocked { get; }
+        public int CombatDamageApplications { get; }
+        public int CombatNonLethalHits { get; }
+        public int CombatLethalHits { get; }
         public int Deaths { get; }
         public int StarvationDeaths { get; }
         public int CrowdingDeaths { get; }
@@ -263,6 +284,13 @@ namespace SaltyGame
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
+            int combatOpportunities = 0,
+            int combatAttempts = 0,
+            int combatHits = 0,
+            int combatBlocked = 0,
+            int combatDamageApplications = 0,
+            int combatNonLethalHits = 0,
+            int combatLethalHits = 0,
             int deaths = 0,
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
@@ -278,6 +306,13 @@ namespace SaltyGame
                 MovementSteps + movementSteps,
                 DamageDealt + damageDealt,
                 CombatKills + combatKills,
+                CombatOpportunities + combatOpportunities,
+                CombatAttempts + combatAttempts,
+                CombatHits + combatHits,
+                CombatBlocked + combatBlocked,
+                CombatDamageApplications + combatDamageApplications,
+                CombatNonLethalHits + combatNonLethalHits,
+                CombatLethalHits + combatLethalHits,
                 Deaths + deaths,
                 StarvationDeaths + starvationDeaths,
                 CrowdingDeaths + crowdingDeaths,
@@ -555,6 +590,13 @@ namespace SaltyGame
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
+            int combatOpportunities = 0,
+            int combatAttempts = 0,
+            int combatHits = 0,
+            int combatBlocked = 0,
+            int combatDamageApplications = 0,
+            int combatNonLethalHits = 0,
+            int combatLethalHits = 0,
             int deaths = 0,
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
@@ -575,6 +617,13 @@ namespace SaltyGame
                 movementSteps,
                 damageDealt,
                 combatKills,
+                combatOpportunities,
+                combatAttempts,
+                combatHits,
+                combatBlocked,
+                combatDamageApplications,
+                combatNonLethalHits,
+                combatLethalHits,
                 deaths,
                 starvationDeaths,
                 crowdingDeaths,
@@ -595,6 +644,28 @@ namespace SaltyGame
                 foodActionAttempts: 1,
                 foodActionSuccesses: successful ? 1 : 0,
                 foodActionFailures: successful ? 0 : 1);
+        }
+
+        internal void RecordCombatOpportunity(SpeciesId attackerSpecies)
+        {
+            Record(attackerSpecies, combatOpportunities: 1);
+        }
+
+        internal void RecordCombatAttempt(
+            SpeciesId attackerSpecies,
+            bool hit,
+            bool blocked,
+            int damageDealt,
+            bool lethal)
+        {
+            Record(
+                attackerSpecies,
+                combatAttempts: 1,
+                combatHits: hit ? 1 : 0,
+                combatBlocked: blocked ? 1 : 0,
+                combatDamageApplications: damageDealt > 0 ? 1 : 0,
+                combatNonLethalHits: damageDealt > 0 && !lethal ? 1 : 0,
+                combatLethalHits: lethal ? 1 : 0);
         }
 
         internal void RecordCombatRoll(

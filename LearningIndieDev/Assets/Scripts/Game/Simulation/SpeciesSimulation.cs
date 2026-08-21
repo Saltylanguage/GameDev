@@ -225,6 +225,11 @@ namespace SaltyGame
                             continue;
                         }
 
+                        if (target.IsCreature)
+                        {
+                            metrics?.RecordCombatOpportunity(attacker.SpeciesId);
+                        }
+
                         var currentTarget = target;
                         if (target.IsCreature
                             && (!next.TryGetCell(targetX, targetY, out currentTarget)
@@ -296,6 +301,14 @@ namespace SaltyGame
                         if (damage > 0 && currentTarget.IsCreature)
                         {
                             var remainingHealth = currentTarget.Health - damage;
+                            metrics?.RecordCombatAttempt(
+                                attacker.SpeciesId,
+                                hit: damage > 0,
+                                blocked: hasDirectionalBlock
+                                    && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
+                                    && damage <= 0,
+                                damageDealt: Math.Min(damage, currentTarget.Health),
+                                lethal: remainingHealth <= 0);
                             metrics?.Record(
                                 attacker.SpeciesId,
                                 damageDealt: Math.Min(damage, currentTarget.Health));
@@ -351,6 +364,16 @@ namespace SaltyGame
                         }
                         else
                         {
+                            if (currentTarget.IsCreature)
+                            {
+                                metrics?.RecordCombatAttempt(
+                                    attacker.SpeciesId,
+                                    hit: false,
+                                    blocked: hasDirectionalBlock
+                                        && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll,
+                                    damageDealt: 0,
+                                    lethal: false);
+                            }
                             metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
                         }
 
