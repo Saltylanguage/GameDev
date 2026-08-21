@@ -32,5 +32,26 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(sprites.GetValue(index), Is.Not.Null, $"Animal presentation slot {index} must be initialized.");
             }
         }
+
+        [UnityTest]
+        public IEnumerator BevExperimentalFeaturesStayOffUntilExplicitlyApplied()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.False);
+            Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(0));
+
+            var applied = runtime.SpeciesPreview.TryApplyExperimentalFeatures(
+                true,
+                "2",
+                out var message);
+
+            Assert.That(applied, Is.True, message);
+            Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.True);
+            Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(2));
+        }
     }
 }

@@ -190,6 +190,10 @@ namespace SaltyGame
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
 
+        [Header("Bev Experimental Features")]
+        [SerializeField] bool bevExperimentalFeaturesEnabled;
+        [SerializeField, Min(0)] int foxAttackCooldownTicks;
+
         readonly SpeciesUpgrade[] rewardOptions =
         {
             SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId),
@@ -230,6 +234,8 @@ namespace SaltyGame
         public float HerbivoreProbability => herbivoreProbability;
         public float CarnivoreProbability => carnivoreProbability;
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
+        public bool BevExperimentalFeaturesEnabled => bevExperimentalFeaturesEnabled;
+        public int FoxAttackCooldownTicks => foxAttackCooldownTicks;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
         public IReadOnlyList<ScenarioDefinitionAsset> ScenarioOptions => scenarioOptions;
         public IReadOnlyList<SpeciesId> RosterSpecies => rosterSpecies;
@@ -419,6 +425,42 @@ namespace SaltyGame
             carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
             randomizeSeedOnStart = randomizeSeed;
             settingsMessage = "Global settings applied to the next run.";
+            PrepareNextRun();
+            validationMessage = settingsMessage;
+            return true;
+        }
+
+        public bool TryApplyExperimentalFeatures(
+            bool enabled,
+            string foxAttackCooldownValue,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (!SettingsEditable)
+            {
+                validationMessage = "Experimental features can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (!TryParseInt(foxAttackCooldownValue, "Fox attack cooldown", out var parsedCooldown))
+            {
+                validationMessage = settingsMessage;
+                return false;
+            }
+
+            if (parsedCooldown < 0)
+            {
+                validationMessage = "Fox attack cooldown must be zero or greater.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            bevExperimentalFeaturesEnabled = enabled;
+            foxAttackCooldownTicks = parsedCooldown;
+            settingsMessage = enabled
+                ? $"Bev experimental features enabled: opposed-roll combat, fox cooldown {foxAttackCooldownTicks} ticks."
+                : "Bev experimental features disabled; legacy combat retained.";
             PrepareNextRun();
             validationMessage = settingsMessage;
             return true;
@@ -791,7 +833,18 @@ namespace SaltyGame
                 playerSpecies,
                 seed + runNumber,
                 simulationData.RunDurationSeconds);
-            runner = new SpeciesSimulationRunner(run, simulationData);
+            var experimentalOptions = bevExperimentalFeaturesEnabled
+                ? new SpeciesExperimentalOptions(
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    foxAttackCooldownTicks)
+                : SpeciesExperimentalOptions.None;
+            runner = new SpeciesSimulationRunner(
+                run,
+                simulationData,
+                combatResolutionMode: bevExperimentalFeaturesEnabled
+                    ? SpeciesCombatResolutionMode.OpposedRoll
+                    : SpeciesCombatResolutionMode.LegacyFixedDamage,
+                experimentalOptions: experimentalOptions);
             tickTimer = 0f;
             result = default;
             rewardGranted = false;
