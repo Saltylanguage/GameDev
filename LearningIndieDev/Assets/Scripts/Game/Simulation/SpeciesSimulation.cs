@@ -18,7 +18,7 @@ namespace SaltyGame
 
     public static class SpeciesSimulation
     {
-        public const int FixedRateDiagnosticPeriodTicks = 30;
+        public const int FixedRateDiagnosticPeriodTicks = 3;
 
         public static bool DoesOpposedRollHit(
             int attackRoll,

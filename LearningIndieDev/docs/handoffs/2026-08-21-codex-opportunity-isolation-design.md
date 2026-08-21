@@ -3,11 +3,11 @@
 ## Decision
 
 Use **Method C: fixed-rate diagnostic opportunity mode**. The mode is named
-`fixed-rate-diagnostic`, is disabled by default, and schedules one global combat
-slot every `30` simulation ticks. The period was frozen before outcome runs from
-the prior natural calibration exposure (132 Fox opportunities / 20 runs = 6.6
-per run; 200 ticks / 6.6 rounds to a 30-tick period). It is not selected from
-the new arm results.
+`fixed-rate-diagnostic`, is disabled by default, and polls for one global combat
+slot every `3` simulation ticks. The three-tick cadence is a diagnostic sampling
+interval chosen before the accepted rerun to avoid missing one-tick contact
+windows in the 0.1-second simulation; it is not a production attack rate and is
+not selected from a preferred ecological outcome.
 
 ## Runtime flow audited
 
@@ -23,12 +23,12 @@ target availability.
 
 ## Controlled behavior
 
-- The slot schedule is derived from the per-tick seed (`seed % 30 == 0`) and does
+- The slot schedule is derived from the per-tick seed (`seed % 3 == 0`) and does
   not consume the simulation RNG, so `UpgradeId` cannot change scheduled slots.
-- On a scheduled slot, the resolver deterministically scans the current source
-  grid for the first valid creature attacker with a creature diet target in its
-  authored attack pattern. This exposes a live candidate without inventing a
-  target outside the authored contact pattern.
+- On a scheduled slot, the resolver enumerates current valid creature attackers
+  and contacts, then selects one with a seed-indexed deterministic index. This
+  exposes cardinal and diagonal contacts without using arm outcomes or inventing
+  a target outside the authored contact pattern.
 - The diagnostic mode bypasses only the natural `Attacking`/`ShouldForage`
   gate for that selected slot. Movement, aging, metabolism, resource regrowth,
   starvation, reproduction, target validity, opposed-roll randomness, and all
@@ -69,3 +69,9 @@ evidence. The scheduler was corrected before the accepted rerun to select a
 seed-indexed candidate across the full valid-contact set, so authored cardinal
 and diagonal contacts are exposed without using arm outcomes. The corrected
 implementation must be rerun across all 80 seeds.
+
+The corrected seed-indexed selector with the original 30-tick cadence then
+produced exact exposure equality but only 16 calibration attempts across 20
+runs, and every sampled opposed roll had the same outcome in both arms. Those
+reports (`20260821-013752` through `013929`) are also non-evidence for SC-2.
+The accepted rerun uses the frozen three-tick sampling cadence.
