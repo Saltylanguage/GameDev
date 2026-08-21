@@ -95,16 +95,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
-### P1-006 — Editor smart-tiling preview path fix awaits validation
+### P1-006 — Named dual-grid terrain preview awaits validation
 
-- **Status:** Committed; visual validation remains open.
-- **Evidence:** Commit `6bdf6af` points
-  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs:10` at
-  `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` instead of the deleted
-  Resources path. No 16-mask preview evidence or runtime screenshot records
-  acceptance yet.
-- **Next action:** Run the 16-mask preview, record visual evidence, and include
-  the fix in a focused reviewed commit.
+- **Status:** Refactored; visual validation remains open.
+- **Evidence:** `TerrainTilePreviewWindow` now loads the named `Grass_` and
+  `Desert_` sprites from `Assets/Art/Terrain/Standardized/128/` and previews
+  all 16 four-corner masks. No runtime screenshot records acceptance yet.
+- **Next action:** Run the named dual-grid preview and cellular prototype,
+  record visual evidence, and include the refactor in a focused reviewed commit.
 - **Likely owner:** Presentation/art owner.
 - **Confidence:** High.
 

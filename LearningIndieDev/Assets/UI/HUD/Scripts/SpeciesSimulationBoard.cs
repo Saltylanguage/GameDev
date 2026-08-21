@@ -12,7 +12,7 @@ namespace SaltyGame
     /// </summary>
     public sealed class SpeciesSimulationBoard : FrameworkElement
     {
-        const int TerrainFamilyTileOffset = 16;
+        const int TerrainFamilyTileOffset = TerrainTileResolver.TerrainVariantCount;
 
         static readonly Dictionary<SpeciesId, int> AnimalAtlasIndexBySpecies =
             new Dictionary<SpeciesId, int>
@@ -102,7 +102,11 @@ namespace SaltyGame
             {
                 var tileIndex = TerrainTileResolver.ResolveTerrainTileIndex(cells, x, y, cell.TerrainId)
                     + familyOffset;
-                context.DrawImage(terrainTiles[tileIndex], cellRect);
+                if (tileIndex >= familyOffset && tileIndex < terrainTiles.Length)
+                {
+                    context.DrawImage(terrainTiles[tileIndex], cellRect);
+                }
+
                 return;
             }
 
@@ -115,7 +119,7 @@ namespace SaltyGame
             {
                 if (terrainTiles != null)
                 {
-                    context.DrawImage(terrainTiles[0], cellRect);
+                    context.DrawImage(terrainTiles[TerrainTileResolver.FullVariantIndex], cellRect);
                 }
 
                 return;

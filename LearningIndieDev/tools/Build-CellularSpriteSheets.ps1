@@ -121,30 +121,5 @@ function Build-AnimalSheet([string] $sourcePath, [string] $outputPath) {
     $source.Dispose()
 }
 
-$terrainX = @(210, 430, 645, 865)
-$terrainWidths = @(176, 178, 168, 178)
-$grassY = @(63, 226, 389, 522)
-$grassHeights = @(148, 148, 114, 125)
-$desertY = @(715, 857, 998, 1116)
-$desertHeights = @(125, 125, 100, 109)
 Build-AnimalSheet (Join-Path $sourceRoot 'Species\Animals\Animals_01.png') (Join-Path $outputRoot 'Animals_01_SpriteSheet.png')
-$terrainSource = [System.Drawing.Bitmap]::new((Join-Path $sourceRoot 'Terrain\Terrain_01.png'))
-$terrainSheet = New-TransparentSheet 4 8
-$tileIndex = 0
-foreach ($yIndex in 0..3) {
-    foreach ($xIndex in 0..3) {
-        Copy-Sprite $terrainSource ([System.Drawing.Rectangle]::new(
-            $terrainX[$xIndex], $grassY[$yIndex], $terrainWidths[$xIndex], $grassHeights[$yIndex])) $terrainSheet ($tileIndex % 4) ([int][Math]::Floor($tileIndex / 4))
-        $tileIndex++
-    }
-}
-foreach ($yIndex in 0..3) {
-    foreach ($xIndex in 0..3) {
-        Copy-Sprite $terrainSource ([System.Drawing.Rectangle]::new(
-            $terrainX[$xIndex], $desertY[$yIndex], $terrainWidths[$xIndex], $desertHeights[$yIndex])) $terrainSheet ($tileIndex % 4) ([int][Math]::Floor($tileIndex / 4))
-        $tileIndex++
-    }
-}
-Save-Sheet $terrainSheet (Join-Path $outputRoot 'Terrain_01_SpriteSheet.png')
-$terrainSource.Dispose()
-Write-Output "Wrote cellular sprite sheets to $outputRoot"
+Write-Output "Wrote the animal cellular sprite sheet to $outputRoot"
