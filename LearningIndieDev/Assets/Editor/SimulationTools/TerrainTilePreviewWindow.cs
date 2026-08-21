@@ -4,17 +4,15 @@ using UnityEngine;
 
 namespace SaltyGame.EditorTools
 {
-    /// <summary>Shows every smart-tiling mask against the authored terrain atlas.</summary>
+    /// <summary>Shows every named four-corner terrain variant.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainAtlasPath = "Assets/Art/Terrain/Terrain_01_SpriteSheet.png";
-        const int AtlasColumns = 4;
-        const int AtlasRows = 8;
-        const int DesertAtlasOffset = 16;
+        const string TerrainFolder = "Assets/Art/Terrain/Standardized/128/";
         const float LabelHeight = 18f;
 
-        Texture2D terrainAtlas;
+        Texture2D[] terrainTiles;
         bool showDesert;
+        bool loadedDesert;
 
         [MenuItem("Salty Game/Simulation/Preview Terrain Smart Tiles")]
         static void Open()
@@ -27,29 +25,34 @@ namespace SaltyGame.EditorTools
 
         void OnEnable()
         {
-            LoadAtlas();
+            LoadTiles();
         }
 
         void OnGUI()
         {
             EditorGUILayout.LabelField("Terrain smart-tiling preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Each tile is selected from the four cardinal neighbors: N=1, E=2, S=4, W=8. "
-                + "The preview uses the same lookup table as the runtime board.",
+                "Each named sprite represents one non-empty combination of the four simulation cells around a visual tile. "
+                + "Mask 0 is intentionally empty.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();
-            showDesert = EditorGUILayout.ToggleLeft("Show desert family (atlas rows 4-7)", showDesert);
-            if (GUILayout.Button("Reload atlas", GUILayout.Width(100f)))
+            showDesert = EditorGUILayout.ToggleLeft("Show Desert_ family", showDesert);
+            if (showDesert != loadedDesert)
             {
-                LoadAtlas();
+                LoadTiles();
+            }
+
+            if (GUILayout.Button("Reload tiles", GUILayout.Width(100f)))
+            {
+                LoadTiles();
             }
 
             EditorGUILayout.EndHorizontal();
 
-            if (terrainAtlas == null)
+            if (terrainTiles == null)
             {
-                EditorGUILayout.HelpBox($"Could not load {TerrainAtlasPath}.", MessageType.Warning);
+                EditorGUILayout.HelpBox("Could not load the named terrain sprites.", MessageType.Warning);
                 return;
             }
 
@@ -70,57 +73,49 @@ namespace SaltyGame.EditorTools
                         tileSize);
 
                     EditorGUI.DrawRect(tileRect, new Color(0.12f, 0.12f, 0.12f));
-                    DrawAtlasTile(tileRect, mask);
+                    DrawTile(tileRect, mask);
                     var labelRect = new Rect(tileRect.x, tileRect.yMax, tileRect.width, LabelHeight);
                     GUI.Label(labelRect, $"mask {mask}: {DescribeMask(mask)}", EditorStyles.centeredGreyMiniLabel);
                 }
             }
         }
 
-        void LoadAtlas()
+        void LoadTiles()
         {
-            terrainAtlas = AssetDatabase.LoadAssetAtPath<Texture2D>(TerrainAtlasPath);
+            loadedDesert = showDesert;
+            terrainTiles = new Texture2D[TerrainTileResolver.TerrainVariantCount];
+            for (var index = 0; index < terrainTiles.Length; index++)
+            {
+                var name = TerrainTileResolver.GetVariantName(index);
+                var family = showDesert ? "Desert" : "Grass";
+                terrainTiles[index] = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TerrainFolder}{family}_{name}.png");
+            }
         }
 
-        void DrawAtlasTile(Rect destination, int mask)
+        void DrawTile(Rect destination, int mask)
         {
-            var atlasIndex = TerrainTileResolver.ResolveGrassAtlasIndex(mask)
-                + (showDesert ? DesertAtlasOffset : 0);
-            var atlasColumn = atlasIndex % AtlasColumns;
-            var atlasRow = atlasIndex / AtlasColumns;
-            var uv = new Rect(
-                atlasColumn / (float)AtlasColumns,
-                1f - (atlasRow + 1f) / AtlasRows,
-                1f / AtlasColumns,
-                1f / AtlasRows);
+            var variantIndex = TerrainTileResolver.ResolveTerrainAtlasIndex(mask);
+            if (variantIndex < 0 || terrainTiles[variantIndex] == null)
+            {
+                return;
+            }
 
-            GUI.DrawTextureWithTexCoords(destination, terrainAtlas, uv, true);
+            GUI.DrawTexture(destination, terrainTiles[variantIndex], ScaleMode.StretchToFill, true);
         }
 
         static string DescribeMask(int mask)
         {
+            if (mask == 0)
+            {
+                return "empty";
+            }
+
             var value = string.Empty;
-            if ((mask & 1) != 0)
-            {
-                value += "N";
-            }
-
-            if ((mask & 2) != 0)
-            {
-                value += "E";
-            }
-
-            if ((mask & 4) != 0)
-            {
-                value += "S";
-            }
-
-            if ((mask & 8) != 0)
-            {
-                value += "W";
-            }
-
-            return value.Length == 0 ? "isolated" : value;
+            if ((mask & TerrainTileResolver.NorthWest) != 0) value += "NW";
+            if ((mask & TerrainTileResolver.NorthEast) != 0) value += "NE";
+            if ((mask & TerrainTileResolver.SouthWest) != 0) value += "SW";
+            if ((mask & TerrainTileResolver.SouthEast) != 0) value += "SE";
+            return value;
         }
     }
 }

@@ -2,71 +2,57 @@
 
 ## Current implementation
 
-- `tools/Build-CellularSpriteSheets.ps1` converts the supplied reference sheets
-  into transparent, nearest-neighbor atlases at 128 pixels per tile.
-- Animal presentation is now scene-wired through a `SpriteAtlas` packed from
-  `Assets/Art/Species/Animals/Standardized/32/`; standardized exports also
-  exist under `Standardized/64/` and `Standardized/128/`. The board receives
-  the atlas and direct sprite inputs through `SpeciesSimulationNoesisHost`;
-  it no longer loads animal sheets from `Resources`.
-- `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` remains the 4x8 authored source
-  sheet: grass variants occupy rows 0-3 and desert variants rows 4-7. The sheet
-  is split into named per-tile exports under
-  `Assets/Art/Terrain/Standardized/` at source, 32, 64, and 128 pixels. The
-  runtime `Terrain_01` SpriteAtlas packs the 128-pixel folder and resolves tiles
-  by stable names rather than pack order. The current board uses the grass half
-  for grass and temporarily maps bare terrain to the desert half until a
-  dedicated bare-ground atlas is authored.
-- `TerrainTileResolver` computes a four-cardinal-neighbor bit mask from the
-  simulation grid. It is presentation-only: it reads the immutable cell state
-  and never changes simulation rules or determinism. The same mask table is
-  shared by the runtime board, tests, and the editor preview window.
-- The species preview no longer has a legacy IMGUI board or settings fallback;
-  the Noesis shell is now the single runtime presentation path.
-- `TerrainTilePreviewWindow` loads the current terrain sheet from
-  `Assets/Art/Terrain`, and animal atlas entries are resolved by stable sprite
-  names before optional Fox/Rabbit scene overrides are layered on top.
+- Animal presentation remains scene-wired through a `SpriteAtlas` and stable
+  sprite names; the board does not load art from `Resources`.
+- Terrain art is now a named 15-piece dual-grid set under
+  `Assets/Art/Terrain/Standardized/128/`. The grass family uses `Grass_` names
+  and the matching desert family uses `Desert_` names.
+- `Terrain_01.spriteatlasv2` packs the standardized terrain folder. The Noesis
+  view model resolves the named sprites directly, so atlas packing order is not
+  simulation or presentation state.
+- `TerrainTileResolver` is presentation-only. It reads the simulation grid and
+  never changes `SpeciesCell` or the deterministic simulation rules.
 
 ## Smart-tiling model
 
-For each grass cell, compute a mask with `N=1`, `E=2`, `S=4`, and `W=8`.
-The resolver maps that mask to the current atlas order. Because the source art
-is arranged visually rather than in bit-mask order, the lookup table is the
-single art-layout seam. Replacing or reordering the atlas only requires changing
-that table; simulation code and cell data stay untouched.
+The new sprites represent the 15 non-empty combinations of four surrounding
+simulation cells. The four-bit mask is:
 
-The first pass intentionally uses cardinal neighbors only. That is the smallest
-working smart-tiling model and keeps edges deterministic. If the artwork later
-needs diagonal corner decisions, add a second eight-neighbor pass at this
-presentation boundary and keep the 16 base variants as the fallback.
+```text
+SW = 1, SE = 2, NW = 4, NE = 8
+```
 
-## Completed in this pass
+Mask `0` draws no transition tile. Masks `1` through `15` map directly to the
+named variants (`DiagBottomLeft` through `Full`) in `TerrainTileResolver`.
+The board samples the four cells around each visual tile, with the current cell
+as the north-east corner, so the species icon and terrain remain centered in
+the same board cell while the edge shape comes from the dual-grid combination.
 
-- Desert-family rendering now uses the same resolver and atlas offset 16;
-  `Bare` currently shares that family as a temporary visual mapping.
-- `Salty Game > Simulation > Preview Terrain Smart Tiles` renders all 16 masks
-  in a labelled 4x4 grid and can switch between grass and desert families.
-- Edit Mode coverage now checks all 16 unique mappings, invalid masks, and the
-  shared resolver behavior for a desert terrain family.
+Both grass and desert use the same mask rules. `Bare` continues to use the
+desert family as its temporary visual family until a dedicated bare set exists.
 
-## Remaining validation and art work
+## Validation
 
-1. Open the preview and cellular prototype in Unity at gameplay scale and test
-   every authored species that can appear. If an
-   edge or corner is wrong, adjust only `GrassAtlasIndexByMask`.
-2. Replace the temporary bare-to-desert mapping with an authored bare-ground
-   tileset when that art is available.
-3. Add authored plant sprites to the animal atlas or a dedicated plant atlas;
-   until then, plant-resource terrain is represented by grass and avoids an
-   unrelated animal icon.
-4. Add a Play Mode screenshot check once Unity is available in the development
-   environment. This should verify atlas loading, terrain seams, and icon scale
-   in the actual Noesis view rather than only in the editor preview.
+- `TerrainTileResolverTests` covers empty masks, all 15 named variants, corner
+  sampling, grass/desert parity, sprite naming, and invalid masks.
+- `TerrainTilePreviewWindow` previews all 16 masks from the named files and can
+  switch between `Grass_` and `Desert_` families.
+- The runtime still uses one batched Noesis board; no Tilemap or `RuleTile`
+  dependency was added.
+
+## Remaining validation
+
+1. Let Unity reimport the renamed desert sprites and rebuild the SpriteAtlas.
+2. Open `Salty Game > Simulation > Preview Terrain Smart Tiles` and confirm
+   each mask shows the expected named texture.
+3. Run the cellular prototype and inspect mixed grass/bare boundaries at normal
+   gameplay scale. If a shape is wrong, change the named mask table in the
+   resolver, not simulation state.
+4. Add a dedicated bare-ground family when that art is available.
 
 ## Non-goals
 
 - Do not put neighbor masks, atlas indices, or renderer-only state into
   `SpeciesCell` or `CellularSimData`.
-- Do not introduce Unity's `RuleTile` package for this board yet. The board is a
-  batched Noesis control and a small deterministic lookup is sufficient until
-  the simulation becomes a scene-authored Tilemap.
+- Do not introduce Unity's `RuleTile` package while this remains a batched
+  Noesis board.

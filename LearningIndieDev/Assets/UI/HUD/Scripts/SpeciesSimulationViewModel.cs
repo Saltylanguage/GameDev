@@ -23,41 +23,20 @@ namespace SaltyGame
             "Animals_01_Elephant",
         };
 
-        static readonly string[] TerrainSpriteNames =
+        static readonly string[] TerrainSpriteNames = CreateTerrainSpriteNames();
+
+        static string[] CreateTerrainSpriteNames()
         {
-            "Terrain_01_Grass_00",
-            "Terrain_01_Grass_01",
-            "Terrain_01_Grass_02",
-            "Terrain_01_Grass_03",
-            "Terrain_01_Grass_04",
-            "Terrain_01_Grass_05",
-            "Terrain_01_Grass_06",
-            "Terrain_01_Grass_07",
-            "Terrain_01_Grass_08",
-            "Terrain_01_Grass_09",
-            "Terrain_01_Grass_10",
-            "Terrain_01_Grass_11",
-            "Terrain_01_Grass_12",
-            "Terrain_01_Grass_13",
-            "Terrain_01_Grass_14",
-            "Terrain_01_Grass_15",
-            "Terrain_01_Desert_00",
-            "Terrain_01_Desert_01",
-            "Terrain_01_Desert_02",
-            "Terrain_01_Desert_03",
-            "Terrain_01_Desert_04",
-            "Terrain_01_Desert_05",
-            "Terrain_01_Desert_06",
-            "Terrain_01_Desert_07",
-            "Terrain_01_Desert_08",
-            "Terrain_01_Desert_09",
-            "Terrain_01_Desert_10",
-            "Terrain_01_Desert_11",
-            "Terrain_01_Desert_12",
-            "Terrain_01_Desert_13",
-            "Terrain_01_Desert_14",
-            "Terrain_01_Desert_15",
-        };
+            var names = new string[TerrainTileResolver.TerrainVariantCount * 2];
+            for (var index = 0; index < TerrainTileResolver.TerrainVariantCount; index++)
+            {
+                var variantName = TerrainTileResolver.GetVariantName(index);
+                names[index] = $"Grass_{variantName}";
+                names[index + TerrainTileResolver.TerrainVariantCount] = $"Desert_{variantName}";
+            }
+
+            return names;
+        }
 
         SpeciesSimulationPreview preview;
         SpeciesSimulationBoard board;
@@ -421,7 +400,7 @@ namespace SaltyGame
             }
 
             animalSprites = CreateSpeciesSprites();
-            terrainTiles = CreateTerrainAtlasSprites(terrainSpriteAtlas, out terrainTextureSource);
+            terrainTiles = CreateNamedAtlasSprites(terrainSpriteAtlas, TerrainSpriteNames, out terrainTextureSource);
             if (animalSprites == null || terrainTiles == null)
             {
                 animalSprites = null;
@@ -434,7 +413,7 @@ namespace SaltyGame
         {
             var sprites = animalSpriteAtlas == null
                 ? new CroppedBitmap[8]
-                : CreateAnimalAtlasSprites(animalSpriteAtlas, out animalTextureSource);
+                : CreateNamedAtlasSprites(animalSpriteAtlas, AnimalSpriteNames, out animalTextureSource);
             if (sprites == null)
             {
                 return null;
@@ -453,8 +432,9 @@ namespace SaltyGame
             return sprites;
         }
 
-        static CroppedBitmap[] CreateAnimalAtlasSprites(
+        static CroppedBitmap[] CreateNamedAtlasSprites(
             SpriteAtlas atlas,
+            string[] spriteNames,
             out TextureSource textureSource)
         {
             textureSource = null;
@@ -466,22 +446,15 @@ namespace SaltyGame
                 return null;
             }
 
-            var atlasTexture = FindAtlasTexture(packedSprites);
-            if (atlasTexture == null)
-            {
-                Debug.LogWarning($"SpriteAtlas '{atlas.name}' has no runtime texture source.");
-                return null;
-            }
-
-            textureSource = new TextureSource(atlasTexture);
-            var sprites = new CroppedBitmap[AnimalSpriteNames.Length];
-            for (var index = 0; index < AnimalSpriteNames.Length; index++)
+            textureSource = new TextureSource(packedSprites[0].texture);
+            var sprites = new CroppedBitmap[spriteNames.Length];
+            for (var index = 0; index < spriteNames.Length; index++)
             {
                 Sprite matchingSprite = null;
                 for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
                 {
                     if (packedSprites[spriteIndex].name.StartsWith(
-                        AnimalSpriteNames[index],
+                        spriteNames[index],
                         StringComparison.OrdinalIgnoreCase))
                     {
                         matchingSprite = packedSprites[spriteIndex];
@@ -492,7 +465,7 @@ namespace SaltyGame
                 if (matchingSprite == null || matchingSprite.texture == null)
                 {
                     Debug.LogWarning(
-                        $"SpriteAtlas '{atlas.name}' is missing species sprite '{AnimalSpriteNames[index]}'.");
+                        $"SpriteAtlas '{atlas.name}' is missing sprite '{spriteNames[index]}'.");
                     return null;
                 }
 

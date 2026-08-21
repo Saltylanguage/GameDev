@@ -1,24 +1,50 @@
 namespace SaltyGame
 {
-    /// <summary>Resolves a terrain atlas tile from the four cardinal neighbors.</summary>
+    /// <summary>
+    /// Resolves the 15 non-empty corner combinations in the Grass_/Desert_
+    /// dual-grid terrain sets. The mask is presentation-only.
+    /// </summary>
     public static class TerrainTileResolver
     {
-        public const int VariantCount = 16;
+        public const int TerrainVariantCount = 15;
+        public const int CornerMaskCount = 16;
+        public const int VariantCount = TerrainVariantCount;
 
-        const int North = 1;
-        const int East = 2;
-        const int South = 4;
-        const int West = 8;
+        public const int SouthWest = 1;
+        public const int SouthEast = 2;
+        public const int NorthWest = 4;
+        public const int NorthEast = 8;
+        public const int FullVariantIndex = TerrainVariantCount - 1;
 
-        // Terrain_01 is authored in visual order rather than bit-mask order.
-        // Keep this table as the only art-layout seam for future atlas revisions.
-        static readonly int[] GrassAtlasIndexByMask =
+        static readonly string[] VariantNamesByMask =
         {
-            5, 13, 12, 14,
-            1, 10, 3, 2,
-            4, 11, 9, 7,
-            8, 6, 15, 0,
+            string.Empty,
+            "TopRight",
+            "TopLeft",
+            "TopMiddle",
+            "BottomRight",
+            "MiddleRight",
+            "DiagStripUpRight",
+            "DiagTopRight",
+            "BottomLeft",
+            "DiagStripDownRight",
+            "MiddleLeft",
+            "DiagTopLeft",
+            "BottomMiddle",
+            "DiagBottomRight",
+            "DiagBottomLeft",
+            "Full",
         };
+
+        public static string GetVariantName(int variantIndex)
+        {
+            if (variantIndex < 0 || variantIndex >= TerrainVariantCount)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(variantIndex), variantIndex, "Terrain variant indices must be 0-14.");
+            }
+
+            return VariantNamesByMask[variantIndex + 1];
+        }
 
         public static int ResolveGrassTileIndex(Grid<SpeciesCell> cells, int x, int y)
         {
@@ -31,22 +57,42 @@ namespace SaltyGame
             int y,
             TerrainId terrainId)
         {
-            var mask = 0;
-            if (IsTerrain(cells, x, y + 1, terrainId)) mask |= North;
-            if (IsTerrain(cells, x + 1, y, terrainId)) mask |= East;
-            if (IsTerrain(cells, x, y - 1, terrainId)) mask |= South;
-            if (IsTerrain(cells, x - 1, y, terrainId)) mask |= West;
-            return ResolveGrassAtlasIndex(mask);
+            return ResolveTerrainAtlasIndex(ComputeCornerMask(cells, x, y, terrainId));
         }
 
-        public static int ResolveGrassAtlasIndex(int neighborMask)
+        /// <summary>
+        /// Samples the four simulation cells around the visual tile centered at
+        /// (x,y). The current cell is the north-east corner, so icons remain
+        /// centered while terrain edges use the dual-grid combinations.
+        /// </summary>
+        public static int ComputeCornerMask(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            TerrainId terrainId)
         {
-            if (neighborMask < 0 || neighborMask >= VariantCount)
+            var mask = 0;
+            if (IsTerrain(cells, x - 1, y - 1, terrainId)) mask |= SouthWest;
+            if (IsTerrain(cells, x, y - 1, terrainId)) mask |= SouthEast;
+            if (IsTerrain(cells, x - 1, y, terrainId)) mask |= NorthWest;
+            if (IsTerrain(cells, x, y, terrainId)) mask |= NorthEast;
+            return mask;
+        }
+
+        public static int ResolveTerrainAtlasIndex(int cornerMask)
+        {
+            if (cornerMask < 0 || cornerMask >= CornerMaskCount)
             {
-                throw new System.ArgumentOutOfRangeException(nameof(neighborMask), neighborMask, "Terrain neighbor masks must be four-bit values.");
+                throw new System.ArgumentOutOfRangeException(nameof(cornerMask), cornerMask, "Terrain corner masks must be four-bit values.");
             }
 
-            return GrassAtlasIndexByMask[neighborMask];
+            return cornerMask == 0 ? -1 : cornerMask - 1;
+        }
+
+        public static string GetTerrainSpriteName(TerrainId terrainId, int variantIndex)
+        {
+            var family = terrainId == TerrainIds.Grass ? "Grass" : "Desert";
+            return $"{family}_{GetVariantName(variantIndex)}";
         }
 
         static bool IsTerrain(Grid<SpeciesCell> cells, int x, int y, TerrainId terrainId)
