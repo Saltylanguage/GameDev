@@ -10,8 +10,16 @@ namespace SaltyGame
         OpposedRoll,
     }
 
+    public enum SpeciesAttackOpportunityMode
+    {
+        Natural,
+        FixedRateDiagnostic,
+    }
+
     public static class SpeciesSimulation
     {
+        public const int FixedRateDiagnosticPeriodTicks = 30;
+
         public static bool DoesOpposedRollHit(
             int attackRoll,
             int attackModifier,
@@ -67,7 +75,8 @@ namespace SaltyGame
             CellularSimData simulationData,
             int seed,
             SpeciesSimulationMetrics metrics = null,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
         {
             if (simulationData == null)
             {
@@ -82,7 +91,8 @@ namespace SaltyGame
                 simulationData.TerrainDefinitions,
                 simulationData.AlphaOffspringRules,
                 metrics,
-                combatResolutionMode);
+                combatResolutionMode,
+                attackOpportunityMode);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -93,7 +103,8 @@ namespace SaltyGame
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
             SpeciesSimulationMetrics metrics = null,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
         {
             if (source == null)
             {
@@ -115,7 +126,7 @@ namespace SaltyGame
             var random = new System.Random(seed);
             ResolveAging(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
-            ResolveAttacks(source, next, rules, random, metrics, combatResolutionMode);
+            ResolveAttacks(source, next, rules, random, metrics, combatResolutionMode, attackOpportunityMode, seed);
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
             ResolveTerrainRegrowth(next, terrainDefinitions);
@@ -194,8 +205,38 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
             SpeciesSimulationMetrics metrics,
-            SpeciesCombatResolutionMode combatResolutionMode)
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            int seed)
         {
+            var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
+            var controlledX = -1;
+            var controlledY = -1;
+            var controlledTargetX = -1;
+            var controlledTargetY = -1;
+            if (controlled)
+            {
+                if (!IsFixedRateDiagnosticTick(seed))
+                {
+                    return;
+                }
+
+                metrics?.RecordControlledOpportunityScheduled();
+                if (!TryFindControlledOpportunity(
+                    source,
+                    rules,
+                    out controlledX,
+                    out controlledY,
+                    out controlledTargetX,
+                    out controlledTargetY))
+                {
+                    metrics?.RecordControlledOpportunityUnfulfilledNoTarget();
+                    return;
+                }
+
+                metrics?.RecordControlledOpportunityEligible();
+            }
+
             for (var y = 0; y < source.Height; y++)
             {
                 for (var x = 0; x < source.Width; x++)
@@ -204,20 +245,34 @@ namespace SaltyGame
                     if (!attacker.IsCreature
                         || !rules.TryGetValue(attacker.SpeciesId, out var attackerRules)
                         || attackerRules.AttackAmount <= 0
-                        || next.GetCell(x, y).BehaviorState != SpeciesBehaviorState.Attacking
-                        || !ShouldForage(attacker, attackerRules)
                         || !next.GetCell(x, y).IsCreature)
                     {
                         continue;
                     }
 
+                    if (controlled
+                        ? x != controlledX || y != controlledY
+                        : next.GetCell(x, y).BehaviorState != SpeciesBehaviorState.Attacking
+                            || !ShouldForage(attacker, attackerRules))
+                    {
+                        continue;
+                    }
+
                     var attackPattern = attackerRules.AttackPattern;
-                    var startOffset = attackPattern.Count == 0 ? 0 : random.Next(attackPattern.Count);
+                    var startOffset = controlled || attackPattern.Count == 0
+                        ? 0
+                        : random.Next(attackPattern.Count);
                     for (var offsetIndex = 0; offsetIndex < attackPattern.Count; offsetIndex++)
                     {
                         var offset = attackPattern.Offsets[(startOffset + offsetIndex) % attackPattern.Count];
                         var targetX = x + offset.x;
                         var targetY = y + offset.y;
+                        if (controlled
+                            && (targetX != controlledTargetX || targetY != controlledTargetY))
+                        {
+                            continue;
+                        }
+
                         if (!source.TryGetCell(targetX, targetY, out var target)
                             || !attackerRules.DietTargetId.HasValue
                             || !SpeciesPerception.IsDietTarget(target, attackerRules.DietTargetId.Value))
@@ -235,6 +290,12 @@ namespace SaltyGame
                             && (!next.TryGetCell(targetX, targetY, out currentTarget)
                                 || !currentTarget.IsCreature))
                         {
+                            if (controlled)
+                            {
+                                metrics?.RecordControlledOpportunityUnfulfilledInvalidated();
+                                return;
+                            }
+
                             continue;
                         }
 
@@ -381,6 +442,61 @@ namespace SaltyGame
                     }
                 }
             }
+        }
+
+        static bool IsFixedRateDiagnosticTick(int seed)
+        {
+            return seed % FixedRateDiagnosticPeriodTicks == 0;
+        }
+
+        static bool TryFindControlledOpportunity(
+            Grid<SpeciesCell> source,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            out int attackerX,
+            out int attackerY,
+            out int targetX,
+            out int targetY)
+        {
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var attacker = source.GetCell(x, y);
+                    if (!attacker.IsCreature
+                        || !rules.TryGetValue(attacker.SpeciesId, out var attackerRules)
+                        || attackerRules.AttackAmount <= 0
+                        || !attackerRules.DietTargetId.HasValue)
+                    {
+                        continue;
+                    }
+
+                    foreach (var offset in attackerRules.AttackPattern.Offsets)
+                    {
+                        var candidateX = x + offset.x;
+                        var candidateY = y + offset.y;
+                        if (!source.TryGetCell(candidateX, candidateY, out var candidate)
+                            || !candidate.IsCreature
+                            || !SpeciesPerception.IsDietTarget(
+                                candidate,
+                                attackerRules.DietTargetId.Value))
+                        {
+                            continue;
+                        }
+
+                        attackerX = x;
+                        attackerY = y;
+                        targetX = candidateX;
+                        targetY = candidateY;
+                        return true;
+                    }
+                }
+            }
+
+            attackerX = -1;
+            attackerY = -1;
+            targetX = -1;
+            targetY = -1;
+            return false;
         }
 
         static void ResolveMovement(

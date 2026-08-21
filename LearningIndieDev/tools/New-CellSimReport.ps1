@@ -101,6 +101,25 @@ function Get-ActivityValue {
     return [double]$propertyValue.Value
 }
 
+function Get-OpportunityControlValue {
+    param(
+        [object]$Run,
+        [string]$Property
+    )
+
+    $control = $Run.opportunityControl
+    if ($null -eq $control) {
+        return 0d
+    }
+
+    $propertyValue = $control.PSObject.Properties[$Property]
+    if ($null -eq $propertyValue -or $null -eq $propertyValue.Value) {
+        return 0d
+    }
+
+    return [double]$propertyValue.Value
+}
+
 function Get-Number {
     param([double]$Value)
 
@@ -257,7 +276,35 @@ $lines.Add(('- Scenario asset: `{0}`' -f $report.scenarioAssetPath))
 $lines.Add("- Seeds: $($report.seedStart) through $($report.seedStart + $report.seedCount - 1) ($($report.seedCount) runs)")
 $lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
 $lines.Add(('- Player species: `{0}`' -f $report.playerSpeciesId))
+$lines.Add(('- Attack opportunity mode: `{0}`' -f $report.attackOpportunityMode))
 $lines.Add('')
+
+$scheduledOpportunities = 0d
+$eligibleOpportunities = 0d
+$unfulfilledNoTarget = 0d
+$unfulfilledInvalidated = 0d
+foreach ($run in @($report.runs)) {
+    $scheduledOpportunities += Get-OpportunityControlValue -Run $run -Property 'scheduled'
+    $eligibleOpportunities += Get-OpportunityControlValue -Run $run -Property 'eligible'
+    $unfulfilledNoTarget += Get-OpportunityControlValue -Run $run -Property 'unfulfilledNoTarget'
+    $unfulfilledInvalidated += Get-OpportunityControlValue -Run $run -Property 'unfulfilledInvalidated'
+}
+if ($scheduledOpportunities -gt 0) {
+    $lines.Add('## Controlled opportunity exposure')
+    $lines.Add('')
+    $controlRows = [System.Collections.Generic.List[object[]]]::new()
+    $controlRows.Add(@(
+        $scheduledOpportunities,
+        $eligibleOpportunities,
+        $unfulfilledNoTarget,
+        $unfulfilledInvalidated,
+        (($scheduledOpportunities - $eligibleOpportunities) -eq ($unfulfilledNoTarget + $unfulfilledInvalidated))
+    ))
+    Add-MarkdownTable -Lines $lines -Headers @('Scheduled', 'Eligible', 'Unfulfilled: no target', 'Unfulfilled: invalidated', 'Reconciled') -Rows $controlRows.ToArray()
+    $lines.Add('')
+    $lines.Add('Scheduled slots are deterministic fixed-rate diagnostic exposure; eligible slots had a live Fox-to-diet-target candidate in the current arm. Unfulfilled slots are never silently counted as attack attempts.')
+    $lines.Add('')
+}
 $lines.Add('## Final population summary')
 $lines.Add('')
 $summaryRows = [System.Collections.Generic.List[object[]]]::new()

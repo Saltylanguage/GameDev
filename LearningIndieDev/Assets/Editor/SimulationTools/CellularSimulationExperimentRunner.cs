@@ -15,7 +15,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 10;
+        const int ReportSchemaVersion = 11;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -32,6 +32,8 @@ namespace SaltyGame.EditorTools
         const string OutputPathArgument = "-outputPath";
         const string CombatModeArgument = "-combatMode";
         const string DefaultCombatMode = "legacy-fixed-damage";
+        const string AttackOpportunityModeArgument = "-attackOpportunityMode";
+        const string DefaultAttackOpportunityMode = "natural";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -138,7 +140,8 @@ namespace SaltyGame.EditorTools
                     playerSpecies,
                     options.SeedStart + index,
                     species,
-                    options.CombatResolutionMode);
+                    options.CombatResolutionMode,
+                    options.AttackOpportunityMode);
             }
 
             return new ExperimentReport
@@ -155,6 +158,7 @@ namespace SaltyGame.EditorTools
                 upgradeValue = upgrade == null ? 0f : upgrade.Value,
                 orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
+                attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = data.Width,
@@ -171,11 +175,16 @@ namespace SaltyGame.EditorTools
             SpeciesId playerSpecies,
             int seed,
             IReadOnlyList<SpeciesId> species,
-            SpeciesCombatResolutionMode combatResolutionMode)
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
-            var runner = new SpeciesSimulationRunner(run, data, combatResolutionMode);
+            var runner = new SpeciesSimulationRunner(
+                run,
+                data,
+                combatResolutionMode,
+                attackOpportunityMode);
             while (runner.AdvanceOneTick())
             {
             }
@@ -195,6 +204,13 @@ namespace SaltyGame.EditorTools
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
                 combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
+                opportunityControl = new ExperimentOpportunityControl
+                {
+                    scheduled = run.Metrics.ControlledOpportunityScheduled,
+                    eligible = run.Metrics.ControlledOpportunityEligible,
+                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
+                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
+                },
             };
         }
 
@@ -500,6 +516,7 @@ namespace SaltyGame.EditorTools
             public string PlayerSpeciesId { get; private set; }
             public string UpgradeId { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
+            public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -517,6 +534,8 @@ namespace SaltyGame.EditorTools
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
                     CombatResolutionMode = ParseCombatResolutionMode(
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
+                    AttackOpportunityMode = ParseAttackOpportunityMode(
+                        GetOptionalValue(arguments, AttackOpportunityModeArgument) ?? DefaultAttackOpportunityMode),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
@@ -540,6 +559,23 @@ namespace SaltyGame.EditorTools
                 throw new ArgumentException(
                     $"'{CombatModeArgument}' must be 'legacy-fixed-damage' or 'opposed-roll'.",
                     CombatModeArgument);
+            }
+
+            static SpeciesAttackOpportunityMode ParseAttackOpportunityMode(string value)
+            {
+                if (string.Equals(value, "natural", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.Natural;
+                }
+
+                if (string.Equals(value, "fixed-rate-diagnostic", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.FixedRateDiagnostic;
+                }
+
+                throw new ArgumentException(
+                    $"'{AttackOpportunityModeArgument}' must be 'natural' or 'fixed-rate-diagnostic'.",
+                    AttackOpportunityModeArgument);
             }
 
             static string GetOptionalValue(IReadOnlyList<string> arguments, string name)
@@ -621,6 +657,7 @@ namespace SaltyGame.EditorTools
             public float upgradeValue;
             public string[] orderedLoadout;
             public string combatResolutionMode;
+            public string attackOpportunityMode;
             public int seedStart;
             public int seedCount;
             public int gridWidth;
@@ -646,6 +683,16 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
             public SimulationSpeciesDeathRecord[] deathEvents;
             public SimulationSpeciesCombatRollRecord[] combatRolls;
+            public ExperimentOpportunityControl opportunityControl;
+        }
+
+        [Serializable]
+        sealed class ExperimentOpportunityControl
+        {
+            public int scheduled;
+            public int eligible;
+            public int unfulfilledNoTarget;
+            public int unfulfilledInvalidated;
         }
 
         [Serializable]

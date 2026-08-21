@@ -10,13 +10,15 @@ namespace SaltyGame
         readonly float stepSeconds;
         readonly int maxPopulation;
         readonly SpeciesCombatResolutionMode combatResolutionMode;
+        readonly SpeciesAttackOpportunityMode attackOpportunityMode;
 
         public SpeciesSimulationRunner(
             SimulationRunState run,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             float stepSeconds,
             int maxPopulation = 0,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.rules = rules ?? throw new ArgumentNullException(nameof(rules));
@@ -33,6 +35,7 @@ namespace SaltyGame
 
             this.maxPopulation = maxPopulation;
             this.combatResolutionMode = combatResolutionMode;
+            this.attackOpportunityMode = attackOpportunityMode;
         }
 
         [Obsolete("Use the SpeciesId overload instead.")]
@@ -48,7 +51,8 @@ namespace SaltyGame
         public SpeciesSimulationRunner(
             SimulationRunState run,
             CellularSimData simulationData,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage)
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.simulationData = simulationData ?? throw new ArgumentNullException(nameof(simulationData));
@@ -56,6 +60,7 @@ namespace SaltyGame
             stepSeconds = simulationData.StepInterval;
             maxPopulation = simulationData.MaxPopulation;
             this.combatResolutionMode = combatResolutionMode;
+            this.attackOpportunityMode = attackOpportunityMode;
             Run.SetRulesetFingerprint(simulationData.Fingerprint);
         }
 
@@ -102,13 +107,15 @@ namespace SaltyGame
                     Run.Seed + Run.Tick,
                     maxPopulation,
                     metrics: Run.Metrics,
-                    combatResolutionMode: combatResolutionMode)
+                    combatResolutionMode: combatResolutionMode,
+                    attackOpportunityMode: attackOpportunityMode)
                 : SpeciesSimulation.Step(
                     Run.Cells,
                     simulationData,
                     Run.Seed + Run.Tick,
                     Run.Metrics,
-                    combatResolutionMode);
+                    combatResolutionMode,
+                    attackOpportunityMode);
             Run.Advance(next, stepSeconds);
             return true;
         }

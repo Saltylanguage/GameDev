@@ -342,6 +342,10 @@ namespace SaltyGame
         readonly List<SpeciesCombatRollEvent> combatRollEvents =
             new List<SpeciesCombatRollEvent>();
         int currentTick = -1;
+        int controlledOpportunityScheduled;
+        int controlledOpportunityEligible;
+        int controlledOpportunityUnfulfilledNoTarget;
+        int controlledOpportunityUnfulfilledInvalidated;
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -375,6 +379,10 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
         public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
+        public int ControlledOpportunityScheduled => controlledOpportunityScheduled;
+        public int ControlledOpportunityEligible => controlledOpportunityEligible;
+        public int ControlledOpportunityUnfulfilledNoTarget => controlledOpportunityUnfulfilledNoTarget;
+        public int ControlledOpportunityUnfulfilledInvalidated => controlledOpportunityUnfulfilledInvalidated;
 
         public bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior)
         {
@@ -393,6 +401,10 @@ namespace SaltyGame
             deathEvents.Clear();
             combatRollEvents.Clear();
             currentTick = -1;
+            controlledOpportunityScheduled = 0;
+            controlledOpportunityEligible = 0;
+            controlledOpportunityUnfulfilledNoTarget = 0;
+            controlledOpportunityUnfulfilledInvalidated = 0;
         }
 
         internal void BeginTick(int tick)
@@ -649,6 +661,26 @@ namespace SaltyGame
         internal void RecordCombatOpportunity(SpeciesId attackerSpecies)
         {
             Record(attackerSpecies, combatOpportunities: 1);
+        }
+
+        internal void RecordControlledOpportunityScheduled()
+        {
+            controlledOpportunityScheduled++;
+        }
+
+        internal void RecordControlledOpportunityEligible()
+        {
+            controlledOpportunityEligible++;
+        }
+
+        internal void RecordControlledOpportunityUnfulfilledNoTarget()
+        {
+            controlledOpportunityUnfulfilledNoTarget++;
+        }
+
+        internal void RecordControlledOpportunityUnfulfilledInvalidated()
+        {
+            controlledOpportunityUnfulfilledInvalidated++;
         }
 
         internal void RecordCombatAttempt(

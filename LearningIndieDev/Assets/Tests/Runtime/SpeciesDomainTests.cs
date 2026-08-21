@@ -633,6 +633,92 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void FixedRateDiagnosticOpportunityIsDeterministicAndUpgradeIndependent()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var baselineRules = CreateControlledOpportunityRules(right, left, blockAmount: 0);
+            var upgradeRules = CreateControlledOpportunityRules(right, left, blockAmount: 2);
+
+            var baselineMetrics = new SpeciesSimulationMetrics();
+            var baseline = SpeciesSimulation.Step(
+                source,
+                baselineRules,
+                seed: 10200,
+                metrics: baselineMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                attackOpportunityMode: SpeciesAttackOpportunityMode.FixedRateDiagnostic);
+            var upgradeMetrics = new SpeciesSimulationMetrics();
+            var upgrade = SpeciesSimulation.Step(
+                source,
+                upgradeRules,
+                seed: 10200,
+                metrics: upgradeMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                attackOpportunityMode: SpeciesAttackOpportunityMode.FixedRateDiagnostic);
+            var replayMetrics = new SpeciesSimulationMetrics();
+            var replay = SpeciesSimulation.Step(
+                source,
+                baselineRules,
+                seed: 10200,
+                metrics: replayMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                attackOpportunityMode: SpeciesAttackOpportunityMode.FixedRateDiagnostic);
+
+            Assert.That(baselineMetrics.ControlledOpportunityScheduled, Is.EqualTo(1));
+            Assert.That(upgradeMetrics.ControlledOpportunityScheduled, Is.EqualTo(1));
+            Assert.That(baselineMetrics.ControlledOpportunityEligible, Is.EqualTo(1));
+            Assert.That(upgradeMetrics.ControlledOpportunityEligible, Is.EqualTo(1));
+            Assert.That(baselineMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts, Is.EqualTo(1));
+            Assert.That(upgradeMetrics.GetActivity(SpeciesIds.Carnivore).CombatAttempts, Is.EqualTo(1));
+            Assert.That(replayMetrics.ControlledOpportunityScheduled, Is.EqualTo(baselineMetrics.ControlledOpportunityScheduled));
+            Assert.That(replay.GetCell(1, 0).Health, Is.EqualTo(baseline.GetCell(1, 0).Health));
+            Assert.That(upgrade.GetCell(1, 0).IsCreature, Is.True);
+        }
+
+        static Dictionary<SpeciesId, SpeciesRules> CreateControlledOpportunityRules(
+            GridPattern attackPattern,
+            GridPattern blockPattern,
+            int blockAmount)
+        {
+            return new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: attackPattern,
+                    attackAmount: 2,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: attackPattern,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 10,
+                    forageBelowEnergy: 0,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: blockPattern,
+                    blockAmount: blockAmount,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0),
+            };
+        }
+
+        [Test]
         public void BlockedPredationRecordsAFailedFoodActionWithoutFoodConsumed()
         {
             var source = new Grid<SpeciesCell>(2, 1);
