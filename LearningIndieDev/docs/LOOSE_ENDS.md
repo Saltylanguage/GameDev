@@ -40,9 +40,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/cellular-experiment-20260820-161029/report.json` (5 seeds). The
   paired 20-seed Hare delta was −5.30 average, while the held-out delta was
   +9.60; this sign reversal is descriptive evidence, not a promotion result.
-- **Next action:** Keep balance changes blocked, choose the next predeclared
-  upgrade/control arm, and investigate the faster-movement sign reversal
-  before expanding the roster.
+  The predeclared schema-8 `stronger-block-2` diagnostic is recorded at
+  `artifacts/cellular-experiment-20260820-222600/report.json` (20 seeds) and
+  its held-out check at `artifacts/cellular-experiment-20260820-222705/report.json`
+  (5 seeds). It changed Fox 2.40 → 1.85 and Hare 27.15 → 23.25 on the paired
+  range, but Fox 3.40 → 2.60 and Hare 20.80 → 26.40 on held-out seeds; the
+  direction reverses, so this is descriptive evidence and is not promoted.
+- **Next action:** Keep balance changes blocked, investigate the block-relevant
+  combat and sign reversal, and choose the next predeclared arm before
+  expanding the roster.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -74,7 +80,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   ticks from resolver food-action attempts, successes, and failures. Predation
   and plant feeding both record the action result; focused domain regressions
   cover successful and blocked predation plus plant feeding. Current-head
-  EditMode is 140/140 and graphics-capable PlayMode is 6/6 in
+  EditMode is 142/142 and graphics-capable PlayMode is 6/6 in
   `artifacts/unity-tests-20260820-160709/` and
   `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
   artifacts remain historical; new arm output is schema 8 with loadout

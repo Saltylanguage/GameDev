@@ -246,5 +246,6 @@ the following are true:
 2. The schema-7 Forest Edge control and held-out baseline are now recorded at
    `artifacts/cellular-experiment-20260820-123724/report.json` and
    `artifacts/cellular-experiment-20260820-154509/report.json`. The schema-8
-   `faster-movement` matched arm is complete, but its held-out sign reversal
-   prevents promotion; further upgrade/control evidence remains required.
+   `faster-movement` and `stronger-block-2` matched arms are complete, but both
+   held-out checks reverse direction and prevent promotion; further
+   upgrade/control evidence remains required.

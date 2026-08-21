@@ -279,6 +279,16 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void UpgradeCatalogProvidesStrongerBlockDiagnosticDefinition()
+        {
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerBlockTwoId);
+
+            Assert.That(upgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.StrongerBlockTwoId));
+            Assert.That(upgrade.Type, Is.EqualTo(SpeciesUpgradeType.BlockAmount));
+            Assert.That(upgrade.Value, Is.EqualTo(2f));
+        }
+
+        [Test]
         public void RunStateAdvancesUntilItsDuration()
         {
             var initialGrid = new Grid<SpeciesCell>(2, 2);
@@ -473,6 +483,59 @@ namespace SaltyGame.Tests
                 activity.FoodActionSuccesses + activity.FoodActionFailures));
             Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Attacking), Is.EqualTo(1));
             Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Eating), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void BlockAmountReducesPredationDamageUntilTheAttackIsNegated()
+        {
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            foreach (var blockAmount in new[] { 0, 1, 2 })
+            {
+                var source = new Grid<SpeciesCell>(2, 1);
+                source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+                source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+                var rules = new Dictionary<SpeciesId, SpeciesRules>
+                {
+                    [SpeciesIds.Carnivore] = new SpeciesRules(
+                        movementSpeed: 0f,
+                        movementPattern: EmptyPattern,
+                        attackPattern: right,
+                        attackAmount: 2,
+                        blockPattern: EmptyPattern,
+                        blockAmount: 0,
+                        dietPattern: right,
+                        dietTarget: SpeciesIds.Herbivore,
+                        reproductionPattern: EmptyPattern,
+                        reproductionNeighborCount: 0,
+                        reproductionChance: 0f,
+                        startingEnergy: 1,
+                        forageBelowEnergy: 5,
+                        metabolism: 0,
+                        awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                    [SpeciesIds.Herbivore] = new SpeciesRules(
+                        movementSpeed: 0f,
+                        movementPattern: EmptyPattern,
+                        attackPattern: EmptyPattern,
+                        attackAmount: 0,
+                        blockPattern: left,
+                        blockAmount: blockAmount,
+                        dietPattern: EmptyPattern,
+                        dietTarget: null,
+                        reproductionPattern: EmptyPattern,
+                        reproductionNeighborCount: 0,
+                        reproductionChance: 0f,
+                        metabolism: 0),
+                };
+
+                var metrics = new SpeciesSimulationMetrics();
+                var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+                var activity = metrics.GetActivity(SpeciesIds.Carnivore);
+
+                Assert.That(activity.DamageDealt, Is.EqualTo(blockAmount < 2 ? 1 : 0), $"blockAmount={blockAmount}");
+                Assert.That(activity.CombatKills, Is.EqualTo(blockAmount < 2 ? 1 : 0), $"blockAmount={blockAmount}");
+                Assert.That(next.GetCell(1, 0).IsCreature, Is.EqualTo(blockAmount >= 2), $"blockAmount={blockAmount}");
+            }
         }
 
         [Test]

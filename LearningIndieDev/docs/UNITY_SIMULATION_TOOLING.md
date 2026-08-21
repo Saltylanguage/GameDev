@@ -153,6 +153,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -SeedCount 20 `
     -PlayerSpeciesId hare `
     -UpgradeId faster-movement
+
+# Diagnostic protection arm; use the same seeds for control and trial.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -UpgradeId stronger-block-2
 ```
 
 Each invocation makes a timestamped directory below `artifacts/`:

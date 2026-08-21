@@ -99,6 +99,7 @@ namespace SaltyGame
         public const string FasterMovementId = "faster-movement";
         public const string StrongerAttackId = "stronger-attack";
         public const string StrongerBlockId = "stronger-block";
+        public const string StrongerBlockTwoId = "stronger-block-2";
 
         public static SpeciesUpgrade Create(string id)
         {
@@ -115,6 +116,8 @@ namespace SaltyGame
                     return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
                 case StrongerBlockId:
                     return new SpeciesUpgrade(StrongerBlockId, 5, SpeciesUpgradeType.BlockAmount, 1f);
+                case StrongerBlockTwoId:
+                    return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 default:
                     throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
             }
