@@ -84,6 +84,8 @@ promote Block+2 as a balance change from this diagnostic alone.
 
 ## Evidence index
 
+Tracked manifest: `docs/handoffs/2026-08-21-codex-paired-lockstep-opportunity-isolation-manifest.md`.
+
 Calibration:
 
 - `artifacts/cellular-experiment-20260821-024335/report.json`
