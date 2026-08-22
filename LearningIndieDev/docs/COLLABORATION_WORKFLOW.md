@@ -50,6 +50,14 @@ them unless that developer explicitly asks for them to be changed or discarded.
 
 ## Ending or handing off a work session
 
+### Push reminder
+
+From now on, whenever we add new work to the project, updating the related
+Trello board(s) is part of the push. After pushing, take a quick look at the
+matching card(s) and bring them up to date so the board and the project tell
+the same story. A push is not fully wrapped up until that Trello update is
+done.
+
 Before another developer takes over:
 
 1. Commit and push the work intended for sharing, or clearly identify anything
