@@ -2,7 +2,7 @@
 
 **Guideline ID:** SG-001  
 **Status:** Active  
-**Version:** 1.0  
+**Version:** 1.1<br>
 **Adopted:** 2026-08-15  
 **Scope:** AI-assisted workflows, automated tools, simulations, experiments, diagnostics, content generation, and feature-validation workflows.
 
@@ -25,6 +25,11 @@ These stages must remain distinct.
 ### 1. Experiment
 
 The experiment defines the question being investigated before execution begins.
+The experiment is human-owned: AI may help draft it or suggest telemetry, but
+a named human decision owner must approve and record the scope, hypothesis,
+success criteria, and expected report contract before runs begin. Material
+changes after execution require a revised or new experiment rather than a
+silent rewrite.
 
 It should record:
 
@@ -230,3 +235,4 @@ An automated workflow is not considered complete until a human can:
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-08-15 | Initial studio guideline adopted. |
+| 1.1 | 2026-08-22 | Clarified that experiment pre-specification is human-owned and must be approved before runs begin. |

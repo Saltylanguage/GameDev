@@ -1,6 +1,6 @@
 # Predictive AI: An Auditable Change-Impact Research Program
 
-**Draft status:** Research paper draft v0.4<br>
+**Draft status:** Research paper draft v0.5<br>
 **Date:** 2026-08-15  
 **Project:** LearningIndieDev  
 **Research area:** Predictive AI, deterministic simulation, evidence systems, and human-governed design decisions
@@ -156,10 +156,13 @@ Experiment -> Run -> Report -> Analysis -> Human Decision
 
 The experiment defines the question, hypothesis, independent variable,
 controls, seed/sample plan, success criteria, report template, and decision
-owner before execution where practical. A run is immutable provenance for one
-configuration and seed. A report records observed facts and anomalies. Analysis
-interprets those facts without overwriting them. A human decision determines
-what the evidence authorizes.
+owner before execution where practical. In this protocol, that
+pre-specification is human-owned: AI may draft or propose the experiment, but
+the named human decision owner must approve and record the contract before
+execution. A run is immutable provenance for one configuration and seed. A
+report records observed facts and anomalies. Analysis interprets those facts
+without overwriting them. A human decision determines what the evidence
+authorizes.
 
 This separation supports both scientific discipline and practical debugging.
 Failed automation, partial runs, crashes, and missing outputs are evidence about
@@ -208,8 +211,9 @@ Predictive AI uses progressively stronger causal labels:
 1. **Observed association:** variables move together in recorded reports.
 2. **Mechanistically consistent:** telemetry and timing fit a proposed mechanism,
    but alternatives remain.
-3. **Causal evidence supported within model scope:** a pre-specified, same-seed,
-   replicated intervention shows a measurable effect.
+3. **Causal evidence supported within model scope:** a human-approved
+   intervention recorded before execution is tested against a same-seed
+   baseline, replicated, and shown to produce a measurable effect.
 4. **Robust causal relationship within validated range:** the effect survives
    held-out seeds or scenarios and range coverage without a credible competing
    explanation in the instrumented model.

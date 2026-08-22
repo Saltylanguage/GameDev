@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.6<br>
+**Version:** 1.10<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -205,9 +205,17 @@ Experiment -> Run -> Report -> Analysis -> Human Decision
 
 These are different artifacts and responsibilities.
 
+In this protocol, **pre-specified means human-owned and recorded before
+execution**. AI may help draft an experiment, suggest variables, or identify
+possible telemetry gaps, but the named human decision owner must approve the
+question, scope, controls, success criteria, and expected report before runs
+begin. A material change after execution requires a revised experiment or a
+new experiment; it must not silently rewrite the original specification.
+
 ### 1. Experiment
 
-The experiment describes the question before execution. It must state:
+The human-approved experiment describes the question before execution. It must
+state:
 
 - Experiment ID.
 - Question and hypothesis.
@@ -436,7 +444,7 @@ The assistant may use stronger causal language only as the evidence earns it:
 |---|---|
 | Observed association | Variables move together in the recorded reports; no intervention claim. |
 | Mechanistically consistent | Telemetry and timing fit a proposed mechanism, but alternatives remain. |
-| Causal evidence supported within model scope | A pre-specified intervention, same-seed baseline, replicated runs, and a measurable effect support the proposed mechanism. |
+| Causal evidence supported within model scope | A human-approved intervention recorded before execution, compared against a same-seed baseline across replicated runs, produces a measurable effect supporting the proposed mechanism. |
 | Robust causal relationship within validated range | The intervention survives held-out seeds/scenarios and range coverage, with no credible competing explanation in the instrumented model. |
 | Unresolved | Evidence, telemetry, or range coverage cannot distinguish the alternatives. |
 
@@ -487,6 +495,11 @@ why and what confidence is lost.
 
 ## AI role and boundaries
 
+AI may draft or propose an experiment, but it does not pre-specify one. A
+human decision owner must approve and record the experiment contract before
+execution, including its question, scope, variables, controls, success
+criteria, and expected report fields.
+
 AI is encouraged to:
 
 - Translate a design question into a bounded experiment brief.
@@ -531,7 +544,7 @@ same seed, scenario asset, and ruleset fingerprint?
 
 **Method:** Run the existing baseline over a fixed seed range, repeat the same
 range, compare fingerprints, final grids, population histories, and outcome
-summaries, then replay at least one representative seed.
+summaries, then replay at least one representative .seed
 
 **Success:** Identical inputs produce identical machine-readable outcomes, and
 any intentional nondeterminism is documented rather than hidden.
@@ -877,3 +890,4 @@ rule.
 | 1.7 | 2026-08-15 | Added schema-5 per-death telemetry with proximate cause, entity/resource identity, tick, age, and position; documented the remaining root-cause attribution gap. |
 | 1.8 | 2026-08-15 | Integrated death telemetry into EX-002 and reclassified the schema-4 aggregate BaselineParity numbers as pre-telemetry evidence pending a same-seed schema-5 rerun. |
 | 1.9 | 2026-08-18 | Added schema-6 reproduction-funnel outcomes while retaining schema-5 death telemetry; advanced the pending instrumented EX-002 baseline to a same-seed schema-6 rerun. |
+| 1.10 | 2026-08-22 | Clarified that pre-specification is human-owned: AI may draft proposals, but a human decision owner must approve and record the experiment contract before execution. |
