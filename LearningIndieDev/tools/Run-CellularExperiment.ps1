@@ -49,8 +49,8 @@ function ConvertTo-UnityAssetPath {
 }
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
-Assert-UnityProjectNotOpen -ProjectPath $project
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
+$preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
 $assetPath = ConvertTo-UnityAssetPath -Path $ScenarioPath -ProjectRoot $project
 $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $project 'artifacts') -Prefix 'cellular-experiment'
 $reportPath = Join-Path $artifactDirectory 'report.json'
@@ -95,6 +95,7 @@ if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
 
 [pscustomobject]@{
     ArtifactDirectory = $artifactDirectory
+    Preflight = $preflight
     Report = $reportPath
     UnityLog = $logPath
 }

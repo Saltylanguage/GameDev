@@ -594,13 +594,13 @@ follow-up intervention, with the adapter's collapse rule, endpoint, validated
 range, and remaining instrument gaps recorded. A plausible narrative alone is
 insufficient, and no ecology-specific rule is promoted as universal.
 
-**Readiness note:** The EX-002 brief records the intervention-surface gap and
-integrates the schema-5 run-window, tracked-FSM, and per-death-cause telemetry;
-schema 6 retains those fields and adds a reconciled reproduction funnel. The
-existing aggregate BaselineParity result remains pre-telemetry evidence; a
-same-seed schema-6 rerun is still required. Unity batch startup failure observed
-during initial characterization blocks that rerun, so no causal run should be
-treated as started until the blocker is resolved.
+**Readiness note:** The EX-002 brief records the intervention surface and the
+schema-5/6 run-window, tracked-FSM, per-death-cause, and reproduction-funnel
+telemetry. The matched schema-6 control, intervention matrix, and held-out
+check are complete for the bounded BaselineParity window. The newer schema-7
+food-action counters are a separate current-code instrument change; do not
+silently merge them into the historical matrix. The original batch-startup
+failure is historical; only a fresh unlocked Unity rerun remains pending.
 
 ### EX-003 - AI recommendation validity
 
@@ -808,9 +808,10 @@ Every research bundle should preserve:
 - EX-001 is accepted as a current-code ForestEdge reproducibility baseline.
 - EX-001B has an accepted bounded reproducibility result for matching
   current-code pairs across ForestEdge, OpenRange, Wetland, and BaselineParity.
-- EX-002 (BaselineParity herbivore decline/extinction attribution) now has a
-  paired deterministic schema-6 control over seeds 10100–10119. Its matched
-  intervention matrix remains gated on an approved intervention surface.
+- EX-002 (BaselineParity herbivore decline/extinction attribution) has a
+  bounded deterministic schema-6 control, matched intervention matrix, and
+  held-out check over the declared seed ranges. Its interpretation remains
+  scoped to that protocol.
 - CIA-001 and EX-007 remain proposed research work, not validated predictive
   capability.
 
@@ -825,8 +826,8 @@ the current production lane:
 6. Record a human decision: pass, identify an instrument gap, or revise the
    experiment.
 7. Record and review the accepted EX-001B cross-scenario extension.
-8. Create EX-002 using BaselineParity as the herbivore reference and ForestEdge
-   as the instrument-trust baseline.
+8. Preserve the completed EX-002 package and its bounded interpretation; create
+   a new protocol before expanding the intervention surface or telemetry.
 
 This first package should avoid new simulation mechanics, generalized AI
 frameworks, dashboards, or autonomous code changes. It is a trust-building

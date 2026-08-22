@@ -14,8 +14,8 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 }
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
-Assert-UnityProjectNotOpen -ProjectPath $project
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
+$preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
 $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $project 'artifacts') -Prefix 'visual-evidence'
 $resultPath = Join-Path $artifactDirectory 'PlayMode-results.xml'
 $logPath = Join-Path $artifactDirectory 'PlayMode.log'
@@ -100,6 +100,7 @@ if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) {
 
 [pscustomobject]@{
     ArtifactDirectory = $artifactDirectory
+    Preflight = $preflight
     Results = $resultPath
     Screenshots = @(Get-ChildItem -LiteralPath $artifactDirectory -Filter '*.png' -File | Select-Object -ExpandProperty FullName)
 }

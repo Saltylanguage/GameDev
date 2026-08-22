@@ -309,12 +309,25 @@ $activityRows = [System.Collections.Generic.List[object[]]]::new()
 foreach ($speciesId in $species) {
     $births = 0d
     $foodConsumed = 0d
+    $foodActionAttempts = 0d
+    $foodActionSuccesses = 0d
+    $foodActionFailures = 0d
+    $foodActionsReconciled = $true
     $movementSteps = 0d
     $damageDealt = 0d
     $combatKills = 0d
     foreach ($run in @($report.runs)) {
         $births += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'births')
         $foodConsumed += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodConsumed')
+        $attempts = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodActionAttempts'
+        $successes = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodActionSuccesses'
+        $failures = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodActionFailures'
+        $foodActionAttempts += $attempts
+        $foodActionSuccesses += $successes
+        $foodActionFailures += $failures
+        if ($attempts -ne ($successes + $failures)) {
+            $foodActionsReconciled = $false
+        }
         $movementSteps += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'movementSteps')
         $damageDealt += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'damageDealt')
         $combatKills += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatKills')
@@ -324,16 +337,22 @@ foreach ($speciesId in $species) {
         $speciesId,
         (Get-Number ($births / [double]$report.seedCount)),
         (Get-Number ($foodConsumed / [double]$report.seedCount)),
+        (Get-Number ($foodActionAttempts / [double]$report.seedCount)),
+        (Get-Number ($foodActionSuccesses / [double]$report.seedCount)),
+        (Get-Number ($foodActionFailures / [double]$report.seedCount)),
+        $foodActionsReconciled,
         (Get-Number ($movementSteps / [double]$report.seedCount)),
         (Get-Number ($damageDealt / [double]$report.seedCount)),
         (Get-Number ($combatKills / [double]$report.seedCount))
     ))
 }
-Add-MarkdownTable -Lines $lines -Headers @('Species', 'Births', 'Food consumed', 'Movement steps', 'Damage dealt', 'Combat kills') -Rows $activityRows.ToArray()
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Births', 'Food consumed', 'Food attempts', 'Food successes', 'Food failures', 'Food actions reconciled', 'Movement steps', 'Damage dealt', 'Combat kills') -Rows $activityRows.ToArray()
 $lines.Add('')
 $lines.Add('Births include successful plant seed drops.')
 $lines.Add('')
 $lines.Add('Food consumed is the resource amount actually withdrawn; one consumed creature counts as one unit.')
+$lines.Add('')
+$lines.Add('Food attempts are eligible diet-target resolutions; successes must reconcile with failures as attempts = successes + failures.')
 $lines.Add('')
 $lines.Add('## Average reproduction funnel per run')
 $lines.Add('')

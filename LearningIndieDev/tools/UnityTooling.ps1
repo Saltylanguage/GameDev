@@ -50,6 +50,9 @@ function Resolve-UnityEditorPath {
         $candidates += Join-Path ${env:ProgramFiles(x86)} "Unity\Hub\Editor\$editorVersion\Editor\Unity.exe"
     }
 
+    # This machine keeps Unity editors on F: rather than under the Hub default.
+    $candidates += Join-Path 'F:\Editor' "$editorVersion-x86_64\Editor\Unity.exe"
+
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {
             return $candidate
@@ -66,8 +69,14 @@ function Assert-UnityProjectNotOpen {
     )
 
     $lockFile = Join-Path $ProjectPath 'Temp/UnityLockfile'
+    $unityProcesses = @(Get-Process -Name Unity -ErrorAction SilentlyContinue)
+    if ($unityProcesses.Count -gt 0) {
+        throw "Unity is already running (PID $($unityProcesses[0].Id)). Close the editor, save your work, and run this command again. This tooling never closes Unity for you."
+    }
+
     if (Test-Path -LiteralPath $lockFile -PathType Leaf) {
-        throw "Unity appears to be open for '$ProjectPath' (found Temp/UnityLockfile). Close the editor, save your work, and run this command again. This tooling never closes Unity for you."
+        Remove-Item -LiteralPath $lockFile -Force
+        Write-Verbose "Removed stale Unity lockfile '$lockFile'."
     }
 }
 
@@ -91,6 +100,9 @@ function Invoke-UnityBatch {
         [string]$UnityPath,
         [Parameter(Mandatory)]
         [string[]]$Arguments
+        ,
+        [ValidateRange(30, 3600)]
+        [int]$TimeoutSeconds = 900
     )
 
     $argumentLine = ($Arguments | ForEach-Object {
@@ -101,8 +113,75 @@ function Invoke-UnityBatch {
             $_
         }
     }) -join ' '
-    $process = Start-Process -FilePath $UnityPath -ArgumentList $argumentLine -Wait -PassThru
+    $process = Start-Process -FilePath $UnityPath -ArgumentList $argumentLine -PassThru
+    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+        throw "Unity batch command timed out after $TimeoutSeconds seconds (PID $($process.Id))."
+    }
+
     if ($process.ExitCode -ne 0) {
         throw "Unity batch command failed with exit code $($process.ExitCode). See the command's log file for details."
+    }
+}
+
+function Invoke-UnityPreflight {
+    param(
+        [Parameter(Mandatory)]
+        [string]$ProjectPath,
+        [Parameter(Mandatory)]
+        [string]$UnityPath,
+        [Parameter(Mandatory)]
+        [string]$ArtifactsRoot,
+        [ValidateRange(30, 360)]
+        [int]$TimeoutSeconds = 180
+    )
+
+    Assert-UnityProjectNotOpen -ProjectPath $ProjectPath
+
+    $licenseDirectory = Join-Path $env:LOCALAPPDATA 'Unity/licenses'
+    if (-not (Get-ChildItem -LiteralPath $licenseDirectory -Filter '*.xml' -File -ErrorAction SilentlyContinue)) {
+        throw "No local Unity entitlement file was found under '$licenseDirectory'. Open Unity Hub, sign in, and activate the editor before running validation."
+    }
+
+    $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot $ArtifactsRoot -Prefix 'unity-preflight'
+    $logPath = Join-Path $artifactDirectory 'license-probe.log'
+    try {
+        Invoke-UnityBatch -UnityPath $UnityPath -TimeoutSeconds $TimeoutSeconds -Arguments @(
+            '-batchmode',
+            '-nographics',
+            '-quit',
+            '-projectPath', $ProjectPath,
+            '-logFile', $logPath
+        )
+    }
+    catch {
+        throw "Unity preflight failed: $($_.Exception.Message) Log: '$logPath'."
+    }
+
+    if (-not (Test-Path -LiteralPath $logPath -PathType Leaf)) {
+        throw "Unity preflight completed without writing '$logPath'."
+    }
+
+    $lines = @(Get-Content -LiteralPath $logPath)
+    $lastReady = -1
+    $lastFailure = -1
+    for ($index = 0; $index -lt $lines.Count; $index++) {
+        if ($lines[$index] -match 'Licensing is initialized') {
+            $lastReady = $index
+        }
+
+        if ($lines[$index] -match 'LicenseClient-[^\"]+ refused|Licensing initialization failed') {
+            $lastFailure = $index
+        }
+    }
+
+    if ($lastReady -lt 0 -or $lastFailure -gt $lastReady) {
+        throw "Unity license preflight did not reach a stable licensing handshake. Log: '$logPath'."
+    }
+
+    return [pscustomobject]@{
+        ArtifactDirectory = $artifactDirectory
+        Log = $logPath
+        LicenseEntitlementFile = (Get-ChildItem -LiteralPath $licenseDirectory -Filter '*.xml' -File | Select-Object -First 1 -ExpandProperty FullName)
     }
 }

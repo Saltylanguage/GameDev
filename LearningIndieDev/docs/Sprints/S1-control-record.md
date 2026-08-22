@@ -49,16 +49,26 @@ automatically committed to new scope.
 - The four cards above are the complete Sprint 1 commitment and were promoted
   from `🎯 Upcoming Work` to `🛠️ In Progress` at the 2026-08-18 kickoff. Their
   owners, estimates, acceptance evidence, and Aug 30 due dates are unchanged.
-- `Sprint 1 - Separate the player UI from the Dev Lab scene` (Trello 30) is
+- `Sprint 1 - Separate the player UI from the Dev Lab scene` (Trello 4) is
   retained but moved to `🗂️ Backlog & Ideas`: it is explicitly deferred by
   `SPRINT_1_PLAN.md` and lacks the metadata required for sprint commitment.
 - The Sprint 0 C4 card is closed only after this record and the matching board
   control card are visible and the 20-hour total is verified.
 
-## Known blockers
+## Current gate
 
-- Unity Editor/headless licensing still prevents the Play Mode and Windows
-  smoke checks. This is tracked as an explicit integration/verification risk,
-  not hidden inside the reserve.
-- The Main Menu scene needs the bounded player-shell XAML/ViewModel repair
-  identified by C3 before Build Settings promotion.
+- Graphics-capable PlayMode evidence passes 6/6, while the generic nographics
+  failures are a known Noesis native-texture boundary. Current-head EditMode
+  passes 139/139.
+- Build Settings put `MainMenu.unity` first. The current-head Windows
+  development build succeeded and the player stayed alive for a 15-second
+  startup smoke; artifacts are under
+  `artifacts/audit-windows-build-current-20260820-101211/`.
+- The shared preflight now bounds the licensing handshake and preserves a probe
+  log. Keep the exact build/launch evidence on Trello card 53; do not reopen
+  the completed Main Menu repair because of the prior environment failure.
+- The current schema-7 Forest Edge control completed over seeds `10100`–`10119`
+  with player species `hare`, authored grid `32 x 32`, and 20-second runs.
+  Report: `artifacts/cellular-experiment-20260820-123724/report.json`;
+  analysis: `artifacts/cellular-experiment-20260820-123724/analysis.md`.
+  All 20 runs reconciled food-action attempts as successes plus failures.

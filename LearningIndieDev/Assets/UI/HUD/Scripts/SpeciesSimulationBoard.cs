@@ -31,6 +31,8 @@ namespace SaltyGame
         IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] terrainTiles;
+        SpeciesId playerSpecies;
+        Pen playerSpeciesOutline;
 
         public void SetSpriteVisuals(CroppedBitmap[] animals, CroppedBitmap[] terrain)
         {
@@ -53,6 +55,17 @@ namespace SaltyGame
         public void SetGrid(Grid<SpeciesCell> grid)
         {
             cells = grid;
+            InvalidateVisual();
+        }
+
+        public void SetPlayerSpecies(SpeciesId species)
+        {
+            if (playerSpecies == species)
+            {
+                return;
+            }
+
+            playerSpecies = species;
             InvalidateVisual();
         }
 
@@ -91,8 +104,24 @@ namespace SaltyGame
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
                     }
+
+                    if (cell.IsCreature && cell.SpeciesId == playerSpecies)
+                    {
+                        DrawPlayerSpeciesOutline(context, cellRect, cellSize);
+                    }
                 }
             }
+        }
+
+        void DrawPlayerSpeciesOutline(Noesis.DrawingContext context, NoesisRect cellRect, float cellSize)
+        {
+            if (playerSpeciesOutline == null)
+            {
+                playerSpeciesOutline = new Pen { Brush = Brushes.Gold };
+            }
+
+            playerSpeciesOutline.Thickness = Math.Max(1f, cellSize * 0.09f);
+            context.DrawRectangle(null, playerSpeciesOutline, cellRect);
         }
 
         void DrawTerrain(DrawingContext context, SpeciesCell cell, NoesisRect cellRect, int x, int y)

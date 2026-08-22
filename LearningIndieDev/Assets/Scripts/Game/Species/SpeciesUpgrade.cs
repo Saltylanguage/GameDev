@@ -87,7 +87,10 @@ namespace SaltyGame
                 rules.Metabolism,
                 awareness: rules.Awareness,
                 role: rules.Role,
-                forageBelowEnergy: rules.ForageBelowEnergy);
+                forageBelowEnergy: rules.ForageBelowEnergy,
+                maximumEnergy: rules.MaximumEnergy,
+                litterMinimum: rules.LitterMinimum,
+                litterMaximum: rules.LitterMaximum);
         }
     }
 }

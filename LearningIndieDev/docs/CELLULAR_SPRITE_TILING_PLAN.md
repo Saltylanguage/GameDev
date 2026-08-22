@@ -2,6 +2,30 @@
 
 ## Current implementation
 
+- `tools/Build-CellularSpriteSheets.ps1` converts the supplied reference sheets
+  into transparent, nearest-neighbor atlases at 128 pixels per tile.
+- Animal presentation is now scene-wired through a `SpriteAtlas` packed from
+  `Assets/Art/Species/Animals/Standardized/32/`; standardized exports also
+  exist under `Standardized/64/` and `Standardized/128/`. The board receives
+  the atlas and direct sprite inputs through `SpeciesSimulationNoesisHost`;
+  it no longer loads animal sheets from `Resources`.
+- `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` remains the 4x8 authored source
+  sheet: grass variants occupy rows 0-3 and desert variants rows 4-7. The sheet
+  is split into named per-tile exports under
+  `Assets/Art/Terrain/Standardized/` at source, 32, 64, and 128 pixels. The
+  runtime `Terrain_01` SpriteAtlas packs the 128-pixel folder and resolves tiles
+  by stable names rather than pack order. The current board uses the grass half
+  for grass and temporarily maps bare terrain to the desert half until a
+  dedicated bare-ground atlas is authored.
+- `TerrainTileResolver` computes a four-cardinal-neighbor bit mask from the
+  simulation grid. It is presentation-only: it reads the immutable cell state
+  and never changes simulation rules or determinism. The same mask table is
+  shared by the runtime board, tests, and the editor preview window.
+- The species preview no longer has a legacy IMGUI board or settings fallback;
+  the Noesis shell is now the single runtime presentation path.
+- `TerrainTilePreviewWindow` loads the current terrain sheet from
+  `Assets/Art/Terrain`, and animal atlas entries are resolved by stable sprite
+  names before optional Fox/Rabbit scene overrides are layered on top.
 - Animal presentation remains scene-wired through a `SpriteAtlas` and stable
   sprite names; the board does not load art from `Resources`.
 - Terrain art is now a named 15-piece dual-grid set under

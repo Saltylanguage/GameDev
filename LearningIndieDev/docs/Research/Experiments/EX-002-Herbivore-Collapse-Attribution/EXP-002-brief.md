@@ -6,7 +6,7 @@ cell type's collapse state, using herbivore decline in BaselineParity as the
 first concrete adapter?  
 **Stage:** Causal attribution  
 **Decision owner:** Human design owner  
-**Status:** Schema-6 BaselineParity control validated deterministically; full EX-002 execution remains open
+**Status:** Bounded schema-6 intervention matrix and held-out check complete; interpretation remains scoped to BaselineParity
 
 ## Collapse contract
 
@@ -76,8 +76,8 @@ The table above is therefore retained as **pre-telemetry baseline evidence**.
 Its starvation/crowding totals are valid aggregate observations from the schema-4
 report, but the report contains no per-event entity, location, or tick data and
 must not be backfilled. A schema-6 same-seed rerun was required to produce the
-instrumented EX-002 baseline. The paired control now exists; until the
-intervention matrix and held-out check succeed, the experiment result is:
+instrumented EX-002 baseline. The paired control and the committed intervention
+matrix now exist. The result is:
 
 - **Observed:** BaselineParity shows a candidate starvation-dominant proximate
   mortality pattern in aggregate data.
@@ -86,7 +86,11 @@ intervention matrix and held-out check succeed, the experiment result is:
   `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
   contain death events, and creature event counts reconcile with aggregate
   activity. These are control results, not a causal intervention conclusion.
-- **Causal conclusion:** Not supported.
+- **Causal conclusion:** Bounded support for the declared herbivore
+  starting-energy intervention increasing final herbivore population in the
+  tested BaselineParity window; the predation-relief arm is neutral. This does
+  not establish starvation as the sole root cause or generalize beyond the
+  tested scenario, duration, and seed ranges.
 
 ## CellSim run and report API
 

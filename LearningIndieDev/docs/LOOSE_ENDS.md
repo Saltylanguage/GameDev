@@ -7,10 +7,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-08-18
-- Report state: Sprint 1 shell and Fox instrumentation are now isolated in
-  focused commits; Main Menu smoke passed, while one existing preview defect,
-  art acceptance, and the EX-002 intervention matrix remain open
+- Last reviewed: 2026-08-20
+- Report state: the current-head S1 build/launch, telemetry validation, and
+  schema-7 Forest Edge baseline are reconciled. Remaining work is the held-out
+  upgrade/results gate and the Noesis analytics privacy decision.
 
 ## Triage rules
 
@@ -23,11 +23,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-001 — Forest Edge balance is outside the vertical-slice target
 
 - **Status:** Still open.
-- **Evidence:** `artifacts/playmode-last-run.md` and `.json`; the latest 32x32,
-  200-tick run ended at Fox 5, Hare 19, and Plant 902. The current Hare target
-  is approximately 26–33 final population, with Foxes remaining relevant but
-  viable. This is a single unpaired seed, so it is a tuning signal rather than
-  a balance conclusion.
+- **Evidence:** The current schema-7 20-seed baseline is recorded at
+  `artifacts/cellular-experiment-20260820-123724/report.json` (analysis:
+  `artifacts/cellular-experiment-20260820-123724/analysis.md`). Hare final
+  population is 12–46 (27.15 average), Fox is 0–4 (2.40 average; 2/20 extinct
+  final runs), and Plant is 736–931 (840 average). This establishes the
+  distribution without promoting a balance target.
 - **Next action:** Run fixed-seed comparisons that reduce Hare reproduction
   throughput and establish a meaningful regional Grass carrying limit before
   expanding the roster.
@@ -54,15 +55,20 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-### P1-003 — Eating state telemetry is undercounted for Foxes
+### P1-003 — Fox eating/action telemetry needs a current Forest Edge report
 
-- **Status:** New finding from the latest report review.
-- **Evidence:** Fox activity records 6 food events, while the aggregate table
-  still has no Fox Eating row; tracked transition history references
-  Hunting → Attacking → Eating → Wandering around attack resolution.
-- **Next action:** Distinguish FSM decision ticks from resolver-applied action
-  states, or record action states after attack/feeding resolution. Add a
-  regression assertion for the report fields.
+- **Status:** Resolved for the current baseline report; the preflight prevents
+  the prior licensing hang.
+- **Evidence:** `SpeciesSimulationMetrics` now distinguishes behavior-decision
+  ticks from resolver food-action attempts, successes, and failures. Predation
+  and plant feeding both record the action result; focused domain regressions
+  cover successful and blocked predation plus plant feeding. Current-head
+  EditMode is 139/139 and graphics-capable PlayMode is 6/6 in
+  `artifacts/unity-tests-20260820-101018/` and
+  `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
+  artifacts remain historical; new experiment output is schema 7.
+- **Next action:** Use the reconciled report as the baseline control, then run
+  the held-out and single-upgrade arms before changing balance values.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -80,72 +86,86 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-005 — Player-facing shell and Dev Lab split lack acceptance evidence
 
-- **Status:** Partially resolved; the bounded shell and route smoke are accepted,
-  while the Windows development-build gate and broader Dev Lab split remain
-  follow-up work.
+- **Status:** Windows development-build and launch smoke are now resolved for
+  the bounded shell; the broader Dev Lab split remains follow-up work.
 - **Evidence:** `a90bf5f` implements the Main Menu → Lab → Research shell;
   `d5ad141` adds the route smoke test. The Play Mode evidence passes at
   1280×720 (`artifacts/visual-evidence-20260818-210020/PlayMode-results.xml`)
   and 1920×1080
   (`artifacts/visual-evidence-20260818-210108/PlayMode-results.xml`).
-  `docs/SPRINT_1_PLAN.md` still requires the Windows development-build review
-  before the sprint exit gate is closed.
-- **Next action:** Keep the remaining Windows-build/final review acceptance on
-  the S1 verification card; do not reopen the completed shell implementation.
+  `artifacts/audit-windows-build-current-20260820-101211/` contains the fresh
+  successful build and 15-second player startup log; graphics PlayMode is 6/6.
+- **Next action:** Move the bounded build/launch evidence through the S1
+  verification card; keep broader Dev Lab separation out of this gate.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
-### P1-006 — Named dual-grid terrain preview awaits validation
+### P1-006 — Editor smart-tiling preview path fix
 
-- **Status:** Refactored; visual validation remains open.
-- **Evidence:** `TerrainTilePreviewWindow` now loads the named `Grass_` and
-  `Desert_` sprites from `Assets/Art/Terrain/Standardized/128/` and previews
-  all 16 four-corner masks. No runtime screenshot records acceptance yet.
-- **Next action:** Run the named dual-grid preview and cellular prototype,
-  record visual evidence, and include the refactor in a focused reviewed commit.
+- **Status:** Resolved and evidenced.
+- **Evidence:** Commit `771ca50` is pushed. The 16-mask preview artifacts are
+  `artifacts/editor-smart-tiling-20260820-023512/grass-16-masks.png` and
+  `desert-16-masks.png`, with `mapping.txt` documenting the mask mapping.
+- **Next action:** Keep the artifact paths attached to the completed Trello 67
+  record; do not reopen this finding without a new visual regression.
 - **Likely owner:** Presentation/art owner.
 - **Confidence:** High.
 
-### P1-007 — Species sprite fallback fix awaits validation
+### P1-007 — Species sprite fallback fix
 
-- **Status:** Committed; runtime validation found a separate atlas defect.
-- **Evidence:** Commit `6bdf6af` builds the complete named animal set from the
-  atlas and then applies direct Fox/Rabbit overrides. The full Play Mode run
-  `artifacts/unity-tests-20260818-210144/PlayMode-results.xml` is 4/5 because
-  the existing cellular preview throws a Noesis texture-source exception at
-  `SpeciesSimulationViewModel.CreateAnimalAtlasSprites`.
-- **Next action:** Repair or guard the atlas texture-source creation, then add
-  focused presentation coverage for every authored species.
+- **Status:** Resolved for the graphics-capable runtime path.
+- **Evidence:** Commit `024ea86` is pushed. The authoritative graphics-capable
+  PlayMode artifact `artifacts/visual-evidence-20260820-025530/PlayMode-results.xml`
+  passes 6/6, including the species-presentation coverage. The generic
+  nographics run remains 4/6 only because Noesis cannot create native textures
+  without a graphics device.
+- **Next action:** Preserve the explicit nographics limitation; do not treat it
+  as a product regression.
 - **Likely owner:** Presentation owner.
 - **Confidence:** High.
 
-### P1-008 — Art/presentation commit lacks post-commit runtime acceptance
+### P1-008 — Art/presentation runtime acceptance
 
-- **Status:** New finding; implementation is committed and pushed, acceptance
-  is still open.
-- **Evidence:** Commit `4f04f4b2` standardized the art/SpriteAtlas pipeline and
-  scene wiring. No Unity screenshots or gameplay-scale visual checks exist
-  after that commit; the relay health check only reports `OK` with zero relay
-  processes when Unity is not active.
-- **Next action:** Open the preview and `CellularAutomataPrototype` in Unity,
-  capture gameplay-scale screenshots, and verify atlas loading, terrain seams,
-  and species icon scale.
-- **Likely owner:** Josh + Sim.
+- **Status:** Resolved for the bounded runtime-art acceptance; product UX polish
+  remains a separate open concern.
+- **Evidence:** The pushed art/presentation commits are covered by the graphics
+  PlayMode 6/6 artifact above and screenshots `01-settings.png` through
+  `04-results.png` in `artifacts/visual-evidence-20260820-025530/`.
+- **Next action:** Track label overlap and generic reward/results presentation
+  under the upgrade/results work; do not reopen this completed art finding.
+
+### P1-012 — Embedded Noesis editor analytics requires a release decision
+
+- **Status:** Open security/privacy decision; not a player-build code path.
+- **Evidence:** The embedded vendor package's Editor-only assembly calls
+  `GoogleAnalyticsHelper.Install` from `NoesisUpdater` when the package version
+  changes. The helper sends a `unity_install` event to Google Analytics and
+  contains a committed credential. The Editor asmdef includes only `Editor`, so
+  the code is not compiled into the Windows player; the Editor can still make
+  the network request during package installation/update.
+- **Next action:** Obtain vendor/project approval to disable or update the
+  telemetry through a supported package mechanism, then rotate the credential
+  if it is genuine. Do not patch the embedded vendor package casually or copy
+  the value into project documentation.
+- **Likely owner:** Repository maintainer + vendor/license owner.
 - **Confidence:** High.
 
-### P1-009 — EX-002 control complete; intervention matrix remains open
+### P1-009 — EX-002 intervention matrix and held-out check
 
-- **Status:** Control complete; intervention matrix and held-out check remain
-  open.
+- **Status:** Resolved for the bounded BaselineParity experiment window.
 - **Evidence:** Paired schema-6 BaselineParity controls over seeds 10100–10119
   are deterministic:
   `artifacts/cellular-experiment-20260818-210354/report.json` and
   `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
   contain death events; creature death-event counts reconcile with aggregate
-  activity. Final herbivore population is min 0, max 37, average 10.25, with
-  one extinct run. No intervention values were changed.
-- **Next action:** Predeclare the collapse endpoint and approved intervention
-  surface; run the matched-seed intervention matrix and held-out check.
+  activity. The committed matrix and held-out evidence are recorded in
+  `docs/handoffs/2026-08-20-0255-codex-ex002-intervention-matrix.md` with
+  distinct fingerprints for both intervention arms. The energy-relief arm
+  improves the declared endpoint in both ranges; the predation-relief arm is
+  neutral because combat kills are zero and carnivores go extinct.
+- **Next action:** Preserve the causal boundary: do not generalize beyond
+  BaselineParity, the tested 20-second window, and the declared seed ranges
+  without new instrumentation and a new protocol.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -281,5 +301,6 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** Commit `4f04f4b2` is present on
   `codex/cellular-sprite-tiling` and the branch is synchronized with origin.
 - **Result:** Standardized art exports, SpriteAtlas assets, scene wiring, and
-  relay-health tooling are shared. Runtime visual acceptance remains open as
-  P1-008.
+  relay-health tooling are shared. Graphics-capable runtime-art acceptance is
+  resolved; remaining label/reward readability work belongs to the upgrade/UI
+  lane.

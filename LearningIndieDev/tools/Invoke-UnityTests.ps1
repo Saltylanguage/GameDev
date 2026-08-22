@@ -13,8 +13,8 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 }
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
-Assert-UnityProjectNotOpen -ProjectPath $project
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
+$preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
 $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $project 'artifacts') -Prefix 'unity-tests'
 $platforms = if ($Mode -eq 'All') { @('EditMode', 'PlayMode') } else { @($Mode) }
 $results = foreach ($platform in $platforms) {
@@ -39,5 +39,6 @@ $results = foreach ($platform in $platforms) {
 
 [pscustomobject]@{
     ArtifactDirectory = $artifactDirectory
+    Preflight = $preflight
     Results = $results
 }
