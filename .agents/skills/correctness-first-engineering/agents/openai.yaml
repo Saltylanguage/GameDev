@@ -1,0 +1,4 @@
+interface:
+  display_name: "Skill: Correctness-First Engineering"
+  short_description: "Prevent confident guesses and repeated bad fixes"
+  default_prompt: "Use $correctness-first-engineering to re-check this technical problem before proceeding."

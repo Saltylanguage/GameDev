@@ -5,6 +5,14 @@ repeatable project workflows. Skills should stay thin, reuse existing scripts
 and documentation, and be created only when the workflow is stable enough to
 test with representative prompts.
 
+## Active project skills
+
+| Skill | Scope and trigger |
+|---|---|
+| **Skill: Correctness-First Engineering** | Safety harness for conflicting evidence, meaningful uncertainty, failed attempts, challenged claims, regression risk, and correctness reviews. It interrupts speculation and repeated fixes without loading for routine low-risk edits. |
+| **LooseEnds** | Evidence-backed review of unassigned work, informal plans, orphaned artifacts, forgotten decisions, and unresolved project uncertainty. |
+| **Sprint Kickoff** | Trello sprint audit, rollover, and explicit carry-over workflow. |
+
 ## Planned skills
 
 | Skill | Status | Scope and trigger | Build gate |
@@ -17,8 +25,9 @@ test with representative prompts.
 
 ## Boundaries
 
-- Keep broad product direction and engineering rules in `AGENTS.md` and the
-  project documentation, not in one large skill.
+- Keep broad product direction and detailed engineering rules in `AGENTS.md`
+  and project documentation. A safety skill may address a focused reasoning
+  failure mode, but it must not replace project or domain guidance.
 - Prefer existing `CellSim`, handoff, and authoring scripts over new wrappers.
 - Skills may draft reports or plans, but must not silently change canonical
   design documents, scenario assets, or generated evidence.
