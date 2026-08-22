@@ -94,25 +94,23 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void EditorSmartTilingPreviewLoadsTheAuthoredTerrainSheet()
+        public void EditorSmartTilingPreviewLoadsEveryNamedTerrainTile()
         {
-            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(
-                "Assets/Art/Terrain/Terrain_01_SpriteSheet.png");
-
-            Assert.That(atlas, Is.Not.Null);
-            Assert.That(atlas.width % 4, Is.EqualTo(0));
-            Assert.That(atlas.height % 8, Is.EqualTo(0));
-            Assert.That(atlas.width / 4, Is.EqualTo(128));
-            Assert.That(atlas.height / 8, Is.EqualTo(128));
-
-            for (var mask = 0; mask < TerrainTileResolver.VariantCount; mask++)
+            var terrainIds = new[] { TerrainIds.Grass, TerrainIds.Desert };
+            foreach (var terrainId in terrainIds)
             {
-                Assert.That(TerrainTileResolver.ResolveGrassAtlasIndex(mask), Is.InRange(0, 15));
+                for (var variantIndex = 0; variantIndex < TerrainTileResolver.TerrainVariantCount; variantIndex++)
+                {
+                    var spriteName = TerrainTileResolver.GetTerrainSpriteName(terrainId, variantIndex);
+                    var path = $"Assets/Art/Terrain/Standardized/128/{spriteName}.png";
+                    var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+
+                    Assert.That(texture, Is.Not.Null, path);
+                }
             }
         }
 
-        static Grid<SpeciesCell> CreateCells(int neighborMask)
-        
+        [Test]
         public void InvalidCornerMaskIsRejected()
         {
             Assert.Throws<System.ArgumentOutOfRangeException>(
