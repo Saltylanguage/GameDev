@@ -101,6 +101,43 @@ function Get-ActivityValue {
     return [double]$propertyValue.Value
 }
 
+function Get-OpportunityControlValue {
+    param(
+        [object]$Run,
+        [string]$Property
+    )
+
+    $control = $Run.opportunityControl
+    if ($null -eq $control) {
+        return 0d
+    }
+
+    $propertyValue = $control.PSObject.Properties[$Property]
+    if ($null -eq $propertyValue -or $null -eq $propertyValue.Value) {
+        return 0d
+    }
+
+    return [double]$propertyValue.Value
+}
+
+function Get-OpposedHitProbability {
+    param(
+        [int]$AttackModifier,
+        [int]$BlockModifier
+    )
+
+    $winningRolls = 0
+    for ($attackRoll = 1; $attackRoll -le 20; $attackRoll++) {
+        for ($blockRoll = 1; $blockRoll -le 20; $blockRoll++) {
+            if (($attackRoll + $AttackModifier) -gt ($blockRoll + $BlockModifier)) {
+                $winningRolls++
+            }
+        }
+    }
+
+    return $winningRolls / 400d
+}
+
 function Get-Number {
     param([double]$Value)
 
@@ -257,7 +294,133 @@ $lines.Add(('- Scenario asset: `{0}`' -f $report.scenarioAssetPath))
 $lines.Add("- Seeds: $($report.seedStart) through $($report.seedStart + $report.seedCount - 1) ($($report.seedCount) runs)")
 $lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
 $lines.Add(('- Player species: `{0}`' -f $report.playerSpeciesId))
+$lines.Add(('- Attack opportunity mode: `{0}`' -f $report.attackOpportunityMode))
 $lines.Add('')
+
+$scheduledOpportunities = 0d
+$eligibleOpportunities = 0d
+$unfulfilledNoTarget = 0d
+$unfulfilledInvalidated = 0d
+$baselineValidOpportunities = 0d
+$blockPlusTwoValidOpportunities = 0d
+$commonValidOpportunities = 0d
+$baselineOnlyOpportunities = 0d
+$blockPlusTwoOnlyOpportunities = 0d
+$pairedAttempts = 0d
+$pairedMismatches = 0d
+$baselineCandidateContacts = 0d
+$blockPlusTwoCandidateContacts = 0d
+$commonCandidateContacts = 0d
+$unionCandidateContacts = 0d
+foreach ($run in @($report.runs)) {
+    $scheduledOpportunities += Get-OpportunityControlValue -Run $run -Property 'scheduled'
+    $eligibleOpportunities += Get-OpportunityControlValue -Run $run -Property 'eligible'
+    $unfulfilledNoTarget += Get-OpportunityControlValue -Run $run -Property 'unfulfilledNoTarget'
+    $unfulfilledInvalidated += Get-OpportunityControlValue -Run $run -Property 'unfulfilledInvalidated'
+    $baselineValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'baselineValid'
+    $blockPlusTwoValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoValid'
+    $commonValidOpportunities += Get-OpportunityControlValue -Run $run -Property 'commonValid'
+    $baselineOnlyOpportunities += Get-OpportunityControlValue -Run $run -Property 'baselineOnly'
+    $blockPlusTwoOnlyOpportunities += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoOnly'
+    $pairedAttempts += Get-OpportunityControlValue -Run $run -Property 'pairedAttempts'
+    $pairedMismatches += Get-OpportunityControlValue -Run $run -Property 'pairedMismatches'
+    $baselineCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'baselineCandidateCount'
+    $blockPlusTwoCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'blockPlusTwoCandidateCount'
+    $commonCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'commonCandidateCount'
+    $unionCandidateContacts += Get-OpportunityControlValue -Run $run -Property 'unionCandidateCount'
+}
+if ($scheduledOpportunities -gt 0) {
+    $lines.Add('## Controlled opportunity exposure')
+    $lines.Add('')
+    if ($report.attackOpportunityMode -eq 'PairedLockstepDiagnostic') {
+        $pairRows = [System.Collections.Generic.List[object[]]]::new()
+        $pairRows.Add(@(
+            $baselineValidOpportunities,
+            $blockPlusTwoValidOpportunities,
+            $commonValidOpportunities,
+            $baselineOnlyOpportunities,
+            $blockPlusTwoOnlyOpportunities,
+            $pairedAttempts,
+            $pairedMismatches,
+            (($commonValidOpportunities -eq $pairedAttempts) -and ($pairedMismatches -eq 0))
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Baseline valid', 'Block+2 valid', 'Common valid', 'Baseline-only', 'Block+2-only', 'Paired attempts', 'Mismatches', 'Reconciled') -Rows $pairRows.ToArray()
+        $commonCandidateFraction = if ($unionCandidateContacts -eq 0) { 0d } else { $commonCandidateContacts / $unionCandidateContacts }
+        $candidateRows = [System.Collections.Generic.List[object[]]]::new()
+        $candidateRows.Add(@(
+            $baselineCandidateContacts,
+            $blockPlusTwoCandidateContacts,
+            $commonCandidateContacts,
+            $unionCandidateContacts,
+            $commonCandidateFraction
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Baseline candidate contacts', 'Block+2 candidate contacts', 'Common candidate contacts', 'Union candidate contacts', 'Common / union') -Rows $candidateRows.ToArray()
+        $lines.Add('Paired lockstep uses coordinate/species/contact identities and executes one shared common contact slot in both worlds. Candidate-contact counts quantify the intersection censoring separately from the exact paired-attempt gate.')
+    }
+    else {
+        $controlRows = [System.Collections.Generic.List[object[]]]::new()
+        $controlRows.Add(@(
+            $scheduledOpportunities,
+            $eligibleOpportunities,
+            $unfulfilledNoTarget,
+            $unfulfilledInvalidated,
+            (($scheduledOpportunities - $eligibleOpportunities) -eq ($unfulfilledNoTarget + $unfulfilledInvalidated))
+        ))
+        Add-MarkdownTable -Lines $lines -Headers @('Scheduled', 'Eligible', 'Unfulfilled: no target', 'Unfulfilled: invalidated', 'Reconciled') -Rows $controlRows.ToArray()
+        $lines.Add('')
+        $lines.Add('Scheduled slots are deterministic fixed-rate diagnostic exposure; eligible slots had a live Fox-to-diet-target candidate in the current arm. Unfulfilled slots are never silently counted as attack attempts.')
+    }
+    $lines.Add('')
+}
+if ($report.experimentalFeatures -eq 'bev-experimental') {
+    $statRuns = @($report.runs | Where-Object {
+        $statProperty = $_.PSObject.Properties['herbivoreStatLine']
+        $null -ne $statProperty -and $null -ne $statProperty.Value
+    } | Sort-Object seed)
+    if ($statRuns.Count -gt 0) {
+        $lines.Add('## Experimental herbivore stat line')
+        $lines.Add('')
+        $statHeaders = @('Seed', 'Species', 'SPO', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'sAVI', 'cAVI', 'bAVG')
+        $statRows = [System.Collections.Generic.List[object[]]]::new()
+        foreach ($run in $statRuns) {
+            $stat = $run.herbivoreStatLine
+            $crowdingProperty = $stat.PSObject.Properties['CRWD']
+            $crowding = if ($null -eq $crowdingProperty -or $null -eq $crowdingProperty.Value) {
+                0
+            } else {
+                $crowdingProperty.Value
+            }
+            $crowdingAverageProperty = $stat.PSObject.Properties['cAVI']
+            $crowdingAverage = if ($null -eq $crowdingAverageProperty -or $null -eq $crowdingAverageProperty.Value) {
+                'N/A'
+            } else {
+                Get-Number $crowdingAverageProperty.Value
+            }
+            $statRows.Add(@(
+                $run.seed,
+                $stat.speciesId,
+                $stat.SPO,
+                $stat.ECN,
+                $stat.PREY,
+                $stat.STRV,
+                $stat.MAT,
+                $stat.BIR,
+                $crowding,
+                $stat.FPO,
+                $stat.expectedFPO,
+                $stat.fpoReconciled,
+                (Get-Number $stat.pAVI),
+                (Get-Number $stat.sAVI),
+                $crowdingAverage,
+                (Get-Number $stat.bAVG)
+            ))
+        }
+        Add-MarkdownTable -Lines $lines -Headers $statHeaders -Rows $statRows.ToArray()
+        $lines.Add('')
+        $lines.Add('This opt-in stat line is emitted only for a herbivore player species. ECN and MAT must be nonzero. FPO is checked against SPO + BIR - PREY - STRV - CRWD; a false reconciliation flag identifies additional death causes or missing population events.')
+        $lines.Add('')
+    }
+}
 $lines.Add('## Final population summary')
 $lines.Add('')
 $summaryRows = [System.Collections.Generic.List[object[]]]::new()
@@ -316,6 +479,13 @@ foreach ($speciesId in $species) {
     $movementSteps = 0d
     $damageDealt = 0d
     $combatKills = 0d
+    $combatOpportunities = 0d
+    $combatAttempts = 0d
+    $combatHits = 0d
+    $combatBlocked = 0d
+    $combatDamageApplications = 0d
+    $combatNonLethalHits = 0d
+    $combatLethalHits = 0d
     foreach ($run in @($report.runs)) {
         $births += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'births')
         $foodConsumed += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'foodConsumed')
@@ -331,6 +501,13 @@ foreach ($speciesId in $species) {
         $movementSteps += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'movementSteps')
         $damageDealt += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'damageDealt')
         $combatKills += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatKills')
+        $combatOpportunities += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatOpportunities')
+        $combatAttempts += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatAttempts')
+        $combatHits += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatHits')
+        $combatBlocked += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatBlocked')
+        $combatDamageApplications += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatDamageApplications')
+        $combatNonLethalHits += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatNonLethalHits')
+        $combatLethalHits += (Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'combatLethalHits')
     }
 
     $activityRows.Add(@(
@@ -343,16 +520,74 @@ foreach ($speciesId in $species) {
         $foodActionsReconciled,
         (Get-Number ($movementSteps / [double]$report.seedCount)),
         (Get-Number ($damageDealt / [double]$report.seedCount)),
-        (Get-Number ($combatKills / [double]$report.seedCount))
+        (Get-Number ($combatKills / [double]$report.seedCount)),
+        (Get-Number ($combatOpportunities / [double]$report.seedCount)),
+        (Get-Number ($combatAttempts / [double]$report.seedCount)),
+        (Get-Number ($combatHits / [double]$report.seedCount)),
+        (Get-Number ($combatBlocked / [double]$report.seedCount)),
+        (Get-Number ($combatDamageApplications / [double]$report.seedCount)),
+        (Get-Number ($combatNonLethalHits / [double]$report.seedCount)),
+        (Get-Number ($combatLethalHits / [double]$report.seedCount)),
+        (($combatHits + $combatBlocked) -eq $combatAttempts)
     ))
 }
-Add-MarkdownTable -Lines $lines -Headers @('Species', 'Births', 'Food consumed', 'Food attempts', 'Food successes', 'Food failures', 'Food actions reconciled', 'Movement steps', 'Damage dealt', 'Combat kills') -Rows $activityRows.ToArray()
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Births', 'Food consumed', 'Food attempts', 'Food successes', 'Food failures', 'Food actions reconciled', 'Movement steps', 'Damage dealt', 'Combat kills', 'Combat opportunities', 'Combat attempts', 'Combat hits', 'Combat blocked', 'Combat damage applications', 'Combat non-lethal hits', 'Combat lethal hits', 'Combat reconciled') -Rows $activityRows.ToArray()
 $lines.Add('')
 $lines.Add('Births include successful plant seed drops.')
 $lines.Add('')
 $lines.Add('Food consumed is the resource amount actually withdrawn; one consumed creature counts as one unit.')
 $lines.Add('')
 $lines.Add('Food attempts are eligible diet-target resolutions; successes must reconcile with failures as attempts = successes + failures.')
+$lines.Add('')
+$lines.Add('Combat opportunities are creature diet-targets found in the attack pattern; combat attempts are targets still present when the attack resolves. Hits and blocked rolls reconcile against attempts for opposed-roll diagnostics.')
+$lines.Add('')
+$lines.Add('## Experimental combat diagnostics')
+$lines.Add('')
+$diagnosticRows = [System.Collections.Generic.List[object[]]]::new()
+foreach ($speciesId in $species) {
+    $rollCount = 0d
+    $hitCount = 0d
+    $expectedProbabilityTotal = 0d
+    $suppressionCount = 0d
+    foreach ($run in @($report.runs)) {
+        foreach ($roll in @($run.combatRolls | Where-Object { $_.attackerSpeciesId -eq $speciesId })) {
+            if ($null -eq $roll) {
+                continue
+            }
+
+            $rollCount++
+            if ($roll.hit) {
+                $hitCount++
+            }
+
+            $probabilityProperty = $roll.PSObject.Properties['expectedHitProbability']
+            if ($null -ne $probabilityProperty) {
+                $expectedProbabilityTotal += [double]$probabilityProperty.Value
+            }
+            else {
+                $expectedProbabilityTotal += Get-OpposedHitProbability -AttackModifier $roll.attackModifier -BlockModifier $roll.blockModifier
+            }
+        }
+
+        $suppressionEventsProperty = $run.PSObject.Properties['combatCooldownSuppressions']
+        if ($null -ne $suppressionEventsProperty) {
+            $suppressionCount += @($suppressionEventsProperty.Value | Where-Object { $_.attackerSpeciesId -eq $speciesId }).Count
+        }
+    }
+
+    $actualHitRate = if ($rollCount -eq 0) { 0d } else { $hitCount / $rollCount }
+    $expectedHitRate = if ($rollCount -eq 0) { 0d } else { $expectedProbabilityTotal / $rollCount }
+    $diagnosticRows.Add(@(
+        $speciesId,
+        (Get-Number ($rollCount / [double]$report.seedCount)),
+        ((Get-Number ($actualHitRate * 100)) + '%'),
+        ((Get-Number ($expectedHitRate * 100)) + '%'),
+        (Get-Number ($suppressionCount / [double]$report.seedCount))
+    ))
+}
+Add-MarkdownTable -Lines $lines -Headers @('Attacker', 'Rolls/run', 'Actual hit rate', 'Expected hit rate', 'Cooldown suppressions/run') -Rows $diagnosticRows.ToArray()
+$lines.Add('')
+$lines.Add('Expected hit rate is the exact d20 probability implied by the recorded attack and block modifiers, with defender wins on ties. Cooldown suppressions are eligible experimental attacks skipped because the attacker still had cooldown ticks remaining. Legacy runs should produce no roll or suppression records.')
 $lines.Add('')
 $lines.Add('## Average reproduction funnel per run')
 $lines.Add('')

@@ -6,6 +6,8 @@ namespace SaltyGame
     {
         MovementSpeed,
         AttackAmount,
+        AttackModifier,
+        DamageAmount,
         BlockAmount,
     }
 
@@ -48,6 +50,8 @@ namespace SaltyGame
 
             var movementSpeed = rules.MovementSpeed;
             var attackAmount = rules.AttackAmount;
+            var attackModifier = rules.AttackModifier;
+            var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
             switch (Type)
             {
@@ -56,6 +60,14 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.AttackAmount:
                     attackAmount += (int)Value;
+                    attackModifier += (int)Value;
+                    damageAmount += (int)Value;
+                    break;
+                case SpeciesUpgradeType.AttackModifier:
+                    attackModifier += (int)Value;
+                    break;
+                case SpeciesUpgradeType.DamageAmount:
+                    damageAmount += (int)Value;
                     break;
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
@@ -90,7 +102,54 @@ namespace SaltyGame
                 forageBelowEnergy: rules.ForageBelowEnergy,
                 maximumEnergy: rules.MaximumEnergy,
                 litterMinimum: rules.LitterMinimum,
-                litterMaximum: rules.LitterMaximum);
+                litterMaximum: rules.LitterMaximum,
+                attackModifier: attackModifier,
+                damageAmount: damageAmount);
+        }
+    }
+
+    public static class SpeciesUpgradeCatalog
+    {
+        public const string FasterMovementId = "faster-movement";
+        public const string StrongerAttackId = "stronger-attack";
+        public const string StrongerAttackModifierId = "stronger-attack-modifier";
+        public const string StrongerDamageId = "stronger-damage";
+        public const string StrongerBlockId = "stronger-block";
+        public const string StrongerBlockTwoId = "stronger-block-2";
+
+        public static SpeciesUpgrade Create(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentException("Upgrade id cannot be empty.", nameof(id));
+            }
+
+            switch (id)
+            {
+                case FasterMovementId:
+                    return new SpeciesUpgrade(FasterMovementId, 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
+                case StrongerAttackId:
+                    return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
+                case StrongerAttackModifierId:
+                    return new SpeciesUpgrade(StrongerAttackModifierId, 5, SpeciesUpgradeType.AttackModifier, 1f);
+                case StrongerDamageId:
+                    return new SpeciesUpgrade(StrongerDamageId, 5, SpeciesUpgradeType.DamageAmount, 1f);
+                case StrongerBlockId:
+                    return new SpeciesUpgrade(StrongerBlockId, 5, SpeciesUpgradeType.BlockAmount, 1f);
+                case StrongerBlockTwoId:
+                    return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
+                default:
+                    const string blockSweepPrefix = "stronger-block-";
+                    if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
+                        && int.TryParse(id.Substring(blockSweepPrefix.Length), out var blockBonus)
+                        && blockBonus >= 3
+                        && blockBonus <= 10)
+                    {
+                        return new SpeciesUpgrade(id, 5, SpeciesUpgradeType.BlockAmount, blockBonus);
+                    }
+
+                    throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
+            }
         }
     }
 }

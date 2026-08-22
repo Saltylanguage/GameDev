@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace SaltyGame
@@ -118,6 +119,68 @@ namespace SaltyGame
         public bool IsCreature { get; }
     }
 
+    public readonly struct SpeciesCombatRollEvent
+    {
+        internal SpeciesCombatRollEvent(
+            SpeciesId attackerSpecies,
+            SpeciesId targetSpecies,
+            int tick,
+            int attackRoll,
+            int attackModifier,
+            int blockRoll,
+            int blockModifier,
+            bool hit)
+        {
+            AttackerSpecies = attackerSpecies;
+            TargetSpecies = targetSpecies;
+            Tick = tick;
+            AttackRoll = attackRoll;
+            AttackModifier = attackModifier;
+            BlockRoll = blockRoll;
+            BlockModifier = blockModifier;
+            Hit = hit;
+        }
+
+        public SpeciesId AttackerSpecies { get; }
+        public SpeciesId TargetSpecies { get; }
+        public int Tick { get; }
+        public int AttackRoll { get; }
+        public int AttackModifier { get; }
+        public int BlockRoll { get; }
+        public int BlockModifier { get; }
+        public bool Hit { get; }
+        public int AttackTotal => AttackRoll + AttackModifier;
+        public int BlockTotal => BlockRoll + BlockModifier;
+        public float ExpectedHitProbability =>
+            SpeciesSimulation.GetOpposedRollHitProbability(AttackModifier, BlockModifier);
+    }
+
+    public readonly struct SpeciesCombatCooldownSuppressionEvent
+    {
+        internal SpeciesCombatCooldownSuppressionEvent(
+            SpeciesId attackerSpecies,
+            long entityId,
+            int x,
+            int y,
+            int tick,
+            int remainingTicks)
+        {
+            AttackerSpecies = attackerSpecies;
+            EntityId = entityId;
+            X = x;
+            Y = y;
+            Tick = tick;
+            RemainingTicks = remainingTicks;
+        }
+
+        public SpeciesId AttackerSpecies { get; }
+        public long EntityId { get; }
+        public int X { get; }
+        public int Y { get; }
+        public int Tick { get; }
+        public int RemainingTicks { get; }
+    }
+
     public readonly struct SpeciesBehaviorTransition
     {
         internal SpeciesBehaviorTransition(
@@ -187,6 +250,13 @@ namespace SaltyGame
             int movementSteps,
             int damageDealt,
             int combatKills,
+            int combatOpportunities,
+            int combatAttempts,
+            int combatHits,
+            int combatBlocked,
+            int combatDamageApplications,
+            int combatNonLethalHits,
+            int combatLethalHits,
             int deaths,
             int starvationDeaths,
             int crowdingDeaths,
@@ -201,6 +271,13 @@ namespace SaltyGame
             MovementSteps = movementSteps;
             DamageDealt = damageDealt;
             CombatKills = combatKills;
+            CombatOpportunities = combatOpportunities;
+            CombatAttempts = combatAttempts;
+            CombatHits = combatHits;
+            CombatBlocked = combatBlocked;
+            CombatDamageApplications = combatDamageApplications;
+            CombatNonLethalHits = combatNonLethalHits;
+            CombatLethalHits = combatLethalHits;
             Deaths = deaths;
             StarvationDeaths = starvationDeaths;
             CrowdingDeaths = crowdingDeaths;
@@ -216,6 +293,13 @@ namespace SaltyGame
         public int MovementSteps { get; }
         public int DamageDealt { get; }
         public int CombatKills { get; }
+        public int CombatOpportunities { get; }
+        public int CombatAttempts { get; }
+        public int CombatHits { get; }
+        public int CombatBlocked { get; }
+        public int CombatDamageApplications { get; }
+        public int CombatNonLethalHits { get; }
+        public int CombatLethalHits { get; }
         public int Deaths { get; }
         public int StarvationDeaths { get; }
         public int CrowdingDeaths { get; }
@@ -231,6 +315,13 @@ namespace SaltyGame
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
+            int combatOpportunities = 0,
+            int combatAttempts = 0,
+            int combatHits = 0,
+            int combatBlocked = 0,
+            int combatDamageApplications = 0,
+            int combatNonLethalHits = 0,
+            int combatLethalHits = 0,
             int deaths = 0,
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
@@ -246,12 +337,101 @@ namespace SaltyGame
                 MovementSteps + movementSteps,
                 DamageDealt + damageDealt,
                 CombatKills + combatKills,
+                CombatOpportunities + combatOpportunities,
+                CombatAttempts + combatAttempts,
+                CombatHits + combatHits,
+                CombatBlocked + combatBlocked,
+                CombatDamageApplications + combatDamageApplications,
+                CombatNonLethalHits + combatNonLethalHits,
+                CombatLethalHits + combatLethalHits,
                 Deaths + deaths,
                 StarvationDeaths + starvationDeaths,
                 CrowdingDeaths + crowdingDeaths,
                 WiltDeaths + wiltDeaths,
                 PopulationLimitRemovals + populationLimitRemovals);
         }
+    }
+
+    public readonly struct SpeciesHerbivoreStatLine
+    {
+        public SpeciesHerbivoreStatLine(
+            SpeciesId species,
+            int startingPopulation,
+            int encounters,
+            int preyed,
+            int starved,
+            int mating,
+            int births,
+            int crowding,
+            int finalPopulation)
+        {
+            if (!species.IsValid)
+            {
+                throw new ArgumentException("Herbivore stat line requires a valid species id.", nameof(species));
+            }
+
+            if (startingPopulation < 0 || encounters < 0 || preyed < 0 || starved < 0
+                || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
+            }
+
+            if (encounters == 0)
+            {
+                throw new InvalidOperationException("Herbivore stat line is invalid because ECN is zero.");
+            }
+
+            if (mating == 0)
+            {
+                throw new InvalidOperationException("Herbivore stat line is invalid because MAT is zero.");
+            }
+
+            var populationBeforeStarvation = startingPopulation + births - preyed;
+            if (populationBeforeStarvation <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Herbivore stat line is invalid because the sAVI denominator is zero or negative.");
+            }
+
+            var populationBeforeCrowding = populationBeforeStarvation - starved;
+            if (populationBeforeCrowding <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Herbivore stat line is invalid because the cAVI denominator is zero or negative.");
+            }
+
+            Species = species;
+            StartingPopulation = startingPopulation;
+            Encounters = encounters;
+            Preyed = preyed;
+            Starved = starved;
+            Mating = mating;
+            Births = births;
+            Crowding = crowding;
+            FinalPopulation = finalPopulation;
+            ExpectedFinalPopulation = populationBeforeCrowding - crowding;
+            PopulationReconciled = finalPopulation == ExpectedFinalPopulation;
+            InversePreyedAverage = 1f - (float)preyed / encounters;
+            InverseStarvedAverage = 1f - (float)starved / populationBeforeStarvation;
+            InverseCrowdingAverage = 1f - (float)crowding / populationBeforeCrowding;
+            BirthAverage = (float)births / mating;
+        }
+
+        public SpeciesId Species { get; }
+        public int StartingPopulation { get; }
+        public int Encounters { get; }
+        public int Preyed { get; }
+        public int Starved { get; }
+        public int Mating { get; }
+        public int Births { get; }
+        public int Crowding { get; }
+        public int FinalPopulation { get; }
+        public int ExpectedFinalPopulation { get; }
+        public bool PopulationReconciled { get; }
+        public float InversePreyedAverage { get; }
+        public float InverseStarvedAverage { get; }
+        public float InverseCrowdingAverage { get; }
+        public float BirthAverage { get; }
     }
 
     public sealed class SpeciesSimulationMetrics
@@ -268,11 +448,23 @@ namespace SaltyGame
             new Dictionary<SpeciesId, TrackedBehaviorCell>();
         readonly Dictionary<SpeciesId, SpeciesTrackedBehavior> trackedBehaviors =
             new Dictionary<SpeciesId, SpeciesTrackedBehavior>();
+        readonly Dictionary<SpeciesId, int> herbivoreEncountersBySpecies =
+            new Dictionary<SpeciesId, int>();
+        readonly Dictionary<SpeciesId, int> herbivorePreyedBySpecies =
+            new Dictionary<SpeciesId, int>();
         readonly List<SpeciesBehaviorTransition> behaviorTransitions =
             new List<SpeciesBehaviorTransition>();
         readonly List<SpeciesDeathEvent> deathEvents =
             new List<SpeciesDeathEvent>();
+        readonly List<SpeciesCombatRollEvent> combatRollEvents =
+            new List<SpeciesCombatRollEvent>();
+        readonly List<SpeciesCombatCooldownSuppressionEvent> combatCooldownSuppressionEvents =
+            new List<SpeciesCombatCooldownSuppressionEvent>();
         int currentTick = -1;
+        int controlledOpportunityScheduled;
+        int controlledOpportunityEligible;
+        int controlledOpportunityUnfulfilledNoTarget;
+        int controlledOpportunityUnfulfilledInvalidated;
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -303,8 +495,29 @@ namespace SaltyGame
                 : 0;
         }
 
+        public int GetHerbivoreEncounters(SpeciesId species)
+        {
+            return herbivoreEncountersBySpecies.TryGetValue(species, out var encounters)
+                ? encounters
+                : 0;
+        }
+
+        public int GetHerbivorePreyed(SpeciesId species)
+        {
+            return herbivorePreyedBySpecies.TryGetValue(species, out var preyed)
+                ? preyed
+                : 0;
+        }
+
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
+        public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
+        public IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents =>
+            combatCooldownSuppressionEvents;
+        public int ControlledOpportunityScheduled => controlledOpportunityScheduled;
+        public int ControlledOpportunityEligible => controlledOpportunityEligible;
+        public int ControlledOpportunityUnfulfilledNoTarget => controlledOpportunityUnfulfilledNoTarget;
+        public int ControlledOpportunityUnfulfilledInvalidated => controlledOpportunityUnfulfilledInvalidated;
 
         public bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior)
         {
@@ -319,9 +532,17 @@ namespace SaltyGame
             stateTransitionsBySpecies.Clear();
             trackedBehaviorCells.Clear();
             trackedBehaviors.Clear();
+            herbivoreEncountersBySpecies.Clear();
+            herbivorePreyedBySpecies.Clear();
             behaviorTransitions.Clear();
             deathEvents.Clear();
+            combatRollEvents.Clear();
+            combatCooldownSuppressionEvents.Clear();
             currentTick = -1;
+            controlledOpportunityScheduled = 0;
+            controlledOpportunityEligible = 0;
+            controlledOpportunityUnfulfilledNoTarget = 0;
+            controlledOpportunityUnfulfilledInvalidated = 0;
         }
 
         internal void BeginTick(int tick)
@@ -519,6 +740,13 @@ namespace SaltyGame
             int movementSteps = 0,
             int damageDealt = 0,
             int combatKills = 0,
+            int combatOpportunities = 0,
+            int combatAttempts = 0,
+            int combatHits = 0,
+            int combatBlocked = 0,
+            int combatDamageApplications = 0,
+            int combatNonLethalHits = 0,
+            int combatLethalHits = 0,
             int deaths = 0,
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
@@ -539,6 +767,13 @@ namespace SaltyGame
                 movementSteps,
                 damageDealt,
                 combatKills,
+                combatOpportunities,
+                combatAttempts,
+                combatHits,
+                combatBlocked,
+                combatDamageApplications,
+                combatNonLethalHits,
+                combatLethalHits,
                 deaths,
                 starvationDeaths,
                 crowdingDeaths,
@@ -559,6 +794,143 @@ namespace SaltyGame
                 foodActionAttempts: 1,
                 foodActionSuccesses: successful ? 1 : 0,
                 foodActionFailures: successful ? 0 : 1);
+        }
+
+        internal void RecordCombatOpportunity(SpeciesId attackerSpecies)
+        {
+            Record(attackerSpecies, combatOpportunities: 1);
+        }
+
+        internal void RecordHerbivoreEncounter(SpeciesId species)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            herbivoreEncountersBySpecies.TryGetValue(species, out var encounters);
+            herbivoreEncountersBySpecies[species] = encounters + 1;
+        }
+
+        internal void RecordHerbivorePreyed(SpeciesId species)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            herbivorePreyedBySpecies.TryGetValue(species, out var preyed);
+            herbivorePreyedBySpecies[species] = preyed + 1;
+        }
+
+        public SpeciesHerbivoreStatLine CreateHerbivoreStatLine(
+            SpeciesId species,
+            int startingPopulation,
+            int finalPopulation)
+        {
+            var starved = 0;
+            var crowding = 0;
+            foreach (var death in deathEvents)
+            {
+                if (!death.IsCreature || death.Species != species)
+                {
+                    continue;
+                }
+
+                if (death.Cause == SpeciesDeathCause.Starvation)
+                {
+                    starved++;
+                }
+
+                if (death.Cause == SpeciesDeathCause.Crowding)
+                {
+                    crowding++;
+                }
+            }
+
+            return new SpeciesHerbivoreStatLine(
+                species,
+                startingPopulation,
+                GetHerbivoreEncounters(species),
+                GetHerbivorePreyed(species),
+                starved,
+                GetReproductionActivity(species).Candidates,
+                GetActivity(species).Births,
+                crowding,
+                finalPopulation);
+        }
+
+        internal void RecordControlledOpportunityScheduled()
+        {
+            controlledOpportunityScheduled++;
+        }
+
+        internal void RecordControlledOpportunityEligible()
+        {
+            controlledOpportunityEligible++;
+        }
+
+        internal void RecordControlledOpportunityUnfulfilledNoTarget()
+        {
+            controlledOpportunityUnfulfilledNoTarget++;
+        }
+
+        internal void RecordControlledOpportunityUnfulfilledInvalidated()
+        {
+            controlledOpportunityUnfulfilledInvalidated++;
+        }
+
+        internal void RecordCombatAttempt(
+            SpeciesId attackerSpecies,
+            bool hit,
+            bool blocked,
+            int damageDealt,
+            bool lethal)
+        {
+            Record(
+                attackerSpecies,
+                combatAttempts: 1,
+                combatHits: hit ? 1 : 0,
+                combatBlocked: blocked ? 1 : 0,
+                combatDamageApplications: damageDealt > 0 ? 1 : 0,
+                combatNonLethalHits: damageDealt > 0 && !lethal ? 1 : 0,
+                combatLethalHits: lethal ? 1 : 0);
+        }
+
+        internal void RecordCombatRoll(
+            SpeciesId attackerSpecies,
+            SpeciesId targetSpecies,
+            int attackRoll,
+            int attackModifier,
+            int blockRoll,
+            int blockModifier,
+            bool hit)
+        {
+            combatRollEvents.Add(new SpeciesCombatRollEvent(
+                attackerSpecies,
+                targetSpecies,
+                currentTick,
+                attackRoll,
+                attackModifier,
+                blockRoll,
+                blockModifier,
+                hit));
+        }
+
+        internal void RecordCombatCooldownSuppressed(
+            SpeciesId attackerSpecies,
+            long entityId,
+            int x,
+            int y,
+            int remainingTicks)
+        {
+            combatCooldownSuppressionEvents.Add(new SpeciesCombatCooldownSuppressionEvent(
+                attackerSpecies,
+                entityId,
+                x,
+                y,
+                currentTick,
+                remainingTicks));
         }
 
         internal void RecordReproductionOutcome(

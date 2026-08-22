@@ -145,6 +145,30 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -SeedStart 1000 `
     -SeedCount 50 `
     -PlayerSpeciesId herbivore
+
+# Matched control/upgrade arm; use the same seeds for both invocations.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -UpgradeId faster-movement
+
+# Diagnostic protection arm; use the same seeds for control and trial.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -UpgradeId stronger-block-2
+
+# Opt-in D&D-style opposed combat arm; legacy fixed damage remains the default.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -CombatMode opposed-roll
 ```
 
 Each invocation makes a timestamped directory below `artifacts/`:
@@ -157,15 +181,19 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The current experiment JSON schema is `7`. Historical schema-6 EX-002 reports
-remain valid for their bounded matrix; new outputs record the schema version,
+The current experiment JSON schema is `9`. Historical schema-6 EX-002 and
+schema-7 baseline reports remain valid for their bounded matrices; new outputs
+record the schema version,
 timestamp, scenario asset path,
 seed range, grid settings, run window, player species, ruleset fingerprint,
+upgrade ID/type/value and ordered loadout,
 run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. The companion CSV contains one row per seed with run metadata
+identity, tick, age, and position. Schema 9 also records the selected combat
+resolution mode and, for opposed-roll runs, each d20 attack/block roll with
+its modifiers, totals, and outcome. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.

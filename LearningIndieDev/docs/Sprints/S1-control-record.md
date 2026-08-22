@@ -59,7 +59,8 @@ automatically committed to new scope.
 
 - Graphics-capable PlayMode evidence passes 6/6, while the generic nographics
   failures are a known Noesis native-texture boundary. Current-head EditMode
-  passes 139/139.
+  passes 140/140 after the shared upgrade catalog and experiment-runner
+  plumbing change.
 - Build Settings put `MainMenu.unity` first. The current-head Windows
   development build succeeded and the player stayed alive for a 15-second
   startup smoke; artifacts are under
@@ -72,3 +73,9 @@ automatically committed to new scope.
   Report: `artifacts/cellular-experiment-20260820-123724/report.json`;
   analysis: `artifacts/cellular-experiment-20260820-123724/analysis.md`.
   All 20 runs reconciled food-action attempts as successes plus failures.
+- The held-out control completed over seeds `10120`–`10124` under the same
+  protocol with zero food-action reconciliation mismatches. Report:
+  `artifacts/cellular-experiment-20260820-154509/report.json`; analysis:
+  `artifacts/cellular-experiment-20260820-154509/analysis.md`. Its Hare,
+  Fox, and Plant final-population ranges remained within the 20-seed control
+  envelope; the next evidence gate is the matched upgrade/control arm.

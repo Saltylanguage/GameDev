@@ -25,6 +25,13 @@ namespace SaltyGame.EditorTools
                     movementSteps = source.MovementSteps,
                     damageDealt = source.DamageDealt,
                     combatKills = source.CombatKills,
+                    combatOpportunities = source.CombatOpportunities,
+                    combatAttempts = source.CombatAttempts,
+                    combatHits = source.CombatHits,
+                    combatBlocked = source.CombatBlocked,
+                    combatDamageApplications = source.CombatDamageApplications,
+                    combatNonLethalHits = source.CombatNonLethalHits,
+                    combatLethalHits = source.CombatLethalHits,
                     deaths = source.Deaths,
                     starvationDeaths = source.StarvationDeaths,
                     crowdingDeaths = source.CrowdingDeaths,
@@ -139,6 +146,54 @@ namespace SaltyGame.EditorTools
             return records;
         }
 
+        public static SimulationSpeciesCombatRollRecord[] CreateCombatRolls(SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.CombatRollEvents;
+            var records = new SimulationSpeciesCombatRollRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var roll = source[index];
+                records[index] = new SimulationSpeciesCombatRollRecord
+                {
+                    attackerSpeciesId = roll.AttackerSpecies.Value,
+                    targetSpeciesId = roll.TargetSpecies.Value,
+                    tick = roll.Tick,
+                    attackRoll = roll.AttackRoll,
+                    attackModifier = roll.AttackModifier,
+                    blockRoll = roll.BlockRoll,
+                    blockModifier = roll.BlockModifier,
+                    attackTotal = roll.AttackRoll + roll.AttackModifier,
+                    blockTotal = roll.BlockRoll + roll.BlockModifier,
+                    expectedHitProbability = roll.ExpectedHitProbability,
+                    hit = roll.Hit,
+                };
+            }
+
+            return records;
+        }
+
+        public static SimulationSpeciesCombatCooldownSuppressionRecord[] CreateCombatCooldownSuppressions(
+            SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.CombatCooldownSuppressionEvents;
+            var records = new SimulationSpeciesCombatCooldownSuppressionRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var suppression = source[index];
+                records[index] = new SimulationSpeciesCombatCooldownSuppressionRecord
+                {
+                    attackerSpeciesId = suppression.AttackerSpecies.Value,
+                    entityId = suppression.EntityId,
+                    x = suppression.X,
+                    y = suppression.Y,
+                    tick = suppression.Tick,
+                    remainingTicks = suppression.RemainingTicks,
+                };
+            }
+
+            return records;
+        }
+
         public static SimulationPopulationSnapshotRecord[] CreatePopulationHistory(
             IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
             IReadOnlyList<SpeciesId> species)
@@ -167,6 +222,36 @@ namespace SaltyGame.EditorTools
             }
 
             return snapshots;
+        }
+
+        public static SimulationHerbivoreStatLineRecord CreateHerbivoreStatLine(
+            SimulationRunState run,
+            SpeciesId species)
+        {
+            var startingPopulation = run.PopulationHistory[0].GetCount(species);
+            var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
+            var statLine = run.Metrics.CreateHerbivoreStatLine(
+                species,
+                startingPopulation,
+                finalPopulation);
+            return new SimulationHerbivoreStatLineRecord
+            {
+                speciesId = statLine.Species.Value,
+                SPO = statLine.StartingPopulation,
+                ECN = statLine.Encounters,
+                PREY = statLine.Preyed,
+                STRV = statLine.Starved,
+                MAT = statLine.Mating,
+                BIR = statLine.Births,
+                CRWD = statLine.Crowding,
+                FPO = statLine.FinalPopulation,
+                expectedFPO = statLine.ExpectedFinalPopulation,
+                fpoReconciled = statLine.PopulationReconciled,
+                pAVI = statLine.InversePreyedAverage,
+                sAVI = statLine.InverseStarvedAverage,
+                cAVI = statLine.InverseCrowdingAverage,
+                bAVG = statLine.BirthAverage,
+            };
         }
 
         public static List<SpeciesId> GetSpecies(IReadOnlyList<SpeciesPopulationSnapshot> history)
@@ -215,6 +300,13 @@ namespace SaltyGame.EditorTools
         public int movementSteps;
         public int damageDealt;
         public int combatKills;
+        public int combatOpportunities;
+        public int combatAttempts;
+        public int combatHits;
+        public int combatBlocked;
+        public int combatDamageApplications;
+        public int combatNonLethalHits;
+        public int combatLethalHits;
         public int deaths;
         public int starvationDeaths;
         public int crowdingDeaths;
@@ -274,5 +366,52 @@ namespace SaltyGame.EditorTools
         public int tick;
         public string cause;
         public bool isCreature;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesCombatRollRecord
+    {
+        public string attackerSpeciesId;
+        public string targetSpeciesId;
+        public int tick;
+        public int attackRoll;
+        public int attackModifier;
+        public int blockRoll;
+        public int blockModifier;
+        public int attackTotal;
+        public int blockTotal;
+        public float expectedHitProbability;
+        public bool hit;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesCombatCooldownSuppressionRecord
+    {
+        public string attackerSpeciesId;
+        public long entityId;
+        public int x;
+        public int y;
+        public int tick;
+        public int remainingTicks;
+    }
+
+    [System.Serializable]
+    sealed class SimulationHerbivoreStatLineRecord
+    {
+        public string speciesId;
+        public int SPO;
+        public int ECN;
+        public int PREY;
+        public int STRV;
+        public int MAT;
+        public int BIR;
+        public int CRWD;
+        public int FPO;
+        public int expectedFPO;
+        public bool fpoReconciled;
+        public float pAVI;
+        public float sAVI;
+        public float cAVI;
+        public float bAVG;
     }
 }

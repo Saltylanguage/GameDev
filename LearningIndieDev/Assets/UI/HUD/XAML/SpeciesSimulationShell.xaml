@@ -334,6 +334,32 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
+                <StackPanel Visibility="{Binding DeveloperSettingsVisibility}"
+                            IsEnabled="{Binding CanEditSettings}"
+                            Margin="0,10,0,0">
+                    <TextBlock Text="BEV EXPERIMENTAL FEATURES"
+                               Foreground="#FFF1C27D"
+                               FontSize="16"
+                               FontWeight="Bold"
+                               Margin="0,0,0,2"/>
+                    <CheckBox Content="Enable opposed-roll combat and Bev experimental features"
+                              IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
+                              Foreground="White"
+                              Margin="0,3,0,0"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <TextBlock Text="Fox attack cooldown (ticks; 0 = off)"
+                                   Foreground="White"
+                                   Width="250"
+                                   VerticalAlignment="Center"/>
+                        <TextBox Text="{Binding FoxAttackCooldownTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                 Width="120"/>
+                    </StackPanel>
+                    <TextBlock Text="Leave this unchecked to keep the legacy combat rules. Apply Settings before starting."
+                               Foreground="#FFD9E7F0"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Margin="0,2,0,0"/>
+                </StackPanel>
                 <Button Content="APPLY SPECIES RULES"
                         Visibility="{Binding DeveloperSettingsVisibility}"
                         Command="{Binding ApplySpeciesRulesCommand}"

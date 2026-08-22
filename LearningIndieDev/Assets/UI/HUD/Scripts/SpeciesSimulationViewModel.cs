@@ -69,7 +69,9 @@ namespace SaltyGame
         string plantProbabilityText;
         string herbivoreProbabilityText;
         string carnivoreProbabilityText;
+        string foxAttackCooldownTicksText;
         bool randomizeSeedOnStart;
+        bool bevExperimentalFeaturesEnabled;
         bool canEditSettings;
         bool developerMode;
         int selectedRuleSpeciesIndex;
@@ -175,6 +177,16 @@ namespace SaltyGame
         {
             get => carnivoreProbabilityText;
             set => Set(ref carnivoreProbabilityText, value, nameof(CarnivoreProbabilityText));
+        }
+        public bool BevExperimentalFeaturesEnabled
+        {
+            get => bevExperimentalFeaturesEnabled;
+            set => Set(ref bevExperimentalFeaturesEnabled, value, nameof(BevExperimentalFeaturesEnabled));
+        }
+        public string FoxAttackCooldownTicksText
+        {
+            get => foxAttackCooldownTicksText;
+            set => Set(ref foxAttackCooldownTicksText, value, nameof(FoxAttackCooldownTicksText));
         }
         public bool RandomizeSeedOnStart
         {
@@ -725,7 +737,7 @@ namespace SaltyGame
                 return;
             }
 
-            preview.TryApplyGlobalSettings(
+            if (!preview.TryApplyGlobalSettings(
                 GridWidthText,
                 GridHeightText,
                 BaseSeedText,
@@ -737,6 +749,15 @@ namespace SaltyGame
                 HerbivoreProbabilityText,
                 CarnivoreProbabilityText,
                 RandomizeSeedOnStart,
+                out _))
+            {
+                Refresh(true);
+                return;
+            }
+
+            preview.TryApplyExperimentalFeatures(
+                BevExperimentalFeaturesEnabled,
+                FoxAttackCooldownTicksText,
                 out _);
             Refresh(true);
         }
@@ -886,6 +907,8 @@ namespace SaltyGame
             PlantProbabilityText = preview.PlantProbability.ToString("0.###", CultureInfo.InvariantCulture);
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             CarnivoreProbabilityText = preview.CarnivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
+            BevExperimentalFeaturesEnabled = preview.BevExperimentalFeaturesEnabled;
+            FoxAttackCooldownTicksText = preview.FoxAttackCooldownTicks.ToString(CultureInfo.InvariantCulture);
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
         }
 

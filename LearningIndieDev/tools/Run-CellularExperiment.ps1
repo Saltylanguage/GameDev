@@ -13,6 +13,14 @@ param(
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
+    [string]$UpgradeId = 'none',
+    [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
+    [string]$CombatMode = 'legacy-fixed-damage',
+    [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
+    [string]$AttackOpportunityMode = 'natural',
+    [string]$ExperimentalFeatures = '',
+    [ValidateRange(0, 1000000)]
+    [int]$FoxAttackCooldownTicks = 0,
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -64,6 +72,9 @@ $arguments = @(
     '-seedStart', $SeedStart,
     '-seedCount', $SeedCount,
     '-playerSpeciesId', $PlayerSpeciesId,
+    '-upgradeId', $UpgradeId,
+    '-combatMode', $CombatMode,
+    '-attackOpportunityMode', $AttackOpportunityMode,
     '-outputPath', $reportPath,
     '-logFile', $logPath
 )
@@ -86,6 +97,14 @@ if ($RunDurationSeconds -gt 0) {
 
 if ($StepIntervalSeconds -gt 0) {
     $arguments += @('-stepIntervalSeconds', $StepIntervalSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
+}
+
+if (-not [string]::IsNullOrWhiteSpace($ExperimentalFeatures)) {
+    $arguments += @('-experimentalFeatures', $ExperimentalFeatures)
+}
+
+if ($FoxAttackCooldownTicks -gt 0) {
+    $arguments += @('-foxAttackCooldownTicks', $FoxAttackCooldownTicks)
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments

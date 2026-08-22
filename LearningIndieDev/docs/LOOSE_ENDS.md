@@ -9,8 +9,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - Last reviewed: 2026-08-20
 - Report state: the current-head S1 build/launch, telemetry validation, and
-  schema-7 Forest Edge baseline are reconciled. Remaining work is the held-out
-  upgrade/results gate and the Noesis analytics privacy decision.
+  schema-7 Forest Edge control plus held-out baseline are reconciled. Remaining
+  work is the matched upgrade/results gate and the Noesis analytics privacy
+  decision.
 
 ## Triage rules
 
@@ -28,9 +29,25 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `artifacts/cellular-experiment-20260820-123724/analysis.md`). Hare final
   population is 12–46 (27.15 average), Fox is 0–4 (2.40 average; 2/20 extinct
   final runs), and Plant is 736–931 (840 average). This establishes the
-  distribution without promoting a balance target.
-- **Next action:** Run fixed-seed comparisons that reduce Hare reproduction
-  throughput and establish a meaningful regional Grass carrying limit before
+  distribution without promoting a balance target. The held-out control at
+  `artifacts/cellular-experiment-20260820-154509/report.json` (analysis:
+  `artifacts/cellular-experiment-20260820-154509/analysis.md`) completed all
+  five seeds with zero reconciliation mismatches; Hare was 14–27 (20.80
+  average), Fox 3–4 (3.40 average), and Plant 831–920 (884.60 average), all
+  within the control envelope. The matched schema-8 `faster-movement` arm is
+  recorded at `artifacts/cellular-experiment-20260820-160818/report.json`
+  (20 seeds) and its held-out check at
+  `artifacts/cellular-experiment-20260820-161029/report.json` (5 seeds). The
+  paired 20-seed Hare delta was −5.30 average, while the held-out delta was
+  +9.60; this sign reversal is descriptive evidence, not a promotion result.
+  The predeclared schema-8 `stronger-block-2` diagnostic is recorded at
+  `artifacts/cellular-experiment-20260820-222600/report.json` (20 seeds) and
+  its held-out check at `artifacts/cellular-experiment-20260820-222705/report.json`
+  (5 seeds). It changed Fox 2.40 → 1.85 and Hare 27.15 → 23.25 on the paired
+  range, but Fox 3.40 → 2.60 and Hare 20.80 → 26.40 on held-out seeds; the
+  direction reverses, so this is descriptive evidence and is not promoted.
+- **Next action:** Keep balance changes blocked, investigate the block-relevant
+  combat and sign reversal, and choose the next predeclared arm before
   expanding the roster.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
@@ -63,12 +80,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   ticks from resolver food-action attempts, successes, and failures. Predation
   and plant feeding both record the action result; focused domain regressions
   cover successful and blocked predation plus plant feeding. Current-head
-  EditMode is 139/139 and graphics-capable PlayMode is 6/6 in
-  `artifacts/unity-tests-20260820-101018/` and
+  EditMode is 142/142 and graphics-capable PlayMode is 6/6 in
+  `artifacts/unity-tests-20260820-160709/` and
   `artifacts/visual-evidence-20260820-101101/`. Existing schema-6 EX-002
-  artifacts remain historical; new experiment output is schema 7.
-- **Next action:** Use the reconciled report as the baseline control, then run
-  the held-out and single-upgrade arms before changing balance values.
+  artifacts remain historical; new arm output is schema 8 with loadout
+  metadata.
+- **Next action:** Use the reconciled control and held-out reports, then run
+  the single-upgrade arms before changing balance values.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -100,6 +118,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + Sim.
 - **Confidence:** Medium-high.
 
+### P1-006 — Named dual-grid terrain preview awaits validation
+
+- **Status:** Refactored; visual validation remains open.
+- **Evidence:** `TerrainTilePreviewWindow` now loads the named `Grass_` and
+  `Desert_` sprites from `Assets/Art/Terrain/Standardized/128/` and previews
+  all 16 four-corner masks. No runtime screenshot records acceptance yet.
+- **Next action:** Run the named dual-grid preview and cellular prototype,
+  record visual evidence, and include the refactor in a focused reviewed commit.
 ### P1-006 — Editor smart-tiling preview path fix
 
 - **Status:** Resolved and evidenced.

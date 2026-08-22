@@ -30,7 +30,9 @@ namespace SaltyGame
             int forageBelowEnergy = 0,
             int maximumEnergy = 0,
             int litterMinimum = 1,
-            int litterMaximum = 1)
+            int litterMaximum = 1,
+            int? attackModifier = null,
+            int? damageAmount = null)
         {
             if (movementSpeed < 0f)
             {
@@ -40,6 +42,16 @@ namespace SaltyGame
             if (attackAmount < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(attackAmount), attackAmount, "Attack amount cannot be negative.");
+            }
+
+            if (attackModifier.HasValue && attackModifier.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(attackModifier), attackModifier, "Attack modifier cannot be negative.");
+            }
+
+            if (damageAmount.HasValue && damageAmount.Value < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(damageAmount), damageAmount, "Damage amount cannot be negative.");
             }
 
             if (blockAmount < 0)
@@ -121,6 +133,8 @@ namespace SaltyGame
             MovementPattern = movementPattern ?? throw new ArgumentNullException(nameof(movementPattern));
             AttackPattern = attackPattern ?? throw new ArgumentNullException(nameof(attackPattern));
             AttackAmount = attackAmount;
+            AttackModifier = attackModifier ?? attackAmount;
+            DamageAmount = damageAmount ?? attackAmount;
             BlockPattern = blockPattern ?? throw new ArgumentNullException(nameof(blockPattern));
             BlockAmount = blockAmount;
             DietPattern = dietPattern ?? throw new ArgumentNullException(nameof(dietPattern));
@@ -149,6 +163,8 @@ namespace SaltyGame
         public GridPattern MovementPattern { get; }
         public GridPattern AttackPattern { get; }
         public int AttackAmount { get; }
+        public int AttackModifier { get; }
+        public int DamageAmount { get; }
         public GridPattern BlockPattern { get; }
         public int BlockAmount { get; }
         public GridPattern DietPattern { get; }

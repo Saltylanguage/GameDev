@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Globalization;
 using SaltyGame;
 using UnityEditor;
@@ -15,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 7;
+        const int ReportSchemaVersion = 15;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -23,11 +24,19 @@ namespace SaltyGame.EditorTools
         const string SeedStartArgument = "-seedStart";
         const string SeedCountArgument = "-seedCount";
         const string PlayerSpeciesArgument = "-playerSpeciesId";
+        const string UpgradeIdArgument = "-upgradeId";
+        const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
+        const string CombatModeArgument = "-combatMode";
+        const string DefaultCombatMode = "legacy-fixed-damage";
+        const string AttackOpportunityModeArgument = "-attackOpportunityMode";
+        const string DefaultAttackOpportunityMode = "natural";
+        const string ExperimentalFeaturesArgument = "-experimentalFeatures";
+        const string FoxAttackCooldownTicksArgument = "-foxAttackCooldownTicks";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -79,11 +88,20 @@ namespace SaltyGame.EditorTools
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
                     options);
+                var experimentalOptions = GetExperimentalOptions(options);
 
                 try
                 {
-                    var report = CreateReport(data, options, outputPath);
-                    File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
+                    var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
+                        ? CreatePairedReport(data, options, outputPath, experimentalOptions)
+                        : CreateReport(ApplyLoadout(data, options), options, outputPath, experimentalOptions);
+                    File.WriteAllText(
+                        outputPath,
+                        SerializeReport(
+                            report,
+                            experimentalOptions.UsesHerbivoreStatLine
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore),
+                        new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
                 }
@@ -113,7 +131,11 @@ namespace SaltyGame.EditorTools
             }
         }
 
-        static ExperimentReport CreateReport(CellularSimData data, CommandLineOptions options, string outputPath)
+        static ExperimentReport CreateReport(
+            CellularSimData data,
+            CommandLineOptions options,
+            string outputPath,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
             if (!data.SpeciesRules.ContainsKey(playerSpecies))
@@ -124,10 +146,18 @@ namespace SaltyGame.EditorTools
             }
 
             var species = GetSortedSpecies(data.SpeciesRules);
+            var upgrade = GetOptionalUpgrade(options.UpgradeId);
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
-                runs[index] = RunSimulation(data, playerSpecies, options.SeedStart + index, species);
+                runs[index] = RunSimulation(
+                    data,
+                    playerSpecies,
+                    options.SeedStart + index,
+                    species,
+                    options.CombatResolutionMode,
+                    options.AttackOpportunityMode,
+                    experimentalOptions);
             }
 
             return new ExperimentReport
@@ -139,6 +169,14 @@ namespace SaltyGame.EditorTools
                 csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
                 rulesetFingerprint = data.Fingerprint,
                 playerSpeciesId = playerSpecies.Value,
+                upgradeId = options.UpgradeId,
+                upgradeType = upgrade == null ? string.Empty : upgrade.Type.ToString(),
+                upgradeValue = upgrade == null ? 0f : upgrade.Value,
+                orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
+                combatResolutionMode = options.CombatResolutionMode.ToString(),
+                attackOpportunityMode = options.AttackOpportunityMode.ToString(),
+                experimentalFeatures = experimentalOptions.FeatureId,
+                foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = data.Width,
@@ -154,19 +192,179 @@ namespace SaltyGame.EditorTools
             CellularSimData data,
             SpeciesId playerSpecies,
             int seed,
-            IReadOnlyList<SpeciesId> species)
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
-            var runner = new SpeciesSimulationRunner(run, data);
+            var runner = new SpeciesSimulationRunner(
+                run,
+                data,
+                combatResolutionMode,
+                attackOpportunityMode,
+                experimentalOptions);
             while (runner.AdvanceOneTick())
             {
             }
 
+            return CreateExperimentRun(
+                run,
+                species,
+                new ExperimentOpportunityControl
+                {
+                    scheduled = run.Metrics.ControlledOpportunityScheduled,
+                    eligible = run.Metrics.ControlledOpportunityEligible,
+                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
+                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
+                },
+                playerSpecies,
+                experimentalOptions.UsesHerbivoreStatLine
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
+        }
+
+        static ExperimentReport CreatePairedReport(
+            CellularSimData data,
+            CommandLineOptions options,
+            string outputPath,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            if (!string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                && !string.Equals(options.UpgradeId, "stronger-block-2", StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    "Paired lockstep diagnostic mode requires upgradeId 'none' or 'stronger-block-2'.",
+                    UpgradeIdArgument);
+            }
+
+            var baselineData = ApplyLoadout(data, options.PlayerSpeciesId, DefaultUpgradeId);
+            var blockPlusTwoData = ApplyLoadout(data, options.PlayerSpeciesId, "stronger-block-2");
+            var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
+            var species = GetSortedSpecies(data.SpeciesRules);
+            var selectedRuns = new ExperimentRun[options.SeedCount];
+            for (var index = 0; index < options.SeedCount; index++)
+            {
+                var paired = RunPairedSimulation(
+                    baselineData,
+                    blockPlusTwoData,
+                    playerSpecies,
+                    options.SeedStart + index,
+                    species,
+                    options.CombatResolutionMode,
+                    experimentalOptions);
+                selectedRuns[index] = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                    ? paired.Baseline
+                    : paired.BlockPlusTwo;
+            }
+
+            var selectedData = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                ? baselineData
+                : blockPlusTwoData;
+            return new ExperimentReport
+            {
+                schemaVersion = ReportSchemaVersion,
+                createdUtc = DateTime.UtcNow.ToString("O"),
+                scenarioAssetPath = options.ScenarioPath ?? string.Empty,
+                outputPath = outputPath,
+                csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
+                rulesetFingerprint = selectedData.Fingerprint,
+                playerSpeciesId = playerSpecies.Value,
+                upgradeId = options.UpgradeId,
+                upgradeType = GetOptionalUpgrade(options.UpgradeId)?.Type.ToString() ?? string.Empty,
+                upgradeValue = GetOptionalUpgrade(options.UpgradeId)?.Value ?? 0f,
+                orderedLoadout = options.UpgradeId == DefaultUpgradeId ? new string[0] : new[] { options.UpgradeId },
+                combatResolutionMode = options.CombatResolutionMode.ToString(),
+                attackOpportunityMode = options.AttackOpportunityMode.ToString(),
+                experimentalFeatures = experimentalOptions.FeatureId,
+                foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
+                seedStart = options.SeedStart,
+                seedCount = options.SeedCount,
+                gridWidth = selectedData.Width,
+                gridHeight = selectedData.Height,
+                runDurationSeconds = selectedData.RunDurationSeconds,
+                stepIntervalSeconds = selectedData.StepInterval,
+                runs = selectedRuns,
+                finalPopulationSummary = CreateFinalPopulationSummary(selectedRuns, species),
+            };
+        }
+
+        static PairedExperimentRuns RunPairedSimulation(
+            CellularSimData baselineData,
+            CellularSimData blockPlusTwoData,
+            SpeciesId playerSpecies,
+            int seed,
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            var initialGrid = SpeciesInitialGridFactory.Create(baselineData, seed);
+            var baselineRun = new SimulationRunState(initialGrid.Copy(), playerSpecies, seed, baselineData.RunDurationSeconds);
+            var blockPlusTwoRun = new SimulationRunState(initialGrid.Copy(), playerSpecies, seed, blockPlusTwoData.RunDurationSeconds);
+            var runner = new SpeciesPairedSimulationRunner(
+                baselineRun,
+                baselineData,
+                blockPlusTwoRun,
+                blockPlusTwoData,
+                combatResolutionMode,
+                experimentalOptions);
+            while (runner.AdvanceOneTick())
+            {
+            }
+
+            return new PairedExperimentRuns
+            {
+                Baseline = CreateExperimentRun(
+                    baselineRun,
+                    species,
+                    CreatePairedOpportunityControl(runner.OpportunityControl),
+                    playerSpecies,
+                    experimentalOptions.UsesHerbivoreStatLine
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                BlockPlusTwo = CreateExperimentRun(
+                    blockPlusTwoRun,
+                    species,
+                    CreatePairedOpportunityControl(runner.OpportunityControl),
+                    playerSpecies,
+                    experimentalOptions.UsesHerbivoreStatLine
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+            };
+        }
+
+        static ExperimentOpportunityControl CreatePairedOpportunityControl(
+            SpeciesPairedOpportunityControl control)
+        {
+            return new ExperimentOpportunityControl
+            {
+                scheduled = control.Scheduled,
+                baselineValid = control.BaselineValid,
+                blockPlusTwoValid = control.BlockPlusTwoValid,
+                commonValid = control.CommonValid,
+                baselineOnly = control.BaselineOnly,
+                blockPlusTwoOnly = control.BlockPlusTwoOnly,
+                baselineCandidateCount = control.BaselineCandidateCount,
+                blockPlusTwoCandidateCount = control.BlockPlusTwoCandidateCount,
+                commonCandidateCount = control.CommonCandidateCount,
+                unionCandidateCount = control.UnionCandidateCount,
+                pairedAttempts = control.PairedAttempts,
+                pairedMismatches = control.PairedMismatches,
+                unfulfilledInvalidated = control.Invalidated,
+                pairedOpportunityIds = new List<string>(control.PairedOpportunityIds).ToArray(),
+                opportunityAudit = new List<SpeciesPairedOpportunityObservation>(control.OpportunityObservations).ToArray(),
+            };
+        }
+
+        static ExperimentRun CreateExperimentRun(
+            SimulationRunState run,
+            IReadOnlyList<SpeciesId> species,
+            ExperimentOpportunityControl opportunityControl,
+            SpeciesId statSpecies,
+            bool includeHerbivoreStatLine)
+        {
             var result = SimulationRunResults.Create(run);
             return new ExperimentRun
             {
-                seed = seed,
+                seed = run.Seed,
                 ticks = result.Ticks,
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
@@ -177,6 +375,12 @@ namespace SaltyGame.EditorTools
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
+                combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
+                combatCooldownSuppressions = SimulationReportSerialization.CreateCombatCooldownSuppressions(run.Metrics),
+                herbivoreStatLine = includeHerbivoreStatLine
+                    ? SimulationReportSerialization.CreateHerbivoreStatLine(run, statSpecies)
+                    : null,
+                opportunityControl = opportunityControl,
             };
         }
 
@@ -252,6 +456,76 @@ namespace SaltyGame.EditorTools
                 data.TerrainDefinitions,
                 data.AlphaOffspringRules,
                 data.StartingPopulations);
+        }
+
+        static SpeciesExperimentalOptions GetExperimentalOptions(CommandLineOptions options)
+        {
+            if (!string.IsNullOrEmpty(options.ExperimentalFeatures)
+                && !string.Equals(
+                    options.ExperimentalFeatures,
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"'{ExperimentalFeaturesArgument}' must be empty or '{SpeciesExperimentalOptions.BevExperimentalFeaturesId}'.",
+                    ExperimentalFeaturesArgument);
+            }
+
+            var experimentalOptions = new SpeciesExperimentalOptions(
+                options.ExperimentalFeatures,
+                options.FoxAttackCooldownTicks);
+            if (experimentalOptions.HasFoxAttackCooldown
+                && options.CombatResolutionMode != SpeciesCombatResolutionMode.OpposedRoll)
+            {
+                throw new ArgumentException(
+                    $"'{FoxAttackCooldownTicksArgument}' requires '{CombatModeArgument}' opposed-roll.",
+                    FoxAttackCooldownTicksArgument);
+            }
+
+            if (experimentalOptions.HasFoxAttackCooldown
+                && options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic)
+            {
+                throw new ArgumentException(
+                    $"'{FoxAttackCooldownTicksArgument}' is not supported by paired lockstep diagnostic mode.",
+                    FoxAttackCooldownTicksArgument);
+            }
+
+            return experimentalOptions;
+        }
+
+        static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
+        {
+            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeId);
+        }
+
+        static CellularSimData ApplyLoadout(
+            CellularSimData data,
+            string playerSpeciesId,
+            string upgradeId)
+        {
+            var upgrade = GetOptionalUpgrade(upgradeId);
+            if (upgrade == null)
+            {
+                return data;
+            }
+
+            var playerSpecies = new SpeciesId(playerSpeciesId);
+            if (!data.SpeciesRules.TryGetValue(playerSpecies, out var rules))
+            {
+                throw new ArgumentException(
+                    $"Scenario does not define the requested player species '{playerSpeciesId}'.",
+                    PlayerSpeciesArgument);
+            }
+
+            return data.WithSpeciesRules(playerSpecies, upgrade.Apply(rules));
+        }
+
+        static SpeciesUpgrade GetOptionalUpgrade(string upgradeId)
+        {
+            return string.IsNullOrWhiteSpace(upgradeId)
+                || string.Equals(upgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                ? null
+                : SpeciesUpgradeCatalog.Create(upgradeId);
         }
 
         static void WriteCsv(
@@ -453,6 +727,11 @@ namespace SaltyGame.EditorTools
             public int SeedStart { get; private set; }
             public int SeedCount { get; private set; }
             public string PlayerSpeciesId { get; private set; }
+            public string UpgradeId { get; private set; }
+            public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
+            public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
+            public string ExperimentalFeatures { get; private set; }
+            public int FoxAttackCooldownTicks { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -467,12 +746,62 @@ namespace SaltyGame.EditorTools
                     SeedStart = GetIntValue(arguments, SeedStartArgument, DefaultSeedStart, allowZero: true, allowSigned: true),
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
+                    UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
+                    CombatResolutionMode = ParseCombatResolutionMode(
+                        GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
+                    AttackOpportunityMode = ParseAttackOpportunityMode(
+                        GetOptionalValue(arguments, AttackOpportunityModeArgument) ?? DefaultAttackOpportunityMode),
+                    ExperimentalFeatures = GetOptionalValue(arguments, ExperimentalFeaturesArgument) ?? string.Empty,
+                    FoxAttackCooldownTicks = GetIntValue(
+                        arguments,
+                        FoxAttackCooldownTicksArgument,
+                        0,
+                        allowZero: true),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
+            }
+
+            static SpeciesCombatResolutionMode ParseCombatResolutionMode(string value)
+            {
+                if (string.Equals(value, "legacy-fixed-damage", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesCombatResolutionMode.LegacyFixedDamage;
+                }
+
+                if (string.Equals(value, "opposed-roll", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesCombatResolutionMode.OpposedRoll;
+                }
+
+                throw new ArgumentException(
+                    $"'{CombatModeArgument}' must be 'legacy-fixed-damage' or 'opposed-roll'.",
+                    CombatModeArgument);
+            }
+
+            static SpeciesAttackOpportunityMode ParseAttackOpportunityMode(string value)
+            {
+                if (string.Equals(value, "natural", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.Natural;
+                }
+
+                if (string.Equals(value, "fixed-rate-diagnostic", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.FixedRateDiagnostic;
+                }
+
+                if (string.Equals(value, "paired-lockstep-diagnostic", StringComparison.OrdinalIgnoreCase))
+                {
+                    return SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
+                }
+
+                throw new ArgumentException(
+                    $"'{AttackOpportunityModeArgument}' must be 'natural', 'fixed-rate-diagnostic', or 'paired-lockstep-diagnostic'.",
+                    AttackOpportunityModeArgument);
             }
 
             static string GetOptionalValue(IReadOnlyList<string> arguments, string name)
@@ -549,6 +878,14 @@ namespace SaltyGame.EditorTools
             public string csvOutputPath;
             public string rulesetFingerprint;
             public string playerSpeciesId;
+            public string upgradeId;
+            public string upgradeType;
+            public float upgradeValue;
+            public string[] orderedLoadout;
+            public string combatResolutionMode;
+            public string attackOpportunityMode;
+            public string experimentalFeatures;
+            public int foxAttackCooldownTicks;
             public int seedStart;
             public int seedCount;
             public int gridWidth;
@@ -573,6 +910,46 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
             public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
             public SimulationSpeciesDeathRecord[] deathEvents;
+            public SimulationSpeciesCombatRollRecord[] combatRolls;
+            public SimulationSpeciesCombatCooldownSuppressionRecord[] combatCooldownSuppressions;
+            public SimulationHerbivoreStatLineRecord herbivoreStatLine;
+            public ExperimentOpportunityControl opportunityControl;
+        }
+
+        static string SerializeReport(ExperimentReport report, bool includeHerbivoreStatLine)
+        {
+            var json = JsonUtility.ToJson(report, true);
+            return includeHerbivoreStatLine
+                ? json
+                : Regex.Replace(json, @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?", string.Empty);
+        }
+
+        [Serializable]
+        sealed class ExperimentOpportunityControl
+        {
+            public int scheduled;
+            public int eligible;
+            public int unfulfilledNoTarget;
+            public int unfulfilledInvalidated;
+            public int baselineValid;
+            public int blockPlusTwoValid;
+            public int commonValid;
+            public int baselineOnly;
+            public int blockPlusTwoOnly;
+            public int baselineCandidateCount;
+            public int blockPlusTwoCandidateCount;
+            public int commonCandidateCount;
+            public int unionCandidateCount;
+            public int pairedAttempts;
+            public int pairedMismatches;
+            public string[] pairedOpportunityIds;
+            public SpeciesPairedOpportunityObservation[] opportunityAudit;
+        }
+
+        sealed class PairedExperimentRuns
+        {
+            public ExperimentRun Baseline;
+            public ExperimentRun BlockPlusTwo;
         }
 
         [Serializable]
