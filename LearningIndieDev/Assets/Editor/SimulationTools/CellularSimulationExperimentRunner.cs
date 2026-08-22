@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Globalization;
 using SaltyGame;
 using UnityEditor;
@@ -15,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 13;
+        const int ReportSchemaVersion = 15;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -94,7 +95,13 @@ namespace SaltyGame.EditorTools
                     var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
                         ? CreatePairedReport(data, options, outputPath, experimentalOptions)
                         : CreateReport(ApplyLoadout(data, options), options, outputPath, experimentalOptions);
-                    File.WriteAllText(outputPath, JsonUtility.ToJson(report, true), new UTF8Encoding(false));
+                    File.WriteAllText(
+                        outputPath,
+                        SerializeReport(
+                            report,
+                            experimentalOptions.UsesHerbivoreStatLine
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore),
+                        new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
                 }
@@ -211,7 +218,10 @@ namespace SaltyGame.EditorTools
                     eligible = run.Metrics.ControlledOpportunityEligible,
                     unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
                     unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
-                });
+                },
+                playerSpecies,
+                experimentalOptions.UsesHerbivoreStatLine
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -241,7 +251,8 @@ namespace SaltyGame.EditorTools
                     playerSpecies,
                     options.SeedStart + index,
                     species,
-                    options.CombatResolutionMode);
+                    options.CombatResolutionMode,
+                    experimentalOptions);
                 selectedRuns[index] = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
                     ? paired.Baseline
                     : paired.BlockPlusTwo;
@@ -284,7 +295,8 @@ namespace SaltyGame.EditorTools
             SpeciesId playerSpecies,
             int seed,
             IReadOnlyList<SpeciesId> species,
-            SpeciesCombatResolutionMode combatResolutionMode)
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(baselineData, seed);
             var baselineRun = new SimulationRunState(initialGrid.Copy(), playerSpecies, seed, baselineData.RunDurationSeconds);
@@ -294,15 +306,28 @@ namespace SaltyGame.EditorTools
                 baselineData,
                 blockPlusTwoRun,
                 blockPlusTwoData,
-                combatResolutionMode);
+                combatResolutionMode,
+                experimentalOptions);
             while (runner.AdvanceOneTick())
             {
             }
 
             return new PairedExperimentRuns
             {
-                Baseline = CreateExperimentRun(baselineRun, species, CreatePairedOpportunityControl(runner.OpportunityControl)),
-                BlockPlusTwo = CreateExperimentRun(blockPlusTwoRun, species, CreatePairedOpportunityControl(runner.OpportunityControl)),
+                Baseline = CreateExperimentRun(
+                    baselineRun,
+                    species,
+                    CreatePairedOpportunityControl(runner.OpportunityControl),
+                    playerSpecies,
+                    experimentalOptions.UsesHerbivoreStatLine
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                BlockPlusTwo = CreateExperimentRun(
+                    blockPlusTwoRun,
+                    species,
+                    CreatePairedOpportunityControl(runner.OpportunityControl),
+                    playerSpecies,
+                    experimentalOptions.UsesHerbivoreStatLine
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
             };
         }
 
@@ -332,7 +357,9 @@ namespace SaltyGame.EditorTools
         static ExperimentRun CreateExperimentRun(
             SimulationRunState run,
             IReadOnlyList<SpeciesId> species,
-            ExperimentOpportunityControl opportunityControl)
+            ExperimentOpportunityControl opportunityControl,
+            SpeciesId statSpecies,
+            bool includeHerbivoreStatLine)
         {
             var result = SimulationRunResults.Create(run);
             return new ExperimentRun
@@ -350,6 +377,9 @@ namespace SaltyGame.EditorTools
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
                 combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
                 combatCooldownSuppressions = SimulationReportSerialization.CreateCombatCooldownSuppressions(run.Metrics),
+                herbivoreStatLine = includeHerbivoreStatLine
+                    ? SimulationReportSerialization.CreateHerbivoreStatLine(run, statSpecies)
+                    : null,
                 opportunityControl = opportunityControl,
             };
         }
@@ -882,7 +912,16 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesDeathRecord[] deathEvents;
             public SimulationSpeciesCombatRollRecord[] combatRolls;
             public SimulationSpeciesCombatCooldownSuppressionRecord[] combatCooldownSuppressions;
+            public SimulationHerbivoreStatLineRecord herbivoreStatLine;
             public ExperimentOpportunityControl opportunityControl;
+        }
+
+        static string SerializeReport(ExperimentReport report, bool includeHerbivoreStatLine)
+        {
+            var json = JsonUtility.ToJson(report, true);
+            return includeHerbivoreStatLine
+                ? json
+                : Regex.Replace(json, @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?", string.Empty);
         }
 
         [Serializable]

@@ -224,6 +224,36 @@ namespace SaltyGame.EditorTools
             return snapshots;
         }
 
+        public static SimulationHerbivoreStatLineRecord CreateHerbivoreStatLine(
+            SimulationRunState run,
+            SpeciesId species)
+        {
+            var startingPopulation = run.PopulationHistory[0].GetCount(species);
+            var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
+            var statLine = run.Metrics.CreateHerbivoreStatLine(
+                species,
+                startingPopulation,
+                finalPopulation);
+            return new SimulationHerbivoreStatLineRecord
+            {
+                speciesId = statLine.Species.Value,
+                SPO = statLine.StartingPopulation,
+                ECN = statLine.Encounters,
+                PREY = statLine.Preyed,
+                STRV = statLine.Starved,
+                MAT = statLine.Mating,
+                BIR = statLine.Births,
+                CRWD = statLine.Crowding,
+                FPO = statLine.FinalPopulation,
+                expectedFPO = statLine.ExpectedFinalPopulation,
+                fpoReconciled = statLine.PopulationReconciled,
+                pAVI = statLine.InversePreyedAverage,
+                sAVI = statLine.InverseStarvedAverage,
+                cAVI = statLine.InverseCrowdingAverage,
+                bAVG = statLine.BirthAverage,
+            };
+        }
+
         public static List<SpeciesId> GetSpecies(IReadOnlyList<SpeciesPopulationSnapshot> history)
         {
             var species = new List<SpeciesId>();
@@ -363,5 +393,25 @@ namespace SaltyGame.EditorTools
         public int y;
         public int tick;
         public int remainingTicks;
+    }
+
+    [System.Serializable]
+    sealed class SimulationHerbivoreStatLineRecord
+    {
+        public string speciesId;
+        public int SPO;
+        public int ECN;
+        public int PREY;
+        public int STRV;
+        public int MAT;
+        public int BIR;
+        public int CRWD;
+        public int FPO;
+        public int expectedFPO;
+        public bool fpoReconciled;
+        public float pAVI;
+        public float sAVI;
+        public float cAVI;
+        public float bAVG;
     }
 }

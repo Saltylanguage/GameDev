@@ -372,6 +372,55 @@ if ($scheduledOpportunities -gt 0) {
     }
     $lines.Add('')
 }
+if ($report.experimentalFeatures -eq 'bev-experimental') {
+    $statRuns = @($report.runs | Where-Object {
+        $statProperty = $_.PSObject.Properties['herbivoreStatLine']
+        $null -ne $statProperty -and $null -ne $statProperty.Value
+    } | Sort-Object seed)
+    if ($statRuns.Count -gt 0) {
+        $lines.Add('## Experimental herbivore stat line')
+        $lines.Add('')
+        $statHeaders = @('Seed', 'Species', 'SPO', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'sAVI', 'cAVI', 'bAVG')
+        $statRows = [System.Collections.Generic.List[object[]]]::new()
+        foreach ($run in $statRuns) {
+            $stat = $run.herbivoreStatLine
+            $crowdingProperty = $stat.PSObject.Properties['CRWD']
+            $crowding = if ($null -eq $crowdingProperty -or $null -eq $crowdingProperty.Value) {
+                0
+            } else {
+                $crowdingProperty.Value
+            }
+            $crowdingAverageProperty = $stat.PSObject.Properties['cAVI']
+            $crowdingAverage = if ($null -eq $crowdingAverageProperty -or $null -eq $crowdingAverageProperty.Value) {
+                'N/A'
+            } else {
+                Get-Number $crowdingAverageProperty.Value
+            }
+            $statRows.Add(@(
+                $run.seed,
+                $stat.speciesId,
+                $stat.SPO,
+                $stat.ECN,
+                $stat.PREY,
+                $stat.STRV,
+                $stat.MAT,
+                $stat.BIR,
+                $crowding,
+                $stat.FPO,
+                $stat.expectedFPO,
+                $stat.fpoReconciled,
+                (Get-Number $stat.pAVI),
+                (Get-Number $stat.sAVI),
+                $crowdingAverage,
+                (Get-Number $stat.bAVG)
+            ))
+        }
+        Add-MarkdownTable -Lines $lines -Headers $statHeaders -Rows $statRows.ToArray()
+        $lines.Add('')
+        $lines.Add('This opt-in stat line is emitted only for a herbivore player species. ECN and MAT must be nonzero. FPO is checked against SPO + BIR - PREY - STRV - CRWD; a false reconciliation flag identifies additional death causes or missing population events.')
+        $lines.Add('')
+    }
+}
 $lines.Add('## Final population summary')
 $lines.Add('')
 $summaryRows = [System.Collections.Generic.List[object[]]]::new()

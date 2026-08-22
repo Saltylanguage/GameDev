@@ -35,5 +35,7 @@ namespace SaltyGame
         public bool HasFoxAttackCooldown => FoxAttackCooldownTicks > 0;
         public bool UsesSplitCombatStats =>
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
+        public bool UsesHerbivoreStatLine =>
+            string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
     }
 }

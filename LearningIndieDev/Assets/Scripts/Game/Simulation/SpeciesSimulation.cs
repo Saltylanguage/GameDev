@@ -188,7 +188,8 @@ namespace SaltyGame
             out Grid<SpeciesCell> blockPlusTwoNext,
             out string pairedOpportunityId,
             IList<SpeciesPairedOpportunityObservation> opportunityObservations = null,
-            int tick = 0)
+            int tick = 0,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             if (baselineSource == null || blockPlusTwoSource == null)
             {
@@ -204,8 +205,20 @@ namespace SaltyGame
             blockPlusTwoNext = blockPlusTwoSource.Copy();
             var baselineRandom = new System.Random(seed);
             var blockPlusTwoRandom = new System.Random(seed);
-            PrepareStep(baselineSource, baselineNext, baselineRules, baselineRandom, baselineMetrics);
-            PrepareStep(blockPlusTwoSource, blockPlusTwoNext, blockPlusTwoRules, blockPlusTwoRandom, blockPlusTwoMetrics);
+            PrepareStep(
+                baselineSource,
+                baselineNext,
+                baselineRules,
+                baselineRandom,
+                baselineMetrics,
+                experimentalOptions);
+            PrepareStep(
+                blockPlusTwoSource,
+                blockPlusTwoNext,
+                blockPlusTwoRules,
+                blockPlusTwoRandom,
+                blockPlusTwoMetrics,
+                experimentalOptions);
 
             var result = BuildPairedStepResult(
                 baselineSource,
@@ -272,7 +285,8 @@ namespace SaltyGame
                 combatResolutionMode,
                 SpeciesAttackOpportunityMode.PairedLockstepDiagnostic,
                 seed,
-                forcedOpportunity: executable ? selectedOpportunity : null);
+                forcedOpportunity: executable ? selectedOpportunity : null,
+                experimentalOptions: experimentalOptions);
             blockPlusTwoNext = CompleteStep(
                 blockPlusTwoSource,
                 blockPlusTwoNext,
@@ -285,7 +299,8 @@ namespace SaltyGame
                 combatResolutionMode,
                 SpeciesAttackOpportunityMode.PairedLockstepDiagnostic,
                 seed,
-                forcedOpportunity: executable ? selectedOpportunity : null);
+                forcedOpportunity: executable ? selectedOpportunity : null,
+                experimentalOptions: experimentalOptions);
             return result;
         }
 
@@ -414,6 +429,8 @@ namespace SaltyGame
         {
             var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
             var paired = attackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
+            var collectHerbivoreStatLine = experimentalOptions != null
+                && experimentalOptions.UsesHerbivoreStatLine;
             var useSplitCombatStats = combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
                 && experimentalOptions != null
                 && experimentalOptions.UsesSplitCombatStats;
@@ -516,9 +533,20 @@ namespace SaltyGame
                             continue;
                         }
 
+                        SpeciesRules targetRules = null;
+                        var hasTargetRules = target.IsCreature
+                            && rules.TryGetValue(target.SpeciesId, out targetRules);
+                        var isCarnivoreHerbivoreInteraction = collectHerbivoreStatLine
+                            && attackerRules.Role == SpeciesRole.Carnivore
+                            && hasTargetRules
+                            && targetRules.Role == SpeciesRole.Herbivore;
                         if (target.IsCreature)
                         {
                             metrics?.RecordCombatOpportunity(attacker.SpeciesId);
+                            if (isCarnivoreHerbivoreInteraction)
+                            {
+                                metrics?.RecordHerbivoreEncounter(target.SpeciesId);
+                            }
                         }
 
                         var currentTarget = target;
@@ -538,9 +566,6 @@ namespace SaltyGame
                         var damage = useSplitCombatStats
                             ? attackerRules.DamageAmount
                             : attackerRules.AttackAmount;
-                        SpeciesRules targetRules = null;
-                        var hasTargetRules = target.IsCreature
-                            && rules.TryGetValue(target.SpeciesId, out targetRules);
                         var hasDirectionalBlock = hasTargetRules
                             && ContainsOffset(targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y));
                         if (target.IsCreature && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll)
@@ -636,6 +661,11 @@ namespace SaltyGame
 
                             if (remainingHealth <= 0)
                             {
+                                if (isCarnivoreHerbivoreInteraction)
+                                {
+                                    metrics?.RecordHerbivorePreyed(currentTarget.SpeciesId);
+                                }
+
                                 metrics?.RecordDeath(
                                     currentTarget,
                                     targetX,

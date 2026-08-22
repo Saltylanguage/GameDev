@@ -11,18 +11,21 @@ namespace SaltyGame
     {
         readonly CellularSimData baselineData;
         readonly CellularSimData blockPlusTwoData;
+        readonly SpeciesExperimentalOptions experimentalOptions;
 
         public SpeciesPairedSimulationRunner(
             SimulationRunState baselineRun,
             CellularSimData baselineData,
             SimulationRunState blockPlusTwoRun,
             CellularSimData blockPlusTwoData,
-            SpeciesCombatResolutionMode combatResolutionMode)
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             BaselineRun = baselineRun ?? throw new ArgumentNullException(nameof(baselineRun));
             this.baselineData = baselineData ?? throw new ArgumentNullException(nameof(baselineData));
             BlockPlusTwoRun = blockPlusTwoRun ?? throw new ArgumentNullException(nameof(blockPlusTwoRun));
             this.blockPlusTwoData = blockPlusTwoData ?? throw new ArgumentNullException(nameof(blockPlusTwoData));
+            this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
             if (baselineData.StepInterval != blockPlusTwoData.StepInterval)
             {
                 throw new ArgumentException("Paired runs must use the same step interval.", nameof(blockPlusTwoData));
@@ -87,7 +90,8 @@ namespace SaltyGame
                 out var blockPlusTwoNext,
                 out var pairedOpportunityId,
                 opportunityObservations: observations,
-                tick: baselineTick);
+                tick: baselineTick,
+                experimentalOptions: experimentalOptions);
             OpportunityControl.Add(result, pairedOpportunityId, observations);
             BaselineRun.Advance(baselineNext, baselineData.StepInterval);
             BlockPlusTwoRun.Advance(blockPlusTwoNext, blockPlusTwoData.StepInterval);
