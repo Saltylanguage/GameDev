@@ -148,6 +148,36 @@ namespace SaltyGame
         public int BlockRoll { get; }
         public int BlockModifier { get; }
         public bool Hit { get; }
+        public int AttackTotal => AttackRoll + AttackModifier;
+        public int BlockTotal => BlockRoll + BlockModifier;
+        public float ExpectedHitProbability =>
+            SpeciesSimulation.GetOpposedRollHitProbability(AttackModifier, BlockModifier);
+    }
+
+    public readonly struct SpeciesCombatCooldownSuppressionEvent
+    {
+        internal SpeciesCombatCooldownSuppressionEvent(
+            SpeciesId attackerSpecies,
+            long entityId,
+            int x,
+            int y,
+            int tick,
+            int remainingTicks)
+        {
+            AttackerSpecies = attackerSpecies;
+            EntityId = entityId;
+            X = x;
+            Y = y;
+            Tick = tick;
+            RemainingTicks = remainingTicks;
+        }
+
+        public SpeciesId AttackerSpecies { get; }
+        public long EntityId { get; }
+        public int X { get; }
+        public int Y { get; }
+        public int Tick { get; }
+        public int RemainingTicks { get; }
     }
 
     public readonly struct SpeciesBehaviorTransition
@@ -341,6 +371,8 @@ namespace SaltyGame
             new List<SpeciesDeathEvent>();
         readonly List<SpeciesCombatRollEvent> combatRollEvents =
             new List<SpeciesCombatRollEvent>();
+        readonly List<SpeciesCombatCooldownSuppressionEvent> combatCooldownSuppressionEvents =
+            new List<SpeciesCombatCooldownSuppressionEvent>();
         int currentTick = -1;
         int controlledOpportunityScheduled;
         int controlledOpportunityEligible;
@@ -379,6 +411,8 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
         public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
+        public IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents =>
+            combatCooldownSuppressionEvents;
         public int ControlledOpportunityScheduled => controlledOpportunityScheduled;
         public int ControlledOpportunityEligible => controlledOpportunityEligible;
         public int ControlledOpportunityUnfulfilledNoTarget => controlledOpportunityUnfulfilledNoTarget;
@@ -400,6 +434,7 @@ namespace SaltyGame
             behaviorTransitions.Clear();
             deathEvents.Clear();
             combatRollEvents.Clear();
+            combatCooldownSuppressionEvents.Clear();
             currentTick = -1;
             controlledOpportunityScheduled = 0;
             controlledOpportunityEligible = 0;
@@ -718,6 +753,22 @@ namespace SaltyGame
                 blockRoll,
                 blockModifier,
                 hit));
+        }
+
+        internal void RecordCombatCooldownSuppressed(
+            SpeciesId attackerSpecies,
+            long entityId,
+            int x,
+            int y,
+            int remainingTicks)
+        {
+            combatCooldownSuppressionEvents.Add(new SpeciesCombatCooldownSuppressionEvent(
+                attackerSpecies,
+                entityId,
+                x,
+                y,
+                currentTick,
+                remainingTicks));
         }
 
         internal void RecordReproductionOutcome(

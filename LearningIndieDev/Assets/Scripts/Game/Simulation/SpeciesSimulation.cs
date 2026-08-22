@@ -31,6 +31,29 @@ namespace SaltyGame
             return attackRoll + attackModifier > blockRoll + blockModifier;
         }
 
+        public static float GetOpposedRollHitProbability(
+            int attackModifier,
+            int blockModifier)
+        {
+            var winningRolls = 0;
+            for (var attackRoll = 1; attackRoll <= 20; attackRoll++)
+            {
+                for (var blockRoll = 1; blockRoll <= 20; blockRoll++)
+                {
+                    if (DoesOpposedRollHit(
+                        attackRoll,
+                        attackModifier,
+                        blockRoll,
+                        blockModifier))
+                    {
+                        winningRolls++;
+                    }
+                }
+            }
+
+            return winningRolls / 400f;
+        }
+
         internal static string FormatTrackedEntityId(SpeciesId species, long entityId)
         {
             var value = species.Value;
@@ -391,6 +414,9 @@ namespace SaltyGame
         {
             var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
             var paired = attackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
+            var useSplitCombatStats = combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
+                && experimentalOptions != null
+                && experimentalOptions.UsesSplitCombatStats;
             var controlledX = -1;
             var controlledY = -1;
             var controlledTargetX = -1;
@@ -438,15 +464,10 @@ namespace SaltyGame
                     var attacker = source.GetCell(x, y);
                     if (!attacker.IsCreature
                         || !rules.TryGetValue(attacker.SpeciesId, out var attackerRules)
-                        || attackerRules.AttackAmount <= 0
+                        || (useSplitCombatStats
+                            ? attackerRules.AttackModifier <= 0 && attackerRules.DamageAmount <= 0
+                            : attackerRules.AttackAmount <= 0)
                         || !next.GetCell(x, y).IsCreature)
-                    {
-                        continue;
-                    }
-
-                    if (experimentalOptions != null
-                        && attacker.SpeciesId == FoxSpeciesId
-                        && next.GetCell(x, y).AttackCooldownTicksRemaining > 0)
                     {
                         continue;
                     }
@@ -456,6 +477,20 @@ namespace SaltyGame
                         : next.GetCell(x, y).BehaviorState != SpeciesBehaviorState.Attacking
                             || !ShouldForage(attacker, attackerRules))
                     {
+                        continue;
+                    }
+
+                    var cooldownRemaining = next.GetCell(x, y).AttackCooldownTicksRemaining;
+                    if (experimentalOptions != null
+                        && attacker.SpeciesId == FoxSpeciesId
+                        && cooldownRemaining > 0)
+                    {
+                        metrics?.RecordCombatCooldownSuppressed(
+                            attacker.SpeciesId,
+                            attacker.EntityId,
+                            x,
+                            y,
+                            cooldownRemaining);
                         continue;
                     }
 
@@ -500,41 +535,47 @@ namespace SaltyGame
                             continue;
                         }
 
-                        var damage = attackerRules.AttackAmount;
+                        var damage = useSplitCombatStats
+                            ? attackerRules.DamageAmount
+                            : attackerRules.AttackAmount;
                         SpeciesRules targetRules = null;
-                        var hasDirectionalBlock = target.IsCreature
-                            && rules.TryGetValue(target.SpeciesId, out targetRules)
+                        var hasTargetRules = target.IsCreature
+                            && rules.TryGetValue(target.SpeciesId, out targetRules);
+                        var hasDirectionalBlock = hasTargetRules
                             && ContainsOffset(targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y));
-                        if (hasDirectionalBlock)
+                        if (target.IsCreature && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll)
                         {
-                            if (combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll)
+                            // Opposed-roll combat is a universal creature-versus-creature
+                            // resolution path. Directional block patterns may still describe
+                            // authored defense coverage, but they do not decide whether dice
+                            // are rolled; the target's block amount is always the modifier.
+                            var attackRoll = random.Next(1, 21);
+                            var blockRoll = random.Next(1, 21);
+                            var attackModifier = useSplitCombatStats
+                                ? attackerRules.AttackModifier
+                                : attackerRules.AttackAmount;
+                            var blockModifier = hasTargetRules ? targetRules.BlockAmount : 0;
+                            var hit = DoesOpposedRollHit(
+                                attackRoll,
+                                attackModifier,
+                                blockRoll,
+                                blockModifier);
+                            metrics?.RecordCombatRoll(
+                                attacker.SpeciesId,
+                                target.SpeciesId,
+                                attackRoll,
+                                attackModifier,
+                                blockRoll,
+                                blockModifier,
+                                hit);
+                            if (!hit)
                             {
-                                // ponytail: reuse authored attack/block values as temporary roll modifiers;
-                                // split damage and modifier stats when balance data needs that distinction.
-                                var attackRoll = random.Next(1, 21);
-                                var blockRoll = random.Next(1, 21);
-                                var hit = DoesOpposedRollHit(
-                                    attackRoll,
-                                    attackerRules.AttackAmount,
-                                    blockRoll,
-                                    targetRules.BlockAmount);
-                                metrics?.RecordCombatRoll(
-                                    attacker.SpeciesId,
-                                    target.SpeciesId,
-                                    attackRoll,
-                                    attackerRules.AttackAmount,
-                                    blockRoll,
-                                    targetRules.BlockAmount,
-                                    hit);
-                                if (!hit)
-                                {
-                                    damage = 0;
-                                }
+                                damage = 0;
                             }
-                            else
-                            {
-                                damage = Math.Max(0, damage - targetRules.BlockAmount);
-                            }
+                        }
+                        else if (hasDirectionalBlock)
+                        {
+                            damage = Math.Max(0, damage - targetRules.BlockAmount);
                         }
 
                         var currentAttacker = next.GetCell(x, y);
@@ -566,8 +607,7 @@ namespace SaltyGame
                             metrics?.RecordCombatAttempt(
                                 attacker.SpeciesId,
                                 hit: damage > 0,
-                                blocked: hasDirectionalBlock
-                                    && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
+                                blocked: combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
                                     && damage <= 0,
                                 damageDealt: Math.Min(damage, currentTarget.Health),
                                 lethal: remainingHealth <= 0);
@@ -631,8 +671,7 @@ namespace SaltyGame
                                 metrics?.RecordCombatAttempt(
                                     attacker.SpeciesId,
                                     hit: false,
-                                    blocked: hasDirectionalBlock
-                                        && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll,
+                                    blocked: combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll,
                                     damageDealt: 0,
                                     lethal: false);
                             }

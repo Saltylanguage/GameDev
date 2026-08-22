@@ -120,6 +120,24 @@ function Get-OpportunityControlValue {
     return [double]$propertyValue.Value
 }
 
+function Get-OpposedHitProbability {
+    param(
+        [int]$AttackModifier,
+        [int]$BlockModifier
+    )
+
+    $winningRolls = 0
+    for ($attackRoll = 1; $attackRoll -le 20; $attackRoll++) {
+        for ($blockRoll = 1; $blockRoll -le 20; $blockRoll++) {
+            if (($attackRoll + $AttackModifier) -gt ($blockRoll + $BlockModifier)) {
+                $winningRolls++
+            }
+        }
+    }
+
+    return $winningRolls / 400d
+}
+
 function Get-Number {
     param([double]$Value)
 
@@ -473,6 +491,54 @@ $lines.Add('')
 $lines.Add('Food attempts are eligible diet-target resolutions; successes must reconcile with failures as attempts = successes + failures.')
 $lines.Add('')
 $lines.Add('Combat opportunities are creature diet-targets found in the attack pattern; combat attempts are targets still present when the attack resolves. Hits and blocked rolls reconcile against attempts for opposed-roll diagnostics.')
+$lines.Add('')
+$lines.Add('## Experimental combat diagnostics')
+$lines.Add('')
+$diagnosticRows = [System.Collections.Generic.List[object[]]]::new()
+foreach ($speciesId in $species) {
+    $rollCount = 0d
+    $hitCount = 0d
+    $expectedProbabilityTotal = 0d
+    $suppressionCount = 0d
+    foreach ($run in @($report.runs)) {
+        foreach ($roll in @($run.combatRolls | Where-Object { $_.attackerSpeciesId -eq $speciesId })) {
+            if ($null -eq $roll) {
+                continue
+            }
+
+            $rollCount++
+            if ($roll.hit) {
+                $hitCount++
+            }
+
+            $probabilityProperty = $roll.PSObject.Properties['expectedHitProbability']
+            if ($null -ne $probabilityProperty) {
+                $expectedProbabilityTotal += [double]$probabilityProperty.Value
+            }
+            else {
+                $expectedProbabilityTotal += Get-OpposedHitProbability -AttackModifier $roll.attackModifier -BlockModifier $roll.blockModifier
+            }
+        }
+
+        $suppressionEventsProperty = $run.PSObject.Properties['combatCooldownSuppressions']
+        if ($null -ne $suppressionEventsProperty) {
+            $suppressionCount += @($suppressionEventsProperty.Value | Where-Object { $_.attackerSpeciesId -eq $speciesId }).Count
+        }
+    }
+
+    $actualHitRate = if ($rollCount -eq 0) { 0d } else { $hitCount / $rollCount }
+    $expectedHitRate = if ($rollCount -eq 0) { 0d } else { $expectedProbabilityTotal / $rollCount }
+    $diagnosticRows.Add(@(
+        $speciesId,
+        (Get-Number ($rollCount / [double]$report.seedCount)),
+        ((Get-Number ($actualHitRate * 100)) + '%'),
+        ((Get-Number ($expectedHitRate * 100)) + '%'),
+        (Get-Number ($suppressionCount / [double]$report.seedCount))
+    ))
+}
+Add-MarkdownTable -Lines $lines -Headers @('Attacker', 'Rolls/run', 'Actual hit rate', 'Expected hit rate', 'Cooldown suppressions/run') -Rows $diagnosticRows.ToArray()
+$lines.Add('')
+$lines.Add('Expected hit rate is the exact d20 probability implied by the recorded attack and block modifiers, with defender wins on ties. Cooldown suppressions are eligible experimental attacks skipped because the attacker still had cooldown ticks remaining. Legacy runs should produce no roll or suppression records.')
 $lines.Add('')
 $lines.Add('## Average reproduction funnel per run')
 $lines.Add('')

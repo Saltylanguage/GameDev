@@ -164,7 +164,30 @@ namespace SaltyGame.EditorTools
                     blockModifier = roll.BlockModifier,
                     attackTotal = roll.AttackRoll + roll.AttackModifier,
                     blockTotal = roll.BlockRoll + roll.BlockModifier,
+                    expectedHitProbability = roll.ExpectedHitProbability,
                     hit = roll.Hit,
+                };
+            }
+
+            return records;
+        }
+
+        public static SimulationSpeciesCombatCooldownSuppressionRecord[] CreateCombatCooldownSuppressions(
+            SpeciesSimulationMetrics metrics)
+        {
+            var source = metrics.CombatCooldownSuppressionEvents;
+            var records = new SimulationSpeciesCombatCooldownSuppressionRecord[source.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var suppression = source[index];
+                records[index] = new SimulationSpeciesCombatCooldownSuppressionRecord
+                {
+                    attackerSpeciesId = suppression.AttackerSpecies.Value,
+                    entityId = suppression.EntityId,
+                    x = suppression.X,
+                    y = suppression.Y,
+                    tick = suppression.Tick,
+                    remainingTicks = suppression.RemainingTicks,
                 };
             }
 
@@ -327,6 +350,18 @@ namespace SaltyGame.EditorTools
         public int blockModifier;
         public int attackTotal;
         public int blockTotal;
+        public float expectedHitProbability;
         public bool hit;
+    }
+
+    [System.Serializable]
+    sealed class SimulationSpeciesCombatCooldownSuppressionRecord
+    {
+        public string attackerSpeciesId;
+        public long entityId;
+        public int x;
+        public int y;
+        public int tick;
+        public int remainingTicks;
     }
 }

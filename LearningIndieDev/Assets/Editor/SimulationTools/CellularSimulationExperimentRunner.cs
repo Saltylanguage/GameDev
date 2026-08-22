@@ -349,6 +349,7 @@ namespace SaltyGame.EditorTools
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
                 combatRolls = SimulationReportSerialization.CreateCombatRolls(run.Metrics),
+                combatCooldownSuppressions = SimulationReportSerialization.CreateCombatCooldownSuppressions(run.Metrics),
                 opportunityControl = opportunityControl,
             };
         }
@@ -880,6 +881,7 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
             public SimulationSpeciesDeathRecord[] deathEvents;
             public SimulationSpeciesCombatRollRecord[] combatRolls;
+            public SimulationSpeciesCombatCooldownSuppressionRecord[] combatCooldownSuppressions;
             public ExperimentOpportunityControl opportunityControl;
         }
 
