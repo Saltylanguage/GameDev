@@ -1,6 +1,6 @@
 # Future Sprint Roadmap — Draft Planning Horizon
 
-> Status: Draft planning baseline | Updated: 2026-08-18 | Cadence: two weeks
+> Status: Draft planning baseline | Updated: 2026-08-23 | Cadence: two weeks
 
 This document turns the current planning themes into a dependency-aware horizon
 for future sprint selection. It is deliberately a planning map, not a committed
@@ -27,6 +27,7 @@ owner, estimate, acceptance evidence, and capacity impact are written down.
 | --- | --- | --- | --- |
 | File save/load | A versioned local profile can save, load, reset safely, migrate, and fall back from corrupt data. Keep settings, meta-progression, and active-run resume as separate decisions. | Profile shape, settlement/wallet rules, stable IDs | Design can start during S2–S3; implementation belongs after the profile and settlement contracts, targeting the roguelike-loop sprint. |
 | Species and scenarios | A small roster and scenario matrix create different strategic pressures without balancing the whole library. | Upgrade vocabulary, slice scenario evidence, species identities | Slice co-design in S3; broader content after vertical-slice validation. |
+| Reactive species / ecology | A deterministic predator–prey upgrade loop creates counterplay, tension, and recoverable pressure without hidden catch-up multipliers. | S2 upgrade contract/catalog, Forest Edge baseline envelope, existing BEV/EX-002 telemetry, Hare/Fox fixture | Design spike and paired counter trials in S3; recovery validation during S6. See [`REACTIVE_SPECIES_ECOLOGY_PLAN.md`](REACTIVE_SPECIES_ECOLOGY_PLAN.md). |
 | Iteration tooling | One measured authoring/comparison workflow becomes faster without becoming a feature dependency. | Repeated manual friction, explicit inputs/outputs, manual fallback | Parallel lane from S2 onward; promote only evidence-backed tools. |
 | Upgrade system | Clear separation between temporary per-run evolution and permanent Lab research, including costs, prerequisites, stacking, exclusions, and persistence boundaries. | Product economy and run cadence decisions | S2 design foundation; integrate permanent research after the wallet/settlement contract. |
 | Actual upgrades | A small explicit catalog proves numeric, spatial, conditional, and tradeoff effects with visible previews and telemetry. | Upgrade grammar, deterministic effective ruleset, first slice species | S2 first catalog; S3 co-design and pruning. |
@@ -53,6 +54,12 @@ and create a scenario matrix that pressures different strategies. Run fixed-seed
 baselines and comparisons. In parallel, improve only the highest-friction
 iteration workflow—such as seeded A/B reports or definition validation—while
 keeping a manual path for every feature decision.
+
+The reactive-species design spike belongs in this horizon. Define explicit
+Herbivore/Carnivore counter pairs, establish role-specific pressure envelopes,
+and instrument the upgrade boundary before implementing rubber banding. The
+bounded counterplay proposal and evidence sequence are in
+[`REACTIVE_SPECIES_ECOLOGY_PLAN.md`](REACTIVE_SPECIES_ECOLOGY_PLAN.md).
 
 ### S4 — Art bible, UI/UX, and readable feedback
 
@@ -89,7 +96,7 @@ candidates rather than becoming automatic sprint scope.
 ```text
 S1 UI shell and Lab boundary
   -> S2 upgrade grammar + first catalog
-       -> S3 species/scenario co-design
+       -> S3 species/scenario co-design + reactive ecology spike
             -> S6 vertical-slice validation
   -> S4 art bible + UI/UX readability
   -> profile/settlement contracts
