@@ -57,6 +57,8 @@ namespace SaltyGame
         string stateTitle;
         string runStatusText;
         string runDetailsText;
+        string experimentalHerbivoreStatLineSummary;
+        string experimentalUpgradeCountText;
         string currencyText;
         string settingsMessage;
         string gridWidthText;
@@ -101,6 +103,8 @@ namespace SaltyGame
         Visibility pausedVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
+        Visibility experimentalHerbivoreStatLineSummaryVisibility;
+        Visibility experimentalUpgradeCountVisibility;
         Visibility boardVisibility;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -123,6 +127,8 @@ namespace SaltyGame
         public string StateTitle => stateTitle;
         public string RunStatusText => runStatusText;
         public string RunDetailsText => runDetailsText;
+        public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
+        public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
         public string ScenarioText => scenarioText;
         public string PlayerSpeciesText => playerSpeciesText;
@@ -325,6 +331,8 @@ namespace SaltyGame
         public Visibility PausedVisibility => pausedVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
+        public Visibility ExperimentalHerbivoreStatLineSummaryVisibility => experimentalHerbivoreStatLineSummaryVisibility;
+        public Visibility ExperimentalUpgradeCountVisibility => experimentalUpgradeCountVisibility;
         public Visibility BoardVisibility => boardVisibility;
 
         public void Initialize(
@@ -666,6 +674,16 @@ namespace SaltyGame
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
             var tick = run == null ? -1 : run.Tick;
+            var isHerbivorePlayer = preview.ActiveSpeciesRules != null
+                && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out var playerRules)
+                && playerRules.Role == SpeciesRole.Herbivore;
+            var showExperimentalHerbivoreStatLine =
+                (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
+                && preview.BevExperimentalFeaturesEnabled
+                && isHerbivorePlayer;
+            var showExperimentalUpgradeCount =
+                (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
+                && preview.BevExperimentalFeaturesEnabled;
             if (!force && state == lastState && runStatus == lastRunStatus && tick == lastTick)
             {
                 return;
@@ -693,6 +711,18 @@ namespace SaltyGame
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
             Set(ref runStatusText, GetRunStatusText(run), nameof(RunStatusText));
             Set(ref runDetailsText, GetRunDetailsText(run), nameof(RunDetailsText));
+            Set(
+                ref experimentalHerbivoreStatLineSummary,
+                showExperimentalHerbivoreStatLine
+                    ? GetExperimentalHerbivoreStatLineSummary(run, preview.PlayerSpecies)
+                    : string.Empty,
+                nameof(ExperimentalHerbivoreStatLineSummary));
+            Set(
+                ref experimentalUpgradeCountText,
+                showExperimentalUpgradeCount
+                    ? $"BEV EXPERIMENTAL UPGRADES CHOSEN: {preview.PurchasedUpgradeCount}"
+                    : string.Empty,
+                nameof(ExperimentalUpgradeCountText));
             Set(ref currencyText, preview.Progression == null
                 ? "Currency: 0"
                 : $"Currency: {preview.Progression.Currency}", nameof(CurrencyText));
@@ -723,6 +753,18 @@ namespace SaltyGame
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
+            Set(
+                ref experimentalHerbivoreStatLineSummaryVisibility,
+                showExperimentalHerbivoreStatLine
+                    ? Visibility.Visible
+                    : Visibility.Collapsed,
+                nameof(ExperimentalHerbivoreStatLineSummaryVisibility));
+            Set(
+                ref experimentalUpgradeCountVisibility,
+                showExperimentalUpgradeCount
+                    ? Visibility.Visible
+                    : Visibility.Collapsed,
+                nameof(ExperimentalUpgradeCountVisibility));
             Set(ref boardVisibility,
                 state == SpeciesPreviewState.Running
                     ? Visibility.Visible
@@ -1058,6 +1100,79 @@ namespace SaltyGame
                 run.Tick,
                 run.ElapsedSeconds,
                 run.DurationSeconds);
+        }
+
+        static string GetExperimentalHerbivoreStatLineSummary(SimulationRunState run, SpeciesId species)
+        {
+            if (run == null || run.PopulationHistory.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var statLine = run.Metrics.CreateHerbivoreStatLine(
+                species,
+                run.PopulationHistory[0].GetCount(species),
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
+            var summary = new StringBuilder();
+            AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "ECN", statLine.Encounters);
+            AppendMetric(summary, "PREY", statLine.Preyed);
+            AppendMetric(summary, "STRV", statLine.Starved);
+            summary.Append('\n');
+            AppendMetric(summary, "MAT", statLine.Mating);
+            AppendMetric(summary, "BIR", statLine.Births);
+            AppendMetric(summary, "CRWD", statLine.Crowding);
+            AppendMetric(summary, "FPO", statLine.FinalPopulation);
+            summary.Append('\n');
+            AppendMetric(summary, "pAVI", statLine.InversePreyedAverage, statLine.InversePreyedAverageStatus);
+            AppendMetric(summary, "sAVI", statLine.InverseStarvedAverage, statLine.InverseStarvedAverageStatus);
+            AppendMetric(summary, "cAVI", statLine.InverseCrowdingAverage, statLine.InverseCrowdingAverageStatus);
+            AppendMetric(summary, "bAVG", statLine.BirthAverage, statLine.BirthAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "RFS", statLine.ReplicationFitnessScore, statLine.ReplicationFitnessScoreStatus);
+            AppendMetric(summary, "APS", statLine.ActualPreyScore, statLine.ActualPreyScoreStatus);
+            summary.Append('\n')
+                .Append("Expected FPO: ")
+                .Append(statLine.ExpectedFinalPopulation)
+                .Append("  |  Reconciled: ")
+                .Append(statLine.PopulationReconciled);
+            return summary.ToString();
+        }
+
+        static void AppendMetric(StringBuilder summary, string name, int value)
+        {
+            AppendSeparator(summary);
+            summary.Append(name).Append(": ").Append(value);
+        }
+
+        static void AppendMetric(
+            StringBuilder summary,
+            string name,
+            float value,
+            SpeciesHerbivoreMetricStatus status)
+        {
+            AppendSeparator(summary);
+            summary.Append(name).Append(": ");
+            switch (status)
+            {
+                case SpeciesHerbivoreMetricStatus.NotApplicable:
+                    summary.Append("N/A");
+                    break;
+                case SpeciesHerbivoreMetricStatus.Invalid:
+                    summary.Append("INVALID");
+                    break;
+                default:
+                    summary.Append(value.ToString("0.##", CultureInfo.InvariantCulture));
+                    break;
+            }
+        }
+
+        static void AppendSeparator(StringBuilder summary)
+        {
+            if (summary.Length > 0 && summary[summary.Length - 1] != '\n')
+            {
+                summary.Append("  |  ");
+            }
         }
 
         void Set<T>(ref T field, T value, string propertyName)

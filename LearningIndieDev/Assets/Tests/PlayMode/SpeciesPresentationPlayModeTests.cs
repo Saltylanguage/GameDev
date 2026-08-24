@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -34,7 +35,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator BevExperimentalFeaturesStayOffUntilExplicitlyApplied()
+        public IEnumerator BevExperimentalFeaturesShowHerbivoreStatLineAfterRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -52,6 +53,51 @@ namespace SaltyGame.PlayModeTests
             Assert.That(applied, Is.True, message);
             Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.True);
             Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(2));
+            StringAssert.Contains("herbivore stat line", message);
+
+            var settingsApplied = runtime.SpeciesPreview.TryApplyGlobalSettings(
+                "8",
+                "8",
+                runtime.SpeciesPreview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                runtime.SpeciesPreview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                runtime.SpeciesPreview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "0.05",
+                "0.01",
+                runtime.SpeciesPreview.PlantProbability.ToString(CultureInfo.InvariantCulture),
+                runtime.SpeciesPreview.HerbivoreProbability.ToString(CultureInfo.InvariantCulture),
+                runtime.SpeciesPreview.CarnivoreProbability.ToString(CultureInfo.InvariantCulture),
+                randomizeSeed: false,
+                out var settingsMessage);
+            Assert.That(settingsApplied, Is.True, settingsMessage);
+
+            runtime.SpeciesPreview.StartSimulation();
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (runtime.SpeciesPreview.State != SpeciesPreviewState.Rewards
+                   && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(runtime.SpeciesPreview.State, Is.EqualTo(SpeciesPreviewState.Rewards));
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.SpeciesSimulationViewModel");
+            Assert.That(viewModel, Is.Not.Null);
+            var summary = viewModel.GetType()
+                .GetProperty("ExperimentalHerbivoreStatLineSummary")
+                ?.GetValue(viewModel) as string;
+            var summaryVisibility = viewModel.GetType()
+                .GetProperty("ExperimentalHerbivoreStatLineSummaryVisibility")
+                ?.GetValue(viewModel)
+                ?.ToString();
+            var expectedStartingPopulation = runtime.SpeciesPreview.Run.PopulationHistory[0]
+                .GetCount(runtime.SpeciesPreview.PlayerSpecies);
+            StringAssert.Contains($"SPO: {expectedStartingPopulation}", summary);
+            StringAssert.Contains("SPO:", summary);
+            StringAssert.Contains("APS:", summary);
+            Assert.That(summaryVisibility, Is.EqualTo("Visible"));
+
+            runtime.SpeciesPreview.ContinueWithoutUpgrade();
+            yield return null;
         }
     }
 }

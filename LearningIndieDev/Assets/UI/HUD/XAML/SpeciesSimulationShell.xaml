@@ -342,7 +342,7 @@
                                FontSize="16"
                                FontWeight="Bold"
                                Margin="0,0,0,2"/>
-                    <CheckBox Content="Enable opposed-roll combat and Bev experimental features"
+                    <CheckBox Content="Enable Bev experimental combat and herbivore stat line"
                               IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
                               Foreground="White"
                               Margin="0,3,0,0"/>
@@ -492,6 +492,28 @@
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,18"/>
+                <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                               Foreground="#FFF1C27D"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding ExperimentalHerbivoreStatLineSummary}"
+                               Foreground="#FFD9E7F0"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ExperimentalUpgradeCountText}"
+                           Visibility="{Binding ExperimentalUpgradeCountVisibility}"
+                           Foreground="#FFF1C27D"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0,-8,0,12"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="FASTER"
                             Command="{Binding PurchaseMovementUpgradeCommand}"
@@ -537,6 +559,28 @@
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,18"/>
+                <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                               Foreground="#FFF1C27D"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding ExperimentalHerbivoreStatLineSummary}"
+                               Foreground="#FFD9E7F0"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ExperimentalUpgradeCountText}"
+                           Visibility="{Binding ExperimentalUpgradeCountVisibility}"
+                           Foreground="#FFF1C27D"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           Margin="0,-8,0,12"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="PLAY NEXT SIMULATION"
                             Command="{Binding PlayNextSimulationCommand}"

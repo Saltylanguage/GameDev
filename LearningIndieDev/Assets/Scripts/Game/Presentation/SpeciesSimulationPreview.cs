@@ -222,6 +222,7 @@ namespace SaltyGame
 
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
+        public int PurchasedUpgradeCount => progression?.PurchasedUpgradeCount ?? 0;
         public SpeciesPreviewState State => previewState;
         public int GridWidth => width;
         public int GridHeight => height;
@@ -459,7 +460,7 @@ namespace SaltyGame
             bevExperimentalFeaturesEnabled = enabled;
             foxAttackCooldownTicks = parsedCooldown;
             settingsMessage = enabled
-                ? $"Bev experimental features enabled: opposed-roll combat, fox cooldown {foxAttackCooldownTicks} ticks."
+                ? $"Bev experimental features enabled: opposed-roll combat, herbivore stat line, fox cooldown {foxAttackCooldownTicks} ticks."
                 : "Bev experimental features disabled; legacy combat retained.";
             PrepareNextRun();
             validationMessage = settingsMessage;

@@ -248,10 +248,31 @@ namespace SaltyGame.EditorTools
                 expectedFPO = statLine.ExpectedFinalPopulation,
                 fpoReconciled = statLine.PopulationReconciled,
                 pAVI = statLine.InversePreyedAverage,
+                pAVIStatus = GetMetricStatusText(statLine.InversePreyedAverageStatus),
                 sAVI = statLine.InverseStarvedAverage,
+                sAVIStatus = GetMetricStatusText(statLine.InverseStarvedAverageStatus),
                 cAVI = statLine.InverseCrowdingAverage,
+                cAVIStatus = GetMetricStatusText(statLine.InverseCrowdingAverageStatus),
                 bAVG = statLine.BirthAverage,
+                bAVGStatus = GetMetricStatusText(statLine.BirthAverageStatus),
+                RFS = statLine.ReplicationFitnessScore,
+                RFSStatus = GetMetricStatusText(statLine.ReplicationFitnessScoreStatus),
+                APS = statLine.ActualPreyScore,
+                APSStatus = GetMetricStatusText(statLine.ActualPreyScoreStatus),
             };
+        }
+
+        static string GetMetricStatusText(SpeciesHerbivoreMetricStatus status)
+        {
+            switch (status)
+            {
+                case SpeciesHerbivoreMetricStatus.NotApplicable:
+                    return "N/A";
+                case SpeciesHerbivoreMetricStatus.Invalid:
+                    return "INVALID";
+                default:
+                    return "Valid";
+            }
         }
 
         public static List<SpeciesId> GetSpecies(IReadOnlyList<SpeciesPopulationSnapshot> history)
@@ -410,8 +431,16 @@ namespace SaltyGame.EditorTools
         public int expectedFPO;
         public bool fpoReconciled;
         public float pAVI;
+        public string pAVIStatus;
         public float sAVI;
+        public string sAVIStatus;
         public float cAVI;
+        public string cAVIStatus;
         public float bAVG;
+        public string bAVGStatus;
+        public float RFS;
+        public string RFSStatus;
+        public float APS;
+        public string APSStatus;
     }
 }

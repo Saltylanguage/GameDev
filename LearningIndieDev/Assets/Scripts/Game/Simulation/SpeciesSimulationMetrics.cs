@@ -352,6 +352,13 @@ namespace SaltyGame
         }
     }
 
+    public enum SpeciesHerbivoreMetricStatus
+    {
+        Valid,
+        NotApplicable,
+        Invalid,
+    }
+
     public readonly struct SpeciesHerbivoreStatLine
     {
         public SpeciesHerbivoreStatLine(
@@ -376,28 +383,64 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
             }
 
-            if (encounters == 0)
-            {
-                throw new InvalidOperationException("Herbivore stat line is invalid because ECN is zero.");
-            }
-
-            if (mating == 0)
-            {
-                throw new InvalidOperationException("Herbivore stat line is invalid because MAT is zero.");
-            }
-
             var populationBeforeStarvation = startingPopulation + births - preyed;
-            if (populationBeforeStarvation <= 0)
-            {
-                throw new InvalidOperationException(
-                    "Herbivore stat line is invalid because the sAVI denominator is zero or negative.");
-            }
-
             var populationBeforeCrowding = populationBeforeStarvation - starved;
-            if (populationBeforeCrowding <= 0)
+            var inversePreyedAverageStatus = GetRateStatus(preyed, encounters);
+            var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
+            var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
+            var birthAverageStatus = GetRateStatus(births, mating);
+            var expectedFinalPopulation = populationBeforeCrowding - crowding;
+            var populationReconciled = finalPopulation == expectedFinalPopulation;
+
+            var inversePreyedAverage = inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? 1f - (float)preyed / encounters
+                : 0f;
+            var inverseStarvedAverage = inverseStarvedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? 1f - (float)starved / populationBeforeStarvation
+                : 0f;
+            var inverseCrowdingAverage = inverseCrowdingAverageStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? 1f - (float)crowding / populationBeforeCrowding
+                : 0f;
+            var birthAverage = birthAverageStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? (float)births / mating
+                : 0f;
+
+            var replicationFitnessNumerator = finalPopulation - startingPopulation;
+            var replicationFitnessStatus = GetReplicationFitnessStatus(birthAverageStatus);
+            var replicationFitnessScore = replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? replicationFitnessNumerator * birthAverage
+                : 0f;
+
+            var actualPreyScoreStatus = populationReconciled
+                && inversePreyedAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
+                && inverseStarvedAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
+                && inverseCrowdingAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
+                && birthAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
+                && replicationFitnessStatus != SpeciesHerbivoreMetricStatus.Invalid
+                ? SpeciesHerbivoreMetricStatus.Valid
+                : SpeciesHerbivoreMetricStatus.Invalid;
+            var actualPreyScore = 0f;
+            if (actualPreyScoreStatus == SpeciesHerbivoreMetricStatus.Valid)
             {
-                throw new InvalidOperationException(
-                    "Herbivore stat line is invalid because the cAVI denominator is zero or negative.");
+                if (replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid)
+                {
+                    actualPreyScore += replicationFitnessScore;
+                }
+
+                if (inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
+                {
+                    actualPreyScore += inversePreyedAverage;
+                }
+
+                if (inverseStarvedAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
+                {
+                    actualPreyScore -= 1f - inverseStarvedAverage;
+                }
+
+                if (inverseCrowdingAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
+                {
+                    actualPreyScore -= 1f - inverseCrowdingAverage;
+                }
             }
 
             Species = species;
@@ -409,12 +452,53 @@ namespace SaltyGame
             Births = births;
             Crowding = crowding;
             FinalPopulation = finalPopulation;
-            ExpectedFinalPopulation = populationBeforeCrowding - crowding;
-            PopulationReconciled = finalPopulation == ExpectedFinalPopulation;
-            InversePreyedAverage = 1f - (float)preyed / encounters;
-            InverseStarvedAverage = 1f - (float)starved / populationBeforeStarvation;
-            InverseCrowdingAverage = 1f - (float)crowding / populationBeforeCrowding;
-            BirthAverage = (float)births / mating;
+            ExpectedFinalPopulation = expectedFinalPopulation;
+            PopulationReconciled = populationReconciled;
+            InversePreyedAverage = inversePreyedAverage;
+            InversePreyedAverageStatus = inversePreyedAverageStatus;
+            InverseStarvedAverage = inverseStarvedAverage;
+            InverseStarvedAverageStatus = inverseStarvedAverageStatus;
+            InverseCrowdingAverage = inverseCrowdingAverage;
+            InverseCrowdingAverageStatus = inverseCrowdingAverageStatus;
+            BirthAverage = birthAverage;
+            BirthAverageStatus = birthAverageStatus;
+            ReplicationFitnessScore = replicationFitnessScore;
+            ReplicationFitnessScoreStatus = replicationFitnessStatus;
+            ActualPreyScore = actualPreyScore;
+            ActualPreyScoreStatus = actualPreyScoreStatus;
+        }
+
+        static SpeciesHerbivoreMetricStatus GetRateStatus(int numerator, int denominator)
+        {
+            if (denominator < 0 || numerator > denominator)
+            {
+                return SpeciesHerbivoreMetricStatus.Invalid;
+            }
+
+            if (denominator == 0)
+            {
+                return numerator == 0
+                    ? SpeciesHerbivoreMetricStatus.NotApplicable
+                    : SpeciesHerbivoreMetricStatus.Invalid;
+            }
+
+            return SpeciesHerbivoreMetricStatus.Valid;
+        }
+
+        static SpeciesHerbivoreMetricStatus GetReplicationFitnessStatus(
+            SpeciesHerbivoreMetricStatus birthAverageStatus)
+        {
+            if (birthAverageStatus == SpeciesHerbivoreMetricStatus.Invalid)
+            {
+                return SpeciesHerbivoreMetricStatus.Invalid;
+            }
+
+            if (birthAverageStatus == SpeciesHerbivoreMetricStatus.NotApplicable)
+            {
+                return SpeciesHerbivoreMetricStatus.NotApplicable;
+            }
+
+            return SpeciesHerbivoreMetricStatus.Valid;
         }
 
         public SpeciesId Species { get; }
@@ -429,9 +513,17 @@ namespace SaltyGame
         public int ExpectedFinalPopulation { get; }
         public bool PopulationReconciled { get; }
         public float InversePreyedAverage { get; }
+        public SpeciesHerbivoreMetricStatus InversePreyedAverageStatus { get; }
         public float InverseStarvedAverage { get; }
+        public SpeciesHerbivoreMetricStatus InverseStarvedAverageStatus { get; }
         public float InverseCrowdingAverage { get; }
+        public SpeciesHerbivoreMetricStatus InverseCrowdingAverageStatus { get; }
         public float BirthAverage { get; }
+        public SpeciesHerbivoreMetricStatus BirthAverageStatus { get; }
+        public float ReplicationFitnessScore { get; }
+        public SpeciesHerbivoreMetricStatus ReplicationFitnessScoreStatus { get; }
+        public float ActualPreyScore { get; }
+        public SpeciesHerbivoreMetricStatus ActualPreyScoreStatus { get; }
     }
 
     public sealed class SpeciesSimulationMetrics

@@ -13,6 +13,7 @@ namespace SaltyGame
         public SpeciesDefinition Definition { get; }
         public SpeciesRules CurrentRules { get; private set; }
         public int Currency { get; private set; }
+        public int PurchasedUpgradeCount { get; private set; }
 
         public void AddCurrency(int amount)
         {
@@ -53,6 +54,7 @@ namespace SaltyGame
             }
 
             CurrentRules = upgrade.Apply(CurrentRules);
+            PurchasedUpgradeCount++;
             return true;
         }
 

@@ -290,6 +290,22 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void UpgradeProgressionCountsOnlySuccessfulPurchases()
+        {
+            var progression = new SpeciesProgression(
+                new SpeciesDefinition(SpeciesArchetype.Herbivore, CreateRules()));
+            var upgrade = new SpeciesUpgrade("faster", 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
+            progression.AddCurrency(10);
+
+            Assert.That(progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(progression.TryPurchase(upgrade), Is.True);
+            Assert.That(progression.TryPurchase(upgrade), Is.True);
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(2));
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(2));
+        }
+
+        [Test]
         public void UpgradeCatalogProvidesStableFasterMovementDefinition()
         {
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
@@ -2847,46 +2863,116 @@ namespace SaltyGame.Tests
                 finalPopulation: 9);
 
             Assert.That(statLine.InversePreyedAverage, Is.EqualTo(0.9f).Within(0.0001f));
+            Assert.That(statLine.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.InverseStarvedAverage, Is.EqualTo(10f / 11f).Within(0.0001f));
+            Assert.That(statLine.InverseStarvedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.InverseCrowdingAverage, Is.EqualTo(0.9f).Within(0.0001f));
+            Assert.That(statLine.InverseCrowdingAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.BirthAverage, Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(statLine.BirthAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.ReplicationFitnessScore, Is.EqualTo(-0.75f).Within(0.0001f));
+            Assert.That(statLine.ReplicationFitnessScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.ActualPreyScore, Is.EqualTo(-0.0409091f).Within(0.0001f));
+            Assert.That(statLine.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.ExpectedFinalPopulation, Is.EqualTo(9));
             Assert.That(statLine.PopulationReconciled, Is.True);
         }
 
         [Test]
-        public void ExperimentalHerbivoreStatLineRejectsZeroEncounterOrMatingDenominators()
+        public void ExperimentalHerbivoreStatLineTreatsZeroBirthAverageAsZeroRfsMultiplier()
         {
-            Assert.Throws<System.InvalidOperationException>(() => new SpeciesHerbivoreStatLine(
-                SpeciesIds.Herbivore,
-                startingPopulation: 10,
-                encounters: 0,
-                preyed: 0,
-                starved: 0,
-                mating: 1,
-                births: 1,
-                crowding: 0,
-                finalPopulation: 11));
-            Assert.Throws<System.InvalidOperationException>(() => new SpeciesHerbivoreStatLine(
+            var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
                 encounters: 1,
-                preyed: 0,
+                preyed: 1,
+                starved: 0,
+                mating: 4,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 9);
+
+            Assert.That(statLine.BirthAverage, Is.EqualTo(0f));
+            Assert.That(statLine.BirthAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.ReplicationFitnessScore, Is.EqualTo(0f));
+            Assert.That(statLine.ReplicationFitnessScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+        }
+
+        [Test]
+        public void ExperimentalHerbivoreStatLineUsesNeutralNADenominatorsForAps()
+        {
+            var statLine = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 1,
+                encounters: 1,
+                preyed: 1,
                 starved: 0,
                 mating: 0,
-                births: 1,
+                births: 0,
                 crowding: 0,
-                finalPopulation: 11));
-            Assert.Throws<System.InvalidOperationException>(() => new SpeciesHerbivoreStatLine(
+                finalPopulation: 0);
+
+            Assert.That(statLine.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.InverseStarvedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(statLine.InverseCrowdingAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(statLine.BirthAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(statLine.ReplicationFitnessScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(statLine.ActualPreyScore, Is.EqualTo(0f));
+            Assert.That(statLine.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+        }
+
+        [Test]
+        public void ExperimentalHerbivoreStatLineMarksZeroDenominatorWithDeathsInvalid()
+        {
+            var statLine = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 1,
+                encounters: 0,
+                preyed: 1,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 0);
+
+            Assert.That(statLine.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+            Assert.That(statLine.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+
+            var starvationWithoutExposure = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 0,
+                encounters: 0,
+                preyed: 0,
+                starved: 1,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 0);
+
+            Assert.That(
+                starvationWithoutExposure.InverseStarvedAverageStatus,
+                Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+            Assert.That(
+                starvationWithoutExposure.ActualPreyScoreStatus,
+                Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+        }
+
+        [Test]
+        public void ExperimentalHerbivoreStatLineMarksFpoReconciliationFailureInvalid()
+        {
+            var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
                 encounters: 1,
                 preyed: 0,
-                starved: 10,
+                starved: 0,
                 mating: 1,
                 births: 0,
                 crowding: 0,
-                finalPopulation: 0));
+                finalPopulation: 9);
+
+            Assert.That(statLine.PopulationReconciled, Is.False);
+            Assert.That(statLine.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
         }
 
         [Test]
