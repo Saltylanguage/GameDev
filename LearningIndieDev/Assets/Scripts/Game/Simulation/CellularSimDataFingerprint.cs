@@ -98,6 +98,9 @@ namespace SaltyGame
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
+            Append(builder, rules.DigestionEnergyBonus);
+            Append(builder, rules.CrowdingTolerance);
+            Append(builder, rules.FleeMovementSpeedBonus);
         }
 
         static void AppendTerrain(StringBuilder builder, TerrainDefinition terrain)

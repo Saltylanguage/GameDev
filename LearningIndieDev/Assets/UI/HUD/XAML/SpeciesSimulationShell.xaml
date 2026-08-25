@@ -342,7 +342,7 @@
                                FontSize="16"
                                FontWeight="Bold"
                                Margin="0,0,0,2"/>
-                    <CheckBox Content="Enable opposed-roll combat and Bev experimental features"
+                    <CheckBox Content="Enable Bev experimental combat and herbivore stat line"
                               IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
                               Foreground="White"
                               Margin="0,3,0,0"/>
@@ -492,24 +492,58 @@
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,18"/>
+                <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                               Foreground="#FFF1C27D"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding ExperimentalHerbivoreStatLineSummary}"
+                               Foreground="#FFD9E7F0"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ExperimentalUpgradeCountText}"
+                           Visibility="{Binding ExperimentalUpgradeCountVisibility}"
+                           Foreground="#FFF1C27D"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Margin="0,-8,0,12"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="FASTER"
-                            Command="{Binding PurchaseMovementUpgradeCommand}"
-                            IsEnabled="{Binding CanPurchaseMovementUpgrade}"
+                    <Button Command="{Binding PurchaseRewardOption1Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Width="130"
                             Height="50"
-                            Margin="0,0,8,0"/>
-                    <Button Content="ATTACK"
-                            Command="{Binding PurchaseAttackUpgradeCommand}"
-                            IsEnabled="{Binding CanPurchaseAttackUpgrade}"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="{Binding RewardOption1Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
+                    <Button Command="{Binding PurchaseRewardOption2Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Width="130"
                             Height="50"
-                            Margin="0,0,8,0"/>
-                    <Button Content="BLOCK"
-                            Command="{Binding PurchaseBlockUpgradeCommand}"
-                            IsEnabled="{Binding CanPurchaseBlockUpgrade}"
+                            Margin="0,0,8,0">
+                        <TextBlock Text="{Binding RewardOption2Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
+                    <Button Command="{Binding PurchaseRewardOption3Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption3}"
+                            Visibility="{Binding RewardOption3Visibility}"
                             Width="130"
-                            Height="50"/>
+                            Height="50">
+                        <TextBlock Text="{Binding RewardOption3Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
                 </StackPanel>
                 <Button Content="CONTINUE WITHOUT UPGRADE"
                         Command="{Binding ContinueWithoutUpgradeCommand}"
@@ -537,6 +571,30 @@
                            TextWrapping="Wrap"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,18"/>
+                <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
+                            Margin="0,0,0,18">
+                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                               Foreground="#FFF1C27D"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="{Binding ExperimentalHerbivoreStatLineSummary}"
+                               Foreground="#FFD9E7F0"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               TextAlignment="Center"
+                               Margin="0,6,0,0"/>
+                </StackPanel>
+                <TextBlock Text="{Binding ExperimentalUpgradeCountText}"
+                           Visibility="{Binding ExperimentalUpgradeCountVisibility}"
+                           Foreground="#FFF1C27D"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           TextWrapping="Wrap"
+                           TextAlignment="Center"
+                           Margin="0,-8,0,12"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Content="PLAY NEXT SIMULATION"
                             Command="{Binding PlayNextSimulationCommand}"

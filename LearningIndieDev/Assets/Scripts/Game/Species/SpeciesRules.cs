@@ -32,7 +32,10 @@ namespace SaltyGame
             int litterMinimum = 1,
             int litterMaximum = 1,
             int? attackModifier = null,
-            int? damageAmount = null)
+            int? damageAmount = null,
+            int digestionEnergyBonus = 0,
+            int crowdingTolerance = 0,
+            float fleeMovementSpeedBonus = 0f)
         {
             if (movementSpeed < 0f)
             {
@@ -52,6 +55,21 @@ namespace SaltyGame
             if (damageAmount.HasValue && damageAmount.Value < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(damageAmount), damageAmount, "Damage amount cannot be negative.");
+            }
+
+            if (digestionEnergyBonus < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(digestionEnergyBonus), digestionEnergyBonus, "Digestion energy bonus cannot be negative.");
+            }
+
+            if (crowdingTolerance < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(crowdingTolerance), crowdingTolerance, "Crowding tolerance cannot be negative.");
+            }
+
+            if (fleeMovementSpeedBonus < 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(fleeMovementSpeedBonus), fleeMovementSpeedBonus, "Flee movement speed bonus cannot be negative.");
             }
 
             if (blockAmount < 0)
@@ -157,6 +175,9 @@ namespace SaltyGame
             MaximumEnergy = maximumEnergy;
             LitterMinimum = litterMinimum;
             LitterMaximum = litterMaximum;
+            DigestionEnergyBonus = digestionEnergyBonus;
+            CrowdingTolerance = crowdingTolerance;
+            FleeMovementSpeedBonus = fleeMovementSpeedBonus;
         }
 
         public float MovementSpeed { get; }
@@ -193,5 +214,8 @@ namespace SaltyGame
         public int MaximumEnergy { get; }
         public int LitterMinimum { get; }
         public int LitterMaximum { get; }
+        public int DigestionEnergyBonus { get; }
+        public int CrowdingTolerance { get; }
+        public float FleeMovementSpeedBonus { get; }
     }
 }

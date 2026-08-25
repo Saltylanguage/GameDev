@@ -144,6 +144,28 @@ function Get-Number {
     return $Value.ToString('0.##', [System.Globalization.CultureInfo]::InvariantCulture)
 }
 
+function Get-StatMetricDisplay {
+    param(
+        [object]$Stat,
+        [string]$ValueProperty,
+        [string]$StatusProperty
+    )
+
+    $status = $Stat.PSObject.Properties[$StatusProperty]
+    if ($null -ne $status -and -not [string]::IsNullOrWhiteSpace([string]$status.Value)) {
+        if ([string]$status.Value -ne 'Valid') {
+            return [string]$status.Value
+        }
+    }
+
+    $value = $Stat.PSObject.Properties[$ValueProperty]
+    if ($null -eq $value -or $null -eq $value.Value) {
+        return 'N/A'
+    }
+
+    return Get-Number ([double]$value.Value)
+}
+
 function Add-MarkdownTable {
     param(
         [System.Collections.Generic.List[string]]$Lines,
@@ -380,7 +402,7 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
     if ($statRuns.Count -gt 0) {
         $lines.Add('## Experimental herbivore stat line')
         $lines.Add('')
-        $statHeaders = @('Seed', 'Species', 'SPO', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'sAVI', 'cAVI', 'bAVG')
+        $statHeaders = @('Seed', 'Species', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'eAVI', 'predAVG', 'sAVI', 'cAVI', 'bAVG', 'RFS', 'APS')
         $statRows = [System.Collections.Generic.List[object[]]]::new()
         foreach ($run in $statRuns) {
             $stat = $run.herbivoreStatLine
@@ -390,16 +412,16 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
             } else {
                 $crowdingProperty.Value
             }
-            $crowdingAverageProperty = $stat.PSObject.Properties['cAVI']
-            $crowdingAverage = if ($null -eq $crowdingAverageProperty -or $null -eq $crowdingAverageProperty.Value) {
-                'N/A'
-            } else {
-                Get-Number $crowdingAverageProperty.Value
-            }
+            $hpsProperty = $stat.PSObject.Properties['HPS']
+            $hps = if ($null -eq $hpsProperty -or $null -eq $hpsProperty.Value) { 'N/A' } else { $hpsProperty.Value }
+            $ehsProperty = $stat.PSObject.Properties['EHS']
+            $ehs = if ($null -eq $ehsProperty -or $null -eq $ehsProperty.Value) { 'N/A' } else { $ehsProperty.Value }
             $statRows.Add(@(
                 $run.seed,
                 $stat.speciesId,
                 $stat.SPO,
+                $hps,
+                $ehs,
                 $stat.ECN,
                 $stat.PREY,
                 $stat.STRV,
@@ -409,15 +431,23 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
                 $stat.FPO,
                 $stat.expectedFPO,
                 $stat.fpoReconciled,
-                (Get-Number $stat.pAVI),
-                (Get-Number $stat.sAVI),
-                $crowdingAverage,
-                (Get-Number $stat.bAVG)
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'pAVI' -StatusProperty 'pAVIStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'eAVI' -StatusProperty 'eAVIStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'predAVG' -StatusProperty 'predAVGStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'sAVI' -StatusProperty 'sAVIStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'cAVI' -StatusProperty 'cAVIStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'bAVG' -StatusProperty 'bAVGStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'RFS' -StatusProperty 'RFSStatus'),
+                (Get-StatMetricDisplay -Stat $stat -ValueProperty 'APS' -StatusProperty 'APSStatus')
             ))
         }
         Add-MarkdownTable -Lines $lines -Headers $statHeaders -Rows $statRows.ToArray()
         $lines.Add('')
-        $lines.Add('This opt-in stat line is emitted only for a herbivore player species. ECN and MAT must be nonzero. FPO is checked against SPO + BIR - PREY - STRV - CRWD; a false reconciliation flag identifies additional death causes or missing population events.')
+        if ([int]$report.schemaVersion -ge 17) {
+            $lines.Add('This opt-in stat line is emitted only for a herbivore player species. HPS counts living herbivores on predator-active steps; EHS counts each encountered herbivore at most once per step. eAVI is 1-EHS/HPS, and predAVG averages the applicable pAVI and eAVI components. N/A means zero exposure or opportunity with a zero numerator. INVALID means positive outcomes with zero exposure, negative exposure, over-counting, or an FPO reconciliation failure. APS treats N/A as neutral but remains INVALID when a component or FPO reconciliation is invalid.')
+        } else {
+            $lines.Add('This report predates schema 17. HPS, EHS, eAVI, and predAVG are shown as N/A, and APS retains the historical formula stored in the report.')
+        }
         $lines.Add('')
     }
 }
