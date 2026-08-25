@@ -332,6 +332,7 @@ namespace SaltyGame
             SpeciesAttackOpportunity? forcedOpportunity,
             SpeciesExperimentalOptions experimentalOptions = null)
         {
+            RecordHerbivoreExposureStep(source, rules, metrics, experimentalOptions);
             ResolveAttacks(
                 source,
                 next,
@@ -353,6 +354,55 @@ namespace SaltyGame
             ResolveReproduction(next, rules, terrainDefinitions, alphaOffspringRules, random, metrics);
             ResolvePopulationLimit(next, maxPopulation, random, metrics);
             return next;
+        }
+
+        static void RecordHerbivoreExposureStep(
+            Grid<SpeciesCell> source,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            SpeciesSimulationMetrics metrics,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            if (metrics == null || experimentalOptions == null
+                || !experimentalOptions.UsesHerbivoreStatLine)
+            {
+                return;
+            }
+
+            metrics.BeginHerbivoreExposureStep();
+            var hasCarnivore = false;
+            for (var y = 0; y < source.Height && !hasCarnivore; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (cell.IsCreature
+                        && rules.TryGetValue(cell.SpeciesId, out var cellRules)
+                        && cellRules.Role == SpeciesRole.Carnivore)
+                    {
+                        hasCarnivore = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!hasCarnivore)
+            {
+                return;
+            }
+
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (cell.IsCreature
+                        && rules.TryGetValue(cell.SpeciesId, out var cellRules)
+                        && cellRules.Role == SpeciesRole.Herbivore)
+                    {
+                        metrics.RecordPredatorActiveHerbivoreStep(cell.SpeciesId);
+                    }
+                }
+            }
         }
 
         [Obsolete("Use the SpeciesId overload instead.")]
@@ -545,7 +595,7 @@ namespace SaltyGame
                             metrics?.RecordCombatOpportunity(attacker.SpeciesId);
                             if (isCarnivoreHerbivoreInteraction)
                             {
-                                metrics?.RecordHerbivoreEncounter(target.SpeciesId);
+                                metrics?.RecordHerbivoreEncounter(target.SpeciesId, target.EntityId);
                             }
                         }
 
@@ -1168,7 +1218,9 @@ namespace SaltyGame
             {
                 movementPasses = Math.Max(
                     movementPasses,
-                    (int)Math.Ceiling(speciesRules.MovementSpeed / lowestMovementCost));
+                    (int)Math.Ceiling(
+                        (speciesRules.MovementSpeed + speciesRules.FleeMovementSpeedBonus)
+                        / lowestMovementCost));
             }
 
             for (var pass = 0; pass < movementPasses; pass++)
@@ -1716,8 +1768,12 @@ namespace SaltyGame
                 return true;
             }
 
+            var movementSpeed = speciesRules.MovementSpeed
+                + (cell.BehaviorState == SpeciesBehaviorState.Fleeing
+                    ? speciesRules.FleeMovementSpeedBonus
+                    : 0f);
             if (!CanMoveThisPass(
-                speciesRules.MovementSpeed / sourceTarget.MovementCost,
+                movementSpeed / sourceTarget.MovementCost,
                 movementPass,
                 random))
             {
@@ -2002,7 +2058,8 @@ namespace SaltyGame
                         speciesRules.ReproductionPattern,
                         excludeX: -1,
                         excludeY: -1) + 1;
-                    var excessMembers = groupSize - speciesRules.MaxReproductionGroupSize;
+                    var excessMembers = groupSize
+                        - (speciesRules.MaxReproductionGroupSize + speciesRules.CrowdingTolerance);
                     if (excessMembers <= 0)
                     {
                         continue;
@@ -2286,8 +2343,8 @@ namespace SaltyGame
                 cell.SpeciesId,
                 cell.Health,
                 rules.MaximumEnergy > 0
-                    ? Math.Min(rules.MaximumEnergy, cell.Energy + energyValue)
-                    : cell.Energy + energyValue,
+                    ? Math.Min(rules.MaximumEnergy, cell.Energy + energyValue + rules.DigestionEnergyBonus)
+                    : cell.Energy + energyValue + rules.DigestionEnergyBonus,
                 cell.Age,
                 cell.FoodEaten + 1,
                 cell.FoodReserve + foodAmount,

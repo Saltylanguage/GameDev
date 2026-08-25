@@ -1,8 +1,8 @@
 # Herbivore Slash-Line Measurement Contract
 
-Status: baseline and controlled-trial validation completed on 2026-08-23,
-with one schema limitation: ECN cannot currently be reconstructed from the
-exported event records.
+Status: schema-17 encounter-avoidance contract implemented. The 2026-08-23
+baseline and controlled-trial evidence predates HPS/EHS and must not be treated
+as validation of eAVI, predAVG, or the revised APS.
 
 This document separates four claims:
 
@@ -21,11 +21,13 @@ metric values to calculate anything.
 | --- | --- | --- | --- |
 | FPO | `SPO + BIR - PREY - STRV - CRWD` | `SPO`, `BIR`, `PREY`, `STRV`, `CRWD` | Compare the formula result to the observed final population. A mismatch is an FPO reconciliation failure. |
 | pAVI | `1 - PREY / ECN` | `PREY`, `ECN` | `ECN=0, PREY=0` is N/A. Positive `PREY` with `ECN=0`, negative exposure, or `PREY>ECN` is INVALID. |
+| eAVI | `1 - EHS / HPS` | `EHS`, `HPS` | `HPS=0, EHS=0` is N/A. Positive `EHS` with `HPS=0`, negative exposure, or `EHS>HPS` is INVALID. |
+| predAVG | Average of applicable pAVI and eAVI | pAVI, eAVI | One valid component stands alone. Both N/A is N/A. Any INVALID component makes predAVG INVALID. |
 | sAVI | `1 - STRV / (SPO + BIR - PREY)` | `STRV`, `SPO`, `BIR`, `PREY` | Zero exposure with zero `STRV` is N/A. Positive `STRV`, negative exposure, or `STRV>denominator` is INVALID. |
 | cAVI | `1 - CRWD / (SPO + BIR - PREY - STRV)` | `CRWD`, `SPO`, `BIR`, `PREY`, `STRV` | Zero exposure with zero `CRWD` is N/A. Positive `CRWD`, negative exposure, or `CRWD>denominator` is INVALID. |
 | bAVG | `BIR / MAT` | `BIR`, `MAT` | `MAT=0, BIR=0` is N/A. Positive `BIR` with `MAT=0`, negative opportunity, or `BIR>MAT` is INVALID. |
 | RFS | `(FPO - SPO) * bAVG` | `FPO`, `SPO`, `bAVG` | Valid `bAVG=0` is a valid zero multiplier when `MAT>0`. N/A bAVG remains N/A; INVALID bAVG remains INVALID. |
-| APS | `RFS + pAVI - (1-sAVI) - (1-cAVI)` | RFS, pAVI, sAVI, cAVI | N/A contributions are neutral. Any INVALID component or FPO reconciliation failure makes APS INVALID. |
+| APS | `RFS + predAVG - (1-sAVI) - (1-cAVI)` | RFS, predAVG, sAVI, cAVI | N/A contributions are neutral. Any INVALID component or FPO reconciliation failure makes APS INVALID. |
 
 The game stores raw counts as integers and computed export values as floats.
 The UI formats valid floats with up to two decimal places (`0.##`); the JSON
@@ -38,6 +40,8 @@ rounded check.
 | Raw value | Current source |
 | --- | --- |
 | SPO/FPO | First and final `PopulationHistory` snapshots for the player species. |
+| HPS | At the start of each step containing at least one living carnivore, count every living herbivore once. |
+| EHS | For each step, count each herbivore that has at least one carnivore encounter once, even if it has multiple encounters. |
 | ECN | `SpeciesSimulationMetrics.RecordHerbivoreEncounter`, called when a carnivore has a creature target whose role is herbivore. |
 | PREY | `SpeciesSimulationMetrics.RecordHerbivorePreyed`, called when that carnivore-herbivore combat resolves lethally. |
 | STRV/CRWD | Creature `SpeciesDeathEvent` records with `Starvation` or `Crowding` cause. |
@@ -68,10 +72,10 @@ against export values and separately verifies that the UI path is populated.
 The JSON report exports accumulated raw count fields, death events, activity,
 population history, and combat telemetry. Death, birth, mating-candidate, SPO,
 and FPO counts can be independently cross-checked from those supporting
-records. ECN is currently an accumulated counter rather than a per-encounter
-event list in the JSON schema, so the first validation proves the formulas and
-the exported counter boundary, but does not yet independently reconstruct every
-ECN encounter from event records. A mismatch there must be treated as an
+records. HPS, EHS, and ECN are currently accumulated counters rather than
+per-step/per-encounter event lists in the JSON schema. Formula validation can
+check their exported boundary, but cannot independently reconstruct those
+three counts from supporting events. A mismatch must be treated as an
 instrumentation gap, not silently adjusted.
 
 ## Validation sequence
@@ -99,7 +103,7 @@ raw-count deltas and statistic deltas be described as evidence of the movement
 rule's effect. The baseline and trial reports, validation outputs, and revision
 identifier must be preserved together.
 
-## Completed validation evidence
+## Completed schema-16 validation evidence
 
 Both arms used Forest Edge, hare, seeds `1-20`, a `32x32` grid, 20 seconds,
 `0.1` second steps, opposed-roll combat, natural attack opportunities, and
@@ -114,8 +118,8 @@ derived `rulesetFingerprint`.
 | Baseline (`upgradeId=none`) | `artifacts/cellular-experiment-20260823-114102/report.json` | `VALIDATED_WITH_LIMITATIONS` | 140/140 pass | 140 pass; 20 ECN unavailable |
 | Trial (`upgradeId=faster-movement`) | `artifacts/cellular-experiment-20260823-114357/report.json` | `VALIDATED_WITH_LIMITATIONS` | 140/140 pass | 140 pass; 20 ECN unavailable |
 
-The independent validator calculated FPO, pAVI, sAVI, cAVI, bAVG, RFS, and
-APS from each report's raw stat-line counts. It did not use the game's metric
+The independent validator calculated the then-current FPO, pAVI, sAVI, cAVI,
+bAVG, RFS, and APS from each report's raw stat-line counts. It did not use the game's metric
 values as calculation inputs. Both arms had zero metric mismatches and zero
 available raw-count mismatches. The 20 unavailable checks per arm are the
 known ECN instrumentation limitation described above.

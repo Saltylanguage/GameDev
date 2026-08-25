@@ -9,6 +9,9 @@ namespace SaltyGame
         AttackModifier,
         DamageAmount,
         BlockAmount,
+        DigestionEnergyBonus,
+        CrowdingTolerance,
+        FleeMovementSpeedBonus,
     }
 
     public sealed class SpeciesUpgrade
@@ -53,6 +56,9 @@ namespace SaltyGame
             var attackModifier = rules.AttackModifier;
             var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
+            var digestionEnergyBonus = rules.DigestionEnergyBonus;
+            var crowdingTolerance = rules.CrowdingTolerance;
+            var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
             switch (Type)
             {
                 case SpeciesUpgradeType.MovementSpeed:
@@ -71,6 +77,15 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
+                    break;
+                case SpeciesUpgradeType.DigestionEnergyBonus:
+                    digestionEnergyBonus += (int)Value;
+                    break;
+                case SpeciesUpgradeType.CrowdingTolerance:
+                    crowdingTolerance += (int)Value;
+                    break;
+                case SpeciesUpgradeType.FleeMovementSpeedBonus:
+                    fleeMovementSpeedBonus += Value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
@@ -104,7 +119,10 @@ namespace SaltyGame
                 litterMinimum: rules.LitterMinimum,
                 litterMaximum: rules.LitterMaximum,
                 attackModifier: attackModifier,
-                damageAmount: damageAmount);
+                damageAmount: damageAmount,
+                digestionEnergyBonus: digestionEnergyBonus,
+                crowdingTolerance: crowdingTolerance,
+                fleeMovementSpeedBonus: fleeMovementSpeedBonus);
         }
     }
 
@@ -116,6 +134,18 @@ namespace SaltyGame
         public const string StrongerDamageId = "stronger-damage";
         public const string StrongerBlockId = "stronger-block";
         public const string StrongerBlockTwoId = "stronger-block-2";
+        public const string ToughHideId = "tough-hide";
+        public const string EfficientDigestionId = "efficient-digestion";
+        public const string CrowdingToleranceId = "crowding-tolerance";
+        public const string EscapeArtistId = "escape-artist";
+
+        static readonly string[] ExperimentalHerbivoreUpgradeIds =
+        {
+            ToughHideId,
+            EfficientDigestionId,
+            CrowdingToleranceId,
+            EscapeArtistId,
+        };
 
         public static SpeciesUpgrade Create(string id)
         {
@@ -138,6 +168,14 @@ namespace SaltyGame
                     return new SpeciesUpgrade(StrongerBlockId, 5, SpeciesUpgradeType.BlockAmount, 1f);
                 case StrongerBlockTwoId:
                     return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
+                case ToughHideId:
+                    return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.BlockAmount, 2f);
+                case EfficientDigestionId:
+                    return new SpeciesUpgrade(EfficientDigestionId, 5, SpeciesUpgradeType.DigestionEnergyBonus, 1f);
+                case CrowdingToleranceId:
+                    return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
+                case EscapeArtistId:
+                    return new SpeciesUpgrade(EscapeArtistId, 5, SpeciesUpgradeType.FleeMovementSpeedBonus, 0.5f);
                 default:
                     const string blockSweepPrefix = "stronger-block-";
                     if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
@@ -150,6 +188,60 @@ namespace SaltyGame
 
                     throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
             }
+        }
+
+        public static string GetDisplayName(string id)
+        {
+            switch (id)
+            {
+                case FasterMovementId:
+                    return "FASTER";
+                case StrongerAttackId:
+                    return "ATTACK";
+                case StrongerBlockId:
+                    return "BLOCK";
+                case ToughHideId:
+                    return "TOUGH HIDE";
+                case EfficientDigestionId:
+                    return "EFFICIENT DIGESTION";
+                case CrowdingToleranceId:
+                    return "CROWDING TOLERANCE";
+                case EscapeArtistId:
+                    return "ESCAPE ARTIST";
+                default:
+                    return id?.ToUpperInvariant() ?? string.Empty;
+            }
+        }
+
+        public static SpeciesUpgrade[] CreateExperimentalHerbivoreOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed)
+        {
+            if (rotation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
+            }
+
+            var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);
+            var seededValue = seed & int.MaxValue;
+            var hasContinuingUpgrade = primaryIndex >= 0;
+            if (!hasContinuingUpgrade)
+            {
+                primaryIndex = seededValue % ExperimentalHerbivoreUpgradeIds.Length;
+            }
+
+            var alternativeRotation = hasContinuingUpgrade
+                ? rotation % (ExperimentalHerbivoreUpgradeIds.Length - 1)
+                : (seededValue / ExperimentalHerbivoreUpgradeIds.Length)
+                    % (ExperimentalHerbivoreUpgradeIds.Length - 1);
+            var alternativeIndex = (primaryIndex + 1 + alternativeRotation)
+                % ExperimentalHerbivoreUpgradeIds.Length;
+            return new[]
+            {
+                Create(ExperimentalHerbivoreUpgradeIds[primaryIndex]),
+                Create(ExperimentalHerbivoreUpgradeIds[alternativeIndex]),
+            };
         }
     }
 }

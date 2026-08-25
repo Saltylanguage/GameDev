@@ -88,10 +88,13 @@ namespace SaltyGame
         bool canResume;
         bool canRestart;
         bool canStop;
-        bool canPurchaseMovementUpgrade;
-        bool canPurchaseAttackUpgrade;
-        bool canPurchaseBlockUpgrade;
+        bool canPurchaseRewardOption1;
+        bool canPurchaseRewardOption2;
+        bool canPurchaseRewardOption3;
         bool canPlayNextSimulation;
+        string rewardOption1Text;
+        string rewardOption2Text;
+        string rewardOption3Text;
         string[] scenarioOptions = Array.Empty<string>();
         int selectedScenarioIndex;
         string scenarioText;
@@ -105,6 +108,7 @@ namespace SaltyGame
         Visibility resultsVisibility;
         Visibility experimentalHerbivoreStatLineSummaryVisibility;
         Visibility experimentalUpgradeCountVisibility;
+        Visibility rewardOption3Visibility;
         Visibility boardVisibility;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -115,9 +119,9 @@ namespace SaltyGame
         public DelegateCommand RestartCommand { get; private set; }
         public DelegateCommand StopCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
-        public DelegateCommand PurchaseMovementUpgradeCommand { get; private set; }
-        public DelegateCommand PurchaseAttackUpgradeCommand { get; private set; }
-        public DelegateCommand PurchaseBlockUpgradeCommand { get; private set; }
+        public DelegateCommand PurchaseRewardOption1Command { get; private set; }
+        public DelegateCommand PurchaseRewardOption2Command { get; private set; }
+        public DelegateCommand PurchaseRewardOption3Command { get; private set; }
         public DelegateCommand ContinueWithoutUpgradeCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
         public DelegateCommand ApplySettingsCommand { get; private set; }
@@ -274,9 +278,12 @@ namespace SaltyGame
         public bool CanResume => canResume;
         public bool CanRestart => canRestart;
         public bool CanStop => canStop;
-        public bool CanPurchaseMovementUpgrade => canPurchaseMovementUpgrade;
-        public bool CanPurchaseAttackUpgrade => canPurchaseAttackUpgrade;
-        public bool CanPurchaseBlockUpgrade => canPurchaseBlockUpgrade;
+        public bool CanPurchaseRewardOption1 => canPurchaseRewardOption1;
+        public bool CanPurchaseRewardOption2 => canPurchaseRewardOption2;
+        public bool CanPurchaseRewardOption3 => canPurchaseRewardOption3;
+        public string RewardOption1Text => rewardOption1Text;
+        public string RewardOption2Text => rewardOption2Text;
+        public string RewardOption3Text => rewardOption3Text;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
         public string[] ScenarioOptions => scenarioOptions;
         public string[] PlayerSpeciesOptions => playerSpeciesOptions;
@@ -333,6 +340,7 @@ namespace SaltyGame
         public Visibility ResultsVisibility => resultsVisibility;
         public Visibility ExperimentalHerbivoreStatLineSummaryVisibility => experimentalHerbivoreStatLineSummaryVisibility;
         public Visibility ExperimentalUpgradeCountVisibility => experimentalUpgradeCountVisibility;
+        public Visibility RewardOption3Visibility => rewardOption3Visibility;
         public Visibility BoardVisibility => boardVisibility;
 
         public void Initialize(
@@ -633,9 +641,9 @@ namespace SaltyGame
             RestartCommand = new DelegateCommand(() => preview?.RestartSimulation());
             StopCommand = new DelegateCommand(() => preview?.StopSimulation());
             ResetCommand = new DelegateCommand(() => preview?.ResetToStart());
-            PurchaseMovementUpgradeCommand = new DelegateCommand(() => preview?.PurchaseReward(0));
-            PurchaseAttackUpgradeCommand = new DelegateCommand(() => preview?.PurchaseReward(1));
-            PurchaseBlockUpgradeCommand = new DelegateCommand(() => preview?.PurchaseReward(2));
+            PurchaseRewardOption1Command = new DelegateCommand(() => preview?.PurchaseReward(0));
+            PurchaseRewardOption2Command = new DelegateCommand(() => preview?.PurchaseReward(1));
+            PurchaseRewardOption3Command = new DelegateCommand(() => preview?.PurchaseReward(2));
             ContinueWithoutUpgradeCommand = new DelegateCommand(() => preview?.ContinueWithoutUpgrade());
             PlayNextSimulationCommand = new DelegateCommand(() => preview?.PlayNextSimulation());
             ApplySettingsCommand = new DelegateCommand(ApplySettings);
@@ -683,7 +691,8 @@ namespace SaltyGame
                 && isHerbivorePlayer;
             var showExperimentalUpgradeCount =
                 (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
-                && preview.BevExperimentalFeaturesEnabled;
+                && preview.BevExperimentalFeaturesEnabled
+                && isHerbivorePlayer;
             if (!force && state == lastState && runStatus == lastRunStatus && tick == lastTick)
             {
                 return;
@@ -720,7 +729,14 @@ namespace SaltyGame
             Set(
                 ref experimentalUpgradeCountText,
                 showExperimentalUpgradeCount
-                    ? $"BEV EXPERIMENTAL UPGRADES CHOSEN: {preview.PurchasedUpgradeCount}"
+                    ? string.Format(
+                        CultureInfo.InvariantCulture,
+                        "BEV EXPERIMENTAL UPGRADES: {0} | TOUGH HIDE Lv {1} | DIGESTION Lv {2} | CROWDING Lv {3} | ESCAPE Lv {4}",
+                        preview.PurchasedUpgradeCount,
+                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.ToughHideId),
+                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.EfficientDigestionId),
+                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.CrowdingToleranceId),
+                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.EscapeArtistId))
                     : string.Empty,
                 nameof(ExperimentalUpgradeCountText));
             Set(ref currencyText, preview.Progression == null
@@ -739,9 +755,12 @@ namespace SaltyGame
             Set(ref canResume, runStatus == SimulationRunStatus.Paused, nameof(CanResume));
             Set(ref canRestart, runStatus == SimulationRunStatus.Running || runStatus == SimulationRunStatus.Paused, nameof(CanRestart));
             Set(ref canStop, runStatus == SimulationRunStatus.Running || runStatus == SimulationRunStatus.Paused, nameof(CanStop));
-            Set(ref canPurchaseMovementUpgrade, preview.CanPurchaseReward(0), nameof(CanPurchaseMovementUpgrade));
-            Set(ref canPurchaseAttackUpgrade, preview.CanPurchaseReward(1), nameof(CanPurchaseAttackUpgrade));
-            Set(ref canPurchaseBlockUpgrade, preview.CanPurchaseReward(2), nameof(CanPurchaseBlockUpgrade));
+            Set(ref rewardOption1Text, preview.GetRewardOptionDisplayName(0), nameof(RewardOption1Text));
+            Set(ref rewardOption2Text, preview.GetRewardOptionDisplayName(1), nameof(RewardOption2Text));
+            Set(ref rewardOption3Text, preview.GetRewardOptionDisplayName(2), nameof(RewardOption3Text));
+            Set(ref canPurchaseRewardOption1, preview.CanPurchaseReward(0), nameof(CanPurchaseRewardOption1));
+            Set(ref canPurchaseRewardOption2, preview.CanPurchaseReward(1), nameof(CanPurchaseRewardOption2));
+            Set(ref canPurchaseRewardOption3, preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));
             Set(ref canPlayNextSimulation, state == SpeciesPreviewState.Results, nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
@@ -765,6 +784,10 @@ namespace SaltyGame
                     ? Visibility.Visible
                     : Visibility.Collapsed,
                 nameof(ExperimentalUpgradeCountVisibility));
+            Set(
+                ref rewardOption3Visibility,
+                preview.RewardOptionCount > 2 ? Visibility.Visible : Visibility.Collapsed,
+                nameof(RewardOption3Visibility));
             Set(ref boardVisibility,
                 state == SpeciesPreviewState.Running
                     ? Visibility.Visible
@@ -1115,16 +1138,21 @@ namespace SaltyGame
                 run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
             var summary = new StringBuilder();
             AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "HPS", statLine.PredatorActiveHerbivoreSteps);
+            AppendMetric(summary, "EHS", statLine.EncounteredHerbivoreSteps);
             AppendMetric(summary, "ECN", statLine.Encounters);
+            summary.Append('\n');
             AppendMetric(summary, "PREY", statLine.Preyed);
             AppendMetric(summary, "STRV", statLine.Starved);
-            summary.Append('\n');
             AppendMetric(summary, "MAT", statLine.Mating);
             AppendMetric(summary, "BIR", statLine.Births);
+            summary.Append('\n');
             AppendMetric(summary, "CRWD", statLine.Crowding);
             AppendMetric(summary, "FPO", statLine.FinalPopulation);
-            summary.Append('\n');
             AppendMetric(summary, "pAVI", statLine.InversePreyedAverage, statLine.InversePreyedAverageStatus);
+            AppendMetric(summary, "eAVI", statLine.InverseEncounterAverage, statLine.InverseEncounterAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "predAVG", statLine.PredationAverage, statLine.PredationAverageStatus);
             AppendMetric(summary, "sAVI", statLine.InverseStarvedAverage, statLine.InverseStarvedAverageStatus);
             AppendMetric(summary, "cAVI", statLine.InverseCrowdingAverage, statLine.InverseCrowdingAverageStatus);
             AppendMetric(summary, "bAVG", statLine.BirthAverage, statLine.BirthAverageStatus);

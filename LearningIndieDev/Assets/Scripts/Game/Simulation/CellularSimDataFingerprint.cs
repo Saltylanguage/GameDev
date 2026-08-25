@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v5";
+        public const string Version = "cellular-sim-data-v6";
 
         public static string Create(CellularSimData data)
         {
@@ -93,6 +93,9 @@ namespace SaltyGame
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
+            Append(builder, rules.DigestionEnergyBonus);
+            Append(builder, rules.CrowdingTolerance);
+            Append(builder, rules.FleeMovementSpeedBonus);
         }
 
         static void AppendTerrain(StringBuilder builder, TerrainDefinition terrain)

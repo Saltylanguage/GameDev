@@ -166,6 +166,27 @@ function Get-BirthAverageResult {
     }
 }
 
+function Get-ApplicableAverageResult {
+    param(
+        [Parameter(Mandatory)] [object]$First,
+        [Parameter(Mandatory)] [object]$Second
+    )
+
+    if ($First.Status -eq 'INVALID' -or $Second.Status -eq 'INVALID') {
+        return [pscustomobject]@{ Value = $null; Status = 'INVALID' }
+    }
+
+    $values = @(@($First, $Second) | Where-Object { $_.Status -eq 'VALID' })
+    if ($values.Count -eq 0) {
+        return [pscustomobject]@{ Value = $null; Status = 'N/A' }
+    }
+
+    return [pscustomobject]@{
+        Value = [double](($values | Measure-Object -Property Value -Average).Average)
+        Status = 'VALID'
+    }
+}
+
 function Get-GameMetricStatus {
     param(
         [Parameter(Mandatory)] [object]$Stat,
@@ -265,6 +286,8 @@ foreach ($run in $runs) {
     }
 
     $SPO = [int](Get-RequiredProperty $stat SPO "run $($run.seed) herbivoreStatLine")
+    $HPS = [int](Get-RequiredProperty $stat HPS "run $($run.seed) herbivoreStatLine")
+    $EHS = [int](Get-RequiredProperty $stat EHS "run $($run.seed) herbivoreStatLine")
     $ECN = [int](Get-RequiredProperty $stat ECN "run $($run.seed) herbivoreStatLine")
     $PREY = [int](Get-RequiredProperty $stat PREY "run $($run.seed) herbivoreStatLine")
     $STRV = [int](Get-RequiredProperty $stat STRV "run $($run.seed) herbivoreStatLine")
@@ -276,6 +299,8 @@ foreach ($run in $runs) {
     $expectedFPO = $SPO + $BIR - $PREY - $STRV - $CRWD
     $fpoPass = $expectedFPO -eq $FPO
     $pAVI = Get-RateResult -Numerator $PREY -Denominator $ECN
+    $eAVI = Get-RateResult -Numerator $EHS -Denominator $HPS
+    $predAVG = Get-ApplicableAverageResult -First $pAVI -Second $eAVI
     $sAVI = Get-RateResult -Numerator $STRV -Denominator ($SPO + $BIR - $PREY)
     $cAVI = Get-RateResult -Numerator $CRWD -Denominator ($SPO + $BIR - $PREY - $STRV)
     $bAVG = Get-BirthAverageResult -Births $BIR -Mating $MAT
@@ -291,14 +316,14 @@ foreach ($run in $runs) {
         }
     }
 
-    $components = @($pAVI, $sAVI, $cAVI, $bAVG, $rfs)
+    $components = @($predAVG, $sAVI, $cAVI, $bAVG, $rfs)
     $hasInvalidComponent = @($components | Where-Object { $_.Status -eq 'INVALID' }).Count -gt 0
     if (-not $fpoPass -or $hasInvalidComponent) {
         $aps = [pscustomobject]@{ Value = $null; Status = 'INVALID' }
     } else {
         $apsValue = 0d
         if ($rfs.Status -eq 'VALID') { $apsValue += $rfs.Value }
-        if ($pAVI.Status -eq 'VALID') { $apsValue += $pAVI.Value }
+        if ($predAVG.Status -eq 'VALID') { $apsValue += $predAVG.Value }
         if ($sAVI.Status -eq 'VALID') { $apsValue -= 1d - $sAVI.Value }
         if ($cAVI.Status -eq 'VALID') { $apsValue -= 1d - $cAVI.Value }
         $aps = [pscustomobject]@{ Value = $apsValue; Status = 'VALID' }
@@ -315,6 +340,8 @@ foreach ($run in $runs) {
             Passed = $fpoPass -and ([bool](Get-OptionalProperty -Object $stat -Name 'fpoReconciled'))
         },
         (Compare-Metric -Name 'pAVI' -Independent $pAVI -Stat $stat -GameValueProperty 'pAVI' -GameStatusProperty 'pAVIStatus' -AllowedTolerance $Tolerance),
+        (Compare-Metric -Name 'eAVI' -Independent $eAVI -Stat $stat -GameValueProperty 'eAVI' -GameStatusProperty 'eAVIStatus' -AllowedTolerance $Tolerance),
+        (Compare-Metric -Name 'predAVG' -Independent $predAVG -Stat $stat -GameValueProperty 'predAVG' -GameStatusProperty 'predAVGStatus' -AllowedTolerance $Tolerance),
         (Compare-Metric -Name 'sAVI' -Independent $sAVI -Stat $stat -GameValueProperty 'sAVI' -GameStatusProperty 'sAVIStatus' -AllowedTolerance $Tolerance),
         (Compare-Metric -Name 'cAVI' -Independent $cAVI -Stat $stat -GameValueProperty 'cAVI' -GameStatusProperty 'cAVIStatus' -AllowedTolerance $Tolerance),
         (Compare-Metric -Name 'bAVG' -Independent $bAVG -Stat $stat -GameValueProperty 'bAVG' -GameStatusProperty 'bAVGStatus' -AllowedTolerance $Tolerance),
@@ -330,6 +357,8 @@ foreach ($run in $runs) {
         (New-RawCrossCheck -Name 'STRV' -Source 'creature deathEvents with cause Starvation' -IndependentValue (Get-DeathEventCount -Run $run -SpeciesId $statSpeciesId -Cause 'Starvation') -ReportValue $STRV),
         (New-RawCrossCheck -Name 'CRWD' -Source 'creature deathEvents with cause Crowding' -IndependentValue (Get-DeathEventCount -Run $run -SpeciesId $statSpeciesId -Cause 'Crowding') -ReportValue $CRWD),
         (New-RawCrossCheck -Name 'PREY' -Source 'creature deathEvents with cause Combat' -IndependentValue (Get-DeathEventCount -Run $run -SpeciesId $statSpeciesId -Cause 'Combat') -ReportValue $PREY),
+        (New-RawCrossCheck -Name 'HPS' -Source 'no per-step predator-active population event list in current report schema' -IndependentValue $null -ReportValue $HPS),
+        (New-RawCrossCheck -Name 'EHS' -Source 'no per-step encountered-herbivore event list in current report schema' -IndependentValue $null -ReportValue $EHS),
         (New-RawCrossCheck -Name 'ECN' -Source 'no per-encounter target event list in current report schema' -IndependentValue $null -ReportValue $ECN)
     )
     $hasRawCrossCheckMismatch = @($rawCrossChecks | Where-Object { $_.Status -eq 'MISMATCH' }).Count -gt 0
@@ -338,7 +367,7 @@ foreach ($run in $runs) {
     $validationRuns.Add([pscustomobject]@{
         Seed = [int]$run.seed
         SpeciesId = $statSpeciesId
-        RawCounts = [ordered]@{ SPO = $SPO; ECN = $ECN; PREY = $PREY; STRV = $STRV; MAT = $MAT; BIR = $BIR; CRWD = $CRWD; FPO = $FPO }
+        RawCounts = [ordered]@{ SPO = $SPO; HPS = $HPS; EHS = $EHS; ECN = $ECN; PREY = $PREY; STRV = $STRV; MAT = $MAT; BIR = $BIR; CRWD = $CRWD; FPO = $FPO }
         ExpectedFPO = $expectedFPO
         Comparisons = $comparisons
         RawCrossChecks = $rawCrossChecks
@@ -383,11 +412,11 @@ $lines.Add('Tolerance for exported floats: ' + $Tolerance)
 $lines.Add('')
 $lines.Add('## Raw counts used')
 $lines.Add('')
-Add-MarkdownTableRow -Values @('Seed', 'Species', 'SPO', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO')
-Add-MarkdownTableRow -Values @('---', '---', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:')
+Add-MarkdownTableRow -Values @('Seed', 'Species', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO')
+Add-MarkdownTableRow -Values @('---', '---', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:')
 foreach ($validationRun in $validationRuns) {
     $raw = $validationRun.RawCounts
-    Add-MarkdownTableRow -Values @($validationRun.Seed, $validationRun.SpeciesId, $raw.SPO, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD, $raw.FPO, $validationRun.ExpectedFPO)
+    Add-MarkdownTableRow -Values @($validationRun.Seed, $validationRun.SpeciesId, $raw.SPO, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD, $raw.FPO, $validationRun.ExpectedFPO)
 }
 
 $lines.Add('')

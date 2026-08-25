@@ -194,12 +194,14 @@ namespace SaltyGame
         [SerializeField] bool bevExperimentalFeaturesEnabled;
         [SerializeField, Min(0)] int foxAttackCooldownTicks;
 
-        readonly SpeciesUpgrade[] rewardOptions =
+        static readonly SpeciesUpgrade[] LegacyRewardOptions =
         {
             SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId),
             SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId),
             SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerBlockId),
         };
+
+        SpeciesUpgrade[] rewardOptions = LegacyRewardOptions;
 
         SpeciesId playerSpecies;
         readonly List<SpeciesId> rosterSpecies = new List<SpeciesId>();
@@ -217,12 +219,21 @@ namespace SaltyGame
         bool rewardGranted;
         bool sessionStarted;
         string settingsMessage;
+        string lastExperimentalUpgradeId;
+        int experimentalOfferRotation;
 
         const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         public SimulationRunState Run => runner?.Run;
         public SpeciesProgression Progression => progression;
         public int PurchasedUpgradeCount => progression?.PurchasedUpgradeCount ?? 0;
+        public int GetUpgradeLevel(string upgradeId) => progression?.GetUpgradeLevel(upgradeId) ?? 0;
+        public int RewardOptionCount => rewardOptions.Length;
+        public string GetRewardOptionId(int rewardIndex) => rewardIndex >= 0 && rewardIndex < rewardOptions.Length
+            ? rewardOptions[rewardIndex].Id
+            : string.Empty;
+        public string GetRewardOptionDisplayName(int rewardIndex) =>
+            SpeciesUpgradeCatalog.GetDisplayName(GetRewardOptionId(rewardIndex));
         public SpeciesPreviewState State => previewState;
         public int GridWidth => width;
         public int GridHeight => height;
@@ -348,6 +359,7 @@ namespace SaltyGame
                 result = SimulationRunResults.Create(runner.Run);
                 RunCompleted?.Invoke(this, runner.Run);
                 progression.AddCurrency(result.CurrencyEarned);
+                PrepareRewardOptions();
                 rewardGranted = true;
                 previewState = SpeciesPreviewState.Rewards;
             }
@@ -459,8 +471,11 @@ namespace SaltyGame
 
             bevExperimentalFeaturesEnabled = enabled;
             foxAttackCooldownTicks = parsedCooldown;
+            lastExperimentalUpgradeId = null;
+            experimentalOfferRotation = 0;
+            rewardOptions = LegacyRewardOptions;
             settingsMessage = enabled
-                ? $"Bev experimental features enabled: opposed-roll combat, herbivore stat line, fox cooldown {foxAttackCooldownTicks} ticks."
+                ? $"Bev experimental features enabled: opposed-roll combat, herbivore stat line, two-of-four herbivore upgrades, fox cooldown {foxAttackCooldownTicks} ticks."
                 : "Bev experimental features disabled; legacy combat retained.";
             PrepareNextRun();
             validationMessage = settingsMessage;
@@ -686,6 +701,10 @@ namespace SaltyGame
             }
 
             selectedUpgrade = upgrade;
+            if (bevExperimentalFeaturesEnabled)
+            {
+                lastExperimentalUpgradeId = upgrade.Id;
+            }
             previewState = SpeciesPreviewState.Results;
             rewardMessage = string.Empty;
             return true;
@@ -731,6 +750,9 @@ namespace SaltyGame
                 playerSpecies,
                 rules[playerSpecies]));
             runNumber = 0;
+            lastExperimentalUpgradeId = null;
+            experimentalOfferRotation = 0;
+            rewardOptions = LegacyRewardOptions;
             sessionStarted = false;
             settingsMessage = string.Empty;
             PrepareNextRun();
@@ -853,6 +875,23 @@ namespace SaltyGame
             rewardMessage = string.Empty;
             previewState = SpeciesPreviewState.Ready;
             runNumber++;
+        }
+
+        void PrepareRewardOptions()
+        {
+            if (!bevExperimentalFeaturesEnabled
+                || !rules.TryGetValue(playerSpecies, out var playerRules)
+                || playerRules.Role != SpeciesRole.Herbivore)
+            {
+                rewardOptions = LegacyRewardOptions;
+                return;
+            }
+
+            rewardOptions = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
+                lastExperimentalUpgradeId,
+                experimentalOfferRotation,
+                runner?.Run.Seed ?? seed);
+            experimentalOfferRotation++;
         }
 
         Dictionary<SpeciesId, SpeciesRuleDraft> CreateRuleDrafts(

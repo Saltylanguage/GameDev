@@ -93,8 +93,22 @@ namespace SaltyGame.PlayModeTests
                 .GetCount(runtime.SpeciesPreview.PlayerSpecies);
             StringAssert.Contains($"SPO: {expectedStartingPopulation}", summary);
             StringAssert.Contains("SPO:", summary);
+            StringAssert.Contains("HPS:", summary);
+            StringAssert.Contains("EHS:", summary);
+            StringAssert.Contains("eAVI:", summary);
+            StringAssert.Contains("predAVG:", summary);
             StringAssert.Contains("APS:", summary);
             Assert.That(summaryVisibility, Is.EqualTo("Visible"));
+            Assert.That(runtime.SpeciesPreview.RewardOptionCount, Is.EqualTo(2));
+            Assert.That(runtime.SpeciesPreview.GetRewardOptionId(0), Is.Not.Empty);
+            Assert.That(
+                runtime.SpeciesPreview.GetRewardOptionId(1),
+                Is.Not.EqualTo(runtime.SpeciesPreview.GetRewardOptionId(0)));
+            var thirdRewardVisibility = viewModel.GetType()
+                .GetProperty("RewardOption3Visibility")
+                ?.GetValue(viewModel)
+                ?.ToString();
+            Assert.That(thirdRewardVisibility, Is.EqualTo("Collapsed"));
 
             runtime.SpeciesPreview.ContinueWithoutUpgrade();
             yield return null;

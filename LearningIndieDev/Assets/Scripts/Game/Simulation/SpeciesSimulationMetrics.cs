@@ -364,6 +364,8 @@ namespace SaltyGame
         public SpeciesHerbivoreStatLine(
             SpeciesId species,
             int startingPopulation,
+            int predatorActiveHerbivoreSteps,
+            int encounteredHerbivoreSteps,
             int encounters,
             int preyed,
             int starved,
@@ -377,7 +379,8 @@ namespace SaltyGame
                 throw new ArgumentException("Herbivore stat line requires a valid species id.", nameof(species));
             }
 
-            if (startingPopulation < 0 || encounters < 0 || preyed < 0 || starved < 0
+            if (startingPopulation < 0 || predatorActiveHerbivoreSteps < 0
+                || encounteredHerbivoreSteps < 0 || encounters < 0 || preyed < 0 || starved < 0
                 || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
@@ -386,6 +389,9 @@ namespace SaltyGame
             var populationBeforeStarvation = startingPopulation + births - preyed;
             var populationBeforeCrowding = populationBeforeStarvation - starved;
             var inversePreyedAverageStatus = GetRateStatus(preyed, encounters);
+            var inverseEncounterAverageStatus = GetRateStatus(
+                encounteredHerbivoreSteps,
+                predatorActiveHerbivoreSteps);
             var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
             var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
             var birthAverageStatus = GetRateStatus(births, mating);
@@ -395,6 +401,17 @@ namespace SaltyGame
             var inversePreyedAverage = inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? 1f - (float)preyed / encounters
                 : 0f;
+            var inverseEncounterAverage = inverseEncounterAverageStatus == SpeciesHerbivoreMetricStatus.Valid
+                ? 1f - (float)encounteredHerbivoreSteps / predatorActiveHerbivoreSteps
+                : 0f;
+            var predationAverageStatus = GetApplicableAverageStatus(
+                inversePreyedAverageStatus,
+                inverseEncounterAverageStatus);
+            var predationAverage = GetApplicableAverage(
+                inversePreyedAverage,
+                inversePreyedAverageStatus,
+                inverseEncounterAverage,
+                inverseEncounterAverageStatus);
             var inverseStarvedAverage = inverseStarvedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? 1f - (float)starved / populationBeforeStarvation
                 : 0f;
@@ -412,7 +429,7 @@ namespace SaltyGame
                 : 0f;
 
             var actualPreyScoreStatus = populationReconciled
-                && inversePreyedAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
+                && predationAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
                 && inverseStarvedAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
                 && inverseCrowdingAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
                 && birthAverageStatus != SpeciesHerbivoreMetricStatus.Invalid
@@ -427,9 +444,9 @@ namespace SaltyGame
                     actualPreyScore += replicationFitnessScore;
                 }
 
-                if (inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
+                if (predationAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
                 {
-                    actualPreyScore += inversePreyedAverage;
+                    actualPreyScore += predationAverage;
                 }
 
                 if (inverseStarvedAverageStatus == SpeciesHerbivoreMetricStatus.Valid)
@@ -445,6 +462,8 @@ namespace SaltyGame
 
             Species = species;
             StartingPopulation = startingPopulation;
+            PredatorActiveHerbivoreSteps = predatorActiveHerbivoreSteps;
+            EncounteredHerbivoreSteps = encounteredHerbivoreSteps;
             Encounters = encounters;
             Preyed = preyed;
             Starved = starved;
@@ -456,6 +475,10 @@ namespace SaltyGame
             PopulationReconciled = populationReconciled;
             InversePreyedAverage = inversePreyedAverage;
             InversePreyedAverageStatus = inversePreyedAverageStatus;
+            InverseEncounterAverage = inverseEncounterAverage;
+            InverseEncounterAverageStatus = inverseEncounterAverageStatus;
+            PredationAverage = predationAverage;
+            PredationAverageStatus = predationAverageStatus;
             InverseStarvedAverage = inverseStarvedAverage;
             InverseStarvedAverageStatus = inverseStarvedAverageStatus;
             InverseCrowdingAverage = inverseCrowdingAverage;
@@ -501,8 +524,46 @@ namespace SaltyGame
             return SpeciesHerbivoreMetricStatus.Valid;
         }
 
+        static SpeciesHerbivoreMetricStatus GetApplicableAverageStatus(
+            SpeciesHerbivoreMetricStatus first,
+            SpeciesHerbivoreMetricStatus second)
+        {
+            if (first == SpeciesHerbivoreMetricStatus.Invalid
+                || second == SpeciesHerbivoreMetricStatus.Invalid)
+            {
+                return SpeciesHerbivoreMetricStatus.Invalid;
+            }
+
+            return first == SpeciesHerbivoreMetricStatus.Valid
+                || second == SpeciesHerbivoreMetricStatus.Valid
+                ? SpeciesHerbivoreMetricStatus.Valid
+                : SpeciesHerbivoreMetricStatus.NotApplicable;
+        }
+
+        static float GetApplicableAverage(
+            float firstValue,
+            SpeciesHerbivoreMetricStatus firstStatus,
+            float secondValue,
+            SpeciesHerbivoreMetricStatus secondStatus)
+        {
+            if (firstStatus == SpeciesHerbivoreMetricStatus.Valid
+                && secondStatus == SpeciesHerbivoreMetricStatus.Valid)
+            {
+                return (firstValue + secondValue) * 0.5f;
+            }
+
+            if (firstStatus == SpeciesHerbivoreMetricStatus.Valid)
+            {
+                return firstValue;
+            }
+
+            return secondStatus == SpeciesHerbivoreMetricStatus.Valid ? secondValue : 0f;
+        }
+
         public SpeciesId Species { get; }
         public int StartingPopulation { get; }
+        public int PredatorActiveHerbivoreSteps { get; }
+        public int EncounteredHerbivoreSteps { get; }
         public int Encounters { get; }
         public int Preyed { get; }
         public int Starved { get; }
@@ -514,6 +575,10 @@ namespace SaltyGame
         public bool PopulationReconciled { get; }
         public float InversePreyedAverage { get; }
         public SpeciesHerbivoreMetricStatus InversePreyedAverageStatus { get; }
+        public float InverseEncounterAverage { get; }
+        public SpeciesHerbivoreMetricStatus InverseEncounterAverageStatus { get; }
+        public float PredationAverage { get; }
+        public SpeciesHerbivoreMetricStatus PredationAverageStatus { get; }
         public float InverseStarvedAverage { get; }
         public SpeciesHerbivoreMetricStatus InverseStarvedAverageStatus { get; }
         public float InverseCrowdingAverage { get; }
@@ -544,6 +609,11 @@ namespace SaltyGame
             new Dictionary<SpeciesId, int>();
         readonly Dictionary<SpeciesId, int> herbivorePreyedBySpecies =
             new Dictionary<SpeciesId, int>();
+        readonly Dictionary<SpeciesId, int> predatorActiveHerbivoreStepsBySpecies =
+            new Dictionary<SpeciesId, int>();
+        readonly Dictionary<SpeciesId, int> encounteredHerbivoreStepsBySpecies =
+            new Dictionary<SpeciesId, int>();
+        readonly HashSet<long> encounteredHerbivoreEntityIdsThisStep = new HashSet<long>();
         readonly List<SpeciesBehaviorTransition> behaviorTransitions =
             new List<SpeciesBehaviorTransition>();
         readonly List<SpeciesDeathEvent> deathEvents =
@@ -601,6 +671,20 @@ namespace SaltyGame
                 : 0;
         }
 
+        public int GetPredatorActiveHerbivoreSteps(SpeciesId species)
+        {
+            return predatorActiveHerbivoreStepsBySpecies.TryGetValue(species, out var steps)
+                ? steps
+                : 0;
+        }
+
+        public int GetEncounteredHerbivoreSteps(SpeciesId species)
+        {
+            return encounteredHerbivoreStepsBySpecies.TryGetValue(species, out var steps)
+                ? steps
+                : 0;
+        }
+
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
         public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
@@ -626,6 +710,9 @@ namespace SaltyGame
             trackedBehaviors.Clear();
             herbivoreEncountersBySpecies.Clear();
             herbivorePreyedBySpecies.Clear();
+            predatorActiveHerbivoreStepsBySpecies.Clear();
+            encounteredHerbivoreStepsBySpecies.Clear();
+            encounteredHerbivoreEntityIdsThisStep.Clear();
             behaviorTransitions.Clear();
             deathEvents.Clear();
             combatRollEvents.Clear();
@@ -893,7 +980,23 @@ namespace SaltyGame
             Record(attackerSpecies, combatOpportunities: 1);
         }
 
-        internal void RecordHerbivoreEncounter(SpeciesId species)
+        internal void BeginHerbivoreExposureStep()
+        {
+            encounteredHerbivoreEntityIdsThisStep.Clear();
+        }
+
+        internal void RecordPredatorActiveHerbivoreStep(SpeciesId species)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            predatorActiveHerbivoreStepsBySpecies.TryGetValue(species, out var steps);
+            predatorActiveHerbivoreStepsBySpecies[species] = steps + 1;
+        }
+
+        internal void RecordHerbivoreEncounter(SpeciesId species, long entityId)
         {
             if (!species.IsValid)
             {
@@ -902,6 +1005,11 @@ namespace SaltyGame
 
             herbivoreEncountersBySpecies.TryGetValue(species, out var encounters);
             herbivoreEncountersBySpecies[species] = encounters + 1;
+            if (encounteredHerbivoreEntityIdsThisStep.Add(entityId))
+            {
+                encounteredHerbivoreStepsBySpecies.TryGetValue(species, out var steps);
+                encounteredHerbivoreStepsBySpecies[species] = steps + 1;
+            }
         }
 
         internal void RecordHerbivorePreyed(SpeciesId species)
@@ -943,6 +1051,8 @@ namespace SaltyGame
             return new SpeciesHerbivoreStatLine(
                 species,
                 startingPopulation,
+                GetPredatorActiveHerbivoreSteps(species),
+                GetEncounteredHerbivoreSteps(species),
                 GetHerbivoreEncounters(species),
                 GetHerbivorePreyed(species),
                 starved,

@@ -62,4 +62,7 @@ Desktop.ini
 
 # Local Unity test and simulation experiment output
 LearningIndieDev/artifacts/
+
+# Local artifact-tool dependency junctions
+outputs/**/node_modules/
 Chrono Lead Artist Agreement Draft.md

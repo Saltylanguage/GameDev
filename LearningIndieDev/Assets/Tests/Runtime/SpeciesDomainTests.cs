@@ -295,14 +295,22 @@ namespace SaltyGame.Tests
             var progression = new SpeciesProgression(
                 new SpeciesDefinition(SpeciesArchetype.Herbivore, CreateRules()));
             var upgrade = new SpeciesUpgrade("faster", 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
-            progression.AddCurrency(10);
+            var otherUpgrade = new SpeciesUpgrade("attack", 5, SpeciesUpgradeType.AttackAmount, 1f);
+            progression.AddCurrency(15);
 
             Assert.That(progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.Zero);
             Assert.That(progression.TryPurchase(upgrade), Is.True);
+            Assert.That(progression.TryPurchase(otherUpgrade), Is.True);
             Assert.That(progression.TryPurchase(upgrade), Is.True);
-            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(2));
-            Assert.That(progression.TryPurchase(upgrade), Is.False);
-            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(2));
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(3));
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(2));
+            Assert.That(progression.GetUpgradeLevel(otherUpgrade.Id), Is.EqualTo(1));
+            Assert.That(progression.TryPurchase(otherUpgrade), Is.False);
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(3));
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(2));
+            Assert.That(progression.GetUpgradeLevel(otherUpgrade.Id), Is.EqualTo(1));
+            Assert.That(progression.GetUpgradeLevel("missing"), Is.Zero);
         }
 
         [Test]
@@ -313,6 +321,48 @@ namespace SaltyGame.Tests
             Assert.That(upgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.FasterMovementId));
             Assert.That(upgrade.Type, Is.EqualTo(SpeciesUpgradeType.MovementSpeed));
             Assert.That(upgrade.Value, Is.EqualTo(0.5f));
+        }
+
+        [Test]
+        public void ExperimentalHerbivoreUpgradesChangeOnlyTheirNamedRule()
+        {
+            var rules = CreateRules();
+
+            var toughHide = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(rules);
+            var digestion = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId).Apply(rules);
+            var crowding = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).Apply(rules);
+            var escape = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EscapeArtistId).Apply(rules);
+
+            Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount + 2));
+            Assert.That(toughHide.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus));
+            Assert.That(digestion.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 1));
+            Assert.That(digestion.Metabolism, Is.EqualTo(rules.Metabolism));
+            Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + 1));
+            Assert.That(crowding.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
+            Assert.That(escape.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.5f));
+            Assert.That(escape.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+        }
+
+        [Test]
+        public void ExperimentalHerbivoreOffersKeepTheChosenPathAndCycleTheOtherThree()
+        {
+            var initial = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(null, rotation: 0, seed: 42);
+            Assert.That(initial, Has.Length.EqualTo(2));
+            Assert.That(initial[0].Id, Is.Not.EqualTo(initial[1].Id));
+
+            var alternatives = new HashSet<string>();
+            for (var rotation = 0; rotation < 3; rotation++)
+            {
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
+                    SpeciesUpgradeCatalog.ToughHideId,
+                    rotation,
+                    seed: 42);
+                Assert.That(offer[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+                Assert.That(offer[1].Id, Is.Not.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+                alternatives.Add(offer[1].Id);
+            }
+
+            Assert.That(alternatives, Has.Count.EqualTo(3));
         }
 
         [Test]
@@ -1595,6 +1645,19 @@ namespace SaltyGame.Tests
 
             Assert.That(hunted.GetCell(1, 0).SpeciesId, Is.EqualTo(fox));
             Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
+
+            var escapeUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EscapeArtistId);
+            var escapeRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            {
+                [hare] = escapeUpgrade.Apply(escapeUpgrade.Apply(rules[hare])),
+            };
+            var fasterFleeing = new Grid<SpeciesCell>(5, 1);
+            fasterFleeing.SetCell(0, 0, new SpeciesCell(fox, energy: 8));
+            fasterFleeing.SetCell(2, 0, new SpeciesCell(hare, energy: 8));
+
+            var escapedTwice = SpeciesSimulation.Step(fasterFleeing, escapeRules, seed: 11);
+
+            Assert.That(escapedTwice.GetCell(4, 0).SpeciesId, Is.EqualTo(hare));
         }
 
         [Test]
@@ -2124,6 +2187,53 @@ namespace SaltyGame.Tests
                     secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionSuccesses
                     + secondMetrics.GetActivity(SpeciesIds.Herbivore).FoodActionFailures));
             Assert.That(secondMetrics.GetActivity(SpeciesIds.Plant).Deaths, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void EfficientDigestionAddsEnergyWithoutConsumingMorePlantFood()
+        {
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Plant, foodReserve: 5f));
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                energyValue: 1,
+                metabolism: 0,
+                role: SpeciesRole.Plant);
+            var herbivoreRules = new SpeciesRules(
+                movementSpeed: 1f,
+                movementPattern: right,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: right,
+                dietTarget: SpeciesIds.Plant,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                forageBelowEnergy: 2,
+                metabolism: 0,
+                digestionEnergyBonus: 1);
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Plant] = plantRules,
+                [SpeciesIds.Herbivore] = herbivoreRules,
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(3));
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(4f));
         }
 
         [Test]
@@ -2854,6 +2964,8 @@ namespace SaltyGame.Tests
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
+                predatorActiveHerbivoreSteps: 100,
+                encounteredHerbivoreSteps: 20,
                 encounters: 20,
                 preyed: 2,
                 starved: 1,
@@ -2864,6 +2976,10 @@ namespace SaltyGame.Tests
 
             Assert.That(statLine.InversePreyedAverage, Is.EqualTo(0.9f).Within(0.0001f));
             Assert.That(statLine.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.InverseEncounterAverage, Is.EqualTo(0.8f).Within(0.0001f));
+            Assert.That(statLine.InverseEncounterAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.PredationAverage, Is.EqualTo(0.85f).Within(0.0001f));
+            Assert.That(statLine.PredationAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.InverseStarvedAverage, Is.EqualTo(10f / 11f).Within(0.0001f));
             Assert.That(statLine.InverseStarvedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.InverseCrowdingAverage, Is.EqualTo(0.9f).Within(0.0001f));
@@ -2872,7 +2988,7 @@ namespace SaltyGame.Tests
             Assert.That(statLine.BirthAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.ReplicationFitnessScore, Is.EqualTo(-0.75f).Within(0.0001f));
             Assert.That(statLine.ReplicationFitnessScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
-            Assert.That(statLine.ActualPreyScore, Is.EqualTo(-0.0409091f).Within(0.0001f));
+            Assert.That(statLine.ActualPreyScore, Is.EqualTo(-0.0909091f).Within(0.0001f));
             Assert.That(statLine.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.ExpectedFinalPopulation, Is.EqualTo(9));
             Assert.That(statLine.PopulationReconciled, Is.True);
@@ -2884,6 +3000,8 @@ namespace SaltyGame.Tests
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
+                predatorActiveHerbivoreSteps: 1,
+                encounteredHerbivoreSteps: 1,
                 encounters: 1,
                 preyed: 1,
                 starved: 0,
@@ -2904,6 +3022,8 @@ namespace SaltyGame.Tests
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 1,
+                predatorActiveHerbivoreSteps: 1,
+                encounteredHerbivoreSteps: 1,
                 encounters: 1,
                 preyed: 1,
                 starved: 0,
@@ -2913,6 +3033,8 @@ namespace SaltyGame.Tests
                 finalPopulation: 0);
 
             Assert.That(statLine.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.InverseEncounterAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.PredationAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
             Assert.That(statLine.InverseStarvedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
             Assert.That(statLine.InverseCrowdingAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
             Assert.That(statLine.BirthAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
@@ -2922,11 +3044,68 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ExperimentalHerbivoreStatLineUsesApplicableEncounterAvoidanceInAps()
+        {
+            var avoidedAllEncounters = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 1,
+                predatorActiveHerbivoreSteps: 10,
+                encounteredHerbivoreSteps: 0,
+                encounters: 0,
+                preyed: 0,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 1);
+
+            Assert.That(avoidedAllEncounters.InversePreyedAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(avoidedAllEncounters.InverseEncounterAverage, Is.EqualTo(1f));
+            Assert.That(avoidedAllEncounters.PredationAverage, Is.EqualTo(1f));
+            Assert.That(avoidedAllEncounters.ActualPreyScore, Is.EqualTo(1f));
+
+            var noPredatorActivity = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 1,
+                predatorActiveHerbivoreSteps: 0,
+                encounteredHerbivoreSteps: 0,
+                encounters: 0,
+                preyed: 0,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 1);
+
+            Assert.That(noPredatorActivity.PredationAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.NotApplicable));
+            Assert.That(noPredatorActivity.ActualPreyScore, Is.EqualTo(0f));
+
+            var overcountedEncounterSteps = new SpeciesHerbivoreStatLine(
+                SpeciesIds.Herbivore,
+                startingPopulation: 1,
+                predatorActiveHerbivoreSteps: 1,
+                encounteredHerbivoreSteps: 2,
+                encounters: 2,
+                preyed: 0,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 1);
+
+            Assert.That(overcountedEncounterSteps.InverseEncounterAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+            Assert.That(overcountedEncounterSteps.PredationAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+            Assert.That(overcountedEncounterSteps.ActualPreyScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+        }
+
+        [Test]
         public void ExperimentalHerbivoreStatLineMarksZeroDenominatorWithDeathsInvalid()
         {
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 1,
+                predatorActiveHerbivoreSteps: 0,
+                encounteredHerbivoreSteps: 0,
                 encounters: 0,
                 preyed: 1,
                 starved: 0,
@@ -2941,6 +3120,8 @@ namespace SaltyGame.Tests
             var starvationWithoutExposure = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 0,
+                predatorActiveHerbivoreSteps: 0,
+                encounteredHerbivoreSteps: 0,
                 encounters: 0,
                 preyed: 0,
                 starved: 1,
@@ -2963,6 +3144,8 @@ namespace SaltyGame.Tests
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
+                predatorActiveHerbivoreSteps: 10,
+                encounteredHerbivoreSteps: 0,
                 encounters: 1,
                 preyed: 0,
                 starved: 0,
@@ -2981,6 +3164,8 @@ namespace SaltyGame.Tests
             var statLine = new SpeciesHerbivoreStatLine(
                 SpeciesIds.Herbivore,
                 startingPopulation: 10,
+                predatorActiveHerbivoreSteps: 10,
+                encounteredHerbivoreSteps: 1,
                 encounters: 1,
                 preyed: 1,
                 starved: 1,
@@ -3051,6 +3236,25 @@ namespace SaltyGame.Tests
             }
 
             Assert.That(survivingHares, Is.EqualTo(3));
+
+            var tolerantRules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Herbivore] = SpeciesUpgradeCatalog.Create(
+                    SpeciesUpgradeCatalog.CrowdingToleranceId).Apply(rules[SpeciesIds.Herbivore]),
+            };
+            var tolerantMetrics = new SpeciesSimulationMetrics();
+            var tolerantNext = SpeciesSimulation.Step(source, tolerantRules, seed: 7, metrics: tolerantMetrics);
+
+            Assert.That(tolerantMetrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.Zero);
+            var tolerantSurvivors = 0;
+            for (var y = 0; y < tolerantNext.Height; y++)
+            {
+                for (var x = 0; x < tolerantNext.Width; x++)
+                {
+                    tolerantSurvivors += tolerantNext.GetCell(x, y).IsCreature ? 1 : 0;
+                }
+            }
+            Assert.That(tolerantSurvivors, Is.EqualTo(4));
         }
 
         [Test]
@@ -3105,6 +3309,8 @@ namespace SaltyGame.Tests
 
             Assert.That(metrics.GetHerbivoreEncounters(SpeciesIds.Herbivore), Is.EqualTo(1));
             Assert.That(metrics.GetHerbivorePreyed(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(metrics.GetPredatorActiveHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(metrics.GetEncounteredHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(1));
         }
     }
 }

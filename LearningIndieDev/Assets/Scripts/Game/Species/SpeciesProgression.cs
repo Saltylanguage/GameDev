@@ -1,9 +1,13 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
     public sealed class SpeciesProgression
     {
+        readonly Dictionary<string, int> purchasedUpgradeLevels =
+            new Dictionary<string, int>(StringComparer.Ordinal);
+
         public SpeciesProgression(SpeciesDefinition definition)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
@@ -14,6 +18,14 @@ namespace SaltyGame
         public SpeciesRules CurrentRules { get; private set; }
         public int Currency { get; private set; }
         public int PurchasedUpgradeCount { get; private set; }
+
+        public int GetUpgradeLevel(string upgradeId)
+        {
+            return !string.IsNullOrWhiteSpace(upgradeId)
+                && purchasedUpgradeLevels.TryGetValue(upgradeId, out var level)
+                ? level
+                : 0;
+        }
 
         public void AddCurrency(int amount)
         {
@@ -54,6 +66,7 @@ namespace SaltyGame
             }
 
             CurrentRules = upgrade.Apply(CurrentRules);
+            purchasedUpgradeLevels[upgrade.Id] = GetUpgradeLevel(upgrade.Id) + 1;
             PurchasedUpgradeCount++;
             return true;
         }

@@ -238,6 +238,8 @@ namespace SaltyGame.EditorTools
             {
                 speciesId = statLine.Species.Value,
                 SPO = statLine.StartingPopulation,
+                HPS = statLine.PredatorActiveHerbivoreSteps,
+                EHS = statLine.EncounteredHerbivoreSteps,
                 ECN = statLine.Encounters,
                 PREY = statLine.Preyed,
                 STRV = statLine.Starved,
@@ -249,6 +251,10 @@ namespace SaltyGame.EditorTools
                 fpoReconciled = statLine.PopulationReconciled,
                 pAVI = statLine.InversePreyedAverage,
                 pAVIStatus = GetMetricStatusText(statLine.InversePreyedAverageStatus),
+                eAVI = statLine.InverseEncounterAverage,
+                eAVIStatus = GetMetricStatusText(statLine.InverseEncounterAverageStatus),
+                predAVG = statLine.PredationAverage,
+                predAVGStatus = GetMetricStatusText(statLine.PredationAverageStatus),
                 sAVI = statLine.InverseStarvedAverage,
                 sAVIStatus = GetMetricStatusText(statLine.InverseStarvedAverageStatus),
                 cAVI = statLine.InverseCrowdingAverage,
@@ -421,6 +427,8 @@ namespace SaltyGame.EditorTools
     {
         public string speciesId;
         public int SPO;
+        public int HPS;
+        public int EHS;
         public int ECN;
         public int PREY;
         public int STRV;
@@ -432,6 +440,10 @@ namespace SaltyGame.EditorTools
         public bool fpoReconciled;
         public float pAVI;
         public string pAVIStatus;
+        public float eAVI;
+        public string eAVIStatus;
+        public float predAVG;
+        public string predAVGStatus;
         public float sAVI;
         public string sAVIStatus;
         public float cAVI;
