@@ -242,7 +242,12 @@ Plain C# domain systems **MUST** be testable without a production scene whenever
 
 Test names describe behavior, not implementation. Fixtures must own setup/teardown and destroy created Unity objects. Add Edit Mode tests for pure rules, serialization/configuration, and migrations; add Play Mode tests for scene composition, lifecycle, input wiring, and presentation integration. Integration/regression tests belong at the narrowest useful boundary. Performance tests are required only for measured performance-sensitive systems.
 
-Current gaps: no Play Mode test assembly, save-data tests, serialization tests, or performance tests were found. These are staged requirements, not immediate refactor work.
+The project has a Play Mode assembly at
+`Assets/Tests/PlayMode/SaltyGame.PlayMode.Tests.asmdef`. Current gaps include
+save-data tests (no save system exists), broader serialized-asset validation,
+and performance baselines/tests. These are staged requirements, not immediate
+refactor work. Historical test totals must cite their source commit and artifact;
+do not present a rolling count as current evidence.
 
 Enforcement: Unity Test Framework execution and bootstrap menu validation can be run now; coverage and Play Mode gates are planned. Exception: prototype-only features may start with a focused Edit Mode test or a documented manual validation path.
 

@@ -7,8 +7,9 @@ namespace SaltyGame.EditorTools
     /// <summary>Shows every named four-corner terrain variant.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainFolder = "Assets/Art/Terrain/Standardized/128/";
+        const string TerrainFolder = "Assets/Art/Terrain/Blob/128/";
         const float LabelHeight = 18f;
+        const int PreviewColumns = 7;
 
         Texture2D[] terrainTiles;
         bool showDesert;
@@ -58,14 +59,20 @@ namespace SaltyGame.EditorTools
 
             var availableWidth = Mathf.Max(320f, position.width - 24f);
             var tileSize = Mathf.Min(availableWidth / 4f, 160f);
-            var gridHeight = tileSize * 4f + LabelHeight * 4f;
+            var gridHeight = tileSize * PreviewColumns + LabelHeight * PreviewColumns;
             var gridRect = GUILayoutUtility.GetRect(availableWidth, gridHeight);
 
-            for (var row = 0; row < 4; row++)
+            for (var row = 0; row < PreviewColumns; row++)
             {
-                for (var column = 0; column < 4; column++)
+                for (var column = 0; column < PreviewColumns; column++)
                 {
-                    var mask = row * 4 + column;
+                    var index = row * PreviewColumns + column;
+                    if (index >= TerrainTileResolver.AllValidMasks.Count)
+                    {
+                        continue;
+                    }
+
+                    var mask = TerrainTileResolver.AllValidMasks[index];
                     var tileRect = new Rect(
                         gridRect.x + column * tileSize,
                         gridRect.y + row * (tileSize + LabelHeight),
@@ -83,24 +90,37 @@ namespace SaltyGame.EditorTools
         void LoadTiles()
         {
             loadedDesert = showDesert;
-            terrainTiles = new Texture2D[TerrainTileResolver.TerrainVariantCount];
+            terrainTiles = new Texture2D[TerrainTileResolver.AllValidMasks.Count];
             for (var index = 0; index < terrainTiles.Length; index++)
             {
-                var name = TerrainTileResolver.GetVariantName(index);
+                var mask = TerrainTileResolver.AllValidMasks[index];
                 var family = showDesert ? "Desert" : "Grass";
-                terrainTiles[index] = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TerrainFolder}{family}_{name}.png");
+                terrainTiles[index] = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TerrainFolder}{family}_{mask:D3}.png");
             }
         }
 
         void DrawTile(Rect destination, int mask)
         {
-            var variantIndex = TerrainTileResolver.ResolveTerrainAtlasIndex(mask);
+            var variantIndex = FindMaskIndex(mask);
             if (variantIndex < 0 || terrainTiles[variantIndex] == null)
             {
                 return;
             }
 
             GUI.DrawTexture(destination, terrainTiles[variantIndex], ScaleMode.StretchToFill, true);
+        }
+
+        static int FindMaskIndex(int mask)
+        {
+            for (var index = 0; index < TerrainTileResolver.AllValidMasks.Count; index++)
+            {
+                if (TerrainTileResolver.AllValidMasks[index] == mask)
+                {
+                    return index;
+                }
+            }
+
+            return -1;
         }
 
         static string DescribeMask(int mask)

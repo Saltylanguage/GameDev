@@ -64,6 +64,32 @@ The current Hare vertical-slice builds provide the first working example:
 
 These are intended build identities, not final node lists. The first implementation should prove these three paths with a small explicit catalog before creating a reusable tree-authoring framework.
 
+### First experimental catalog contract
+
+The following six nodes are pre-implementation experiment candidates. Their
+values are starting hypotheses, not accepted balance. Each is Hare-only,
+temporary for one run, non-stackable in the first slice, and recorded by stable
+ID in purchase order. Direct mechanic tests must pass before ecological trials.
+
+| Stable ID | Build | Effect | Tradeoff | Required contribution evidence |
+| --- | --- | --- | --- | --- |
+| `trailblazer-long-stride` | Trailblazer | Movement speed +0.5 | Reproduction neighbor count +1 | Attributable movement, target arrivals, missing-mate blocks |
+| `trailblazer-far-sight` | Trailblazer | Vision range +1 | Metabolism +1 | Targets detected beyond the old range, energy trajectory, starvation deaths |
+| `warren-guarded-burrow` | Warren | Block +2 | Movement speed -0.25 | Blocks, prevented hits/damage, movement |
+| `warren-room-to-breed` | Warren | Reproduction group limit +1 and crowding penalty -1, floored at zero | Metabolism +1 | Group-limit blocks, crowding penalties, births, local Fern depletion |
+| `gardeners-seed-pouches` | Gardeners | Starting food reserve +2 | Starting energy -2 | Reserve consumed, seed attempts/successes, early starvation exposure |
+| `gardeners-careful-sowing` | Gardeners | Seed-drop chance +0.10, capped at 1.0 | Movement speed -0.25 | Successful drops, new Fern cells, Fern population-time integral, movement |
+
+`stronger-attack`, split attack-modifier, and damage upgrades are excluded from
+the Hare catalog. Block above +2 and Fox attack cooldown remain diagnostic arms,
+not player rewards. Same-build prerequisites and cross-build hybrids remain
+future decisions until these nodes independently demonstrate their declared
+mechanics and costs.
+
+The run-start snapshot and fingerprint must include every effect, tradeoff, and
+ordered selection. The current implementation supports only a single selected
+upgrade; its `orderedLoadout` output is not evidence of multi-upgrade ordering.
+
 ## Relationship to species mastery
 
 Species-type research answers, “What can members of this ecological type learn?” Species mastery answers, “What is special about this particular species?”

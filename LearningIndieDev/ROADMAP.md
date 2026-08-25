@@ -260,6 +260,13 @@ The authoritative execution plan for this sprint is
 [`docs/SPRINT_1_PLAN.md`](docs/SPRINT_1_PLAN.md). It defines committed versus
 stretch scope, work packages, sequencing, risks, and the review demonstration.
 
+**Current execution override (2026-08-24):** Sim's remaining Sprint 1 capacity
+is reassigned to the species stat-line tickets in
+[`docs/SPRINT_1_SPECIES_STAT_LINE_TICKETS.md`](docs/SPRINT_1_SPECIES_STAT_LINE_TICKETS.md).
+Unstarted Sim-owned Main Menu/Lab work is paused and carried forward rather than
+deleted. The original shell remains a regression/review gate for work already
+completed.
+
 Primary outcome: a player can launch into Main Menu, enter Lab Overview, and
 inspect one representative Herbivore research project with clear scientific-
 data costs.

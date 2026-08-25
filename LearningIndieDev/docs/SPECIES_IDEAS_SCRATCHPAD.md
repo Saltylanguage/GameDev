@@ -40,6 +40,70 @@ focused experiment.
 - Seed dispersal or improved plant propagation.
 - Conditional attack or block patterns tied to cell state.
 
+## Future species interaction stats
+
+These are future candidates for richer species interactions. They are not a
+request to add every stat at once; each should earn its place through a focused,
+deterministic experiment.
+
+### Perception, pursuit, and movement
+
+- **Scent system:** add a second, distinct perception channel alongside sight.
+  Scent could persist, diffuse, decay, or reveal recent activity, allowing the
+  two channels to be layered for more dynamic pursuit and evasion. It should be
+  treated as a separate field/state model, not as delayed vision.
+- **Endurance:** distinguish short-term sprinting from sustained stalking or
+  travel over longer distances. This creates a viable choice between a burst of
+  speed and conserving energy for a prolonged pursuit.
+- **Optional — sprint state, distance, and duration:** ambush predators could
+  gain a short speed burst when close to prey. Nimble prey that recently escaped
+  an encounter could receive a brief close-call escape advantage. The trigger,
+  distance, duration, and energy cost would need to be explicit and bounded.
+
+### Combat and escape
+
+- **Attack versus Armor:** separate hit resolution from health loss. A seeded
+  attack check against an Armor rating is a likely fit, followed by damage when
+  the attack succeeds. This is a candidate D&D-like structure, not a locked dice
+  formula. Attack reliability, Armor, damage, and HP should remain separately
+  observable so a local combat effect is not mistaken for population fitness.
+- **Dodge / Evasion:** give nimble species a way to avoid contact rather than
+  relying only on HP or Armor. Evasion can interact with movement and escape;
+  missed attacks may also create a species-specific delay before the next attack
+  opportunity, reducing repeated-contact pressure.
+
+### Mating and life history
+
+- **Mating system improvements:** make mating a tracked interaction with legal
+  partners, a pregnancy state, species-specific gestation measured in ticks,
+  tunable litter sizes, and a clear birth event. Miscarriage remains optional
+  until it proves useful for gameplay rather than adding noise.
+- **Optional — maturity tiers:** infant, child, adolescent, adult, and elder
+  phases could affect movement, reproduction, vulnerability, or lifespan. Some
+  species may begin as adults when the intermediate phases are not gameplay-
+  relevant. Tier durations must be tunable and should not exist only for
+  simulation realism.
+- **Significant-event age tracking:** record the age/tick of mating, pregnancy,
+  birth, hunting, major injury, and death. This is primarily mutable state and
+  telemetry rather than a species stat; it supports life-history rules,
+  explainable reports, and later balance analysis.
+
+## Candidate sequencing
+
+Do not introduce these as one large species-data expansion. A plausible future
+sequence is:
+
+1. Attack/Armor/Dodge semantics and attack-delay telemetry.
+2. Endurance and one explicit sprint interaction.
+3. Mating, pregnancy, gestation, and event-age telemetry.
+4. Scent as a separate perception-field experiment.
+5. Optional maturity tiers and close-call buffs only if the earlier systems
+   demonstrate a clear gameplay need.
+
+Keep reusable species definitions, per-creature mutable state, and event
+telemetry separate. Every new interaction must preserve fixed-seed replay and
+have an isolated test before it is combined with the wider ecology.
+
 ## Emergent-system ideas
 
 - Predator hunting-strategy ideation has been promoted into

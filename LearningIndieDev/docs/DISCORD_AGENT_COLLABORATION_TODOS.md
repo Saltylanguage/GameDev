@@ -1,5 +1,9 @@
 # Discord agent collaboration TODOs
 
+> **Status (2026-08-25): On hold for the foreseeable future.** Do not perform
+> transport, authentication, automation, or external Discord work unless the
+> project owner explicitly reactivates this initiative.
+
 This is a tracked exploration goal for connecting Josh's and Sim's AI-assisted
 development workflows through a shared Discord channel. Discord would be a
 coordination and handoff layer; the repository and project context files remain

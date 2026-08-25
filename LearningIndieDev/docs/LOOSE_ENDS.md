@@ -222,13 +222,34 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-001 — Discord collaboration proof remains unassigned
 
-- **Status:** Controlled future work, not a current blocker.
+- **Status:** On hold for the foreseeable future by product-owner decision on
+  2026-08-25; no active work should be assigned.
 - **Evidence:** `docs/DISCORD_AGENT_COLLABORATION_TODOS.md` still leaves the
   final channel contract, authenticated read/write proof, handoff automation,
   and safety validation unchecked.
-- **Next action:** Resolve the contract first, then run one restricted transport
-  proof before adding automation.
+- **Next action:** None until the product owner explicitly reactivates the
+  initiative. If reactivated, resolve the contract before any transport proof.
 - **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-013 — Effective simulation provenance was incomplete
+
+- **Status:** Scenario-data fingerprint fixed locally; execution-option identity
+  and durable artifact retention remain open.
+- **Evidence:** `CellularSimDataFingerprint` version 5 omitted attack modifier,
+  damage amount, maximum energy, and litter bounds. Version 6 now includes all
+  current `SpeciesRules` fields and focused inequality coverage. Combat mode,
+  attack-opportunity mode, experimental feature ID, and Fox cooldown are runner
+  inputs rather than `CellularSimData`; they remain separate report fields and
+  must not be described as part of the scenario-data fingerprint. Sampled
+  ignored `artifacts/cellular-experiment-*` bundles cited by handoffs are absent
+  from this checkout, so their summaries are durable but their raw evidence is
+  not independently auditable here.
+- **Next action:** Run the focused fingerprint test after Unity is closed. Before
+  new ecological experiments, define a combined run-provenance identity or
+  manifest that includes execution options, report checksum, source revision,
+  scenario GUID/path, command line, seed range, and reconciliation verdict.
+- **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
 ### P2-002 — Deferred mechanics need trigger-based review only

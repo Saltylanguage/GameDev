@@ -76,6 +76,9 @@ settle them in foundational grid code.
 
 - Noesis/XAML with ViewModels is the intended presentation stack for menus,
   HUD, settings, rewards, results, and other player-facing controls.
+- For now, use a corner radius of `12` as the visual default for top-level UI
+  windows and major panel containers. This is a tentative baseline rather than
+  a rule for every button, badge, or smaller nested control.
 - Simulation and domain code remain UI agnostic. A Unity composition/controller
   layer projects completed simulation state into UI-ready ViewModels and applies
   player commands through explicit methods; neither `Grid<T>` nor simulation

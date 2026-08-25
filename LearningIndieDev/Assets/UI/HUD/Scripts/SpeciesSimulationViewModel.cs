@@ -27,12 +27,13 @@ namespace SaltyGame
 
         static string[] CreateTerrainSpriteNames()
         {
-            var names = new string[TerrainTileResolver.TerrainVariantCount * 2];
-            for (var index = 0; index < TerrainTileResolver.TerrainVariantCount; index++)
+            var names = new string[TerrainTileResolver.AllValidMasks.Count * 2];
+            for (var index = 0; index < TerrainTileResolver.AllValidMasks.Count; index++)
             {
-                var variantName = TerrainTileResolver.GetVariantName(index);
-                names[index] = $"Grass_{variantName}";
-                names[index + TerrainTileResolver.TerrainVariantCount] = $"Desert_{variantName}";
+                var mask = TerrainTileResolver.AllValidMasks[index];
+                names[index] = TerrainTileResolver.GetTerrainSpriteName(TerrainVisualFamily.Grass, mask);
+                names[index + TerrainTileResolver.AllValidMasks.Count] =
+                    TerrainTileResolver.GetTerrainSpriteName(TerrainVisualFamily.Desert, mask);
             }
 
             return names;
@@ -49,7 +50,8 @@ namespace SaltyGame
         TextureSource foxTextureSource;
         TextureSource rabbitTextureSource;
         CroppedBitmap[] animalSprites;
-        CroppedBitmap[] terrainTiles;
+        CroppedBitmap[] grassTerrainTiles;
+        CroppedBitmap[] desertTerrainTiles;
         bool warnedMissingAtlases;
         SpeciesPreviewState lastState;
         SimulationRunStatus lastRunStatus;
@@ -350,7 +352,7 @@ namespace SaltyGame
 
             view.Content.DataContext = this;
             board = view.Content.FindName("SimulationBoard") as SpeciesSimulationBoard;
-            board?.SetSpriteVisuals(animalSprites, terrainTiles);
+            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
             Refresh(true);
         }
 
@@ -364,7 +366,7 @@ namespace SaltyGame
                 && terrainSpriteAtlas == terrain
                 && foxSpeciesSprite == fox
                 && rabbitSpeciesSprite == rabbit
-                && (animalSprites != null || terrainTiles != null || warnedMissingAtlases))
+                && (animalSprites != null || grassTerrainTiles != null || warnedMissingAtlases))
             {
                 return;
             }
@@ -378,10 +380,11 @@ namespace SaltyGame
             foxTextureSource = null;
             rabbitTextureSource = null;
             animalSprites = null;
-            terrainTiles = null;
+            grassTerrainTiles = null;
+            desertTerrainTiles = null;
             warnedMissingAtlases = false;
             PrepareSpriteVisuals();
-            board?.SetSpriteVisuals(animalSprites, terrainTiles);
+            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
         }
 
         void PrepareSpriteVisuals()
@@ -400,11 +403,18 @@ namespace SaltyGame
             }
 
             animalSprites = CreateSpeciesSprites();
-            terrainTiles = CreateNamedAtlasSprites(terrainSpriteAtlas, TerrainSpriteNames, out terrainTextureSource);
-            if (animalSprites == null || terrainTiles == null)
+            var allTerrainTiles = CreateNamedAtlasSprites(terrainSpriteAtlas, TerrainSpriteNames, out terrainTextureSource);
+            if (allTerrainTiles != null)
+            {
+                grassTerrainTiles = SliceTerrainTiles(allTerrainTiles, 0);
+                desertTerrainTiles = SliceTerrainTiles(allTerrainTiles, TerrainTileResolver.AllValidMasks.Count);
+            }
+
+            if (animalSprites == null || grassTerrainTiles == null || desertTerrainTiles == null)
             {
                 animalSprites = null;
-                terrainTiles = null;
+                grassTerrainTiles = null;
+                desertTerrainTiles = null;
                 warnedMissingAtlases = true;
             }
         }
@@ -427,6 +437,17 @@ namespace SaltyGame
             if (rabbitSpeciesSprite != null)
             {
                 sprites[5] = CreateSprite(rabbitSpeciesSprite, out rabbitTextureSource);
+            }
+
+            return sprites;
+        }
+
+        static CroppedBitmap[] SliceTerrainTiles(CroppedBitmap[] allTiles, int offset)
+        {
+            var sprites = new CroppedBitmap[256];
+            for (var index = 0; index < TerrainTileResolver.AllValidMasks.Count; index++)
+            {
+                sprites[TerrainTileResolver.AllValidMasks[index]] = allTiles[offset + index];
             }
 
             return sprites;

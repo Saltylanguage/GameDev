@@ -2320,6 +2320,22 @@ namespace SaltyGame.Tests
                     SpeciesIds.Herbivore,
                     CreateRules(forageBelowEnergy: 1)).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(attackModifier: 1)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(damageAmount: 1)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(maximumEnergy: 10)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(litterMaximum: 2)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
         }
 
         [Test]
@@ -2470,7 +2486,9 @@ namespace SaltyGame.Tests
             float startingFoodReserve = 0f,
             int maximumEnergy = 0,
             int litterMinimum = 1,
-            int litterMaximum = 1)
+            int litterMaximum = 1,
+            int? attackModifier = null,
+            int? damageAmount = null)
         {
             return new SpeciesRules(
                 movementSpeed,
@@ -2490,7 +2508,9 @@ namespace SaltyGame.Tests
                 forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: maximumEnergy,
                 litterMinimum: litterMinimum,
-                litterMaximum: litterMaximum);
+                litterMaximum: litterMaximum,
+                attackModifier: attackModifier,
+                damageAmount: damageAmount);
         }
 
         static SpeciesSimulationMetrics StepWithReproductionMetrics(

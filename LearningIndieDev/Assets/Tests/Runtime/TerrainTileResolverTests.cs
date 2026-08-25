@@ -1,6 +1,4 @@
 using NUnit.Framework;
-using UnityEditor;
-using UnityEngine;
 
 namespace SaltyGame.Tests
 {
@@ -8,113 +6,63 @@ namespace SaltyGame.Tests
     public sealed class TerrainTileResolverTests
     {
         [Test]
-        public void EmptyCornerMaskDrawsNoTile()
+        public void EveryRawMaskNormalizesToOneOf47BlobMasks()
         {
-            Assert.That(TerrainTileResolver.ResolveTerrainAtlasIndex(0), Is.EqualTo(-1));
-        }
-
-        [Test]
-        public void EveryNonEmptyCornerMaskUsesOneNamedVariant()
-        {
-            var variants = new System.Collections.Generic.HashSet<int>();
-
-            for (var mask = 1; mask < TerrainTileResolver.CornerMaskCount; mask++)
+            var normalized = new System.Collections.Generic.HashSet<int>();
+            for (var raw = 0; raw <= TerrainTileResolver.FullMask; raw++)
             {
-                variants.Add(TerrainTileResolver.ResolveTerrainAtlasIndex(mask));
+                var mask = TerrainTileResolver.NormalizeMask(raw);
+                normalized.Add(mask);
+                Assert.That(TerrainTileResolver.IsValidMask(mask), Is.True, $"Raw mask {raw} normalized to {mask}.");
             }
 
-            Assert.That(variants.Count, Is.EqualTo(TerrainTileResolver.TerrainVariantCount));
-            Assert.That(variants, Is.EquivalentTo(new[]
-            {
-                0, 1, 2, 3, 4,
-                5, 6, 7, 8, 9,
-                10, 11, 12, 13, 14,
-            }));
+            Assert.That(normalized.Count, Is.EqualTo(TerrainTileResolver.TerrainVariantCount));
+            Assert.That(normalized, Is.EquivalentTo(TerrainTileResolver.AllValidMasks));
         }
 
         [Test]
-        public void VariantNamesFollowCornerMaskOrder()
+        public void DiagonalOnlyConnectionsAreRemoved()
         {
-            Assert.That(TerrainTileResolver.GetVariantName(0), Is.EqualTo("TopRight"));
-            Assert.That(TerrainTileResolver.GetVariantName(2), Is.EqualTo("TopMiddle"));
-            Assert.That(TerrainTileResolver.GetVariantName(9), Is.EqualTo("MiddleLeft"));
-            Assert.That(TerrainTileResolver.GetVariantName(TerrainTileResolver.FullVariantIndex), Is.EqualTo("Full"));
+            Assert.That(TerrainTileResolver.NormalizeMask(TerrainTileResolver.NorthEast),
+                Is.EqualTo(TerrainTileResolver.North | TerrainTileResolver.NorthEast | TerrainTileResolver.East));
+            Assert.That(
+                TerrainTileResolver.NormalizeMask(
+                    TerrainTileResolver.North | TerrainTileResolver.East | TerrainTileResolver.NorthEast),
+                Is.EqualTo(TerrainTileResolver.North | TerrainTileResolver.East | TerrainTileResolver.NorthEast));
         }
 
         [Test]
-        public void CornerMaskSamplesTheFourCellsAroundTheVisualTile()
+        public void RotationMasksMatchGeneratedTiles()
+        {
+            Assert.That(TerrainTileResolver.IsValidMask(29), Is.True);
+            Assert.That(TerrainTileResolver.IsValidMask(116), Is.True);
+            Assert.That(TerrainTileResolver.IsValidMask(209), Is.True);
+            Assert.That(TerrainTileResolver.IsValidMask(71), Is.True);
+        }
+
+        [Test]
+        public void BareAndDesertSharePresentationFamily()
+        {
+            Assert.That(
+                TerrainVisualFamilies.Get(TerrainIds.Bare),
+                Is.EqualTo(TerrainVisualFamilies.Get(TerrainIds.Desert)));
+            Assert.That(
+                TerrainTileResolver.GetTerrainSpriteName(TerrainIds.Bare, TerrainTileResolver.FullMask),
+                Is.EqualTo("Desert_255"));
+        }
+
+        [Test]
+        public void TerrainMaskUsesCellCenteredEightNeighbors()
         {
             var cells = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Empty);
-            cells.SetCell(0, 0, SpeciesCell.Grass(1f));
+            cells.SetCell(1, 2, SpeciesCell.Grass(1f));
+            cells.SetCell(2, 1, SpeciesCell.Grass(1f));
+            cells.SetCell(2, 0, SpeciesCell.Grass(1f));
             cells.SetCell(1, 0, SpeciesCell.Grass(1f));
-            cells.SetCell(0, 1, SpeciesCell.Grass(1f));
-            cells.SetCell(1, 1, SpeciesCell.Grass(1f));
 
             Assert.That(
-                TerrainTileResolver.ComputeCornerMask(cells, 1, 1, TerrainIds.Grass),
-                Is.EqualTo(
-                    TerrainTileResolver.SouthWest
-                    | TerrainTileResolver.SouthEast
-                    | TerrainTileResolver.NorthWest
-                    | TerrainTileResolver.NorthEast));
-        }
-
-        [Test]
-        public void CurrentCellOnlyUsesTheNorthEastVariant()
-        {
-            var cells = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Empty);
-            cells.SetCell(1, 1, SpeciesCell.Grass(1f));
-
-            Assert.That(
-                TerrainTileResolver.ComputeCornerMask(cells, 1, 1, TerrainIds.Grass),
-                Is.EqualTo(TerrainTileResolver.NorthEast));
-            Assert.That(
-                TerrainTileResolver.ResolveGrassTileIndex(cells, 1, 1),
-                Is.EqualTo(TerrainTileResolver.ResolveTerrainAtlasIndex(TerrainTileResolver.NorthEast)));
-        }
-
-        [Test]
-        public void DesertUsesTheSameCornerRules()
-        {
-            var desert = new TerrainDefinition(
-                TerrainIds.Desert,
-                isPassable: true,
-                movementCost: 1f,
-                providesResource: false,
-                presentationColor: UnityEngine.Color.yellow);
-            var cells = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Empty);
-            cells.SetCell(1, 1, SpeciesCell.FromTerrain(desert));
-
-            Assert.That(
-                TerrainTileResolver.ResolveTerrainTileIndex(cells, 1, 1, TerrainIds.Desert),
-                Is.EqualTo(TerrainTileResolver.ResolveTerrainAtlasIndex(TerrainTileResolver.NorthEast)));
-            Assert.That(
-                TerrainTileResolver.GetTerrainSpriteName(TerrainIds.Desert, TerrainTileResolver.FullVariantIndex),
-                Is.EqualTo("Desert_Full"));
-        }
-
-        [Test]
-        public void EditorSmartTilingPreviewLoadsEveryNamedTerrainTile()
-        {
-            var terrainIds = new[] { TerrainIds.Grass, TerrainIds.Desert };
-            foreach (var terrainId in terrainIds)
-            {
-                for (var variantIndex = 0; variantIndex < TerrainTileResolver.TerrainVariantCount; variantIndex++)
-                {
-                    var spriteName = TerrainTileResolver.GetTerrainSpriteName(terrainId, variantIndex);
-                    var path = $"Assets/Art/Terrain/Standardized/128/{spriteName}.png";
-                    var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
-
-                    Assert.That(texture, Is.Not.Null, path);
-                }
-            }
-        }
-
-        [Test]
-        public void InvalidCornerMaskIsRejected()
-        {
-            Assert.Throws<System.ArgumentOutOfRangeException>(
-                () => TerrainTileResolver.ResolveTerrainAtlasIndex(TerrainTileResolver.CornerMaskCount));
+                TerrainTileResolver.ResolveTerrainMask(cells, 1, 1, TerrainIds.Grass),
+                Is.EqualTo(29));
         }
     }
 }

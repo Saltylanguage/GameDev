@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v5";
+        public const string Version = "cellular-sim-data-v6";
 
         public static string Create(CellularSimData data)
         {
@@ -73,6 +73,8 @@ namespace SaltyGame
             AppendPattern(builder, rules.MovementPattern);
             AppendPattern(builder, rules.AttackPattern);
             Append(builder, rules.AttackAmount);
+            Append(builder, rules.AttackModifier);
+            Append(builder, rules.DamageAmount);
             AppendPattern(builder, rules.BlockPattern);
             Append(builder, rules.BlockAmount);
             AppendPattern(builder, rules.DietPattern);
@@ -84,6 +86,9 @@ namespace SaltyGame
             Append(builder, rules.MaxReproductionGroupSize);
             Append(builder, rules.StartingEnergy);
             Append(builder, rules.ForageBelowEnergy);
+            Append(builder, rules.MaximumEnergy);
+            Append(builder, rules.LitterMinimum);
+            Append(builder, rules.LitterMaximum);
             Append(builder, rules.WiltChance);
             Append(builder, rules.CrowdingEnergyPenalty);
             Append(builder, rules.StartingFoodReserve);

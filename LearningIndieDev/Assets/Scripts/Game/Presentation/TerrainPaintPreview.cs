@@ -20,8 +20,8 @@ namespace SaltyGame
 
         [SerializeField] SpriteAtlas terrainAtlas;
 
-        readonly Sprite[] grassTiles = new Sprite[TerrainTileResolver.TerrainVariantCount];
-        readonly Sprite[] desertTiles = new Sprite[TerrainTileResolver.TerrainVariantCount];
+        readonly Sprite[] grassTiles = new Sprite[256];
+        readonly Sprite[] desertTiles = new Sprite[256];
         Grid<SpeciesCell> cells;
         TerrainDefinition selectedTerrain = TerrainDefaults.Grass;
 
@@ -75,9 +75,9 @@ namespace SaltyGame
             }
 
             GUI.backgroundColor = previousColor;
-            if (tiles[TerrainTileResolver.FullVariantIndex] != null)
+            if (tiles[TerrainTileResolver.FullMask] != null)
             {
-                DrawSprite(tiles[TerrainTileResolver.FullVariantIndex], new Rect(rect.x + 15f, rect.y + 4f, 42f, 42f));
+                DrawSprite(tiles[TerrainTileResolver.FullMask], new Rect(rect.x + 15f, rect.y + 4f, 42f, 42f));
             }
 
             GUI.Label(new Rect(rect.x, rect.yMax - 20f, rect.width, 18f), label, GUI.skin.label);
@@ -116,18 +116,24 @@ namespace SaltyGame
 
         void DrawCell(SpeciesCell cell, Rect rect, int x, int y)
         {
-            var tiles = cell.TerrainId == TerrainIds.Grass ? grassTiles : desertTiles;
-            var tileIndex = TerrainTileResolver.ResolveTerrainTileIndex(cells, x, y, cell.TerrainId);
-            if (tileIndex >= 0 && tileIndex < tiles.Length && tiles[tileIndex] != null)
+            if (desertTiles[TerrainTileResolver.FullMask] != null)
             {
-                DrawSprite(tiles[tileIndex], rect);
-            }
-            else
-            {
-                GUI.DrawTexture(rect, Texture2D.whiteTexture, ScaleMode.StretchToFill);
+                DrawSprite(desertTiles[TerrainTileResolver.FullMask], rect);
             }
 
-            GUI.Box(rect, GUIContent.none);
+            if (TerrainVisualFamilies.Get(cell.TerrainId) == TerrainVisualFamily.Grass)
+            {
+                var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, cell.TerrainId);
+                if (grassTiles[mask] != null)
+                {
+                    DrawSprite(grassTiles[mask], rect);
+                }
+            }
+            // Desert is the base layer; Bare/empty cells intentionally leave it
+            // visible so the painted terrain can be evaluated in context.
+
+            // Do not draw a box per cell: the blob sprites must meet across
+            // boundaries, otherwise the diagnostic grid masks the transitions.
         }
 
         void HandlePainting(Rect boardRect, Event currentEvent)
@@ -151,11 +157,10 @@ namespace SaltyGame
                 return;
             }
 
-            for (var index = 0; index < TerrainTileResolver.TerrainVariantCount; index++)
+            foreach (var mask in TerrainTileResolver.AllValidMasks)
             {
-                var variant = TerrainTileResolver.GetVariantName(index);
-                grassTiles[index] = terrainAtlas.GetSprite($"Grass_{variant}");
-                desertTiles[index] = terrainAtlas.GetSprite($"Desert_{variant}");
+                grassTiles[mask] = terrainAtlas.GetSprite(TerrainTileResolver.GetTerrainSpriteName(TerrainVisualFamily.Grass, mask));
+                desertTiles[mask] = terrainAtlas.GetSprite(TerrainTileResolver.GetTerrainSpriteName(TerrainVisualFamily.Desert, mask));
             }
         }
 

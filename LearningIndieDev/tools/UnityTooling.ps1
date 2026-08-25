@@ -50,8 +50,10 @@ function Resolve-UnityEditorPath {
         $candidates += Join-Path ${env:ProgramFiles(x86)} "Unity\Hub\Editor\$editorVersion\Editor\Unity.exe"
     }
 
-    # This machine keeps Unity editors on F: rather than under the Hub default.
-    $candidates += Join-Path 'F:\Editor' "$editorVersion-x86_64\Editor\Unity.exe"
+    # Some machines keep Unity editors on F: rather than under the Hub default.
+    if (Test-Path -LiteralPath 'F:\Editor' -PathType Container) {
+        $candidates += Join-Path 'F:\Editor' "$editorVersion-x86_64\Editor\Unity.exe"
+    }
 
     foreach ($candidate in $candidates) {
         if (Test-Path -LiteralPath $candidate -PathType Leaf) {

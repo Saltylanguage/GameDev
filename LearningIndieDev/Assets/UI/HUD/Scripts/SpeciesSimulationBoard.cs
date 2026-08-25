@@ -12,8 +12,6 @@ namespace SaltyGame
     /// </summary>
     public sealed class SpeciesSimulationBoard : FrameworkElement
     {
-        const int TerrainFamilyTileOffset = TerrainTileResolver.TerrainVariantCount;
-
         static readonly Dictionary<SpeciesId, int> AnimalAtlasIndexBySpecies =
             new Dictionary<SpeciesId, int>
             {
@@ -30,19 +28,23 @@ namespace SaltyGame
         Grid<SpeciesCell> cells;
         IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
         CroppedBitmap[] animalSprites;
-        CroppedBitmap[] terrainTiles;
+        CroppedBitmap[] grassTerrainTiles;
+        CroppedBitmap[] desertTerrainTiles;
         SpeciesId playerSpecies;
         Pen playerSpeciesOutline;
 
-        public void SetSpriteVisuals(CroppedBitmap[] animals, CroppedBitmap[] terrain)
+        public void SetSpriteVisuals(CroppedBitmap[] animals, CroppedBitmap[] grassTerrain, CroppedBitmap[] desertTerrain)
         {
-            if (ReferenceEquals(animalSprites, animals) && ReferenceEquals(terrainTiles, terrain))
+            if (ReferenceEquals(animalSprites, animals)
+                && ReferenceEquals(grassTerrainTiles, grassTerrain)
+                && ReferenceEquals(desertTerrainTiles, desertTerrain))
             {
                 return;
             }
 
             animalSprites = animals;
-            terrainTiles = terrain;
+            grassTerrainTiles = grassTerrain;
+            desertTerrainTiles = desertTerrain;
             InvalidateVisual();
         }
 
@@ -85,7 +87,10 @@ namespace SaltyGame
             var boardHeight = cellSize * cells.Height;
             var left = (width - boardWidth) * 0.5f;
             var top = (height - boardHeight) * 0.5f;
-            var gap = Math.Min(1.5f, cellSize * 0.08f);
+            // Blob sprites are transparent overlays that must touch across
+            // cell boundaries. Draw the diagnostic grid separately if needed;
+            // a per-cell gap hides edge and diagonal continuity.
+            const float gap = 0f;
 
             for (var y = 0; y < cells.Height; y++)
             {
@@ -126,14 +131,14 @@ namespace SaltyGame
 
         void DrawTerrain(DrawingContext context, SpeciesCell cell, NoesisRect cellRect, int x, int y)
         {
-            if (TryGetTerrainFamilyOffset(cell.TerrainId, out var familyOffset)
-                && terrainTiles != null)
+            if (desertTerrainTiles != null)
             {
-                var tileIndex = TerrainTileResolver.ResolveTerrainTileIndex(cells, x, y, cell.TerrainId)
-                    + familyOffset;
-                if (tileIndex >= familyOffset && tileIndex < terrainTiles.Length)
+                DrawTerrainSprite(context, desertTerrainTiles, TerrainTileResolver.FullMask, cellRect);
+                if (TerrainVisualFamilies.Get(cell.TerrainId) == TerrainVisualFamily.Grass
+                    && grassTerrainTiles != null)
                 {
-                    context.DrawImage(terrainTiles[tileIndex], cellRect);
+                    var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, cell.TerrainId);
+                    DrawTerrainSprite(context, grassTerrainTiles, mask, cellRect);
                 }
 
                 return;
@@ -146,9 +151,9 @@ namespace SaltyGame
         {
             if (cell.IsPlantResource && !cell.IsTerrainResource)
             {
-                if (terrainTiles != null)
+                if (grassTerrainTiles != null)
                 {
-                    context.DrawImage(terrainTiles[TerrainTileResolver.FullVariantIndex], cellRect);
+                    DrawTerrainSprite(context, grassTerrainTiles, TerrainTileResolver.FullMask, cellRect);
                 }
 
                 return;
@@ -166,24 +171,16 @@ namespace SaltyGame
             context.DrawImage(animalSprites[index], cellRect);
         }
 
-        static bool TryGetTerrainFamilyOffset(TerrainId terrainId, out int offset)
+        static void DrawTerrainSprite(
+            DrawingContext context,
+            CroppedBitmap[] sprites,
+            int mask,
+            NoesisRect cellRect)
         {
-            if (terrainId == TerrainIds.Grass)
+            if (mask >= 0 && mask < sprites.Length && sprites[mask] != null)
             {
-                offset = 0;
-                return true;
+                context.DrawImage(sprites[mask], cellRect);
             }
-
-            // Bare temporarily uses the desert family until a dedicated bare
-            // ground atlas is authored. Keep the simulation TerrainId intact.
-            if (terrainId == TerrainIds.Bare || terrainId == TerrainIds.Desert)
-            {
-                offset = TerrainFamilyTileOffset;
-                return true;
-            }
-
-            offset = 0;
-            return false;
         }
 
         int GetAnimalAtlasIndex(SpeciesCell cell)

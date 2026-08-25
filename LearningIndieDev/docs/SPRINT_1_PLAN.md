@@ -17,6 +17,22 @@ Launch -> Main Menu -> Lab Overview -> Research preview
 
 The Lab introduces the experimental-biology theme and scientific-data economy using representative UI data. It does not yet include the complete Species Archive, Expedition Setup, real currency, persistence, purchases, mastery progression, or simulation launching.
 
+## Priority override — Species Stat Line (2026-08-24)
+
+The remainder of Sim's Sprint 1 capacity is now reassigned to the species
+stat-line work described in [`SPRINT_1_SPECIES_STAT_LINE_TICKETS.md`](SPRINT_1_SPECIES_STAT_LINE_TICKETS.md).
+This supersedes Sim's remaining unstarted Main Menu/Lab tasks for this sprint;
+those tasks are paused, not deleted, and should be carried forward explicitly.
+
+The stat line is the active priority because it establishes the measurement
+surface needed for the simulation, upgrade, and ecology work. It uses a
+baseball-style structure of counting stats, rate stats, and context/splits. It
+does not introduce a composite species score or new species mechanics.
+
+The existing Main Menu/Lab route remains a regression and review surface for
+work already completed. No new Sim-owned Lab feature should displace the
+stat-line tickets unless Josh explicitly re-plans the sprint.
+
 ## Capacity
 
 | Contributor | Capacity | Primary responsibility |
@@ -46,6 +62,23 @@ Sprint 0 supplies the screen contract, wireframes, representative-data definitio
 - Each committed task has an owner, reviewer, and acceptance check.
 
 ## Committed work
+
+### S1-STAT — Species Stat Line (priority override)
+
+**Effort:** 20 hours — Sim 20 | **Reviewer:** Josh
+
+Execute S1-STAT-01 through S1-STAT-06 in the linked ticket summary. The active
+exit evidence is a deterministic, per-species stat line that preserves raw
+counts, derives auditable rates, carries scenario/seed/fingerprint context, and
+reconciles against existing simulation ledgers.
+
+The first ticket is a contract gate. If a metric requires a new gameplay rule
+or species mechanic rather than telemetry, split it into future work instead of
+expanding Sprint 1 silently.
+
+The S1.1–S1.3 packages below remain the original Sprint 1 scope and acceptance
+history. Any unfinished Sim-owned portions are paused under the priority
+override; they are not silently competing with S1-STAT.
 
 ### S1.1 — Main Menu and Lab shell
 
@@ -104,6 +137,10 @@ Reserved for Unity/Noesis scene repair, review changes, coordination, and defect
 
 ## Effort summary
 
+The table below is the original Sprint 1 allocation. For Sim, it is superseded
+by the S1-STAT allocation above; the unstarted Sim-owned work packages remain
+paused for a later sprint.
+
 | Work package | Josh | Sim | Total |
 | --- | ---: | ---: | ---: |
 | S1.1 Main Menu/Lab shell | 4h | 6h | 10h |
@@ -113,6 +150,27 @@ Reserved for Unity/Noesis scene repair, review changes, coordination, and defect
 | **Total** | **10h** | **10h** | **20h** |
 
 ## Two-week schedule
+
+### Monday, August 24 — priority reset
+
+- Stop starting new Sim-owned Main Menu/Lab work.
+- Review the current shell state and identify any completed work that must remain
+  as a regression gate.
+- Begin S1-STAT-01 and confirm the stat-line contract before adding counters.
+
+### Tuesday, August 25 – Saturday, August 29 — stat-line implementation
+
+- Complete the raw opportunity/outcome ledger and derived rate calculations.
+- Serialize the stat line through the existing report path.
+- Run focused deterministic validation and preserve a representative report.
+
+### Sunday, August 30 — stat-line review and handoff
+
+- Review the stat line against the contract and fixed-seed evidence.
+- Record accepted fields, deferred metrics, changed files, and follow-up tickets.
+- Re-plan the paused Main Menu/Lab work into the next available bucket.
+
+### Original Sprint 1 schedule (historical; superseded for Sim)
 
 ### Monday, August 17 — kickoff
 
@@ -160,6 +218,9 @@ Do not cut deterministic Back behavior, visible focus, currency clarity, target-
 
 ## Explicitly deferred
 
+- Remaining unstarted Sim-owned Main Menu/Lab work until the stat-line priority
+  is reviewed and re-planned.
+
 - Full Lab navigation and content.
 - Species Archive and contextual mastery UI.
 - Expedition Setup and simulation handoff.
@@ -178,5 +239,10 @@ Sprint 1 is complete when:
 - Main Menu, Lab Overview, and Research preview are navigable with keyboard and mouse;
 - scientific-data balances and research costs are understandable and clearly representative;
 - Back behavior, visible focus, both target resolutions, and the smoke check pass;
+- the S1-STAT stat line preserves raw counts, exposes auditable rates and
+  denominators, carries replay context, and reconciles against the simulation
+  ledgers;
+- the stat-line validation runs deterministically on a recorded seed and
+  ruleset fingerprint;
 - unfinished work is explicitly assigned to a later bucket.
 
