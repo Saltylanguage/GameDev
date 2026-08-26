@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0 contract baseline; implementation not started
+> Status: T0 contract baseline; T1 simulation seam implemented
 > Date: 2026-08-25
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -15,7 +15,7 @@ smallest concrete C# representation that preserves them.
 | --- | --- | --- |
 | Profile selection and last-loaded profile | Profile/session owner reached through a helper | `ProfileSessionSnapshot` |
 | Scene transitions | Explicit Unity transition helper | `SceneTransitionRequest` result/status |
-| Simulation ticks and run lifecycle | `Helper_SimulationManager` | `SimulationShellSnapshot` and `SimulationBoardSnapshot` |
+| Simulation ticks and run lifecycle | Plain C# `SimulationManager` | `SimulationShellSnapshot` and `SimulationBoardSnapshot` through `Helper_Simulation` |
 | Simulation rules and deterministic outcomes | Plain C# domain/runner | Read-only run/result data |
 | Shell and feature presentation | `VM_*` plus XAML | Bindable display state and commands |
 | Pixel board drawing | `SpeciesSimulationBoard` View | `SimulationBoardSnapshot` |
@@ -244,7 +244,7 @@ or assigned by the scene/prefab; normal runtime setup does not use `Find*` or
 | --- | --- |
 | Main Menu | Root `NoesisView`, `VM_MainMenu`, profile/session helper, scene transition helper |
 | Lab | Root `NoesisView`, `VM_Lab`, feature ViewModels/roots, profile/research helpers, scene transition helper |
-| Simulation | Root `NoesisView`, `Helper_SimulationManager`, shell ViewModel, board View/renderer, atlas/rendering references, scene transition helper |
+| Simulation | Root `NoesisView`, `Helper_Simulation`, plain C# `SimulationManager`, shell ViewModel, board View/renderer, atlas/rendering references, scene transition helper |
 
 The Lab may contain separate feature XAML roots or panels, but they remain
 under the same top-level Noesis root/host. That choice does not change the

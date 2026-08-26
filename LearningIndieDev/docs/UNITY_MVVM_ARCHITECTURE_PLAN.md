@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; implementation staged and not yet started
+> Status: Accepted direction; T1 simulation seam implemented, UI migration staged
 > Date: 2026-08-25
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -127,7 +127,9 @@ The simulation remains a separate scene and domain boundary.
 
 ```text
 Simulation scene
-  Helper_SimulationManager
+  Helper_Simulation
+    SimulationManager (plain C#)
+      SpeciesSimulationRunner
     VM_SimulationShell
       V_Panel_SimulationShell.xaml
         Welcome state
@@ -141,11 +143,13 @@ Simulation scene
       SpeciesSimulationBoard (custom batched renderer)
 ```
 
-The manager advances the simulation and publishes the current run state and
-board snapshot. The shell ViewModel exposes the player-facing controls and
-state-specific bindings. The board ViewModel exposes only the current board
-projection, selection/inspection state, and presentation data needed by the
-custom board renderer.
+`Helper_Simulation` is the narrow Unity-facing micro-API. It forwards player
+intent and Unity lifecycle time to the plain C# `SimulationManager`. The manager
+owns the runner and tick advancement, then exposes run completion/state data to
+the helper. The shell ViewModel exposes player-facing controls and state
+bindings. The board ViewModel exposes only the current board projection,
+selection/inspection state, and presentation data needed by the custom board
+renderer.
 
 ## Simulation flow state
 
@@ -176,9 +180,10 @@ explicit launch or return request.
    and scene handoff requests without changing simulation behavior.
 2. **Name new work correctly:** use `VM_*`, `V_Panel_*`, and `Helper_*` for all
    new files; do not rename unrelated legacy assets yet.
-3. **Extract simulation ownership:** treat the current
-   `SpeciesSimulationPreview` as the first simulation-manager seam, then move
-   lifecycle/orchestration behind the helper contract.
+3. **Extract simulation ownership:** move runner lifecycle and fixed-step
+   advancement into a plain C# `SimulationManager`, then expose it through the
+   Unity `Helper_Simulation` micro-API. Keep `SpeciesSimulationPreview` as a
+   compatibility adapter until the seam is verified.
 4. **Split shell and board presentation:** keep shell controls/rewards separate
    from the board-only ViewModel and snapshot projection.
 5. **Make composition explicit:** wire scene references through the host or
@@ -206,10 +211,11 @@ inputs, outputs, and invalid states for Main Menu, Lab, and Simulation.
 
 ### T1 — Establish the simulation-manager seam
 
-Introduce the smallest `Helper_SimulationManager` seam around the current
-simulation lifecycle. Move or wrap tick advancement, run state, and completion
-notifications without changing simulation behavior. Keep the existing preview
-as a compatibility surface until the new seam is verified.
+Introduce the plain C# `SimulationManager` and the Unity `Helper_Simulation`
+micro-API around the current simulation lifecycle. Move or wrap tick
+advancement, run state, and completion notifications without changing
+simulation behavior. Keep the existing preview as a compatibility surface
+until the new seam is verified.
 
 **Exit gate:** the manager is the only tick owner, existing runs still behave
 the same, and a seeded run produces the same result with presentation attached

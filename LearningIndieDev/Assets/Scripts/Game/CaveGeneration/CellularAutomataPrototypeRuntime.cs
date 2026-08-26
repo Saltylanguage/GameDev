@@ -10,11 +10,16 @@ namespace SaltyGame
         [SerializeField, Min(-1)] int selectedScenarioIndex = -1;
 
         public SpeciesSimulationPreview SpeciesPreview { get; private set; }
+        public Helper_Simulation SimulationHelper { get; private set; }
 
         void Awake()
         {
             CreateBackgroundCamera();
+            // Compatibility composition for T1; T3 will replace this with
+            // serialized scene wiring once the seam is verified.
+            SimulationHelper = gameObject.AddComponent<Helper_Simulation>();
             SpeciesPreview = gameObject.AddComponent<SpeciesSimulationPreview>();
+            SpeciesPreview.BindSimulationHelper(SimulationHelper);
             SpeciesPreview.ConfigureScenarioOptions(scenarioOptions, selectedScenarioIndex);
         }
 

@@ -144,10 +144,11 @@ serialized reference. Add an interface only when there is a real substitution,
 testing, or module boundary; direct references are preferred while ownership is
 clear.
 
-For simulation, `Helper_SimulationManager` (or its approved equivalent) owns
-run lifecycle and calls the deterministic runner. It provides board and shell
-snapshots to their ViewModels. The board renderer only consumes its projection
-and draws pixels.
+For simulation, plain C# `SimulationManager` owns run lifecycle and calls the
+deterministic runner. `Helper_Simulation` is the narrow Unity-facing micro-API
+that forwards player intent and Unity lifecycle time to that manager. It
+provides board and shell snapshots to their ViewModels. The board renderer only
+consumes its projection and draws pixels.
 
 ## 6. Domain and determinism
 
@@ -205,7 +206,8 @@ GalapagOS Lab scene
 Simulation scene
   VM_SimulationShell + V_Panel_SimulationShell
   VM_SimulationBoard + board View/custom renderer
-  Helper_SimulationManager
+  Helper_Simulation
+  SimulationManager
 ```
 
 The Lab shell may host feature windows, but each meaningful feature owns its

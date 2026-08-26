@@ -208,13 +208,13 @@ namespace SaltyGame
         readonly List<SpeciesId> playableSpecies = new List<SpeciesId>();
         IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         SpeciesProgression progression;
-        SpeciesSimulationRunner runner;
+        [SerializeField] Helper_Simulation simulationHelper;
+        SimulationManager simulationManager;
         SimulationRunResult result;
         SpeciesUpgrade selectedUpgrade;
         SpeciesPreviewState previewState;
         string rewardMessage;
         Dictionary<SpeciesId, SpeciesRuleDraft> ruleDrafts;
-        float tickTimer;
         int runNumber;
         bool rewardGranted;
         bool sessionStarted;
@@ -224,7 +224,7 @@ namespace SaltyGame
 
         const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
-        public SimulationRunState Run => runner?.Run;
+        public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public SpeciesProgression Progression => progression;
         public int PurchasedUpgradeCount => progression?.PurchasedUpgradeCount ?? 0;
         public int GetUpgradeLevel(string upgradeId) => progression?.GetUpgradeLevel(upgradeId) ?? 0;
@@ -257,6 +257,40 @@ namespace SaltyGame
         public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
+
+        public void BindSimulationHelper(Helper_Simulation helper)
+        {
+            if (helper == null)
+            {
+                throw new ArgumentNullException(nameof(helper));
+            }
+
+            if (ReferenceEquals(simulationHelper, helper))
+            {
+                return;
+            }
+
+            var existingRunner = simulationManager?.Runner;
+
+            if (simulationHelper != null)
+            {
+                simulationHelper.RunCompleted -= HandleRunCompleted;
+            }
+
+            if (simulationManager != null)
+            {
+                simulationManager.RunCompleted -= HandleRunCompleted;
+                simulationManager = null;
+            }
+
+            simulationHelper = helper;
+            simulationHelper.RunCompleted += HandleRunCompleted;
+            if (existingRunner != null)
+            {
+                simulationHelper.SetRunner(existingRunner);
+            }
+        }
+
         public void ConfigureScenarioOptions(IReadOnlyList<ScenarioDefinitionAsset> options, int initialSelection = -1)
         {
             scenarioOptions = options == null
@@ -331,6 +365,16 @@ namespace SaltyGame
 
         void Awake()
         {
+            if (simulationHelper != null)
+            {
+                simulationHelper.RunCompleted += HandleRunCompleted;
+            }
+            else
+            {
+                simulationManager = new SimulationManager();
+                simulationManager.RunCompleted += HandleRunCompleted;
+            }
+
             playerSpecies = new SpeciesId(string.IsNullOrWhiteSpace(playerSpeciesKey)
                 ? SpeciesIds.Herbivore.Value
                 : playerSpeciesKey);
@@ -342,32 +386,47 @@ namespace SaltyGame
 
         void Update()
         {
-            if (runner == null || runner.Run.Status != SimulationRunStatus.Running)
+            if (simulationHelper != null)
+            {
+                simulationHelper.Advance(Time.deltaTime);
+            }
+            else
+            {
+                simulationManager?.Advance(Time.deltaTime);
+            }
+        }
+
+        void OnDestroy()
+        {
+            if (simulationManager != null)
+            {
+                simulationManager.RunCompleted -= HandleRunCompleted;
+            }
+
+            if (simulationHelper != null)
+            {
+                simulationHelper.RunCompleted -= HandleRunCompleted;
+            }
+        }
+
+        void HandleRunCompleted(SimulationRunState run)
+        {
+            if (rewardGranted)
             {
                 return;
             }
 
-            tickTimer += Time.deltaTime;
-            while (tickTimer >= runner.StepSeconds && runner.Run.Status == SimulationRunStatus.Running)
-            {
-                tickTimer -= runner.StepSeconds;
-                runner.AdvanceOneTick();
-            }
-
-            if (runner.Run.Status == SimulationRunStatus.Complete && !rewardGranted)
-            {
-                result = SimulationRunResults.Create(runner.Run);
-                RunCompleted?.Invoke(this, runner.Run);
-                progression.AddCurrency(result.CurrencyEarned);
-                PrepareRewardOptions();
-                rewardGranted = true;
-                previewState = SpeciesPreviewState.Rewards;
-            }
+            result = SimulationRunResults.Create(run);
+            RunCompleted?.Invoke(this, run);
+            progression.AddCurrency(result.CurrencyEarned);
+            PrepareRewardOptions();
+            rewardGranted = true;
+            previewState = SpeciesPreviewState.Rewards;
         }
 
         public void StartSimulation()
         {
-            if (runner != null && runner.Run.Status == SimulationRunStatus.Ready)
+            if (Run != null && Run.Status == SimulationRunStatus.Ready)
             {
                 if (!sessionStarted)
                 {
@@ -383,7 +442,14 @@ namespace SaltyGame
                     PrepareNextRun();
                 }
 
-                runner.Start();
+                if (simulationHelper != null)
+                {
+                    simulationHelper.StartRun();
+                }
+                else
+                {
+                    simulationManager.Start();
+                }
                 sessionStarted = true;
                 previewState = SpeciesPreviewState.Running;
             }
@@ -633,34 +699,32 @@ namespace SaltyGame
 
         public void PauseSimulation()
         {
-            if (runner != null && runner.Run.Status == SimulationRunStatus.Running)
+            if ((simulationHelper != null && simulationHelper.PauseRun())
+                || (simulationHelper == null && simulationManager != null && simulationManager.Pause()))
             {
-                runner.Pause();
                 previewState = SpeciesPreviewState.Paused;
             }
         }
 
         public void ResumeSimulation()
         {
-            if (runner != null && runner.Run.Status == SimulationRunStatus.Paused)
+            if ((simulationHelper != null && simulationHelper.ResumeRun())
+                || (simulationHelper == null && simulationManager != null && simulationManager.Resume()))
             {
-                runner.Resume();
                 previewState = SpeciesPreviewState.Running;
             }
         }
 
         public void RestartSimulation()
         {
-            if (runner == null
-                || (runner.Run.Status != SimulationRunStatus.Running
-                    && runner.Run.Status != SimulationRunStatus.Paused))
+            var restarted = simulationHelper != null
+                ? simulationHelper.RestartRun()
+                : simulationManager != null && simulationManager.Restart();
+            if (!restarted)
             {
                 return;
             }
 
-            runner.Restart();
-            runner.Start();
-            tickTimer = 0f;
             result = default;
             rewardGranted = false;
             selectedUpgrade = null;
@@ -670,10 +734,19 @@ namespace SaltyGame
 
         public void StopSimulation()
         {
-            if (runner != null
-                && (runner.Run.Status == SimulationRunStatus.Running
-                    || runner.Run.Status == SimulationRunStatus.Paused))
+            if (Run != null
+                && (Run.Status == SimulationRunStatus.Running
+                    || Run.Status == SimulationRunStatus.Paused))
             {
+                if (simulationHelper != null)
+                {
+                    simulationHelper.StopRun();
+                }
+                else
+                {
+                    simulationManager?.Stop();
+                }
+
                 ResetToStart();
             }
         }
@@ -861,14 +934,21 @@ namespace SaltyGame
                     SpeciesExperimentalOptions.BevExperimentalFeaturesId,
                     foxAttackCooldownTicks)
                 : SpeciesExperimentalOptions.None;
-            runner = new SpeciesSimulationRunner(
+            var nextRunner = new SpeciesSimulationRunner(
                 run,
                 simulationData,
                 combatResolutionMode: bevExperimentalFeaturesEnabled
                     ? SpeciesCombatResolutionMode.OpposedRoll
                     : SpeciesCombatResolutionMode.LegacyFixedDamage,
                 experimentalOptions: experimentalOptions);
-            tickTimer = 0f;
+            if (simulationHelper != null)
+            {
+                simulationHelper.SetRunner(nextRunner);
+            }
+            else
+            {
+                simulationManager.SetRunner(nextRunner);
+            }
             result = default;
             rewardGranted = false;
             selectedUpgrade = null;
@@ -890,7 +970,7 @@ namespace SaltyGame
             rewardOptions = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                 lastExperimentalUpgradeId,
                 experimentalOfferRotation,
-                runner?.Run.Seed ?? seed);
+                Run?.Seed ?? seed);
             experimentalOfferRotation++;
         }
 
