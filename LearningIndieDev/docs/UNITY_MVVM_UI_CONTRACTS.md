@@ -1,13 +1,14 @@
 # Unity MVVM UI Contracts
 
-> Status: T0 contract baseline; T1 simulation seam implemented
-> Date: 2026-08-25
+> Status: T0/T1 baseline; T2 board snapshot boundary implemented
+> Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
 This document freezes the smallest contracts needed to migrate the current
 Noesis prototype without moving simulation rules into the UI. The shapes below
-are design contracts, not runtime types yet. T1 and later tasks may choose the
-smallest concrete C# representation that preserves them.
+are design contracts. T2 now provides the concrete board snapshot and board
+ViewModel; the shell snapshot remains a staged contract while the legacy shell
+ViewModel is retained for compatibility.
 
 ## 1. Ownership
 
@@ -141,10 +142,10 @@ BoardCellSnapshot
   IsPassable         : bool
 ```
 
-The terrain mask is presentation data derived from neighboring terrain. The
-board renderer consumes it; it does not evaluate simulation rules or query
-neighboring domain objects. `Revision` and `Tick` allow stale projections to
-be ignored during scene changes or delayed updates.
+The terrain mask is presentation data derived from neighboring terrain during
+snapshot creation. The board renderer consumes it; it does not evaluate
+simulation rules or query neighboring domain objects. `Revision` and `Tick`
+allow stale projections to be ignored during scene changes or delayed updates.
 
 ### Result summary
 
@@ -259,5 +260,5 @@ feature ViewModel/helper boundaries.
 - [x] Serialized composition references are identified.
 - [x] No runtime code, scene, prefab, or serialized asset was changed in T0.
 
-T1 may now select concrete C# types and add tests around the simulation-manager
-seam without reopening these ownership decisions.
+T2 may now continue the shell extraction without reopening these ownership
+decisions. The board projection is concrete and covered by focused tests.

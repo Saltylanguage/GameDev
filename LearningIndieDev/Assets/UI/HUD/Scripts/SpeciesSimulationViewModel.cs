@@ -40,7 +40,6 @@ namespace SaltyGame
         }
 
         SpeciesSimulationPreview preview;
-        SpeciesSimulationBoard board;
         SpriteAtlas animalSpriteAtlas;
         SpriteAtlas terrainSpriteAtlas;
         Sprite foxSpeciesSprite;
@@ -344,6 +343,9 @@ namespace SaltyGame
         public Visibility ExperimentalUpgradeCountVisibility => experimentalUpgradeCountVisibility;
         public Visibility RewardOption3Visibility => rewardOption3Visibility;
         public Visibility BoardVisibility => boardVisibility;
+        internal CroppedBitmap[] AnimalSprites => animalSprites;
+        internal CroppedBitmap[] GrassTerrainTiles => grassTerrainTiles;
+        internal CroppedBitmap[] DesertTerrainTiles => desertTerrainTiles;
 
         public void Initialize(
             SpeciesSimulationPreview simulationPreview,
@@ -367,8 +369,6 @@ namespace SaltyGame
             }
 
             view.Content.DataContext = this;
-            board = view.Content.FindName("SimulationBoard") as SpeciesSimulationBoard;
-            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
             Refresh(true);
         }
 
@@ -400,7 +400,6 @@ namespace SaltyGame
             desertTerrainTiles = null;
             warnedMissingAtlases = false;
             PrepareSpriteVisuals();
-            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
         }
 
         void PrepareSpriteVisuals()
@@ -752,19 +751,6 @@ namespace SaltyGame
             lastRunStatus = runStatus;
             lastTick = tick;
 
-            if (board == null)
-            {
-                var view = GetComponent<NoesisView>();
-                if (view != null && view.Content is FrameworkElement content)
-                {
-                    board = content.FindName("SimulationBoard") as SpeciesSimulationBoard;
-                }
-            }
-
-            board?.SetSpeciesRules(preview.ActiveSpeciesRules);
-            board?.SetPlayerSpecies(preview.PlayerSpecies);
-            board?.SetGrid(run?.Cells);
-
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
             Set(ref runStatusText, GetRunStatusText(run), nameof(RunStatusText));
             Set(ref runDetailsText, GetRunDetailsText(run), nameof(RunDetailsText));
@@ -1094,7 +1080,9 @@ namespace SaltyGame
 
         static string FormatSpeciesName(SpeciesId species)
         {
-            return species.Value.Replace('-', ' ').ToUpperInvariant();
+            return species.IsValid
+                ? species.Value.Replace('-', ' ').ToUpperInvariant()
+                : "(UNASSIGNED)";
         }
 
         void SyncScenarioOptions()

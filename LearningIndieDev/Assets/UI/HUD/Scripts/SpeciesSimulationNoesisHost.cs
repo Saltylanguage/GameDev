@@ -46,6 +46,19 @@ namespace SaltyGame
 
             viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
             viewModel.BindToView(view);
+
+            var boardViewModel = camera.GetComponent<VM_SimulationBoard>();
+            if (boardViewModel == null)
+            {
+                boardViewModel = camera.gameObject.AddComponent<VM_SimulationBoard>();
+            }
+
+            boardViewModel.Initialize(preview);
+            boardViewModel.SetSpriteVisuals(
+                viewModel.AnimalSprites,
+                viewModel.GrassTerrainTiles,
+                viewModel.DesertTerrainTiles);
+            boardViewModel.BindToView(view);
         }
     }
 }

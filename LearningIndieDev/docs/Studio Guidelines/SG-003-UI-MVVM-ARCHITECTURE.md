@@ -146,9 +146,10 @@ clear.
 
 For simulation, plain C# `SimulationManager` owns run lifecycle and calls the
 deterministic runner. `Helper_Simulation` is the narrow Unity-facing micro-API
-that forwards player intent and Unity lifecycle time to that manager. It
-provides board and shell snapshots to their ViewModels. The board renderer only
-consumes its projection and draws pixels.
+that forwards player intent and Unity lifecycle time to that manager. The board
+ViewModel converts the current run into an immutable board snapshot; the board
+renderer consumes only that projection and draws pixels. Shell snapshot work
+remains staged behind the legacy shell compatibility surface.
 
 ## 6. Domain and determinism
 

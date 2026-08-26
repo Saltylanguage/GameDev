@@ -46,6 +46,37 @@ namespace SaltyGame.Tests
             Assert.That(manager.Run.Tick, Is.EqualTo(2));
         }
 
+        [Test]
+        public void BoardSnapshotCopiesCellsAndSpeciesRoles()
+        {
+            var grid = new Grid<SpeciesCell>(2, 1, (_, x) => x == 0
+                ? SpeciesCell.Grass(3f)
+                : new SpeciesCell(SpeciesIds.Herbivore, health: 4, energy: 7));
+            var run = new SimulationRunState(
+                grid,
+                SpeciesIds.Herbivore,
+                seed: 17,
+                durationSeconds: 1f);
+
+            var snapshot = SimulationBoardSnapshot.Create(
+                run,
+                SpeciesRuleDefaults.Create(),
+                SpeciesIds.Herbivore);
+
+            grid.SetCell(0, 0, SpeciesCell.Empty);
+
+            Assert.That(snapshot.Width, Is.EqualTo(2));
+            Assert.That(snapshot.Height, Is.EqualTo(1));
+            Assert.That(snapshot.GetCell(0, 0).IsPlantResource, Is.True);
+            Assert.That(
+                TerrainTileResolver.IsValidMask(snapshot.GetCell(0, 0).TerrainVariantMask),
+                Is.True);
+            Assert.That(snapshot.GetCell(1, 0).Health, Is.EqualTo(4));
+            Assert.That(
+                snapshot.SpeciesRoles[SpeciesIds.Carnivore],
+                Is.EqualTo(SpeciesRole.Carnivore));
+        }
+
         static SimulationManager CreateManager(float durationSeconds = 0.2f)
         {
             var data = new CellularSimData(

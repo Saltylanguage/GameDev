@@ -120,6 +120,9 @@ settle them in foundational grid code.
 - The cellular species preview uses the Noesis shell as its single runtime UI
   path. The former IMGUI board/settings fallback has been removed, so terrain
   and species presentation cannot silently diverge between two renderers.
+  The board now receives an immutable `SimulationBoardSnapshot` through
+  `VM_SimulationBoard`; the legacy shell ViewModel remains the compatibility
+  composition surface until the safe naming pass.
 
 ## CellularSimData direction
 
@@ -220,9 +223,9 @@ settle them in foundational grid code.
   vector silhouettes. The atlas build is deterministic and preserves the
   source's compact, high-contrast visual language.
 - Terrain presentation is separate from simulation state: `TerrainTileResolver`
-  derives a four-cardinal-neighbor mask at render time and selects one of the
-  16 variants for the grass or desert family. Neighbor masks and atlas indices
-  do not belong in `SpeciesCell` or `CellularSimData`.
+  derives the authored normalized neighbor mask during board snapshot creation
+  and selects the matching variant for the grass or desert family. Neighbor
+  masks and atlas indices do not belong in `SpeciesCell` or `CellularSimData`.
 - The reference set contains animal symbols but no dedicated plant symbol.
   Plant-resource terrain currently uses the grass tile family; add a dedicated
   plant atlas before displaying a separate plant glyph rather than borrowing an
@@ -320,12 +323,13 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
   part of the runtime path; older handoffs that describe it as a fallback are
   historical.
 - `SpeciesSimulationBoard` is the first XAML game-board attempt. It is a single
-  `FrameworkElement` custom renderer that receives the current
-  `Grid<SpeciesCell>` and batches all cell rectangles through `DrawingContext`.
-  It intentionally does not create one XAML element per cell.
+  `FrameworkElement` custom renderer that receives an immutable
+  `SimulationBoardSnapshot` and batches all cell rectangles through
+  `DrawingContext`. It intentionally does not create one XAML element per cell.
 - The board is presentation-only: simulation stepping still happens in
-  `SpeciesSimulationPreview`/`SpeciesSimulationRunner`, and the custom control
-  only reads the current grid and invalidates its visual when the tick changes.
+  `SpeciesSimulationPreview`/`SpeciesSimulationRunner`, `VM_SimulationBoard`
+  creates the read-only projection, and the custom control only reads the
+  snapshot and invalidates its visual when the tick changes.
 - Elevated Unity validation on 2026-08-12 passed 75/75 Edit Mode tests and 4/4
   Play Mode tests after the custom board was added. Unity licensing handshake
   warnings remain machine-environment noise; they did not fail the suites.

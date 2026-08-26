@@ -1,7 +1,7 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T1 simulation seam implemented, UI migration staged
-> Date: 2026-08-25
+> Status: Accepted direction; T2 board/shell boundary implemented, T3 composition next
+> Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
 This plan adapts MVVM to Unity and Noesis without moving simulation rules into
@@ -227,6 +227,12 @@ Create the shell and board ViewModel boundaries. The shell exposes controls,
 rewards, results, and flow state. The board ViewModel exposes only the current
 board projection, inspection/selection state, and renderer inputs. The custom
 board control remains the high-throughput View.
+
+The first implementation slice now provides an immutable
+`SimulationBoardSnapshot`, `VM_SimulationBoard`, and snapshot-based terrain
+mask resolution. The existing `SpeciesSimulationViewModel` remains the shell
+compatibility surface while its direct board ownership has been removed. Its
+legacy name is intentionally retained until the safe naming pass in T7.
 
 **Exit gate:** the board draws from a snapshot, shell commands do not mutate
 board internals, and no XAML control is created per simulation cell.

@@ -25,8 +25,7 @@ namespace SaltyGame
                 [new SpeciesId("elephant")] = 7,
             };
 
-        Grid<SpeciesCell> cells;
-        IReadOnlyDictionary<SpeciesId, SpeciesRules> speciesRules;
+        SimulationBoardSnapshot snapshot;
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] grassTerrainTiles;
         CroppedBitmap[] desertTerrainTiles;
@@ -48,15 +47,15 @@ namespace SaltyGame
             InvalidateVisual();
         }
 
-        public void SetSpeciesRules(IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+        public void SetSnapshot(SimulationBoardSnapshot nextSnapshot)
         {
-            speciesRules = rules;
-            InvalidateVisual();
-        }
+            if (ReferenceEquals(snapshot, nextSnapshot))
+            {
+                return;
+            }
 
-        public void SetGrid(Grid<SpeciesCell> grid)
-        {
-            cells = grid;
+            snapshot = nextSnapshot;
+            playerSpecies = snapshot?.PlayerSpecies ?? default;
             InvalidateVisual();
         }
 
@@ -77,14 +76,14 @@ namespace SaltyGame
             var height = ActualHeight > 0f ? ActualHeight : Height;
             context.DrawRectangle(Brushes.Transparent, null, new NoesisRect(0f, 0f, width, height));
 
-            if (cells == null || width <= 0f || height <= 0f)
+            if (snapshot == null || width <= 0f || height <= 0f)
             {
                 return;
             }
 
-            var cellSize = Math.Min(width / cells.Width, height / cells.Height);
-            var boardWidth = cellSize * cells.Width;
-            var boardHeight = cellSize * cells.Height;
+            var cellSize = Math.Min(width / snapshot.Width, height / snapshot.Height);
+            var boardWidth = cellSize * snapshot.Width;
+            var boardHeight = cellSize * snapshot.Height;
             var left = (width - boardWidth) * 0.5f;
             var top = (height - boardHeight) * 0.5f;
             // Blob sprites are transparent overlays that must touch across
@@ -92,19 +91,19 @@ namespace SaltyGame
             // a per-cell gap hides edge and diagonal continuity.
             const float gap = 0f;
 
-            for (var y = 0; y < cells.Height; y++)
+            for (var y = 0; y < snapshot.Height; y++)
             {
-                for (var x = 0; x < cells.Width; x++)
+                for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = cells.GetCell(x, y);
-                    var cellTop = (cells.Height - 1 - y) * cellSize;
+                    var cell = snapshot.GetCell(x, y);
+                    var cellTop = (snapshot.Height - 1 - y) * cellSize;
                     var cellRect = new NoesisRect(
                         left + x * cellSize + gap,
                         top + cellTop + gap,
                         Math.Max(0f, cellSize - gap * 2f),
                         Math.Max(0f, cellSize - gap * 2f));
 
-                    DrawTerrain(context, cell, cellRect, x, y);
+                    DrawTerrain(context, cell, cellRect);
                     if (cell.IsCreature || (cell.IsPlantResource && !cell.IsTerrainResource))
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
@@ -129,7 +128,7 @@ namespace SaltyGame
             context.DrawRectangle(null, playerSpeciesOutline, cellRect);
         }
 
-        void DrawTerrain(DrawingContext context, SpeciesCell cell, NoesisRect cellRect, int x, int y)
+        void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
             if (desertTerrainTiles != null)
             {
@@ -137,8 +136,7 @@ namespace SaltyGame
                 if (TerrainVisualFamilies.Get(cell.TerrainId) == TerrainVisualFamily.Grass
                     && grassTerrainTiles != null)
                 {
-                    var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, cell.TerrainId);
-                    DrawTerrainSprite(context, grassTerrainTiles, mask, cellRect);
+                    DrawTerrainSprite(context, grassTerrainTiles, cell.TerrainVariantMask, cellRect);
                 }
 
                 return;
@@ -147,7 +145,7 @@ namespace SaltyGame
             context.DrawRectangle(cell.IsPassable ? Brushes.SaddleBrown : Brushes.Black, null, cellRect);
         }
 
-        void DrawSpeciesSprite(DrawingContext context, SpeciesCell cell, NoesisRect cellRect)
+        void DrawSpeciesSprite(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
             if (cell.IsPlantResource && !cell.IsTerrainResource)
             {
@@ -183,7 +181,7 @@ namespace SaltyGame
             }
         }
 
-        int GetAnimalAtlasIndex(SpeciesCell cell)
+        int GetAnimalAtlasIndex(SimulationCellSnapshot cell)
         {
             if (AnimalAtlasIndexBySpecies.TryGetValue(cell.SpeciesId, out var index))
             {
@@ -193,11 +191,11 @@ namespace SaltyGame
             return GetSpeciesRole(cell) == SpeciesRole.Carnivore ? 0 : 4;
         }
 
-        SpeciesRole GetSpeciesRole(SpeciesCell cell)
+        SpeciesRole GetSpeciesRole(SimulationCellSnapshot cell)
         {
-            if (speciesRules != null && speciesRules.TryGetValue(cell.SpeciesId, out var rules))
+            if (snapshot != null && snapshot.SpeciesRoles.TryGetValue(cell.SpeciesId, out var role))
             {
-                return rules.Role;
+                return role;
             }
 
             if (cell.SpeciesId == SpeciesIds.Plant)
