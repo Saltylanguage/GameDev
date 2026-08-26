@@ -9,6 +9,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MainMenu.unity
     guid: 947558fede4e56247b35f8e625dae890
   - enabled: 1
+    path: Assets/Scenes/Lab.unity
+    guid: 8e7d6c5b4a3928170f1e2d3c4b5a6978
+  - enabled: 1
     path: Assets/Scenes/CellularAutomataPrototype.unity
     guid: 317411a1bdcd4ef29cb52d73d6ea77a3
   - enabled: 1

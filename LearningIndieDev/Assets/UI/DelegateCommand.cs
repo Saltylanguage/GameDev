@@ -3,24 +3,50 @@ using System.Windows.Input;
 
 public class DelegateCommand : ICommand
 {
-    private readonly Action _Execute;
+    readonly Action execute;
+    readonly Action<object> executeWithParameter;
+    readonly Func<object, bool> canExecute;
 
-    public DelegateCommand(Action execute, Func<bool> canExcute = null)
+    public DelegateCommand(Action execute, Func<bool> canExecute = null)
     {
-        _Execute = execute;
+        this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
+        this.canExecute = canExecute == null
+            ? null
+            : new Func<object, bool>(_ => canExecute());
     }
 
-    public void Execute (object parameter)
+    public DelegateCommand(Action<object> execute, Func<object, bool> canExecute = null)
     {
-        _Execute();
+        executeWithParameter = execute ?? throw new ArgumentNullException(nameof(execute));
+        this.canExecute = canExecute;
     }
 
     public event EventHandler CanExecuteChanged;
 
-    public bool CanExecute (object paramter)
+    public bool CanExecute(object parameter)
     {
-        return true;
+        return canExecute == null || canExecute(parameter);
     }
 
-    
+    public void Execute(object parameter)
+    {
+        if (!CanExecute(parameter))
+        {
+            return;
+        }
+
+        if (executeWithParameter != null)
+        {
+            executeWithParameter(parameter);
+        }
+        else
+        {
+            execute();
+        }
+    }
+
+    public void RaiseCanExecuteChanged()
+    {
+        CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+    }
 }

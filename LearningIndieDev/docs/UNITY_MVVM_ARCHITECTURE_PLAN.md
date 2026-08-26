@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T0–T3 composition baseline implemented
+> Status: Accepted direction; T0–T4 implementation complete, Play Mode gate pending
 > Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -66,9 +66,9 @@ already being changed, preserve Unity `.meta` files and serialized references,
 and verify scene/prefab loading after each batch. No broad rename pass should
 precede a working composition path.
 
-Existing names such as `MainMenuViewModel`, `SpeciesSimulationViewModel`,
-`SpeciesSimulationPreview`, and `MainMenuShell.xaml` remain compatibility
-names until their feature is migrated safely.
+Existing names such as `SpeciesSimulationViewModel` and
+`SpeciesSimulationPreview` remain compatibility names until their feature is
+migrated safely. The Main Menu naming migration is handled by T4.
 
 ## Scene and feature structure
 
@@ -259,6 +259,12 @@ the shell is touched. Implement only Profile Selection, Continue, and Quit.
 Profile Selection handles the first profile create/select path; Continue is
 disabled until a profile exists and then loads the Lab with the last loaded
 profile.
+
+Implemented with `VM_MainMenu`, `V_Panel_MainMenu.xaml`, serialized Main Menu
+composition, `Helper_ProfileSession`, `Helper_SceneTransition`, and a minimal
+`Lab` destination scene. The focused Main Menu Play Mode tests cover the
+first-launch, profile persistence, Continue routing, and quit-state contracts;
+they still need to be run through the Editor test runner.
 
 **Exit gate:** first-launch and returning-profile flows work in Play Mode, Quit
 is wired, and no New Game or Load Game action remains in the player menu.

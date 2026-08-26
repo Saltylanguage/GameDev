@@ -260,6 +260,9 @@ GameObject:
   - component: {fileID: 1292116714}
   - component: {fileID: 1292116713}
   - component: {fileID: 1292116715}
+  - component: {fileID: 1292116716}
+  - component: {fileID: 1292116717}
+  - component: {fileID: 1292116718}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -429,7 +432,48 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7ab6b0f3a0c34d3a9d7e2a1b8c6f4e52, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.MainMenuViewModel
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_MainMenu
+  profileSession: {fileID: 1292116716}
+  sceneTransition: {fileID: 1292116717}
+--- !u!114 &1292116716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292116709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_ProfileSession
+--- !u!114 &1292116717
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292116709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6e5d4c3b2a1908f7e6d5c4b3a29180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
+  labSceneName: Lab
+--- !u!114 &1292116718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292116709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8c7d6e5f4a3b2910f7e6d5c4b3a29180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.MainMenuNoesisHost
+  view: {fileID: 1292116713}
+  viewModel: {fileID: 1292116715}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

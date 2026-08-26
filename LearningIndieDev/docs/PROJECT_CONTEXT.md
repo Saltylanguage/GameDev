@@ -123,6 +123,11 @@ settle them in foundational grid code.
   The board now receives an immutable `SimulationBoardSnapshot` through
   `VM_SimulationBoard`; the legacy shell ViewModel remains the compatibility
   composition surface until the safe naming pass.
+- T4 establishes the Main Menu contract: `VM_MainMenu` and
+  `V_Panel_MainMenu.xaml` expose Profile Selection, Continue, and Quit. Profile
+  state is owned by `Helper_ProfileSession`, and `Helper_SceneTransition` loads
+  the minimal `Lab` scene in `Single` mode. Continue is unavailable until a
+  profile has been created or selected.
 
 ## CellularSimData direction
 

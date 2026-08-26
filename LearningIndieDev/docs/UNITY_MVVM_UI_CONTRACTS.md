@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0–T3 composition baseline; T2 board snapshot boundary implemented
+> Status: T0–T4 composition baseline; T2 board snapshot boundary implemented
 > Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -269,3 +269,8 @@ create them during normal startup.
 T2 and T3 are now complete for the simulation prototype. The board projection
 is concrete and covered by focused tests, and the authored composition is
 covered by a focused Play Mode composition test.
+
+T4 now applies the Main Menu contract: profile/session state is persisted by
+`Helper_ProfileSession`, scene loading is owned by `Helper_SceneTransition`,
+and the Main Menu exposes only Profile Selection, Continue, and Quit. Full
+Play Mode execution remains the final verification step for this slice.
