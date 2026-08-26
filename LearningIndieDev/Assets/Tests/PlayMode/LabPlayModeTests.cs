@@ -62,14 +62,66 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator ExpeditionLaunchStaysDisabledUntilT6()
+        public IEnumerator ExpeditionLaunchStaysDisabledWithoutProfile()
         {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
             yield return LoadLab();
 
             var viewModel = FindViewModel();
             var launch = GetProperty(viewModel, "LaunchExpeditionCommand");
             Assert.That(CanExecute(launch), Is.False);
             Assert.That((bool)GetProperty(viewModel, "CanLaunchExpedition"), Is.False);
+        }
+
+        [UnityTest]
+        public IEnumerator ExpeditionLaunchLoadsSimulationWithImmutableRequest()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
+            yield return LoadLab();
+
+            var root = FindRoot();
+            var profile = root.GetComponent<Helper_ProfileSession>();
+            profile.CreateInitialProfile("T6 Test Profile");
+
+            var viewModel = FindViewModel();
+            var features = (IEnumerable)GetProperty(viewModel, "Features");
+            foreach (var feature in features)
+            {
+                if ((string)GetProperty(feature, "FeatureId") == "ExpeditionSetup")
+                {
+                    Execute(GetProperty(feature, "OpenCommand"));
+                    break;
+                }
+            }
+
+            var launch = GetProperty(viewModel, "LaunchExpeditionCommand");
+            Assert.That(CanExecute(launch), Is.True);
+            Execute(launch);
+            yield return null;
+            yield return null;
+
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("CellularAutomataPrototype"));
+            Component preview = null;
+            var previewObjects = Object.FindObjectsByType<Component>(FindObjectsSortMode.None);
+            foreach (var candidate in previewObjects)
+            {
+                if (candidate.GetType().FullName == "SaltyGame.SpeciesSimulationPreview")
+                {
+                    preview = candidate;
+                    break;
+                }
+            }
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(GetProperty(preview, "SelectedScenario"), Is.Not.Null);
+            Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
+            Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
+            Assert.That((int)GetProperty(preview, "BaseSeed"), Is.EqualTo(10100));
+            Assert.That((bool)GetProperty(preview, "RandomizeSeedOnStart"), Is.False);
+
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
         }
 
         static IEnumerator LoadLab()

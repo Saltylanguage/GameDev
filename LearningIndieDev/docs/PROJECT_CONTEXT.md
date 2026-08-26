@@ -132,6 +132,13 @@ settle them in foundational grid code.
   Overview, Research, Species Archive, Expedition Setup, and Settings feature
   pairs beneath one Noesis root. The feature data is representative and UI-only
   until the persistence and simulation handoffs are implemented.
+- T6 establishes the first end-to-end handoff: Expedition Setup creates an
+  immutable `SimulationLaunchRequest`, `Helper_SceneTransition` loads the
+  authored `CellularAutomataPrototype` Simulation scene in `Single` mode, and
+  the results surface can return to Lab using the persisted profile session.
+  The initial slice uses ForestEdge, hare, and seed 10100 as the authored Lab
+  launch defaults; upgrades remain an empty ordered list until progression is
+  connected.
 
 ## CellularSimData direction
 

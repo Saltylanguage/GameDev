@@ -56,7 +56,8 @@ namespace SaltyGame
         public Visibility SpeciesArchiveVisibility => activeFeature == speciesArchive ? Visibility.Visible : Visibility.Collapsed;
         public Visibility ExpeditionSetupVisibility => activeFeature == expeditionSetup ? Visibility.Visible : Visibility.Collapsed;
         public Visibility SettingsVisibility => activeFeature == settings ? Visibility.Visible : Visibility.Collapsed;
-        public bool CanLaunchExpedition => false;
+        public bool CanLaunchExpedition => activeFeature == expeditionSetup
+            && profileSession?.Current?.HasLoadedProfile == true;
 
         void Awake()
         {
@@ -116,7 +117,16 @@ namespace SaltyGame
 
         void LaunchExpedition()
         {
-            // T6 owns the simulation scene handoff; this command remains disabled until then.
+            if (!CanLaunchExpedition)
+            {
+                return;
+            }
+
+            var launch = expeditionSetup.CreateLaunchRequest(profileSession.Current);
+            if (launch != null)
+            {
+                sceneTransition.LoadSimulation(launch);
+            }
         }
 
         void ReturnToMainMenu()
@@ -138,6 +148,7 @@ namespace SaltyGame
             OnPropertyChanged(nameof(SpeciesArchiveVisibility));
             OnPropertyChanged(nameof(ExpeditionSetupVisibility));
             OnPropertyChanged(nameof(SettingsVisibility));
+            OnPropertyChanged(nameof(CanLaunchExpedition));
             LaunchExpeditionCommand?.RaiseCanExecuteChanged();
         }
 

@@ -258,6 +258,51 @@ namespace SaltyGame
         public string SettingsMessage => settingsMessage ?? string.Empty;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
 
+        public bool TryApplyLaunchRequest(SimulationLaunchRequest launch, out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (launch == null)
+            {
+                validationMessage = "A simulation launch request is required.";
+                return false;
+            }
+
+            randomizeSeedOnStart = false;
+            seed = launch.Seed;
+
+            var scenarioIndex = -1;
+            for (var index = 0; index < scenarioOptions.Count; index++)
+            {
+                var scenario = scenarioOptions[index];
+                if (scenario != null
+                    && string.Equals(scenario.name, launch.ScenarioId, StringComparison.OrdinalIgnoreCase))
+                {
+                    scenarioIndex = index;
+                    break;
+                }
+            }
+
+            if (scenarioIndex < 0)
+            {
+                validationMessage = $"Scenario '{launch.ScenarioId}' is not available in the Simulation scene.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (!TrySelectScenario(scenarioIndex, out validationMessage))
+            {
+                return false;
+            }
+
+            if (!TrySetPlayerSpecies(launch.PlayerSpeciesId, out validationMessage))
+            {
+                return false;
+            }
+
+            settingsMessage = $"Launch accepted: {launch.ScenarioId} / {launch.PlayerSpeciesId} / seed {launch.Seed}.";
+            return true;
+        }
+
         public void BindSimulationHelper(Helper_Simulation helper)
         {
             if (helper == null)
@@ -297,6 +342,14 @@ namespace SaltyGame
                 ? new List<ScenarioDefinitionAsset>()
                 : new List<ScenarioDefinitionAsset>(options);
             selectedScenarioIndex = Mathf.Clamp(initialSelection, -1, scenarioOptions.Count - 1);
+
+            // CellularAutomataPrototypeRuntime may configure options from its
+            // Awake before this component's Awake has initialized ruleDrafts.
+            // Defer the reset until our own initialization in that case.
+            if (ruleDrafts == null)
+            {
+                return;
+            }
 
             if (previewState == SpeciesPreviewState.Ready && !sessionStarted)
             {

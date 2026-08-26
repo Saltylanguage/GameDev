@@ -7,9 +7,13 @@ namespace SaltyGame
     {
         [SerializeField] string labSceneName = "Lab";
         [SerializeField] string mainMenuSceneName = "MainMenu";
+        [SerializeField] string simulationSceneName = "CellularAutomataPrototype";
+
+        static SimulationLaunchRequest pendingSimulationLaunch;
 
         public string LabSceneName => labSceneName;
         public string MainMenuSceneName => mainMenuSceneName;
+        public string SimulationSceneName => simulationSceneName;
 
         public bool LoadLab(ProfileSessionSnapshot profile)
         {
@@ -36,6 +40,31 @@ namespace SaltyGame
 
             SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
             return true;
+        }
+
+        public bool LoadSimulation(SimulationLaunchRequest launch)
+        {
+            if (launch == null || string.IsNullOrEmpty(simulationSceneName))
+            {
+                return false;
+            }
+
+            pendingSimulationLaunch = launch;
+            SceneManager.LoadScene(simulationSceneName, LoadSceneMode.Single);
+            return true;
+        }
+
+        public static bool TryConsumeSimulationLaunch(out SimulationLaunchRequest launch)
+        {
+            launch = pendingSimulationLaunch;
+            pendingSimulationLaunch = null;
+            return launch != null;
+        }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        static void ResetPendingLaunch()
+        {
+            pendingSimulationLaunch = null;
         }
     }
 }

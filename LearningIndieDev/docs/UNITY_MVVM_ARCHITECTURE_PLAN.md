@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T0–T5 implementation complete, Play Mode gate pending
+> Status: Accepted direction; T0–T6 implementation complete, Play Mode gate pending
 > Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -278,12 +278,12 @@ Lab root. Use clearly labelled representative data until services are ready.
 
 Implemented with `VM_Lab`, `V_Panel_Lab.xaml`, five feature ViewModel/View pairs,
 `LabNoesisHost`, explicit profile/session and scene-transition references, and
-disabled expedition launch until the T6 simulation handoff exists. The Lab
-shell supports feature selection, Back to Overview, Return to Main Menu, and
-placeholder data without pretending that research or settings are persisted.
+the T6 simulation handoff. The Lab shell supports feature selection, Back to
+Overview, Return to Main Menu, and a profile-gated Forest Edge launch without
+pretending that research or settings are persisted.
 Focused Lab Play Mode coverage now covers composition, feature navigation, and
-the disabled T6 launch command; it still needs to be run through the Editor
-test runner.
+the profile-gated T6 launch path; it still needs a normal Editor Test Runner
+completion window.
 
 **Exit gate:** keyboard/mouse navigation, focus, Back behavior, disabled
 prototype actions, and the Lab UI-only acceptance checklist work without
@@ -296,10 +296,9 @@ Main Menu → Lab → Expedition Setup → Simulation → Results → Lab. Pass 
 immutable run-start snapshot into the simulation and return a result snapshot
 without relying on destroyed scene objects.
 
-#### T6 preparation
+#### T6 implementation
 
-The current T5 launch command remains disabled until these handoff boundaries
-are implemented:
+The T5 launch command now uses these handoff boundaries:
 
 1. `VM_ExpeditionSetup` creates a validated, immutable
    `SimulationLaunchRequest` from the player's scenario, species, seed, and
@@ -311,11 +310,17 @@ are implemented:
 4. Results, rewards, failure, and final-report states consume that snapshot and
    return to Lab through an explicit transition intent.
 
-Execution should be split into three reviewable slices: scene/request
-composition, simulation welcome/play handoff, and result/reward/failure return.
+The implementation uses the existing `CellularAutomataPrototype` as the
+Simulation scene target while it remains the authored simulation composition.
+The request is consumed once on scene startup, and the existing rewards/results
+surface now exposes an explicit Return to Lab command. A lifecycle guard also
+handles scenario configuration arriving before the preview component's own
+`Awake` initialization.
+
 The focused exit checks are deterministic replay with the same request,
 intentional back/stop behavior, and a complete Main Menu → Lab → Simulation →
-Lab loop in Play Mode.
+Lab loop in Play Mode. The focused test dispatch is accepted by the Editor; its
+completion callback still requires a normal Test Runner completion window.
 
 **Exit gate:** the full navigation loop works, leaving a run is intentional,
 and the same seed/profile/options reproduce the same simulation result.

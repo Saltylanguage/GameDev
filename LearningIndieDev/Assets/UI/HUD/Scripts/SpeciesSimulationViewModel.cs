@@ -101,6 +101,8 @@ namespace SaltyGame
         string scenarioText;
         string playerSpeciesText;
         string rosterText;
+        Helper_SceneTransition sceneTransition;
+        Helper_ProfileSession profileSession;
         readonly StringBuilder rosterTextBuilder = new StringBuilder();
         Visibility settingsVisibility;
         Visibility runningVisibility;
@@ -128,6 +130,7 @@ namespace SaltyGame
         public DelegateCommand ApplySettingsCommand { get; private set; }
         public DelegateCommand SaveSettingsCommand { get; private set; }
         public DelegateCommand ApplySpeciesRulesCommand { get; private set; }
+        public DelegateCommand ReturnToLabCommand { get; private set; }
 
         public string StateTitle => stateTitle;
         public string RunStatusText => runStatusText;
@@ -286,6 +289,9 @@ namespace SaltyGame
         public string RewardOption2Text => rewardOption2Text;
         public string RewardOption3Text => rewardOption3Text;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
+        public bool CanReturnToLab => resultsVisibility == Visibility.Visible
+            && sceneTransition != null
+            && profileSession?.Current?.HasLoadedProfile == true;
         public string[] ScenarioOptions => scenarioOptions;
         public string[] PlayerSpeciesOptions => playerSpeciesOptions;
         public int SelectedScenarioIndex
@@ -370,6 +376,14 @@ namespace SaltyGame
 
             view.Content.DataContext = this;
             Refresh(true);
+        }
+
+        public void BindSceneTransition(Helper_SceneTransition transition, Helper_ProfileSession profile)
+        {
+            sceneTransition = transition;
+            profileSession = profile;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
+            ReturnToLabCommand?.RaiseCanExecuteChanged();
         }
 
         public void SetSpriteVisuals(
@@ -696,6 +710,7 @@ namespace SaltyGame
             ApplySettingsCommand = new DelegateCommand(ApplySettings);
             SaveSettingsCommand = new DelegateCommand(SaveSettings);
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
+            ReturnToLabCommand = new DelegateCommand(ReturnToLab, () => CanReturnToLab);
         }
 
         void Start()
@@ -806,6 +821,8 @@ namespace SaltyGame
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
+            ReturnToLabCommand?.RaiseCanExecuteChanged();
             Set(
                 ref experimentalHerbivoreStatLineSummaryVisibility,
                 showExperimentalHerbivoreStatLine
@@ -885,6 +902,14 @@ namespace SaltyGame
 
             preview.SaveCurrentSettingsAsDefault();
             Refresh(true);
+        }
+
+        void ReturnToLab()
+        {
+            if (CanReturnToLab)
+            {
+                sceneTransition.LoadLab(profileSession.Current);
+            }
         }
 
         void LoadRuleValues()

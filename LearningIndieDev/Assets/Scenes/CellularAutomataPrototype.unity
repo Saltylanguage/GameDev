@@ -132,6 +132,8 @@ GameObject:
   - component: {fileID: 100003}
   - component: {fileID: 100004}
   - component: {fileID: 100005}
+  - component: {fileID: 100016}
+  - component: {fileID: 100017}
   m_Layer: 0
   m_Name: Cellular Automata Prototype
   m_TagString: Untagged
@@ -193,6 +195,8 @@ MonoBehaviour:
   view: {fileID: 100013}
   viewModel: {fileID: 100014}
   boardViewModel: {fileID: 100015}
+  profileSession: {fileID: 100016}
+  sceneTransition: {fileID: 100017}
   xaml: {fileID: -8414808784256213763, guid: d9f8c2b3e8e74769a9f0d8c1b3a6e542, type: 3}
   animalAtlas: {fileID: 100100200, guid: 4f65e1e4d733ccc4d8113314e433af9b, type: 3}
   terrainAtlas: {fileID: 100100200, guid: c97b93d070e278c44be95a371f6c3bc6, type: 3}
@@ -224,6 +228,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.SpeciesSimulationPreview
   simulationHelper: {fileID: 100004}
+--- !u!114 &100016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_ProfileSession
+--- !u!114 &100017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6e5d4c3b2a1908f7e6d5c4b3a29180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
+  labSceneName: Lab
+  mainMenuSceneName: MainMenu
+  simulationSceneName: CellularAutomataPrototype
 --- !u!1 &100010
 GameObject:
   m_ObjectHideFlags: 0

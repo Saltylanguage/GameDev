@@ -12,6 +12,8 @@ namespace SaltyGame
         [SerializeField] NoesisView view;
         [SerializeField] SpeciesSimulationViewModel viewModel;
         [SerializeField] VM_SimulationBoard boardViewModel;
+        [SerializeField] Helper_ProfileSession profileSession;
+        [SerializeField] Helper_SceneTransition sceneTransition;
 
         [Header("UI Assets")]
         [SerializeField] NoesisXaml xaml;
@@ -44,7 +46,17 @@ namespace SaltyGame
             view.Xaml = xaml;
             view.enabled = true;
 
+            if (Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch))
+            {
+                if (!preview.TryApplyLaunchRequest(launch, out var validationMessage))
+                {
+                    Debug.LogError($"Simulation launch request was rejected: {validationMessage}", this);
+                    return;
+                }
+            }
+
             viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
+            viewModel.BindSceneTransition(sceneTransition, profileSession);
             viewModel.BindToView(view);
 
             boardViewModel.Initialize(preview);

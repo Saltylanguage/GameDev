@@ -607,6 +607,12 @@
                             Width="100"
                             Height="50"/>
                 </StackPanel>
+                <Button Content="RETURN TO LAB"
+                        Command="{Binding ReturnToLabCommand}"
+                        IsEnabled="{Binding CanReturnToLab}"
+                        Width="250"
+                        Height="44"
+                        Margin="0,14,0,0"/>
             </StackPanel>
         </Border>
     </Grid>

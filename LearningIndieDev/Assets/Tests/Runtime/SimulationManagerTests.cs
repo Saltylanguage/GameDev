@@ -6,6 +6,28 @@ namespace SaltyGame.Tests
     public sealed class SimulationManagerTests
     {
         [Test]
+        public void LaunchRequestCopiesOrderedUpgrades()
+        {
+            var upgrades = new List<string> { "Trailblazer", "" };
+            var request = new SimulationLaunchRequest(
+                "profile-1",
+                "ForestEdge",
+                "hare",
+                10100,
+                upgrades,
+                "ruleset-1");
+
+            upgrades.Add("Warren");
+
+            Assert.That(request.ProfileId, Is.EqualTo("profile-1"));
+            Assert.That(request.ScenarioId, Is.EqualTo("ForestEdge"));
+            Assert.That(request.PlayerSpeciesId, Is.EqualTo("hare"));
+            Assert.That(request.Seed, Is.EqualTo(10100));
+            Assert.That(request.RulesetFingerprint, Is.EqualTo("ruleset-1"));
+            Assert.That(request.OrderedUpgradeIds, Is.EqualTo(new[] { "Trailblazer" }));
+        }
+
+        [Test]
         public void AdvanceUsesFixedStepAndRaisesCompletionOnce()
         {
             var manager = CreateManager();

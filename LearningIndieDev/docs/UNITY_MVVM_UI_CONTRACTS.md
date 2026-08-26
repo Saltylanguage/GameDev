@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0–T5 composition baseline; T2 board snapshot boundary implemented
+> Status: T0–T6 composition baseline; T2 board snapshot boundary implemented
 > Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -287,10 +287,9 @@ and the Main Menu exposes only Profile Selection, Continue, and Quit. Full
 Play Mode execution remains the final verification step for this slice.
 
 T5 now applies the Lab contract: one `NoesisView` hosts `VM_Lab` and the five
-feature View/ViewModel pairs. Lab navigation is UI-only, uses representative
-data, and keeps expedition launch disabled until T6 supplies the simulation
-handoff.
+feature View/ViewModel pairs. Lab navigation remains UI-only, while the
+profile-gated Expedition Setup command now supplies the T6 simulation handoff.
 
-T6 is prepared but not implemented: the launch request, scene ownership, and
-result-return boundaries are now explicit. The launch command stays disabled
-until the Simulation scene and its result path are authored and validated.
+T6 implements the request handoff to the authored Simulation scene, one-shot
+request consumption, and the Results → Lab command. The launch command remains
+unavailable without a loaded profile or while another Lab feature is active.
