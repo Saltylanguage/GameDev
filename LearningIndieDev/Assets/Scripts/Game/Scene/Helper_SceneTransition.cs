@@ -6,8 +6,10 @@ namespace SaltyGame
     public sealed class Helper_SceneTransition : MonoBehaviour
     {
         [SerializeField] string labSceneName = "Lab";
+        [SerializeField] string mainMenuSceneName = "MainMenu";
 
         public string LabSceneName => labSceneName;
+        public string MainMenuSceneName => mainMenuSceneName;
 
         public bool LoadLab(ProfileSessionSnapshot profile)
         {
@@ -23,6 +25,17 @@ namespace SaltyGame
         public void QuitApplication()
         {
             Application.Quit();
+        }
+
+        public bool LoadMainMenu()
+        {
+            if (string.IsNullOrEmpty(mainMenuSceneName))
+            {
+                return false;
+            }
+
+            SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
+            return true;
         }
     }
 }

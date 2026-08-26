@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../DesignSystem/FigmaNoesisPilotResources.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <DataTemplate x:Key="ExpeditionSetupTemplate">
+        <StackPanel>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Ui.Text.WindowTitle}" />
+            <TextBlock Text="{Binding Description}" Style="{StaticResource Ui.Text.Body}" TextWrapping="Wrap" Margin="0,12,0,24" />
+            <Border Background="{DynamicResource Ui.Brush.Header}" CornerRadius="8" Padding="18">
+                <StackPanel>
+                    <TextBlock Text="SCENARIO" Foreground="{DynamicResource Ui.Brush.TextAccent}" FontWeight="Bold" />
+                    <TextBlock Text="FOREST EDGE" Foreground="{DynamicResource Ui.Brush.TextPrimary}" FontSize="20" Margin="0,8,0,4" />
+                    <TextBlock Text="Player species: HARE" Style="{StaticResource Ui.Text.Body}" />
+                    <TextBlock Text="Deterministic seed: assigned at launch" Style="{StaticResource Ui.Text.Body}" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource Ui.Brush.TextAccent}" FontWeight="Bold" TextWrapping="Wrap" Margin="0,24,0,0" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

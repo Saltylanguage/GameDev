@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0–T4 composition baseline; T2 board snapshot boundary implemented
+> Status: T0–T5 composition baseline; T2 board snapshot boundary implemented
 > Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -274,3 +274,8 @@ T4 now applies the Main Menu contract: profile/session state is persisted by
 `Helper_ProfileSession`, scene loading is owned by `Helper_SceneTransition`,
 and the Main Menu exposes only Profile Selection, Continue, and Quit. Full
 Play Mode execution remains the final verification step for this slice.
+
+T5 now applies the Lab contract: one `NoesisView` hosts `VM_Lab` and the five
+feature View/ViewModel pairs. Lab navigation is UI-only, uses representative
+data, and keeps expedition launch disabled until T6 supplies the simulation
+handoff.

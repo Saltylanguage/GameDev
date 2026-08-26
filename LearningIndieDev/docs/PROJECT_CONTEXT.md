@@ -128,6 +128,10 @@ settle them in foundational grid code.
   state is owned by `Helper_ProfileSession`, and `Helper_SceneTransition` loads
   the minimal `Lab` scene in `Single` mode. Continue is unavailable until a
   profile has been created or selected.
+- T5 establishes the GalapagOS Lab shell: `VM_Lab` and `V_Panel_Lab.xaml` host
+  Overview, Research, Species Archive, Expedition Setup, and Settings feature
+  pairs beneath one Noesis root. The feature data is representative and UI-only
+  until the persistence and simulation handoffs are implemented.
 
 ## CellularSimData direction
 

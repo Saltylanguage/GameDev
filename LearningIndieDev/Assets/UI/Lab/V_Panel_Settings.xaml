@@ -1,0 +1,21 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../DesignSystem/FigmaNoesisPilotResources.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <DataTemplate x:Key="SettingsTemplate">
+        <StackPanel>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Ui.Text.WindowTitle}" />
+            <TextBlock Text="{Binding Description}" Style="{StaticResource Ui.Text.Body}" TextWrapping="Wrap" Margin="0,12,0,24" />
+            <Border Background="{DynamicResource Ui.Brush.Header}" CornerRadius="8" Padding="18">
+                <StackPanel>
+                    <TextBlock Text="PRESENTATION" Foreground="{DynamicResource Ui.Brush.TextAccent}" FontWeight="Bold" />
+                    <CheckBox Content="Enable accessibility hints" IsEnabled="False" Foreground="{DynamicResource Ui.Brush.TextPrimary}" Margin="0,12,0,0" />
+                    <CheckBox Content="Reduce animation" IsEnabled="False" Foreground="{DynamicResource Ui.Brush.TextPrimary}" Margin="0,10,0,0" />
+                    <TextBlock Text="Controls are reserved for the settings helper implementation." Style="{StaticResource Ui.Text.Body}" TextWrapping="Wrap" Margin="0,14,0,0" />
+                </StackPanel>
+            </Border>
+            <TextBlock Text="{Binding StatusText}" Foreground="{DynamicResource Ui.Brush.TextAccent}" FontWeight="Bold" TextWrapping="Wrap" Margin="0,24,0,0" />
+        </StackPanel>
+    </DataTemplate>
+</ResourceDictionary>

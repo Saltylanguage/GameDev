@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T0–T4 implementation complete, Play Mode gate pending
+> Status: Accepted direction; T0–T5 implementation complete, Play Mode gate pending
 > Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -275,6 +275,15 @@ Create the separate Lab scene with one top-level Noesis root. Add the meaningful
 feature pairs for Overview, Research, Species Archive, Expedition Setup, and
 Settings. Feature windows may use separate XAML roots or panels beneath the
 Lab root. Use clearly labelled representative data until services are ready.
+
+Implemented with `VM_Lab`, `V_Panel_Lab.xaml`, five feature ViewModel/View pairs,
+`LabNoesisHost`, explicit profile/session and scene-transition references, and
+disabled expedition launch until the T6 simulation handoff exists. The Lab
+shell supports feature selection, Back to Overview, Return to Main Menu, and
+placeholder data without pretending that research or settings are persisted.
+Focused Lab Play Mode coverage now covers composition, feature navigation, and
+the disabled T6 launch command; it still needs to be run through the Editor
+test runner.
 
 **Exit gate:** keyboard/mouse navigation, focus, Back behavior, disabled
 prototype actions, and the Lab UI-only acceptance checklist work without

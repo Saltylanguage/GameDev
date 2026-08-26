@@ -460,6 +460,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
   labSceneName: Lab
+  mainMenuSceneName: MainMenu
 --- !u!114 &1292116718
 MonoBehaviour:
   m_ObjectHideFlags: 0
