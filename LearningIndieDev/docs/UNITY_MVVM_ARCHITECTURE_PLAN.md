@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T2 board/shell boundary implemented, T3 composition next
+> Status: Accepted direction; T0–T3 composition baseline implemented
 > Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -242,6 +242,12 @@ board internals, and no XAML control is created per simulation cell.
 Replace normal-path `Find*` discovery and runtime `AddComponent` setup with
 serialized host references and explicit data-context wiring. Keep the host
 responsible for composition, not simulation or feature behavior.
+
+Implemented for `CellularAutomataPrototype`: the scene now serializes the
+simulation helper, preview, camera, Noesis view, shell ViewModel, and board
+ViewModel. The host binds those references directly; it no longer discovers
+objects or creates components at runtime. A focused Play Mode composition test
+guards the authored object graph.
 
 **Exit gate:** the target scene opens from its serialized composition alone,
 the Noesis binding smoke test passes, and no compatibility reference was lost.

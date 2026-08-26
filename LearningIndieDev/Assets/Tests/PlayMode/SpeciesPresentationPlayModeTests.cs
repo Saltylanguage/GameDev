@@ -13,6 +13,27 @@ namespace SaltyGame.PlayModeTests
     public sealed class SpeciesPresentationPlayModeTests
     {
         [UnityTest]
+        public IEnumerator CellularPrototypeUsesSerializedComposition()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var root = GameObject.Find("Cellular Automata Prototype");
+            var camera = GameObject.Find("Prototype Camera");
+            Assert.That(root, Is.Not.Null);
+            Assert.That(camera, Is.Not.Null);
+
+            Assert.That(root.GetComponent("SaltyGame.CellularAutomataPrototypeRuntime"), Is.Not.Null);
+            Assert.That(root.GetComponent("SaltyGame.SpeciesSimulationNoesisHost"), Is.Not.Null);
+            Assert.That(root.GetComponent("SaltyGame.Helper_Simulation"), Is.Not.Null);
+            Assert.That(root.GetComponent("SaltyGame.SpeciesSimulationPreview"), Is.Not.Null);
+            Assert.That(camera.GetComponent<Camera>(), Is.Not.Null);
+            Assert.That(camera.GetComponent("NoesisView"), Is.Not.Null);
+            Assert.That(camera.GetComponent("SaltyGame.SpeciesSimulationViewModel"), Is.Not.Null);
+            Assert.That(camera.GetComponent("SaltyGame.VM_SimulationBoard"), Is.Not.Null);
+        }
+
+        [UnityTest]
         public IEnumerator CellularPrototypeInitializesEveryAuthoredAnimalSprite()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)

@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0/T1 baseline; T2 board snapshot boundary implemented
+> Status: T0–T3 composition baseline; T2 board snapshot boundary implemented
 > Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -251,6 +251,12 @@ The Lab may contain separate feature XAML roots or panels, but they remain
 under the same top-level Noesis root/host. That choice does not change the
 feature ViewModel/helper boundaries.
 
+The simulation prototype currently satisfies this contract with an authored
+composition: `CellularAutomataPrototype` wires its helper, preview, camera,
+Noesis view, shell ViewModel, and board ViewModel in the scene. The host only
+binds those references and reports missing composition; it does not discover or
+create them during normal startup.
+
 ## 7. T0 exit criteria
 
 - [x] Flow states and authoritative owners are named.
@@ -260,5 +266,6 @@ feature ViewModel/helper boundaries.
 - [x] Serialized composition references are identified.
 - [x] No runtime code, scene, prefab, or serialized asset was changed in T0.
 
-T2 may now continue the shell extraction without reopening these ownership
-decisions. The board projection is concrete and covered by focused tests.
+T2 and T3 are now complete for the simulation prototype. The board projection
+is concrete and covered by focused tests, and the authored composition is
+covered by a focused Play Mode composition test.

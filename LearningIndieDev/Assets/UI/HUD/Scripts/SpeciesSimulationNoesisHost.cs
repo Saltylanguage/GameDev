@@ -6,6 +6,14 @@ namespace SaltyGame
 {
     public sealed class SpeciesSimulationNoesisHost : MonoBehaviour
     {
+        [Header("Serialized Composition")]
+        [SerializeField] SpeciesSimulationPreview preview;
+        [SerializeField] Camera uiCamera;
+        [SerializeField] NoesisView view;
+        [SerializeField] SpeciesSimulationViewModel viewModel;
+        [SerializeField] VM_SimulationBoard boardViewModel;
+
+        [Header("UI Assets")]
         [SerializeField] NoesisXaml xaml;
         [SerializeField] SpriteAtlas animalAtlas;
         [SerializeField] SpriteAtlas terrainAtlas;
@@ -20,38 +28,24 @@ namespace SaltyGame
                 return;
             }
 
-            var preview = FindAnyObjectByType<SpeciesSimulationPreview>();
-            var camera = GetComponentInChildren<Camera>(true);
-            if (preview == null || camera == null)
+            if (preview == null
+                || uiCamera == null
+                || view == null
+                || viewModel == null
+                || boardViewModel == null)
             {
-                Debug.LogError("SpeciesSimulationNoesisHost requires a simulation preview and camera.", this);
+                Debug.LogError(
+                    "SpeciesSimulationNoesisHost requires serialized preview, camera, view, shell VM, and board VM references.",
+                    this);
                 return;
-            }
-
-            var view = camera.GetComponent<NoesisView>();
-            if (view == null)
-            {
-                view = camera.gameObject.AddComponent<NoesisView>();
             }
 
             view.enabled = false;
             view.Xaml = xaml;
             view.enabled = true;
 
-            var viewModel = camera.GetComponent<SpeciesSimulationViewModel>();
-            if (viewModel == null)
-            {
-                viewModel = camera.gameObject.AddComponent<SpeciesSimulationViewModel>();
-            }
-
             viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
             viewModel.BindToView(view);
-
-            var boardViewModel = camera.GetComponent<VM_SimulationBoard>();
-            if (boardViewModel == null)
-            {
-                boardViewModel = camera.gameObject.AddComponent<VM_SimulationBoard>();
-            }
 
             boardViewModel.Initialize(preview);
             boardViewModel.SetSpriteVisuals(
