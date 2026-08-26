@@ -9,7 +9,7 @@ using UnityEngine.U2D;
 
 namespace SaltyGame
 {
-    public sealed class SpeciesSimulationViewModel : MonoBehaviour, INotifyPropertyChanged
+    public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
         static readonly string[] AnimalSpriteNames =
         {
@@ -424,7 +424,7 @@ namespace SaltyGame
                 if (!warnedMissingAtlases)
                 {
                     Debug.LogWarning(
-                        "SpeciesSimulationViewModel requires Terrain_01 and either animal atlas or fox/rabbit sprites.");
+                        "VM_SimulationShell requires Terrain_01 and either animal atlas or fox/rabbit sprites.");
                     warnedMissingAtlases = true;
                 }
 

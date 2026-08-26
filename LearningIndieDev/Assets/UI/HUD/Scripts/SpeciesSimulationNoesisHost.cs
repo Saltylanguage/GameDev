@@ -10,7 +10,7 @@ namespace SaltyGame
         [SerializeField] SpeciesSimulationPreview preview;
         [SerializeField] Camera uiCamera;
         [SerializeField] NoesisView view;
-        [SerializeField] SpeciesSimulationViewModel viewModel;
+        [SerializeField] VM_SimulationShell viewModel;
         [SerializeField] VM_SimulationBoard boardViewModel;
         [SerializeField] Helper_ProfileSession profileSession;
         [SerializeField] Helper_SceneTransition sceneTransition;

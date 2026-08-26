@@ -1,6 +1,6 @@
 # Unity MVVM Architecture Plan
 
-> Status: Accepted direction; T0–T6 implementation complete, Play Mode gate pending
+> Status: Accepted direction; T0–T7 implementation complete, Play Mode gate pending
 > Date: 2026-08-26
 > Scope: player-facing Main Menu, GalapagOS Lab, and simulation UI
 
@@ -66,9 +66,9 @@ already being changed, preserve Unity `.meta` files and serialized references,
 and verify scene/prefab loading after each batch. No broad rename pass should
 precede a working composition path.
 
-Existing names such as `SpeciesSimulationViewModel` and
-`SpeciesSimulationPreview` remain compatibility names until their feature is
-migrated safely. The Main Menu naming migration is handled by T4.
+Existing names such as `SpeciesSimulationPreview` remain compatibility names
+until their feature is migrated safely. The Main Menu naming migration is
+handled by T4; the simulation shell naming migration is handled by T7.
 
 ## Scene and feature structure
 
@@ -230,9 +230,9 @@ board control remains the high-throughput View.
 
 The first implementation slice now provides an immutable
 `SimulationBoardSnapshot`, `VM_SimulationBoard`, and snapshot-based terrain
-mask resolution. The existing `SpeciesSimulationViewModel` remains the shell
-compatibility surface while its direct board ownership has been removed. Its
-legacy name is intentionally retained until the safe naming pass in T7.
+mask resolution. The simulation shell now uses `VM_SimulationShell`; its direct
+board ownership has been removed. `VM_SimulationBoard` remains the separate
+board projection surface.
 
 **Exit gate:** the board draws from a snapshot, shell commands do not mutate
 board internals, and no XAML control is created per simulation cell.
@@ -332,6 +332,17 @@ only after their replacement path works. Preserve `.meta` files, Unity GUIDs,
 serialized references, and compatibility shims until scene validation passes.
 Remove obsolete wiring only after the new path has a focused test or smoke
 check.
+
+#### T7 implementation
+
+The simulation shell migration renames `SpeciesSimulationViewModel` to
+`VM_SimulationShell` and `SpeciesSimulationShell.xaml` to
+`V_Panel_SimulationShell.xaml`. Their Unity asset GUIDs remain unchanged, and
+the authored simulation scene, Noesis host, and focused presentation tests now
+reference the convention-compliant type. `SpeciesSimulationPreview` remains a
+presentation/preview component rather than being renamed speculatively; it is
+shared by runtime, editor, and test tooling and is not a ViewModel, view, or
+helper.
 
 **Exit gate:** no untracked compatibility dependency remains unexplained,
 Unity scenes load cleanly, focused tests pass, and the documentation reflects

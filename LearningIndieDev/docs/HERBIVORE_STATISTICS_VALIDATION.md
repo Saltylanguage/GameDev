@@ -55,7 +55,7 @@ in `SpeciesHerbivoreStatLine` in that same file.
 
 ## Game display and export paths
 
-- Rewards/results UI: `Assets/UI/HUD/Scripts/SpeciesSimulationViewModel.cs`
+- Rewards/results UI: `Assets/UI/HUD/Scripts/VM_SimulationShell.cs`
   calls `CreateHerbivoreStatLine` and formats the result when
   `bev-experimental` is enabled for a herbivore player.
 - Batch export: `Assets/Editor/SimulationTools/SimulationReportSerialization.cs`

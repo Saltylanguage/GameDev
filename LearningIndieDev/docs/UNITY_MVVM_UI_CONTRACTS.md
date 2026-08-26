@@ -1,6 +1,6 @@
 # Unity MVVM UI Contracts
 
-> Status: T0–T6 composition baseline; T2 board snapshot boundary implemented
+> Status: T0–T7 composition baseline; T2 board snapshot boundary and T7 naming migration implemented
 > Date: 2026-08-26
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
@@ -293,3 +293,7 @@ profile-gated Expedition Setup command now supplies the T6 simulation handoff.
 T6 implements the request handoff to the authored Simulation scene, one-shot
 request consumption, and the Results → Lab command. The launch command remains
 unavailable without a loaded profile or while another Lab feature is active.
+
+T7 applies the naming convention to the simulation shell: the ViewModel is
+`VM_SimulationShell` and the shell view is `V_Panel_SimulationShell.xaml`.
+Their serialized Unity references retain the existing asset GUIDs.

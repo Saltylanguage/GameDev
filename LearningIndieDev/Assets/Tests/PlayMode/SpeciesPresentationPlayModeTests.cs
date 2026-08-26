@@ -29,7 +29,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(root.GetComponent("SaltyGame.SpeciesSimulationPreview"), Is.Not.Null);
             Assert.That(camera.GetComponent<Camera>(), Is.Not.Null);
             Assert.That(camera.GetComponent("NoesisView"), Is.Not.Null);
-            Assert.That(camera.GetComponent("SaltyGame.SpeciesSimulationViewModel"), Is.Not.Null);
+            Assert.That(camera.GetComponent("SaltyGame.VM_SimulationShell"), Is.Not.Null);
             Assert.That(camera.GetComponent("SaltyGame.VM_SimulationBoard"), Is.Not.Null);
         }
 
@@ -46,8 +46,8 @@ namespace SaltyGame.PlayModeTests
             yield return null;
 
             var camera = GameObject.Find("Prototype Camera");
-            var viewModel = camera?.GetComponent("SaltyGame.SpeciesSimulationViewModel");
-            Assert.That(viewModel, Is.Not.Null, "CellularAutomataPrototype must initialize SpeciesSimulationViewModel.");
+            var viewModel = camera?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null, "CellularAutomataPrototype must initialize VM_SimulationShell.");
 
             var sprites = viewModel.GetType()
                 .GetField("animalSprites", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -107,7 +107,7 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(runtime.SpeciesPreview.State, Is.EqualTo(SpeciesPreviewState.Rewards));
             var viewModel = GameObject.Find("Prototype Camera")
-                ?.GetComponent("SaltyGame.SpeciesSimulationViewModel");
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(viewModel, Is.Not.Null);
             var summary = viewModel.GetType()
                 .GetProperty("ExperimentalHerbivoreStatLineSummary")

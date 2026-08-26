@@ -56,7 +56,7 @@ or silent fallback.
 ### ART.3 — Fox/Rabbit presentation repair
 
 - Repair or guard the current Noesis texture-source failure in
-  `SpeciesSimulationViewModel.CreateAnimalAtlasSprites`.
+  `VM_SimulationShell.CreateAnimalAtlasSprites`.
 - Validate Fox and Rabbit overrides, silhouette scale, role colors, contrast,
   and draw ordering in the actual Noesis view.
 - Verify terrain, species, selection, and state feedback remain legible at

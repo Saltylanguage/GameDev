@@ -384,7 +384,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7f2e84f3e4ef4b1b9a42db5f13f5b771, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.SpeciesSimulationViewModel
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_SimulationShell
 --- !u!114 &100015
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -122,9 +122,10 @@ ViewModels **MUST NOT**:
 - Store a second mutable copy of helper/domain state without an explicit
   distinction between a UI draft and the committed value.
 
-The current legacy `SpeciesSimulationViewModel` may violate some of these
-rules during migration. Do not expand that exception; new work should use the
-target boundary.
+The current `VM_SimulationShell` still carries some compatibility-oriented
+responsibilities while the simulation presentation is being separated into
+shell and board projections. Do not expand that exception; new work should use
+the target boundary.
 
 ## 5. Helper/controller restrictions
 

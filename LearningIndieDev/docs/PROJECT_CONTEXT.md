@@ -95,7 +95,7 @@ settle them in foundational grid code.
   shared resources, solid brushes, and redraws only when a simulation tick or
   relevant presentation state changes.
 - The `CellularAutomataPrototype` scene now composes a Noesis shell through
-  `SpeciesSimulationNoesisHost` and `SpeciesSimulationViewModel`. The shell
+  `SpeciesSimulationNoesisHost` and `VM_SimulationShell`. The shell
   owns the running, paused, rewards, and results controls, while the existing
   IMGUI panel remains the fallback authoring surface for species-specific rules.
 - The shell also edits global run settings (grid size, seed mode, population
@@ -334,8 +334,8 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
 ## Noesis migration status
 
 - Global settings, species-rule authoring, run controls, rewards, and results are
-  now presented by `SpeciesSimulationShell.xaml` with
-  `SpeciesSimulationViewModel`. The former IMGUI species editor is no longer
+  now presented by `V_Panel_SimulationShell.xaml` with
+  `VM_SimulationShell`. The former IMGUI species editor is no longer
   part of the runtime path; older handoffs that describe it as a fallback are
   historical.
 - `SpeciesSimulationBoard` is the first XAML game-board attempt. It is a single
