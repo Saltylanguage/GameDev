@@ -296,6 +296,27 @@ Main Menu → Lab → Expedition Setup → Simulation → Results → Lab. Pass 
 immutable run-start snapshot into the simulation and return a result snapshot
 without relying on destroyed scene objects.
 
+#### T6 preparation
+
+The current T5 launch command remains disabled until these handoff boundaries
+are implemented:
+
+1. `VM_ExpeditionSetup` creates a validated, immutable
+   `SimulationLaunchRequest` from the player's scenario, species, seed, and
+   ordered upgrades.
+2. `Helper_SceneTransition` carries that request into the Simulation scene in
+   `Single` mode; no Lab `GameObject` or ViewModel reference crosses the unload.
+3. The Simulation scene owns the run through `Helper_Simulation` and the plain
+   C# `SimulationManager`, then publishes a read-only result snapshot.
+4. Results, rewards, failure, and final-report states consume that snapshot and
+   return to Lab through an explicit transition intent.
+
+Execution should be split into three reviewable slices: scene/request
+composition, simulation welcome/play handoff, and result/reward/failure return.
+The focused exit checks are deterministic replay with the same request,
+intentional back/stop behavior, and a complete Main Menu → Lab → Simulation →
+Lab loop in Play Mode.
+
 **Exit gate:** the full navigation loop works, leaving a run is intentional,
 and the same seed/profile/options reproduce the same simulation result.
 

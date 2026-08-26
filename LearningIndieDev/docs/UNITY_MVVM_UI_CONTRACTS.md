@@ -235,6 +235,17 @@ target scene obtains its serialized composition references locally and uses
 the request/session snapshot as input. No scene object reference crosses a
 scene unload.
 
+For T6, the request is copied at the Expedition Setup boundary and treated as
+immutable for the entire run. `Helper_Simulation` is the Unity-facing adapter;
+the plain C# `SimulationManager` remains the owner of ticks and outcomes. The
+simulation publishes a read-only result projection before the transition back
+to Lab. Rewards, failure, and final-report screens may format that projection,
+but they do not mutate the run or reach into the unloaded Simulation scene.
+
+The T6 result handoff must preserve at least the profile, scenario, player
+species, seed, ruleset identity, outcome, final tick, and reward summary needed
+to render the report and apply a later reward-selection command.
+
 ## 6. Serialized composition contract
 
 Each scene has one explicit composition root/host. References are serialized
@@ -279,3 +290,7 @@ T5 now applies the Lab contract: one `NoesisView` hosts `VM_Lab` and the five
 feature View/ViewModel pairs. Lab navigation is UI-only, uses representative
 data, and keeps expedition launch disabled until T6 supplies the simulation
 handoff.
+
+T6 is prepared but not implemented: the launch request, scene ownership, and
+result-return boundaries are now explicit. The launch command stays disabled
+until the Simulation scene and its result path are authored and validated.
