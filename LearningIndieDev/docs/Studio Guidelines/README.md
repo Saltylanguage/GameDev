@@ -6,6 +6,7 @@ This directory contains durable, studio-level practices that apply across game d
 
 - [SG-001 — AI Generated Reports](AI_GENERATED_REPORTS.md)
 - [SG-002 — AI-Assisted Development](AI_ASSISTED_DEVELOPMENT.md)
+- [SG-003 — UI Architecture and MVVM Boundaries](SG-003-UI-MVVM-ARCHITECTURE.md)
 
 ## Guideline conventions
 

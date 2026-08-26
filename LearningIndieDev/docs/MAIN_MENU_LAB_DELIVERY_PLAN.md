@@ -1,18 +1,20 @@
 # Main Menu and Lab Delivery Plan
 
-> Status: Approved planning baseline | Updated: 2026-08-13 | Target: vertical slice
+> Status: Approved planning baseline | Updated: 2026-08-25 | Target: vertical slice
 
 ## Outcome
 
 Build the player-facing shell around the cellular-automata runs:
 
 ```text
-Launch -> Main Menu -> Lab -> Expedition Setup -> Simulation
-                    ^                              |
-                    |------ Results / Banking -----|
+Launch -> Main Menu -> GalapagOS Lab -> Expedition Setup -> Simulation
+                    ^                                      |
+                    |---------- Results / Banking ---------|
 ```
 
-The first delivery may be entirely UI, but it must establish the screen flow and presentation boundaries that later receive profile saves, scientific data, permanent research, species mastery, and branching run upgrades.
+The first delivery may be entirely UI, but it must establish the screen flow and presentation boundaries that later receive profile saves, scientific data, permanent research, species mastery, and branching run upgrades. The Main Menu and GalapagOS Lab are separate player-facing scenes; the simulation remains a separate scene and domain boundary.
+
+The implementation naming and layer contract are recorded in [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md). New ViewModels use `VM_*`, XAML views use `V_Panel_*`, and Unity helpers use `Helper_*`; legacy names migrate only when their feature is safely touched.
 
 ## Product responsibilities
 
@@ -20,13 +22,15 @@ The first delivery may be entirely UI, but it must establish the screen flow and
 
 The Main Menu is the application entry point. Its vertical-slice scope is:
 
-- **Enter the Lab:** continue the current research profile.
-- **New Profile:** create/reset a profile only after a confirmation step.
-- **Settings:** display, audio, input, and accessibility entry point; implementation may begin as a placeholder panel.
-- **Credits:** simple static panel.
-- **Quit:** desktop only.
+- **Profile Selection:** create or select the profile used by Continue. This is
+  the first-launch path because Continue is unavailable until a profile has
+  been loaded.
+- **Continue:** load the GalapagOS Lab with the last loaded profile.
+- **Quit:** close the application on desktop.
 
-Do not add multiple save slots, cloud-save conflict UI, account systems, news panels, stores, or online features for the slice.
+There is no separate New Game or Load Game action. Do not add multiple save
+slots, cloud-save conflict UI, account systems, news panels, stores, or online
+features for the slice.
 
 ### The Lab
 
@@ -74,8 +78,9 @@ color or decorative metaphor alone.
 | From | Player action | To | Required state/feedback |
 | --- | --- | --- | --- |
 | Launch | Start application | Main Menu | Focus lands on the primary action. |
-| Main Menu | Enter Lab | Lab Overview | Current profile summary is visible. |
-| Main Menu | Open Settings/Credits | Overlay/panel | Back returns focus to the invoking control. |
+| Main Menu | Select Profile | Profile Selection state | Create/select a profile; Continue becomes available after a successful load. |
+| Main Menu | Continue | Lab Overview | The last loaded profile summary is visible. Disabled when no profile has been loaded. |
+| Main Menu | Quit | Application exit | Desktop application closes. |
 | Lab | Select Research | Research Trees | Currency totals and locked/unlocked states remain visible. |
 | Research Trees | Select project | Purchase Preview | Cost, prerequisites, benefit, and remaining balances are shown. |
 | Purchase Preview | Confirm research | Research Trees | Data is deducted once; the unlocked node and newly available paths are revealed. |
@@ -89,8 +94,11 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 
 ## Presentation and technical boundaries
 
-- Reuse the existing `MainMenu.unity` scene and Noesis/XAML/ViewModel conventions.
-- Main Menu and Lab can share one scene and one root UI host. Use explicit screen state; do not introduce a general navigation framework for this flow.
+- Reuse the existing `MainMenu.unity` scene as the application entry point and migrate it to the `VM_MainMenu` / `V_Panel_MainMenu.xaml` naming contract when the shell is safely touched.
+- Main Menu and GalapagOS Lab use separate scenes and explicit scene-transition helpers. Each scene has one root shell pair, with meaningful Lab features using their own ViewModel/View pairs.
+- Main Menu contains Profile Selection, Continue, and Quit. Profile Selection is the first-launch path; Continue loads the Lab with the last loaded profile and is disabled when none exists.
+- Main Menu, Lab, and Simulation use explicit `Single` scene loads. A small application/session owner or launch snapshot carries the selected profile across the transition; the previous scene is not kept alive for state ownership.
+- Use explicit screen state and Noesis visual states for local overlays and polish; do not introduce a general navigation framework for this flow.
 - The cellular simulation remains a separate scene and domain boundary.
 - UI ViewModels expose presentation-ready values and explicit commands. XAML does not read simulation assets, `PlayerPrefs`, or mutable domain state directly.
 - A later profile service owns versioned meta-progression. The UI-only milestone may supply representative data through a small composition fixture, not through fake persisted state.
@@ -138,8 +146,10 @@ Exit gate: every primary action has a destination, required data, failure state,
 
 Deliverables:
 
-- `MainMenu.unity` as the enabled application entry scene;
-- one Noesis root shell with Main Menu, Lab Overview, Research, Species Archive, and Expedition Setup panels;
+- `MainMenu.unity` as the enabled application entry scene with Profile Selection,
+  Continue, and Quit;
+- a separate GalapagOS Lab scene with one Noesis root shell for Lab Overview,
+  Research, Species Archive, and Expedition Setup panels;
 - persistent scientific-data presentation plus representative research costs,
   purchase previews, experiment returns, and species-mastery guidance;
 - keyboard/mouse focus, Back behavior, confirmations, responsive layout, and representative data;

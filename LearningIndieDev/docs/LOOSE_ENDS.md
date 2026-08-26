@@ -245,12 +245,20 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   ignored `artifacts/cellular-experiment-*` bundles cited by handoffs are absent
   from this checkout, so their summaries are durable but their raw evidence is
   not independently auditable here.
-- **Next action:** Run the focused fingerprint test after Unity is closed. Before
-  new ecological experiments, define a combined run-provenance identity or
-  manifest that includes execution options, report checksum, source revision,
-  scenario GUID/path, command line, seed range, and reconciliation verdict.
+- **Next action:** Restore a valid local Unity entitlement, then run the focused
+  fingerprint/paired-runner tests and full suites. Retain complete experiment
+  directories so the report, checksum/source manifest, CSV, and log remain
+  independently auditable together.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
+
+#### 2026-08-25 continuation
+
+Run-provenance fingerprint v1, report schema 18, and the sibling checksum/source
+manifest are implemented locally. Direct paired-runner orchestration coverage is
+also present. Unity is closed, but validation is now blocked by the absent local
+entitlement file; these changes must remain unaccepted until the focused and full
+Unity suites run successfully.
 
 ### P2-002 — Deferred mechanics need trigger-based review only
 

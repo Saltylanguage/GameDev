@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 17;
+        const int ReportSchemaVersion = 18;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -147,6 +147,7 @@ namespace SaltyGame.EditorTools
 
             var species = GetSortedSpecies(data.SpeciesRules);
             var upgrade = GetOptionalUpgrade(options.UpgradeId);
+            var orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id };
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
@@ -168,11 +169,17 @@ namespace SaltyGame.EditorTools
                 outputPath = outputPath,
                 csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
                 rulesetFingerprint = data.Fingerprint,
+                runProvenanceFingerprint = CellularSimDataFingerprint.CreateRun(
+                    data.Fingerprint,
+                    options.CombatResolutionMode,
+                    options.AttackOpportunityMode,
+                    experimentalOptions,
+                    orderedLoadout),
                 playerSpeciesId = playerSpecies.Value,
                 upgradeId = options.UpgradeId,
                 upgradeType = upgrade == null ? string.Empty : upgrade.Type.ToString(),
                 upgradeValue = upgrade == null ? 0f : upgrade.Value,
-                orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id },
+                orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
@@ -261,6 +268,9 @@ namespace SaltyGame.EditorTools
             var selectedData = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
                 ? baselineData
                 : blockPlusTwoData;
+            var orderedLoadout = options.UpgradeId == DefaultUpgradeId
+                ? new string[0]
+                : new[] { options.UpgradeId };
             return new ExperimentReport
             {
                 schemaVersion = ReportSchemaVersion,
@@ -269,11 +279,17 @@ namespace SaltyGame.EditorTools
                 outputPath = outputPath,
                 csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
                 rulesetFingerprint = selectedData.Fingerprint,
+                runProvenanceFingerprint = CellularSimDataFingerprint.CreateRun(
+                    selectedData.Fingerprint,
+                    options.CombatResolutionMode,
+                    options.AttackOpportunityMode,
+                    experimentalOptions,
+                    orderedLoadout),
                 playerSpeciesId = playerSpecies.Value,
                 upgradeId = options.UpgradeId,
                 upgradeType = GetOptionalUpgrade(options.UpgradeId)?.Type.ToString() ?? string.Empty,
                 upgradeValue = GetOptionalUpgrade(options.UpgradeId)?.Value ?? 0f,
-                orderedLoadout = options.UpgradeId == DefaultUpgradeId ? new string[0] : new[] { options.UpgradeId },
+                orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
@@ -877,6 +893,7 @@ namespace SaltyGame.EditorTools
             public string outputPath;
             public string csvOutputPath;
             public string rulesetFingerprint;
+            public string runProvenanceFingerprint;
             public string playerSpeciesId;
             public string upgradeId;
             public string upgradeType;

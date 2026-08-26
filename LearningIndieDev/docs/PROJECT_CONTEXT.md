@@ -110,6 +110,13 @@ settle them in foundational grid code.
   wilt, food reserve, and seed-drop settings. The edit contract is plain data
   and applies only to the next run; it does not expose the private draft or
   mutate an active simulation.
+- The accepted Unity MVVM structure is recorded in
+  [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md): XAML
+  views use `V_Panel_*`, Unity ViewModels use `VM_*`, Unity orchestration helpers
+  use `Helper_*`, and plain C# domain code remains UI-agnostic. The GalapagOS Lab
+  is a separate player-facing scene from Main Menu and Simulation. Noesis visual
+  states present authoritative flow states supplied by the simulation/helper
+  layer; XAML is not the gameplay state machine.
 - The cellular species preview uses the Noesis shell as its single runtime UI
   path. The former IMGUI board/settings fallback has been removed, so terrain
   and species presentation cannot silently diverge between two renderers.

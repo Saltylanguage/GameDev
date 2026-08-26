@@ -1175,6 +1175,45 @@ namespace SaltyGame.Tests
             Assert.That(blockPlusTwoNext.GetCell(0, 0).IsCreature, Is.True);
         }
 
+        [Test]
+        public void PairedRunnerAdvancesAndCompletesBothArmsTogether()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var baselineRules = CreateControlledOpportunityRules(right, left, blockAmount: 0);
+            var blockRules = CreateControlledOpportunityRules(right, left, blockAmount: 2);
+            var emptyProbabilities = new Dictionary<SpeciesId, float>();
+            var baselineData = new CellularSimData(
+                2, 1, emptyProbabilities, baselineRules, runDurationSeconds: 2f, stepInterval: 1f);
+            var blockData = new CellularSimData(
+                2, 1, emptyProbabilities, blockRules, runDurationSeconds: 2f, stepInterval: 1f);
+            var baselineRun = new SimulationRunState(source.Copy(), SpeciesIds.Herbivore, 10200, 2f);
+            var blockRun = new SimulationRunState(source.Copy(), SpeciesIds.Herbivore, 10200, 2f);
+            var runner = new SpeciesPairedSimulationRunner(
+                baselineRun,
+                baselineData,
+                blockRun,
+                blockData,
+                SpeciesCombatResolutionMode.OpposedRoll);
+
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(baselineRun.Tick, Is.EqualTo(1));
+            Assert.That(blockRun.Tick, Is.EqualTo(1));
+            Assert.That(baselineRun.Status, Is.EqualTo(SimulationRunStatus.Running));
+            Assert.That(blockRun.Status, Is.EqualTo(SimulationRunStatus.Running));
+
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(baselineRun.Tick, Is.EqualTo(2));
+            Assert.That(blockRun.Tick, Is.EqualTo(2));
+            Assert.That(baselineRun.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            Assert.That(blockRun.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            Assert.That(runner.OpportunityControl.Scheduled, Is.GreaterThan(0));
+            Assert.That(runner.AdvanceOneTick(), Is.False);
+        }
+
         static Dictionary<SpeciesId, SpeciesRules> CreateControlledOpportunityRules(
             GridPattern attackPattern,
             GridPattern blockPattern,
@@ -2462,6 +2501,43 @@ namespace SaltyGame.Tests
                     SpeciesIds.Herbivore,
                     CreateRules(litterMaximum: 2)).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
+        }
+
+        [Test]
+        public void RunProvenanceFingerprintIncludesExecutionOptionsAndOrderedLoadout()
+        {
+            const string scenarioFingerprint = "scenario-fingerprint";
+            var baseline = CellularSimDataFingerprint.CreateRun(
+                scenarioFingerprint,
+                SpeciesCombatResolutionMode.LegacyFixedDamage,
+                SpeciesAttackOpportunityMode.Natural,
+                SpeciesExperimentalOptions.None,
+                new[] { "first", "second" });
+
+            Assert.That(CellularSimDataFingerprint.CreateRun(
+                scenarioFingerprint,
+                SpeciesCombatResolutionMode.LegacyFixedDamage,
+                SpeciesAttackOpportunityMode.Natural,
+                SpeciesExperimentalOptions.None,
+                new[] { "first", "second" }), Is.EqualTo(baseline));
+            Assert.That(CellularSimDataFingerprint.CreateRun(
+                scenarioFingerprint,
+                SpeciesCombatResolutionMode.OpposedRoll,
+                SpeciesAttackOpportunityMode.Natural,
+                SpeciesExperimentalOptions.None,
+                new[] { "first", "second" }), Is.Not.EqualTo(baseline));
+            Assert.That(CellularSimDataFingerprint.CreateRun(
+                scenarioFingerprint,
+                SpeciesCombatResolutionMode.LegacyFixedDamage,
+                SpeciesAttackOpportunityMode.FixedRateDiagnostic,
+                new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId),
+                new[] { "first", "second" }), Is.Not.EqualTo(baseline));
+            Assert.That(CellularSimDataFingerprint.CreateRun(
+                scenarioFingerprint,
+                SpeciesCombatResolutionMode.LegacyFixedDamage,
+                SpeciesAttackOpportunityMode.Natural,
+                SpeciesExperimentalOptions.None,
+                new[] { "second", "first" }), Is.Not.EqualTo(baseline));
         }
 
         [Test]

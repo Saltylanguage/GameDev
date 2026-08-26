@@ -9,6 +9,7 @@ namespace SaltyGame
     public static class CellularSimDataFingerprint
     {
         public const string Version = "cellular-sim-data-v6";
+        public const string RunVersion = "cellular-sim-run-v1";
 
         public static string Create(CellularSimData data)
         {
@@ -61,6 +62,37 @@ namespace SaltyGame
                 Append(canonical, entry.Value.Chance);
                 Append(canonical, entry.Value.HealthBonus);
                 Append(canonical, entry.Value.EnergyBonus);
+            }
+
+            canonical.Append(']');
+            return Hash(canonical.ToString());
+        }
+
+        public static string CreateRun(
+            string scenarioFingerprint,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions,
+            IReadOnlyList<string> orderedLoadout)
+        {
+            if (string.IsNullOrWhiteSpace(scenarioFingerprint))
+            {
+                throw new ArgumentException("Scenario fingerprint cannot be empty.", nameof(scenarioFingerprint));
+            }
+
+            experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
+            orderedLoadout = orderedLoadout ?? Array.Empty<string>();
+            var canonical = new StringBuilder(256);
+            canonical.Append(RunVersion).Append('|');
+            Append(canonical, scenarioFingerprint);
+            Append(canonical, (int)combatResolutionMode);
+            Append(canonical, (int)attackOpportunityMode);
+            Append(canonical, experimentalOptions.FeatureId);
+            Append(canonical, experimentalOptions.FoxAttackCooldownTicks);
+            canonical.Append("loadout[");
+            foreach (var upgradeId in orderedLoadout)
+            {
+                Append(canonical, upgradeId ?? string.Empty);
             }
 
             canonical.Append(']');

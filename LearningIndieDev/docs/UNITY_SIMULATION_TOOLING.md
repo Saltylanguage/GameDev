@@ -178,7 +178,15 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Test-UnityPreflight.ps1` | Lock/process cleanup, entitlement check, bounded licensing probe, and a preserved probe log |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
-| `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, plus the Unity batch log |
+| `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
+
+Experiment report schema 18 keeps `rulesetFingerprint` as the scenario-data
+identity and adds `runProvenanceFingerprint` for the effective execution
+configuration: scenario fingerprint, combat mode, attack-opportunity mode,
+experimental feature/cooldown, and ordered loadout. The sibling manifest records
+the report SHA-256, source commit and dirty state, scenario asset path/GUID, and
+the Unity argument vector. Copy the complete artifact directory when retaining
+evidence; a handoff summary alone is not independently auditable raw evidence.
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
 The current experiment JSON schema is `9`. Historical schema-6 EX-002 and

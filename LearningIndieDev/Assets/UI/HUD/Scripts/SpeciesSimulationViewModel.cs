@@ -483,14 +483,18 @@ namespace SaltyGame
                 return null;
             }
 
-            textureSource = new TextureSource(packedSprites[0].texture);
+            if (!TryCreateTextureSource(FindAtlasTexture(packedSprites), out textureSource))
+            {
+                return null;
+            }
             var sprites = new CroppedBitmap[spriteNames.Length];
             for (var index = 0; index < spriteNames.Length; index++)
             {
                 Sprite matchingSprite = null;
                 for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
                 {
-                    if (packedSprites[spriteIndex].name.StartsWith(
+                    if (packedSprites[spriteIndex] != null
+                        && packedSprites[spriteIndex].name.StartsWith(
                         spriteNames[index],
                         StringComparison.OrdinalIgnoreCase))
                     {
@@ -561,7 +565,11 @@ namespace SaltyGame
                     return null;
                 }
 
-                textureSource ??= new TextureSource(matchingSprite.texture);
+                if (textureSource == null
+                    && !TryCreateTextureSource(matchingSprite.texture, out textureSource))
+                {
+                    return null;
+                }
                 sprites[index] = new CroppedBitmap(textureSource, GetSourceRect(matchingSprite));
             }
 
@@ -570,8 +578,24 @@ namespace SaltyGame
 
         static CroppedBitmap CreateSprite(Sprite sprite, out TextureSource textureSource)
         {
-            textureSource = new TextureSource(sprite.texture);
+            if (!TryCreateTextureSource(sprite?.texture, out textureSource))
+            {
+                return null;
+            }
+
             return new CroppedBitmap(textureSource, GetSourceRect(sprite));
+        }
+
+        static bool TryCreateTextureSource(Texture2D texture, out TextureSource textureSource)
+        {
+            textureSource = null;
+            if (texture == null || texture.GetNativeTexturePtr() == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            textureSource = new TextureSource(texture);
+            return true;
         }
 
         static CroppedBitmap[] CreateSprites(
@@ -590,7 +614,10 @@ namespace SaltyGame
             }
 
             Array.Sort(packedSprites, CompareSpritesBySourcePosition);
-            textureSource = new TextureSource(packedSprites[0].texture);
+            if (!TryCreateTextureSource(FindAtlasTexture(packedSprites), out textureSource))
+            {
+                return null;
+            }
             if (packedSprites.Length == 1)
             {
                 return CreateSprites(textureSource, GetSourceRect(packedSprites[0]), count, columns);

@@ -5,6 +5,7 @@ using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Rendering;
 using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
@@ -14,6 +15,11 @@ namespace SaltyGame.PlayModeTests
         [UnityTest]
         public IEnumerator CellularPrototypeInitializesEveryAuthoredAnimalSprite()
         {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("Animal sprite initialization requires a graphics-capable Unity player.");
+            }
+
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
             yield return null;

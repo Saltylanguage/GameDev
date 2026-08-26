@@ -62,3 +62,30 @@ sprint-planning changes were not modified.
    scenario fingerprint with execution options and reconciliation verdict.
 5. Ask the Noesis vendor/license owner for a supported analytics opt-out or
    consent-gated package before modifying the embedded package.
+
+## Continuation update
+
+The first and fourth actions advanced while Unity remained open:
+
+- Added direct deterministic coverage for `SpeciesPairedSimulationRunner`
+  synchronized advancement, completion, and opportunity accumulation.
+- Added run-provenance fingerprint version 1 and experiment report schema 18.
+  This preserves the scenario-data fingerprint while deterministically including
+  execution modes, experimental options, and ordered loadout.
+- `Run-CellularExperiment.ps1` now writes `manifest.json` with the report
+  checksum, source commit/dirty state, scenario path/GUID, and Unity arguments.
+- PowerShell parsing and `git diff --check` pass. Unity compilation and tests
+  remain unverified because three Editor processes are open. A direct .NET build
+  is not a substitute: Unity's generated test project lacks its temporary
+  `project.assets.json` outside the Editor-managed build flow.
+
+The Editors later closed, but preflight then stopped because no local Unity
+entitlement file exists under `%LOCALAPPDATA%\Unity\licenses`. No licensing
+bypass or Unity Hub activation was attempted.
+
+The two historical nographics Play Mode failures were addressed at their shared
+boundary: Noesis `TextureSource` construction now requires a nonzero Unity native
+texture pointer. Simulation-only nographics scene setup can continue without
+sprite visuals, while the animal-sprite initialization test explicitly skips on
+Unity's null graphics device. Graphics-capable execution must still verify that
+all authored sprites initialize.
