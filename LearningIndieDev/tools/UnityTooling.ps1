@@ -168,7 +168,7 @@ function Invoke-UnityPreflight {
     $lastReady = -1
     $lastFailure = -1
     for ($index = 0; $index -lt $lines.Count; $index++) {
-        if ($lines[$index] -match 'Licensing is initialized') {
+        if ($lines[$index] -match 'Licensing is initialized|Product:\s+Unity\s+|Successfully updated license') {
             $lastReady = $index
         }
 

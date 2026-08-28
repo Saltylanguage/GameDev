@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 18;
+        const int ReportSchemaVersion = 19;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -25,6 +25,7 @@ namespace SaltyGame.EditorTools
         const string SeedCountArgument = "-seedCount";
         const string PlayerSpeciesArgument = "-playerSpeciesId";
         const string UpgradeIdArgument = "-upgradeId";
+        const string UpgradeSequenceArgument = "-upgradeSequence";
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
@@ -94,7 +95,7 @@ namespace SaltyGame.EditorTools
                 {
                     var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
                         ? CreatePairedReport(data, options, outputPath, experimentalOptions)
-                        : CreateReport(ApplyLoadout(data, options), options, outputPath, experimentalOptions);
+                        : CreateReport(data, options, outputPath, experimentalOptions);
                     File.WriteAllText(
                         outputPath,
                         SerializeReport(
@@ -145,14 +146,14 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesArgument);
             }
 
-            var species = GetSortedSpecies(data.SpeciesRules);
-            var upgrade = GetOptionalUpgrade(options.UpgradeId);
-            var orderedLoadout = upgrade == null ? new string[0] : new[] { upgrade.Id };
+            var loadedData = ApplyLoadout(data, options);
+            var species = GetSortedSpecies(loadedData.SpeciesRules);
+            var orderedLoadout = options.UpgradeLoadout;
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
                 runs[index] = RunSimulation(
-                    data,
+                    loadedData,
                     playerSpecies,
                     options.SeedStart + index,
                     species,
@@ -168,7 +169,7 @@ namespace SaltyGame.EditorTools
                 scenarioAssetPath = options.ScenarioPath ?? string.Empty,
                 outputPath = outputPath,
                 csvOutputPath = Path.ChangeExtension(outputPath, ".csv"),
-                rulesetFingerprint = data.Fingerprint,
+                rulesetFingerprint = loadedData.Fingerprint,
                 runProvenanceFingerprint = CellularSimDataFingerprint.CreateRun(
                     data.Fingerprint,
                     options.CombatResolutionMode,
@@ -176,9 +177,9 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     orderedLoadout),
                 playerSpeciesId = playerSpecies.Value,
-                upgradeId = options.UpgradeId,
-                upgradeType = upgrade == null ? string.Empty : upgrade.Type.ToString(),
-                upgradeValue = upgrade == null ? 0f : upgrade.Value,
+                upgradeId = orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
+                upgradeType = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Type.ToString() : string.Empty,
+                upgradeValue = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Value : 0f,
                 orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
@@ -186,10 +187,10 @@ namespace SaltyGame.EditorTools
                 foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
-                gridWidth = data.Width,
-                gridHeight = data.Height,
-                runDurationSeconds = data.RunDurationSeconds,
-                stepIntervalSeconds = data.StepInterval,
+                gridWidth = loadedData.Width,
+                gridHeight = loadedData.Height,
+                runDurationSeconds = loadedData.RunDurationSeconds,
+                stepIntervalSeconds = loadedData.StepInterval,
                 runs = runs,
                 finalPopulationSummary = CreateFinalPopulationSummary(runs, species),
             };
@@ -237,11 +238,12 @@ namespace SaltyGame.EditorTools
             string outputPath,
             SpeciesExperimentalOptions experimentalOptions)
         {
-            if (!string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
-                && !string.Equals(options.UpgradeId, "stronger-block-2", StringComparison.Ordinal))
+            if (options.UpgradeLoadout.Length > 1
+                || (options.UpgradeLoadout.Length == 1
+                    && !string.Equals(options.UpgradeLoadout[0], "stronger-block-2", StringComparison.Ordinal)))
             {
                 throw new ArgumentException(
-                    "Paired lockstep diagnostic mode requires upgradeId 'none' or 'stronger-block-2'.",
+                    "Paired lockstep diagnostic mode requires no upgrade or upgradeId 'stronger-block-2'.",
                     UpgradeIdArgument);
             }
 
@@ -260,17 +262,15 @@ namespace SaltyGame.EditorTools
                     species,
                     options.CombatResolutionMode,
                     experimentalOptions);
-                selectedRuns[index] = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+                selectedRuns[index] = options.UpgradeLoadout.Length == 0
                     ? paired.Baseline
                     : paired.BlockPlusTwo;
             }
 
-            var selectedData = string.Equals(options.UpgradeId, DefaultUpgradeId, StringComparison.Ordinal)
+            var selectedData = options.UpgradeLoadout.Length == 0
                 ? baselineData
                 : blockPlusTwoData;
-            var orderedLoadout = options.UpgradeId == DefaultUpgradeId
-                ? new string[0]
-                : new[] { options.UpgradeId };
+            var orderedLoadout = options.UpgradeLoadout;
             return new ExperimentReport
             {
                 schemaVersion = ReportSchemaVersion,
@@ -286,9 +286,9 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     orderedLoadout),
                 playerSpeciesId = playerSpecies.Value,
-                upgradeId = options.UpgradeId,
-                upgradeType = GetOptionalUpgrade(options.UpgradeId)?.Type.ToString() ?? string.Empty,
-                upgradeValue = GetOptionalUpgrade(options.UpgradeId)?.Value ?? 0f,
+                upgradeId = orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
+                upgradeType = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Type.ToString() : string.Empty,
+                upgradeValue = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Value : 0f,
                 orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
@@ -511,7 +511,7 @@ namespace SaltyGame.EditorTools
 
         static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
         {
-            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeId);
+            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeLoadout);
         }
 
         static CellularSimData ApplyLoadout(
@@ -519,8 +519,21 @@ namespace SaltyGame.EditorTools
             string playerSpeciesId,
             string upgradeId)
         {
-            var upgrade = GetOptionalUpgrade(upgradeId);
-            if (upgrade == null)
+            if (string.IsNullOrWhiteSpace(upgradeId)
+                || string.Equals(upgradeId, DefaultUpgradeId, StringComparison.Ordinal))
+            {
+                return data;
+            }
+
+            return ApplyLoadout(data, playerSpeciesId, new[] { upgradeId });
+        }
+
+        static CellularSimData ApplyLoadout(
+            CellularSimData data,
+            string playerSpeciesId,
+            IReadOnlyList<string> upgradeIds)
+        {
+            if (upgradeIds == null || upgradeIds.Count == 0)
             {
                 return data;
             }
@@ -533,7 +546,16 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesArgument);
             }
 
-            return data.WithSpeciesRules(playerSpecies, upgrade.Apply(rules));
+            foreach (var upgradeId in upgradeIds)
+            {
+                var upgrade = GetOptionalUpgrade(upgradeId);
+                if (upgrade != null)
+                {
+                    rules = upgrade.Apply(rules);
+                }
+            }
+
+            return data.WithSpeciesRules(playerSpecies, rules);
         }
 
         static SpeciesUpgrade GetOptionalUpgrade(string upgradeId)
@@ -744,6 +766,7 @@ namespace SaltyGame.EditorTools
             public int SeedCount { get; private set; }
             public string PlayerSpeciesId { get; private set; }
             public string UpgradeId { get; private set; }
+            public string[] UpgradeLoadout { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
             public string ExperimentalFeatures { get; private set; }
@@ -763,6 +786,7 @@ namespace SaltyGame.EditorTools
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
+                    UpgradeLoadout = ParseUpgradeLoadout(arguments),
                     CombatResolutionMode = ParseCombatResolutionMode(
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
                     AttackOpportunityMode = ParseAttackOpportunityMode(
@@ -779,6 +803,53 @@ namespace SaltyGame.EditorTools
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
+            }
+
+            static string[] ParseUpgradeLoadout(IReadOnlyList<string> arguments)
+            {
+                var upgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId;
+                var sequence = GetOptionalValue(arguments, UpgradeSequenceArgument);
+                if (!string.IsNullOrWhiteSpace(sequence))
+                {
+                    if (!string.Equals(upgradeId, DefaultUpgradeId, StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException(
+                            $"Use either '{UpgradeIdArgument}' or '{UpgradeSequenceArgument}', not both.",
+                            UpgradeSequenceArgument);
+                    }
+
+                    var loadout = sequence.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    for (var index = 0; index < loadout.Length; index++)
+                    {
+                        loadout[index] = loadout[index].Trim();
+                        if (string.IsNullOrWhiteSpace(loadout[index])
+                            || string.Equals(loadout[index], DefaultUpgradeId, StringComparison.Ordinal))
+                        {
+                            throw new ArgumentException(
+                                $"'{UpgradeSequenceArgument}' must contain upgrade IDs separated by commas.",
+                                UpgradeSequenceArgument);
+                        }
+
+                        GetOptionalUpgrade(loadout[index]);
+                    }
+
+                    if (loadout.Length == 0)
+                    {
+                        throw new ArgumentException(
+                            $"'{UpgradeSequenceArgument}' must contain at least one upgrade ID.",
+                            UpgradeSequenceArgument);
+                    }
+
+                    return loadout;
+                }
+
+                if (string.Equals(upgradeId, DefaultUpgradeId, StringComparison.Ordinal))
+                {
+                    return new string[0];
+                }
+
+                GetOptionalUpgrade(upgradeId);
+                return new[] { upgradeId };
             }
 
             static SpeciesCombatResolutionMode ParseCombatResolutionMode(string value)

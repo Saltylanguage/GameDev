@@ -14,6 +14,7 @@ param(
     [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$UpgradeId = 'none',
+    [string]$UpgradeSequence = '',
     [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
     [string]$CombatMode = 'legacy-fixed-damage',
     [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
@@ -56,6 +57,20 @@ function ConvertTo-UnityAssetPath {
     return 'Assets/' + $absolutePath.Substring($assetsPrefix.Length).Replace('\', '/')
 }
 
+function Get-FileSha256 {
+    param([string]$Path)
+
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($stream))).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+        $stream.Dispose()
+        $sha256.Dispose()
+    }
+}
+
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
 $preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
@@ -79,6 +94,14 @@ $arguments = @(
     '-outputPath', $reportPath,
     '-logFile', $logPath
 )
+
+if (-not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
+    if ($UpgradeId -ne 'none') {
+        throw 'Use either -UpgradeId or -UpgradeSequence, not both.'
+    }
+
+    $arguments += @('-upgradeSequence', $UpgradeSequence)
+}
 
 if ($null -ne $assetPath) {
     $arguments += @('-scenarioPath', $assetPath)
@@ -130,7 +153,7 @@ $manifest = [ordered]@{
     schemaVersion = 1
     createdUtc = [DateTime]::UtcNow.ToString('O')
     reportFile = [System.IO.Path]::GetFileName($reportPath)
-    reportSha256 = (Get-FileHash -LiteralPath $reportPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    reportSha256 = Get-FileSha256 -Path $reportPath
     sourceCommit = if ($null -eq $gitCommit) { '' } else { $gitCommit.Trim() }
     sourceTreeDirty = $gitChanges.Count -gt 0
     scenarioAssetPath = if ($null -eq $assetPath) { '' } else { $assetPath }

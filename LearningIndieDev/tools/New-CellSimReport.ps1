@@ -219,6 +219,120 @@ function Add-TestResults {
     $Lines.Add('')
 }
 
+function Get-StatAggregate {
+    param(
+        [object]$Report,
+        [string]$ValueProperty,
+        [string]$StatusProperty
+    )
+
+    $sum = 0d
+    $validCount = 0
+    $naCount = 0
+    $invalidCount = 0
+    foreach ($run in @($Report.runs)) {
+        $statProperty = $run.PSObject.Properties['herbivoreStatLine']
+        if ($null -eq $statProperty -or $null -eq $statProperty.Value) {
+            continue
+        }
+
+        $stat = $statProperty.Value
+        $status = 'Valid'
+        if (-not [string]::IsNullOrWhiteSpace($StatusProperty)) {
+            $statusValue = $stat.PSObject.Properties[$StatusProperty]
+            if ($null -ne $statusValue -and -not [string]::IsNullOrWhiteSpace([string]$statusValue.Value)) {
+                $status = [string]$statusValue.Value
+            }
+        }
+
+        if ($status -ine 'Valid') {
+            if ($status -ieq 'Invalid') { $invalidCount++ } else { $naCount++ }
+            continue
+        }
+
+        $value = $stat.PSObject.Properties[$ValueProperty]
+        if ($null -eq $value -or $null -eq $value.Value) {
+            $naCount++
+            continue
+        }
+
+        $sum += [double]$value.Value
+        $validCount++
+    }
+
+    return [pscustomobject]@{
+        Average = if ($validCount -eq 0) { $null } else { $sum / [double]$validCount }
+        ValidCount = $validCount
+        NaCount = $naCount
+        InvalidCount = $invalidCount
+    }
+}
+
+function Get-StatAggregateDisplay {
+    param([object]$Aggregate)
+
+    if ($null -eq $Aggregate.Average) {
+        return 'N/A'
+    }
+
+    return Get-Number $Aggregate.Average
+}
+
+function Add-HerbivoreStatComparison {
+    param(
+        [System.Collections.Generic.List[string]]$Lines,
+        [object]$Report,
+        [object]$Baseline
+    )
+
+    $reportStatCount = @($Report.runs | Where-Object { $null -ne $_.herbivoreStatLine }).Count
+    $baselineStatCount = @($Baseline.runs | Where-Object { $null -ne $_.herbivoreStatLine }).Count
+    if ($reportStatCount -eq 0 -or $baselineStatCount -eq 0) {
+        return
+    }
+
+    $metrics = @(
+        @('Herbivore FPO', 'FPO', ''),
+        @('APS', 'APS', 'APSStatus'),
+        @('pAVI', 'pAVI', 'pAVIStatus'),
+        @('eAVI', 'eAVI', 'eAVIStatus'),
+        @('sAVI', 'sAVI', 'sAVIStatus'),
+        @('cAVI', 'cAVI', 'cAVIStatus'),
+        @('PREY per run', 'PREY', ''),
+        @('STRV per run', 'STRV', ''),
+        @('CRWD per run', 'CRWD', ''),
+        @('ECN per run', 'ECN', ''),
+        @('EHS per run', 'EHS', '')
+    )
+    $rows = [System.Collections.Generic.List[object[]]]::new()
+    foreach ($metric in $metrics) {
+        $baselineValue = Get-StatAggregate -Report $Baseline -ValueProperty $metric[1] -StatusProperty $metric[2]
+        $reportValue = Get-StatAggregate -Report $Report -ValueProperty $metric[1] -StatusProperty $metric[2]
+        $delta = if ($null -ne $baselineValue.Average -and $null -ne $reportValue.Average) {
+            Get-Number ([double]$reportValue.Average - [double]$baselineValue.Average)
+        } else {
+            'N/A'
+        }
+        $rows.Add(@(
+            $metric[0],
+            (Get-StatAggregateDisplay $baselineValue),
+            (Get-StatAggregateDisplay $reportValue),
+            $delta,
+            $baselineValue.ValidCount,
+            $reportValue.ValidCount,
+            "$($baselineValue.NaCount)/$($baselineValue.InvalidCount)",
+            "$($reportValue.NaCount)/$($reportValue.InvalidCount)"
+        ))
+    }
+
+    $Lines.Add('## Herbivore stat-line comparison')
+    $Lines.Add('')
+    Add-MarkdownTable -Lines $Lines -Headers @('Metric', 'Baseline', 'Trial', 'Delta', 'Baseline valid', 'Trial valid', 'Baseline N/A/invalid', 'Trial N/A/invalid') -Rows $rows.ToArray()
+    $Lines.Add('')
+    $Lines.Add('Raw counts are averaged per run. Rate metrics and APS are averaged over valid stat lines only; N/A and INVALID rows are reported separately rather than silently treated as zero.')
+    $Lines.Add('')
+}
+
 function Add-Comparison {
     param(
         [System.Collections.Generic.List[string]]$Lines,
@@ -260,8 +374,19 @@ function Add-Comparison {
     $Lines.Add('')
     $Lines.Add(('Baseline fingerprint: `{0}`' -f $Baseline.rulesetFingerprint))
     $Lines.Add(('Trial fingerprint: `{0}`' -f $Report.rulesetFingerprint))
-    if ($Baseline.seedStart -eq $Report.seedStart -and $Baseline.seedCount -eq $Report.seedCount) {
-        $Lines.Add('Comparison validity: controlled seed range.')
+    $sameInputs = $Baseline.seedStart -eq $Report.seedStart `
+        -and $Baseline.seedCount -eq $Report.seedCount `
+        -and $Baseline.scenarioAssetPath -eq $Report.scenarioAssetPath `
+        -and $Baseline.playerSpeciesId -eq $Report.playerSpeciesId `
+        -and $Baseline.gridWidth -eq $Report.gridWidth `
+        -and $Baseline.gridHeight -eq $Report.gridHeight `
+        -and $Baseline.runDurationSeconds -eq $Report.runDurationSeconds `
+        -and $Baseline.stepIntervalSeconds -eq $Report.stepIntervalSeconds `
+        -and $Baseline.combatResolutionMode -eq $Report.combatResolutionMode `
+        -and $Baseline.attackOpportunityMode -eq $Report.attackOpportunityMode `
+        -and $Baseline.experimentalFeatures -eq $Report.experimentalFeatures
+    if ($sameInputs) {
+        $Lines.Add('Comparison validity: controlled inputs and seed range; loadout is the intended arm difference.')
     }
     else {
         $Lines.Add('Comparison validity: seed ranges differ; treat deltas as descriptive only, not A/B balance evidence.')
@@ -269,6 +394,7 @@ function Add-Comparison {
     $Lines.Add('')
     Add-MarkdownTable -Lines $Lines -Headers @('Species', 'Baseline avg.', 'Trial avg.', 'Delta', 'Baseline extinction', 'Trial extinction', 'Delta') -Rows $rows.ToArray()
     $Lines.Add('')
+    Add-HerbivoreStatComparison -Lines $Lines -Report $Report -Baseline $Baseline
 }
 
 if ([string]::IsNullOrWhiteSpace($ProjectPath)) {

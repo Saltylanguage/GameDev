@@ -81,9 +81,12 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run
 .\CellSim.cmd Run -SeedCount 50
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
+.\CellSim.cmd Validate -ReportPath artifacts\cellular-experiment-...\report.json
 ```
 
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
@@ -98,6 +101,7 @@ commands below when their full options are needed:
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
+| `CellSim Validate` | Independently recalculate and cross-check the herbivore slash-line in a report. |
 
 `CellSim Run` accepts signed 32-bit seeds, including negative seeds retained in
 older diagnostic reports, so an individual historical run can be replayed
@@ -162,6 +166,26 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -PlayerSpeciesId hare `
     -UpgradeId stronger-block-2
 
+# Experimental herbivore upgrade arm.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -ExperimentalFeatures bev-experimental `
+    -CombatMode opposed-roll `
+    -UpgradeId tough-hide
+
+# Repeated purchases model a higher upgrade level in one fixed-loadout run.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -ExperimentalFeatures bev-experimental `
+    -CombatMode opposed-roll `
+    -UpgradeSequence tough-hide,tough-hide
+
 # Opt-in D&D-style opposed combat arm; legacy fixed damage remains the default.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
@@ -180,7 +204,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
 
-Experiment report schema 18 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 19 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
 experimental feature/cooldown, and ordered loadout. The sibling manifest records
@@ -189,7 +213,7 @@ the Unity argument vector. Copy the complete artifact directory when retaining
 evidence; a handoff summary alone is not independently auditable raw evidence.
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The current experiment JSON schema is `9`. Historical schema-6 EX-002 and
+The current experiment JSON schema is `19`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -199,7 +223,7 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 9 also records the selected combat
+identity, tick, age, and position. Schema 19 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
 its modifiers, totals, and outcome. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
