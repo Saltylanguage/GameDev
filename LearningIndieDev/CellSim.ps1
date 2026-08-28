@@ -19,6 +19,8 @@ param(
 [string]$PlayerSpeciesId = 'herbivore',
 [string]$UpgradeId = 'none',
 [string]$UpgradeSequence = '',
+[ValidateRange(0, 1000000)]
+[double]$UpgradeValueOverride = 0,
 [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
 [string]$CombatMode = 'legacy-fixed-damage',
 [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
@@ -26,6 +28,8 @@ param(
 [string]$ExperimentalFeatures = '',
 [ValidateRange(0, 1000000)]
 [int]$FoxAttackCooldownTicks = 0,
+[ValidateRange(0, 1)]
+[double]$PreContactAvoidanceChance = 0,
 [string]$ReportPath,
     [string]$BaselinePath,
     [string]$TestArtifactDirectory,
@@ -44,8 +48,9 @@ CellSim Test [-Mode EditMode|PlayMode|All]
 CellSim Visuals [-TestFilter SaltyGame.PlayModeTests.SomeTest]
 CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-RunDurationSeconds 20] [-StepIntervalSeconds 0.1] [-ScenarioPath Assets/...]
-             [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide]
+             [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide] [-UpgradeValueOverride 0.75]
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
+             [-PreContactAvoidanceChance 0.10]
 CellSim Report [-ReportPath artifacts/.../report.json]
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]
@@ -65,7 +70,7 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
-        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -ProjectPath $ProjectPath -UnityPath $UnityPath
+        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath

@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 19;
+        const int ReportSchemaVersion = 21;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -26,6 +26,7 @@ namespace SaltyGame.EditorTools
         const string PlayerSpeciesArgument = "-playerSpeciesId";
         const string UpgradeIdArgument = "-upgradeId";
         const string UpgradeSequenceArgument = "-upgradeSequence";
+        const string UpgradeValueOverrideArgument = "-upgradeValueOverride";
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
@@ -38,6 +39,7 @@ namespace SaltyGame.EditorTools
         const string DefaultAttackOpportunityMode = "natural";
         const string ExperimentalFeaturesArgument = "-experimentalFeatures";
         const string FoxAttackCooldownTicksArgument = "-foxAttackCooldownTicks";
+        const string PreContactAvoidanceChanceArgument = "-preContactAvoidanceChance";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -149,6 +151,10 @@ namespace SaltyGame.EditorTools
             var loadedData = ApplyLoadout(data, options);
             var species = GetSortedSpecies(loadedData.SpeciesRules);
             var orderedLoadout = options.UpgradeLoadout;
+            var provenanceLoadout = GetProvenanceLoadout(options);
+            var selectedUpgrade = orderedLoadout.Length == 1
+                ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
+                : null;
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
             {
@@ -175,16 +181,17 @@ namespace SaltyGame.EditorTools
                     options.CombatResolutionMode,
                     options.AttackOpportunityMode,
                     experimentalOptions,
-                    orderedLoadout),
+                    provenanceLoadout),
                 playerSpeciesId = playerSpecies.Value,
                 upgradeId = orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
-                upgradeType = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Type.ToString() : string.Empty,
-                upgradeValue = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Value : 0f,
+                upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
+                upgradeValue = selectedUpgrade == null ? 0f : selectedUpgrade.Value,
                 orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
                 foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
+                preContactAvoidanceChance = experimentalOptions.PreContactAvoidanceChance,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = loadedData.Width,
@@ -247,6 +254,13 @@ namespace SaltyGame.EditorTools
                     UpgradeIdArgument);
             }
 
+            if (options.UpgradeValueOverride > 0f)
+            {
+                throw new ArgumentException(
+                    $"'{UpgradeValueOverrideArgument}' is not supported by paired lockstep diagnostic mode.",
+                    UpgradeValueOverrideArgument);
+            }
+
             var baselineData = ApplyLoadout(data, options.PlayerSpeciesId, DefaultUpgradeId);
             var blockPlusTwoData = ApplyLoadout(data, options.PlayerSpeciesId, "stronger-block-2");
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
@@ -271,6 +285,9 @@ namespace SaltyGame.EditorTools
                 ? baselineData
                 : blockPlusTwoData;
             var orderedLoadout = options.UpgradeLoadout;
+            var selectedUpgrade = orderedLoadout.Length == 1
+                ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
+                : null;
             return new ExperimentReport
             {
                 schemaVersion = ReportSchemaVersion,
@@ -287,13 +304,14 @@ namespace SaltyGame.EditorTools
                     orderedLoadout),
                 playerSpeciesId = playerSpecies.Value,
                 upgradeId = orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
-                upgradeType = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Type.ToString() : string.Empty,
-                upgradeValue = orderedLoadout.Length == 1 ? GetOptionalUpgrade(orderedLoadout[0]).Value : 0f,
+                upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
+                upgradeValue = selectedUpgrade == null ? 0f : selectedUpgrade.Value,
                 orderedLoadout = orderedLoadout,
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
                 foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
+                preContactAvoidanceChance = experimentalOptions.PreContactAvoidanceChance,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = selectedData.Width,
@@ -489,7 +507,8 @@ namespace SaltyGame.EditorTools
 
             var experimentalOptions = new SpeciesExperimentalOptions(
                 options.ExperimentalFeatures,
-                options.FoxAttackCooldownTicks);
+                options.FoxAttackCooldownTicks,
+                options.PreContactAvoidanceChance);
             if (experimentalOptions.HasFoxAttackCooldown
                 && options.CombatResolutionMode != SpeciesCombatResolutionMode.OpposedRoll)
             {
@@ -506,12 +525,24 @@ namespace SaltyGame.EditorTools
                     FoxAttackCooldownTicksArgument);
             }
 
+            if (experimentalOptions.HasPreContactAvoidance
+                && (options.UpgradeLoadout.Length != 1
+                    || !string.Equals(
+                        options.UpgradeLoadout[0],
+                        SpeciesUpgradeCatalog.EscapeArtistId,
+                        StringComparison.Ordinal)))
+            {
+                throw new ArgumentException(
+                    $"'{PreContactAvoidanceChanceArgument}' requires the Escape Artist upgrade.",
+                    PreContactAvoidanceChanceArgument);
+            }
+
             return experimentalOptions;
         }
 
         static CellularSimData ApplyLoadout(CellularSimData data, CommandLineOptions options)
         {
-            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeLoadout);
+            return ApplyLoadout(data, options.PlayerSpeciesId, options.UpgradeLoadout, options.UpgradeValueOverride);
         }
 
         static CellularSimData ApplyLoadout(
@@ -525,13 +556,14 @@ namespace SaltyGame.EditorTools
                 return data;
             }
 
-            return ApplyLoadout(data, playerSpeciesId, new[] { upgradeId });
+            return ApplyLoadout(data, playerSpeciesId, new[] { upgradeId }, 0f);
         }
 
         static CellularSimData ApplyLoadout(
             CellularSimData data,
             string playerSpeciesId,
-            IReadOnlyList<string> upgradeIds)
+            IReadOnlyList<string> upgradeIds,
+            float upgradeValueOverride)
         {
             if (upgradeIds == null || upgradeIds.Count == 0)
             {
@@ -548,7 +580,7 @@ namespace SaltyGame.EditorTools
 
             foreach (var upgradeId in upgradeIds)
             {
-                var upgrade = GetOptionalUpgrade(upgradeId);
+                var upgrade = GetEffectiveUpgrade(upgradeId, upgradeValueOverride);
                 if (upgrade != null)
                 {
                     rules = upgrade.Apply(rules);
@@ -556,6 +588,36 @@ namespace SaltyGame.EditorTools
             }
 
             return data.WithSpeciesRules(playerSpecies, rules);
+        }
+
+        static SpeciesUpgrade GetEffectiveUpgrade(string upgradeId, float upgradeValueOverride)
+        {
+            var upgrade = GetOptionalUpgrade(upgradeId);
+            if (upgrade == null || upgradeValueOverride <= 0f)
+            {
+                return upgrade;
+            }
+
+            if (upgrade.Type != SpeciesUpgradeType.FleeMovementSpeedBonus)
+            {
+                throw new ArgumentException(
+                    $"'{UpgradeValueOverrideArgument}' is only supported for Escape Artist.",
+                    UpgradeValueOverrideArgument);
+            }
+
+            return new SpeciesUpgrade(upgrade.Id, upgrade.Cost, upgrade.Type, upgradeValueOverride);
+        }
+
+        static string[] GetProvenanceLoadout(CommandLineOptions options)
+        {
+            if (options.UpgradeValueOverride <= 0f)
+            {
+                return options.UpgradeLoadout;
+            }
+
+            var loadout = (string[])options.UpgradeLoadout.Clone();
+            loadout[0] = $"{loadout[0]}@{options.UpgradeValueOverride.ToString("R", CultureInfo.InvariantCulture)}";
+            return loadout;
         }
 
         static SpeciesUpgrade GetOptionalUpgrade(string upgradeId)
@@ -767,10 +829,12 @@ namespace SaltyGame.EditorTools
             public string PlayerSpeciesId { get; private set; }
             public string UpgradeId { get; private set; }
             public string[] UpgradeLoadout { get; private set; }
+            public float UpgradeValueOverride { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
             public string ExperimentalFeatures { get; private set; }
             public int FoxAttackCooldownTicks { get; private set; }
+            public float PreContactAvoidanceChance { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -779,6 +843,20 @@ namespace SaltyGame.EditorTools
 
             public static CommandLineOptions Parse(string[] arguments)
             {
+                var upgradeLoadout = ParseUpgradeLoadout(arguments);
+                var upgradeValueOverride = GetFloatValue(arguments, UpgradeValueOverrideArgument);
+                if (upgradeValueOverride > 0f)
+                {
+                    if (upgradeLoadout.Length != 1)
+                    {
+                        throw new ArgumentException(
+                            $"'{UpgradeValueOverrideArgument}' requires exactly one upgrade ID.",
+                            UpgradeValueOverrideArgument);
+                    }
+
+                    GetEffectiveUpgrade(upgradeLoadout[0], upgradeValueOverride);
+                }
+
                 return new CommandLineOptions
                 {
                     ScenarioPath = GetOptionalValue(arguments, ScenarioPathArgument),
@@ -786,7 +864,8 @@ namespace SaltyGame.EditorTools
                     SeedCount = GetIntValue(arguments, SeedCountArgument, DefaultSeedCount, allowZero: false),
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
-                    UpgradeLoadout = ParseUpgradeLoadout(arguments),
+                    UpgradeLoadout = upgradeLoadout,
+                    UpgradeValueOverride = upgradeValueOverride,
                     CombatResolutionMode = ParseCombatResolutionMode(
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
                     AttackOpportunityMode = ParseAttackOpportunityMode(
@@ -797,6 +876,7 @@ namespace SaltyGame.EditorTools
                         FoxAttackCooldownTicksArgument,
                         0,
                         allowZero: true),
+                    PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
@@ -974,6 +1054,7 @@ namespace SaltyGame.EditorTools
             public string attackOpportunityMode;
             public string experimentalFeatures;
             public int foxAttackCooldownTicks;
+            public float preContactAvoidanceChance;
             public int seedStart;
             public int seedCount;
             public int gridWidth;

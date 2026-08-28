@@ -15,6 +15,8 @@ param(
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
+    [ValidateRange(0, 1000000)]
+    [double]$UpgradeValueOverride = 0,
     [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
     [string]$CombatMode = 'legacy-fixed-damage',
     [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
@@ -22,6 +24,8 @@ param(
     [string]$ExperimentalFeatures = '',
     [ValidateRange(0, 1000000)]
     [int]$FoxAttackCooldownTicks = 0,
+    [ValidateRange(0, 1)]
+    [double]$PreContactAvoidanceChance = 0,
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -95,6 +99,10 @@ $arguments = @(
     '-logFile', $logPath
 )
 
+if ($UpgradeValueOverride -gt 0) {
+    $arguments += @('-upgradeValueOverride', $UpgradeValueOverride.ToString([Globalization.CultureInfo]::InvariantCulture))
+}
+
 if (-not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
     if ($UpgradeId -ne 'none') {
         throw 'Use either -UpgradeId or -UpgradeSequence, not both.'
@@ -129,6 +137,10 @@ if (-not [string]::IsNullOrWhiteSpace($ExperimentalFeatures)) {
 
 if ($FoxAttackCooldownTicks -gt 0) {
     $arguments += @('-foxAttackCooldownTicks', $FoxAttackCooldownTicks)
+}
+
+if ($PreContactAvoidanceChance -gt 0) {
+    $arguments += @('-preContactAvoidanceChance', $PreContactAvoidanceChance.ToString([Globalization.CultureInfo]::InvariantCulture))
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments

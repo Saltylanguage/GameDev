@@ -590,6 +590,25 @@ namespace SaltyGame
                             && attackerRules.Role == SpeciesRole.Carnivore
                             && hasTargetRules
                             && targetRules.Role == SpeciesRole.Herbivore;
+                        if (isCarnivoreHerbivoreInteraction
+                            && experimentalOptions != null
+                            && experimentalOptions.HasPreContactAvoidance
+                            && targetRules.FleeMovementSpeedBonus > 0f
+                            && ShouldAvoidPreContact(
+                                experimentalOptions.PreContactAvoidanceChance,
+                                seed,
+                                attacker.EntityId,
+                                target.EntityId,
+                                x,
+                                y,
+                                targetX,
+                                targetY))
+                        {
+                            // Bev experimental pre-contact avoidance removes the interaction
+                            // before ECN/PREY accounting and combat resolution.
+                            continue;
+                        }
+
                         if (target.IsCreature)
                         {
                             metrics?.RecordCombatOpportunity(attacker.SpeciesId);
@@ -763,6 +782,34 @@ namespace SaltyGame
                         break;
                     }
                 }
+            }
+        }
+
+        static bool ShouldAvoidPreContact(
+            float chance,
+            int seed,
+            long attackerEntityId,
+            long targetEntityId,
+            int attackerX,
+            int attackerY,
+            int targetX,
+            int targetY)
+        {
+            if (chance >= 1f)
+            {
+                return true;
+            }
+
+            unchecked
+            {
+                var hash = (uint)seed;
+                hash = (hash ^ (uint)attackerEntityId) * 16777619u;
+                hash = (hash ^ (uint)targetEntityId) * 16777619u;
+                hash = (hash ^ (uint)attackerX) * 16777619u;
+                hash = (hash ^ (uint)attackerY) * 16777619u;
+                hash = (hash ^ (uint)targetX) * 16777619u;
+                hash = (hash ^ (uint)targetY) * 16777619u;
+                return hash / (double)uint.MaxValue < chance;
             }
         }
 

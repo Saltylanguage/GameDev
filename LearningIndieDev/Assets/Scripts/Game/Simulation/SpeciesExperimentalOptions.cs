@@ -6,7 +6,10 @@ namespace SaltyGame
     {
         public const string BevExperimentalFeaturesId = "bev-experimental";
 
-        public SpeciesExperimentalOptions(string featureId = "", int foxAttackCooldownTicks = 0)
+        public SpeciesExperimentalOptions(
+            string featureId = "",
+            int foxAttackCooldownTicks = 0,
+            float preContactAvoidanceChance = 0f)
         {
             if (foxAttackCooldownTicks < 0)
             {
@@ -24,8 +27,25 @@ namespace SaltyGame
                     nameof(featureId));
             }
 
+            if (preContactAvoidanceChance < 0f || preContactAvoidanceChance > 1f)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(preContactAvoidanceChance),
+                    preContactAvoidanceChance,
+                    "Pre-contact avoidance chance must be between zero and one.");
+            }
+
+            if (preContactAvoidanceChance > 0f
+                && !string.Equals(featureId, BevExperimentalFeaturesId, StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"Pre-contact avoidance requires the {BevExperimentalFeaturesId} feature bundle.",
+                    nameof(featureId));
+            }
+
             FeatureId = featureId ?? string.Empty;
             FoxAttackCooldownTicks = foxAttackCooldownTicks;
+            PreContactAvoidanceChance = preContactAvoidanceChance;
         }
 
         public static SpeciesExperimentalOptions None { get; } = new SpeciesExperimentalOptions();
@@ -33,6 +53,8 @@ namespace SaltyGame
         public string FeatureId { get; }
         public int FoxAttackCooldownTicks { get; }
         public bool HasFoxAttackCooldown => FoxAttackCooldownTicks > 0;
+        public float PreContactAvoidanceChance { get; }
+        public bool HasPreContactAvoidance => PreContactAvoidanceChance > 0f;
         public bool UsesSplitCombatStats =>
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
         public bool UsesHerbivoreStatLine =>

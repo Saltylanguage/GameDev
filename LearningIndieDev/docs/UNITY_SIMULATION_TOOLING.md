@@ -83,6 +83,8 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId escape-artist -UpgradeValueOverride 0.75
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId escape-artist -UpgradeValueOverride 0.75 -PreContactAvoidanceChance 0.10
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
@@ -204,16 +206,16 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
 
-Experiment report schema 19 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 21 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
-experimental feature/cooldown, and ordered loadout. The sibling manifest records
+experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling manifest records
 the report SHA-256, source commit and dirty state, scenario asset path/GUID, and
 the Unity argument vector. Copy the complete artifact directory when retaining
 evidence; a handoff summary alone is not independently auditable raw evidence.
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-The current experiment JSON schema is `19`. Historical schema-6 EX-002 and
+The current experiment JSON schema is `21`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -223,9 +225,11 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 19 also records the selected combat
+identity, tick, age, and position. Schema 21 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
-its modifiers, totals, and outcome. The companion CSV contains one row per seed with run metadata
+its modifiers, totals, and outcome. Escape Artist dose-response runs may use
+`-UpgradeValueOverride` to test a single flee-speed value without changing the
+production catalog. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries.
