@@ -4,7 +4,6 @@
   "jobName": "hare-escape-artist-remote-test",
   "createdUtc": "2026-08-30T04:34:15.5959461Z",
   "requestedBy": "bevin",
-  "status": "pending",
   "parameters": {
     "ScenarioPath": "",
     "SeedStart": 1,
@@ -18,5 +17,10 @@
     "ExperimentalFeatures": "bev-experimental",
     "FoxAttackCooldownTicks": 0,
     "PreContactAvoidanceChance": 0.0
-  }
+  },
+  "worker": "BEVBOT001",
+  "status": "failed",
+  "startedUtc": "2026-08-30T05:32:50.5023834Z",
+  "completedUtc": "2026-08-30T05:36:03.0841217Z",
+  "error": "Unity batch command failed with exit code 1. See the command's log file for details."
 }
