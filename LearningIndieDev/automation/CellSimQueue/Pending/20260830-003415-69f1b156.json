@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "jobId": "20260830-003415-69f1b156",
+  "jobName": "hare-escape-artist-remote-test",
+  "createdUtc": "2026-08-30T04:34:15.5959461Z",
+  "requestedBy": "bevin",
+  "status": "pending",
+  "parameters": {
+    "ScenarioPath": "",
+    "SeedStart": 1,
+    "SeedCount": 20,
+    "PlayerSpeciesId": "hare",
+    "UpgradeId": "escape-artist",
+    "UpgradeSequence": "",
+    "UpgradeValueOverride": 0.5,
+    "CombatMode": "legacy-fixed-damage",
+    "AttackOpportunityMode": "natural",
+    "ExperimentalFeatures": "bev-experimental",
+    "FoxAttackCooldownTicks": 0,
+    "PreContactAvoidanceChance": 0.0
+  }
+}
