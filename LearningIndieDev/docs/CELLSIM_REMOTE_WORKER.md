@@ -11,16 +11,19 @@ Use a dedicated branch or clean checkout on the mini PC. Do not run the worker
 against a working tree with unsaved Unity changes. Unity must be closed on the
 mini PC while a job runs.
 
-From the desktop, submit a job and push the queue file:
+From the desktop, submit a job through a temporary worktree. The helper fetches
+the worker branch, creates the pending JSON there, commits only that JSON, and
+pushes the commit. It never checks out or edits the desktop branch.
 
 ```powershell
-.\tools\Submit-CellSimJob.ps1 -JobName 'hare-escape-artist-level-1' `
-  -PlayerSpeciesId hare -UpgradeId escape-artist `
-  -ExperimentalFeatures bev-experimental -UpgradeValueOverride 0.5
-git add automation/CellSimQueue/Pending
-git commit -m 'Queue CellSim hare experiment'
-git push
+.\tools\Submit-RemoteCellSimJob.ps1 -JobName 'hare-escape-artist-20-seeds' `
+  -SeedStart 1 -SeedCount 20 -PlayerSpeciesId hare `
+  -UpgradeId escape-artist -ExperimentalFeatures bev-experimental `
+  -UpgradeValueOverride 0.5
 ```
+
+For a safe local check that generates and validates the JSON but does not
+commit or push, add `-DryRun` to the same command.
 
 On the mini PC, pull and run one job:
 
@@ -32,9 +35,9 @@ git commit -m 'Complete CellSim hare experiment'
 git push
 ```
 
-For a continuously waiting worker, omit `-Once`. Automatic pulls, commits, and
-pushes should be added only after ownership, branch, and failure behavior are
-agreed.
+For a continuously waiting worker, omit `-Once`. The desktop helper uses a
+non-forcing push, so a concurrent worker-branch update fails closed and leaves
+the desktop branch untouched.
 
 The desktop then pulls the completed record and the referenced report under
 `artifacts/`. The report manifest records the source commit, Unity executable,
