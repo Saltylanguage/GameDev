@@ -32,9 +32,17 @@ git commit -m 'Complete CellSim hare experiment'
 git push
 ```
 
-For a continuously waiting worker, omit `-Once`. Automatic pulls, commits, and
-pushes should be added only after ownership, branch, and failure behavior are
-agreed.
+For a continuously waiting worker, omit `-Once`. The hardened worker supports
+explicit unattended mode:
+
+```powershell
+.\tools\Start-CellSimWorker.ps1 -AutoSync -AutoPublish -PollSeconds 15
+```
+
+`-AutoSync` performs an `ff-only` pull only from a clean checkout. `-AutoPublish`
+commits and pushes only queue records and packaged report files. Both switches
+are opt-in and should be tested with `-Once` before registering a Windows
+startup task.
 
 The desktop then pulls the completed record and the referenced report under
 `artifacts/`. The report manifest records the source commit, Unity executable,
@@ -42,7 +50,10 @@ arguments, scenario identity, and report hash.
 
 ## Limits
 
-This first bridge is intentionally one-way and pull-based. It does not expose a
-remote shell, accept arbitrary commands, or run while Unity is open. It also
-requires the two machines to use a dedicated queue branch or coordinate Git
-pull/push operations so they do not edit the same files concurrently.
+The bridge is intentionally one-way and pull-based. It does not expose a remote
+shell, accept arbitrary commands, or run while Unity is open. The worker refuses
+to process jobs when its checkout starts dirty, keeps the tracked Pending job in
+place while Unity runs, records pre-run and post-cleanup tree state, restores
+only known Unity-generated paths, and packages the report/manifest beside the
+completed job. It requires the worker checkout to remain dedicated to this
+branch.
