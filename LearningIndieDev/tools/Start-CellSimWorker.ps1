@@ -98,7 +98,7 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
     try {
         $result = & (Join-Path $project 'tools\Run-CellularExperiment.ps1') @parameters
         Restore-UnityGeneratedChanges
-        $cleanAfterCleanup = (Get-WorkerStatus).Count -eq 0
+        $cleanAfterCleanup = (@(Get-WorkerStatus)).Count -eq 0
         Assert-WorkerClean 'result packaging'
         $resultDirectory = Join-Path $completed $job.jobId
         New-Item -ItemType Directory -Path $resultDirectory -Force | Out-Null
@@ -122,7 +122,7 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         $job.status = 'failed'
         $job | Add-Member -NotePropertyName sourceCommit -NotePropertyValue $sourceCommit -Force
         $job | Add-Member -NotePropertyName sourceTreeCleanBeforeRun -NotePropertyValue ($sourceStatusBefore.Count -eq 0) -Force
-        $job | Add-Member -NotePropertyName sourceTreeCleanAfterCleanup -NotePropertyValue ((Get-WorkerStatus).Count -eq 0) -Force
+        $job | Add-Member -NotePropertyName sourceTreeCleanAfterCleanup -NotePropertyValue ((@(Get-WorkerStatus)).Count -eq 0) -Force
         $job | Add-Member -NotePropertyName completedUtc -NotePropertyValue ([DateTime]::UtcNow.ToString('O')) -Force
         $job | Add-Member -NotePropertyName error -NotePropertyValue $_.Exception.Message -Force
         $destination = Join-Path $failed (Split-Path $Path -Leaf)
