@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "jobId": "20260831-135702-a383c7cb",
+  "jobName": "hare-escape-artist-hardened-worker-test",
+  "createdUtc": "2026-08-31T17:57:02.8886112Z",
+  "requestedBy": "bevin",
+  "parameters": {
+    "ScenarioPath": "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+    "SeedStart": 1,
+    "SeedCount": 5,
+    "PlayerSpeciesId": "hare",
+    "UpgradeId": "escape-artist",
+    "UpgradeSequence": "",
+    "UpgradeValueOverride": 0.5,
+    "CombatMode": "legacy-fixed-damage",
+    "AttackOpportunityMode": "natural",
+    "ExperimentalFeatures": "bev-experimental",
+    "FoxAttackCooldownTicks": 0,
+    "PreContactAvoidanceChance": 0.0
+  },
+  "status": "completed",
+  "worker": "BEVBOT001",
+  "startedUtc": "2026-08-31T18:32:28.9826921Z",
+  "sourceCommit": "e9bee542564ca1011a231c3a0c05fa3b5d9d5839",
+  "sourceTreeCleanBeforeRun": true,
+  "sourceTreeCleanAfterCleanup": true,
+  "completedUtc": "2026-08-31T18:32:48.7068509Z",
+  "result": {
+    "ArtifactDirectory": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-143237",
+    "Manifest": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-143237\\manifest.json",
+    "Preflight": {
+      "ArtifactDirectory": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\unity-preflight-20260831-143229",
+      "Log": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\unity-preflight-20260831-143229\\license-probe.log",
+      "LicenseEntitlementFile": "C:\\Users\\bevadmin\\AppData\\Local\\Unity\\licenses\\UnityEntitlementLicense.xml"
+    },
+    "Report": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-143237\\report.json",
+    "UnityLog": "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-143237\\unity.log"
+  }
+}
