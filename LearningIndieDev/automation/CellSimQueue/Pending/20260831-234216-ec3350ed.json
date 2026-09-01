@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "jobId": "20260831-234216-ec3350ed",
+  "jobName": "hare-no-upgrade-control-batch-100",
+  "createdUtc": "2026-09-01T03:42:16.0283916Z",
+  "requestedBy": "bevin",
+  "status": "pending",
+  "parameters": {
+    "ScenarioPath": "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+    "SeedStart": 1,
+    "SeedCount": 100,
+    "PlayerSpeciesId": "hare",
+    "UpgradeId": "none",
+    "UpgradeSequence": "",
+    "UpgradeValueOverride": 0.0,
+    "CombatMode": "legacy-fixed-damage",
+    "AttackOpportunityMode": "natural",
+    "ExperimentalFeatures": "bev-experimental",
+    "FoxAttackCooldownTicks": 0,
+    "PreContactAvoidanceChance": 0.0
+  }
+}
