@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "jobId": "20260831-223509-e77de2a6",
+  "jobName": "hare-escape-artist-live-test",
+  "createdUtc": "2026-09-01T02:35:09.9270713Z",
+  "requestedBy": "bevin",
+  "status": "pending",
+  "parameters": {
+    "ScenarioPath": "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+    "SeedStart": 1,
+    "SeedCount": 5,
+    "PlayerSpeciesId": "hare",
+    "UpgradeId": "escape-artist",
+    "UpgradeSequence": "",
+    "UpgradeValueOverride": 0.5,
+    "CombatMode": "legacy-fixed-damage",
+    "AttackOpportunityMode": "natural",
+    "ExperimentalFeatures": "bev-experimental",
+    "FoxAttackCooldownTicks": 0,
+    "PreContactAvoidanceChance": 0.0
+  }
+}
