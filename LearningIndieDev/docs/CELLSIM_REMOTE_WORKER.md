@@ -44,9 +44,14 @@ commits and pushes only queue records and packaged report files. Both switches
 are opt-in and should be tested with `-Once` before registering a Windows
 startup task.
 
-The desktop then pulls the completed record and the referenced report under
-`artifacts/`. The report manifest records the source commit, Unity executable,
-arguments, scenario identity, and report hash.
+The desktop then pulls the completed record and its tracked result bundle. Each
+completed job contains `report.json`, the existing per-seed `report.csv`, the
+per-seed `statline.csv` for `bev-experimental` Hare runs, and `manifest.json`.
+The stat-line CSV includes `SPO`, `HPS`, `EHS`, `ECN`, `PREY`, `STRV`, `MAT`,
+`BIR`, `CRWD`, `FPO`, `pAVI`, `eAVI`, `predAVG`, `sAVI`, `cAVI`, `bAVG`,
+`RFS`, and `APS`, plus their validity-status columns. The report manifest
+records the source commit, Unity executable, arguments, scenario identity, and
+report hash.
 
 ## Limits
 

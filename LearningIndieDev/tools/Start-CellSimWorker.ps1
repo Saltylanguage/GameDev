@@ -60,6 +60,131 @@ function Restore-UnityGeneratedChanges {
     }
 }
 
+function ConvertTo-CellSimCsvScalar {
+    param([object]$Value)
+
+    if ($null -eq $Value) { return '' }
+    if ($Value -is [bool]) { return $Value.ToString().ToLowerInvariant() }
+    if ($Value -is [System.IFormattable]) {
+        return $Value.ToString($null, [Globalization.CultureInfo]::InvariantCulture)
+    }
+
+    return [string]$Value
+}
+
+function ConvertTo-CellSimCsvField {
+    param([object]$Value)
+
+    $text = ConvertTo-CellSimCsvScalar $Value
+    return '"' + $text.Replace('"', '""') + '"'
+}
+
+function Get-StatLineMetricCsvValue {
+    param(
+        [object]$Stat,
+        [string]$ValueProperty,
+        [string]$StatusProperty
+    )
+
+    $status = $Stat.PSObject.Properties[$StatusProperty]
+    if ($null -ne $status -and -not [string]::IsNullOrWhiteSpace([string]$status.Value) -and
+        [string]$status.Value -ne 'Valid') {
+        return [string]$status.Value
+    }
+
+    $value = $Stat.PSObject.Properties[$ValueProperty]
+    if ($null -eq $value -or $null -eq $value.Value) { return 'N/A' }
+    return ConvertTo-CellSimCsvScalar $value.Value
+}
+
+function Get-StatLinePropertyValue {
+    param(
+        [object]$Stat,
+        [string]$PropertyName,
+        [object]$Default = 'N/A'
+    )
+
+    $property = $Stat.PSObject.Properties[$PropertyName]
+    if ($null -eq $property -or $null -eq $property.Value) { return $Default }
+    return $property.Value
+}
+
+function Get-StatLineStatusCsvValue {
+    param(
+        [object]$Stat,
+        [string]$StatusProperty
+    )
+
+    $status = $Stat.PSObject.Properties[$StatusProperty]
+    if ($null -eq $status -or [string]::IsNullOrWhiteSpace([string]$status.Value)) { return 'N/A' }
+    return [string]$status.Value
+}
+
+function Export-HerbivoreStatLineCsv {
+    param(
+        [Parameter(Mandatory)] [string]$ReportPath,
+        [Parameter(Mandatory)] [string]$OutputPath
+    )
+
+    $report = Get-Content -LiteralPath $ReportPath -Raw | ConvertFrom-Json
+    $headers = @(
+        'seed', 'speciesId', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
+        'FPO', 'expectedFPO', 'fpoReconciled',
+        'pAVI', 'pAVIStatus', 'eAVI', 'eAVIStatus', 'predAVG', 'predAVGStatus',
+        'sAVI', 'sAVIStatus', 'cAVI', 'cAVIStatus', 'bAVG', 'bAVGStatus', 'RFS', 'RFSStatus',
+        'APS', 'APSStatus'
+    )
+    $lines = [System.Collections.Generic.List[string]]::new()
+    $lines.Add((@($headers | ForEach-Object { ConvertTo-CellSimCsvField $_ }) -join ','))
+    $rowCount = 0
+
+    foreach ($run in @($report.runs | Sort-Object seed)) {
+        $statProperty = $run.PSObject.Properties['herbivoreStatLine']
+        if ($null -eq $statProperty -or $null -eq $statProperty.Value) { continue }
+
+        $stat = $statProperty.Value
+        $values = @(
+            $run.seed,
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'speciesId' -Default ''),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'SPO'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'HPS'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'EHS'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'ECN'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'PREY'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'STRV'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'MAT'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'BIR'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'CRWD' -Default 0),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'FPO'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'expectedFPO'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'fpoReconciled'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'pAVI' -StatusProperty 'pAVIStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'pAVIStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'eAVI' -StatusProperty 'eAVIStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'eAVIStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'predAVG' -StatusProperty 'predAVGStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'predAVGStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'sAVI' -StatusProperty 'sAVIStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'sAVIStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'cAVI' -StatusProperty 'cAVIStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'cAVIStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'bAVG' -StatusProperty 'bAVGStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'bAVGStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'RFS' -StatusProperty 'RFSStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'RFSStatus'),
+            (Get-StatLineMetricCsvValue -Stat $stat -ValueProperty 'APS' -StatusProperty 'APSStatus'),
+            (Get-StatLineStatusCsvValue -Stat $stat -StatusProperty 'APSStatus')
+        )
+        $lines.Add((@($values | ForEach-Object { ConvertTo-CellSimCsvField $_ }) -join ','))
+        $rowCount++
+    }
+
+    $outputDirectory = Split-Path -Parent $OutputPath
+    New-Item -ItemType Directory -Path $outputDirectory -Force | Out-Null
+    Set-Content -LiteralPath $OutputPath -Value $lines -Encoding utf8
+    return $rowCount
+}
+
 function Publish-WorkerResults {
     $unexpected = @(Get-WorkerStatus | Where-Object { $_ -notmatch 'LearningIndieDev/automation/CellSimQueue/' })
     if ($unexpected.Count -gt 0) {
@@ -100,10 +225,23 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         Restore-UnityGeneratedChanges
         $cleanAfterCleanup = (@(Get-WorkerStatus)).Count -eq 0
         Assert-WorkerClean 'result packaging'
+        $reportCsvPath = [IO.Path]::ChangeExtension($result.Report, '.csv')
+        if (-not (Test-Path -LiteralPath $reportCsvPath -PathType Leaf)) {
+            throw "Unity completed without writing expected CSV to '$reportCsvPath'."
+        }
+        $statLineCsvPath = Join-Path $result.ArtifactDirectory 'statline.csv'
+        $statLineCount = Export-HerbivoreStatLineCsv -ReportPath $result.Report -OutputPath $statLineCsvPath
+        if ($parameters.ContainsKey('ExperimentalFeatures') -and
+            [string]$parameters.ExperimentalFeatures -eq 'bev-experimental' -and
+            $statLineCount -ne $parameters.SeedCount) {
+            throw "Expected one Hare stat-line row per seed, found $statLineCount of $($parameters.SeedCount)."
+        }
         $resultDirectory = Join-Path $completed $job.jobId
         New-Item -ItemType Directory -Path $resultDirectory -Force | Out-Null
         Copy-Item -LiteralPath $result.Report -Destination (Join-Path $resultDirectory 'report.json')
+        Copy-Item -LiteralPath $reportCsvPath -Destination (Join-Path $resultDirectory 'report.csv')
         Copy-Item -LiteralPath $result.Manifest -Destination (Join-Path $resultDirectory 'manifest.json')
+        Copy-Item -LiteralPath $statLineCsvPath -Destination (Join-Path $resultDirectory 'statline.csv')
         $job = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
         $job.status = 'completed'
         $job | Add-Member -NotePropertyName sourceCommit -NotePropertyValue $sourceCommit -Force
