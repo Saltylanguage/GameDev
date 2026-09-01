@@ -1,0 +1,39 @@
+﻿{
+    "schemaVersion":  1,
+    "jobId":  "20260831-234216-ec3350ed",
+    "jobName":  "hare-no-upgrade-control-batch-100",
+    "createdUtc":  "2026-09-01T03:42:16.0283916Z",
+    "requestedBy":  "bevin",
+    "parameters":  {
+                       "ScenarioPath":  "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+                       "SeedStart":  1,
+                       "SeedCount":  100,
+                       "PlayerSpeciesId":  "hare",
+                       "UpgradeId":  "none",
+                       "UpgradeSequence":  "",
+                       "UpgradeValueOverride":  0.0,
+                       "CombatMode":  "legacy-fixed-damage",
+                       "AttackOpportunityMode":  "natural",
+                       "ExperimentalFeatures":  "bev-experimental",
+                       "FoxAttackCooldownTicks":  0,
+                       "PreContactAvoidanceChance":  0.0
+                   },
+    "status":  "completed",
+    "startedUtc":  "2026-09-01T03:59:03.3249835Z",
+    "worker":  "BEVBOT001",
+    "sourceCommit":  "4dff61cc05ec1dc89fa849f070ca72832a17ef1f",
+    "sourceTreeCleanBeforeRun":  true,
+    "sourceTreeCleanAfterCleanup":  true,
+    "completedUtc":  "2026-09-01T04:00:06.3666542Z",
+    "result":  {
+                   "ArtifactDirectory":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-235913",
+                   "Manifest":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-235913\\manifest.json",
+                   "Preflight":  {
+                                     "ArtifactDirectory":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\unity-preflight-20260831-235903",
+                                     "Log":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\unity-preflight-20260831-235903\\license-probe.log",
+                                     "LicenseEntitlementFile":  "C:\\Users\\bevadmin\\AppData\\Local\\Unity\\licenses\\UnityEntitlementLicense.xml"
+                                 },
+                   "Report":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-235913\\report.json",
+                   "UnityLog":  "C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\cellular-experiment-20260831-235913\\unity.log"
+               }
+}
