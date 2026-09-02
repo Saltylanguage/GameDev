@@ -1,0 +1,4 @@
+<Project>
+  <Assembly>GalapagOS</Assembly>
+  <DefaultDataNamespace>GalapagOS</DefaultDataNamespace>
+</Project>
