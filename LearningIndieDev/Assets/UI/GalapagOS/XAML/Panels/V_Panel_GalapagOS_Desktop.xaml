@@ -1,0 +1,39 @@
+<Page x:Name="Panel_Root"
+  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  d:DesignWidth="1920"
+  d:DesignHeight="1080"
+  Background="#FF4D5052"
+  Foreground="#FFE1E9ED">
+  <Page.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../../../GlobalResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Page.Resources>
+  <Border x:Name="Root_Border">
+    <Grid x:Name="ContentGrid" Background="{DynamicResource Salty_SoftGreen}">
+      <ContentControl Width="700" Height="420" Margin="47,-14,1173,674" Style="{StaticResource GalapagOS_WindowStyle}">
+        <StackPanel Margin="24" VerticalAlignment="Center" Background="#FFDAFF69">
+          <TextBlock Text="{Binding DesktopTitle}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding WindowTitle}" FontSize="20" Margin="0,16,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding StatusText}" Margin="0,24,0,0" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding ViewModelType}" Margin="0,8,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
+        </StackPanel>
+      </ContentControl>
+      <ContentControl Margin="22,0,0,688" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}">
+        <StackPanel>
+          <Ellipse Width="50" Height="50" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+          <Rectangle Width="100" Height="100" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+          <Ellipse Width="60" Height="60" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+        </StackPanel>
+      </ContentControl>
+      <ContentControl Content="ContentControl" Margin="1188,28,0,0" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}"/>
+      <ContentControl Content="ContentControl" Margin="1188,0,0,675" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}"/>
+    </Grid>
+  </Border>
+</Page>
