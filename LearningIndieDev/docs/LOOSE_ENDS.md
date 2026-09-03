@@ -7,11 +7,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-08-20
-- Report state: the current-head S1 build/launch, telemetry validation, and
-  schema-7 Forest Edge control plus held-out baseline are reconciled. Remaining
-  work is the matched upgrade/results gate and the Noesis analytics privacy
-  decision.
+- Last reviewed: 2026-09-02
+- Report state: the UI/ControlLibrary batch is committed and pushed, static
+  XAML checks pass, and the latest schema-21 worker artifacts are available.
+  Graphics-capable Unity acceptance is currently blocked by two inaccessible
+  orphaned Unity PIDs and a lockfile; worker artifact packaging/provenance and
+  the first trustworthy upgrade catalog remain open.
 
 ## Triage rules
 
@@ -19,7 +20,133 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Open items
+## Current open items (2026-09-02)
+
+### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
+
+- **Status:** UI batch committed/pushed; runtime acceptance pending.
+- **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
+  `HeaderedContentControl` window style/resources, four palette variants, and
+  the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
+  the changed XAML and `git diff --check` is clean apart from Unity's standard
+  blank-value metadata whitespace. No Unity screenshot or graphics Play Mode
+  result exists for this batch yet.
+- **Next action:** Close the protected Unity processes, rerun the graphics
+  acceptance command, and review the desktop scene at the target resolutions.
+- **Likely owner:** Josh + UI owner.
+- **Confidence:** High.
+
+### P1-015 — Unity preflight cannot establish a clean editor state
+
+- **Status:** Blocked by external process state; no destructive workaround used.
+- **Evidence:** `Test-UnityPreflight.ps1` reports Unity already running at PIDs
+  `22440` and `64828`. The processes expose no executable path or command line,
+  reject normal and elevated termination, and `LearningIndieDev/Temp/UnityLockfile`
+  remains present. The relay-health check also currently reports five Codex user
+  relays, but no Unity Assistant package relays.
+- **Next action:** Reboot or end the exact stale processes through an authorized
+  desktop session, confirm the lockfile is stale only after they are gone, then
+  rerun preflight. Do not delete the lockfile while those PIDs remain.
+- **Likely owner:** Josh (machine state) + tooling owner.
+- **Confidence:** High.
+
+### P1-016 — First trustworthy upgrade catalog is not yet defined
+
+- **Status:** Open; the S2 design gate has not started.
+- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` still calls for one explicit
+  six-to-ten-upgrade catalog with numeric, spatial, conditional, and tradeoff
+  effects, deterministic application, and contribution telemetry. Current
+  prototype upgrades remain movement/attack/block oriented and are not yet a
+  complete Hare/Fox interaction catalog.
+- **Next action:** Define the first catalog, previews, stacking rules, and
+  telemetry contract before promoting another balance arm.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-017 — Worker result packaging and provenance disagree
+
+- **Status:** Open; the results are usable descriptively but not yet a clean
+  promotion package.
+- **Evidence:** Matched 100-seed Forest Edge artifacts are present under
+  `automation/CellSimQueue/Completed/`: baseline
+  `20260831-234216-ec3350ed` (Fox 2.94 average, Hare 21.23 average, Plant
+  879.73 average; `report.csv` and `statline.csv` present) and Escape Artist
+  `20260831-234200-d484a2b2` (Fox 2.91, Hare 23.06, Plant 866.13; expected
+  CSV/statline files absent). Both manifests say `sourceTreeDirty: true`, while
+  their queue records say the worker was clean before and after execution.
+- **Next action:** Reconcile worker cleanup/manifest generation and require
+  report JSON, CSV, statline, manifest, and log as one auditable result bundle.
+  Re-run the paired arm only after the packaging contract is green.
+- **Likely owner:** Simulation/tooling owner.
+- **Confidence:** High.
+
+### P1-018 — Upgrade effect evidence is descriptive, not promotable
+
+- **Status:** Open; no causal upgrade claim should be made yet.
+- **Evidence:** The paired Escape Artist arm differs from baseline by a mean
+  Hare delta of +1.83 (median +2; 54 positive, 1 zero, 45 negative across
+  seeds 1–100), with seed-sensitive range −35 to +46. This is useful signal,
+  but not a stable promotion result and lacks the complete Escape CSV/statline
+  bundle noted in P1-017.
+- **Next action:** Predeclare the endpoint and holdout protocol, repair the
+  artifact package, then repeat the matched arm against the locked control.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-019 — Embedded Noesis editor analytics requires a release decision
+
+- **Status:** Open security/privacy decision; not a player-build path.
+- **Evidence:** The vendor Editor-only assembly installs a Google Analytics
+  `unity_install` event on package version changes and contains a committed
+  credential. It is excluded from the Windows player but can make a network
+  request in the Editor during installation/update.
+- **Next action:** Obtain vendor/project approval for a supported disable/update
+  path and rotate the credential if genuine. Do not patch the embedded package
+  casually.
+- **Likely owner:** Repository maintainer + vendor/license owner.
+- **Confidence:** High.
+
+### P1-020 — Figma/Noesis pilot still lacks final visual evidence
+
+- **Status:** Open and intentionally separate from the ControlLibrary commit.
+- **Evidence:** `docs/handoffs/2026-08-25-codex-figma-noesis-pilot.md` records the
+  pilot as incomplete because the Figma Starter quota was exhausted and the
+  component/screenshot pass was not accepted. The new desktop scene has no
+  runtime screenshot yet because of P1-015.
+- **Next action:** Revisit the pilot only after runtime acceptance is available
+  and the visual target is explicit; do not expand the component surface first.
+- **Likely owner:** Presentation/UI owner.
+- **Confidence:** Medium-high.
+
+### P2-005 — Large raw worker artifacts need a retention policy
+
+- **Status:** Open cleanup/operations concern.
+- **Evidence:** The two latest 100-seed JSON reports are approximately 52.2 MB
+  and 53.1 MB, with the completed queue holding roughly 122 MB of raw output.
+  This is useful for audit, but expensive for repository clones and routine
+  review.
+- **Next action:** Keep a compact committed summary/manifest and define when
+  raw JSON/log bundles move to an external archive or are pruned.
+- **Likely owner:** Repository maintainer + tooling owner.
+- **Confidence:** High.
+
+### P2-006 — Sprint rollover and S2 control record need a fresh checkpoint
+
+- **Status:** Open planning hygiene item.
+- **Evidence:** `docs/Sprints/S1-control-record.md` still describes the August
+  17–30 window, while `ROADMAP.md` positions S2 as the next work bucket. No
+  current S2 control record or explicit upgrade catalog is committed.
+- **Next action:** At the next sprint review, close or carry S1 explicitly and
+  create the S2 control record only after the UI/runtime gate and upgrade
+  acceptance criteria are named.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+## Historical open items — 2026-08-20
+
+The entries below are retained as historical evidence from the prior review.
+Use the current section above for active triage; do not infer current status
+from an older entry without checking its cited artifacts.
 
 ### P1-001 — Forest Edge balance is outside the vertical-slice target
 
@@ -359,3 +486,13 @@ Unity suites run successfully.
   relay-health tooling are shared. Graphics-capable runtime-art acceptance is
   resolved; remaining label/reward readability work belongs to the upgrade/UI
   lane.
+
+### R-008 — GalapagOS ControlLibrary batch is committed and pushed
+
+- **Evidence:** Commit `640d8f5d` on `UI/ControlLibrary` adds the desktop test
+  scene, shared resource-driven window template, four palette variants, and the
+  desktop-panel cleanup. The companion handoff is
+  `docs/handoffs/2026-09-02-codex-control-library-and-loose-ends.md`.
+- **Result:** The source change has a focused commit boundary and is available
+  on `origin/UI/ControlLibrary`. Runtime visual acceptance remains open under
+  current item P1-014 because Unity preflight is blocked by P1-015.
