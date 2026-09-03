@@ -192,7 +192,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29355477be96127469aed699dd82b4be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Noesis.NoesisGUI::NoesisView
-  _xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
+  _xaml: {fileID: -8414808784256213763, guid: 4c7e9b1a2d6f4e8a9b0c1d3e5f7a2b6c, type: 3}
   _texture: {fileID: 0}
   _isPPAAEnabled: 0
   _tessellationMaxPixelError: 0.4
@@ -283,7 +283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.GalapagOSDesktopNoesisHost
   view: {fileID: 100003}
   viewModel: {fileID: 100005}
-  xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
+  xaml: {fileID: -8414808784256213763, guid: 4c7e9b1a2d6f4e8a9b0c1d3e5f7a2b6c, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

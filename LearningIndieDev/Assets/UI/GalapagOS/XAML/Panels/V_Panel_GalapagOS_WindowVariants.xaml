@@ -1,0 +1,158 @@
+<Page x:Name="WindowVariantsRoot"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      mc:Ignorable="d"
+      d:DesignWidth="1920" d:DesignHeight="1080">
+  <Page.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="../../../GlobalResources.xaml" />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Page.Resources>
+
+  <Grid Background="{DynamicResource Chrono_TreeBark}" Margin="48">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
+
+    <StackPanel Grid.Row="0" Margin="0,0,0,24">
+      <TextBlock Text="HeaderedContentControl window variants"
+                 FontSize="32" FontWeight="Bold"
+                 Foreground="{DynamicResource Chrono_VanillaCream}" />
+      <TextBlock Text="Four palettes share one template; each one communicates an ecological role at a glance."
+                 Margin="0,8,0,0" FontSize="18"
+                 Foreground="{DynamicResource Chrono_AzureSky}" />
+    </StackPanel>
+
+    <Grid Grid.Row="1">
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="*" />
+      </Grid.RowDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
+      </Grid.ColumnDefinitions>
+
+      <!-- Plant: grounded green, with lime highlights for growth and renewal. -->
+      <HeaderedContentControl Grid.Row="0" Grid.Column="0" Margin="0,0,16,16"
+                              Header="PLANT / VERDANT"
+                              Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+        <HeaderedContentControl.Resources>
+          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF4F783B" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FFDCE9A6" Offset="0" />
+            <GradientStop Color="#FF6A9B74" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FF6A9B74" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF253A20" />
+          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFC5D370" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FF4F783B" Offset="0" />
+            <GradientStop Color="#FF9BCB73" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFFCEEC0" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF365329" />
+        </HeaderedContentControl.Resources>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Verdant / growth" FontSize="28" FontWeight="Bold"
+                     Foreground="#FF253A20" HorizontalAlignment="Center" />
+          <TextBlock Text="A grounded green language for plants, renewal, and stable habitat."
+                     Width="360" Margin="0,12,0,0" FontSize="17" TextWrapping="Wrap"
+                     Foreground="#FF253A20" TextAlignment="Center" />
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <!-- Carnivore: red, coral, and pink create urgency without collapsing into orange. -->
+      <HeaderedContentControl Grid.Row="0" Grid.Column="1" Margin="16,0,0,16"
+                              Header="CARNIVORE / PREDATOR"
+                              Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+        <HeaderedContentControl.Resources>
+          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF8D3345" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FFFFC8DD" Offset="0" />
+            <GradientStop Color="#FFC94E5B" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFBB848E" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF4A1D2A" />
+          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFF08080" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FF8D3345" Offset="0" />
+            <GradientStop Color="#FFF08080" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFFCEEC0" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF632235" />
+        </HeaderedContentControl.Resources>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Warm / pressure" FontSize="28" FontWeight="Bold"
+                     Foreground="#FF4A1D2A" HorizontalAlignment="Center" />
+          <TextBlock Text="Red, coral, and pink signal pursuit, danger, and high ecological pressure."
+                     Width="360" Margin="0,12,0,0" FontSize="17" TextWrapping="Wrap"
+                     Foreground="#FF4A1D2A" TextAlignment="Center" />
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <!-- Herbivore option 1: yellow/gold only, deliberately avoiding orange and green. -->
+      <HeaderedContentControl Grid.Row="1" Grid.Column="0" Margin="0,16,16,0"
+                              Header="HERBIVORE / SUNLIT"
+                              Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+        <HeaderedContentControl.Resources>
+          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF9C7B1B" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FFFFF2BF" Offset="0" />
+            <GradientStop Color="#FFFDCA47" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFE5C65A" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF4D3A13" />
+          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFFFF7D6" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FF9C7B1B" Offset="0" />
+            <GradientStop Color="#FFFFD76A" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFFFF7D6" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF6B5112" />
+        </HeaderedContentControl.Resources>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Sunlit / abundance" FontSize="28" FontWeight="Bold"
+                     Foreground="#FF4D3A13" HorizontalAlignment="Center" />
+          <TextBlock Text="A clear yellow-gold language for grazing, food, and visible energy."
+                     Width="360" Margin="0,12,0,0" FontSize="17" TextWrapping="Wrap"
+                     Foreground="#FF4D3A13" TextAlignment="Center" />
+        </StackPanel>
+      </HeaderedContentControl>
+
+      <!-- Herbivore option 2: cool lavender/sky suggests gentleness, alertness, and flight. -->
+      <HeaderedContentControl Grid.Row="1" Grid.Column="1" Margin="16,16,0,0"
+                              Header="HERBIVORE / TWILIGHT"
+                              Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+        <HeaderedContentControl.Resources>
+          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF70638E" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FFEDE5F5" Offset="0" />
+            <GradientStop Color="#FFA2D2FF" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFCDB4DB" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF302A49" />
+          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFFFC8DD" />
+          <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Color="#FF70638E" Offset="0" />
+            <GradientStop Color="#FFB9DDF4" Offset="1" />
+          </LinearGradientBrush>
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFF7F0FF" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF514669" />
+        </HeaderedContentControl.Resources>
+        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+          <TextBlock Text="Twilight / vigilance" FontSize="28" FontWeight="Bold"
+                     Foreground="#FF302A49" HorizontalAlignment="Center" />
+          <TextBlock Text="A cool lavender and sky language for gentle animals that stay alert to danger."
+                     Width="360" Margin="0,12,0,0" FontSize="17" TextWrapping="Wrap"
+                     Foreground="#FF302A49" TextAlignment="Center" />
+        </StackPanel>
+      </HeaderedContentControl>
+    </Grid>
+  </Grid>
+</Page>
