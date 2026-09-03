@@ -1,0 +1,22 @@
+﻿{
+    "schemaVersion":  1,
+    "jobId":  "20260902-233024-d8d75c20",
+    "jobName":  "step1-hare-baseline-a",
+    "createdUtc":  "2026-09-03T03:30:24.7791431Z",
+    "requestedBy":  "codex",
+    "status":  "pending",
+    "parameters":  {
+                       "ScenarioPath":  "",
+                       "SeedStart":  1,
+                       "SeedCount":  20,
+                       "PlayerSpeciesId":  "hare",
+                       "UpgradeId":  "none",
+                       "UpgradeSequence":  "",
+                       "UpgradeValueOverride":  0,
+                       "CombatMode":  "legacy-fixed-damage",
+                       "AttackOpportunityMode":  "natural",
+                       "ExperimentalFeatures":  "bev-experimental",
+                       "FoxAttackCooldownTicks":  0,
+                       "PreContactAvoidanceChance":  0
+                   }
+}
