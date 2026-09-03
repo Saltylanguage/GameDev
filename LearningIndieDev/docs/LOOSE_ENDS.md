@@ -13,7 +13,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   Graphics-capable Unity acceptance is currently blocked by two inaccessible
   orphaned Unity PIDs and a lockfile; the worker evidence gate is implemented,
   while the P3 research gate, fresh clean baseline execution, and the first
-  trustworthy upgrade catalog remain open.
+  trustworthy upgrade catalog remain open. The worker can now publish failure
+  records, but Unity preflight is still blocked by an active editor process.
 
 ## Triage rules
 
@@ -87,8 +88,11 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   both with `-RequireUnityLog`, and compare their normalized outcomes. The
   first pair was a diagnostic mismatch (blank scenario path and legacy combat)
   and must not be used for the P3 gate; corrected jobs are queued as
-  `20260903-033218-3b7607ba` and `20260903-033240-b1b43c58`. Re-run the paired
-  upgrade arm only after the packaging contract is green.
+  `20260903-033218-3b7607ba` and `20260903-033240-b1b43c58`. The training job
+  failed before simulation because Unity was already running (PIDs `88760` and
+  `38616`); the held-out job remains pending. Close Unity, resubmit the failed
+  training job, then validate both. Re-run the paired upgrade arm only after
+  the packaging contract is green.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -158,12 +162,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - **Status:** Carry-forward; the phase is not closed.
 - **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` records that EX-003
-  has no execution package and EX-007 remains contract-only. The corrected
-  Forest Edge/opposed-roll baseline jobs are queued, but no worker has produced
-  validated training or held-out bundles yet.
-- **Next action:** Complete EX-007 in its declared order, including the
-  pre-registered prediction, S1/J1 training and held-out arms, false-cause and
-  missed-effect scoring, and human decision. Keep P4 work preparatory only.
+  has no execution package and EX-007 remains contract-only. The worker now
+  publishes failure records correctly, but the corrected training baseline
+  stopped at Unity preflight because an editor was already running; the
+  corrected held-out baseline is still pending.
+- **Next action:** Close Unity, resubmit the failed training baseline, process
+  the held-out baseline, then complete EX-007 in its declared order, including
+  the pre-registered prediction, S1/J1 training and held-out arms, false-cause
+  and missed-effect scoring, and human decision. Keep P4 work preparatory only.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -532,8 +538,18 @@ Unity suites run successfully.
   misclassified as a submission failure.
 - **Result:** Historical artifacts were not rewritten. Two identical 20-seed
   Hare diagnostic jobs (`20260902-233024-d8d75c20` and
-  `20260902-233045-437566fd`) remain queued but are not P3 evidence because
-  they used the default temporary scenario and legacy combat mode. Corrected
-  EX-007 baseline jobs are queued as `20260903-033218-3b7607ba` and
-  `20260903-033240-b1b43c58`; no upgrade or balance claim is promoted until the
-  P3 gate completes.
+  `20260902-233045-437566fd`) failed before simulation and are not P3 evidence
+  because they used the default temporary scenario and legacy combat mode. The
+  corrected EX-007 training job (`20260903-033218-3b7607ba`) also failed before
+  simulation when Unity preflight found an active editor; the corrected
+  held-out job (`20260903-033240-b1b43c58`) remains pending. No upgrade or
+  balance claim is promoted until the P3 gate completes.
+
+### R-010 — Detached worker publication path verified
+
+- **Evidence:** Commit `b52208f3` on `codex/cellsim-worker` changes result
+  publication to push `HEAD:refs/heads/codex/cellsim-worker`. The isolated pass
+  published three failure records (`5a11fe37`, `de45d803`, `ba92cb03`) instead
+  of silently losing queue state.
+- **Result:** Queue state is now auditable even when Unity preflight blocks a
+  run. The remaining blocker is machine state, not worker publication.
