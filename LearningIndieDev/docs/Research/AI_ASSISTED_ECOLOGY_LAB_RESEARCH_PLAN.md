@@ -812,8 +812,9 @@ Every research bundle should preserve:
   bounded deterministic schema-6 control, matched intervention matrix, and
   held-out check over the declared seed ranges. Its interpretation remains
   scoped to that protocol.
-- CIA-001 and EX-007 remain proposed research work, not validated predictive
-  capability.
+- CIA-001 remains proposed research work, not validated predictive capability.
+  EX-007 now has a locked first-run contract using the current statline
+  telemetry; its execution and prediction-scoring evidence are still pending.
 
 The first research package should be small enough to complete without blocking
 the current production lane:
