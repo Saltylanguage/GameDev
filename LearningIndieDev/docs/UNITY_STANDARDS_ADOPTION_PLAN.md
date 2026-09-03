@@ -6,7 +6,13 @@ Authority: [`UNITY_ENGINEERING_STANDARDS.md`](UNITY_ENGINEERING_STANDARDS.md)
 
 ## Current compliance summary
 
-The project already has a useful vertical slice: an explicit `GameRuntime` composition root, plain C# activity/inventory/clock rules, a runtime assembly boundary, NUnit tests, text serialization, and a bootstrap validator. It is not yet a production-scale architecture: there are no save-data definitions, profiling budgets/captures, Play Mode test assembly, first-party ScriptableObject definitions, or stable UI/branch/large-file policies.
+The project has two retained slices. The active product path is Main Menu → Lab
+→ CellularAutomataPrototype with plain C# simulation rules, a runtime assembly
+boundary, NUnit tests, text serialization, and a Noesis presentation path. The
+Island Survivor slice retains the historical `GameRuntime` composition root and
+validator but is deprecated. The active path has no general bootstrap validator,
+save-data definitions, profiling budgets/captures, or stable UI/branch/large-file
+policies.
 
 The audit found no missing `.meta` files for current Assets, no runtime-to-Editor assembly reference, no Addressables installation, no first-party DOTS code, and no existing `.editorconfig` or analyzer configuration. `Assets/UI` and `Assets/TutorialInfo` retain inconsistent/template conventions and are excluded from immediate cleanup.
 
@@ -21,7 +27,8 @@ The audit found no missing `.meta` files for current Assets, no runtime-to-Edito
 ## Low-risk immediate improvements
 
 - Use the authoritative stylesheet in code reviews and AI-assisted changes.
-- Run `Salty > Validate Bootstrap Scene` after scene/bootstrap edits.
+- Run the relevant current scene/test validation after active-slice edits;
+  `Salty > Validate Bootstrap Scene` applies only to deprecated Island Survivor.
 - Add a focused Edit Mode test with each new activity or domain rule.
 - Use the new `.editorconfig` for touched first-party code; do not reformat the whole repository.
 - Keep `.meta` files paired and inspect serialized diffs for any Unity asset change.
@@ -31,7 +38,11 @@ The audit found no missing `.meta` files for current Assets, no runtime-to-Edito
 
 ### Phase 0 - policy and checks
 
-Apply the stylesheet, keep the current assembly boundaries, and run existing tests plus the bootstrap validator. Add repository checks for `.meta` parity, forbidden generated files, asmdef cycles, and `git diff --check`/equivalent Plastic diff hygiene where the team can execute them.
+Apply the stylesheet, keep the current assembly boundaries, and run existing
+tests plus the deprecated-slice validator only when touching Island Survivor.
+Add repository checks for `.meta` parity, forbidden generated files, asmdef
+cycles, and `git diff --check`/equivalent Plastic diff hygiene where the team
+can execute them.
 
 ### Phase 1 - touched-code consistency
 
@@ -69,7 +80,9 @@ No gameplay refactor, asset move/rename, scene/prefab modification, package/Unit
 ## Known exceptions and debt not to fix without context
 
 - `Assets/UI/DelegateCommand.cs` has legacy naming and an unused `canExcute` parameter; it is optional/experimental and should not be changed as collateral cleanup.
-- `Assets/UI/HUD/Scripts/BaseViewModel.cs` is guarded by `NOESIS` and contains legacy naming/debug text; keep it isolated until the Noesis path is portable and selected.
+- `Assets/UI/MainMenu/Scripts/BaseViewModel.cs` is an unreferenced starter demo;
+  the active Noesis UI uses the namespaced Main Menu/Lab contracts. Remove the
+  starter only through the focused cleanup ticket after final reference scan.
 - `Assets/TutorialInfo` is template content and may follow Unity's template conventions.
 - `WorldRuntime` creates placeholder sprites and uses hard-coded prototype values; authored data/prefab conversion needs a design decision, not an opportunistic cleanup.
 - `RuntimeDebugPanel.visible` is intentionally static development state; it is not approved as a general global-state pattern.

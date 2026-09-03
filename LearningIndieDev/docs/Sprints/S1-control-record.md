@@ -1,6 +1,6 @@
 # Sprint 1 Control Record — Main Menu and Lab Foundation
 
-> Status: Active | Start: 2026-08-17 | End: 2026-08-30
+> Status: Closed | Start: 2026-08-17 | End: 2026-08-30 | Closed: 2026-09-03
 
 This is the durable Sprint 1 control record produced by S0.C4. The
 authoritative execution detail remains in
@@ -18,6 +18,28 @@ identity, capacity, ownership, checkpoints, and board disposition.
 | Goal | Launch → Main Menu → Lab Overview → Research preview using representative UI data. |
 | Capacity | Josh 20h; Sim 20h; 40h two-week capacity. The committed S1 scope remains 20h including reserve; extra capacity is uncommitted. |
 | Exit criteria | Windows development-build review route works with keyboard/mouse, visible focus, deterministic Back behavior, representative balances/projects, both target resolutions, and recorded smoke evidence. |
+
+## Closeout — 2026-09-03
+
+Sprint 1 closed with its bounded outcome accepted: Main Menu → Lab Overview →
+Research preview, representative research data, and the first usable species
+stat-line slice. The acceptance record is deliberately narrow and does not
+promote later player-loop work into this sprint.
+
+- Route smoke passed at 1280×720 and 1920×1080; graphics-capable PlayMode
+  evidence passed 6/6.
+- The Windows development build succeeded and the player stayed alive through
+  the recorded 15-second startup smoke.
+- The v1 stat line preserves raw counts, exposes audited rates/denominators,
+  and has deterministic validation recorded in
+  `docs/HERBIVORE_STATISTICS_VALIDATION.md`.
+- Trello cards 51–53 and 72 carry their acceptance evidence. The planned
+  integration-reserve card (54) has no live Trello record; no reserve work is
+  claimed.
+
+Deferred work remains explicitly outside S1: Player UI/Dev Lab separation,
+persistence and economy, functional research purchases/mastery, Archive and
+Expedition, branching upgrades, and final art/audio/polish.
 
 ## Committed task register
 

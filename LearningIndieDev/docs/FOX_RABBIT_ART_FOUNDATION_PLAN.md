@@ -22,14 +22,14 @@ uncontrolled texture noise, or competing visual hierarchies.
 ### ART.1 — Smart-tiling correctness and edge cases
 
 - Keep neighbor masks and atlas indices presentation-only.
-- Define the supported mask model (cardinal 16-mask baseline; diagonal policy
-  explicitly accepted or deferred).
+- Define the supported mask model (normalized 47-mask eight-neighbor blob
+    contract; diagonal normalization is explicit in the resolver).
 - Test isolated cells, straight edges, inside/outside corners, four-way joins,
   full regions, empty regions, invalid masks, grid bounds, and terrain-family
   fallbacks.
 - Verify deterministic results and a safe fallback when an atlas entry or
   terrain family is unavailable.
-- Keep the editor 4×4 mask preview and runtime resolver on the same lookup
+  - Keep the editor 7×7 mask preview and runtime resolver on the same lookup
   table.
 
 Acceptance: focused Edit Mode coverage passes for every supported mask and
@@ -90,8 +90,8 @@ inform the comparison but cannot approve the style.
 
 | Surface | Required evidence |
 | --- | --- |
-| Resolver | 16-mask Edit Mode coverage, invalid/fallback cases, deterministic lookup |
-| Editor preview | 4×4 mask sheet for each terrain family at native scale |
+| Resolver | 47-mask Edit Mode coverage, invalid/fallback cases, deterministic lookup |
+| Editor preview | 7×7 mask sheet for each terrain family at native scale |
 | Runtime | Cellular prototype with Fox/Rabbit and terrain at 1280×720 and 1920×1080 |
 | Asset contract | Import settings, stable sprite names, atlas entries, `.meta` parity |
 | Integration | Noesis atlas creation, species fallback, selection/state overlays |
@@ -100,7 +100,7 @@ inform the comparison but cannot approve the style.
 ## Entry dependencies
 
 - `docs/TILE_AUTHORING_GUIDE.md` is the asset-authoring contract.
-- `docs/CELLULAR_SPRITE_TILING_PLAN.md` defines the current 16-mask resolver and
+- `docs/CELLULAR_SPRITE_TILING_PLAN.md` defines the current 47-mask resolver and
   known temporary mappings.
 - P1-006, P1-007, and P1-008 in `docs/LOOSE_ENDS.md` are resolved evidence
   records for this lane; reopen them only for a new visual regression.

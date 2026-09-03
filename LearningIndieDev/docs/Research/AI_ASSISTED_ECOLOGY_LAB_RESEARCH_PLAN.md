@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.10<br>
+**Version:** 1.12<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -535,7 +535,11 @@ AI must not, without explicit human approval:
 The AI-assisted development safeguards in [SG-002 - AI-Assisted
 Development](../Studio%20Guidelines/AI_ASSISTED_DEVELOPMENT.md) apply to the research lane.
 
-## Initial experiment portfolio
+## Experiment portfolio (ranked implementation order)
+
+The EX identifiers are stable record IDs, not a promise that numeric order
+equals execution order. The entries below are ordered by implementation
+dependencies and intended progression through the research program.
 
 ### EX-001 - Reproducibility baseline
 
@@ -637,6 +641,45 @@ feature requests as not currently testable, and keeps model evidence separate
 from balance, quality, or engagement judgments. A human reviewer can trace the
 statement to reports and decide whether a model extension, playtest, or
 implementation should follow.
+
+### EX-008 - Reversed upgrade-order follow-up
+
+**Question:** Does applying the same Hare upgrades in the opposite order change
+the observed outcome relative to EX-007's forward-order sequence?
+
+**Method:** Use the validated EX-007 baseline and run the crowding-only arm plus
+the reversed joint sequence (`crowding-tolerance,faster-movement`) on ForestEdge
+with the same combat and opportunity settings. Compare population, births,
+mortality, predation, movement, resource, and encounter telemetry.
+
+**Scope:** This is follow-up evidence, not a new pre-registered AI prediction.
+Because its held-out seeds differ from EX-007's forward-order panel, it cannot
+by itself establish an order-only causal result.
+
+The working package is documented in [EX-008 - Reversed Upgrade-Order
+Follow-up](Experiments/EX-008-Reversed-Order-Followup/README.md).
+
+### EX-009 - Same-held-out-seed upgrade-order comparison
+
+**Question:** When `faster-movement` and `crowding-tolerance` are applied in
+opposite orders, do the two sequences produce different outcomes on the same
+held-out seeds?
+
+**Method:** Run `faster-movement,crowding-tolerance` and
+`crowding-tolerance,faster-movement` on ForestEdge with Hare, seeds 106–110,
+identical combat/opportunity settings, and complete artifact validation. Compare
+per-seed final population, births, mortality, predation, movement, resource,
+and available encounter telemetry. Do not use the prior different-seed panels
+as a substitute.
+
+**Success:** Both arms complete with valid bundles and the pairwise deltas are
+reported. Order independence may be stated only if the same-seed comparison
+supports it; otherwise the result is order-sensitive or unresolved.
+
+The working package is documented in [EX-009 - Same-Held-Out-Seed Upgrade-Order
+Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md). The
+first execution attempt is recorded as blocked before simulation by Unity
+Package Manager IPC failure.
 
 ### EX-004 - Replay-to-explanation
 
@@ -813,8 +856,11 @@ Every research bundle should preserve:
   held-out check over the declared seed ranges. Its interpretation remains
   scoped to that protocol.
 - CIA-001 remains proposed research work, not validated predictive capability.
-  EX-007 now has a locked first-run contract using the current statline
-  telemetry; its execution and prediction-scoring evidence are still pending.
+  EX-007 now has complete training and held-out run/report/analysis evidence;
+  its human decision remains pending. EX-008 added a crowding-only arm and a
+  reversed sequence, but used a different held-out panel from the original
+  forward sequence. EX-009 is the locked same-held-out-seed A/B follow-up; its
+  forward arm is currently blocked at the Unity Package Manager preflight gate.
 
 The first research package should be small enough to complete without blocking
 the current production lane:
@@ -893,3 +939,5 @@ rule.
 | 1.8 | 2026-08-15 | Integrated death telemetry into EX-002 and reclassified the schema-4 aggregate BaselineParity numbers as pre-telemetry evidence pending a same-seed schema-5 rerun. |
 | 1.9 | 2026-08-18 | Added schema-6 reproduction-funnel outcomes while retaining schema-5 death telemetry; advanced the pending instrumented EX-002 baseline to a same-seed schema-6 rerun. |
 | 1.10 | 2026-08-22 | Clarified that pre-specification is human-owned: AI may draft proposals, but a human decision owner must approve and record the experiment contract before execution. |
+| 1.11 | 2026-09-03 | Added EX-009 to close the same-held-out-seed gap in the EX-007/EX-008 upgrade-order comparison; recorded the current Unity preflight blocker. |
+| 1.12 | 2026-09-03 | Reordered the experiment portfolio by implementation dependencies and added the missing EX-008 entry. |

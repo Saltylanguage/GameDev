@@ -8,13 +8,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-09-03
-- Report state: the UI/ControlLibrary batch is committed and pushed, static
-  XAML checks pass, and the latest schema-21 worker artifacts are available.
-  Graphics-capable Unity acceptance is currently blocked by two inaccessible
-  orphaned Unity PIDs and a lockfile; the worker evidence gate is implemented,
-  while the P3 research gate, fresh clean baseline execution, and the first
-  trustworthy upgrade catalog remain open. The worker can now publish failure
-  records, but Unity preflight is still blocked by an active editor process.
+- Report state: the earlier UI/ControlLibrary batch is committed and pushed, but
+  the current follow-up documentation, XAML, and tooling batch is still local
+  and uncommitted. The current EX-007/EX-008 run bundles pass the strict artifact
+  validator with Unity logs. Graphics-capable Unity acceptance remains blocked by
+  Unity's machine-level UPM/licensing IPC state; the P3 research gate remains
+  open pending human review and the same-held-out EX-009 comparison, while the
+  first trustworthy upgrade catalog remains open.
 
 ## Triage rules
 
@@ -26,32 +26,35 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
 
-- **Status:** UI batch committed/pushed; runtime acceptance pending.
+- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource edits
+  are local; runtime acceptance pending.
 - **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
   `HeaderedContentControl` window style/resources, four palette variants, and
   the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
   the changed XAML and `git diff --check` is clean apart from Unity's standard
   blank-value metadata whitespace. No Unity screenshot or graphics Play Mode
   result exists for this batch yet.
-- **Next action:** Close the protected Unity processes, rerun the graphics
+- **Next action:** Repair the Unity Hub/licensing IPC state, rerun the graphics
   acceptance command, and review the desktop scene at the target resolutions.
 - **Likely owner:** Josh + UI owner.
 - **Confidence:** High.
 
-### P1-015 — Unity preflight cannot establish a clean editor state
+### P1-015 — Unity preflight requires a normal host-permission context
 
-- **Status:** Blocked by external process state; no destructive workaround used.
-- **Evidence:** `Test-UnityPreflight.ps1` still reports Unity already running at
-  PIDs `22440` and `64828`. The processes expose no executable path or command
-  line, `Wait-Process` returns access denied, and normal/elevated termination is
-  unavailable. The lockfile was absent during this retry, but the preflight
-  process guard remains blocked by the inaccessible PIDs. The relay-health check
-  currently reports five Codex user relays, but no Unity Assistant package
-  relays.
-- **Next action:** Reboot or end the exact stale processes through an authorized
-  desktop session, confirm the lockfile is stale only after they are gone, then
-  rerun preflight. Do not delete the lockfile while those PIDs remain.
-- **Likely owner:** Josh (machine state) + tooling owner.
+- **Status:** Mitigated; preflight passes when launched with normal host
+  permissions. Restricted Codex shells now fail fast with an actionable
+  diagnostic instead of launching Unity into a doomed IPC timeout.
+- **Evidence:** Normal-permission preflight passed in
+  `artifacts/unity-preflight-20260903-181807`: licensing and UPM connected and
+  all 65 packages registered. Restricted probes reported Windows Management
+  access denied for the licensing client's host-identity queries.
+- **Tooling follow-up:** `tools/UnityTooling.ps1` now performs the context
+  probe first and cleans only newly created UPM/licensing helpers for ten
+  seconds after Unity exits; late-spawned clients cannot survive a failed run.
+- **Next action:** Run Unity validation from a normal host-permission terminal,
+  or approve the elevated Unity preflight when invoking it through Codex. Do
+  not bypass the preflight gate.
+- **Likely owner:** Josh (host permissions) + tooling owner.
 - **Confidence:** High.
 
 ### P1-016 — First trustworthy upgrade catalog is not yet defined
@@ -69,8 +72,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-017 — Worker result packaging and provenance disagree
 
-- **Status:** Fix implemented; historical bundles remain incomplete, and the
-  fresh worker rerun is pending.
+- **Status:** Packaging contract fix is implemented; historical bundles remain
+  incomplete, while the current EX-007/EX-008 local run bundles are complete and
+  pass the strict validator with Unity logs.
 - **Evidence:** Matched 100-seed Forest Edge artifacts are present under
   `automation/CellSimQueue/Completed/`: baseline
   `20260831-234216-ec3350ed` (Fox 2.94 average, Hare 21.23 average, Plant
@@ -84,28 +88,24 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   read-only `tools/Test-CellSimArtifactBundle.ps1` validator reports the old
   baseline as valid-with-warnings and the old Escape Artist arm as invalid for
   missing CSV/statline files.
-- **Next action:** Let the corrected EX-007 baseline jobs complete, validate
-  both with `-RequireUnityLog`, and compare their normalized outcomes. The
-  first pair was a diagnostic mismatch (blank scenario path and legacy combat)
-  and must not be used for the P3 gate; corrected jobs are queued as
-  `20260903-033218-3b7607ba` and `20260903-033240-b1b43c58`. The training job
-  failed before simulation because Unity was already running (PIDs `88760` and
-  `38616`); the held-out job remains pending. Close Unity, resubmit the failed
-  training job, then validate both. Re-run the paired upgrade arm only after
-  the packaging contract is green.
+- **Next action:** Preserve compact summaries and provenance for the current
+  valid bundles, keep the historical invalid/incomplete bundles clearly
+  excluded, and decide which current bundles qualify as P3 evidence. The
+  detached worker must receive the latest lifecycle tooling before another
+  remote run. Do not use the old diagnostic pair for the P3 gate.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
 ### P1-018 — Upgrade effect evidence is descriptive, not promotable
 
 - **Status:** Open; no causal upgrade claim should be made yet.
-- **Evidence:** The paired Escape Artist arm differs from baseline by a mean
-  Hare delta of +1.83 (median +2; 54 positive, 1 zero, 45 negative across
-  seeds 1–100), with seed-sensitive range −35 to +46. This is useful signal,
-  but not a stable promotion result and lacks the complete Escape CSV/statline
-  bundle noted in P1-017.
-- **Next action:** Predeclare the endpoint and holdout protocol, repair the
-  artifact package, then repeat the matched arm against the locked control.
+- **Evidence:** The current EX-007/EX-008 findings remain descriptive: effect
+  direction and size vary by seed panel, the human decision is pending, and the
+  two joint upgrade orders still lack a same-held-out-seed comparison. The
+  historical Escape Artist evidence remains incomplete as described in P1-017.
+- **Next action:** Complete EX-009's same-seed comparison, record the human
+  decision, and keep all balance or interaction claims bounded to the validated
+  scenario, values, telemetry, and seed panels.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -139,39 +139,358 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Status:** Open cleanup/operations concern.
 - **Evidence:** The two latest 100-seed JSON reports are approximately 52.2 MB
   and 53.1 MB, with the completed queue holding roughly 122 MB of raw output.
-  This is useful for audit, but expensive for repository clones and routine
-  review.
-- **Next action:** Keep a compact committed summary/manifest and define when
-  raw JSON/log bundles move to an external archive or are pruned.
+  The current `artifacts/` directory is ignored and has no Git-tracked files;
+  current EX-007/EX-008 reports therefore depend on local raw bundles.
+- **Next action:** Keep compact committed summaries, manifests, and paired
+  deltas; define when raw JSON/log bundles move to an external archive or are
+  pruned. Do not delete the current local evidence before that policy exists.
 - **Likely owner:** Repository maintainer + tooling owner.
 - **Confidence:** High.
 
 ### P2-006 — Sprint rollover and S2 control record need a fresh checkpoint
 
-- **Status:** Open planning hygiene item.
+- **Status:** S2 control record now exists locally but is not committed; the
+  sprint checkpoint remains non-durable.
 - **Evidence:** `docs/Sprints/S1-control-record.md` still describes the August
-  17–30 window, while `ROADMAP.md` positions S2 as the next work bucket. No
-  current S2 control record or explicit upgrade catalog is committed.
-- **Next action:** At the next sprint review, close or carry S1 explicitly and
-  create the S2 control record only after the UI/runtime gate and upgrade
-  acceptance criteria are named.
+  17–30 window, while the new local `docs/Sprints/S2-control-record.md` and
+  `docs/NEXT_WORK_BUCKET_PLAN.md` activate S2 for September 3–16.
+- **Next action:** Review the S1/S2 transition, reconcile the board and plan,
+  then commit the S2 control record with its acceptance criteria.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
 ### P1-021 — P3 bound-AI-discovery gate is not yet met
 
-- **Status:** Carry-forward; the phase is not closed.
-- **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` records that EX-003
-  has no execution package and EX-007 remains contract-only. The worker now
-  publishes failure records correctly, but the corrected training baseline
-  stopped at Unity preflight because an editor was already running; the
-  corrected held-out baseline is still pending.
-- **Next action:** Close Unity, resubmit the failed training baseline, process
-  the held-out baseline, then complete EX-007 in its declared order, including
-  the pre-registered prediction, S1/J1 training and held-out arms, false-cause
-  and missed-effect scoring, and human decision. Keep P4 work preparatory only.
+- **Status:** Carry-forward; P3 is not closed. EX-007/EX-008 evidence is now
+  assembled locally, but EX-007's human decision is pending and EX-009 is
+  blocked before its forward arm. EX-003 still has no execution package.
+- **Evidence:** The earlier `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is a
+  historical 03:35 snapshot that predates the later EX-007/EX-008 bundles. The
+  current local `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md`
+  records the assembled evidence and pending human decision; the 11 current
+  EX-007/EX-008 bundles pass the strict artifact validator with Unity logs.
+- **Next action:** Mark the old gate snapshot as historical in the current
+  status trail, obtain the human EX-007 decision, repair Unity IPC, complete
+  EX-009, and only then decide whether the P3 gate passes. Keep P4 work
+  preparatory only.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
+
+### P1-024 — Current follow-up batch is not durably checkpointed
+
+- **Status:** Open; the branch is synced with `origin/UI/ControlLibrary`, but
+  the current follow-up is only in the working tree.
+- **Evidence:** `git status` reports 26 modified tracked files and 12 untracked
+  files, including `LOOSE_ENDS.md`, the S2 control record, EX-007/EX-008/EX-009
+  research records, three new handoffs, XAML, and `tools/UnityTooling.ps1`.
+- **Next action:** Review the batch, split it into coherent commits, and push or
+  otherwise record the accepted checkpoint before changing branches or handing
+  work off.
+- **Likely owner:** Josh + current contributors.
+- **Confidence:** High.
+
+### P1-025 — EX-009 same-held-out upgrade-order comparison is blocked
+
+- **Status:** Package and contract are prepared locally; the forward arm was
+  attempted twice and stopped before simulation at Unity preflight. No valid
+  A/B order result exists.
+- **Evidence:** `docs/Research/Experiments/EX-009-Same-Heldout-Order-Comparison/REPORT.md`
+  and `docs/handoffs/2026-09-03-1745-codex-ex009-same-heldout-order.md` record
+  the missing forward arm on seeds 106–110. The existing reverse-order arm must
+  not be compared with the older different-seed forward arm.
+- **Next action:** Repair Unity Hub/UPM licensing IPC, run the forward arm on
+  seeds 106–110, validate the complete bundle, and calculate pairwise deltas
+  before making an order claim.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-026 — Detached worker lacks the latest Unity lifecycle tooling
+
+- **Status:** The cleanup change is local to `UI/ControlLibrary`; the detached
+  `codex/cellsim-worker` branch still has a different `UnityTooling.ps1`.
+- **Evidence:** `docs/handoffs/2026-09-03-1130-codex-process-lifecycle-cleanup.md`
+  explicitly requires propagation before the next remote worker run, and the
+  local/worker tool hashes differ.
+- **Next action:** Commit the lifecycle cleanup and propagate it to the worker
+  branch, then verify worker-side process cleanup before another run.
+- **Likely owner:** Simulation/tooling owner.
+- **Confidence:** High.
+
+### P1-027 — Sprint 2 task register is not uniquely mapped to board work
+
+- **Status:** Active S2 work is named and owner-assigned in the local plan, but
+  its board mapping is not independently auditable from the repository.
+- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` uses duplicate `S2.2` and `S2.3`
+  labels for separate tasks and provides no stable card IDs or links; the local
+  S2 control record asserts Trello list placement without recording the mapping.
+- **Next action:** Assign stable task IDs, card links, dependencies, and
+  acceptance checks to every S2 row, reconcile them with Trello, and commit the
+  checkpoint.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-028 — S2 correctness tasks are absent from the active ledger
+
+- **Status:** The S2 plan assigns `Fox mating/eating telemetry discrepancy`
+  and `BoardSnapshot test-fixture repair`, but neither has a current ledger
+  entry or a separate acceptance record.
+- **Evidence:** Both tasks appear in the active register in
+  `docs/NEXT_WORK_BUCKET_PLAN.md`; the historical ledger entries for Fox
+  telemetry are not in the current open-items section.
+- **Next action:** Give each task a stable ID and acceptance check, or close it
+  with focused test/evidence results before the S2 review.
+- **Likely owner:** Sim + Josh.
+- **Confidence:** High.
+
+### P2-019 — Pending XAML batch has pre-commit whitespace errors
+
+- **Status:** Non-functional cleanup remains in the working tree.
+- **Evidence:** `git diff --check` reports trailing whitespace in
+  `Assets/UI/GalapagOS/XAML/Panels/V_Panel_GalapagOS_Desktop.xaml:74-77`.
+- **Next action:** Remove the trailing whitespace before committing the UI
+  follow-up.
+- **Likely owner:** UI owner.
+- **Confidence:** High.
+
+### P2-020 — Historical Loose Ends IDs are not unique
+
+- **Status:** Documentation ambiguity; no runtime impact.
+- **Evidence:** The historical section contains two separate entries both
+  labeled `P1-006`: the named dual-grid terrain preview item and the editor
+  smart-tiling preview path fix.
+- **Next action:** Renumber one historical entry and update any references,
+  preserving the historical text and decisions.
+- **Likely owner:** Repository maintainer.
+- **Confidence:** High.
+
+## New hygiene candidates — 2026-09-03
+
+These are newly recorded removal, archival, documentation, and refactor
+candidates from the project hygiene review. They are triage markers, not
+authorization to delete or rename Unity assets. Any serialized asset change
+still requires a focused Unity validation pass and preservation of its `.meta`
+file/GUID.
+
+Ticket summaries for these items are recorded in
+[`PROJECT_HYGIENE_TICKET_SUMMARIES.md`](PROJECT_HYGIENE_TICKET_SUMMARIES.md).
+
+### P1-022 — Terrain tiling documentation and implementation disagree
+
+- **Status:** Resolver, preview path, and directly linked documentation now
+  reconcile locally; visual Unity acceptance remains open.
+- **Evidence:** `Assets/Scripts/Game/Presentation/TerrainTileResolver.cs:26-44`
+  implements an eight-neighbor blob resolver with 47 valid masks, and
+  `Assets/Tests/Runtime/TerrainTileResolverTests.cs:9-20` asserts that contract.
+  The current editor preview at
+  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs` now loads the
+  47 Grass/Desert assets from their family directories. The linked tiling,
+  art-production, MVVM, and Blob README documents now describe that same
+  eight-neighbor contract. The older 16-mask artifacts remain historical.
+- **Next action:** After Unity IPC recovery, open the preview and cellular
+  prototype and record gameplay-scale visual evidence for all families. Do not
+  refactor the resolver from the superseded dual-grid plan.
+- **Likely owner:** Presentation/art owner + Sim.
+- **Confidence:** High.
+
+### P1-023 — Bootstrap, scene, Play Mode, and Noesis standards docs have drifted
+
+- **Status:** Current guidance is refreshed locally; historical Bootstrap/Island
+  references remain intentionally dated, and no scene/package change was made.
+- **Evidence:** `FRAMEWORK.md:3-6,47-49` now labels the Bootstrap/Island
+  Survivor guidance historical and identifies the active Main Menu → Lab →
+  CellularAutomataPrototype flow. `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` and
+  `docs/UNITY_ENGINEERING_STANDARDS.md` now match the current scene, Play Mode,
+  starter-`BaseViewModel`, and direct Noesis import facts; the historical
+  Island validator remains explicitly scoped to the deprecated prototype. No
+  scene, package, or runtime implementation change was made in this cleanup.
+- **Next action:** Review the documentation diff, then run the current focused
+  scene/test validation after Unity IPC recovery. Keep historical claims
+  explicitly dated instead of silently mixing them with current instructions.
+- **Likely owner:** Josh + repository maintainer.
+- **Confidence:** High.
+
+### P2-007 — Legacy `SpeciesArchetype` compatibility surface is not retired
+
+- **Status:** Active compatibility debt; not safe to remove yet.
+- **Evidence:** `Assets/Scripts/Game/Species/SpeciesArchetype.cs:5-11` is marked
+  obsolete, but `SpeciesId.cs:57-104`, `SpeciesCell.cs:218-219`,
+  `SpeciesDefinition.cs:14-15`, and `SpeciesRules.cs:193-196` still expose
+  conversions or legacy properties. `Assets/Tests/Runtime/SpeciesDomainTests.cs`
+  still contains extensive `SpeciesArchetype`-based fixtures and assertions.
+- **Next action:** Migrate remaining production/test callsites to `SpeciesId`
+  and ID-keyed collections, add a zero-reference/compile gate, then remove the
+  enum, implicit conversion, legacy properties, and overloads in a separate
+  breaking cleanup. Until then, keep the shim and do not “simplify” it locally.
+- **Likely owner:** Sim/domain owner.
+- **Confidence:** High.
+
+### P2-008 — Orphan `CavePreview` and `LifeSimulationPreview` components await focused removal
+
+- **Status:** Removal candidate already identified, deferred by the Unity
+  validation blocker.
+- **Evidence:** The legacy audit records that
+  `Assets/Scripts/Game/Presentation/CavePreview.cs` and
+  `LifeSimulationPreview.cs` have no scene, prefab, or asset references; the
+  current GUID scan finds only each file’s own `.meta`. The deterministic cave,
+  Life domain code, and tests remain used and must be retained.
+- **Next action:** After Unity IPC/preflight is repaired, delete each source
+  file together with its matching `.meta` in a focused commit, then run the
+  retained Edit Mode tests and the targeted cellular Play Mode test.
+- **Likely owner:** Sim/domain owner.
+- **Confidence:** High.
+
+### P2-009 — Unused UI starter scaffold should be removed
+
+- **Status:** Strong removal candidate; no current serialized references found.
+- **Evidence:** `Assets/UI/MainMenu/Scripts/BaseViewModel.cs` is an unnamespaced
+  Yoda/progress-bar demo with its own `NoesisView` hookup and G/F key polling.
+  `Assets/UI/MainMenu/TestUI.xaml`, `Assets/UI/EcoSim/TestUI.xaml`,
+  `Assets/UI/GalapagOS/TestUI.xaml`, and `Assets/UI/HUD/TestUI.xaml` are byte-for-byte
+  identical starter demos. Their GUIDs have no references outside their own
+  `.meta` files, while the active Main Menu uses the separate
+  `MainMenu_Old/VM_MainMenu.cs` and `V_Panel_MainMenu.xaml` contract.
+- **Next action:** Run one final GUID/reference scan after the UI acceptance
+  pass, then remove the four `TestUI.xaml` files and matching `.meta` files,
+  plus `MainMenu/Scripts/BaseViewModel.cs` and its `.meta`, as one focused
+  starter-scaffold cleanup.
+- **Likely owner:** UI owner.
+- **Confidence:** High.
+
+### P2-010 — `Assets/UI/EcoSim` contains an unreferenced placeholder shell
+
+- **Status:** Removal/archive candidate; ownership is not yet explicit.
+- **Evidence:** The folder contains only `TestUI.xaml` plus four small empty or
+  near-empty XAML shell/resource files under `XAML/Controls` and `XAML/Panels`.
+  The four production-looking EcoSim XAML GUIDs have no references outside
+  their own `.meta` files, and no EcoSim scene/host is present in the current
+  serialized reference scan.
+- **Next action:** Confirm that no future experiment or design handoff depends
+  on this initial scaffold, then remove the folder as a separate XAML cleanup;
+  otherwise rename/document it as an explicitly owned prototype boundary.
+- **Likely owner:** UI/product owner.
+- **Confidence:** Medium-high.
+
+### P2-011 — Unity URP template onboarding is stale project baggage
+
+- **Status:** Low-risk cleanup candidate; template ownership decision needed.
+- **Evidence:** `Assets/Readme.asset` and `Assets/TutorialInfo/**` are standard
+  URP template onboarding assets with no scene references. The only observed
+  links are internal Readme references to the template icon/editor script.
+  `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` explicitly calls this template
+  content out as an exception, so it should not be removed opportunistically.
+- **Next action:** If the project no longer needs Unity’s onboarding Readme,
+  remove `Assets/Readme.asset` and the complete `Assets/TutorialInfo` tree,
+  including matching `.meta` files, in a focused cleanup; otherwise mark it as
+  intentionally retained template content.
+- **Likely owner:** Josh + repository maintainer.
+- **Confidence:** High for unreferenced; medium for removal.
+
+### P2-012 — `_Recovery/0.unity` is an unclassified recovery artifact
+
+- **Status:** Archive/removal candidate; do not touch until recovery value is
+  confirmed.
+- **Evidence:** `Assets/_Recovery/0.unity` is not in Build Settings and has no
+  name/GUID references outside itself. It is dated 2026-08-13 and contains a
+  snapshot-like cellular prototype composition, so it may still be useful as a
+  recovery point even though it is not part of the active scene graph.
+- **Next action:** Josh should decide whether this is a deliberate recovery
+  checkpoint. If not, archive or remove the scene and `.meta` in a standalone
+  cleanup; if yes, document its retention purpose and owner.
+- **Likely owner:** Josh.
+- **Confidence:** Medium.
+
+### P2-013 — `Assets/Scenes/Intro.unity` is an unused template scene
+
+- **Status:** Archive/removal candidate.
+- **Evidence:** `Intro.unity` is a basic camera/light scene, is not in current
+  Build Settings, has no first-party GUID/name references, and only appears to
+  come from the original project setup. It should not be confused with the
+  recent manual acceptance scenes `GalapagOSDesktopTest.unity` and
+  `TerrainPaintTest.unity`, which remain useful despite not being build scenes.
+- **Next action:** Confirm that Intro is not reserved as a future splash/entry
+  scene, then remove or archive it with its `.meta` in a focused scene cleanup.
+- **Likely owner:** Josh + repository maintainer.
+- **Confidence:** Medium-high.
+
+### P2-014 — `MainMenu_Old` is active but now misleadingly named
+
+- **Status:** Refactor/rename candidate; definitely not a deletion candidate.
+- **Evidence:** `Assets/Scenes/MainMenu.unity` serializes the GUIDs for
+  `MainMenu_Old/VM_MainMenu.cs`, `MainMenuNoesisHost.cs`, and
+  `V_Panel_MainMenu.xaml`; `MainMenuPlayModeTests` also requires the active
+  `VM_MainMenu` type. The current architecture names this the Main Menu
+  contract, so the directory name now implies retirement incorrectly.
+- **Next action:** After graphics/UI acceptance, perform a Unity Editor folder
+  migration or an equivalent GUID-preserving rename, update documentation and
+  tests, and validate the scene. Do not rename the folder from the filesystem
+  as a casual cleanup.
+- **Likely owner:** UI owner.
+- **Confidence:** High.
+
+### P2-015 — Several core files have accumulated multiple responsibilities
+
+- **Status:** Deferred staged-refactor candidate; current behavior is covered
+  and should remain stable while evidence gates are open.
+- **Evidence:** Current file sizes are approximately 2,851 lines for
+  `SpeciesSimulation.cs`, 1,183 for `SpeciesSimulationMetrics.cs`, 1,335 for
+  `SpeciesSimulationPreview.cs`, 1,278 for `VM_SimulationShell.cs`, 1,185 for
+  `CellularSimulationExperimentRunner.cs`, and 3,576 for
+  `SpeciesDomainTests.cs`. These combine distinct concerns such as simulation
+  phases, telemetry/statline calculation, presentation/settings persistence,
+  XAML shell orchestration, CLI/report serialization, and broad behavior
+  fixtures.
+- **Next action:** Once the P3/Unity and UI acceptance gates are green, choose
+  one seam at a time: split simulation phases, separate metrics DTOs from
+  accumulation, extract presentation persistence/formatting, isolate report
+  writers, and partition tests by behavior. Preserve public/serialized names
+  until focused tests and Unity validation support each extraction.
+- **Likely owner:** Sim + UI/tooling owners.
+- **Confidence:** High for complexity; medium for the exact split.
+
+### P2-016 — Editor scenario generation duplicates runtime pattern definitions
+
+- **Status:** Small refactor candidate; keep behavior unchanged for now.
+- **Evidence:** `Assets/Editor/SimulationTools/CreateSpeciesScenarioAssets.cs:24-32,350-361`
+  constructs Cardinal and Moore neighbor arrays while
+  `Assets/Scripts/Game/Species/SpeciesRuleDefaults.cs:8-20,99-106` maintains
+  equivalent runtime patterns. This creates a drift risk when a pattern changes.
+- **Next action:** Decide whether a shared pure C# pattern helper is safe across
+  runtime and Editor assemblies. If so, centralize the definitions and add a
+  parity test; otherwise document the intentional editor/runtime isolation.
+  Do not introduce an abstraction solely to reduce two short literals without
+  checking assembly and asset-generation constraints.
+- **Likely owner:** Sim/tooling owner.
+- **Confidence:** Medium.
+
+### P2-017 — One-shot `PrepareEx002Variants` generator needs a retention decision
+
+- **Status:** Retention/archive candidate; keep while EX-002 reproducibility is
+  still active.
+- **Evidence:** `Assets/Editor/SimulationTools/PrepareEx002Variants.cs:10-48`
+  is a menu-driven generator with no source callsites beyond Unity’s menu
+  binding, but it produces the versioned EX-002 intervention assets used by
+  the experiment documentation and reports.
+- **Next action:** After the EX-002 artifact-retention/reproducibility policy
+  is explicit, either retain it as the documented regeneration tool or archive
+  the script and preserve a compact reproducibility record.
+- **Likely owner:** Sim/tooling owner.
+- **Confidence:** Medium-high.
+
+### P2-018 — Empty Unity directories need an ownership decision
+
+- **Status:** Low-value structural cleanup; no immediate action recommended.
+- **Evidence:** Empty directory shells remain under `Assets/Audio`,
+  `Materials`, `ThirdParty`, several `Assets/Project/**` paths,
+  `Assets/UI/Prefabs`, `PuzzleUI`, `Textures`, `UI/EcoSim/Scripts`,
+  `UI/GalapagOS/Art`, `UI/MainMenu/XAML`, and other placeholder locations.
+  Several are intentional future ownership boundaries, so directory absence
+  would not necessarily improve the project.
+- **Next action:** Remove only directories with no named owner or planned
+  near-term use, as part of a single structure cleanup. Preserve any folder
+  `.meta` files required by the chosen Unity layout and do not mix this with
+  gameplay changes.
+- **Likely owner:** Repository maintainer + feature owners.
+- **Confidence:** High that they are empty; low-medium that removal is useful.
 
 ## Historical open items — 2026-08-20
 
@@ -392,31 +711,38 @@ from an older entry without checking its cited artifacts.
 
 ### P1-013 — Effective simulation provenance was incomplete
 
-- **Status:** Scenario-data fingerprint fixed locally; execution-option identity
-  and durable artifact retention remain open.
+- **Status:** Scenario-data and run-provenance fingerprints are fixed locally;
+  durable artifact retention and Unity validation remain open.
 - **Evidence:** `CellularSimDataFingerprint` version 5 omitted attack modifier,
   damage amount, maximum energy, and litter bounds. Version 6 now includes all
   current `SpeciesRules` fields and focused inequality coverage. Combat mode,
   attack-opportunity mode, experimental feature ID, and Fox cooldown are runner
   inputs rather than `CellularSimData`; they remain separate report fields and
-  must not be described as part of the scenario-data fingerprint. Sampled
-  ignored `artifacts/cellular-experiment-*` bundles cited by handoffs are absent
-  from this checkout, so their summaries are durable but their raw evidence is
-  not independently auditable here.
-- **Next action:** Restore a valid local Unity entitlement, then run the focused
-  fingerprint/paired-runner tests and full suites. Retain complete experiment
-  directories so the report, checksum/source manifest, CSV, and log remain
-  independently auditable together.
+  must not be described as part of the scenario-data fingerprint. Run-provenance
+  fingerprint v1, report schema 18, checksum/source manifests, and paired-runner
+  orchestration coverage are now implemented locally. Sampled ignored
+  `artifacts/cellular-experiment-*` bundles cited by handoffs are absent from
+  this checkout, so their summaries are durable but their raw evidence is not
+  independently auditable here.
+- **Next action:** Run the focused fingerprint/paired-runner tests and full
+  suites after the current UPM/licensing IPC failure is repaired. Retain
+  complete experiment directories so the report, checksum/source manifest, CSV,
+  and log remain independently auditable together.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-#### 2026-08-25 continuation
+#### 2026-08-25 historical continuation
 
 Run-provenance fingerprint v1, report schema 18, and the sibling checksum/source
 manifest are implemented locally. Direct paired-runner orchestration coverage is
 also present. Unity is closed, but validation is now blocked by the absent local
 entitlement file; these changes must remain unaccepted until the focused and full
 Unity suites run successfully.
+
+#### 2026-09-03 current continuation
+
+The local entitlement file is present; current validation is blocked by the
+machine-level UPM/licensing IPC handshake rather than a missing entitlement.
 
 ### P2-002 — Deferred mechanics need trigger-based review only
 

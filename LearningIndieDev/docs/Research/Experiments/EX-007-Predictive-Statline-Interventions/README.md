@@ -1,7 +1,7 @@
 # EX-007 - Predictive statline interventions
 
 **Experiment ID:** `EXP-007`  
-**Status:** Contract prepared; execution pending  
+**Status:** Training and held-out runs complete; human review pending
 **Decision owner:** Human design owner  
 **Reference scenario:** `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset`
 
@@ -105,9 +105,14 @@ decide balance, fun, quality, or promotion.
 |---|---|---|
 | `AI_INPUT_TEMPLATE.md` | Bounded pre-run information supplied to AI | Prepared |
 | `PREDICTION_TEMPLATE.json` | Machine-readable pre-registration record | Prepared |
-| `REPORT.md` | Factual paired and held-out outcomes | Pending runs |
-| `AI_ANALYSIS.md` | Prediction scoring and false-cause/missed-effect review | Pending runs |
+| `REPORT.md` | Factual paired and held-out outcomes | Complete |
+| `AI_ANALYSIS.md` | Prediction scoring and false-cause/missed-effect review | Complete |
 | `HUMAN_DECISION.md` | Human accept/reject/revise record | Pending review |
+
+The reversed-order follow-up is documented in
+[EX-008](../EX-008-Reversed-Order-Followup/README.md), and the combined
+plain-language interpretation is in
+[P3-Predictive-AI-Cohesive-Report.md](../P3-Predictive-AI-Cohesive-Report.md).
 
 ## Execution order
 

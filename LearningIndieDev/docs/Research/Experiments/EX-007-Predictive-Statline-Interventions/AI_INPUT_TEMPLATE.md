@@ -33,9 +33,10 @@ No continuous extrapolation is permitted.
 
 The report may expose the following fields for each seed:
 
-- Statline: `SPO`, `HPS`, `EHS`, `ECN`, `PREY`, `STRV`, `MAT`, `BIR`, `CRWD`,
-  `FPO`, `pAVI`, `eAVI`, `predAVG`, `sAVI`, `cAVI`, `bAVG`, `RFS`, `APS`, and
-  each metric's validity status.
+- Statline: `SPO`, `HPS`, `EHS`, `ECN`, `PREY` (Hares killed by carnivores),
+  `STRV`, `MAT`, `BIR`, `CRWD`, `FPO`, `pAVI` (survival across recorded
+  predator encounters), `eAVI`, `predAVG`, `sAVI`, `cAVI`, `bAVG`, `RFS`, `APS`,
+  and each metric's validity status.
 - Population history by species and tick.
 - Activity counters: births, food actions, movement steps, combat attempts,
   hits, blocked attacks, lethal/non-lethal hits, deaths, and reproduction

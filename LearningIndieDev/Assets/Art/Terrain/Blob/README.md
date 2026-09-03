@@ -12,4 +12,5 @@ runtime auto-tiler.
 
 The source and generation contract is documented by
 `tools/Generate-BlobTerrainTiles.ps1`. These are presentation assets only;
-the resolver and runtime atlas wiring are the next integration step.
+`TerrainTileResolver` and the runtime atlas consume the same normalized 47-mask
+contract.

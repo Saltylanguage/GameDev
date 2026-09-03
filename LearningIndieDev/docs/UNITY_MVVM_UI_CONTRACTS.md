@@ -133,7 +133,7 @@ SimulationBoardSnapshot
 
 BoardCellSnapshot
   TerrainId          : stable terrain identifier
-  TerrainVariantMask : four-cardinal presentation mask
+  TerrainVariantMask : normalized eight-neighbor blob presentation mask
   SpeciesId          : occupant species identifier, if any
   ResourceSpeciesId  : plant/resource species identifier, if any
   IsCreature         : bool

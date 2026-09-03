@@ -96,6 +96,62 @@ function New-UnityArtifactDirectory {
     return $directory
 }
 
+function Get-ProcessIdsByName {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Name
+    )
+
+    return @(Get-Process -Name $Name -ErrorAction SilentlyContinue | Select-Object -ExpandProperty Id)
+}
+
+function Stop-UnityProcessTree {
+    param(
+        [Parameter(Mandatory)]
+        [int]$ProcessId
+    )
+
+    try {
+        Stop-Process -Id $ProcessId -Force -ErrorAction Stop
+    }
+    catch {
+        # The process may already have exited; taskkill handles any remaining
+        # descendants that were reparented during shutdown.
+    }
+
+    if ($null -eq (Get-Process -Id $ProcessId -ErrorAction SilentlyContinue)) {
+        return
+    }
+
+    $output = & taskkill.exe /PID $ProcessId /T /F 2>&1
+    if ($LASTEXITCODE -ne 0 -and ($output -join ' ') -notmatch 'not found|no running instance') {
+        Write-Verbose "Could not terminate Unity process tree rooted at PID ${ProcessId}: $($output -join ' ')"
+    }
+}
+
+function Stop-ProcessIds {
+    param(
+        [Parameter(Mandatory)]
+        [int[]]$ProcessIds
+    )
+
+    foreach ($processId in ($ProcessIds | Sort-Object -Unique)) {
+        if ($processId -eq $PID) {
+            continue
+        }
+
+        try {
+            Stop-Process -Id $processId -Force -ErrorAction Stop
+        }
+        catch {
+            $output = & taskkill.exe /PID $processId /T /F 2>&1
+            if ($LASTEXITCODE -ne 0 -and ($output -join ' ') -notmatch 'not found|no running instance') {
+                Write-Verbose "Could not terminate child process PID ${processId}: $($_.Exception.Message)"
+            }
+        }
+    }
+}
+
 function Invoke-UnityBatch {
     param(
         [Parameter(Mandatory)]
@@ -115,14 +171,46 @@ function Invoke-UnityBatch {
             $_
         }
     }) -join ' '
-    $process = Start-Process -FilePath $UnityPath -ArgumentList $argumentLine -PassThru
-    if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
-        Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
-        throw "Unity batch command timed out after $TimeoutSeconds seconds (PID $($process.Id))."
+    $trackedChildNames = @('UnityPackageManager', 'Unity.Licensing.Client')
+    $trackedChildrenBefore = @{}
+    foreach ($name in $trackedChildNames) {
+        $trackedChildrenBefore[$name] = @(Get-ProcessIdsByName -Name $name)
     }
 
-    if ($process.ExitCode -ne 0) {
-        throw "Unity batch command failed with exit code $($process.ExitCode). See the command's log file for details."
+    $process = Start-Process -FilePath $UnityPath -ArgumentList $argumentLine -PassThru
+    try {
+        if (-not $process.WaitForExit($TimeoutSeconds * 1000)) {
+            throw "Unity batch command timed out after $TimeoutSeconds seconds (PID $($process.Id))."
+        }
+
+        if ($process.ExitCode -ne 0) {
+            throw "Unity batch command failed with exit code $($process.ExitCode). See the command's log file for details."
+        }
+    }
+    finally {
+        Stop-UnityProcessTree -ProcessId $process.Id
+
+        # Unity can start or re-parent the Package Manager/licensing client as
+        # the editor is shutting down. Keep a short, bounded cleanup window so
+        # those late children cannot survive a failed batch invocation.
+        $cleanupDeadline = (Get-Date).AddSeconds(10)
+        do {
+            $newChildIds = @()
+            foreach ($name in $trackedChildNames) {
+                $before = @($trackedChildrenBefore[$name])
+                $newChildIds += @(Get-ProcessIdsByName -Name $name | Where-Object { $before -notcontains $_ })
+            }
+
+            if ($newChildIds.Count -gt 0) {
+                Stop-ProcessIds -ProcessIds $newChildIds
+            }
+
+            if ((Get-Date) -ge $cleanupDeadline) {
+                break
+            }
+
+            Start-Sleep -Milliseconds 250
+        } while ($true)
     }
 }
 
@@ -140,12 +228,32 @@ function Invoke-UnityPreflight {
 
     Assert-UnityProjectNotOpen -ProjectPath $ProjectPath
 
+    $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot $ArtifactsRoot -Prefix 'unity-preflight'
+    $contextLogPath = Join-Path $artifactDirectory 'licensing-context.log'
+    $licensingClientPath = Join-Path (Split-Path -Parent $UnityPath) 'Data/Resources/Licensing/Client/Unity.Licensing.Client.exe'
+    if (Test-Path -LiteralPath $licensingClientPath -PathType Leaf) {
+        $previousErrorActionPreference = $ErrorActionPreference
+        try {
+            # The client reports restricted WMI access on stderr; capture it as
+            # diagnostic output instead of allowing the shell's Stop policy to
+            # mask the actionable preflight message below.
+            $ErrorActionPreference = 'Continue'
+            $contextOutput = @(& $licensingClientPath '--showContext' 2>&1)
+        }
+        finally {
+            $ErrorActionPreference = $previousErrorActionPreference
+        }
+        $contextOutput | Set-Content -LiteralPath $contextLogPath
+        if (($contextOutput -join "`n") -match '(?i)access denied') {
+            throw "Unity licensing cannot read the host identity from this restricted process context. Run Unity validation from a normal host-permission terminal (or approve the elevated Unity preflight). Context log: '$contextLogPath'."
+        }
+    }
+
     $licenseDirectory = Join-Path $env:LOCALAPPDATA 'Unity/licenses'
     if (-not (Get-ChildItem -LiteralPath $licenseDirectory -Filter '*.xml' -File -ErrorAction SilentlyContinue)) {
         throw "No local Unity entitlement file was found under '$licenseDirectory'. Open Unity Hub, sign in, and activate the editor before running validation."
     }
 
-    $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot $ArtifactsRoot -Prefix 'unity-preflight'
     $logPath = Join-Path $artifactDirectory 'license-probe.log'
     try {
         Invoke-UnityBatch -UnityPath $UnityPath -TimeoutSeconds $TimeoutSeconds -Arguments @(

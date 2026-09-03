@@ -39,8 +39,7 @@
       </Grid.ColumnDefinitions>
 
       <!-- Plant: grounded green, with lime highlights for growth and renewal. -->
-      <HeaderedContentControl Grid.Row="0" Grid.Column="0" Margin="0,0,16,16"
-                              Header="PLANT / VERDANT"
+      <HeaderedContentControl Margin="14,-7,2,23" Grid.Row="0" Grid.Column="0" Header="PLANT / VERDANT"
                               Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
         <HeaderedContentControl.Resources>
           <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF4F783B" />
@@ -58,13 +57,6 @@
           <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFFCEEC0" />
           <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF365329" />
         </HeaderedContentControl.Resources>
-        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-          <TextBlock Text="Verdant / growth" FontSize="28" FontWeight="Bold"
-                     Foreground="#FF253A20" HorizontalAlignment="Center" />
-          <TextBlock Text="A grounded green language for plants, renewal, and stable habitat."
-                     Width="360" Margin="0,12,0,0" FontSize="17" TextWrapping="Wrap"
-                     Foreground="#FF253A20" TextAlignment="Center" />
-        </StackPanel>
       </HeaderedContentControl>
 
       <!-- Carnivore: red, coral, and pink create urgency without collapsing into orange. -->

@@ -17,12 +17,33 @@
   </Page.Resources>
   <Border x:Name="Root_Border">
     <Grid x:Name="ContentGrid" Background="{DynamicResource Salty_SoftGreen}">
-<Grid x:Name="GalapagOS_Window">
+      <!-- <ContentControl Width="700" Height="420" Margin="19,330,1201,330" Style="{StaticResource GalapagOS_WindowStyle}">
+        <StackPanel Margin="24" VerticalAlignment="Center" Background="#FFDAFF69">
+          <TextBlock x:Name="Label1" Text="{Binding DesktopTitle}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+          <TextBlock x:Name="Label2" Text="{Binding WindowTitle}" FontSize="20" Margin="0,16,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding StatusText}" Margin="0,24,0,0" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+          <TextBlock Text="{Binding ViewModelType}" Margin="0,8,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
+        </StackPanel>
+      </ContentControl>
+      <ContentControl Margin="0,0,0,651" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}">
+        <StackPanel>
+          <Ellipse Width="50" Height="50" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+          <Rectangle Width="100" Height="100" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+          <Ellipse Width="60" Height="60" Fill="#FFF4F4F5" Stroke="#FF000000"/>
+        </StackPanel>
+      </ContentControl>
+      <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}">
+        <TextBlock Text="TextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF000000" FontSize="48" TextWrapping="Wrap"/>
+      </ContentControl>
+      <ContentControl Content="ContentControl" Margin="0,0,1182,651" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}"/> -->
+
+
+<Grid x:Name="GalapagOS_Window" Margin="19,0,-19,0">
               <Border x:Name="Window_Root_Border" Width="500" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="#FF000000" CornerRadius="6,6,6,6">
                 <Grid x:Name="WindowContentGrid">
                   <Grid.Background>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1" Opacity="0.5">
-                      <GradientStop Color="#FFF3FFB6" Offset="0.88100004"/>
+                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                      <GradientStop Color="#FFF3FFB6" Offset="0.9312354"/>
                       <GradientStop Offset="1" Color="#FFCCE43E"/>
                     </LinearGradientBrush>
                   </Grid.Background>
@@ -42,16 +63,16 @@
                           </LinearGradientBrush>
                         </Border.Background>
                         <Border.Effect>
-                          <DropShadowEffect Color="#88A9AA5A" BlurRadius="6" Direction="330" ShadowDepth="4"/>
+                          <DropShadowEffect Color="#1FB5B67D" BlurRadius="6" Direction="325" ShadowDepth="3"/>
                         </Border.Effect>
-                        <TextBlock x:Name="HeaderText" Text="GalapagOS Window" Height="24" Margin="6,0,6,0" Foreground="#FFCCFFA3" Stroke="#FF758F60" StrokeThickness="2" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
+                        <TextBlock x:Name="HeaderText" Text="GalapagOS Window" Height="24" Margin="6,0,6,0" Foreground="{DynamicResource GalapagOS.Window.HeaderForeground}" StrokeThickness="2" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
                       </Border>
                     </Grid>
                   </Border>
                 </Grid>
               </Border>
-              </Grid>
-              </Grid>
-              </Border>
-
+              </Grid> 
+              </Grid> 
+              </Border> 
+                
 </Page>

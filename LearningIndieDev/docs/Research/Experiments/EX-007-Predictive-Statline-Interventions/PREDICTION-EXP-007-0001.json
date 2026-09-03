@@ -1,0 +1,55 @@
+{
+  "predictionId": "PRED-EXP-007-0001",
+  "experimentId": "EXP-007",
+  "status": "preregistered",
+  "baselineArtifact": "artifacts/cellular-experiment-20260903-152434/report.json",
+  "baselineValidation": "VALIDATED_WITH_LIMITATIONS",
+  "trainingSeeds": { "start": 1, "count": 20 },
+  "heldOutSeeds": { "start": 101, "count": 5 },
+  "predictions": [
+    {
+      "armId": "S1",
+      "intervention": ["faster-movement"],
+      "predictedOutcomes": [
+        { "metric": "FPO", "direction": "increase", "effectBand": { "low": 0, "high": 8, "unit": "hares" }, "materialThreshold": 3 },
+        { "metric": "BIR", "direction": "increase", "effectBand": { "low": 0, "high": 15, "unit": "births" }, "materialThreshold": 5 },
+        { "metric": "STRV", "direction": "decrease", "effectBand": { "low": -4, "high": 0, "unit": "deaths" }, "materialThreshold": 2 },
+        { "metric": "PREY", "direction": "increase", "effectBand": { "low": 0, "high": 2, "unit": "prey events" }, "materialThreshold": 1 }
+      ],
+      "candidateCauses": [
+        "More movement capacity may increase access to plants and mates within the short run.",
+        "Improved access may reduce starvation and leave more adults available to reproduce."
+      ],
+      "confidence": 0.56,
+      "uncertainty": "The effect may saturate because natural opportunities, plant availability, and the 20-second horizon constrain usable movement.",
+      "limits": [
+        "Direction and bands apply only to ForestEdge and the declared Hare configuration.",
+        "The catalog value +0.5 is discrete; no continuous scaling claim is made.",
+        "A small or zero FPO change does not invalidate movement-level changes in telemetry."
+      ]
+    },
+    {
+      "armId": "J1",
+      "intervention": ["faster-movement", "crowding-tolerance"],
+      "predictedOutcomes": [
+        { "metric": "FPO", "direction": "increase", "effectBand": { "low": 2, "high": 12, "unit": "hares" }, "materialThreshold": 3 },
+        { "metric": "BIR", "direction": "increase", "effectBand": { "low": 2, "high": 20, "unit": "births" }, "materialThreshold": 5 },
+        { "metric": "CRWD", "direction": "decrease", "effectBand": { "low": -2, "high": 0, "unit": "deaths" }, "materialThreshold": 1 },
+        { "metric": "STRV", "direction": "decrease", "effectBand": { "low": -6, "high": 0, "unit": "deaths" }, "materialThreshold": 2 }
+      ],
+      "candidateCauses": [
+        "Faster movement may improve resource and mate access.",
+        "Crowding tolerance may preserve individuals that would otherwise be removed by crowding.",
+        "The joint effect may be sub-additive if extra survivors increase competition for the same resources."
+      ],
+      "confidence": 0.62,
+      "uncertainty": "The interaction sign is uncertain: crowding tolerance may amplify movement gains or create resource pressure that limits the combined effect.",
+      "limits": [
+        "J1 is one simultaneous vector and must not be reconstructed by adding S1 and a hypothetical single tolerance effect.",
+        "No claim is made about longer horizons, other scenarios, or continuous upgrade values.",
+        "The prediction concerns measured outcomes, not whether the intervention is desirable for game balance."
+      ]
+    }
+  ],
+  "preRegistrationNote": "Recorded after the validated baseline and before any S1 or J1 trial report was available."
+}

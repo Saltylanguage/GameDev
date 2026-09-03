@@ -5,8 +5,10 @@ turns an Inspector-authored scenario, a set of seeds, and the same simulation
 code used by the game into reviewable test results and JSON experiment reports.
 
 > **Current status:** ready for a closed-editor batch run. The tools deliberately
-> refuse to start when this Unity project has an active `Temp/UnityLockfile`; they
-> never close Unity or touch unsaved editor work.
+> refuse to start when this Unity project has an active `Temp/UnityLockfile`.
+> They never close a pre-existing editor or touch unsaved editor work; each
+> batch invocation cleans only the Unity process tree and helper processes it
+> started.
 
 ```mermaid
 flowchart LR
@@ -248,8 +250,17 @@ Every Unity batch entry point runs the same preflight before doing project work:
 it refuses an active Editor/Unity process, removes only a stale project-local
 `Temp/UnityLockfile` when no Unity process exists, verifies a local entitlement
 file, and runs a bounded headless licensing probe. A probe timeout or unstable
-`LicenseClient-*` handshake fails fast with its log path instead of leaving a
-test or build hung indefinitely. Run the standalone check before manual builds:
+`LicenseClient-*` handshake fails fast with its log path. The shared batch
+helper records pre-existing UPM/licensing PIDs, then terminates only newly
+created helper processes in a `finally` cleanup (and the Unity process tree if
+it is still alive). Run the standalone check before manual builds:
+
+By project convention, all EcoSim tests and research experiments use approved
+elevated host permissions unless a request explicitly says otherwise. This is
+required for Unity's licensing identity probe on this workstation. The
+elevated default applies only to the requested validation/experiment command;
+destructive, shared, or unrelated system actions still require their own
+approval.
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-UnityPreflight.ps1

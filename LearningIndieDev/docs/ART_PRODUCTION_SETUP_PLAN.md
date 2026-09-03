@@ -32,7 +32,8 @@ promote any proposed visual direction to a final aesthetic decision.
   high contrast, and role colours: plants green, herbivores/player blue, and
   carnivores/threats red.
 - Animal exports currently exist in standardized 32, 64, and 128 variants.
-- Terrain uses a presentation-only cardinal 16-mask smart-tiling system.
+- Terrain uses a presentation-only normalized 47-mask eight-neighbor blob
+  smart-tiling system.
 - Grass is authored; bare terrain currently uses a temporary desert-family
   mapping.
 - A dedicated authored fern presentation is still required.
@@ -194,7 +195,7 @@ that information.
 ```
 
 Examples: `[SPECIES] Hare — gameplay-scale identity`, `[TERRAIN] Bare Ground —
-16-mask family`, and `[UI] Upgrade Card — selected state`.
+47-mask blob family`, and `[UI] Upgrade Card — selected state`.
 
 ### Description sections
 

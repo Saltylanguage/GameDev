@@ -212,7 +212,14 @@ Enforcement: performance evidence is required in review for optimization changes
 
 **MUST** preserve every Unity `.meta` file and serialized GUID. The current tracked asset inventory has matching `.meta` files for all non-meta assets. Text/YAML serialization is enabled (`EditorSettings.m_SerializationMode: 2`) and must remain enabled for reviewable scene/prefab changes.
 
-`CellularAutomataPrototype.unity` and `IslandSurvivorPrototype.unity` are independent composition scenes enabled in Build Settings; the cellular-automata prototype is the default first scene. `Intro` and `MainMenu` exist but are not currently enabled. Additive-scene policy is otherwise **TBD**. Do not assume Addressables: the manifest does not include Addressables, so no Addressables standard applies.
+`MainMenu.unity`, `Lab.unity`, `CellularAutomataPrototype.unity`, and the
+deprecated `IslandSurvivorPrototype.unity` are enabled in Build Settings. Main
+Menu is the current entry scene and CellularAutomataPrototype is the active
+simulation scene. `Intro.unity` is retained but disabled. The only scene
+validator is the deprecated-slice `Salty > Validate Island Survivor Scene`;
+there is no general bootstrap validator for the current UI/simulation flow.
+Additive-scene policy is otherwise **TBD**. Do not assume Addressables: the
+manifest does not include Addressables, so no Addressables standard applies.
 
 Assets belong in the owning feature folder; settings remain in `Assets/Settings`; third-party content remains isolated. Prefab variants are **SHOULD** be used only when the base/variant ownership is clear. Safe moves/renames require Unity Editor migration, `.meta` preservation, reference validation, and a separate commit/plan. Never bulk move/rename during feature work.
 
@@ -228,7 +235,13 @@ Enforcement: `.meta` parity, YAML mode, enabled bootstrap, and forbidden generat
 
 ## 11. UI and presentation boundaries
 
-The active bootstrap slice uses Unity built-in `OnGUI` in `GameHud` and `RuntimeDebugPanel`. uGUI is installed, and UI Toolkit support is present through Unity modules, but no first-party UI Toolkit runtime screen was found. The Noesis/XAML path under `Assets/UI/HUD` is guarded by `NOESIS` and is experimental; its machine-specific dependency concern is documented in `FRAMEWORK.md`.
+The active player-facing flow uses Noesis/XAML under `Assets/UI` with direct
+Noesis imports and the current generated/editor package resolution. The older
+Island Survivor bootstrap slice uses Unity built-in `OnGUI` in `GameHud` and
+`RuntimeDebugPanel`. uGUI and UI Toolkit modules are installed, but no
+first-party UI Toolkit runtime screen was found. No scripting define currently
+guards the first-party Noesis files; package-resolution and editor analytics
+remain documented risks.
 
 Presentation **MUST** display state and send user intent without owning activity, inventory, or world rules. Refresh on meaningful state changes where practical; do not create unnecessary layout/canvas rebuilds. Use a presenter/view-model only when screen complexity or independent testing justifies it. Do not impose MVVM on the current simple HUD.
 
@@ -253,7 +266,14 @@ Enforcement: Unity Test Framework execution and bootstrap menu validation can be
 
 ## 13. Productivity and Editor tooling
 
-Use the existing `Salty > Validate Bootstrap Scene` validator before bootstrap/scene changes. Add custom inspectors, property drawers, validation menus, templates, or build scripts only for repeated, measurable friction. Development-only diagnostics such as F3 panel behavior must not become gameplay dependencies. Console logs use a stable `[Salty]` prefix for editor validation and should be removed, gated, or downgraded when noisy.
+Use `Salty > Validate Island Survivor Scene` only when maintaining the
+deprecated Island slice. For current Main Menu/Lab/cellular changes, use the
+focused Play Mode and Edit Mode checks documented in the relevant plan. Add
+custom inspectors, property drawers, validation menus, templates, or build
+scripts only for repeated, measurable friction. Development-only diagnostics
+such as F3 panel behavior must not become gameplay dependencies. Console logs
+use a stable `[Salty]` prefix for editor validation and should be removed,
+gated, or downgraded when noisy.
 
 Editor code **MUST** stay out of runtime assemblies. Build scripts and CI checks **SHOULD** be deterministic and report actionable file paths. Project-local templates are **TBD**; do not add them until the naming/field patterns stabilize.
 

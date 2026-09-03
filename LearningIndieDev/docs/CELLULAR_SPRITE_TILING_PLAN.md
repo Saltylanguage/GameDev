@@ -17,7 +17,7 @@
   by stable names rather than pack order. The current board uses the grass half
   for grass and temporarily maps bare terrain to the desert half until a
   dedicated bare-ground atlas is authored.
-- `TerrainTileResolver` computes a four-cardinal-neighbor bit mask from the
+- `TerrainTileResolver` computes a normalized eight-neighbor blob bit mask from the
   simulation grid. It is presentation-only: it reads the immutable cell state
   and never changes simulation rules or determinism. The same mask table is
   shared by the runtime board, tests, and the editor preview window.
@@ -28,9 +28,9 @@
   names before optional Fox/Rabbit scene overrides are layered on top.
 - Animal presentation remains scene-wired through a `SpriteAtlas` and stable
   sprite names; the board does not load art from `Resources`.
-- Terrain art is now a named 15-piece dual-grid set under
-  `Assets/Art/Terrain/Standardized/128/`. The grass family uses `Grass_` names
-  and the matching desert family uses `Desert_` names.
+- Terrain art is now a named 47-mask blob set under
+  `Assets/Art/Terrain/Blob/128/{Grass,Desert}/`. Each family uses stable
+  `Grass_` or `Desert_` names matching the normalized resolver masks.
 - `Terrain_01.spriteatlasv2` packs the standardized terrain folder. The Noesis
   view model resolves the named sprites directly, so atlas packing order is not
   simulation or presentation state.
@@ -39,34 +39,33 @@
 
 ## Smart-tiling model
 
-The new sprites represent the 15 non-empty combinations of four surrounding
-simulation cells. The four-bit mask is:
+The current sprites represent the 47 normalized states of an eight-neighbor
+blob mask. The eight-bit mask is:
 
 ```text
-SW = 1, SE = 2, NW = 4, NE = 8
+N = 1, NE = 2, E = 4, SE = 8, S = 16, SW = 32, W = 64, NW = 128
 ```
 
-Mask `0` draws no transition tile. Masks `1` through `15` map directly to the
-named variants (`DiagBottomLeft` through `Full`) in `TerrainTileResolver`.
-The board samples the four cells around each visual tile, with the current cell
-as the north-east corner, so the species icon and terrain remain centered in
-the same board cell while the edge shape comes from the dual-grid combination.
+Mask `0` draws no transition tile. Other raw masks are normalized for diagonal
+bridges, then resolved through the 47 named variants in `TerrainTileResolver`.
+The board samples the eight neighboring cells around each visual tile and keeps
+the mask presentation-only, so it does not alter simulation determinism.
 
 Both grass and desert use the same mask rules. `Bare` continues to use the
 desert family as its temporary visual family until a dedicated bare set exists.
 
 ## Validation
 
-- `TerrainTileResolverTests` covers empty masks, all 15 named variants, corner
-  sampling, grass/desert parity, sprite naming, and invalid masks.
-- `TerrainTilePreviewWindow` previews all 16 masks from the named files and can
+- `TerrainTileResolverTests` covers empty masks, all 47 normalized variants,
+  corner sampling, grass/desert parity, sprite naming, and invalid masks.
+- `TerrainTilePreviewWindow` previews all 47 masks from the named files and can
   switch between `Grass_` and `Desert_` families.
 - The runtime still uses one batched Noesis board; no Tilemap or `RuleTile`
   dependency was added.
 
 ## Remaining validation
 
-1. Let Unity reimport the renamed desert sprites and rebuild the SpriteAtlas.
+1. Let Unity reimport the blob sprites and rebuild the SpriteAtlas.
 2. Open `Salty Game > Simulation > Preview Terrain Smart Tiles` and confirm
    each mask shows the expected named texture.
 3. Run the cellular prototype and inspect mixed grass/bare boundaries at normal

@@ -36,6 +36,7 @@ become a master changelog.
 - One-note-per-task handoff journal: [`handoffs/`](handoffs/)
 - Handoff process: [`COLLABORATION_WORKFLOW.md`](COLLABORATION_WORKFLOW.md)
 - Loose Ends ledger and review protocol: [`LOOSE_ENDS.md`](LOOSE_ENDS.md)
+- Project hygiene ticket summaries: [`PROJECT_HYGIENE_TICKET_SUMMARIES.md`](PROJECT_HYGIENE_TICKET_SUMMARIES.md)
 
 ## How to get current
 

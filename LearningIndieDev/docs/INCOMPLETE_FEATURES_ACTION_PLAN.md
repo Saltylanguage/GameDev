@@ -34,7 +34,7 @@ state what “beautiful, readable, and pleasant to watch” means at gameplay sc
 
 ### V0.2 — Make smart tiling correct with the authored assets
 
-- Run the editor smart-tiling preview for all 16 cardinal masks.
+- Run the editor smart-tiling preview for all 47 normalized blob masks.
 - Confirm the mask convention (`N=1`, `E=2`, `S=4`, `W=8`) against the authored
   terrain sheet and correct only the resolver lookup when an edge is wrong.
 - Verify grass and temporary desert/bare families, including isolated, straight,
@@ -229,7 +229,7 @@ The project can stop calling the core feature set “half finished” when all o
 the following are true:
 
 - The board is visually attractive and readable at both target resolutions.
-- Smart tiling has passed the 16-mask and live-board checks.
+- Smart tiling has passed the 47-mask and live-board checks.
 - Forest Edge has a trustworthy fixed-seed baseline and reconciled telemetry.
 - Trailblazer, Warren, and Gardeners are understandable and measurably distinct.
 - A player can complete the five-phase run without developer fields.

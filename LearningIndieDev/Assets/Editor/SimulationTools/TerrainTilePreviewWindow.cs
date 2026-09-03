@@ -4,10 +4,10 @@ using UnityEngine;
 
 namespace SaltyGame.EditorTools
 {
-    /// <summary>Shows every named four-corner terrain variant.</summary>
+    /// <summary>Shows every named eight-neighbor blob terrain variant.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainFolder = "Assets/Art/Terrain/Blob/128/";
+        const string TerrainFolder = "Assets/Art/Terrain/Blob/128";
         const float LabelHeight = 18f;
         const int PreviewColumns = 7;
 
@@ -33,7 +33,7 @@ namespace SaltyGame.EditorTools
         {
             EditorGUILayout.LabelField("Terrain smart-tiling preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
-                "Each named sprite represents one non-empty combination of the four simulation cells around a visual tile. "
+                "Each named sprite represents one normalized eight-neighbor blob mask around a visual tile. "
                 + "Mask 0 is intentionally empty.",
                 MessageType.Info);
 
@@ -58,7 +58,7 @@ namespace SaltyGame.EditorTools
             }
 
             var availableWidth = Mathf.Max(320f, position.width - 24f);
-            var tileSize = Mathf.Min(availableWidth / 4f, 160f);
+            var tileSize = Mathf.Min(availableWidth / PreviewColumns, 160f);
             var gridHeight = tileSize * PreviewColumns + LabelHeight * PreviewColumns;
             var gridRect = GUILayoutUtility.GetRect(availableWidth, gridHeight);
 
@@ -95,7 +95,8 @@ namespace SaltyGame.EditorTools
             {
                 var mask = TerrainTileResolver.AllValidMasks[index];
                 var family = showDesert ? "Desert" : "Grass";
-                terrainTiles[index] = AssetDatabase.LoadAssetAtPath<Texture2D>($"{TerrainFolder}{family}_{mask:D3}.png");
+                terrainTiles[index] = AssetDatabase.LoadAssetAtPath<Texture2D>(
+                    $"{TerrainFolder}/{family}/{family}_{mask:D3}.png");
             }
         }
 
@@ -131,10 +132,14 @@ namespace SaltyGame.EditorTools
             }
 
             var value = string.Empty;
-            if ((mask & TerrainTileResolver.NorthWest) != 0) value += "NW";
+            if ((mask & TerrainTileResolver.North) != 0) value += "N";
             if ((mask & TerrainTileResolver.NorthEast) != 0) value += "NE";
-            if ((mask & TerrainTileResolver.SouthWest) != 0) value += "SW";
+            if ((mask & TerrainTileResolver.East) != 0) value += "E";
             if ((mask & TerrainTileResolver.SouthEast) != 0) value += "SE";
+            if ((mask & TerrainTileResolver.South) != 0) value += "S";
+            if ((mask & TerrainTileResolver.SouthWest) != 0) value += "SW";
+            if ((mask & TerrainTileResolver.West) != 0) value += "W";
+            if ((mask & TerrainTileResolver.NorthWest) != 0) value += "NW";
             return value;
         }
     }

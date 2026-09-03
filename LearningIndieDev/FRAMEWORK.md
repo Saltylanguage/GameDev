@@ -1,4 +1,8 @@
-# Salty GameDev framework
+# Salty GameDev framework (historical Island Survivor slice)
+
+> This document describes the deprecated Island Survivor prototype. The active
+> product flow is Main Menu → Lab → CellularAutomataPrototype; the Bootstrap
+> scene and validator named below are not current project infrastructure.
 
 The Bootstrap scene is the composition root. `GameRuntime` creates the runtime systems in one explicit startup path:
 
@@ -44,7 +48,8 @@ The first activities are wood chopping, berry gathering, mining, campfire buildi
 
 ## Editor validation
 
-Use `Salty > Validate Bootstrap Scene` from the Unity editor. It checks that
+Use `Salty > Validate Bootstrap Scene` only when maintaining this deprecated
+slice. It checks that
 the Bootstrap scene exists, is enabled in Build Settings, has one active
 `GameRuntime` composition root, no longer contains the removed giant
 prototype, and has the required survival/camp runtime scripts.

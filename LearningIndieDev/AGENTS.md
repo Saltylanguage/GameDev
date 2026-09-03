@@ -15,6 +15,10 @@ For Unity work in this project:
 - Add focused tests for changed domain logic. Profile before claiming a performance improvement.
 - Keep Editor code out of runtime assemblies and avoid broad refactors during feature work.
 - Report any intentional deviation from the stylesheet in the change summary.
+- Unless explicitly overridden, run all EcoSim tests and research experiments
+  with approved elevated host permissions so Unity licensing and Package
+  Manager can access the required Windows identity data. This standing default
+  does not authorize destructive, shared, or unrelated system actions.
 
 ## Loose Ends protocol
 

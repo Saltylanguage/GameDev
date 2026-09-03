@@ -1,11 +1,19 @@
 # Sprint 1 Plan — Main Menu and Lab Foundation
 
-> Status: Active; authoritative execution plan | Dates: August 17–30, 2026 | Cadence: two weeks | Team: Josh + Sim
+> Status: Closed; historical execution plan | Dates: August 17–30, 2026 | Closed: September 3, 2026 | Cadence: two weeks | Team: Josh + Sim
 
 This document is the authoritative execution plan for Sprint 1. Product-level
 direction remains in `PROJECT_CONTEXT.md` and `ROADMAP.md`; the Sprint 0
 closeout document remains the source for Sprint 1 preconditions and exit-gate
 decisions.
+
+## Closeout
+
+Sprint 1 closed with the bounded Main Menu → Lab → Research preview and v1
+species stat-line outcomes accepted. The durable closeout record is
+[`Sprints/S1-control-record.md`](Sprints/S1-control-record.md). Work deferred
+from the original product roadmap was not carried as unfinished S1 work; it
+remains explicitly scheduled through the Sprint 2 planning records.
 
 ## Sprint goal
 

@@ -1,11 +1,11 @@
-# Next work bucket — S2 first trustworthy upgrade loop
+# Sprint 2 Plan — First Trustworthy Upgrade Loop
 
-> Status: Proposed next two-week bucket | Owner: Josh + Sim | Capacity: 20 committed hours + 3-hour reserve
+> Status: Active | Dates: September 3–16, 2026 | Owner: Josh + Sim | Capacity: Josh 20h; Sim 20h; 40h committed
 
-This bucket turns the current cellular-automata prototype into a small,
-deterministic upgrade loop. It is the next candidate after Sprint 1 review; it
-does not start until the Sprint 1 Windows development-build gate is either
-accepted or explicitly carried as a named risk.
+Sprint 2 turns the current cellular-automata prototype into a small,
+deterministic upgrade loop. Sprint 1's build and review gate is accepted; its
+known headless-Noesis limitation remains an environment boundary rather than an
+entry blocker.
 
 ## Outcome
 
@@ -15,10 +15,33 @@ repeatable evidence showing what changed and why. The same slice distinguishes
 per-run evolution from permanent Lab research without implementing the full
 wallet, save system, or permanent progression.
 
+## Active task register
+
+The initial 20-hour proposal has been deliberately expanded to use the team's
+full 40-hour Sprint 2 capacity. The added telemetry, report, fixture, and
+experiment-preparation work directly supports the upgrade-loop evidence gate;
+it does not broaden the product scope into persistence or new content systems.
+
+| Work | Owner | Reviewer | Estimate |
+| --- | --- | --- | ---: |
+| S2.1 Upgrade contract and boundary | Josh | Sim | 4h |
+| S2.2 Catalog design and acceptance matrix | Josh | Sim | 4h |
+| S2.2 First catalog implementation | Sim | Josh | 4h |
+| S2.3 Deterministic application and contribution evidence | Sim | Josh | 5h |
+| S2.3 Loadout report/stat-line integration | Sim | Josh | 3h |
+| Catalog fixtures and invalid-combination tests | Sim | Josh | 3h |
+| Player-facing upgrade preview and result summary | Josh | Sim | 4h |
+| S2.4 Review and balance evidence | Josh | Sim | 3h |
+| EX-002 intervention surface and causal-gate preparation | Josh | Sim | 5h |
+| Fox mating/eating telemetry discrepancy | Sim | Josh | 3h |
+| BoardSnapshot test-fixture repair | Sim | Josh | 2h |
+| **Total** | **Josh** |  | **20h** |
+| **Total** | **Sim** |  | **20h** |
+
 ## Entry gates and carry-over
 
-- Close or explicitly carry the Sprint 1 Windows development-build/final-review
-  gate on Trello card 53.
+- Sprint 1's Windows development-build/final-review gate is accepted on Trello
+  card 53.
 - Keep the existing Main Menu/Lab shell as the presentation entry point; do not
   reopen completed cards 51 or 52.
 - Keep the graphics-capable Noesis atlas path as the accepted preview surface;
@@ -140,13 +163,13 @@ Continue the matched Forest Edge experiment before changing balance values:
   event/activity reconciliation, and no baseline regression before discussing
   balance or roster expansion.
 
-## Reserve and parallel lanes
+## Integration and parallel lanes
 
-Keep a 3-hour integration reserve for Unity/Noesis defects, review changes, and
-test repair. Tooling may consume part of the reserve only when it removes a
-measured repeated friction and retains a manual fallback. The bounded EX-002
-intervention matrix remains a parallel evidence lane; its historical schema-6
-reports are not invalidated by the new schema-7 telemetry.
+Sprint 2 has no unallocated reserve: the bounded BoardSnapshot repair acts as
+the small correctness reserve, while the EX-002 preparation and Fox telemetry
+work are committed evidence lanes. Tooling may only be added when it removes a
+measured repeated friction and retains a manual fallback. Historical schema-6
+reports remain historical evidence and are not invalidated by newer telemetry.
 
 ## Explicitly out of scope
 
