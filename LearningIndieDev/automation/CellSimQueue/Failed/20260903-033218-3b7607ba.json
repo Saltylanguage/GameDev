@@ -4,7 +4,6 @@
     "jobName":  "p3-ex007-baseline-training",
     "createdUtc":  "2026-09-03T07:32:18.2067545Z",
     "requestedBy":  "codex",
-    "status":  "pending",
     "parameters":  {
                        "ScenarioPath":  "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
                        "SeedStart":  1,
@@ -18,5 +17,13 @@
                        "ExperimentalFeatures":  "bev-experimental",
                        "FoxAttackCooldownTicks":  0,
                        "PreContactAvoidanceChance":  0
-                   }
+                   },
+    "status":  "failed",
+    "startedUtc":  "2026-09-03T07:40:09.6967687Z",
+    "worker":  "SALTY_PC",
+    "sourceCommit":  "de45d803e9d90505caea2433490899be3cd12fe2",
+    "sourceTreeCleanBeforeRun":  true,
+    "sourceTreeCleanAfterCleanup":  true,
+    "completedUtc":  "2026-09-03T07:40:10.2995130Z",
+    "error":  "Unity is already running (PID 38616). Close the editor, save your work, and run this command again. This tooling never closes Unity for you."
 }
