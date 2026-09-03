@@ -11,8 +11,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - Report state: the UI/ControlLibrary batch is committed and pushed, static
   XAML checks pass, and the latest schema-21 worker artifacts are available.
   Graphics-capable Unity acceptance is currently blocked by two inaccessible
-  orphaned Unity PIDs and a lockfile; worker artifact packaging/provenance and
-  the first trustworthy upgrade catalog remain open.
+  orphaned Unity PIDs and a lockfile; the worker evidence gate is implemented,
+  while fresh clean baseline execution and the first trustworthy upgrade catalog
+  remain open.
 
 ## Triage rules
 
@@ -67,18 +68,24 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-017 — Worker result packaging and provenance disagree
 
-- **Status:** Open; the results are usable descriptively but not yet a clean
-  promotion package.
+- **Status:** Fix implemented; historical bundles remain incomplete, and the
+  fresh worker rerun is pending.
 - **Evidence:** Matched 100-seed Forest Edge artifacts are present under
   `automation/CellSimQueue/Completed/`: baseline
   `20260831-234216-ec3350ed` (Fox 2.94 average, Hare 21.23 average, Plant
   879.73 average; `report.csv` and `statline.csv` present) and Escape Artist
   `20260831-234200-d484a2b2` (Fox 2.91, Hare 23.06, Plant 866.13; expected
   CSV/statline files absent). Both manifests say `sourceTreeDirty: true`, while
-  their queue records say the worker was clean before and after execution.
-- **Next action:** Reconcile worker cleanup/manifest generation and require
-  report JSON, CSV, statline, manifest, and log as one auditable result bundle.
-  Re-run the paired arm only after the packaging contract is green.
+  their queue records say the worker was clean before and after execution. The
+  new worker contract now captures explicit before/after source-tree state,
+  canonicalizes report hashing across Git line endings, copies `unity.log`,
+  verifies `reportSha256`, and refuses to publish an incomplete bundle. The
+  read-only `tools/Test-CellSimArtifactBundle.ps1` validator reports the old
+  baseline as valid-with-warnings and the old Escape Artist arm as invalid for
+  missing CSV/statline files.
+- **Next action:** Let the two newly queued identical control jobs complete,
+  validate both with `-RequireUnityLog`, and compare their normalized outcomes.
+  Re-run the paired upgrade arm only after the packaging contract is green.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -498,3 +505,16 @@ Unity suites run successfully.
 - **Result:** The source change has a focused commit boundary and is available
   on `origin/UI/ControlLibrary`. Runtime visual acceptance remains open under
   current item P1-014 because Unity preflight is blocked by P1-015.
+
+### R-009 — CellSim evidence-quality gate is implemented
+
+- **Evidence:** Commit `f315d3d6` on `UI/ControlLibrary` and matching worker
+  commit `03011357` on `codex/cellsim-worker` add canonical report hashing,
+  explicit source-state provenance, strict completed-bundle packaging, and the
+  read-only `tools/Test-CellSimArtifactBundle.ps1` validator. The wrapper fix in
+  the follow-up commit prevents successful Git worktree progress from being
+  misclassified as a submission failure.
+- **Result:** Historical artifacts were not rewritten. Two identical 20-seed
+  Hare control jobs (`20260902-233024-d8d75c20` and
+  `20260902-233045-437566fd`) are queued for a clean repeated baseline. No
+  upgrade or balance claim is promoted until both complete and compare cleanly.

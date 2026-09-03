@@ -31,8 +31,18 @@ function Invoke-Git {
         [Parameter(Mandatory)] [string[]]$Arguments
     )
 
-    $output = @(& git -C $WorkingDirectory @Arguments 2>&1)
-    $exitCode = $LASTEXITCODE
+    # Git writes progress (including successful worktree setup) to stderr. With
+    # the script-wide Stop preference, capture it without turning it into a
+    # terminating PowerShell error; the native exit code remains authoritative.
+    $previousErrorActionPreference = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = @(& git -C $WorkingDirectory @Arguments 2>&1)
+        $exitCode = $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $previousErrorActionPreference
+    }
     if ($exitCode -ne 0) {
         $details = ($output | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine
         throw "git $($Arguments -join ' ') failed with exit code $exitCode. $details"
