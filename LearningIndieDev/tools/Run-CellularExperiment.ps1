@@ -64,19 +64,49 @@ function ConvertTo-UnityAssetPath {
 function Get-FileSha256 {
     param([string]$Path)
 
+    $text = [System.IO.File]::ReadAllText($Path, [System.Text.UTF8Encoding]::new($false, $true))
+    $canonicalText = $text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($canonicalText)
     $sha256 = [System.Security.Cryptography.SHA256]::Create()
-    $stream = [System.IO.File]::OpenRead($Path)
     try {
-        return ([System.BitConverter]::ToString($sha256.ComputeHash($stream))).Replace('-', '').ToLowerInvariant()
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace('-', '').ToLowerInvariant()
     }
     finally {
-        $stream.Dispose()
         $sha256.Dispose()
+    }
+}
+
+function Get-SourceState {
+    param([string]$ProjectPath)
+
+    $commit = ''
+    $dirty = $false
+    try {
+        $repositoryRoot = (& git -C $ProjectPath rev-parse --show-toplevel 2>$null | Select-Object -First 1)
+        if (-not [string]::IsNullOrWhiteSpace([string]$repositoryRoot)) {
+            $repositoryRoot = $repositoryRoot.Trim()
+            $commitValue = (& git -C $repositoryRoot rev-parse HEAD 2>$null | Select-Object -First 1)
+            if ($null -ne $commitValue) {
+                $commit = $commitValue.Trim()
+            }
+
+            $dirty = @(& git -C $repositoryRoot status --porcelain --untracked-files=no 2>$null).Count -gt 0
+        }
+    }
+    catch {
+        # A report may still be useful outside a Git checkout; leave provenance
+        # blank rather than inventing a source identity.
+    }
+
+    return [pscustomobject]@{
+        Commit = $commit
+        Dirty = $dirty
     }
 }
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
+$sourceStateBeforeRun = Get-SourceState -ProjectPath $project
 $preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
 $assetPath = ConvertTo-UnityAssetPath -Path $ScenarioPath -ProjectRoot $project
 $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $project 'artifacts') -Prefix 'cellular-experiment'
@@ -159,15 +189,16 @@ if ($null -ne $assetPath) {
     }
 }
 
-$gitCommit = (& git -C $project rev-parse HEAD 2>$null | Select-Object -First 1)
-$gitChanges = @(& git -C $project status --porcelain --untracked-files=no 2>$null)
+$sourceStateAfterRun = Get-SourceState -ProjectPath $project
 $manifest = [ordered]@{
     schemaVersion = 1
     createdUtc = [DateTime]::UtcNow.ToString('O')
     reportFile = [System.IO.Path]::GetFileName($reportPath)
     reportSha256 = Get-FileSha256 -Path $reportPath
-    sourceCommit = if ($null -eq $gitCommit) { '' } else { $gitCommit.Trim() }
-    sourceTreeDirty = $gitChanges.Count -gt 0
+    sourceCommit = $sourceStateBeforeRun.Commit
+    sourceTreeDirty = $sourceStateBeforeRun.Dirty
+    sourceTreeDirtyBeforeRun = $sourceStateBeforeRun.Dirty
+    sourceTreeDirtyAfterRun = $sourceStateAfterRun.Dirty
     scenarioAssetPath = if ($null -eq $assetPath) { '' } else { $assetPath }
     scenarioAssetGuid = $scenarioGuid
     unityExecutable = $unity

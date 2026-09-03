@@ -205,15 +205,21 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
+| `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
+| `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
 Experiment report schema 21 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
-experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling manifest records
-the report SHA-256, source commit and dirty state, scenario asset path/GUID, and
-the Unity argument vector. Copy the complete artifact directory when retaining
-evidence; a handoff summary alone is not independently auditable raw evidence.
-| `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
+experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling
+manifest records the report SHA-256, source commit and dirty state, scenario
+asset path/GUID, and the Unity argument vector. `sourceTreeDirty` is the
+pre-run state; explicit `sourceTreeDirtyBeforeRun` and
+`sourceTreeDirtyAfterRun` fields make the execution window auditable. Report
+hashes use canonical UTF-8 JSON with LF line endings so Git checkout
+normalization cannot invalidate an otherwise matching artifact. Copy the
+complete artifact directory when retaining evidence; a handoff summary alone
+is not independently auditable raw evidence.
 
 The current experiment JSON schema is `21`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
