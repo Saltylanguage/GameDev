@@ -207,7 +207,9 @@ function Publish-WorkerResults {
     $staged = @(git -C (Split-Path $project -Parent) diff --cached --name-only)
     if ($staged.Count -eq 0) { return }
     Invoke-WorkerGit @('commit', '-m', 'Publish remote CellSim worker result')
-    Invoke-WorkerGit @('push', 'origin', 'codex/cellsim-worker')
+    # The worker commonly runs from a detached temporary worktree. Push the
+    # checked-out commit explicitly instead of relying on a local branch ref.
+    Invoke-WorkerGit @('push', 'origin', 'HEAD:refs/heads/codex/cellsim-worker')
 }
 
 function Update-JobFile([string]$Path, [hashtable]$Changes) {
