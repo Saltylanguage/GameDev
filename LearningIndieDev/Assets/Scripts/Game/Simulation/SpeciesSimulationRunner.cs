@@ -12,6 +12,7 @@ namespace SaltyGame
         readonly SpeciesCombatResolutionMode combatResolutionMode;
         readonly SpeciesAttackOpportunityMode attackOpportunityMode;
         readonly SpeciesExperimentalOptions experimentalOptions;
+        Grid<SpeciesCell> previousCells;
 
         public SpeciesSimulationRunner(
             SimulationRunState run,
@@ -90,6 +91,7 @@ namespace SaltyGame
         public void Restart()
         {
             Run.Restart();
+            previousCells = null;
         }
 
         public bool AdvanceOneTick()
@@ -114,7 +116,8 @@ namespace SaltyGame
                     metrics: Run.Metrics,
                     combatResolutionMode: combatResolutionMode,
                     attackOpportunityMode: attackOpportunityMode,
-                    experimentalOptions: experimentalOptions)
+                    experimentalOptions: experimentalOptions,
+                    previousSource: previousCells)
                 : SpeciesSimulation.Step(
                     Run.Cells,
                     simulationData,
@@ -122,7 +125,9 @@ namespace SaltyGame
                     Run.Metrics,
                     combatResolutionMode,
                     attackOpportunityMode,
-                    experimentalOptions);
+                    experimentalOptions,
+                    previousSource: previousCells);
+            previousCells = Run.Cells;
             Run.Advance(next, stepSeconds);
             return true;
         }

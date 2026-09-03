@@ -780,12 +780,12 @@ namespace SaltyGame
                 showExperimentalUpgradeCount
                     ? string.Format(
                         CultureInfo.InvariantCulture,
-                        "BEV EXPERIMENTAL UPGRADES: {0} | TOUGH HIDE Lv {1} | DIGESTION Lv {2} | CROWDING Lv {3} | ESCAPE Lv {4}",
+                        "BEV EXPERIMENTAL UPGRADES: {0} | TOUGH HIDE Lv {1} | DIGESTION Lv {2} | CROWDING Lv {3} | THREAT RESPONSE Lv {4}",
                         preview.PurchasedUpgradeCount,
                         preview.GetUpgradeLevel(SpeciesUpgradeCatalog.ToughHideId),
                         preview.GetUpgradeLevel(SpeciesUpgradeCatalog.EfficientDigestionId),
                         preview.GetUpgradeLevel(SpeciesUpgradeCatalog.CrowdingToleranceId),
-                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.EscapeArtistId))
+                        preview.GetUpgradeLevel(SpeciesUpgradeCatalog.ThreatResponseId))
                     : string.Empty,
                 nameof(ExperimentalUpgradeCountText));
             Set(ref currencyText, preview.Progression == null

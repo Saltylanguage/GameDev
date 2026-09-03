@@ -102,7 +102,8 @@ namespace SaltyGame
             SpeciesSimulationMetrics metrics = null,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            Grid<SpeciesCell> previousSource = null)
         {
             if (simulationData == null)
             {
@@ -119,7 +120,8 @@ namespace SaltyGame
                 metrics,
                 combatResolutionMode,
                 attackOpportunityMode,
-                experimentalOptions);
+                experimentalOptions,
+                previousSource);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -132,7 +134,8 @@ namespace SaltyGame
             SpeciesSimulationMetrics metrics = null,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            Grid<SpeciesCell> previousSource = null)
         {
             if (source == null)
             {
@@ -152,7 +155,7 @@ namespace SaltyGame
 
             var next = source.Copy();
             var random = new System.Random(seed);
-            PrepareStep(source, next, rules, random, metrics, experimentalOptions);
+            PrepareStep(source, next, rules, random, metrics, experimentalOptions, previousSource);
             return CompleteStep(
                 source,
                 next,
@@ -189,7 +192,9 @@ namespace SaltyGame
             out string pairedOpportunityId,
             IList<SpeciesPairedOpportunityObservation> opportunityObservations = null,
             int tick = 0,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            Grid<SpeciesCell> baselinePreviousSource = null,
+            Grid<SpeciesCell> blockPlusTwoPreviousSource = null)
         {
             if (baselineSource == null || blockPlusTwoSource == null)
             {
@@ -211,14 +216,16 @@ namespace SaltyGame
                 baselineRules,
                 baselineRandom,
                 baselineMetrics,
-                experimentalOptions);
+                experimentalOptions,
+                baselinePreviousSource);
             PrepareStep(
                 blockPlusTwoSource,
                 blockPlusTwoNext,
                 blockPlusTwoRules,
                 blockPlusTwoRandom,
                 blockPlusTwoMetrics,
-                experimentalOptions);
+                experimentalOptions,
+                blockPlusTwoPreviousSource);
 
             var result = BuildPairedStepResult(
                 baselineSource,
@@ -310,11 +317,12 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
             SpeciesSimulationMetrics metrics,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            Grid<SpeciesCell> previousSource = null)
         {
             ResolveAging(next);
             ResolveAttackCooldowns(next, experimentalOptions);
-            SpeciesBehaviorSystem.Update(source, next, rules, random, metrics);
+            SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
         }
 
         static Grid<SpeciesCell> CompleteStep(
@@ -1528,6 +1536,11 @@ namespace SaltyGame
             System.Random random,
             SpeciesSimulationMetrics metrics)
         {
+            if (currentCell.BehaviorState != SpeciesBehaviorState.Threatened)
+            {
+                return false;
+            }
+
             if (speciesRules.Awareness.VisionRange <= 0)
             {
                 return false;
@@ -1816,7 +1829,7 @@ namespace SaltyGame
             }
 
             var movementSpeed = speciesRules.MovementSpeed
-                + (cell.BehaviorState == SpeciesBehaviorState.Fleeing
+                + (IsThreatResponseState(cell.BehaviorState)
                     ? speciesRules.FleeMovementSpeedBonus
                     : 0f);
             if (!CanMoveThisPass(
@@ -1850,6 +1863,11 @@ namespace SaltyGame
             claimed[targetIndex] = true;
             metrics?.Record(cell.SpeciesId, movementSteps: 1);
             return true;
+        }
+
+        static bool IsThreatResponseState(SpeciesBehaviorState state)
+        {
+            return state == SpeciesBehaviorState.Threatened;
         }
 
         static bool TryMoveTowardMate(
@@ -2646,7 +2664,8 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
-            SpeciesSimulationMetrics metrics = null)
+            SpeciesSimulationMetrics metrics = null,
+            Grid<SpeciesCell> previousSource = null)
         {
             if (source == null)
             {
@@ -2673,6 +2692,17 @@ namespace SaltyGame
                 throw new ArgumentException("The source and next grids must have matching dimensions.", nameof(next));
             }
 
+            if (previousSource != null
+                && (source.Width != previousSource.Width || source.Height != previousSource.Height))
+            {
+                throw new ArgumentException(
+                    "The source and previous grids must have matching dimensions.",
+                    nameof(previousSource));
+            }
+
+            var previousEntityPositions = previousSource == null
+                ? null
+                : SpeciesPerception.BuildEntityPositionIndex(previousSource);
             metrics?.BeginBehaviorTracking(source);
             for (var y = 0; y < source.Height; y++)
             {
@@ -2684,7 +2714,15 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var state = ChooseState(source, x, y, cell, speciesRules, rules, random);
+                    var state = ChooseState(
+                        source,
+                        x,
+                        y,
+                        cell,
+                        speciesRules,
+                        rules,
+                        random,
+                        previousEntityPositions);
                     var transitioned = state != cell.BehaviorState;
                     var stateTicks = !transitioned
                         ? cell.BehaviorStateTicks + 1
@@ -2716,18 +2754,28 @@ namespace SaltyGame
             SpeciesCell cell,
             SpeciesRules speciesRules,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
-            System.Random random)
+            System.Random random,
+            IReadOnlyDictionary<long, Vector2Int> previousEntityPositions)
         {
-            if (SpeciesPerception.TryFindThreatTarget(
+            if (previousEntityPositions != null
+                && SpeciesPerception.TryFindApproachingThreatTarget(
+                    cells,
+                    x,
+                    y,
+                    cell,
+                    cell.SpeciesId,
+                    rules,
+                    previousEntityPositions,
+                    random,
+                    out _)
+                && !SpeciesPerception.IsSafeFromThreats(
                     cells,
                     x,
                     y,
                     cell.SpeciesId,
-                    rules,
-                    random,
-                    out _))
+                    rules))
             {
-                return SpeciesBehaviorState.Fleeing;
+                return SpeciesBehaviorState.Threatened;
             }
 
             if (cell.BehaviorState == SpeciesBehaviorState.Sleeping
@@ -2766,7 +2814,7 @@ namespace SaltyGame
                 return SpeciesBehaviorState.Mating;
             }
 
-            if (cell.BehaviorState == SpeciesBehaviorState.Fleeing)
+            if (cell.BehaviorState == SpeciesBehaviorState.Threatened)
             {
                 return SpeciesBehaviorState.Wandering;
             }

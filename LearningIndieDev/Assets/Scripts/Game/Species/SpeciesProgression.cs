@@ -16,6 +16,7 @@ namespace SaltyGame
 
         public SpeciesDefinition Definition { get; }
         public SpeciesRules CurrentRules { get; private set; }
+        public float PreContactAvoidanceChance { get; private set; }
         public int Currency { get; private set; }
         public int PurchasedUpgradeCount { get; private set; }
 
@@ -60,13 +61,33 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
+            if (string.Equals(upgrade.Id, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal)
+                && GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.ThreatResponseMaxLevel)
+            {
+                return false;
+            }
+
             if (!TrySpend(upgrade.Cost))
             {
                 return false;
             }
 
-            CurrentRules = upgrade.Apply(CurrentRules);
-            purchasedUpgradeLevels[upgrade.Id] = GetUpgradeLevel(upgrade.Id) + 1;
+            var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
+            if (string.Equals(upgrade.Id, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+            {
+                if (SpeciesUpgradeCatalog.IsThreatResponseFleeLevel(nextLevel))
+                {
+                    CurrentRules = upgrade.Apply(CurrentRules);
+                }
+
+                PreContactAvoidanceChance = SpeciesUpgradeCatalog.GetThreatResponseAvoidanceChance(nextLevel);
+            }
+            else
+            {
+                CurrentRules = upgrade.Apply(CurrentRules);
+            }
+
+            purchasedUpgradeLevels[upgrade.Id] = nextLevel;
             PurchasedUpgradeCount++;
             return true;
         }

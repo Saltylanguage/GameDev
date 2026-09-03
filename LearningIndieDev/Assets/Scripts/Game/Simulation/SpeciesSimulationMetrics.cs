@@ -11,7 +11,7 @@ namespace SaltyGame
         Mating,
         Sleeping,
         Attacking,
-        Fleeing,
+        Threatened,
         Dead,
     }
 

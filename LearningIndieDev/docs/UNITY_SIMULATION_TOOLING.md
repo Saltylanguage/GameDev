@@ -83,13 +83,17 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId escape-artist -UpgradeValueOverride 0.75
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId escape-artist -UpgradeValueOverride 0.75 -PreContactAvoidanceChance 0.10
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-response -UpgradeValueOverride 0.75
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-response -UpgradeValueOverride 0.75 -PreContactAvoidanceChance 0.10
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
 .\CellSim.cmd Validate -ReportPath artifacts\cellular-experiment-...\report.json
 ```
+
+Threat Response progression is capped at level 12. Level 1 grants `+0.75`
+flee speed and `+0.08` avoidance; each level through level 12 adds another
+`+0.08` avoidance, reaching a maximum of `0.96`.
 
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
@@ -227,7 +231,7 @@ and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked stat
 transitions, plus per-death events with proximate cause, entity/resource
 identity, tick, age, and position. Schema 21 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
-its modifiers, totals, and outcome. Escape Artist dose-response runs may use
+its modifiers, totals, and outcome. Threat Response dose-response runs may use
 `-UpgradeValueOverride` to test a single flee-speed value without changing the
 production catalog. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
@@ -260,7 +264,7 @@ Creature behavior is evaluated once per simulation tick by
 `SpeciesBehaviorSystem`. The state is persisted on each creature cell, so the
 same state survives aging, movement, feeding, and other cell-copy operations.
 The initial state layer contains Wandering, Hunting, Eating, Mating, Sleeping,
-Attacking, Fleeing, and Dead. Existing movement/attack resolvers remain the
+Attacking, Threatened, and Dead. Existing movement/attack resolvers remain the
 action executors; the FSM supplies the short-term decision and telemetry
 boundary. Each creature cell carries a persistent `EntityId`, which survives
 movement and state updates, is replaced for offspring, and is logged on tracked

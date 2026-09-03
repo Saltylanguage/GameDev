@@ -14,8 +14,8 @@ mini PC while a job runs.
 From the desktop, submit a job and push the queue file:
 
 ```powershell
-.\tools\Submit-CellSimJob.ps1 -JobName 'hare-escape-artist-level-1' `
-  -PlayerSpeciesId hare -UpgradeId escape-artist `
+.\tools\Submit-CellSimJob.ps1 -JobName 'hare-threat-response-level-1' `
+  -PlayerSpeciesId hare -UpgradeId threat-response `
   -ExperimentalFeatures bev-experimental -UpgradeValueOverride 0.5
 git add automation/CellSimQueue/Pending
 git commit -m 'Queue CellSim hare experiment'

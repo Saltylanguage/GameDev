@@ -985,7 +985,8 @@ namespace SaltyGame
             var experimentalOptions = bevExperimentalFeaturesEnabled
                 ? new SpeciesExperimentalOptions(
                     SpeciesExperimentalOptions.BevExperimentalFeaturesId,
-                    foxAttackCooldownTicks)
+                    foxAttackCooldownTicks,
+                    progression?.PreContactAvoidanceChance ?? 0f)
                 : SpeciesExperimentalOptions.None;
             var nextRunner = new SpeciesSimulationRunner(
                 run,

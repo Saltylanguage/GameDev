@@ -505,10 +505,22 @@ namespace SaltyGame.EditorTools
                     ExperimentalFeaturesArgument);
             }
 
+            var threatResponseLevel = 0;
+            foreach (var upgradeId in options.UpgradeLoadout)
+            {
+                if (string.Equals(upgradeId, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+                {
+                    threatResponseLevel++;
+                }
+            }
+
+            var preContactAvoidanceChance = options.PreContactAvoidanceChance > 0f
+                ? options.PreContactAvoidanceChance
+                : SpeciesUpgradeCatalog.GetThreatResponseAvoidanceChance(threatResponseLevel);
             var experimentalOptions = new SpeciesExperimentalOptions(
                 options.ExperimentalFeatures,
                 options.FoxAttackCooldownTicks,
-                options.PreContactAvoidanceChance);
+                preContactAvoidanceChance);
             if (experimentalOptions.HasFoxAttackCooldown
                 && options.CombatResolutionMode != SpeciesCombatResolutionMode.OpposedRoll)
             {
@@ -525,15 +537,15 @@ namespace SaltyGame.EditorTools
                     FoxAttackCooldownTicksArgument);
             }
 
-            if (experimentalOptions.HasPreContactAvoidance
+            if (options.PreContactAvoidanceChance > 0f
                 && (options.UpgradeLoadout.Length != 1
                     || !string.Equals(
                         options.UpgradeLoadout[0],
-                        SpeciesUpgradeCatalog.EscapeArtistId,
+                        SpeciesUpgradeCatalog.ThreatResponseId,
                         StringComparison.Ordinal)))
             {
                 throw new ArgumentException(
-                    $"'{PreContactAvoidanceChanceArgument}' requires the Escape Artist upgrade.",
+                    $"'{PreContactAvoidanceChanceArgument}' requires the Threat Response upgrade.",
                     PreContactAvoidanceChanceArgument);
             }
 
@@ -578,12 +590,24 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesArgument);
             }
 
+            var threatResponseLevel = 0;
             foreach (var upgradeId in upgradeIds)
             {
                 var upgrade = GetEffectiveUpgrade(upgradeId, upgradeValueOverride);
                 if (upgrade != null)
                 {
-                    rules = upgrade.Apply(rules);
+                    if (string.Equals(upgradeId, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+                    {
+                        threatResponseLevel++;
+                        if (SpeciesUpgradeCatalog.IsThreatResponseFleeLevel(threatResponseLevel))
+                        {
+                            rules = upgrade.Apply(rules);
+                        }
+                    }
+                    else
+                    {
+                        rules = upgrade.Apply(rules);
+                    }
                 }
             }
 
@@ -601,7 +625,7 @@ namespace SaltyGame.EditorTools
             if (upgrade.Type != SpeciesUpgradeType.FleeMovementSpeedBonus)
             {
                 throw new ArgumentException(
-                    $"'{UpgradeValueOverrideArgument}' is only supported for Escape Artist.",
+                    $"'{UpgradeValueOverrideArgument}' is only supported for Threat Response.",
                     UpgradeValueOverrideArgument);
             }
 
