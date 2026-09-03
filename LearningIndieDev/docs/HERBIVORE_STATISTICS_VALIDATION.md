@@ -41,7 +41,7 @@ rounded check.
 | --- | --- |
 | SPO/FPO | First and final `PopulationHistory` snapshots for the player species. |
 | HPS | At the start of each step containing at least one living carnivore, count every living herbivore once. |
-| EHS | For each step, count each herbivore that has at least one carnivore encounter once, even if it has multiple encounters. |
+| EHS | For each step, if at least one herbivore of the species has a carnivore encounter, count every living herbivore of that species once for that step. |
 | ECN | `SpeciesSimulationMetrics.RecordHerbivoreEncounter`, called when a carnivore has a creature target whose role is herbivore. |
 | PREY | `SpeciesSimulationMetrics.RecordHerbivorePreyed`, called when that carnivore-herbivore combat resolves lethally. |
 | STRV/CRWD | Creature `SpeciesDeathEvent` records with `Starvation` or `Crowding` cause. |

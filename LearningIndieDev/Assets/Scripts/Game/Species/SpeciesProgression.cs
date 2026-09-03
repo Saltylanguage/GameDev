@@ -61,8 +61,8 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            if (string.Equals(upgrade.Id, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal)
-                && GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.ThreatResponseMaxLevel)
+            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
+                && GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.ThreatExposureMaxLevel)
             {
                 return false;
             }
@@ -73,14 +73,14 @@ namespace SaltyGame
             }
 
             var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
-            if (string.Equals(upgrade.Id, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
             {
-                if (SpeciesUpgradeCatalog.IsThreatResponseFleeLevel(nextLevel))
+                if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(nextLevel))
                 {
                     CurrentRules = upgrade.Apply(CurrentRules);
                 }
 
-                PreContactAvoidanceChance = SpeciesUpgradeCatalog.GetThreatResponseAvoidanceChance(nextLevel);
+                PreContactAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
             }
             else
             {

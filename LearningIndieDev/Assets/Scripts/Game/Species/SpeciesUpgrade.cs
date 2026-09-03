@@ -137,17 +137,26 @@ namespace SaltyGame
         public const string ToughHideId = "tough-hide";
         public const string EfficientDigestionId = "efficient-digestion";
         public const string CrowdingToleranceId = "crowding-tolerance";
-        public const string ThreatResponseId = "threat-response";
-        public const float ThreatResponseFleeSpeedBonus = 0.75f;
-        public const float ThreatResponseAvoidanceChanceBonus = 0.08f;
-        public const int ThreatResponseMaxLevel = 12;
+        public const string ThreatExposureId = "threat-exposure";
+        public const string LegacyThreatResponseId = "threat-response";
+        [Obsolete("Use ThreatExposureId.")]
+        public const string ThreatResponseId = LegacyThreatResponseId;
+        public const float ThreatExposureFleeSpeedBonus = 0.75f;
+        public const float ThreatExposureAvoidanceChanceBonus = 0.08f;
+        public const int ThreatExposureMaxLevel = 10;
+        [Obsolete("Use ThreatExposureFleeSpeedBonus.")]
+        public const float ThreatResponseFleeSpeedBonus = ThreatExposureFleeSpeedBonus;
+        [Obsolete("Use ThreatExposureAvoidanceChanceBonus.")]
+        public const float ThreatResponseAvoidanceChanceBonus = ThreatExposureAvoidanceChanceBonus;
+        [Obsolete("Use ThreatExposureMaxLevel.")]
+        public const int ThreatResponseMaxLevel = ThreatExposureMaxLevel;
 
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
         {
             ToughHideId,
             EfficientDigestionId,
             CrowdingToleranceId,
-            ThreatResponseId,
+            ThreatExposureId,
         };
 
         public static SpeciesUpgrade Create(string id)
@@ -177,12 +186,13 @@ namespace SaltyGame
                     return new SpeciesUpgrade(EfficientDigestionId, 5, SpeciesUpgradeType.DigestionEnergyBonus, 1f);
                 case CrowdingToleranceId:
                     return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
-                case ThreatResponseId:
+                case ThreatExposureId:
+                case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
-                        ThreatResponseId,
+                        ThreatExposureId,
                         5,
                         SpeciesUpgradeType.FleeMovementSpeedBonus,
-                        ThreatResponseFleeSpeedBonus);
+                        ThreatExposureFleeSpeedBonus);
                 default:
                     const string blockSweepPrefix = "stronger-block-";
                     if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
@@ -197,30 +207,48 @@ namespace SaltyGame
             }
         }
 
-        public static bool IsThreatResponseFleeLevel(int level)
+        public static bool IsThreatExposureId(string id)
         {
-            if (level < 1 || level > ThreatResponseMaxLevel)
+            return string.Equals(id, ThreatExposureId, StringComparison.Ordinal)
+                || string.Equals(id, LegacyThreatResponseId, StringComparison.Ordinal);
+        }
+
+        public static bool IsThreatExposureFleeLevel(int level)
+        {
+            if (level < 1 || level > ThreatExposureMaxLevel)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(level),
                     level,
-                    $"Threat Response level must be between 1 and {ThreatResponseMaxLevel}.");
+                    $"Threat Exposure level must be between 1 and {ThreatExposureMaxLevel}.");
             }
 
             return level == 1;
         }
 
-        public static float GetThreatResponseAvoidanceChance(int level)
+        public static float GetThreatExposureAvoidanceChance(int level)
         {
-            if (level < 0 || level > ThreatResponseMaxLevel)
+            if (level < 0 || level > ThreatExposureMaxLevel)
             {
                 throw new ArgumentOutOfRangeException(
                     nameof(level),
                     level,
-                    $"Threat Response level must be between 0 and {ThreatResponseMaxLevel}.");
+                    $"Threat Exposure level must be between 0 and {ThreatExposureMaxLevel}.");
             }
 
-            return level * ThreatResponseAvoidanceChanceBonus;
+            return level * ThreatExposureAvoidanceChanceBonus;
+        }
+
+        [Obsolete("Use IsThreatExposureFleeLevel.")]
+        public static bool IsThreatResponseFleeLevel(int level)
+        {
+            return IsThreatExposureFleeLevel(level);
+        }
+
+        [Obsolete("Use GetThreatExposureAvoidanceChance.")]
+        public static float GetThreatResponseAvoidanceChance(int level)
+        {
+            return GetThreatExposureAvoidanceChance(level);
         }
 
         public static string GetDisplayName(string id)
@@ -239,8 +267,9 @@ namespace SaltyGame
                     return "EFFICIENT DIGESTION";
                 case CrowdingToleranceId:
                     return "CROWDING TOLERANCE";
-                case ThreatResponseId:
-                    return "THREAT RESPONSE";
+                case ThreatExposureId:
+                case LegacyThreatResponseId:
+                    return "THREAT EXPOSURE";
                 default:
                     return id?.ToUpperInvariant() ?? string.Empty;
             }
@@ -254,6 +283,11 @@ namespace SaltyGame
             if (rotation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
+            }
+
+            if (IsThreatExposureId(continuingUpgradeId))
+            {
+                continuingUpgradeId = ThreatExposureId;
             }
 
             var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);

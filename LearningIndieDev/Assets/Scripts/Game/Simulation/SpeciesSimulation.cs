@@ -622,7 +622,7 @@ namespace SaltyGame
                             metrics?.RecordCombatOpportunity(attacker.SpeciesId);
                             if (isCarnivoreHerbivoreInteraction)
                             {
-                                metrics?.RecordHerbivoreEncounter(target.SpeciesId, target.EntityId);
+                                metrics?.RecordHerbivoreEncounter(target.SpeciesId);
                             }
                         }
 
@@ -1829,7 +1829,7 @@ namespace SaltyGame
             }
 
             var movementSpeed = speciesRules.MovementSpeed
-                + (IsThreatResponseState(cell.BehaviorState)
+                + (IsThreatenedState(cell.BehaviorState)
                     ? speciesRules.FleeMovementSpeedBonus
                     : 0f);
             if (!CanMoveThisPass(
@@ -1865,7 +1865,7 @@ namespace SaltyGame
             return true;
         }
 
-        static bool IsThreatResponseState(SpeciesBehaviorState state)
+        static bool IsThreatenedState(SpeciesBehaviorState state)
         {
             return state == SpeciesBehaviorState.Threatened;
         }
