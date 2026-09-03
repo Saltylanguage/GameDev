@@ -27,6 +27,7 @@ not redefine the program.
 ## Experiment packages
 
 - [EX-001 - Reproducibility Baseline](Experiments/EX-001-Reproducibility-Baseline/README.md)
+- [EX-007 - Predictive Statline Interventions](Experiments/EX-007-Predictive-Statline-Interventions/README.md)
 
 Reusable brief, report, and AI-analysis templates are stored in
 [Templates](Templates/).

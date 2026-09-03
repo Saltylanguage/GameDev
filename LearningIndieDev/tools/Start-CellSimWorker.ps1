@@ -60,6 +60,19 @@ function Restore-UnityGeneratedChanges {
     }
 }
 
+function Get-FileSha256([string]$Path) {
+    $text = [System.IO.File]::ReadAllText($Path, [System.Text.UTF8Encoding]::new($false, $true))
+    $canonicalText = $text.Replace("`r`n", "`n").Replace("`r", "`n")
+    $bytes = [System.Text.UTF8Encoding]::new($false).GetBytes($canonicalText)
+    $sha256 = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        return ([System.BitConverter]::ToString($sha256.ComputeHash($bytes))).Replace('-', '').ToLowerInvariant()
+    }
+    finally {
+        $sha256.Dispose()
+    }
+}
+
 function ConvertTo-CellSimCsvScalar {
     param([object]$Value)
 
@@ -194,7 +207,9 @@ function Publish-WorkerResults {
     $staged = @(git -C (Split-Path $project -Parent) diff --cached --name-only)
     if ($staged.Count -eq 0) { return }
     Invoke-WorkerGit @('commit', '-m', 'Publish remote CellSim worker result')
-    Invoke-WorkerGit @('push', 'origin', 'codex/cellsim-worker')
+    # The worker commonly runs from a detached temporary worktree. Push the
+    # checked-out commit explicitly instead of relying on a local branch ref.
+    Invoke-WorkerGit @('push', 'origin', 'HEAD:refs/heads/codex/cellsim-worker')
 }
 
 function Update-JobFile([string]$Path, [hashtable]$Changes) {
@@ -236,17 +251,29 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
             $statLineCount -ne $parameters.SeedCount) {
             throw "Expected one Hare stat-line row per seed, found $statLineCount of $($parameters.SeedCount)."
         }
+        if (-not (Test-Path -LiteralPath $result.UnityLog -PathType Leaf)) {
+            throw "Unity completed without writing expected log to '$($result.UnityLog)'."
+        }
+        $manifest = Get-Content -LiteralPath $result.Manifest -Raw | ConvertFrom-Json
+        $manifestReportHash = [string]$manifest.reportSha256
+        if ([string]::IsNullOrWhiteSpace($manifestReportHash) -or
+            $manifestReportHash.ToLowerInvariant() -ne (Get-FileSha256 -Path $result.Report)) {
+            throw "Manifest reportSha256 does not match '$($result.Report)'."
+        }
         $resultDirectory = Join-Path $completed $job.jobId
         New-Item -ItemType Directory -Path $resultDirectory -Force | Out-Null
         Copy-Item -LiteralPath $result.Report -Destination (Join-Path $resultDirectory 'report.json')
         Copy-Item -LiteralPath $reportCsvPath -Destination (Join-Path $resultDirectory 'report.csv')
         Copy-Item -LiteralPath $result.Manifest -Destination (Join-Path $resultDirectory 'manifest.json')
         Copy-Item -LiteralPath $statLineCsvPath -Destination (Join-Path $resultDirectory 'statline.csv')
+        Copy-Item -LiteralPath $result.UnityLog -Destination (Join-Path $resultDirectory 'unity.log')
         $job = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
         $job.status = 'completed'
         $job | Add-Member -NotePropertyName sourceCommit -NotePropertyValue $sourceCommit -Force
         $job | Add-Member -NotePropertyName sourceTreeCleanBeforeRun -NotePropertyValue ($sourceStatusBefore.Count -eq 0) -Force
         $job | Add-Member -NotePropertyName sourceTreeCleanAfterCleanup -NotePropertyValue $cleanAfterCleanup -Force
+        $job | Add-Member -NotePropertyName reportHashVerified -NotePropertyValue $true -Force
+        $job | Add-Member -NotePropertyName packagedFiles -NotePropertyValue @('report.json', 'report.csv', 'statline.csv', 'manifest.json', 'unity.log') -Force
         $job | Add-Member -NotePropertyName completedUtc -NotePropertyValue ([DateTime]::UtcNow.ToString('O')) -Force
         $job | Add-Member -NotePropertyName result -NotePropertyValue $result -Force
         $destination = Join-Path $completed (Split-Path $Path -Leaf)

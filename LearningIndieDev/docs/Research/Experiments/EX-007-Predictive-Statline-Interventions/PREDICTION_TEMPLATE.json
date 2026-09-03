@@ -1,0 +1,44 @@
+{
+  "predictionId": "PRED-EXP-007-0001",
+  "experimentId": "EXP-007",
+  "status": "draft",
+  "baselineArtifact": "artifacts/.../report.json",
+  "baselineValidation": "pending",
+  "trainingSeeds": { "start": 1, "count": 20 },
+  "heldOutSeeds": { "start": 101, "count": 5 },
+  "predictions": [
+    {
+      "armId": "S1",
+      "intervention": ["faster-movement"],
+      "predictedOutcomes": [
+        {
+          "metric": "FPO",
+          "direction": "unresolved",
+          "effectBand": { "low": null, "high": null, "unit": "hares" },
+          "materialThreshold": null
+        }
+      ],
+      "candidateCauses": [],
+      "confidence": null,
+      "uncertainty": "",
+      "limits": []
+    },
+    {
+      "armId": "J1",
+      "intervention": ["faster-movement", "crowding-tolerance"],
+      "predictedOutcomes": [
+        {
+          "metric": "FPO",
+          "direction": "unresolved",
+          "effectBand": { "low": null, "high": null, "unit": "hares" },
+          "materialThreshold": null
+        }
+      ],
+      "candidateCauses": [],
+      "confidence": null,
+      "uncertainty": "",
+      "limits": []
+    }
+  ],
+  "preRegistrationNote": "Fill predictions only after the validated baseline is supplied and before trial reports are available."
+}

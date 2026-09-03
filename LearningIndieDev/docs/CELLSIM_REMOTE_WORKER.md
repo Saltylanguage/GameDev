@@ -46,7 +46,20 @@ startup task.
 
 The desktop then pulls the completed record and its tracked result bundle. Each
 completed job contains `report.json`, the existing per-seed `report.csv`, the
-per-seed `statline.csv` for `bev-experimental` Hare runs, and `manifest.json`.
+per-seed `statline.csv` for `bev-experimental` Hare runs, `manifest.json`, and
+the Unity batch `unity.log`. Validate a pulled bundle before analysis:
+
+```powershell
+.\tools\Test-CellSimArtifactBundle.ps1 `
+  -ArtifactDirectory .\automation\CellSimQueue\Completed\<job-id> `
+  -RequireUnityLog
+```
+
+The worker verifies the report hash before copying the bundle and records the
+packaged file list on the completed job record. The manifest's
+`sourceTreeDirty` now means the source state at run start; explicit
+`sourceTreeDirtyBeforeRun` and `sourceTreeDirtyAfterRun` fields preserve both
+ends of the execution window.
 The stat-line CSV includes `SPO`, `HPS`, `EHS`, `ECN`, `PREY`, `STRV`, `MAT`,
 `BIR`, `CRWD`, `FPO`, `pAVI`, `eAVI`, `predAVG`, `sAVI`, `cAVI`, `bAVG`,
 `RFS`, and `APS`, plus their validity-status columns. The report manifest
