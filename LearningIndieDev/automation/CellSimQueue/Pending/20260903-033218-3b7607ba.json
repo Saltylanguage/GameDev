@@ -1,0 +1,22 @@
+﻿{
+    "schemaVersion":  1,
+    "jobId":  "20260903-033218-3b7607ba",
+    "jobName":  "p3-ex007-baseline-training",
+    "createdUtc":  "2026-09-03T07:32:18.2067545Z",
+    "requestedBy":  "codex",
+    "status":  "pending",
+    "parameters":  {
+                       "ScenarioPath":  "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+                       "SeedStart":  1,
+                       "SeedCount":  20,
+                       "PlayerSpeciesId":  "hare",
+                       "UpgradeId":  "none",
+                       "UpgradeSequence":  "",
+                       "UpgradeValueOverride":  0,
+                       "CombatMode":  "opposed-roll",
+                       "AttackOpportunityMode":  "natural",
+                       "ExperimentalFeatures":  "bev-experimental",
+                       "FoxAttackCooldownTicks":  0,
+                       "PreContactAvoidanceChance":  0
+                   }
+}
