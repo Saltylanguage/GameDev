@@ -7,13 +7,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-02
+- Last reviewed: 2026-09-03
 - Report state: the UI/ControlLibrary batch is committed and pushed, static
   XAML checks pass, and the latest schema-21 worker artifacts are available.
   Graphics-capable Unity acceptance is currently blocked by two inaccessible
   orphaned Unity PIDs and a lockfile; the worker evidence gate is implemented,
-  while fresh clean baseline execution and the first trustworthy upgrade catalog
-  remain open.
+  while the P3 research gate, fresh clean baseline execution, and the first
+  trustworthy upgrade catalog remain open.
 
 ## Triage rules
 
@@ -21,7 +21,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-02)
+## Current open items (2026-09-03)
 
 ### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
 
@@ -83,9 +83,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   read-only `tools/Test-CellSimArtifactBundle.ps1` validator reports the old
   baseline as valid-with-warnings and the old Escape Artist arm as invalid for
   missing CSV/statline files.
-- **Next action:** Let the two newly queued identical control jobs complete,
-  validate both with `-RequireUnityLog`, and compare their normalized outcomes.
-  Re-run the paired upgrade arm only after the packaging contract is green.
+- **Next action:** Let the corrected EX-007 baseline jobs complete, validate
+  both with `-RequireUnityLog`, and compare their normalized outcomes. The
+  first pair was a diagnostic mismatch (blank scenario path and legacy combat)
+  and must not be used for the P3 gate; corrected jobs are queued as
+  `20260903-033218-3b7607ba` and `20260903-033240-b1b43c58`. Re-run the paired
+  upgrade arm only after the packaging contract is green.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
@@ -148,6 +151,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Next action:** At the next sprint review, close or carry S1 explicitly and
   create the S2 control record only after the UI/runtime gate and upgrade
   acceptance criteria are named.
+- **Likely owner:** Josh + Sim.
+- **Confidence:** High.
+
+### P1-021 — P3 bound-AI-discovery gate is not yet met
+
+- **Status:** Carry-forward; the phase is not closed.
+- **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` records that EX-003
+  has no execution package and EX-007 remains contract-only. The corrected
+  Forest Edge/opposed-roll baseline jobs are queued, but no worker has produced
+  validated training or held-out bundles yet.
+- **Next action:** Complete EX-007 in its declared order, including the
+  pre-registered prediction, S1/J1 training and held-out arms, false-cause and
+  missed-effect scoring, and human decision. Keep P4 work preparatory only.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -515,6 +531,9 @@ Unity suites run successfully.
   the follow-up commit prevents successful Git worktree progress from being
   misclassified as a submission failure.
 - **Result:** Historical artifacts were not rewritten. Two identical 20-seed
-  Hare control jobs (`20260902-233024-d8d75c20` and
-  `20260902-233045-437566fd`) are queued for a clean repeated baseline. No
-  upgrade or balance claim is promoted until both complete and compare cleanly.
+  Hare diagnostic jobs (`20260902-233024-d8d75c20` and
+  `20260902-233045-437566fd`) remain queued but are not P3 evidence because
+  they used the default temporary scenario and legacy combat mode. Corrected
+  EX-007 baseline jobs are queued as `20260903-033218-3b7607ba` and
+  `20260903-033240-b1b43c58`; no upgrade or balance claim is promoted until the
+  P3 gate completes.
