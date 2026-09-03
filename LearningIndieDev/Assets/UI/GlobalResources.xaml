@@ -15,6 +15,101 @@
   <SolidColorBrush x:Key="Chrono_AzureSky" Color="#FFA2D2FF"/>
   <SolidColorBrush x:Key="Chrono_FloralRose" Color="#FFFFC8DD"/>
   <SolidColorBrush x:Key="Chrono_PaleLilac" Color="#FFCDB4DB"/>
+
+  <!-- Resource-driven HeaderedContentControl window defaults. Variants can override these
+       semantic keys in the control's local Resources without duplicating the template. -->
+  <x:String x:Key="GalapagOS.Window.HeaderText">GalapagOS Window</x:String>
+  <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF758F60"/>
+  <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+    <GradientStop Color="#FFF3FFB6" Offset="0"/>
+    <GradientStop Color="#FFCCE43E" Offset="1"/>
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFDFE99A"/>
+  <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF372C15"/>
+  <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFC5D370"/>
+  <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
+    <GradientStop Color="#FFA9AA5A" Offset="0"/>
+    <GradientStop Color="#FFEDFFA0" Offset="1"/>
+  </LinearGradientBrush>
+  <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFCCFFA3"/>
+  <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF758F60"/>
+
+  <ControlTemplate x:Key="GalapagOS_CloseWindowButtonTemplate" TargetType="Button">
+    <Border x:Name="CloseButtonBackground" Padding="{TemplateBinding Padding}"
+            Background="{TemplateBinding Background}" CornerRadius="4">
+      <Grid Width="32" Height="32">
+        <Path Data="M1,-6 -2,-3 8,7 -2,17 1,20 11,10 21,20 24,17 14,7 24,-3 21,-6 11,4z"
+              Width="27" Height="27" HorizontalAlignment="Center" VerticalAlignment="Center"
+              Stretch="Fill" Fill="{TemplateBinding Foreground}"
+              Stroke="{DynamicResource GalapagOS.Window.CloseIconStroke}"
+              StrokeThickness="2" StrokeLineJoin="Round"/>
+      </Grid>
+    </Border>
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="CloseButtonBackground" Property="Opacity" Value="0.82"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter TargetName="CloseButtonBackground" Property="Opacity" Value="0.62"/>
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <Style x:Key="GalapagOS_HeaderedWindowStyle" TargetType="HeaderedContentControl">
+    <Setter Property="Header" Value="{DynamicResource GalapagOS.Window.HeaderText}"/>
+    <Setter Property="Background" Value="{DynamicResource GalapagOS.Window.BodyBackground}"/>
+    <Setter Property="BorderBrush" Value="{DynamicResource GalapagOS.Window.BorderBrush}"/>
+    <Setter Property="BorderThickness" Value="2"/>
+    <Setter Property="Foreground" Value="{DynamicResource GalapagOS.Window.HeaderForeground}"/>
+    <Setter Property="Padding" Value="16"/>
+    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="HeaderedContentControl">
+          <Border Background="{TemplateBinding Background}"
+                  BorderBrush="{TemplateBinding BorderBrush}"
+                  BorderThickness="{TemplateBinding BorderThickness}"
+                  CornerRadius="12">
+            <Grid>
+              <Border Height="32" VerticalAlignment="Top"
+                      Background="{DynamicResource GalapagOS.Window.HeaderBackground}"
+                      CornerRadius="12,12,0,0">
+                <Grid>
+                  <Grid Margin="0,0,40,0">
+                    <Rectangle Height="2" Margin="0,8,0,0" VerticalAlignment="Top"
+                               Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
+                    <Rectangle Height="2" Margin="0,16,0,0" VerticalAlignment="Top"
+                               Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
+                    <Rectangle Height="2" Margin="0,24,0,0" VerticalAlignment="Top"
+                               Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
+                  </Grid>
+                  <ContentPresenter Content="{TemplateBinding Header}"
+                                    ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                    ContentStringFormat="{TemplateBinding HeaderStringFormat}"
+                                    Margin="8,0,40,0" VerticalAlignment="Center"
+                                    TextElement.Foreground="{DynamicResource GalapagOS.Window.HeaderForeground}"/>
+                  <Button Width="32" Height="32" HorizontalAlignment="Right"
+                          Background="{DynamicResource GalapagOS.Window.CloseBackground}"
+                          Foreground="{DynamicResource GalapagOS.Window.CloseIcon}"
+                          Template="{StaticResource GalapagOS_CloseWindowButtonTemplate}"
+                          IsTabStop="False"/>
+                </Grid>
+              </Border>
+              <Border Margin="0,32,0,0" Padding="{TemplateBinding Padding}">
+                <ContentPresenter Content="{TemplateBinding Content}"
+                                  ContentTemplate="{TemplateBinding ContentTemplate}"
+                                  ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                  HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+              </Border>
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
   <ControlTemplate x:Key="GalapagOS_CloseWindowButtonStyle" TargetType="Button">
     <Border x:Name="BackgroundBorder" Padding="{TemplateBinding Padding}" CornerRadius="4,4,4,4">
       <Border.Background>
