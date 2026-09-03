@@ -1,0 +1,22 @@
+﻿{
+    "schemaVersion":  1,
+    "jobId":  "20260903-033240-b1b43c58",
+    "jobName":  "p3-ex007-baseline-heldout",
+    "createdUtc":  "2026-09-03T07:32:40.1775422Z",
+    "requestedBy":  "codex",
+    "status":  "pending",
+    "parameters":  {
+                       "ScenarioPath":  "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
+                       "SeedStart":  101,
+                       "SeedCount":  5,
+                       "PlayerSpeciesId":  "hare",
+                       "UpgradeId":  "none",
+                       "UpgradeSequence":  "",
+                       "UpgradeValueOverride":  0,
+                       "CombatMode":  "opposed-roll",
+                       "AttackOpportunityMode":  "natural",
+                       "ExperimentalFeatures":  "bev-experimental",
+                       "FoxAttackCooldownTicks":  0,
+                       "PreContactAvoidanceChance":  0
+                   }
+}
