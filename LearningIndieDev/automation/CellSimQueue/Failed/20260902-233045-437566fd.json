@@ -4,7 +4,6 @@
     "jobName":  "step1-hare-baseline-b",
     "createdUtc":  "2026-09-03T03:30:45.6249368Z",
     "requestedBy":  "codex",
-    "status":  "pending",
     "parameters":  {
                        "ScenarioPath":  "",
                        "SeedStart":  1,
@@ -18,5 +17,13 @@
                        "ExperimentalFeatures":  "bev-experimental",
                        "FoxAttackCooldownTicks":  0,
                        "PreContactAvoidanceChance":  0
-                   }
+                   },
+    "status":  "failed",
+    "startedUtc":  "2026-09-03T07:40:04.5139033Z",
+    "worker":  "SALTY_PC",
+    "sourceCommit":  "5a11fe370032a7514124b70e205facd0cb26dd5b",
+    "sourceTreeCleanBeforeRun":  true,
+    "sourceTreeCleanAfterCleanup":  true,
+    "completedUtc":  "2026-09-03T07:40:05.1799285Z",
+    "error":  "Unity is already running (PID 38616). Close the editor, save your work, and run this command again. This tooling never closes Unity for you."
 }
