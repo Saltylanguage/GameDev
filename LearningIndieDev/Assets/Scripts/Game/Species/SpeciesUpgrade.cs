@@ -137,14 +137,17 @@ namespace SaltyGame
         public const string ToughHideId = "tough-hide";
         public const string EfficientDigestionId = "efficient-digestion";
         public const string CrowdingToleranceId = "crowding-tolerance";
-        public const string EscapeArtistId = "escape-artist";
+        public const string ThreatResponseId = "threat-response";
+        public const float ThreatResponseFleeSpeedBonus = 0.75f;
+        public const float ThreatResponseAvoidanceChanceBonus = 0.08f;
+        public const int ThreatResponseMaxLevel = 12;
 
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
         {
             ToughHideId,
             EfficientDigestionId,
             CrowdingToleranceId,
-            EscapeArtistId,
+            ThreatResponseId,
         };
 
         public static SpeciesUpgrade Create(string id)
@@ -174,8 +177,12 @@ namespace SaltyGame
                     return new SpeciesUpgrade(EfficientDigestionId, 5, SpeciesUpgradeType.DigestionEnergyBonus, 1f);
                 case CrowdingToleranceId:
                     return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
-                case EscapeArtistId:
-                    return new SpeciesUpgrade(EscapeArtistId, 5, SpeciesUpgradeType.FleeMovementSpeedBonus, 0.5f);
+                case ThreatResponseId:
+                    return new SpeciesUpgrade(
+                        ThreatResponseId,
+                        5,
+                        SpeciesUpgradeType.FleeMovementSpeedBonus,
+                        ThreatResponseFleeSpeedBonus);
                 default:
                     const string blockSweepPrefix = "stronger-block-";
                     if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
@@ -188,6 +195,32 @@ namespace SaltyGame
 
                     throw new ArgumentException($"Unknown upgrade id '{id}'.", nameof(id));
             }
+        }
+
+        public static bool IsThreatResponseFleeLevel(int level)
+        {
+            if (level < 1 || level > ThreatResponseMaxLevel)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(level),
+                    level,
+                    $"Threat Response level must be between 1 and {ThreatResponseMaxLevel}.");
+            }
+
+            return level == 1;
+        }
+
+        public static float GetThreatResponseAvoidanceChance(int level)
+        {
+            if (level < 0 || level > ThreatResponseMaxLevel)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(level),
+                    level,
+                    $"Threat Response level must be between 0 and {ThreatResponseMaxLevel}.");
+            }
+
+            return level * ThreatResponseAvoidanceChanceBonus;
         }
 
         public static string GetDisplayName(string id)
@@ -206,8 +239,8 @@ namespace SaltyGame
                     return "EFFICIENT DIGESTION";
                 case CrowdingToleranceId:
                     return "CROWDING TOLERANCE";
-                case EscapeArtistId:
-                    return "ESCAPE ARTIST";
+                case ThreatResponseId:
+                    return "THREAT RESPONSE";
                 default:
                     return id?.ToUpperInvariant() ?? string.Empty;
             }

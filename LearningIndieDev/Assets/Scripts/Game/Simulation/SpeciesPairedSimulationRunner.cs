@@ -12,6 +12,8 @@ namespace SaltyGame
         readonly CellularSimData baselineData;
         readonly CellularSimData blockPlusTwoData;
         readonly SpeciesExperimentalOptions experimentalOptions;
+        Grid<SpeciesCell> baselinePreviousCells;
+        Grid<SpeciesCell> blockPlusTwoPreviousCells;
 
         public SpeciesPairedSimulationRunner(
             SimulationRunState baselineRun,
@@ -91,8 +93,12 @@ namespace SaltyGame
                 out var pairedOpportunityId,
                 opportunityObservations: observations,
                 tick: baselineTick,
-                experimentalOptions: experimentalOptions);
+                experimentalOptions: experimentalOptions,
+                baselinePreviousSource: baselinePreviousCells,
+                blockPlusTwoPreviousSource: blockPlusTwoPreviousCells);
             OpportunityControl.Add(result, pairedOpportunityId, observations);
+            baselinePreviousCells = BaselineRun.Cells;
+            blockPlusTwoPreviousCells = BlockPlusTwoRun.Cells;
             BaselineRun.Advance(baselineNext, baselineData.StepInterval);
             BlockPlusTwoRun.Advance(blockPlusTwoNext, blockPlusTwoData.StepInterval);
             return true;
