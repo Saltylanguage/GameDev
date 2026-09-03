@@ -39,11 +39,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-015 — Unity preflight cannot establish a clean editor state
 
 - **Status:** Blocked by external process state; no destructive workaround used.
-- **Evidence:** `Test-UnityPreflight.ps1` reports Unity already running at PIDs
-  `22440` and `64828`. The processes expose no executable path or command line,
-  reject normal and elevated termination, and `LearningIndieDev/Temp/UnityLockfile`
-  remains present. The relay-health check also currently reports five Codex user
-  relays, but no Unity Assistant package relays.
+- **Evidence:** `Test-UnityPreflight.ps1` still reports Unity already running at
+  PIDs `22440` and `64828`. The processes expose no executable path or command
+  line, `Wait-Process` returns access denied, and normal/elevated termination is
+  unavailable. The lockfile was absent during this retry, but the preflight
+  process guard remains blocked by the inaccessible PIDs. The relay-health check
+  currently reports five Codex user relays, but no Unity Assistant package
+  relays.
 - **Next action:** Reboot or end the exact stale processes through an authorized
   desktop session, confirm the lockfile is stale only after they are gone, then
   rerun preflight. Do not delete the lockfile while those PIDs remain.

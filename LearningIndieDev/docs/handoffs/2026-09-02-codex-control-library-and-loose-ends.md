@@ -26,10 +26,11 @@ machine state.
   Unity's conventional blank-value whitespace in the new `.meta` file.
 - Unity relay-health tooling ran, but the current machine reports five Codex
   user relays and no Unity Assistant package relays.
-- Unity graphics/Play Mode acceptance was **not** run. `Test-UnityPreflight.ps1`
-  reports protected orphaned Unity PIDs `22440` and `64828`; exact process
-  termination was denied even with elevation, and `Temp/UnityLockfile` remains.
-  Do not remove that lockfile while those PIDs are still present.
+- Unity graphics/Play Mode acceptance was **not** run. On retry,
+  `Test-UnityPreflight.ps1` still reports protected Unity PIDs `22440` and
+  `64828`; `Wait-Process` returns access denied and exact termination was denied
+  even with elevation. The lockfile was absent during this retry, but the
+  process guard remains blocked until those PIDs are cleared externally.
 
 ## Current risks and next actions
 
