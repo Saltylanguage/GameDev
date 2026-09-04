@@ -1,19 +1,21 @@
 # Authored upgrade prediction-input adapter
 
-**Status:** Implementation complete; elevated Unity verification is pending
-while the Unity Editor is open.
+**Status:** Implementation and elevated verification complete
+**Updated:** 2026-09-04
 
 ## What changed
 
 - Added `SpeciesUpgradePredictionInputAdapter` under
-  `Assets/Editor/SimulationTools/`.
+  `Assets/Scripts/Game/Species/`.
 - Added `SpeciesUpgradeLoadoutFingerprint` to give an ordered set of resolved
   snapshots one deterministic identity.
-- Added the `-UpgradeAssetSequence` option to
-  `tools/Run-CellularExperiment.ps1` and the Unity experiment runner.
-- Authored research runs now resolve IDs from the production catalog, apply the
-  immutable snapshots in the requested order, pass those snapshots into every
-  run state, and write the prediction input and fingerprints into `report.json`.
+- Added `-UpgradeAssetSequence` and the optional
+  `-UpgradeAssetCatalogPath` options to `tools/Run-CellularExperiment.ps1` and
+  the Unity experiment runner.
+- Authored research runs now resolve IDs from either the production catalog or
+  an explicitly named research fixture catalog, apply immutable snapshots in
+  the requested order, pass those snapshots into every run state, and write the
+  prediction input and fingerprints into `report.json`.
 - Editor callers that already hold a Scriptable Object list can use
   `CreateInputFromAssets` or `SerializeAssets`; runtime state still receives
   snapshots rather than asset references.
@@ -24,45 +26,33 @@ while the Unity Editor is open.
   assets so the migration preserves the original legacy values instead of
   silently substituting newer production upgrades.
 
-## How to use it
-
-From `LearningIndieDev`, with Unity closed:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
-    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
-    -SeedStart 10100 `
-    -SeedCount 20 `
-    -PlayerSpeciesId hare `
-    -UpgradeAssetSequence trailblazer-long-stride,warren-guarded-burrow
-```
-
-The IDs are stable upgrade IDs, not file names or asset paths. The adapter
-rejects unknown IDs, duplicate IDs, invalid production assets, and upgrades
-that target a different player species.
-
-EX-007's fixtures are intentionally resolved from an explicit asset list rather
-than the production catalog because its historical `faster-movement` and
-`crowding-tolerance` arms predate the current production catalog.
-
-## Report evidence
-
-Schema 22 authored reports include:
-
-- `predictionInput`: ordered IDs plus each snapshot's modifiers, prerequisites,
-  exclusions, contract version, registry fingerprint, and snapshot fingerprint.
-- `upgradeLoadoutFingerprint`: deterministic identity that changes when the
-  snapshot values or order changes.
-- Per-run `upgradeLoadout` records using the same snapshot serializer as the
-  player-facing run path.
-
 ## Verification
 
-The new Edit Mode tests cover catalog resolution, serialization, unknown and
-duplicate IDs, and order-sensitive loadout fingerprints. Run the full elevated
-Edit Mode suite after closing Unity. The verified gate is
-`artifacts/unity-tests-20260904-165536/EditMode-results.xml` (**198/198**).
-The end-to-end authored run is
-`artifacts/cellular-experiment-20260904-170039/report.json`; it contains schema
-22 `predictionInput` metadata and matching per-run snapshot records for
-`trailblazer-long-stride,warren-guarded-burrow`.
+The focused elevated Edit Mode gate passed **200/200** tests:
+`artifacts/unity-tests-20260904-191205/EditMode-results.xml`.
+
+The adapter-backed EX-007 arms passed bundle validation and StatLine validation
+with limitations:
+
+- `artifacts/cellular-experiment-20260904-191654` (S1, seeds 1–20)
+- `artifacts/cellular-experiment-20260904-191915` (J1, seeds 1–20)
+- `artifacts/cellular-experiment-20260904-192118` (S1, seeds 101–105)
+- `artifacts/cellular-experiment-20260904-192239` (J1, seeds 101–105)
+
+The EX-009 same-held-out order comparison also completed through the adapter:
+
+- `artifacts/cellular-experiment-20260904-192559` (A,
+  `faster-movement,crowding-tolerance`)
+- `artifacts/cellular-experiment-20260904-192703` (B,
+  `crowding-tolerance,faster-movement`)
+
+All five EX-009 pairs are exact matches after excluding the intentionally
+different ordered loadout record. The pairwise result is recorded in
+`docs/Research/Experiments/EX-009-Same-Heldout-Order-Comparison/`.
+
+## Provenance note
+
+Historical EX-007 artifacts remain unchanged. They use schema 21, while the
+adapter-backed reruns use schema 23 and current telemetry code. Core simulation
+payloads match where the ruleset is unchanged; derived StatLine fields were
+recalculated and must be compared only within the matching telemetry version.

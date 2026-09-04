@@ -1,7 +1,7 @@
 # Predictive AI research architecture and flows
 
 > Status: Needs Review  
-> Last reviewed: 2026-09-03  
+> Last reviewed: 2026-09-04
 > Scope: Program roadmap, experiment operation, evidence lineage, and experiment selection
 
 These diagrams summarize the current Predictive AI research program and the
@@ -24,7 +24,7 @@ flowchart LR
     P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6
 
     NOW["Current gate<br/>EX-007 evidence complete<br/>Human decision pending<br/>EX-003 unresolved"]
-    ORDER["Second-pass recommendation<br/>Replace EX-009 research priority<br/>with a commutativity unit test"]
+    ORDER["EX-009 same-seed check complete<br/>A/B matched for current additive pair<br/>Add commutativity regression test"]
 
     NOW -.-> P3
     ORDER -.-> P3
@@ -156,4 +156,3 @@ flowchart LR
 - [Second-pass delta](../DeepResearch_Treatement/SECOND_PASS_DELTA.md)
 - [Revised research protocol](../DeepResearch_Treatement/REVISED_PROTOCOL.md)
 - [AI-generated reports guideline](../Studio%20Guidelines/AI_GENERATED_REPORTS.md)
-

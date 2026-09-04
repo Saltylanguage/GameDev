@@ -21,6 +21,26 @@ can change the result, but not yet how large or dependable the change is.
 Every run produced a complete, validated report. The per-seed comparisons are
 in `artifacts/EX-007-20260903-1535/paired-deltas.csv`.
 
+## Adapter-backed rerun audit
+
+To verify that the research path consumes the same snapshot contract as the
+game, S1 and J1 were rerun with the EX-007 research fixture catalog through
+`SpeciesUpgradePredictionInputAdapter`. The new schema-23 bundles are:
+
+| Arm | Seeds | Artifact | Bundle | Statline |
+|---|---:|---|---|---|
+| S1 | 1–20 | `artifacts/cellular-experiment-20260904-191654` | Valid | Validated with limitations |
+| J1 | 1–20 | `artifacts/cellular-experiment-20260904-191915` | Valid | Validated with limitations |
+| S1 | 101–105 | `artifacts/cellular-experiment-20260904-192118` | Valid | Validated with limitations |
+| J1 | 101–105 | `artifacts/cellular-experiment-20260904-192239` | Valid | Validated with limitations |
+
+The adapter-backed reports record the fixture catalog path and complete
+snapshot provenance. Their core run payloads match the historical arms after
+accounting for the intentionally different loadout metadata. The historical
+reports are schema 21 and the reruns are schema 23; derived StatLine fields
+were recalculated by the current telemetry code, so this audit does not claim
+full byte-for-byte StatLine parity.
+
 ## What the words mean
 
 - **Final Hares (FPO):** how many Hares were alive at the end.

@@ -5,39 +5,50 @@
 **Feature:** Ordered upgrade application  
 **Task:** Compare Fast Movement → Crowding Tolerance against the reverse order  
 **Focus:** Same-seed outcome differences, deterministic application, telemetry completeness  
-**Location:** `artifacts/EX-009-20260903/`  
-**Status:** Blocked before execution  
-**Generated:** 2026-09-03
+**Location:** `artifacts/cellular-experiment-20260904-192559/` and
+`artifacts/cellular-experiment-20260904-192703/`
+**Status:** Complete; human review pending
+**Generated:** 2026-09-04
 
 ## Locked A/B inputs
 
 | Arm | Ordered loadout | Seed range | Status |
 |---|---|---:|---|
-| A | `faster-movement,crowding-tolerance` | 106–110 | Blocked at Unity preflight |
-| B | `crowding-tolerance,faster-movement` | 106–110 | Existing validated bundle |
+| A | `faster-movement,crowding-tolerance` | 106–110 | Complete, schema 23 |
+| B | `crowding-tolerance,faster-movement` | 106–110 | Complete, schema 23 |
 
 ## Observed execution result
 
-Arm A was attempted twice. Both attempts stopped before simulation because the
-Unity Package Manager IPC preflight failed. No `report.json`, `report.csv`,
-`statline.csv`, or valid run bundle was produced for Arm A.
+Both arms ran through the authored-upgrade adapter with the explicit EX-007
+research fixture catalog. Each produced `report.json`, `report.csv`,
+`statline.csv`, `manifest.json`, and `unity.log`; both bundles passed the strict
+artifact validator. The independent StatLine validator returned
+`VALIDATED_WITH_LIMITATIONS` for each arm.
 
-| Attempt | Preflight evidence | Result |
+| Arm | Artifact | Validation |
 |---|---|---|
-| 1 | `artifacts/unity-preflight-20260903-173849/license-probe.log` | Failed before simulation |
-| 2 | `artifacts/unity-preflight-20260903-174035/license-probe.log` | Failed before simulation |
+| A | `artifacts/cellular-experiment-20260904-192559` | Bundle valid; StatLine validated with limitations |
+| B | `artifacts/cellular-experiment-20260904-192703` | Bundle valid; StatLine validated with limitations |
 
 ## A/B comparison
 
-**Not available.** Comparing Arm B with the prior forward-order runs on seeds
-101–105 would repeat the exact design error this experiment is intended to fix.
-No order conclusion is made.
+The paired comparison is complete. Every seed-level delta in
+[`paired-deltas.csv`](paired-deltas.csv) is zero for the final populations,
+births, predation, starvation, crowding, movement, food, and available
+encounter/statline measures. The five per-run objects are JSON-equivalent after
+excluding the intentionally different ordered loadout record.
+
+The ruleset fingerprint is identical between arms, while the ordered loadout
+and its fingerprints differ as intended. This is evidence that these two
+current additive upgrades commute under the locked test conditions. It does not
+generalize to future stateful or non-additive upgrades.
 
 ## Known limitations
 
-- Unity licensing/Package Manager IPC must be repaired before Arm A can run.
-- Existing Arm B was produced on the same source revision but while the working
-  tree was dirty; provenance must be checked again when Arm A completes.
+- The five-seed panel is a transfer smoke test, not a high-powered promotion
+  sample.
+- StatLine validation limitations remain for accumulated counters; they are
+  reported explicitly and do not change the exact A/B equality observed here.
 - This experiment only answers the discrete order question for ForestEdge,
   Hare, the declared values, and seeds 106–110.
 
@@ -46,7 +57,14 @@ No order conclusion is made.
 **Decision ID:** `DEC-EXP-009-0001`  
 **Decision:** Pending  
 **Owner:** Human design owner  
-**Key Observation:** No valid A/B order comparison exists because the forward arm was blocked before simulation.  
-**Evidence References:** [EX-009 README](README.md), preflight logs above, existing Arm B bundle.  
-**Scope:** Authorizes no order-independence, balance, or production conclusion.  
-**Follow-up:** Repair Unity/Hub IPC state, rerun Arm A on seeds 106–110, validate the bundle, then compare pairwise with Arm B.
+**Key Observation:** Both ordered loadouts produced identical outcomes on all
+five shared held-out seeds; the observed result supports commutativity for this
+specific pair of additive upgrades and configuration.
+**Evidence References:** [EX-009 README](README.md),
+[paired deltas](paired-deltas.csv), Arm A and Arm B bundles above.
+**Scope:** This is a bounded model-behavior result, not a balance, fun, or
+production approval and not a universal order theorem.
+**Follow-up:** Add a focused commutativity regression test and reopen an
+order-specific research comparison only if upgrade application becomes
+stateful, capped, multiplicative, prerequisite-driven, or otherwise
+non-commutative.

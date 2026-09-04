@@ -33,6 +33,7 @@ effect size or a reliable interaction claim.
 - [AI analysis](AI_ANALYSIS.md)
 - [Prediction](PREDICTION-EXP-007-0001.json)
 - Per-seed comparisons: `artifacts/EX-007-20260903-1535/paired-deltas.csv`
+- Adapter migration audit: [package README](README.md#adapter-migration-verification-2026-09-04)
 
 ## Scope
 

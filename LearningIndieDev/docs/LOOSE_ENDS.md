@@ -7,14 +7,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-03
+- Last reviewed: 2026-09-04
 - Report state: the earlier UI/ControlLibrary batch is committed and pushed, but
   the current follow-up documentation, XAML, and tooling batch is still local
   and uncommitted. The current EX-007/EX-008 run bundles pass the strict artifact
   validator with Unity logs. Graphics-capable Unity acceptance remains blocked by
   Unity's machine-level UPM/licensing IPC state; the P3 research gate remains
-  open pending human review and the same-held-out EX-009 comparison, while the
-  first trustworthy upgrade catalog remains open.
+  open pending human review; the same-held-out EX-009 comparison is now
+  complete and the first trustworthy upgrade catalog is in place. The current
+  adapter-backed evidence/documentation checkpoint is being committed.
 
 ## Triage rules
 
@@ -57,17 +58,17 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh (host permissions) + tooling owner.
 - **Confidence:** High.
 
-### P1-016 — First trustworthy upgrade catalog is not yet defined
+### P1-016 — First trustworthy upgrade catalog needs balance review
 
-- **Status:** Open; the S2 design gate has not started.
-- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` still calls for one explicit
-  six-to-ten-upgrade catalog with numeric, spatial, conditional, and tradeoff
-  effects, deterministic application, and contribution telemetry. Current
-  prototype upgrades remain movement/attack/block oriented and are not yet a
-  complete Hare/Fox interaction catalog.
-- **Next action:** Define the first catalog, previews, stacking rules, and
-  telemetry contract before promoting another balance arm.
-- **Likely owner:** Josh + Sim.
+- **Status:** Catalog and authoring path are complete; balance/promotion review
+  remains open.
+- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` records seven authored
+  production assets, the catalog validator, snapshot adapter, and the completed
+  EX-009 same-seed check. The remaining questions are design balance, player
+  readability, and whether the EX-007 evidence should be accepted or revised.
+- **Next action:** Record the EX-007 human decision and name any balance or
+  playtest follow-up; keep Lab/permanent upgrades out of this slice.
+- **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P1-017 — Worker result packaging and provenance disagree
@@ -98,15 +99,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-018 — Upgrade effect evidence is descriptive, not promotable
 
-- **Status:** Open; no causal upgrade claim should be made yet.
-- **Evidence:** The current EX-007/EX-008 findings remain descriptive: effect
-  direction and size vary by seed panel, the human decision is pending, and the
-  two joint upgrade orders still lack a same-held-out-seed comparison. The
-  historical Escape Artist evidence remains incomplete as described in P1-017.
-- **Next action:** Complete EX-009's same-seed comparison, record the human
-  decision, and keep all balance or interaction claims bounded to the validated
-  scenario, values, telemetry, and seed panels.
-- **Likely owner:** Josh + Sim.
+- **Status:** Open; no balance or production claim should be made yet.
+- **Evidence:** EX-007/EX-008 effect direction and size still vary by seed
+  panel, and the EX-007 human decision is pending. EX-009 now provides a clean
+  same-held-out order result: the two current additive upgrades matched on all
+  five pairs. That is a bounded implementation result, not a balance result.
+- **Next action:** Record the EX-007 human decision and keep all balance or
+  interaction claims bounded to the validated scenario, values, telemetry, and
+  seed panels.
+- **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P1-019 — Embedded Noesis editor analytics requires a release decision
@@ -161,19 +162,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-021 — P3 bound-AI-discovery gate is not yet met
 
-- **Status:** Carry-forward; P3 is not closed. EX-007/EX-008 evidence is now
-  assembled locally, but EX-007's human decision is pending and EX-009 is
-  blocked before its forward arm. EX-003 still has no execution package.
+- **Status:** Carry-forward; P3 is not closed. EX-007/EX-008 evidence is
+  assembled, EX-009's same-seed comparison is complete, and EX-007's human
+  decision is pending. EX-003 still has no execution package.
 - **Evidence:** The earlier `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is a
   historical 03:35 snapshot that predates the later EX-007/EX-008 bundles. The
   current local `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md`
   records the assembled evidence and pending human decision; the 11 current
   EX-007/EX-008 bundles pass the strict artifact validator with Unity logs.
 - **Next action:** Mark the old gate snapshot as historical in the current
-  status trail, obtain the human EX-007 decision, repair Unity IPC, complete
-  EX-009, and only then decide whether the P3 gate passes. Keep P4 work
-  preparatory only.
-- **Likely owner:** Josh + Sim.
+  status trail, obtain the human EX-007 decision, decide whether EX-003 needs
+  to be executed or the exit gate revised, and only then decide whether P3
+  passes. Keep P4 work preparatory only.
+- **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P1-024 — Current follow-up batch is not durably checkpointed
@@ -189,19 +190,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + current contributors.
 - **Confidence:** High.
 
-### P1-025 — EX-009 same-held-out upgrade-order comparison is blocked
+### P1-025 — EX-009 same-held-out upgrade-order comparison is complete
 
-- **Status:** Package and contract are prepared locally; the forward arm was
-  attempted twice and stopped before simulation at Unity preflight. No valid
-  A/B order result exists.
-- **Evidence:** `docs/Research/Experiments/EX-009-Same-Heldout-Order-Comparison/REPORT.md`
-  and `docs/handoffs/2026-09-03-1745-codex-ex009-same-heldout-order.md` record
-  the missing forward arm on seeds 106–110. The existing reverse-order arm must
-  not be compared with the older different-seed forward arm.
-- **Next action:** Repair Unity Hub/UPM licensing IPC, run the forward arm on
-  seeds 106–110, validate the complete bundle, and calculate pairwise deltas
-  before making an order claim.
-- **Likely owner:** Josh + Sim.
+- **Status:** Resolved for the locked question; keep the historical preflight
+  failures as operational records.
+- **Evidence:** Both adapter-backed arms passed validation on seeds 106–110:
+  `artifacts/cellular-experiment-20260904-192559` and
+  `artifacts/cellular-experiment-20260904-192703`. The paired table in the
+  EX-009 package records zero deltas across all compared outcome and telemetry
+  fields.
+- **Next action:** Add a focused commutativity regression test and reopen an
+  order-specific experiment only if future upgrades introduce stateful or
+  non-additive behavior.
+- **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P1-026 — Detached worker lacks the latest Unity lifecycle tooling

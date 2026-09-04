@@ -15,6 +15,28 @@ herbivore statline. It is deliberately small: one supported single-variable
 intervention and one joint intervention, with the same seeds, the same report
 schema, and a held-out seed panel.
 
+## Adapter migration verification (2026-09-04)
+
+The four EX-007 trial arms were rerun through the authored-upgrade prediction
+input adapter using the explicit research fixture catalog at
+`Assets/Data/CellularSimulation/Upgrades/Research/EX-007`:
+
+| Arm | Seeds | Adapter-backed artifact |
+|---|---:|---|
+| S1 | 1–20 | `artifacts/cellular-experiment-20260904-191654` |
+| J1 | 1–20 | `artifacts/cellular-experiment-20260904-191915` |
+| S1 | 101–105 | `artifacts/cellular-experiment-20260904-192118` |
+| J1 | 101–105 | `artifacts/cellular-experiment-20260904-192239` |
+
+All four bundles are schema 23 and pass the strict artifact validator; the
+independent StatLine validator returns `VALIDATED_WITH_LIMITATIONS`. The
+adapter preserves the legacy research values while recording the source
+catalog, ordered snapshots, registry fingerprint, and loadout fingerprint.
+Historical schema-21 reports remain unchanged. Core simulation payloads match
+the corresponding historical runs where the ruleset is unchanged; derived
+StatLine fields were recalculated by the current telemetry code and must not be
+treated as byte-for-byte historical parity.
+
 ## What this package must prove
 
 1. A supported single intervention can be stated in executable terms.

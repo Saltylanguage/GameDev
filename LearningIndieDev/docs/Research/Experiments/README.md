@@ -23,4 +23,5 @@ into the documentation tree.
 - [EX-001B - Cross-Scenario Determinism](EX-001B-Cross-Scenario-Determinism/README.md)
 - [EX-002 - Herbivore Collapse Attribution](EX-002-Herbivore-Collapse-Attribution/README.md)
 - [EX-007 - Predictive Statline Interventions](EX-007-Predictive-Statline-Interventions/README.md)
+- [EX-008 - Reversed Upgrade-Order Follow-up](EX-008-Reversed-Order-Followup/README.md)
 - [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](EX-009-Same-Heldout-Order-Comparison/README.md)

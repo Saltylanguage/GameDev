@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.12<br>
+**Version:** 1.13<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -642,6 +642,15 @@ from balance, quality, or engagement judgments. A human reviewer can trace the
 statement to reports and decide whether a model extension, playtest, or
 implementation should follow.
 
+**Current implementation note:** EX-007's legacy research arms have now been
+rerun through the authored-upgrade prediction-input adapter using an explicit
+research fixture catalog. The adapter-backed artifacts preserve the original
+intervention values while recording the source catalog, ordered snapshots, and
+fingerprints. Their core simulation payloads match the historical arms where
+the ruleset is unchanged; derived StatLine values are versioned telemetry and
+must not be treated as byte-for-byte historical parity across schema/code
+revisions.
+
 ### EX-008 - Reversed upgrade-order follow-up
 
 **Question:** Does applying the same Hare upgrades in the opposite order change
@@ -677,9 +686,12 @@ reported. Order independence may be stated only if the same-seed comparison
 supports it; otherwise the result is order-sensitive or unresolved.
 
 The working package is documented in [EX-009 - Same-Held-Out-Seed Upgrade-Order
-Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md). The
-first execution attempt is recorded as blocked before simulation by Unity
-Package Manager IPC failure.
+Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md). Both
+ordered arms have now completed on seeds 106–110 through the authored-upgrade
+adapter. All five per-seed outcome and available telemetry comparisons are
+identical; the bounded result supports commutativity for these two additive
+upgrades under the locked conditions. The prior Unity preflight failures remain
+historical operational records, not current research blockers.
 
 ### EX-004 - Replay-to-explanation
 
@@ -857,10 +869,13 @@ Every research bundle should preserve:
   scoped to that protocol.
 - CIA-001 remains proposed research work, not validated predictive capability.
   EX-007 now has complete training and held-out run/report/analysis evidence;
-  its human decision remains pending. EX-008 added a crowding-only arm and a
-  reversed sequence, but used a different held-out panel from the original
-  forward sequence. EX-009 is the locked same-held-out-seed A/B follow-up; its
-  forward arm is currently blocked at the Unity Package Manager preflight gate.
+  its human decision remains pending. The current adapter-backed reruns also
+  verify that its research fixture values can be consumed through the same
+  snapshot path used by authored game loadouts. EX-008 added a crowding-only
+  arm and a reversed sequence, but used a different held-out panel from the
+  original forward sequence. EX-009 has now closed that same-held-out-seed gap:
+  both orders completed on 106–110 and matched exactly on the recorded outcome
+  and telemetry fields. Its human decision remains pending.
 
 The first research package should be small enough to complete without blocking
 the current production lane:
@@ -941,3 +956,4 @@ rule.
 | 1.10 | 2026-08-22 | Clarified that pre-specification is human-owned: AI may draft proposals, but a human decision owner must approve and record the experiment contract before execution. |
 | 1.11 | 2026-09-03 | Added EX-009 to close the same-held-out-seed gap in the EX-007/EX-008 upgrade-order comparison; recorded the current Unity preflight blocker. |
 | 1.12 | 2026-09-03 | Reordered the experiment portfolio by implementation dependencies and added the missing EX-008 entry. |
+| 1.13 | 2026-09-04 | Recorded the adapter-backed EX-007 reruns, completed the same-held-out EX-009 order comparison, and bounded the commutativity result to the tested additive upgrades and configuration. |

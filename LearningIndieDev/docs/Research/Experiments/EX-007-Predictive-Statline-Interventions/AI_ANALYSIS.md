@@ -111,3 +111,12 @@ comparison. The new panel shows that crowding tolerance can account for some
 of the birth and survival shift by itself, while the combined arm's extra
 movement mainly shows up in births and predator-contact outcomes rather than a
 large final-population increase.
+
+## Adapter migration note
+
+The four EX-007 trial arms were rerun through the authored-upgrade adapter with
+the explicit research fixture catalog. The adapter-backed core run payloads
+match the corresponding historical arms where the ruleset is unchanged, which
+supports the implementation handoff. The reruns use schema 23 and current
+telemetry code; derived StatLine values therefore remain versioned evidence and
+are not silently merged into the original prediction score.

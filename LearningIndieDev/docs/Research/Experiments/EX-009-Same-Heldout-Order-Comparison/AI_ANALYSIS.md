@@ -3,15 +3,39 @@
 **Analysis:** `ANL-RPT-RUN-009-0001-v1`  
 **Experiment:** `EXP-009`  
 **Source report:** `REPORT.md`  
-**Status:** Not generated; no valid A/B outcome exists  
-**Generated:** 2026-09-03
+**Status:** Scored; human decision pending
+**Generated:** 2026-09-04
 
-AI analysis is intentionally deferred. The forward-order arm did not pass the
-Unity preflight gate, so there is no same-seed outcome to interpret. Treating
-the existing reversed-order bundle or the prior different-seed forward bundle
-as a comparison would create an unsupported order claim.
+Both ordered loadouts now have complete adapter-backed schema-23 bundles on the
+same held-out seeds (106–110). The two reports share the same scenario, ruleset
+fingerprint, catalog path, registry fingerprint, run configuration, and seed
+panel. Their ordered loadout and order-sensitive fingerprints differ as
+expected.
 
-## Next required evidence
+## Result
 
-Run Arm A on seeds 106–110 after Unity Package Manager/licensing IPC recovery,
-validate the complete artifact bundle, and calculate per-seed A-minus-B deltas.
+All five per-seed comparisons are exact matches after excluding the intentionally
+different ordered loadout record. Final population, births, predation,
+starvation, crowding, movement, food, and available encounter/statline measures
+all have A-minus-B = 0. The full table is in
+[`paired-deltas.csv`](paired-deltas.csv).
+
+## Interpretation
+
+The evidence supports the bounded statement:
+
+> Under the current additive upgrade implementation, `faster-movement` and
+> `crowding-tolerance` commute for ForestEdge/Hare at the declared values and
+> seeds 106–110.
+
+This is stronger than the earlier different-panel comparison, but it remains a
+local implementation result. It does not establish commutativity for upgrades
+that share fields, use caps or multipliers, alter prerequisites, or introduce
+stateful side effects. The five-seed panel is also too small to serve as a
+standalone balance or promotion study.
+
+## Validation note
+
+Both artifact bundles passed the strict bundle validator. StatLine validation
+returned `VALIDATED_WITH_LIMITATIONS` for the known accumulated-counter limits;
+those limits do not affect the exact paired equality reported here.

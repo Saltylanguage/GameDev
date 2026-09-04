@@ -41,27 +41,35 @@ should be confirmed when the next sprint is kicked off.
 | Write down the upgrade rules | Josh | 4h | Complete |
 | Create the first catalog and authoring path | Josh | 8h | Complete; seven production assets and the catalog validator are ready |
 | Apply upgrades consistently and show what changed | Josh | 8h | Complete |
-| Add catalog fixtures and invalid-combination tests | Josh | 3h | Complete; 198/198 Edit Mode tests pass |
-| Show upgrade choices and the result in the game | Josh | 4h | Complete; 198/198 Edit Mode and 14/14 runnable Play Mode tests pass |
-| Connect upgrades to research and review balance evidence | Josh | 6h | In progress; adapter-backed fixture path is implemented, EX-009 rerun and balance review remain |
+| Add catalog fixtures and invalid-combination tests | Josh | 3h | Complete; 200/200 Edit Mode tests pass |
+| Show upgrade choices and the result in the game | Josh | 4h | Complete; 200/200 Edit Mode and 14/14 runnable Play Mode tests pass |
+| Connect upgrades to research and review balance evidence | Josh | 6h | Adapter-backed fixture path and EX-009 same-seed comparison complete; EX-007 human review and balance questions remain |
 | EX-002 research intervention preparation | Josh | 5h | Separate research lane |
 | Fox mating/eating telemetry discrepancy | Sim | 3h | Separate Sim lane |
 | BoardSnapshot test-fixture repair | Sim | 2h | Separate Sim lane |
 
 ## Completed work
 
-The current implementation has passed the final Edit Mode gate: **198 of 198
+The current implementation has passed the final Edit Mode gate: **200 of 200
 tests passed**. The catalog slice is complete with seven authored production
 assets across the Trailblazer, Warren, and Gardeners directions. The
 player-facing flow uses those assets, shows costs and availability, applies the
 selected temporary upgrade to the next run, and summarizes the selected effect
 when the run ends.
 
+The research bridge is now exercised end to end. EX-007's historical research
+fixtures can be resolved through the same snapshot adapter as production
+loadouts, and the locked EX-009 order comparison completed on the same held-out
+seeds with zero deltas across the recorded outcomes and available telemetry.
+The raw bundles and a diffable paired table are linked from the experiment
+packages. This closes the implementation handoff; it does not close the human
+balance or promotion decision.
+
 ## Next block — connect research and balance review
 
-This is the next coordinated block with two closely related parts. The catalog
-is complete; this block is the remaining bridge into the research workflow and
-the evidence review.
+This was the coordinated block with two closely related parts. The catalog and
+adapter bridge are complete; the remaining work is evidence review, a human
+decision, and any follow-up tests the decision requests.
 
 ### Part 1: Use the same upgrade in research
 
@@ -69,10 +77,10 @@ the evidence review.
 would receive.
 
 **Needed:** A small adapter that takes the resolved upgrade values used by the
-game and creates the research input from them. The first slice is now in place:
+game and creates the research input from them. This is complete:
 `-UpgradeAssetSequence` resolves production assets by stable ID and feeds the
 same immutable snapshots into the simulation runner. An explicit
-`-UpgradeAssetCatalogPath` now lets historical research fixtures use the same
+`-UpgradeAssetCatalogPath` lets historical research fixtures use the same
 adapter without substituting production values.
 
 **Problem solved:** The game and research tools could otherwise look like they
@@ -81,9 +89,9 @@ are testing the same upgrade while quietly using different values or order.
 **Done when:** A game loadout and a research input agree on the upgrade ID,
 values, order, and run signature. The report records the full prediction input
 and snapshot fingerprints, so the research path no longer needs a separate
-handwritten version of the intervention. The remaining work is to rerun the
-locked EX-009 comparison through the adapter and record the human decision for
-EX-007.
+handwritten version of the intervention. This gate is complete. The remaining
+human work is to review EX-007 and decide whether a balance or promotion test
+is warranted.
 
 ### Part 2: Review the evidence and player experience
 
@@ -97,7 +105,9 @@ proof that an upgrade is balanced and ready.
 
 **Done when:** The matched runs are repeatable, the UI is readable at the target
 resolutions, and the handoff records accepted behavior, tuning questions, and
-explicit cuts. No balance conclusion is based on one seed.
+explicit cuts. No balance conclusion is based on one seed. The research-side
+matched-run and order checks are complete; the EX-007 human decision is the
+remaining acceptance item.
 
 ## Evidence we will use
 

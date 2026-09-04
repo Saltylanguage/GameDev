@@ -43,9 +43,10 @@ and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 - **Evidence:** The research plan requires immutable run data, upgrade/event loadout, build and ruleset provenance, and model/evidence fingerprints; the current launch request primarily carries ordered upgrade IDs.
 - **Progress:** The authored research path now resolves production assets into
   immutable snapshots with `SpeciesUpgradePredictionInputAdapter`, records the
-  ordered loadout fingerprint, and emits the full prediction input in schema-22
-  reports. Legacy experiment IDs remain intentionally supported for historical
-  evidence.
+  ordered loadout fingerprint, and emits the full prediction input in schema-23
+  reports. The adapter can resolve an explicit research fixture catalog while
+  retaining the same snapshot shape used by production loadouts. Legacy
+  experiment IDs remain intentionally supported for historical evidence.
 - **Smallest mitigation:** Resolve authoring assets once at launch into a plain immutable snapshot containing schema/version, stable upgrade ID, ordered modifier IDs and signed values, and registry/catalog fingerprint; retain the asset GUID/path only as optional provenance; emit the snapshot in run, report, and prediction artifacts and never consult the mutable asset during execution.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
@@ -58,6 +59,11 @@ and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 - **Why it matters:** Applying A then B can produce a different result from B then A; consumers could disagree about the effective ruleset and invalidate comparisons or player-facing explanations.
 - **Evidence:** User decision: upgrade order is not commutative and both/all relevant orders must be tested; Sprint 2 explicitly requires ordered loadouts plus stacking and exclusion rules, while the current implementation has only single-upgrade evidence.
 - **Smallest mitigation:** Preserve authored purchase order; define scope, stacking, exclusion, and prerequisite behavior explicitly; record order in the snapshot, fingerprint, and report; run paired A→B, B→A, and all relevant order variants in research tests rather than assuming equivalence.
+- **Progress:** EX-009 completed the locked A→B/B→A comparison on the same
+  held-out seeds (106–110). The two additive upgrades produced identical
+  outcomes and available telemetry in all five pairs. A focused commutativity
+  regression test remains the appropriate follow-up as future stateful upgrade
+  types are introduced.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
 

@@ -1,7 +1,7 @@
 # EX-009 — Same-held-out-seed upgrade-order comparison
 
 **Experiment ID:** `EXP-009`  
-**Status:** Blocked before valid execution; Unity preflight failed  
+**Status:** Both same-seed arms complete; order result available; human review pending
 **Parent:** `EXP-007` / exploratory follow-up `EXP-008`  
 **Decision owner:** Human design owner  
 **Scenario:** `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset`  
@@ -26,10 +26,11 @@ state, or another implementation detail matters.
 | A | `faster-movement,crowding-tolerance` | 106–110 |
 | B | `crowding-tolerance,faster-movement` | 106–110 |
 
-Both arms must use ForestEdge, Hare, 32x32, 20.0 seconds, 0.1-second steps,
+Both arms use ForestEdge, Hare, 32x32, 20.0 seconds, 0.1-second steps,
 `opposed-roll` combat, `natural` attack opportunities, `bev-experimental`, the
-same source revision, and the same report/statline validators. The existing B
-arm is recorded at `artifacts/cellular-experiment-20260903-160827`.
+same source revision, and the same report/statline validators. Both arms were
+resolved through the authored-upgrade adapter and the explicit research fixture
+catalog at `Assets/Data/CellularSimulation/Upgrades/Research/EX-007`.
 
 ## Success criteria
 
@@ -57,25 +58,57 @@ arm is recorded at `artifacts/cellular-experiment-20260903-160827`.
 5. **Separate interpretation:** A/B differences describe model behavior; they
    do not decide whether either order is desirable for the game.
 
-## Current blocker
+## Execution result
 
-The forward arm was attempted twice on 2026-09-03 and stopped at the intentional
-Unity preflight gate before simulation. Both attempts failed because Unity could
-not connect to the Package Manager IPC service:
+Both arms completed on 2026-09-04 through the same adapter-backed path. Each
+produced a complete schema-23 bundle and passed the artifact validator. The
+independent StatLine validator returned `VALIDATED_WITH_LIMITATIONS` for both
+arms, which is the expected status for the accumulated-counter limitations in
+this telemetry version.
+
+| Arm | Artifact | Bundle | Statline |
+|---|---|---|---|
+| A | `artifacts/cellular-experiment-20260904-192559` | Valid | Validated with limitations |
+| B | `artifacts/cellular-experiment-20260904-192703` | Valid | Validated with limitations |
+
+The two reports have the same scenario, ruleset fingerprint, run settings, and
+seed panel. Their ordered loadout and loadout fingerprints differ as intended;
+the research catalog path and registry fingerprint match.
+
+## A/B result
+
+All five same-seed pairs were identical across the available run evidence after
+excluding the intentionally different ordered loadout record. Final Hare,
+Fox, and Plant populations, births, predation, starvation, crowding, movement,
+food, and available encounter/statline measures all have an A-minus-B delta of
+zero. The machine-readable comparison is in
+[`paired-deltas.csv`](paired-deltas.csv).
+
+| Metric | Arm A mean | Arm B mean | Mean A-minus-B |
+|---|---:|---:|---:|
+| Final Hare population (FPO) | 78.8 | 78.8 | 0.0 |
+| Hare births (BIR) | 88.2 | 88.2 | 0.0 |
+| Hare predation deaths (PREY) | 5.8 | 5.8 | 0.0 |
+| Hare starvation deaths (STRV) | 25.6 | 25.6 | 0.0 |
+| Hare crowding deaths (CRWD) | 0.0 | 0.0 | 0.0 |
+| Hare movement steps | 18,119.4 | 18,119.4 | 0.0 |
+| Hare food consumed | 14,307.6 | 14,307.6 | 0.0 |
+| Resource-finding score (RFS) | 0.519920 | 0.519920 | 0.000000 |
+| Activity per step (APS) | 0.955246 | 0.955246 | 0.000000 |
+
+This supports an order-independent result for these two additive upgrades,
+values, scenario, ruleset, telemetry, and held-out seeds. It is not a universal
+claim that every future upgrade combination commutes; shared state, caps,
+multipliers, prerequisites, or side effects would require their own test.
+
+## Historical preflight record
+
+The two failed 2026-09-03 forward-arm attempts remain useful operational
+history, but they are not experimental evidence. Their logs are preserved at:
 
 - `artifacts/unity-preflight-20260903-173849/license-probe.log`
 - `artifacts/unity-preflight-20260903-174035/license-probe.log`
 
-No forward-order report was generated, so no A/B result is currently valid.
-The Unity/Hub licensing and Package Manager service state must be repaired or
-restarted before rerunning this package.
-
-## Evidence available for continuation
-
-- Existing reversed-order arm B: `artifacts/cellular-experiment-20260903-160827`
-- Existing same-panel no-upgrade control: `artifacts/cellular-experiment-20260903-160706`
-- Prior forward-order arm on different held-out seeds:
-  `artifacts/cellular-experiment-20260903-153149`
-
-The prior forward-order artifact is context only and must not be substituted
-for the missing same-seed arm.
+The earlier EX-008 reverse arm and the prior forward arm on seeds 101–105 are
+also retained as historical context only; they were not used for this order
+comparison.

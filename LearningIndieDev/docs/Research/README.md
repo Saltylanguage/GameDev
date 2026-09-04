@@ -27,7 +27,11 @@ not redefine the program.
 ## Experiment packages
 
 - [EX-001 - Reproducibility Baseline](Experiments/EX-001-Reproducibility-Baseline/README.md)
+- [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md)
+- [EX-002 - Herbivore Collapse Attribution](Experiments/EX-002-Herbivore-Collapse-Attribution/README.md)
 - [EX-007 - Predictive Statline Interventions](Experiments/EX-007-Predictive-Statline-Interventions/README.md)
+- [EX-008 - Reversed Upgrade-Order Follow-up](Experiments/EX-008-Reversed-Order-Followup/README.md)
+- [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md)
 
 Reusable brief, report, and AI-analysis templates are stored in
 [Templates](Templates/).
