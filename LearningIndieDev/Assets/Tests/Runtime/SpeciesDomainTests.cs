@@ -331,7 +331,7 @@ namespace SaltyGame.Tests
             var toughHide = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(rules);
             var digestion = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId).Apply(rules);
             var crowding = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).Apply(rules);
-            var threatResponse = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatResponseId).Apply(rules);
+            var threatExposure = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).Apply(rules);
 
             Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount + 2));
             Assert.That(toughHide.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus));
@@ -339,38 +339,41 @@ namespace SaltyGame.Tests
             Assert.That(digestion.Metabolism, Is.EqualTo(rules.Metabolism));
             Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + 1));
             Assert.That(crowding.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
-            Assert.That(threatResponse.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
-            Assert.That(threatResponse.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+            Assert.That(threatExposure.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
+            Assert.That(threatExposure.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
         }
 
         [Test]
-        public void ThreatResponseProgressionGrantsSpeedAndCumulativeAvoidanceThroughLevelTwelve()
+        public void ThreatExposureProgressionGrantsSpeedAndCumulativeAvoidanceThroughLevelTen()
         {
             var rules = CreateRules();
             var progression = new SpeciesProgression(
                 new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
-            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatResponseId);
-            progression.AddCurrency(60);
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId);
+            progression.AddCurrency(55);
 
             Assert.That(progression.PreContactAvoidanceChance, Is.Zero);
-            for (var level = 1; level <= SpeciesUpgradeCatalog.ThreatResponseMaxLevel; level++)
+            for (var level = 1; level <= SpeciesUpgradeCatalog.ThreatExposureMaxLevel; level++)
             {
                 Assert.That(progression.TryPurchase(upgrade), Is.True);
 
                 Assert.That(
                     progression.CurrentRules.FleeMovementSpeedBonus,
-                    Is.EqualTo(rules.FleeMovementSpeedBonus + SpeciesUpgradeCatalog.ThreatResponseFleeSpeedBonus).Within(0.0001f));
+                    Is.EqualTo(rules.FleeMovementSpeedBonus + SpeciesUpgradeCatalog.ThreatExposureFleeSpeedBonus).Within(0.0001f));
                 Assert.That(
                     progression.PreContactAvoidanceChance,
-                    Is.EqualTo(level * SpeciesUpgradeCatalog.ThreatResponseAvoidanceChanceBonus).Within(0.0001f));
+                    Is.EqualTo(level * SpeciesUpgradeCatalog.ThreatExposureAvoidanceChanceBonus).Within(0.0001f));
             }
 
-            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(SpeciesUpgradeCatalog.ThreatResponseMaxLevel));
-            Assert.That(progression.Currency, Is.Zero);
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureMaxLevel));
+            Assert.That(progression.Currency, Is.EqualTo(5));
             Assert.That(progression.TryPurchase(upgrade), Is.False);
-            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(SpeciesUpgradeCatalog.ThreatResponseMaxLevel));
-            Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(0.96f).Within(0.0001f));
-            Assert.That(progression.Currency, Is.Zero);
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureMaxLevel));
+            Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(0.8f).Within(0.0001f));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+
+            var legacyUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LegacyThreatResponseId);
+            Assert.That(legacyUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureId));
         }
 
         [Test]
@@ -393,6 +396,12 @@ namespace SaltyGame.Tests
             }
 
             Assert.That(alternatives, Has.Count.EqualTo(3));
+
+            var legacyOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
+                SpeciesUpgradeCatalog.LegacyThreatResponseId,
+                rotation: 0,
+                seed: 42);
+            Assert.That(legacyOffer[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureId));
         }
 
         [Test]
@@ -1742,10 +1751,10 @@ namespace SaltyGame.Tests
             Assert.That(hunted.GetCell(1, 0).SpeciesId, Is.EqualTo(fox));
             Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
 
-            var threatResponseUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatResponseId);
-            var threatResponseRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            var threatExposureUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId);
+            var threatExposureRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
-                [hare] = threatResponseUpgrade.Apply(threatResponseUpgrade.Apply(rules[hare])),
+                [hare] = threatExposureUpgrade.Apply(threatExposureUpgrade.Apply(rules[hare])),
             };
             var fasterThreatened = new Grid<SpeciesCell>(5, 1);
             var fasterFox = new SpeciesCell(fox, energy: 8);
@@ -1772,7 +1781,7 @@ namespace SaltyGame.Tests
 
             var escapedTwice = SpeciesSimulation.Step(
                 fasterThreatened,
-                threatResponseRules,
+                threatExposureRules,
                 seed: 11,
                 previousSource: previousFasterThreatened);
 
@@ -3518,7 +3527,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ExperimentalFeatureRecordsCarnivoreToHerbivoreEncounterOnTargetSpecies()
+        public void ExperimentalFeatureRecordsSpeciesWideHerbivoreExposureOnEncounter()
         {
             var right = new GridPattern(new[] { Vector2Int.right });
             var rules = new Dictionary<SpeciesId, SpeciesRules>
@@ -3554,9 +3563,10 @@ namespace SaltyGame.Tests
                     metabolism: 0,
                     role: SpeciesRole.Herbivore),
             };
-            var source = new Grid<SpeciesCell>(2, 1);
+            var source = new Grid<SpeciesCell>(3, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
             source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
             var metrics = new SpeciesSimulationMetrics();
 
             SpeciesSimulation.Step(
@@ -3569,8 +3579,8 @@ namespace SaltyGame.Tests
 
             Assert.That(metrics.GetHerbivoreEncounters(SpeciesIds.Herbivore), Is.EqualTo(1));
             Assert.That(metrics.GetHerbivorePreyed(SpeciesIds.Herbivore), Is.EqualTo(1));
-            Assert.That(metrics.GetPredatorActiveHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(1));
-            Assert.That(metrics.GetEncounteredHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(metrics.GetPredatorActiveHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(2));
+            Assert.That(metrics.GetEncounteredHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(2));
         }
     }
 }

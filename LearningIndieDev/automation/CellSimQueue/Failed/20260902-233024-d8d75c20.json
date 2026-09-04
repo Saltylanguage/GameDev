@@ -1,10 +1,9 @@
 ﻿{
     "schemaVersion":  1,
-    "jobId":  "20260902-233045-437566fd",
-    "jobName":  "step1-hare-baseline-b",
-    "createdUtc":  "2026-09-03T03:30:45.6249368Z",
+    "jobId":  "20260902-233024-d8d75c20",
+    "jobName":  "step1-hare-baseline-a",
+    "createdUtc":  "2026-09-03T03:30:24.7791431Z",
     "requestedBy":  "codex",
-    "status":  "pending",
     "parameters":  {
                        "ScenarioPath":  "",
                        "SeedStart":  1,
@@ -18,5 +17,13 @@
                        "ExperimentalFeatures":  "bev-experimental",
                        "FoxAttackCooldownTicks":  0,
                        "PreContactAvoidanceChance":  0
-                   }
+                   },
+    "status":  "failed",
+    "startedUtc":  "2026-09-03T07:39:58.8935279Z",
+    "worker":  "SALTY_PC",
+    "sourceCommit":  "b52208f39a29b1fc7fcfe905983ec05466b9b061",
+    "sourceTreeCleanBeforeRun":  true,
+    "sourceTreeCleanAfterCleanup":  true,
+    "completedUtc":  "2026-09-03T07:39:59.6158248Z",
+    "error":  "Unity is already running (PID 88760). Close the editor, save your work, and run this command again. This tooling never closes Unity for you."
 }

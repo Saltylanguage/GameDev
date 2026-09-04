@@ -613,7 +613,9 @@ namespace SaltyGame
             new Dictionary<SpeciesId, int>();
         readonly Dictionary<SpeciesId, int> encounteredHerbivoreStepsBySpecies =
             new Dictionary<SpeciesId, int>();
-        readonly HashSet<long> encounteredHerbivoreEntityIdsThisStep = new HashSet<long>();
+        readonly Dictionary<SpeciesId, int> predatorActiveHerbivoreStepsThisStepBySpecies =
+            new Dictionary<SpeciesId, int>();
+        readonly HashSet<SpeciesId> encounteredHerbivoreSpeciesThisStep = new HashSet<SpeciesId>();
         readonly List<SpeciesBehaviorTransition> behaviorTransitions =
             new List<SpeciesBehaviorTransition>();
         readonly List<SpeciesDeathEvent> deathEvents =
@@ -712,7 +714,8 @@ namespace SaltyGame
             herbivorePreyedBySpecies.Clear();
             predatorActiveHerbivoreStepsBySpecies.Clear();
             encounteredHerbivoreStepsBySpecies.Clear();
-            encounteredHerbivoreEntityIdsThisStep.Clear();
+            predatorActiveHerbivoreStepsThisStepBySpecies.Clear();
+            encounteredHerbivoreSpeciesThisStep.Clear();
             behaviorTransitions.Clear();
             deathEvents.Clear();
             combatRollEvents.Clear();
@@ -982,7 +985,8 @@ namespace SaltyGame
 
         internal void BeginHerbivoreExposureStep()
         {
-            encounteredHerbivoreEntityIdsThisStep.Clear();
+            predatorActiveHerbivoreStepsThisStepBySpecies.Clear();
+            encounteredHerbivoreSpeciesThisStep.Clear();
         }
 
         internal void RecordPredatorActiveHerbivoreStep(SpeciesId species)
@@ -994,9 +998,12 @@ namespace SaltyGame
 
             predatorActiveHerbivoreStepsBySpecies.TryGetValue(species, out var steps);
             predatorActiveHerbivoreStepsBySpecies[species] = steps + 1;
+
+            predatorActiveHerbivoreStepsThisStepBySpecies.TryGetValue(species, out var stepsThisStep);
+            predatorActiveHerbivoreStepsThisStepBySpecies[species] = stepsThisStep + 1;
         }
 
-        internal void RecordHerbivoreEncounter(SpeciesId species, long entityId)
+        internal void RecordHerbivoreEncounter(SpeciesId species)
         {
             if (!species.IsValid)
             {
@@ -1005,10 +1012,13 @@ namespace SaltyGame
 
             herbivoreEncountersBySpecies.TryGetValue(species, out var encounters);
             herbivoreEncountersBySpecies[species] = encounters + 1;
-            if (encounteredHerbivoreEntityIdsThisStep.Add(entityId))
+            if (encounteredHerbivoreSpeciesThisStep.Add(species)
+                && predatorActiveHerbivoreStepsThisStepBySpecies.TryGetValue(
+                    species,
+                    out var stepsThisStep))
             {
                 encounteredHerbivoreStepsBySpecies.TryGetValue(species, out var steps);
-                encounteredHerbivoreStepsBySpecies[species] = steps + 1;
+                encounteredHerbivoreStepsBySpecies[species] = steps + stepsThisStep;
             }
         }
 

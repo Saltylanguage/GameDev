@@ -505,18 +505,18 @@ namespace SaltyGame.EditorTools
                     ExperimentalFeaturesArgument);
             }
 
-            var threatResponseLevel = 0;
+            var threatExposureLevel = 0;
             foreach (var upgradeId in options.UpgradeLoadout)
             {
-                if (string.Equals(upgradeId, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+                if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
                 {
-                    threatResponseLevel++;
+                    threatExposureLevel++;
                 }
             }
 
             var preContactAvoidanceChance = options.PreContactAvoidanceChance > 0f
                 ? options.PreContactAvoidanceChance
-                : SpeciesUpgradeCatalog.GetThreatResponseAvoidanceChance(threatResponseLevel);
+                : SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(threatExposureLevel);
             var experimentalOptions = new SpeciesExperimentalOptions(
                 options.ExperimentalFeatures,
                 options.FoxAttackCooldownTicks,
@@ -539,13 +539,10 @@ namespace SaltyGame.EditorTools
 
             if (options.PreContactAvoidanceChance > 0f
                 && (options.UpgradeLoadout.Length != 1
-                    || !string.Equals(
-                        options.UpgradeLoadout[0],
-                        SpeciesUpgradeCatalog.ThreatResponseId,
-                        StringComparison.Ordinal)))
+                    || !SpeciesUpgradeCatalog.IsThreatExposureId(options.UpgradeLoadout[0])))
             {
                 throw new ArgumentException(
-                    $"'{PreContactAvoidanceChanceArgument}' requires the Threat Response upgrade.",
+                    $"'{PreContactAvoidanceChanceArgument}' requires the Threat Exposure upgrade.",
                     PreContactAvoidanceChanceArgument);
             }
 
@@ -590,16 +587,16 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesArgument);
             }
 
-            var threatResponseLevel = 0;
+            var threatExposureLevel = 0;
             foreach (var upgradeId in upgradeIds)
             {
                 var upgrade = GetEffectiveUpgrade(upgradeId, upgradeValueOverride);
                 if (upgrade != null)
                 {
-                    if (string.Equals(upgradeId, SpeciesUpgradeCatalog.ThreatResponseId, StringComparison.Ordinal))
+                    if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
                     {
-                        threatResponseLevel++;
-                        if (SpeciesUpgradeCatalog.IsThreatResponseFleeLevel(threatResponseLevel))
+                        threatExposureLevel++;
+                        if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(threatExposureLevel))
                         {
                             rules = upgrade.Apply(rules);
                         }
@@ -625,7 +622,7 @@ namespace SaltyGame.EditorTools
             if (upgrade.Type != SpeciesUpgradeType.FleeMovementSpeedBonus)
             {
                 throw new ArgumentException(
-                    $"'{UpgradeValueOverrideArgument}' is only supported for Threat Response.",
+                    $"'{UpgradeValueOverrideArgument}' is only supported for Threat Exposure.",
                     UpgradeValueOverrideArgument);
             }
 
