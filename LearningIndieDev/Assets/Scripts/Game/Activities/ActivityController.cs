@@ -1,6 +1,6 @@
 namespace SaltyGame
 {
-    public sealed class ActivityController
+    public sealed class ActivityController 
     {
         readonly InventoryState inventory;
         readonly SurvivalState survival;

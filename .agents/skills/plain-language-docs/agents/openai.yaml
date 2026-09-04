@@ -1,0 +1,7 @@
+interface:
+  display_name: "Plain-Language Docs"
+  short_description: "Make project plans easy to explain"
+  default_prompt: "Use $plain-language-docs to rewrite this project document so it is clear in a meeting without losing its important decisions or constraints."
+
+policy:
+  allow_implicit_invocation: true

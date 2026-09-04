@@ -16,6 +16,10 @@
   <SolidColorBrush x:Key="Chrono_FloralRose" Color="#FFFFC8DD"/>
   <SolidColorBrush x:Key="Chrono_PaleLilac" Color="#FFCDB4DB"/>
 
+  <!-- Pixeloid Sans includes regular and bold faces; select the latter with FontWeight="Bold". -->
+  <FontFamily x:Key="GalapagOS.FontFamily.Primary">Fonts/Pixeloid/#Pixeloid Sans</FontFamily>
+  <FontFamily x:Key="GalapagOS.FontFamily.Monospace">Fonts/Pixeloid/#Pixeloid Mono</FontFamily>
+
   <!-- Resource-driven HeaderedContentControl window defaults. Variants can override these
        semantic keys in the control's local Resources without duplicating the template. -->
   <x:String x:Key="GalapagOS.Window.HeaderText">GalapagOS Window</x:String>

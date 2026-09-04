@@ -18,7 +18,7 @@ MonoBehaviour:
   applicationResourcesHash:
     serializedVersion: 2
     Hash: 00000000000000000000000000000000
-  defaultFont: {fileID: 913751575213456102, guid: 590c917dd0e40b546b57e1f3ef6b591a, type: 3}
+  defaultFont: {fileID: 913751575213456102, guid: cf01cedad66cd5f4ab2d79520772b152, type: 3}
   loadPlatformFonts: 1
   defaultFontSize: 15
   defaultFontWeight: 400
