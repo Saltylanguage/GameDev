@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 21;
+        const int ReportSchemaVersion = 22;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -26,6 +26,7 @@ namespace SaltyGame.EditorTools
         const string PlayerSpeciesArgument = "-playerSpeciesId";
         const string UpgradeIdArgument = "-upgradeId";
         const string UpgradeSequenceArgument = "-upgradeSequence";
+        const string UpgradeAssetSequenceArgument = "-upgradeAssetSequence";
         const string UpgradeValueOverrideArgument = "-upgradeValueOverride";
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
@@ -87,6 +88,9 @@ namespace SaltyGame.EditorTools
             try
             {
                 var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
+                var authoredUpgradeSnapshots = options.AuthoredUpgradeLoadout == null
+                    ? null
+                    : SpeciesUpgradePredictionInputAdapter.Resolve(options.AuthoredUpgradeLoadout);
                 var outputPath = GetRequiredOutputPath(options.OutputPath);
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
@@ -96,8 +100,8 @@ namespace SaltyGame.EditorTools
                 try
                 {
                     var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
-                        ? CreatePairedReport(data, options, outputPath, experimentalOptions)
-                        : CreateReport(data, options, outputPath, experimentalOptions);
+                        ? CreatePairedReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots)
+                        : CreateReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots);
                     File.WriteAllText(
                         outputPath,
                         SerializeReport(
@@ -138,7 +142,8 @@ namespace SaltyGame.EditorTools
             CellularSimData data,
             CommandLineOptions options,
             string outputPath,
-            SpeciesExperimentalOptions experimentalOptions)
+            SpeciesExperimentalOptions experimentalOptions,
+            IReadOnlyList<SpeciesUpgradeSnapshot> authoredUpgradeSnapshots)
         {
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
             if (!data.SpeciesRules.ContainsKey(playerSpecies))
@@ -148,12 +153,22 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesArgument);
             }
 
-            var loadedData = ApplyLoadout(data, options);
+            var loadedData = authoredUpgradeSnapshots == null
+                ? ApplyLoadout(data, options)
+                : ApplySnapshotLoadout(data, options.PlayerSpeciesId, authoredUpgradeSnapshots);
             var species = GetSortedSpecies(loadedData.SpeciesRules);
-            var orderedLoadout = options.UpgradeLoadout;
+            var orderedLoadout = authoredUpgradeSnapshots == null
+                ? options.UpgradeLoadout
+                : GetSnapshotIds(authoredUpgradeSnapshots);
             var provenanceLoadout = GetProvenanceLoadout(options);
+            if (authoredUpgradeSnapshots != null)
+            {
+                provenanceLoadout = GetSnapshotProvenanceLoadout(authoredUpgradeSnapshots);
+            }
             var selectedUpgrade = orderedLoadout.Length == 1
-                ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
+                ? authoredUpgradeSnapshots == null
+                    ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
+                    : null
                 : null;
             var runs = new ExperimentRun[options.SeedCount];
             for (var index = 0; index < options.SeedCount; index++)
@@ -165,7 +180,8 @@ namespace SaltyGame.EditorTools
                     species,
                     options.CombatResolutionMode,
                     options.AttackOpportunityMode,
-                    experimentalOptions);
+                    experimentalOptions,
+                    authoredUpgradeSnapshots);
             }
 
             return new ExperimentReport
@@ -187,6 +203,18 @@ namespace SaltyGame.EditorTools
                 upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
                 upgradeValue = selectedUpgrade == null ? 0f : selectedUpgrade.Value,
                 orderedLoadout = orderedLoadout,
+                upgradeContractVersion = authoredUpgradeSnapshots == null
+                    ? string.Empty
+                    : SpeciesUpgradeSnapshot.ContractVersion,
+                upgradeRegistryFingerprint = authoredUpgradeSnapshots == null
+                    ? string.Empty
+                    : SpeciesAttributeRegistry.Fingerprint,
+                upgradeLoadoutFingerprint = authoredUpgradeSnapshots == null
+                    ? string.Empty
+                    : SpeciesUpgradeLoadoutFingerprint.Create(authoredUpgradeSnapshots),
+                predictionInput = authoredUpgradeSnapshots == null
+                    ? null
+                    : SpeciesUpgradePredictionInputAdapter.CreateInput(authoredUpgradeSnapshots),
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
@@ -210,7 +238,8 @@ namespace SaltyGame.EditorTools
             IReadOnlyList<SpeciesId> species,
             SpeciesCombatResolutionMode combatResolutionMode,
             SpeciesAttackOpportunityMode attackOpportunityMode,
-            SpeciesExperimentalOptions experimentalOptions)
+            SpeciesExperimentalOptions experimentalOptions,
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout)
         {
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
@@ -219,7 +248,8 @@ namespace SaltyGame.EditorTools
                 data,
                 combatResolutionMode,
                 attackOpportunityMode,
-                experimentalOptions);
+                experimentalOptions,
+                upgradeLoadout: upgradeLoadout);
             while (runner.AdvanceOneTick())
             {
             }
@@ -243,8 +273,16 @@ namespace SaltyGame.EditorTools
             CellularSimData data,
             CommandLineOptions options,
             string outputPath,
-            SpeciesExperimentalOptions experimentalOptions)
+            SpeciesExperimentalOptions experimentalOptions,
+            IReadOnlyList<SpeciesUpgradeSnapshot> authoredUpgradeSnapshots)
         {
+            if (authoredUpgradeSnapshots != null)
+            {
+                throw new ArgumentException(
+                    $"'{UpgradeAssetSequenceArgument}' is not supported by paired lockstep diagnostic mode.",
+                    UpgradeAssetSequenceArgument);
+            }
+
             if (options.UpgradeLoadout.Length > 1
                 || (options.UpgradeLoadout.Length == 1
                     && !string.Equals(options.UpgradeLoadout[0], "stronger-block-2", StringComparison.Ordinal)))
@@ -403,6 +441,7 @@ namespace SaltyGame.EditorTools
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
                 currencyEarned = result.CurrencyEarned,
+                upgradeLoadout = SimulationReportSerialization.CreateUpgradeLoadout(result.UpgradeLoadout),
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
                 behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
@@ -609,6 +648,66 @@ namespace SaltyGame.EditorTools
             }
 
             return data.WithSpeciesRules(playerSpecies, rules);
+        }
+
+        static CellularSimData ApplySnapshotLoadout(
+            CellularSimData data,
+            string playerSpeciesId,
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
+        {
+            if (upgrades == null || upgrades.Count == 0)
+            {
+                return data;
+            }
+
+            var playerSpecies = new SpeciesId(playerSpeciesId);
+            if (!data.SpeciesRules.TryGetValue(playerSpecies, out var rules))
+            {
+                throw new ArgumentException(
+                    $"Scenario does not define the requested player species '{playerSpeciesId}'.",
+                    PlayerSpeciesArgument);
+            }
+
+            foreach (var upgrade in upgrades)
+            {
+                if (upgrade == null)
+                {
+                    throw new ArgumentException("Authored upgrade loadouts cannot contain null snapshots.", nameof(upgrades));
+                }
+
+                if (upgrade.TargetSpecies != playerSpecies)
+                {
+                    throw new ArgumentException(
+                        $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{playerSpeciesId}'.",
+                        UpgradeAssetSequenceArgument);
+                }
+
+                rules = upgrade.Apply(rules);
+            }
+
+            return data.WithSpeciesRules(playerSpecies, rules);
+        }
+
+        static string[] GetSnapshotIds(IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
+        {
+            var ids = new string[upgrades.Count];
+            for (var index = 0; index < ids.Length; index++)
+            {
+                ids[index] = upgrades[index].Id;
+            }
+
+            return ids;
+        }
+
+        static string[] GetSnapshotProvenanceLoadout(IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
+        {
+            var provenance = new string[upgrades.Count];
+            for (var index = 0; index < provenance.Length; index++)
+            {
+                provenance[index] = $"{upgrades[index].Id}@{upgrades[index].Fingerprint}";
+            }
+
+            return provenance;
         }
 
         static SpeciesUpgrade GetEffectiveUpgrade(string upgradeId, float upgradeValueOverride)
@@ -850,6 +949,7 @@ namespace SaltyGame.EditorTools
             public string PlayerSpeciesId { get; private set; }
             public string UpgradeId { get; private set; }
             public string[] UpgradeLoadout { get; private set; }
+            public string[] AuthoredUpgradeLoadout { get; private set; }
             public float UpgradeValueOverride { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
@@ -865,7 +965,16 @@ namespace SaltyGame.EditorTools
             public static CommandLineOptions Parse(string[] arguments)
             {
                 var upgradeLoadout = ParseUpgradeLoadout(arguments);
+                var authoredUpgradeLoadout = ParseAuthoredUpgradeLoadout(arguments);
                 var upgradeValueOverride = GetFloatValue(arguments, UpgradeValueOverrideArgument);
+                if (authoredUpgradeLoadout != null
+                    && (upgradeLoadout.Length > 0 || upgradeValueOverride > 0f))
+                {
+                    throw new ArgumentException(
+                        $"Use '{UpgradeAssetSequenceArgument}' instead of the legacy upgrade arguments when running authored upgrades.",
+                        UpgradeAssetSequenceArgument);
+                }
+
                 if (upgradeValueOverride > 0f)
                 {
                     if (upgradeLoadout.Length != 1)
@@ -886,6 +995,7 @@ namespace SaltyGame.EditorTools
                     PlayerSpeciesId = GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
                     UpgradeLoadout = upgradeLoadout,
+                    AuthoredUpgradeLoadout = authoredUpgradeLoadout,
                     UpgradeValueOverride = upgradeValueOverride,
                     CombatResolutionMode = ParseCombatResolutionMode(
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
@@ -904,6 +1014,44 @@ namespace SaltyGame.EditorTools
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
+            }
+
+            static string[] ParseAuthoredUpgradeLoadout(IReadOnlyList<string> arguments)
+            {
+                var sequence = GetOptionalValue(arguments, UpgradeAssetSequenceArgument);
+                if (sequence == null)
+                {
+                    return null;
+                }
+
+                if (string.IsNullOrWhiteSpace(sequence))
+                {
+                    throw new ArgumentException(
+                        $"'{UpgradeAssetSequenceArgument}' must contain upgrade IDs separated by commas.",
+                        UpgradeAssetSequenceArgument);
+                }
+
+                var loadout = sequence.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                for (var index = 0; index < loadout.Length; index++)
+                {
+                    loadout[index] = loadout[index].Trim();
+                    if (string.IsNullOrWhiteSpace(loadout[index])
+                        || string.Equals(loadout[index], DefaultUpgradeId, StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException(
+                            $"'{UpgradeAssetSequenceArgument}' must contain production upgrade IDs separated by commas.",
+                            UpgradeAssetSequenceArgument);
+                    }
+                }
+
+                if (loadout.Length == 0)
+                {
+                    throw new ArgumentException(
+                        $"'{UpgradeAssetSequenceArgument}' must contain at least one upgrade ID.",
+                        UpgradeAssetSequenceArgument);
+                }
+
+                return loadout;
             }
 
             static string[] ParseUpgradeLoadout(IReadOnlyList<string> arguments)
@@ -1071,6 +1219,10 @@ namespace SaltyGame.EditorTools
             public string upgradeType;
             public float upgradeValue;
             public string[] orderedLoadout;
+            public string upgradeContractVersion;
+            public string upgradeRegistryFingerprint;
+            public string upgradeLoadoutFingerprint;
+            public SpeciesUpgradePredictionInput predictionInput;
             public string combatResolutionMode;
             public string attackOpportunityMode;
             public string experimentalFeatures;
@@ -1094,6 +1246,7 @@ namespace SaltyGame.EditorTools
             public float durationSeconds;
             public int playerPopulation;
             public int currencyEarned;
+            public SimulationUpgradeRecord[] upgradeLoadout;
             public SimulationPopulationSnapshotRecord[] populationHistory;
             public SimulationSpeciesActivityRecord[] activity;
             public SimulationSpeciesBehaviorRecord[] behavior;

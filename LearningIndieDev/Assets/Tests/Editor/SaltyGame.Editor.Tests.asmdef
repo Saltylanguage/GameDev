@@ -2,7 +2,8 @@
   "name": "SaltyGame.Editor.Tests",
   "rootNamespace": "SaltyGame.EditorTests",
   "references": [
-    "SaltyGame.JsonCsv.Editor"
+    "SaltyGame.JsonCsv.Editor",
+    "SaltyGame.Runtime"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

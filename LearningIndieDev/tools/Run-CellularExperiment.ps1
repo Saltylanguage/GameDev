@@ -15,6 +15,7 @@ param(
     [string]$PlayerSpeciesId = 'herbivore',
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
+    [string]$UpgradeAssetSequence = '',
     [ValidateRange(0, 1000000)]
     [double]$UpgradeValueOverride = 0,
     [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
@@ -139,6 +140,14 @@ if (-not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
     }
 
     $arguments += @('-upgradeSequence', $UpgradeSequence)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence)) {
+    if ($UpgradeId -ne 'none' -or -not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
+        throw 'Use either -UpgradeAssetSequence or the legacy -UpgradeId/-UpgradeSequence arguments, not both.'
+    }
+
+    $arguments += @('-upgradeAssetSequence', $UpgradeAssetSequence)
 }
 
 if ($null -ne $assetPath) {

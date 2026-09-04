@@ -9,7 +9,32 @@
   "predictions": [
     {
       "armId": "S1",
-      "intervention": ["faster-movement"],
+      "intervention": {
+        "schemaVersion": "species-upgrade-prediction-input-v1",
+        "contractVersion": "species-upgrade-v1",
+        "registryFingerprint": "b7af9fde25b517d3dd73442cc684b9aff3be3a3504bccae40f67177595ccc288",
+        "orderedLoadoutFingerprint": "850b04e1766706846bb5d6f1bc33da88413bc7ded49625c601e163a482f2e754",
+        "orderedUpgradeIds": ["faster-movement"],
+        "upgrades": [
+          {
+            "order": 0,
+            "upgradeId": "faster-movement",
+            "displayName": "Faster Movement",
+            "description": "Legacy EX-007 intervention: movement speed +0.5.",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 5,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "b7af9fde25b517d3dd73442cc684b9aff3be3a3504bccae40f67177595ccc288",
+            "fingerprint": "58867df0fa1ff695dc712998a8206e34c6e2f5a4475da3d1ffeed4b3fbf05671",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "movement.speed", "signedValue": 0.5 }
+            ]
+          }
+        ]
+      },
       "predictedOutcomes": [
         { "metric": "FPO", "direction": "increase", "effectBand": { "low": 0, "high": 8, "unit": "hares" }, "materialThreshold": 3 },
         { "metric": "BIR", "direction": "increase", "effectBand": { "low": 0, "high": 15, "unit": "births" }, "materialThreshold": 5 },
@@ -30,7 +55,49 @@
     },
     {
       "armId": "J1",
-      "intervention": ["faster-movement", "crowding-tolerance"],
+      "intervention": {
+        "schemaVersion": "species-upgrade-prediction-input-v1",
+        "contractVersion": "species-upgrade-v1",
+        "registryFingerprint": "b7af9fde25b517d3dd73442cc684b9aff3be3a3504bccae40f67177595ccc288",
+        "orderedLoadoutFingerprint": "f391a57f2b608903b765210165fd9cd7ff4b2a061449572ce572fbc73b474b44",
+        "orderedUpgradeIds": ["faster-movement", "crowding-tolerance"],
+        "upgrades": [
+          {
+            "order": 0,
+            "upgradeId": "faster-movement",
+            "displayName": "Faster Movement",
+            "description": "Legacy EX-007 intervention: movement speed +0.5.",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 5,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "b7af9fde25b517d3dd73442cc684b9aff3be3a3504bccae40f67177595ccc288",
+            "fingerprint": "58867df0fa1ff695dc712998a8206e34c6e2f5a4475da3d1ffeed4b3fbf05671",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "movement.speed", "signedValue": 0.5 }
+            ]
+          },
+          {
+            "order": 1,
+            "upgradeId": "crowding-tolerance",
+            "displayName": "Crowding Tolerance",
+            "description": "Legacy EX-007 intervention: crowding tolerance +1.",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 5,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "b7af9fde25b517d3dd73442cc684b9aff3be3a3504bccae40f67177595ccc288",
+            "fingerprint": "b97a5ea4b4743d7a9c3386cab3135fcadae35c22fd1d6433b60e8d405086e5f4",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "crowding.tolerance", "signedValue": 1.0 }
+            ]
+          }
+        ]
+      },
       "predictedOutcomes": [
         { "metric": "FPO", "direction": "increase", "effectBand": { "low": 2, "high": 12, "unit": "hares" }, "materialThreshold": 3 },
         { "metric": "BIR", "direction": "increase", "effectBand": { "low": 2, "high": 20, "unit": "births" }, "materialThreshold": 5 },
@@ -51,5 +118,5 @@
       ]
     }
   ],
-  "preRegistrationNote": "Recorded after the validated baseline and before any S1 or J1 trial report was available."
+  "preRegistrationNote": "Recorded after the validated baseline and before any S1 or J1 trial report was available. Intervention objects were subsequently represented with the snapshot contract using research-only fixtures that preserve the original arm values."
 }

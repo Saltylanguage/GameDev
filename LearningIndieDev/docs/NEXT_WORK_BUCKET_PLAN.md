@@ -1,199 +1,137 @@
 # Sprint 2 Plan — First Trustworthy Upgrade Loop
 
-> Status: Active | Dates: September 3–16, 2026 | Owner: Josh + Sim | Capacity: Josh 20h; Sim 20h; 40h committed
+> **Status:** Active
+> **Dates:** September 3–16, 2026
+> **Plan owner:** Josh
+> **Capacity:** Josh 20h; Sim 20h
 
-Sprint 2 turns the current cellular-automata prototype into a small,
-deterministic upgrade loop. Sprint 1's build and review gate is accepted; its
-known headless-Noesis limitation remains an environment boundary rather than an
-entry blocker.
+## Goal
 
-## Outcome
+Give the player a small, understandable upgrade choice during a Forest Edge
+run. The game and the research tools should use the same upgrade definition so
+we can trust the results we collect.
 
-From a deterministic Forest Edge run, a player can inspect a small catalog,
-choose a temporary upgrade, see its effective rule/loadout change, and produce
-repeatable evidence showing what changed and why. The same slice distinguishes
-per-run evolution from permanent Lab research without implementing the full
-wallet, save system, or permanent progression.
+## What success looks like
 
-## Active task register
+- The player can see a small catalog of temporary upgrades.
+- One choice carries into the next run and the result explains what changed.
+- The same choice can be tested by the research tools without being rewritten
+  by hand.
+- Baseline and upgraded runs can be repeated with the same seeds and compared.
+- We clearly separate working behavior from balance questions still needing
+  design review.
 
-The initial 20-hour proposal has been deliberately expanded to use the team's
-full 40-hour Sprint 2 capacity. The added telemetry, report, fixture, and
-experiment-preparation work directly supports the upgrade-loop evidence gate;
-it does not broaden the product scope into persistence or new content systems.
+This sprint does not include the Lab wallet, permanent upgrades, save data, a
+large upgrade library, or final art and audio.
 
-| Work | Owner | Reviewer | Estimate |
-| --- | --- | --- | ---: |
-| S2.1 Upgrade contract and boundary | Josh | Sim | 4h |
-| S2.2 Catalog design and acceptance matrix | Josh | Sim | 4h |
-| S2.2 First catalog implementation | Sim | Josh | 4h |
-| S2.3 Deterministic application and contribution evidence | Sim | Josh | 5h |
-| S2.3 Loadout report/stat-line integration | Sim | Josh | 3h |
-| Catalog fixtures and invalid-combination tests | Sim | Josh | 3h |
-| Player-facing upgrade preview and result summary | Josh | Sim | 4h |
-| S2.4 Review and balance evidence | Josh | Sim | 3h |
-| EX-002 intervention surface and causal-gate preparation | Josh | Sim | 5h |
-| Fox mating/eating telemetry discrepancy | Sim | Josh | 3h |
-| BoardSnapshot test-fixture repair | Sim | Josh | 2h |
-| **Total** | **Josh** |  | **20h** |
-| **Total** | **Sim** |  | **20h** |
+## Ownership and capacity
 
-## Entry gates and carry-over
+Josh owns the entire upgrade stream: rules, assets, authoring, tests, research
+handoff, evidence, and acceptance. Sim is not assigned to this feature; Sim's
+Sprint 2 work remains in the separate lanes below.
 
-- Sprint 1's Windows development-build/final-review gate is accepted on Trello
-  card 53.
-- Keep the existing Main Menu/Lab shell as the presentation entry point; do not
-  reopen completed cards 51 or 52.
-- Keep the graphics-capable Noesis atlas path as the accepted preview surface;
-  the generic nographics texture failure is an environment boundary, not an
-  S2 entry blocker.
-- Current-head EditMode (140/140) and graphics-capable PlayMode (6/6) validate
-  the Fox food-action implementation and upgrade catalog plumbing; do not
-  promote balance evidence from the faster-movement arm because its held-out
-  direction reverses.
-- Keep Forest Edge balance and Fox reproduction findings as evidence inputs;
-  do not rebalance from a single seed.
+The upgrade stream is larger than one 20-hour lane, so work is staged. The
+combined research-and-balance block below is a working 6-hour estimate and
+should be confirmed when the next sprint is kicked off.
 
-## Committed work packages
+## Work at a glance
 
-### S2.1 — Upgrade contract and boundary (4h)
+| Work | Owner | Effort | Status |
+| --- | --- | ---: | --- |
+| Write down the upgrade rules | Josh | 4h | Complete |
+| Create the first catalog and authoring path | Josh | 8h | Complete; seven production assets and the catalog validator are ready |
+| Apply upgrades consistently and show what changed | Josh | 8h | Complete |
+| Add catalog fixtures and invalid-combination tests | Josh | 3h | Complete; 198/198 Edit Mode tests pass |
+| Show upgrade choices and the result in the game | Josh | 4h | Complete; 198/198 Edit Mode and 14/14 runnable Play Mode tests pass |
+| Connect upgrades to research and review balance evidence | Josh | 6h | In progress; authored-input adapter is implemented, balance review remains |
+| EX-002 research intervention preparation | Josh | 5h | Separate research lane |
+| Fox mating/eating telemetry discrepancy | Sim | 3h | Separate Sim lane |
+| BoardSnapshot test-fixture repair | Sim | 2h | Separate Sim lane |
 
-The current `SpeciesUpgrade`/`SpeciesProgression` path is a real, testable
-per-run mechanic for movement speed, attack amount, and block amount. The
-three reward buttons are therefore under-presented implementations, not empty
-placeholders; they still lack a durable player-facing contract and result
-summary. Keep this narrow catalog path and do not introduce a generic modifier
-framework.
+## Completed work
 
-Define and record for each upgrade:
+The current implementation has passed the final Edit Mode gate: **198 of 198
+tests passed**. The catalog slice is complete with seven authored production
+assets across the Trailblazer, Warren, and Gardeners directions. The
+player-facing flow uses those assets, shows costs and availability, applies the
+selected temporary upgrade to the next run, and summarizes the selected effect
+when the run ends.
 
-- stable upgrade IDs and an ordered loadout representation;
-- player-facing name and description;
-- affected mechanic/stat, magnitude/value, and valid range;
-- tradeoff or cost, eligibility/preconditions, and persistence/duration scope;
-- result-summary representation that explains what changed and what the next
-  run will inherit;
-- the boundary between temporary per-run upgrades and permanent Lab research;
-- effect grammar for numeric, spatial, conditional, and tradeoff changes;
-- cost/prerequisite fields, stacking and exclusion rules, and preview text;
-- the immutable run-start snapshot and fingerprint implications.
+## Next block — connect research and balance review
 
-Acceptance: this plan and focused data tests make the boundary unambiguous
-without introducing save/load or a generalized plugin framework. Results must
-be able to identify the selected upgrade, its applied value, and its scope even
-before the final UX copy is implemented.
+This is the next coordinated block with two closely related parts. The catalog
+is complete; this block is the remaining bridge into the research workflow and
+the evidence review.
 
-### S2.2 — First catalog slice (8h)
+### Part 1: Use the same upgrade in research
 
-Implement roughly 6–10 explicit, data-backed candidates for the Forest Edge
-slice. At minimum, prove one each of:
+**Intention:** Make sure a research experiment tests the same upgrade the player
+would receive.
 
-1. numeric effect;
-2. relative-grid/spatial effect;
-3. conditional effect;
-4. tradeoff effect.
+**Needed:** A small adapter that takes the resolved upgrade values used by the
+game and creates the research input from them. The first slice is now in place:
+`-UpgradeAssetSequence` resolves production assets by stable ID and feeds the
+same immutable snapshots into the simulation runner.
 
-Each candidate must expose its ID, cost, prerequisite, effect summary, and
-non-goals. The catalog should support the intended Trailblazer, Warren, and
-Gardeners directions without pretending the entire upgrade library is final.
+**Problem solved:** The game and research tools could otherwise look like they
+are testing the same upgrade while quietly using different values or order.
 
-Acceptance: a player can inspect available, locked, and unaffordable states;
-one temporary choice is applied to the next deterministic run; no real wallet
-or persistence mutation occurs.
+**Done when:** A game loadout and a research input agree on the upgrade ID,
+values, order, and run signature. The report records the full prediction input
+and snapshot fingerprints, so the research path no longer needs a separate
+handwritten version of the intervention. The remaining work is to adopt this
+input in the specific experiment fixtures that still use legacy IDs.
 
-### S2.3 — Deterministic application and contribution evidence (5h)
+### Part 2: Review the evidence and player experience
 
-- Apply an ordered temporary loadout at run start.
-- Preserve the effective ruleset fingerprint and replay metadata.
-- Record which upgrade changed which rule or result signal.
-- Add focused Edit Mode coverage for ordering, stacking/exclusion, and
-  unchanged baseline behavior.
+**Intention:** Decide what is working and what still needs tuning.
 
-Acceptance: paired baseline/upgrade runs use the same seed and report the
-  effective loadout plus contribution telemetry; the baseline remains
-  reproducible when no upgrade is selected.
+**Needed:** Matched baseline-versus-upgrade runs, a small review of the preview
+and result text, and a short written decision record.
 
-### S2.4 — Review and balance evidence (3h)
+**Problem solved:** A single interesting run or unclear UI could be mistaken for
+proof that an upgrade is balanced and ready.
 
-- Run a small fixed-seed comparison for the four effect classes.
-- Verify the preview language and board readability at the existing target
-  resolutions.
-- Record accepted behavior, tuning questions, and cuts in a handoff and the
-  corresponding Trello cards.
+**Done when:** The matched runs are repeatable, the UI is readable at the target
+resolutions, and the handoff records accepted behavior, tuning questions, and
+explicit cuts. No balance conclusion is based on one seed.
 
-Acceptance: evidence separates implementation correctness from balance claims;
-no single-seed result is promoted as a product conclusion.
+## Evidence we will use
 
-## Next evidence lane — Forest Edge baseline before balance tuning
+- Run the baseline and each selected upgrade with the same 20 seeds.
+- Repeat the comparison on five held-out seeds before promoting an effect
+  direction.
+- Keep the scenario, grid, duration, step interval, and starting roster the
+  same across each comparison.
+- Record the selected upgrades and the run signature with every result.
+- Check replay equality and the existing telemetry totals before discussing
+  balance.
 
-The S1 build gate, telemetry validation, and the 20-seed Forest Edge control are
-accepted. The control report is
-`artifacts/cellular-experiment-20260820-123724/report.json` with analysis at
-`artifacts/cellular-experiment-20260820-123724/analysis.md`.
-The five-seed held-out control is also accepted at
-`artifacts/cellular-experiment-20260820-154509/report.json` with analysis at
-`artifacts/cellular-experiment-20260820-154509/analysis.md`; its final
-populations remained within the control envelope and its food counters
-reconciled across all runs.
-The paired schema-8 `faster-movement` arm used the same 20 seeds and is
-recorded at `artifacts/cellular-experiment-20260820-160818/report.json` with
-analysis at `artifacts/cellular-experiment-20260820-160818/analysis.md`.
-Its held-out check is
-`artifacts/cellular-experiment-20260820-161029/report.json` with analysis at
-`artifacts/cellular-experiment-20260820-161029/analysis.md`. The 20-seed Hare
-delta was −5.30 average, but the held-out delta was +9.60, so the effect is
-not promoted.
+The existing Forest Edge baseline and faster-movement results remain evidence
+inputs. The faster-movement result is descriptive only because its held-out
+effect changes direction.
 
-Continue the matched Forest Edge experiment before changing balance values:
+## Review points
 
-- 20 fixed seeds for the baseline, using the current authored scenario and
-  player species; repeat the same 20 seeds for each single upgrade/control arm.
-- Hold grid dimensions, duration, step interval, scenario fingerprint, and
-  starting roster constant. Record the ordered loadout and effective ruleset
-  fingerprint for every run.
-- Capture final and peak populations, collapse/zero-population rate, births,
-  deaths by cause, food consumed, food-action attempts/successes/failures,
-  combat kills, state ticks/transitions, and reproduction reconciliation.
-- Re-run each selected upgrade arm on five held-out seeds before promoting an
-  effect direction. The faster-movement arm has completed this check and is
-  retained as descriptive evidence only because its effect sign reverses.
-  Derive acceptance thresholds from the baseline distribution; do not invent a
-  target population or success threshold in advance.
-- Require fixed-seed replay equality, attempts = successes + failures, death
-  event/activity reconciliation, and no baseline regression before discussing
-  balance or roster expansion.
+- **Mid-sprint:** Confirm the catalog rules and one repeatable baseline-versus-
+  upgrade run before adding more content.
+- **Final review:** Confirm game/research agreement, run the matched comparison,
+  inspect the preview and result text, and record carry-over work.
 
-## Integration and parallel lanes
+## Out of scope
 
-Sprint 2 has no unallocated reserve: the bounded BoardSnapshot repair acts as
-the small correctness reserve, while the EX-002 preparation and Fox telemetry
-work are committed evidence lanes. Tooling may only be added when it removes a
-measured repeated friction and retains a manual fallback. Historical schema-6
-reports remain historical evidence and are not invalidated by newer telemetry.
-
-## Explicitly out of scope
-
-- file save/load, migrations, corrupt-save recovery, or active-run resume;
-- real currency earning, spending, banking, or permanent research persistence;
-- a generalized upgrade/plugin framework;
-- expanding the species/scenario roster beyond the Forest Edge slice;
+- Lab currency, permanent research, save/load, or active-run resume;
+- a general upgrade plug-in framework;
+- new species or scenario content beyond the Forest Edge slice;
 - final-volume art, audio, or broad UI framework work;
-- scent, generalized event buses, custom terrain registries, or other deferred
-  mechanics without an activated trigger.
+- unrelated deferred mechanics such as scent or generalized event systems.
 
 ## Definition of done
 
-- The contract and catalog are durable in repository docs and tracked on
-  Trello with owner, reviewer, estimate, dependencies, and non-goals.
-- A deterministic baseline and one upgraded run are reproducible from recorded
-  seed, scenario, fingerprint, and ordered loadout.
-- At least four effect classes are represented and visibly explained.
-- Focused tests pass; the baseline path remains unchanged without a loadout.
-- Remaining balance, art, telemetry, and research gaps are named rather than
-  silently rolled into the next sprint.
-
-## Promotion decision
-
-At the Sprint 1 review, promote this bucket only if the shell/build gate is
-accepted and the contract can be reviewed in one sitting. Otherwise carry the
-specific failed gate—not the entire bucket—and re-estimate before starting.
+- The upgrade rules and catalog are documented and traceable.
+- A baseline and upgraded run can be repeated from the recorded seed and
+  selected upgrade.
+- The game and research tools use the same upgrade values.
+- Focused tests pass and the no-upgrade baseline remains unchanged.
+- Remaining balance, art, telemetry, and research questions are named clearly
+  for the next sprint.

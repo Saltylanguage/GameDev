@@ -25,6 +25,55 @@ namespace SaltyGame.Tests
             Assert.That(request.Seed, Is.EqualTo(10100));
             Assert.That(request.RulesetFingerprint, Is.EqualTo("ruleset-1"));
             Assert.That(request.OrderedUpgradeIds, Is.EqualTo(new[] { "Trailblazer" }));
+            Assert.That(request.OrderedUpgradeSnapshots, Is.Empty);
+        }
+
+        [Test]
+        public void LaunchRequestCopiesImmutableUpgradeSnapshots()
+        {
+            var snapshot = new SpeciesUpgradeSnapshot(
+                "launch-test",
+                "Launch Test",
+                "Test upgrade",
+                SpeciesIds.Herbivore,
+                0,
+                new[]
+                {
+                    new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
+                });
+            var request = new SimulationLaunchRequest(
+                "profile-1",
+                "ForestEdge",
+                "hare",
+                10100,
+                orderedUpgradeSnapshots: new[] { snapshot });
+
+            Assert.That(request.OrderedUpgradeSnapshots, Has.Count.EqualTo(1));
+            Assert.That(request.OrderedUpgradeSnapshots[0], Is.SameAs(snapshot));
+            Assert.That(request.OrderedUpgradeIds, Is.EqualTo(new[] { "launch-test" }));
+        }
+
+        [Test]
+        public void LaunchRequestRejectsMismatchedUpgradeIdsAndSnapshots()
+        {
+            var snapshot = new SpeciesUpgradeSnapshot(
+                "launch-test",
+                "Launch Test",
+                "Test upgrade",
+                SpeciesIds.Herbivore,
+                0,
+                new[]
+                {
+                    new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
+                });
+
+            Assert.Throws<System.ArgumentException>(() => new SimulationLaunchRequest(
+                "profile-1",
+                "ForestEdge",
+                "hare",
+                10100,
+                orderedUpgradeIds: new[] { "different-id" },
+                orderedUpgradeSnapshots: new[] { snapshot }));
         }
 
         [Test]
@@ -71,7 +120,7 @@ namespace SaltyGame.Tests
         [Test]
         public void BoardSnapshotCopiesCellsAndSpeciesRoles()
         {
-            var grid = new Grid<SpeciesCell>(2, 1, (_, x) => x == 0
+            var grid = new Grid<SpeciesCell>(2, 1, (x, _) => x == 0
                 ? SpeciesCell.Grass(3f)
                 : new SpeciesCell(SpeciesIds.Herbivore, health: 4, energy: 7));
             var run = new SimulationRunState(

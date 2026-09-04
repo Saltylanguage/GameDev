@@ -5,6 +5,11 @@
 **Decision owner:** Human design owner  
 **Reference scenario:** `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset`
 
+The prediction inputs were migrated to the snapshot contract without changing
+the historical trial artifacts. EX-007's research-only fixture assets preserve
+the original legacy values; the newer production catalog is intentionally not
+substituted into this completed experiment.
+
 EX-007 is the first P3 test of the auditable prediction loop using Sim's
 herbivore statline. It is deliberately small: one supported single-variable
 intervention and one joint intervention, with the same seeds, the same report
@@ -52,10 +57,12 @@ before its numbers are used for prediction scoring.
 | Arm | Executable intervention | Permitted range | Purpose |
 |---|---|---|---|
 | B | `upgradeId=none` | no upgrade | Same-seed control |
-| S1 | `upgradeId=faster-movement` | catalog value `+0.5` movement speed only | Single-variable effect |
-| J1 | `upgradeSequence=faster-movement,crowding-tolerance` | movement `+0.5` and crowding tolerance `+1` only | Joint interaction |
+| S1 | snapshot input for `faster-movement` | `movement.speed +0.5` only | Single-variable effect |
+| J1 | ordered snapshot input: `faster-movement` → `crowding-tolerance` | `movement.speed +0.5` and `crowding.tolerance +1` only | Joint interaction |
 
-The catalog is discrete at this stage. It does not support a continuous sweep
+The EX-007 research fixtures are discrete at this stage. They preserve the
+legacy arm values while using the snapshot contract; they are separate from
+the newer player-facing production catalog. The experiment does not support a continuous sweep
 for these upgrades, so no continuous-range or monotonicity claim is allowed.
 The joint arm is one simultaneous intervention vector at run start; its result
 must not be reconstructed by adding the two single-arm effects.
@@ -66,7 +73,7 @@ The AI receives only:
 
 - the validated baseline report or its explicitly generated summary;
 - this experiment contract;
-- the permitted intervention range above; and
+- the permitted intervention snapshot inputs above; and
 - the available telemetry list in `AI_INPUT_TEMPLATE.md`.
 
 The AI must not receive trial reports, post-run comparisons, hidden source
@@ -76,7 +83,9 @@ marked unresolved rather than filled with a plausible value.
 
 Use [AI_INPUT_TEMPLATE.md](AI_INPUT_TEMPLATE.md) to prepare the bounded input
 and [PREDICTION_TEMPLATE.json](PREDICTION_TEMPLATE.json) to capture the
-pre-registration prediction.
+pre-registration prediction. The `intervention` field is the serialized output
+of `SpeciesUpgradePredictionInputAdapter`, including ordered IDs, signed
+modifiers, contract/registry versions, and fingerprints.
 
 ## Analysis and scoring
 

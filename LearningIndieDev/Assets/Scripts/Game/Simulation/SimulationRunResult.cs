@@ -131,6 +131,7 @@ namespace SaltyGame
     {
         readonly Grid<SpeciesCell> initialCells;
         readonly List<SpeciesPopulationSnapshot> populationHistory;
+        readonly List<SpeciesUpgradeSnapshot> upgradeLoadout;
         readonly SpeciesSimulationMetrics metrics;
 
         public SimulationRunState(
@@ -160,6 +161,8 @@ namespace SaltyGame
                 SpeciesPopulationSnapshot.Create(cells, tick: 0),
             };
             PopulationHistory = populationHistory;
+            upgradeLoadout = new List<SpeciesUpgradeSnapshot>();
+            UpgradeLoadout = upgradeLoadout.AsReadOnly();
             metrics = new SpeciesSimulationMetrics();
             Metrics = metrics;
         }
@@ -176,7 +179,34 @@ namespace SaltyGame
         public int Tick { get; private set; }
         public SimulationRunStatus Status { get; private set; }
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
+        public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
         public SpeciesSimulationMetrics Metrics { get; }
+
+        internal void SetUpgradeLoadout(IEnumerable<SpeciesUpgradeSnapshot> upgrades)
+        {
+            upgradeLoadout.Clear();
+            if (upgrades == null)
+            {
+                return;
+            }
+
+            foreach (var upgrade in upgrades)
+            {
+                if (upgrade == null)
+                {
+                    throw new ArgumentException("Upgrade loadout cannot contain null entries.", nameof(upgrades));
+                }
+
+                if (upgrade.TargetSpecies != PlayerSpeciesId)
+                {
+                    throw new ArgumentException(
+                        $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{PlayerSpeciesId}'.",
+                        nameof(upgrades));
+                }
+
+                upgradeLoadout.Add(upgrade);
+            }
+        }
 
         internal void SetRulesetFingerprint(string fingerprint)
         {
@@ -275,13 +305,31 @@ namespace SaltyGame
             float durationSeconds,
             int playerPopulation,
             int currencyEarned,
-            string rulesetFingerprint = null)
+            string rulesetFingerprint = null,
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout = null)
         {
             Ticks = ticks;
             DurationSeconds = durationSeconds;
             PlayerPopulation = playerPopulation;
             CurrencyEarned = currencyEarned;
             RulesetFingerprint = rulesetFingerprint;
+            var copiedUpgradeLoadout = new List<SpeciesUpgradeSnapshot>();
+            if (upgradeLoadout != null)
+            {
+                foreach (var upgrade in upgradeLoadout)
+                {
+                    if (upgrade == null)
+                    {
+                        throw new ArgumentException(
+                            "Upgrade loadout cannot contain null entries.",
+                            nameof(upgradeLoadout));
+                    }
+
+                    copiedUpgradeLoadout.Add(upgrade);
+                }
+            }
+
+            UpgradeLoadout = copiedUpgradeLoadout.AsReadOnly();
         }
 
         public int Ticks { get; }
@@ -289,6 +337,7 @@ namespace SaltyGame
         public int PlayerPopulation { get; }
         public int CurrencyEarned { get; }
         public string RulesetFingerprint { get; }
+        public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
     }
 
     public static class SimulationRunResults
@@ -313,7 +362,8 @@ namespace SaltyGame
                 run.ElapsedSeconds,
                 playerPopulation,
                 playerPopulation,
-                run.RulesetFingerprint);
+                run.RulesetFingerprint,
+                run.UpgradeLoadout);
         }
     }
 }

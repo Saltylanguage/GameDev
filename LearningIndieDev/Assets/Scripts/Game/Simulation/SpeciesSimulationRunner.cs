@@ -21,7 +21,8 @@ namespace SaltyGame
             int maxPopulation = 0,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.rules = rules ?? throw new ArgumentNullException(nameof(rules));
@@ -40,6 +41,7 @@ namespace SaltyGame
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
+            Run.SetUpgradeLoadout(upgradeLoadout);
         }
 
         [Obsolete("Use the SpeciesId overload instead.")]
@@ -57,7 +59,8 @@ namespace SaltyGame
             CellularSimData simulationData,
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
-            SpeciesExperimentalOptions experimentalOptions = null)
+            SpeciesExperimentalOptions experimentalOptions = null,
+            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.simulationData = simulationData ?? throw new ArgumentNullException(nameof(simulationData));
@@ -67,6 +70,7 @@ namespace SaltyGame
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
+            Run.SetUpgradeLoadout(upgradeLoadout);
             Run.SetRulesetFingerprint(simulationData.Fingerprint);
         }
 

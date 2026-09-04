@@ -146,6 +146,52 @@ namespace SaltyGame.EditorTools
             return records;
         }
 
+        public static SimulationUpgradeRecord[] CreateUpgradeLoadout(
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
+        {
+            if (upgrades == null || upgrades.Count == 0)
+            {
+                return new SimulationUpgradeRecord[0];
+            }
+
+            var records = new SimulationUpgradeRecord[upgrades.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var upgrade = upgrades[index];
+                records[index] = new SimulationUpgradeRecord
+                {
+                    order = index,
+                    upgradeId = upgrade.Id,
+                    displayName = upgrade.DisplayName,
+                    targetSpeciesId = upgrade.TargetSpecies.Value,
+                    scope = upgrade.Scope.ToString(),
+                    cost = upgrade.Cost,
+                    contractVersion = SpeciesUpgradeSnapshot.ContractVersion,
+                    registryFingerprint = upgrade.RegistryFingerprint,
+                    fingerprint = upgrade.Fingerprint,
+                    modifiers = CreateUpgradeModifiers(upgrade.Modifiers),
+                };
+            }
+
+            return records;
+        }
+
+        static SimulationUpgradeModifierRecord[] CreateUpgradeModifiers(
+            IReadOnlyList<SpeciesUpgradeModifier> modifiers)
+        {
+            var records = new SimulationUpgradeModifierRecord[modifiers.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                records[index] = new SimulationUpgradeModifierRecord
+                {
+                    attributeId = modifiers[index].AttributeId,
+                    signedValue = modifiers[index].SignedValue,
+                };
+            }
+
+            return records;
+        }
+
         public static SimulationSpeciesCombatRollRecord[] CreateCombatRolls(SpeciesSimulationMetrics metrics)
         {
             var source = metrics.CombatRollEvents;
@@ -393,6 +439,28 @@ namespace SaltyGame.EditorTools
         public int tick;
         public string cause;
         public bool isCreature;
+    }
+
+    [System.Serializable]
+    sealed class SimulationUpgradeRecord
+    {
+        public int order;
+        public string upgradeId;
+        public string displayName;
+        public string targetSpeciesId;
+        public string scope;
+        public int cost;
+        public string contractVersion;
+        public string registryFingerprint;
+        public string fingerprint;
+        public SimulationUpgradeModifierRecord[] modifiers;
+    }
+
+    [System.Serializable]
+    sealed class SimulationUpgradeModifierRecord
+    {
+        public string attributeId;
+        public float signedValue;
     }
 
     [System.Serializable]

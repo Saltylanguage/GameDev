@@ -24,8 +24,17 @@ add trial reports or human conclusions.
 Read [README.md](README.md). The permitted arms are:
 
 - B: no upgrade;
-- S1: `faster-movement` at its catalog value `+0.5`;
-- J1: `faster-movement,crowding-tolerance` at catalog values `+0.5` and `+1`.
+- S1: one `species-upgrade-prediction-input-v1` snapshot for
+  `faster-movement`, with `movement.speed +0.5`;
+- J1: one ordered `species-upgrade-prediction-input-v1` loadout containing
+  `faster-movement` (`movement.speed +0.5`) followed by
+  `crowding-tolerance` (`crowding.tolerance +1`).
+
+The intervention objects in the prediction record must come from
+`SpeciesUpgradePredictionInputAdapter` (or an equivalent serialized snapshot),
+not from a hand-written list of values. EX-007 uses research-only fixture assets
+under `Assets/Data/CellularSimulation/Upgrades/Research/EX-007/` so the legacy
+arms remain exactly comparable to their historical reports.
 
 No continuous extrapolation is permitted.
 

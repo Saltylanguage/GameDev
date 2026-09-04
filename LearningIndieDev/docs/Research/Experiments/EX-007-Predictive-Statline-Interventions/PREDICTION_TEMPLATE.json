@@ -9,7 +9,32 @@
   "predictions": [
     {
       "armId": "S1",
-      "intervention": ["faster-movement"],
+      "intervention": {
+        "schemaVersion": "species-upgrade-prediction-input-v1",
+        "contractVersion": "species-upgrade-v1",
+        "registryFingerprint": "TBD",
+        "orderedLoadoutFingerprint": "TBD",
+        "orderedUpgradeIds": ["faster-movement"],
+        "upgrades": [
+          {
+            "order": 0,
+            "upgradeId": "faster-movement",
+            "displayName": "TBD",
+            "description": "TBD",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 0,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "TBD",
+            "fingerprint": "TBD",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "movement.speed", "signedValue": 0.0 }
+            ]
+          }
+        ]
+      },
       "predictedOutcomes": [
         {
           "metric": "FPO",
@@ -25,7 +50,49 @@
     },
     {
       "armId": "J1",
-      "intervention": ["faster-movement", "crowding-tolerance"],
+      "intervention": {
+        "schemaVersion": "species-upgrade-prediction-input-v1",
+        "contractVersion": "species-upgrade-v1",
+        "registryFingerprint": "TBD",
+        "orderedLoadoutFingerprint": "TBD",
+        "orderedUpgradeIds": ["faster-movement", "crowding-tolerance"],
+        "upgrades": [
+          {
+            "order": 0,
+            "upgradeId": "faster-movement",
+            "displayName": "TBD",
+            "description": "TBD",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 0,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "TBD",
+            "fingerprint": "TBD",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "movement.speed", "signedValue": 0.0 }
+            ]
+          },
+          {
+            "order": 1,
+            "upgradeId": "crowding-tolerance",
+            "displayName": "TBD",
+            "description": "TBD",
+            "targetSpeciesId": "hare",
+            "scope": "PerRun",
+            "cost": 0,
+            "contractVersion": "species-upgrade-v1",
+            "registryFingerprint": "TBD",
+            "fingerprint": "TBD",
+            "prerequisiteUpgradeIds": [],
+            "excludedUpgradeIds": [],
+            "modifiers": [
+              { "attributeId": "crowding.tolerance", "signedValue": 0.0 }
+            ]
+          }
+        ]
+      },
       "predictedOutcomes": [
         {
           "metric": "FPO",
@@ -40,5 +107,5 @@
       "limits": []
     }
   ],
-  "preRegistrationNote": "Fill predictions only after the validated baseline is supplied and before trial reports are available."
+  "preRegistrationNote": "Fill predictions only after the validated baseline is supplied and before trial reports are available. Generate each intervention object from SpeciesUpgradePredictionInputAdapter rather than hand-copying upgrade values."
 }

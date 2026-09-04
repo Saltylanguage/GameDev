@@ -82,7 +82,8 @@ These are observations to investigate, not recommendations to change balance.
 - No experimental reruns were needed after the environment was repaired.
 - Human review time has not yet been measured.
 - The result covers one scenario, one species, one short time window, and the
-  exact catalog values tested here.
+  exact EX-007 research-fixture values tested here; these are preserved legacy
+  arms and are not the newer production upgrade assets.
 - The factual results do not decide whether an upgrade is fun, fair, or ready
   for production.
 

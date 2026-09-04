@@ -1,0 +1,7 @@
+interface:
+  display_name: "Feature Concern Guard"
+  short_description: "Track and enforce feature planning concerns"
+  default_prompt: "Use $feature-concern-guard to identify and document concerns for this work, then guard their triggers during implementation."
+
+policy:
+  allow_implicit_invocation: true

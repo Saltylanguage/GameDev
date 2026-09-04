@@ -96,6 +96,7 @@ namespace SaltyGame
         string rewardOption1Text;
         string rewardOption2Text;
         string rewardOption3Text;
+        string selectedUpgradeSummaryText;
         string[] scenarioOptions = Array.Empty<string>();
         int selectedScenarioIndex;
         string scenarioText;
@@ -288,6 +289,7 @@ namespace SaltyGame
         public string RewardOption1Text => rewardOption1Text;
         public string RewardOption2Text => rewardOption2Text;
         public string RewardOption3Text => rewardOption3Text;
+        public string SelectedUpgradeSummaryText => selectedUpgradeSummaryText;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
         public bool CanReturnToLab => resultsVisibility == Visibility.Visible
             && sceneTransition != null
@@ -807,6 +809,7 @@ namespace SaltyGame
             Set(ref rewardOption1Text, preview.GetRewardOptionDisplayName(0), nameof(RewardOption1Text));
             Set(ref rewardOption2Text, preview.GetRewardOptionDisplayName(1), nameof(RewardOption2Text));
             Set(ref rewardOption3Text, preview.GetRewardOptionDisplayName(2), nameof(RewardOption3Text));
+            Set(ref selectedUpgradeSummaryText, preview.GetSelectedUpgradeSummary(), nameof(SelectedUpgradeSummaryText));
             Set(ref canPurchaseRewardOption1, preview.CanPurchaseReward(0), nameof(CanPurchaseRewardOption1));
             Set(ref canPurchaseRewardOption2, preview.CanPurchaseReward(1), nameof(CanPurchaseRewardOption2));
             Set(ref canPurchaseRewardOption3, preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));

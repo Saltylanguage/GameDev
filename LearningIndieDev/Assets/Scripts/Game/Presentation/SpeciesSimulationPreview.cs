@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 
 namespace SaltyGame
@@ -186,6 +187,9 @@ namespace SaltyGame
         [SerializeField] List<ScenarioDefinitionAsset> scenarioOptions = new List<ScenarioDefinitionAsset>();
         [SerializeField, Min(-1)] int selectedScenarioIndex = -1;
 
+        [Header("Authored Run Upgrades")]
+        [SerializeField] List<SpeciesUpgradeAsset> authoredUpgradeCatalog = new List<SpeciesUpgradeAsset>();
+
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
@@ -202,6 +206,8 @@ namespace SaltyGame
         };
 
         SpeciesUpgrade[] rewardOptions = LegacyRewardOptions;
+        SpeciesUpgradeSnapshot[] authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
+        bool usingAuthoredRewardOptions;
 
         SpeciesId playerSpecies;
         readonly List<SpeciesId> rosterSpecies = new List<SpeciesId>();
@@ -212,6 +218,7 @@ namespace SaltyGame
         SimulationManager simulationManager;
         SimulationRunResult result;
         SpeciesUpgrade selectedUpgrade;
+        SpeciesUpgradeSnapshot selectedUpgradeSnapshot;
         SpeciesPreviewState previewState;
         string rewardMessage;
         Dictionary<SpeciesId, SpeciesRuleDraft> ruleDrafts;
@@ -228,12 +235,49 @@ namespace SaltyGame
         public SpeciesProgression Progression => progression;
         public int PurchasedUpgradeCount => progression?.PurchasedUpgradeCount ?? 0;
         public int GetUpgradeLevel(string upgradeId) => progression?.GetUpgradeLevel(upgradeId) ?? 0;
-        public int RewardOptionCount => rewardOptions.Length;
-        public string GetRewardOptionId(int rewardIndex) => rewardIndex >= 0 && rewardIndex < rewardOptions.Length
-            ? rewardOptions[rewardIndex].Id
-            : string.Empty;
-        public string GetRewardOptionDisplayName(int rewardIndex) =>
-            SpeciesUpgradeCatalog.GetDisplayName(GetRewardOptionId(rewardIndex));
+        public int RewardOptionCount => usingAuthoredRewardOptions
+            ? authoredRewardOptions.Length
+            : rewardOptions.Length;
+        public string GetRewardOptionId(int rewardIndex)
+        {
+            if (usingAuthoredRewardOptions)
+            {
+                return rewardIndex >= 0 && rewardIndex < authoredRewardOptions.Length
+                    ? authoredRewardOptions[rewardIndex].Id
+                    : string.Empty;
+            }
+
+            return rewardIndex >= 0 && rewardIndex < rewardOptions.Length
+                ? rewardOptions[rewardIndex].Id
+                : string.Empty;
+        }
+
+        public string GetRewardOptionDisplayName(int rewardIndex)
+        {
+            if (usingAuthoredRewardOptions)
+            {
+                if (rewardIndex < 0 || rewardIndex >= authoredRewardOptions.Length)
+                {
+                    return string.Empty;
+                }
+
+                return FormatAuthoredRewardOption(authoredRewardOptions[rewardIndex]);
+            }
+
+            return SpeciesUpgradeCatalog.GetDisplayName(GetRewardOptionId(rewardIndex));
+        }
+
+        public string GetSelectedUpgradeSummary()
+        {
+            if (selectedUpgradeSnapshot != null)
+            {
+                return FormatSnapshotSummary(selectedUpgradeSnapshot);
+            }
+
+            return selectedUpgrade == null
+                ? "No upgrade selected."
+                : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} — legacy upgrade applied to the next run.";
+        }
         public SpeciesPreviewState State => previewState;
         public int GridWidth => width;
         public int GridHeight => height;
@@ -299,7 +343,109 @@ namespace SaltyGame
                 return false;
             }
 
+            if (!TryApplyLaunchUpgrades(launch.OrderedUpgradeSnapshots, out validationMessage))
+            {
+                return false;
+            }
+
             settingsMessage = $"Launch accepted: {launch.ScenarioId} / {launch.PlayerSpeciesId} / seed {launch.Seed}.";
+            return true;
+        }
+
+        bool TryApplyLaunchUpgrades(
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgrades,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (upgrades == null || upgrades.Count == 0)
+            {
+                return true;
+            }
+
+            if (progression == null)
+            {
+                validationMessage = "The player progression is not ready for upgrade snapshots.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            // Validate the complete ordered loadout before mutating progression.
+            // This keeps a malformed request from applying only its prefix.
+            var plannedUpgradeIds = new HashSet<string>(progression.OrderedUpgradeIds, StringComparer.Ordinal);
+            var plannedRules = progression.CurrentRules;
+            foreach (var upgrade in upgrades)
+            {
+                if (upgrade == null)
+                {
+                    validationMessage = "Launch upgrade snapshots cannot contain null entries.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+
+                if (upgrade.TargetSpecies != playerSpecies
+                    || plannedUpgradeIds.Contains(upgrade.Id))
+                {
+                    validationMessage =
+                        $"Upgrade '{upgrade.Id}' cannot be applied to species '{playerSpecies.Value}' or is duplicated.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+
+                foreach (var prerequisiteId in upgrade.PrerequisiteUpgradeIds)
+                {
+                    if (!plannedUpgradeIds.Contains(prerequisiteId))
+                    {
+                        validationMessage =
+                            $"Upgrade '{upgrade.Id}' requires '{prerequisiteId}' before it can be applied.";
+                        settingsMessage = validationMessage;
+                        return false;
+                    }
+                }
+
+                foreach (var excludedId in upgrade.ExcludedUpgradeIds)
+                {
+                    if (plannedUpgradeIds.Contains(excludedId))
+                    {
+                        validationMessage =
+                            $"Upgrade '{upgrade.Id}' conflicts with already selected upgrade '{excludedId}'.";
+                        settingsMessage = validationMessage;
+                        return false;
+                    }
+                }
+
+                try
+                {
+                    plannedRules = upgrade.Apply(plannedRules);
+                }
+                catch (Exception exception) when (
+                    exception is ArgumentException
+                    || exception is InvalidOperationException
+                    || exception is OverflowException)
+                {
+                    validationMessage = $"Upgrade '{upgrade.Id}' is invalid: {exception.Message}";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+
+                plannedUpgradeIds.Add(upgrade.Id);
+            }
+
+            foreach (var upgrade in upgrades)
+            {
+                if (!progression.TryApplyRunUpgrade(upgrade))
+                {
+                    validationMessage = $"Upgrade '{upgrade.Id}' cannot be applied to species '{playerSpecies.Value}'.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+            }
+
+            var updatedRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            {
+                [playerSpecies] = progression.CurrentRules,
+            };
+            rules = updatedRules;
+            PrepareNextRun();
             return true;
         }
 
@@ -781,6 +927,7 @@ namespace SaltyGame
             result = default;
             rewardGranted = false;
             selectedUpgrade = null;
+            selectedUpgradeSnapshot = null;
             rewardMessage = string.Empty;
             previewState = SpeciesPreviewState.Running;
         }
@@ -806,6 +953,13 @@ namespace SaltyGame
 
         public bool CanPurchaseReward(int rewardIndex)
         {
+            if (usingAuthoredRewardOptions)
+            {
+                return rewardIndex >= 0
+                    && rewardIndex < authoredRewardOptions.Length
+                    && CanPurchaseAuthoredReward(authoredRewardOptions[rewardIndex]);
+            }
+
             return previewState == SpeciesPreviewState.Rewards
                 && progression != null
                 && rewardIndex >= 0
@@ -820,6 +974,27 @@ namespace SaltyGame
                 return false;
             }
 
+            if (usingAuthoredRewardOptions)
+            {
+                var authoredUpgrade = authoredRewardOptions[rewardIndex];
+                if (!progression.TrySpend(authoredUpgrade.Cost))
+                {
+                    return false;
+                }
+
+                if (!progression.TryApplyRunUpgrade(authoredUpgrade))
+                {
+                    progression.AddCurrency(authoredUpgrade.Cost);
+                    return false;
+                }
+
+                selectedUpgrade = null;
+                selectedUpgradeSnapshot = authoredUpgrade;
+                previewState = SpeciesPreviewState.Results;
+                rewardMessage = string.Empty;
+                return true;
+            }
+
             var upgrade = rewardOptions[rewardIndex];
             if (!progression.TryPurchase(upgrade))
             {
@@ -827,6 +1002,7 @@ namespace SaltyGame
             }
 
             selectedUpgrade = upgrade;
+            selectedUpgradeSnapshot = null;
             if (bevExperimentalFeaturesEnabled)
             {
                 lastExperimentalUpgradeId = upgrade.Id;
@@ -879,6 +1055,8 @@ namespace SaltyGame
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
+            authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
+            usingAuthoredRewardOptions = false;
             sessionStarted = false;
             settingsMessage = string.Empty;
             PrepareNextRun();
@@ -994,7 +1172,8 @@ namespace SaltyGame
                 combatResolutionMode: bevExperimentalFeaturesEnabled
                     ? SpeciesCombatResolutionMode.OpposedRoll
                     : SpeciesCombatResolutionMode.LegacyFixedDamage,
-                experimentalOptions: experimentalOptions);
+                experimentalOptions: experimentalOptions,
+                upgradeLoadout: progression?.AppliedRunUpgrades);
             if (simulationHelper != null)
             {
                 simulationHelper.SetRunner(nextRunner);
@@ -1006,6 +1185,9 @@ namespace SaltyGame
             result = default;
             rewardGranted = false;
             selectedUpgrade = null;
+            selectedUpgradeSnapshot = null;
+            authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
+            usingAuthoredRewardOptions = false;
             rewardMessage = string.Empty;
             previewState = SpeciesPreviewState.Ready;
             runNumber++;
@@ -1013,6 +1195,31 @@ namespace SaltyGame
 
         void PrepareRewardOptions()
         {
+            authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
+            usingAuthoredRewardOptions = false;
+            if (!bevExperimentalFeaturesEnabled)
+            {
+                var authoredOptions = new List<SpeciesUpgradeSnapshot>();
+                foreach (var asset in authoredUpgradeCatalog ?? new List<SpeciesUpgradeAsset>())
+                {
+                    if (asset == null
+                        || !asset.TryCreateSnapshot(out var snapshot, out _)
+                        || snapshot.TargetSpecies != playerSpecies)
+                    {
+                        continue;
+                    }
+
+                    authoredOptions.Add(snapshot);
+                }
+
+                if (authoredOptions.Count > 0)
+                {
+                    authoredRewardOptions = authoredOptions.ToArray();
+                    usingAuthoredRewardOptions = true;
+                    return;
+                }
+            }
+
             if (!bevExperimentalFeaturesEnabled
                 || !rules.TryGetValue(playerSpecies, out var playerRules)
                 || playerRules.Role != SpeciesRole.Herbivore)
@@ -1026,6 +1233,99 @@ namespace SaltyGame
                 experimentalOfferRotation,
                 Run?.Seed ?? seed);
             experimentalOfferRotation++;
+        }
+
+        bool CanPurchaseAuthoredReward(SpeciesUpgradeSnapshot upgrade)
+        {
+            if (previewState != SpeciesPreviewState.Rewards
+                || progression == null
+                || upgrade == null
+                || upgrade.TargetSpecies != playerSpecies
+                || progression.GetUpgradeLevel(upgrade.Id) > 0
+                || progression.Currency < upgrade.Cost)
+            {
+                return false;
+            }
+
+            foreach (var prerequisiteId in upgrade.PrerequisiteUpgradeIds)
+            {
+                if (progression.GetUpgradeLevel(prerequisiteId) == 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var excludedId in upgrade.ExcludedUpgradeIds)
+            {
+                if (progression.GetUpgradeLevel(excludedId) > 0)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        string FormatAuthoredRewardOption(SpeciesUpgradeSnapshot upgrade)
+        {
+            var modifiers = string.Join(
+                ", ",
+                upgrade.Modifiers.Select(
+                    FormatModifierForDisplay));
+            var status = GetAuthoredRewardStatus(upgrade);
+            return $"{upgrade.DisplayName}\n{modifiers}\nCost: {upgrade.Cost} data — {status}";
+        }
+
+        string GetAuthoredRewardStatus(SpeciesUpgradeSnapshot upgrade)
+        {
+            if (progression == null)
+            {
+                return "UNAVAILABLE";
+            }
+
+            if (progression.GetUpgradeLevel(upgrade.Id) > 0)
+            {
+                return "OWNED";
+            }
+
+            var missingPrerequisites = upgrade.PrerequisiteUpgradeIds
+                .Where(id => progression.GetUpgradeLevel(id) == 0)
+                .ToArray();
+            if (missingPrerequisites.Length > 0)
+            {
+                return $"LOCKED — requires {string.Join(", ", missingPrerequisites)}";
+            }
+
+            var blockedBy = upgrade.ExcludedUpgradeIds
+                .FirstOrDefault(id => progression.GetUpgradeLevel(id) > 0);
+            if (!string.IsNullOrWhiteSpace(blockedBy))
+            {
+                return $"LOCKED — conflicts with {blockedBy}";
+            }
+
+            if (progression.Currency < upgrade.Cost)
+            {
+                return $"NEED {upgrade.Cost - progression.Currency} more data";
+            }
+
+            return "AVAILABLE";
+        }
+
+        static string FormatSnapshotSummary(SpeciesUpgradeSnapshot upgrade)
+        {
+            var modifiers = string.Join(
+                ", ",
+                upgrade.Modifiers.Select(
+                    FormatModifierForDisplay));
+            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {modifiers}. Applied to the next run.";
+        }
+
+        static string FormatModifierForDisplay(SpeciesUpgradeModifier modifier)
+        {
+            var label = SpeciesAttributeRegistry.TryGet(modifier.AttributeId, out var definition)
+                ? definition.DisplayName
+                : modifier.AttributeId;
+            return $"{label} {modifier.SignedValue:+0.###;-0.###;0}";
         }
 
         Dictionary<SpeciesId, SpeciesRuleDraft> CreateRuleDrafts(

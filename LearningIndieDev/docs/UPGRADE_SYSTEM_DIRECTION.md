@@ -1,6 +1,8 @@
 # Upgrade System Direction — Future Work
 
 Status: **approved product direction; detailed trees and balance remain future design work**.
+Feature owner: **Josh**. Sim is not assigned to this feature.
+Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concerns/upgrade-system.md).
 
 ## Two progression layers
 
@@ -66,10 +68,12 @@ These are intended build identities, not final node lists. The first implementat
 
 ### First experimental catalog contract
 
-The following six nodes are pre-implementation experiment candidates. Their
-values are starting hypotheses, not accepted balance. Each is Hare-only,
-temporary for one run, non-stackable in the first slice, and recorded by stable
-ID in purchase order. Direct mechanic tests must pass before ecological trials.
+The following six nodes are the initial path candidates. Their values are
+starting hypotheses, not accepted balance. Each targets exactly one species, is
+Hare-only in this first slice, is temporary for one run,
+non-stackable in the first slice, and is recorded by stable ID in purchase
+order. Cross-species upgrades are deferred. Direct mechanic tests must pass
+before ecological trials.
 
 | Stable ID | Build | Effect | Tradeoff | Required contribution evidence |
 | --- | --- | --- | --- | --- |
@@ -87,14 +91,35 @@ future decisions until these nodes independently demonstrate their declared
 mechanics and costs.
 
 The run-start snapshot and fingerprint must include every effect, tradeoff, and
-ordered selection. The current implementation supports only a single selected
-upgrade; its `orderedLoadout` output is not evidence of multi-upgrade ordering.
+ordered selection. The current contract supports an ordered list of immutable
+snapshots; each snapshot still targets one species and uses signed additive
+modifiers only. This preserves A→B versus B→A evidence without introducing
+clamping, multiplication, or other V1 operations.
+
+The Unity authoring adapter is `SpeciesUpgradeAsset`. Its inspector resolves
+modifier attributes from `SpeciesAttributeRegistry`, validates the contract in
+place, and keeps Scriptable Objects out of runtime state. The initial
+production catalog now contains seven authored assets under
+`Assets/Data/CellularSimulation/Upgrades/Production/`: the six path candidates
+above plus `familial-bond-large-litters`. Their values remain starting
+hypotheses until balance evidence promotes them.
+The repeatable authoring workflow is documented in
+[`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md). The launch boundary,
+progression, run result, and report serializers now carry the ordered snapshot
+metadata and fingerprints. Research runs can opt into the same authored values
+with `-UpgradeAssetSequence`; the `SpeciesUpgradePredictionInputAdapter`
+resolves production assets into ordered immutable snapshots and records the
+resulting prediction input in the report. The older string-loadout arguments
+remain available for historical experiments and diagnostic arms.
+The prototype Simulation scene now references the explicit production assets;
+its reward panel presents authored options and applies snapshots, while the
+legacy reward path remains available for the BEV experimental mode.
 
 ## Relationship to species mastery
 
 Species-type research answers, “What can members of this ecological type learn?” Species mastery answers, “What is special about this particular species?”
 
-For example, Herbivore research might unlock a general migration branch, while Hare mastery adds a hare-specific evasive node within that branch. Species mastery should enrich type trees without requiring a separate full permanent tree for every species.
+For example, Herbivore research might unlock a general migration branch, while Hare mastery adds a hare-specific evasive node within that branch. Species mastery should enrich type trees without requiring a sep arate full permanent tree for every species.
 
 ## Guardrails
 

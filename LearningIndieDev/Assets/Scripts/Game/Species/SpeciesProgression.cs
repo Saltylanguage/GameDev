@@ -7,6 +7,9 @@ namespace SaltyGame
     {
         readonly Dictionary<string, int> purchasedUpgradeLevels =
             new Dictionary<string, int>(StringComparer.Ordinal);
+        readonly List<string> orderedUpgradeIds = new List<string>();
+        readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades =
+            new List<SpeciesUpgradeSnapshot>();
 
         public SpeciesProgression(SpeciesDefinition definition)
         {
@@ -19,6 +22,8 @@ namespace SaltyGame
         public float PreContactAvoidanceChance { get; private set; }
         public int Currency { get; private set; }
         public int PurchasedUpgradeCount { get; private set; }
+        public IReadOnlyList<string> OrderedUpgradeIds => orderedUpgradeIds.AsReadOnly();
+        public IReadOnlyList<SpeciesUpgradeSnapshot> AppliedRunUpgrades => appliedRunUpgrades.AsReadOnly();
 
         public int GetUpgradeLevel(string upgradeId)
         {
@@ -88,6 +93,45 @@ namespace SaltyGame
             }
 
             purchasedUpgradeLevels[upgrade.Id] = nextLevel;
+            orderedUpgradeIds.Add(upgrade.Id);
+            PurchasedUpgradeCount++;
+            return true;
+        }
+
+        public bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade)
+        {
+            if (upgrade == null)
+            {
+                throw new ArgumentNullException(nameof(upgrade));
+            }
+
+            if (upgrade.TargetSpecies != Definition.Id
+                || GetUpgradeLevel(upgrade.Id) > 0)
+            {
+                return false;
+            }
+
+            foreach (var prerequisiteId in upgrade.PrerequisiteUpgradeIds)
+            {
+                if (GetUpgradeLevel(prerequisiteId) == 0)
+                {
+                    return false;
+                }
+            }
+
+            foreach (var excludedId in upgrade.ExcludedUpgradeIds)
+            {
+                if (GetUpgradeLevel(excludedId) > 0)
+                {
+                    return false;
+                }
+            }
+
+            var nextRules = upgrade.Apply(CurrentRules);
+            CurrentRules = nextRules;
+            purchasedUpgradeLevels[upgrade.Id] = 1;
+            orderedUpgradeIds.Add(upgrade.Id);
+            appliedRunUpgrades.Add(upgrade);
             PurchasedUpgradeCount++;
             return true;
         }

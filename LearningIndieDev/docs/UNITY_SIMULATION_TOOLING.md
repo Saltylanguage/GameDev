@@ -35,8 +35,10 @@ flowchart LR
   `artifacts/playmode-last-run.json` and `artifacts/playmode-last-run.md`. The
   JSON keeps the full per-tick population history, ruleset fingerprint, seed,
   scenario path, per-species activity, behavior-state ticks, tracked entity
-  transitions, and per-death cause events; the Markdown is the quick
-  human/agent summary.
+  transitions, per-death cause events, and the ordered per-run upgrade contract
+  snapshots (including modifier values and fingerprints); the Markdown is the
+  quick human/agent summary. The Play Mode report schema is 7 after this
+  addition; older reports remain readable as historical artifacts.
 
 ### Deterministic simulation experiments
 
@@ -195,6 +197,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -CombatMode opposed-roll `
     -UpgradeSequence tough-hide,tough-hide
 
+# Research arm backed by the production Scriptable Object catalog. The adapter
+# resolves these IDs to immutable snapshots, applies those same values to the
+# run, and records the snapshot metadata in report.json.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -UpgradeAssetSequence trailblazer-long-stride,warren-guarded-burrow
+
 # Opt-in D&D-style opposed combat arm; legacy fixed damage remains the default.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
@@ -215,7 +227,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-Experiment report schema 21 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 22 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
 experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling
@@ -228,7 +240,15 @@ normalization cannot invalidate an otherwise matching artifact. Copy the
 complete artifact directory when retaining evidence; a handoff summary alone
 is not independently auditable raw evidence.
 
-The current experiment JSON schema is `21`. Historical schema-6 EX-002 and
+Use `-UpgradeAssetSequence` when a research arm should consume authored
+Scriptable Object values. The comma-separated IDs are resolved from the
+production catalog by `SpeciesUpgradePredictionInputAdapter`; unknown or
+duplicate IDs fail before the run starts. The report includes `predictionInput`
+with each ordered snapshot's modifiers and fingerprints, plus
+`upgradeLoadoutFingerprint`. The older `-UpgradeId` and `-UpgradeSequence`
+arguments remain available for historical experiments and diagnostic arms.
+
+The current experiment JSON schema is `22`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -238,14 +258,15 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 21 also records the selected combat
+identity, tick, age, and position. Schema 22 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
 its modifiers, totals, and outcome. Threat Exposure dose-response runs may use
 `-UpgradeValueOverride` to test a single flee-speed value without changing the
 production catalog. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
-optional test-suite or comparison summaries.
+optional test-suite or comparison summaries. Authored upgrade runs additionally
+record the prediction-input metadata used to resolve and apply their snapshots.
 
 Every Unity batch entry point runs the same preflight before doing project work:
 it refuses an active Editor/Unity process, removes only a stale project-local

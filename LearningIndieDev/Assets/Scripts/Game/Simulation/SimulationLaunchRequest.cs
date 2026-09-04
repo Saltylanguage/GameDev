@@ -11,6 +11,7 @@ namespace SaltyGame
     public sealed class SimulationLaunchRequest
     {
         readonly IReadOnlyList<string> orderedUpgradeIds;
+        readonly IReadOnlyList<SpeciesUpgradeSnapshot> orderedUpgradeSnapshots;
 
         public SimulationLaunchRequest(
             string profileId,
@@ -18,7 +19,8 @@ namespace SaltyGame
             string playerSpeciesId,
             int seed,
             IEnumerable<string> orderedUpgradeIds = null,
-            string rulesetFingerprint = "")
+            string rulesetFingerprint = "",
+            IEnumerable<SpeciesUpgradeSnapshot> orderedUpgradeSnapshots = null)
         {
             if (string.IsNullOrWhiteSpace(profileId))
             {
@@ -53,7 +55,51 @@ namespace SaltyGame
                 }
             }
 
+            var copiedUpgradeSnapshots = new List<SpeciesUpgradeSnapshot>();
+            if (orderedUpgradeSnapshots != null)
+            {
+                foreach (var upgrade in orderedUpgradeSnapshots)
+                {
+                    if (upgrade == null)
+                    {
+                        throw new ArgumentException("Upgrade snapshots cannot be null.", nameof(orderedUpgradeSnapshots));
+                    }
+
+                    copiedUpgradeSnapshots.Add(upgrade);
+                }
+            }
+
+            // Snapshot-backed callers do not need to duplicate the stable IDs;
+            // expose the canonical ordered IDs for legacy consumers as well.
+            if (copiedUpgradeIds.Count == 0)
+            {
+                foreach (var upgrade in copiedUpgradeSnapshots)
+                {
+                    copiedUpgradeIds.Add(upgrade.Id);
+                }
+            }
+            else if (copiedUpgradeSnapshots.Count > 0)
+            {
+                if (copiedUpgradeIds.Count != copiedUpgradeSnapshots.Count)
+                {
+                    throw new ArgumentException(
+                        "Ordered upgrade ids must match the ordered snapshot count.",
+                        nameof(orderedUpgradeIds));
+                }
+
+                for (var index = 0; index < copiedUpgradeIds.Count; index++)
+                {
+                    if (!string.Equals(copiedUpgradeIds[index], copiedUpgradeSnapshots[index].Id, StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException(
+                            "Ordered upgrade ids must match snapshot ids in the same order.",
+                            nameof(orderedUpgradeIds));
+                    }
+                }
+            }
+
             this.orderedUpgradeIds = copiedUpgradeIds.AsReadOnly();
+            this.orderedUpgradeSnapshots = copiedUpgradeSnapshots.AsReadOnly();
         }
 
         public string ProfileId { get; }
@@ -61,6 +107,7 @@ namespace SaltyGame
         public string PlayerSpeciesId { get; }
         public int Seed { get; }
         public IReadOnlyList<string> OrderedUpgradeIds => orderedUpgradeIds;
+        public IReadOnlyList<SpeciesUpgradeSnapshot> OrderedUpgradeSnapshots => orderedUpgradeSnapshots;
         public string RulesetFingerprint { get; }
     }
 }

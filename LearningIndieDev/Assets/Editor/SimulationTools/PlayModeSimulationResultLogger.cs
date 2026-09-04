@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using SaltyGame;
@@ -12,7 +13,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 6;
+        const int ReportSchemaVersion = 7;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -63,6 +64,7 @@ namespace SaltyGame.EditorTools
                 gridWidth = run.Cells.Width,
                 gridHeight = run.Cells.Height,
                 rulesetFingerprint = run.RulesetFingerprint,
+                upgradeLoadout = SimulationReportSerialization.CreateUpgradeLoadout(run.UpgradeLoadout),
                 finalPlayerPopulation = SimulationRunResults.Create(run).PlayerPopulation,
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
@@ -85,7 +87,35 @@ namespace SaltyGame.EditorTools
             builder.AppendLine($"- Player species: `{report.playerSpeciesId}`");
             builder.AppendLine($"- Final player population: `{report.finalPlayerPopulation}`");
             builder.AppendLine($"- Ruleset fingerprint: `{report.rulesetFingerprint}`");
+            builder.AppendLine($"- Upgrade loadout: `{report.upgradeLoadout.Length}` ordered contract snapshot(s)");
             builder.AppendLine();
+            if (report.upgradeLoadout.Length > 0)
+            {
+                builder.AppendLine("## Upgrade loadout");
+                builder.AppendLine();
+                builder.AppendLine("| Order | Upgrade | Target | Modifiers | Snapshot fingerprint |");
+                builder.AppendLine("|---:|---|---|---|---|");
+                for (var index = 0; index < report.upgradeLoadout.Length; index++)
+                {
+                    var upgrade = report.upgradeLoadout[index];
+                    var modifiers = new StringBuilder();
+                    for (var modifierIndex = 0; modifierIndex < upgrade.modifiers.Length; modifierIndex++)
+                    {
+                        if (modifierIndex > 0)
+                        {
+                            modifiers.Append(", ");
+                        }
+
+                        var modifier = upgrade.modifiers[modifierIndex];
+                        modifiers.Append(modifier.attributeId).Append(" ").Append(
+                            modifier.signedValue.ToString("0.###", CultureInfo.InvariantCulture));
+                    }
+
+                    builder.AppendLine($"| {upgrade.order} | {upgrade.upgradeId} | {upgrade.targetSpeciesId} | {modifiers} | `{upgrade.fingerprint}` |");
+                }
+
+                builder.AppendLine();
+            }
             builder.AppendLine("## Final populations");
             builder.AppendLine();
             builder.AppendLine("| Species | Final population |");
@@ -201,6 +231,7 @@ namespace SaltyGame.EditorTools
             public int gridWidth;
             public int gridHeight;
             public string rulesetFingerprint;
+            public SimulationUpgradeRecord[] upgradeLoadout;
             public int finalPlayerPopulation;
             public SimulationPopulationSnapshotRecord[] populationHistory;
             public SimulationSpeciesActivityRecord[] activity;

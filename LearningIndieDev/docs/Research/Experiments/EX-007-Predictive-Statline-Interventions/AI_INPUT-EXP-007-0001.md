@@ -10,7 +10,9 @@
 
 > **Post-run measurement erratum:** `PREY` in the exported statline means Hare
 > deaths caused by carnivores, not successful food/resource events. The original
-> prediction record is retained unchanged; its PREY forecast is excluded from
+> prediction values are retained unchanged; their serialized intervention
+> representation has been migrated to the snapshot contract. The PREY forecast
+> is excluded from
 > causal scoring because the metric was misread at setup time.
 
 ## Baseline summary
@@ -25,8 +27,15 @@
 ## Contract and permitted interventions
 
 - **B:** no upgrade.
-- **S1:** `faster-movement` at catalog value `+0.5` movement speed.
-- **J1:** `faster-movement` `+0.5` plus `crowding-tolerance` `+1` as one simultaneous vector.
+- **S1:** the serialized snapshot input for `faster-movement`, with
+  `movement.speed +0.5`.
+- **J1:** one ordered serialized snapshot input containing `faster-movement`
+  (`movement.speed +0.5`) followed by `crowding-tolerance`
+  (`crowding.tolerance +1`).
+
+The intervention values are represented by the adapter-shaped snapshot object
+in `PREDICTION-EXP-007-0001.json`. These are research-only fixtures matching
+the legacy EX-007 arms; they are not the newer production `Trailblazer` assets.
 
 No continuous extrapolation, balance recommendation, or desirability judgment is permitted.
 
