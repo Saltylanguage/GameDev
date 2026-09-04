@@ -21,7 +21,14 @@ namespace SaltyGame.EditorTools
 
         public static SpeciesUpgradeSnapshot[] Resolve(IReadOnlyList<string> orderedUpgradeIds)
         {
-            if (!TryResolve(orderedUpgradeIds, out var snapshots, out var validationMessage))
+            return Resolve(orderedUpgradeIds, ProductionCatalogPath);
+        }
+
+        public static SpeciesUpgradeSnapshot[] Resolve(
+            IReadOnlyList<string> orderedUpgradeIds,
+            string catalogPath)
+        {
+            if (!TryResolve(orderedUpgradeIds, catalogPath, out var snapshots, out var validationMessage))
             {
                 throw new ArgumentException(validationMessage, nameof(orderedUpgradeIds));
             }
@@ -31,6 +38,19 @@ namespace SaltyGame.EditorTools
 
         public static bool TryResolve(
             IReadOnlyList<string> orderedUpgradeIds,
+            out SpeciesUpgradeSnapshot[] snapshots,
+            out string validationMessage)
+        {
+            return TryResolve(
+                orderedUpgradeIds,
+                ProductionCatalogPath,
+                out snapshots,
+                out validationMessage);
+        }
+
+        public static bool TryResolve(
+            IReadOnlyList<string> orderedUpgradeIds,
+            string catalogPath,
             out SpeciesUpgradeSnapshot[] snapshots,
             out string validationMessage)
         {
@@ -45,7 +65,7 @@ namespace SaltyGame.EditorTools
             Dictionary<string, SpeciesUpgradeSnapshot> catalog;
             try
             {
-                catalog = LoadCatalog();
+                catalog = LoadCatalog(catalogPath);
             }
             catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
             {
@@ -73,7 +93,7 @@ namespace SaltyGame.EditorTools
                 if (!catalog.TryGetValue(id, out var snapshot))
                 {
                     validationMessage =
-                        $"Upgrade ID '{id}' was not found in the production catalog '{ProductionCatalogPath}'.";
+                        $"Upgrade ID '{id}' was not found in the catalog '{catalogPath}'.";
                     return false;
                 }
 
@@ -125,6 +145,13 @@ namespace SaltyGame.EditorTools
         public static SpeciesUpgradePredictionInput CreateInput(
             IReadOnlyList<SpeciesUpgradeSnapshot> orderedSnapshots)
         {
+            return CreateInput(orderedSnapshots, string.Empty);
+        }
+
+        public static SpeciesUpgradePredictionInput CreateInput(
+            IReadOnlyList<SpeciesUpgradeSnapshot> orderedSnapshots,
+            string sourceCatalogPath)
+        {
             orderedSnapshots = orderedSnapshots ?? Array.Empty<SpeciesUpgradeSnapshot>();
             var records = new SpeciesUpgradePredictionRecord[orderedSnapshots.Count];
             var orderedIds = new string[orderedSnapshots.Count];
@@ -161,6 +188,7 @@ namespace SaltyGame.EditorTools
             {
                 schemaVersion = SchemaVersion,
                 contractVersion = SpeciesUpgradeSnapshot.ContractVersion,
+                sourceCatalogPath = sourceCatalogPath ?? string.Empty,
                 registryFingerprint = orderedSnapshots.Count == 0
                     ? SpeciesAttributeRegistry.Fingerprint
                     : orderedSnapshots[0].RegistryFingerprint,
@@ -175,10 +203,24 @@ namespace SaltyGame.EditorTools
             return JsonUtility.ToJson(CreateInput(orderedSnapshots), true);
         }
 
+        public static string Serialize(
+            IReadOnlyList<SpeciesUpgradeSnapshot> orderedSnapshots,
+            string sourceCatalogPath)
+        {
+            return JsonUtility.ToJson(CreateInput(orderedSnapshots, sourceCatalogPath), true);
+        }
+
         public static SpeciesUpgradePredictionInput CreateInputFromAssets(
             IReadOnlyList<SpeciesUpgradeAsset> orderedAssets)
         {
             return CreateInput(ResolveAssets(orderedAssets));
+        }
+
+        public static SpeciesUpgradePredictionInput CreateInputFromAssets(
+            IReadOnlyList<SpeciesUpgradeAsset> orderedAssets,
+            string sourceCatalogPath)
+        {
+            return CreateInput(ResolveAssets(orderedAssets), sourceCatalogPath);
         }
 
         public static string SerializeAssets(IReadOnlyList<SpeciesUpgradeAsset> orderedAssets)
@@ -186,11 +228,39 @@ namespace SaltyGame.EditorTools
             return Serialize(ResolveAssets(orderedAssets));
         }
 
-#if UNITY_EDITOR
-        static Dictionary<string, SpeciesUpgradeSnapshot> LoadCatalog()
+        public static string SerializeAssets(
+            IReadOnlyList<SpeciesUpgradeAsset> orderedAssets,
+            string sourceCatalogPath)
         {
+            return Serialize(ResolveAssets(orderedAssets), sourceCatalogPath);
+        }
+
+#if UNITY_EDITOR
+        static Dictionary<string, SpeciesUpgradeSnapshot> LoadCatalog(string catalogPath)
+        {
+            if (string.IsNullOrWhiteSpace(catalogPath))
+            {
+                throw new ArgumentException("Upgrade catalog path cannot be empty.", nameof(catalogPath));
+            }
+
+            catalogPath = catalogPath.Trim().Replace('\\', '/');
+            if (!catalogPath.StartsWith("Assets/", StringComparison.Ordinal)
+                || catalogPath.IndexOf("..", StringComparison.Ordinal) >= 0)
+            {
+                throw new ArgumentException(
+                    $"Upgrade catalog path must stay inside the Unity Assets folder: '{catalogPath}'.",
+                    nameof(catalogPath));
+            }
+
+            if (!AssetDatabase.IsValidFolder(catalogPath))
+            {
+                throw new ArgumentException(
+                    $"Upgrade catalog folder was not found: '{catalogPath}'.",
+                    nameof(catalogPath));
+            }
+
             var catalog = new Dictionary<string, SpeciesUpgradeSnapshot>(StringComparer.Ordinal);
-            var assetPaths = AssetDatabase.FindAssets("t:SpeciesUpgradeAsset", new[] { ProductionCatalogPath })
+            var assetPaths = AssetDatabase.FindAssets("t:SpeciesUpgradeAsset", new[] { catalogPath })
                 .Select(AssetDatabase.GUIDToAssetPath)
                 .OrderBy(path => path, StringComparer.Ordinal)
                 .ToArray();
@@ -205,13 +275,13 @@ namespace SaltyGame.EditorTools
                 if (!asset.TryCreateSnapshot(out var snapshot, out var validationMessage))
                 {
                     throw new InvalidOperationException(
-                        $"Production upgrade '{asset.name}' is invalid: {validationMessage}");
+                        $"Upgrade '{asset.name}' is invalid: {validationMessage}");
                 }
 
                 if (catalog.ContainsKey(snapshot.Id))
                 {
                     throw new ArgumentException(
-                        $"Duplicate production upgrade ID '{snapshot.Id}' was found in '{ProductionCatalogPath}'.");
+                        $"Duplicate upgrade ID '{snapshot.Id}' was found in '{catalogPath}'.");
                 }
 
                 catalog.Add(snapshot.Id, snapshot);
@@ -227,6 +297,7 @@ namespace SaltyGame.EditorTools
     {
         public string schemaVersion;
         public string contractVersion;
+        public string sourceCatalogPath;
         public string registryFingerprint;
         public string orderedLoadoutFingerprint;
         public string[] orderedUpgradeIds;

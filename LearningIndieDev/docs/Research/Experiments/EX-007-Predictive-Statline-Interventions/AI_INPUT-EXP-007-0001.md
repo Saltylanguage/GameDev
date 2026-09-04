@@ -36,6 +36,9 @@
 The intervention values are represented by the adapter-shaped snapshot object
 in `PREDICTION-EXP-007-0001.json`. These are research-only fixtures matching
 the legacy EX-007 arms; they are not the newer production `Trailblazer` assets.
+The serialized interventions record
+`Assets/Data/CellularSimulation/Upgrades/Research/EX-007` as their
+`sourceCatalogPath`.
 
 No continuous extrapolation, balance recommendation, or desirability judgment is permitted.
 

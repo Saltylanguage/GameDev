@@ -34,7 +34,8 @@ The intervention objects in the prediction record must come from
 `SpeciesUpgradePredictionInputAdapter` (or an equivalent serialized snapshot),
 not from a hand-written list of values. EX-007 uses research-only fixture assets
 under `Assets/Data/CellularSimulation/Upgrades/Research/EX-007/` so the legacy
-arms remain exactly comparable to their historical reports.
+arms remain exactly comparable to their historical reports. Record that catalog
+path in each serialized intervention's `sourceCatalogPath` field.
 
 No continuous extrapolation is permitted.
 

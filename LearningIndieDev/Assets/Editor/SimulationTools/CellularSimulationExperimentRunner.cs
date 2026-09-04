@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 22;
+        const int ReportSchemaVersion = 23;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -27,6 +27,7 @@ namespace SaltyGame.EditorTools
         const string UpgradeIdArgument = "-upgradeId";
         const string UpgradeSequenceArgument = "-upgradeSequence";
         const string UpgradeAssetSequenceArgument = "-upgradeAssetSequence";
+        const string UpgradeAssetCatalogPathArgument = "-upgradeAssetCatalogPath";
         const string UpgradeValueOverrideArgument = "-upgradeValueOverride";
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
@@ -90,7 +91,9 @@ namespace SaltyGame.EditorTools
                 var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
                 var authoredUpgradeSnapshots = options.AuthoredUpgradeLoadout == null
                     ? null
-                    : SpeciesUpgradePredictionInputAdapter.Resolve(options.AuthoredUpgradeLoadout);
+                    : SpeciesUpgradePredictionInputAdapter.Resolve(
+                        options.AuthoredUpgradeLoadout,
+                        options.AuthoredUpgradeCatalogPath);
                 var outputPath = GetRequiredOutputPath(options.OutputPath);
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
@@ -206,6 +209,9 @@ namespace SaltyGame.EditorTools
                 upgradeContractVersion = authoredUpgradeSnapshots == null
                     ? string.Empty
                     : SpeciesUpgradeSnapshot.ContractVersion,
+                upgradeCatalogPath = authoredUpgradeSnapshots == null
+                    ? string.Empty
+                    : options.AuthoredUpgradeCatalogPath,
                 upgradeRegistryFingerprint = authoredUpgradeSnapshots == null
                     ? string.Empty
                     : SpeciesAttributeRegistry.Fingerprint,
@@ -214,7 +220,9 @@ namespace SaltyGame.EditorTools
                     : SpeciesUpgradeLoadoutFingerprint.Create(authoredUpgradeSnapshots),
                 predictionInput = authoredUpgradeSnapshots == null
                     ? null
-                    : SpeciesUpgradePredictionInputAdapter.CreateInput(authoredUpgradeSnapshots),
+                    : SpeciesUpgradePredictionInputAdapter.CreateInput(
+                        authoredUpgradeSnapshots,
+                        options.AuthoredUpgradeCatalogPath),
                 combatResolutionMode = options.CombatResolutionMode.ToString(),
                 attackOpportunityMode = options.AttackOpportunityMode.ToString(),
                 experimentalFeatures = experimentalOptions.FeatureId,
@@ -950,6 +958,7 @@ namespace SaltyGame.EditorTools
             public string UpgradeId { get; private set; }
             public string[] UpgradeLoadout { get; private set; }
             public string[] AuthoredUpgradeLoadout { get; private set; }
+            public string AuthoredUpgradeCatalogPath { get; private set; }
             public float UpgradeValueOverride { get; private set; }
             public SpeciesCombatResolutionMode CombatResolutionMode { get; private set; }
             public SpeciesAttackOpportunityMode AttackOpportunityMode { get; private set; }
@@ -966,6 +975,9 @@ namespace SaltyGame.EditorTools
             {
                 var upgradeLoadout = ParseUpgradeLoadout(arguments);
                 var authoredUpgradeLoadout = ParseAuthoredUpgradeLoadout(arguments);
+                var authoredUpgradeCatalogPath = ParseAuthoredUpgradeCatalogPath(
+                    arguments,
+                    authoredUpgradeLoadout);
                 var upgradeValueOverride = GetFloatValue(arguments, UpgradeValueOverrideArgument);
                 if (authoredUpgradeLoadout != null
                     && (upgradeLoadout.Length > 0 || upgradeValueOverride > 0f))
@@ -996,6 +1008,7 @@ namespace SaltyGame.EditorTools
                     UpgradeId = GetOptionalValue(arguments, UpgradeIdArgument) ?? DefaultUpgradeId,
                     UpgradeLoadout = upgradeLoadout,
                     AuthoredUpgradeLoadout = authoredUpgradeLoadout,
+                    AuthoredUpgradeCatalogPath = authoredUpgradeCatalogPath,
                     UpgradeValueOverride = upgradeValueOverride,
                     CombatResolutionMode = ParseCombatResolutionMode(
                         GetOptionalValue(arguments, CombatModeArgument) ?? DefaultCombatMode),
@@ -1052,6 +1065,40 @@ namespace SaltyGame.EditorTools
                 }
 
                 return loadout;
+            }
+
+            static string ParseAuthoredUpgradeCatalogPath(
+                IReadOnlyList<string> arguments,
+                string[] authoredUpgradeLoadout)
+            {
+                var catalogPath = GetOptionalValue(arguments, UpgradeAssetCatalogPathArgument);
+                if (authoredUpgradeLoadout == null)
+                {
+                    if (!string.IsNullOrWhiteSpace(catalogPath))
+                    {
+                        throw new ArgumentException(
+                            $"'{UpgradeAssetCatalogPathArgument}' requires '{UpgradeAssetSequenceArgument}'.",
+                            UpgradeAssetCatalogPathArgument);
+                    }
+
+                    return string.Empty;
+                }
+
+                if (string.IsNullOrWhiteSpace(catalogPath))
+                {
+                    return SpeciesUpgradePredictionInputAdapter.ProductionCatalogPath;
+                }
+
+                catalogPath = catalogPath.Trim().Replace('\\', '/');
+                if (!catalogPath.StartsWith("Assets/", StringComparison.Ordinal)
+                    || catalogPath.IndexOf("..", StringComparison.Ordinal) >= 0)
+                {
+                    throw new ArgumentException(
+                        $"'{UpgradeAssetCatalogPathArgument}' must stay inside the Unity Assets folder.",
+                        UpgradeAssetCatalogPathArgument);
+                }
+
+                return catalogPath;
             }
 
             static string[] ParseUpgradeLoadout(IReadOnlyList<string> arguments)
@@ -1220,6 +1267,7 @@ namespace SaltyGame.EditorTools
             public float upgradeValue;
             public string[] orderedLoadout;
             public string upgradeContractVersion;
+            public string upgradeCatalogPath;
             public string upgradeRegistryFingerprint;
             public string upgradeLoadoutFingerprint;
             public SpeciesUpgradePredictionInput predictionInput;

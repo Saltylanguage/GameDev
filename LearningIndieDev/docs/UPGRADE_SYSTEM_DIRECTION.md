@@ -108,9 +108,10 @@ The repeatable authoring workflow is documented in
 progression, run result, and report serializers now carry the ordered snapshot
 metadata and fingerprints. Research runs can opt into the same authored values
 with `-UpgradeAssetSequence`; the `SpeciesUpgradePredictionInputAdapter`
-resolves production assets into ordered immutable snapshots and records the
-resulting prediction input in the report. The older string-loadout arguments
-remain available for historical experiments and diagnostic arms.
+resolves a declared production or research catalog into ordered immutable
+snapshots and records the catalog path, prediction input, and fingerprints in
+the report. The older string-loadout arguments remain available for historical
+experiments and diagnostic arms.
 The prototype Simulation scene now references the explicit production assets;
 its reward panel presents authored options and applies snapshots, while the
 legacy reward path remains available for the BEV experimental mode.

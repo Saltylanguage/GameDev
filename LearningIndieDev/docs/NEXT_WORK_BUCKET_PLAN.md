@@ -43,7 +43,7 @@ should be confirmed when the next sprint is kicked off.
 | Apply upgrades consistently and show what changed | Josh | 8h | Complete |
 | Add catalog fixtures and invalid-combination tests | Josh | 3h | Complete; 198/198 Edit Mode tests pass |
 | Show upgrade choices and the result in the game | Josh | 4h | Complete; 198/198 Edit Mode and 14/14 runnable Play Mode tests pass |
-| Connect upgrades to research and review balance evidence | Josh | 6h | In progress; authored-input adapter is implemented, balance review remains |
+| Connect upgrades to research and review balance evidence | Josh | 6h | In progress; adapter-backed fixture path is implemented, EX-009 rerun and balance review remain |
 | EX-002 research intervention preparation | Josh | 5h | Separate research lane |
 | Fox mating/eating telemetry discrepancy | Sim | 3h | Separate Sim lane |
 | BoardSnapshot test-fixture repair | Sim | 2h | Separate Sim lane |
@@ -71,7 +71,9 @@ would receive.
 **Needed:** A small adapter that takes the resolved upgrade values used by the
 game and creates the research input from them. The first slice is now in place:
 `-UpgradeAssetSequence` resolves production assets by stable ID and feeds the
-same immutable snapshots into the simulation runner.
+same immutable snapshots into the simulation runner. An explicit
+`-UpgradeAssetCatalogPath` now lets historical research fixtures use the same
+adapter without substituting production values.
 
 **Problem solved:** The game and research tools could otherwise look like they
 are testing the same upgrade while quietly using different values or order.
@@ -79,8 +81,9 @@ are testing the same upgrade while quietly using different values or order.
 **Done when:** A game loadout and a research input agree on the upgrade ID,
 values, order, and run signature. The report records the full prediction input
 and snapshot fingerprints, so the research path no longer needs a separate
-handwritten version of the intervention. The remaining work is to adopt this
-input in the specific experiment fixtures that still use legacy IDs.
+handwritten version of the intervention. The remaining work is to rerun the
+locked EX-009 comparison through the adapter and record the human decision for
+EX-007.
 
 ### Part 2: Review the evidence and player experience
 

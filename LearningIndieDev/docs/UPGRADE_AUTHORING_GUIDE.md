@@ -103,6 +103,21 @@ values into a research fixture when this option is appropriate. The legacy
 `-UpgradeId` and `-UpgradeSequence` options remain for historical experiments
 that intentionally use the old catalog.
 
+Research-only fixtures use the same adapter with an explicit catalog path:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -PlayerSpeciesId hare `
+    -UpgradeAssetSequence faster-movement,crowding-tolerance `
+    -UpgradeAssetCatalogPath Assets/Data/CellularSimulation/Upgrades/Research/EX-007
+```
+
+The catalog path must stay inside `Assets/` and is recorded in the report and
+prediction input. Use this only when the experiment contract names a separate
+research catalog; do not replace historical fixture values with newer
+production assets.
+
 ## Verification checklist
 
 - [ ] Stable ID is unique and unchanged after publication.

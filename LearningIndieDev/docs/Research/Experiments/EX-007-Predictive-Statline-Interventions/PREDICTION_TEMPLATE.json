@@ -12,6 +12,7 @@
       "intervention": {
         "schemaVersion": "species-upgrade-prediction-input-v1",
         "contractVersion": "species-upgrade-v1",
+        "sourceCatalogPath": "Assets/Data/CellularSimulation/Upgrades/Research/EX-007",
         "registryFingerprint": "TBD",
         "orderedLoadoutFingerprint": "TBD",
         "orderedUpgradeIds": ["faster-movement"],
@@ -53,6 +54,7 @@
       "intervention": {
         "schemaVersion": "species-upgrade-prediction-input-v1",
         "contractVersion": "species-upgrade-v1",
+        "sourceCatalogPath": "Assets/Data/CellularSimulation/Upgrades/Research/EX-007",
         "registryFingerprint": "TBD",
         "orderedLoadoutFingerprint": "TBD",
         "orderedUpgradeIds": ["faster-movement", "crowding-tolerance"],

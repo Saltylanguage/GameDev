@@ -227,7 +227,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-Experiment report schema 22 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 23 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
 experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling
@@ -243,12 +243,15 @@ is not independently auditable raw evidence.
 Use `-UpgradeAssetSequence` when a research arm should consume authored
 Scriptable Object values. The comma-separated IDs are resolved from the
 production catalog by `SpeciesUpgradePredictionInputAdapter`; unknown or
-duplicate IDs fail before the run starts. The report includes `predictionInput`
-with each ordered snapshot's modifiers and fingerprints, plus
-`upgradeLoadoutFingerprint`. The older `-UpgradeId` and `-UpgradeSequence`
-arguments remain available for historical experiments and diagnostic arms.
+duplicate IDs fail before the run starts. For a research-only fixture catalog,
+add `-UpgradeAssetCatalogPath Assets/...` so the same adapter resolves the
+declared fixture assets without replacing them with production values. The
+report includes `predictionInput` with the source catalog path, each ordered
+snapshot's modifiers and fingerprints, plus `upgradeLoadoutFingerprint`. The
+older `-UpgradeId` and `-UpgradeSequence` arguments remain available for
+historical experiments and diagnostic arms.
 
-The current experiment JSON schema is `22`. Historical schema-6 EX-002 and
+The current experiment JSON schema is `23`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -258,9 +261,11 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 22 also records the selected combat
+identity, tick, age, and position. Schema 23 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
-its modifiers, totals, and outcome. Threat Exposure dose-response runs may use
+its modifiers, totals, and outcome. Authored upgrade runs also record the
+catalog path used to resolve the immutable snapshots. Threat Exposure
+dose-response runs may use
 `-UpgradeValueOverride` to test a single flee-speed value without changing the
 production catalog. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average

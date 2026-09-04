@@ -99,6 +99,36 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void ResolveCanLoadExplicitResearchFixtureCatalog()
+        {
+            var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(
+                new[] { "faster-movement", "crowding-tolerance" },
+                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007");
+            var input = SpeciesUpgradePredictionInputAdapter.CreateInput(
+                snapshots,
+                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007");
+
+            Assert.That(snapshots, Has.Length.EqualTo(2));
+            Assert.That(snapshots[0].Id, Is.EqualTo("faster-movement"));
+            Assert.That(snapshots[1].Id, Is.EqualTo("crowding-tolerance"));
+            Assert.That(input.sourceCatalogPath, Is.EqualTo(
+                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007"));
+        }
+
+        [Test]
+        public void InvalidCatalogPathIsRejected()
+        {
+            Assert.That(
+                SpeciesUpgradePredictionInputAdapter.TryResolve(
+                    new[] { "faster-movement" },
+                    "Packages/ResearchFixtures",
+                    out _,
+                    out var validationMessage),
+                Is.False);
+            StringAssert.Contains("Assets", validationMessage);
+        }
+
+        [Test]
         public void OrderedLoadoutFingerprintChangesWhenOrderChanges()
         {
             var forward = SpeciesUpgradePredictionInputAdapter.Resolve(new[]

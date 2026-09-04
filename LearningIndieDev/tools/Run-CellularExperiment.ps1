@@ -16,6 +16,7 @@ param(
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
     [string]$UpgradeAssetSequence = '',
+    [string]$UpgradeAssetCatalogPath = '',
     [ValidateRange(0, 1000000)]
     [double]$UpgradeValueOverride = 0,
     [ValidateSet('legacy-fixed-damage', 'opposed-roll')]
@@ -40,7 +41,8 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 function ConvertTo-UnityAssetPath {
     param(
         [string]$Path,
-        [string]$ProjectRoot
+        [string]$ProjectRoot,
+        [string]$ParameterName = 'Path'
     )
 
     if ([string]::IsNullOrWhiteSpace($Path)) {
@@ -56,7 +58,7 @@ function ConvertTo-UnityAssetPath {
     $assetsPath = (Resolve-Path -LiteralPath (Join-Path $ProjectRoot 'Assets')).Path
     $assetsPrefix = $assetsPath.TrimEnd([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar) + [System.IO.Path]::DirectorySeparatorChar
     if (-not $absolutePath.StartsWith($assetsPrefix, [System.StringComparison]::OrdinalIgnoreCase)) {
-        throw "ScenarioPath must point inside this project's Assets folder."
+        throw "$ParameterName must point inside this project's Assets folder."
     }
 
     return 'Assets/' + $absolutePath.Substring($assetsPrefix.Length).Replace('\', '/')
@@ -148,6 +150,14 @@ if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence)) {
     }
 
     $arguments += @('-upgradeAssetSequence', $UpgradeAssetSequence)
+
+    if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetCatalogPath)) {
+        $catalogPath = ConvertTo-UnityAssetPath -Path $UpgradeAssetCatalogPath -ProjectRoot $project -ParameterName 'UpgradeAssetCatalogPath'
+        $arguments += @('-upgradeAssetCatalogPath', $catalogPath)
+    }
+}
+elseif (-not [string]::IsNullOrWhiteSpace($UpgradeAssetCatalogPath)) {
+    throw 'Use -UpgradeAssetCatalogPath together with -UpgradeAssetSequence.'
 }
 
 if ($null -ne $assetPath) {
