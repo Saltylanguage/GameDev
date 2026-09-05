@@ -136,13 +136,15 @@ namespace SaltyGame
         public const string StrongerBlockTwoId = "stronger-block-2";
         public const string ToughHideId = "tough-hide";
         public const int ToughHideMaxLevel = 10;
+        public const string EfficientDigestionId = "efficient-digestion";
+        public const int EfficientDigestionMaxLevel = 10;
 
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == ToughHideId ? ToughHideMaxLevel
+                : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
         }
-        public const string EfficientDigestionId = "efficient-digestion";
         public const string CrowdingToleranceId = "crowding-tolerance";
         public const string ThreatExposureId = "threat-exposure";
         public const string LegacyThreatResponseId = "threat-response";

@@ -401,6 +401,32 @@ namespace SaltyGame.Tests
             Assert.That(progression.PreContactAvoidanceChance, Is.Zero);
         }
 
+        [Test]
+        public void EfficientDigestionPurchasesStopAtTenWithoutSpendingOrApplyingAgain()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId);
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            progression.AddCurrency(55);
+            for (var level = 1; level <= SpeciesUpgradeCatalog.EfficientDigestionMaxLevel; level++)
+            {
+                Assert.That(progression.CanPurchase(upgrade), Is.True);
+                Assert.That(progression.TryPurchase(upgrade), Is.True);
+                Assert.That(progression.CurrentRules.DigestionEnergyBonus,
+                    Is.EqualTo(rules.DigestionEnergyBonus + level));
+                Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
+            }
+            var cappedRules = progression.CurrentRules;
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+            Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount));
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void ToughHideBlocksPreserveEncountersButDeadTargetsDoNot(bool blocked)
