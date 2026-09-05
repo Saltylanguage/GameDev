@@ -192,6 +192,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   evidence. See commit `79423b4e`, handoff
   `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`, and the draft
   contract at `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md`.
+  The corresponding approval gate is tracked on the
+  [EX-010 schedule/approval card](https://trello.com/c/LyMlLztN).
 - **Next action:** Finalize the authored EX-010 schedule and record a human
   Accept/Revise decision. Only then run the experiment and retain its
   experiment-specific report bundle; do not treat the generic smoke run as
@@ -237,7 +239,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   as `S2.2A/B` and `S2.3A/B`, and the Fox/BoardSnapshot reserve cards have
   explicit `S2-CORR-*` IDs. The board currently assigns the parallel S2.3A and
   S2-QA cards to Sim while the repository plan assigns the implementation lane
-  to Josh; that discrepancy is recorded rather than hidden.
+  to Josh; that discrepancy is recorded rather than hidden. The latest board
+  pass now places completed CF-1, S2.3B, and EX-010 preparation in `✅ Done`,
+  with the EX-010 schedule/approval gate in `🎯 Upcoming Work`; Sim's active
+  telemetry lanes remain in `Current Work`.
 - **Next action:** Reconcile card ownership, list placement, and completion
   status during the S2 review; do not infer completion from the control card.
 - **Likely owner:** Josh + Sim.
