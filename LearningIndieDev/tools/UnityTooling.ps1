@@ -232,6 +232,7 @@ function Invoke-UnityPreflight {
     $contextLogPath = Join-Path $artifactDirectory 'licensing-context.log'
     $licensingClientPath = Join-Path (Split-Path -Parent $UnityPath) 'Data/Resources/Licensing/Client/Unity.Licensing.Client.exe'
     if (Test-Path -LiteralPath $licensingClientPath -PathType Leaf) {
+        $licensingClientsBefore = @(Get-ProcessIdsByName -Name 'Unity.Licensing.Client')
         $previousErrorActionPreference = $ErrorActionPreference
         try {
             # The client reports restricted WMI access on stderr; capture it as
@@ -242,6 +243,15 @@ function Invoke-UnityPreflight {
         }
         finally {
             $ErrorActionPreference = $previousErrorActionPreference
+
+            # The context probe can launch a licensing helper even when the
+            # probe fails. Clean only clients created by this invocation so a
+            # pre-existing Unity/Hub session is never disturbed.
+            $newLicensingClients = @(Get-ProcessIdsByName -Name 'Unity.Licensing.Client' |
+                Where-Object { $licensingClientsBefore -notcontains $_ })
+            if ($newLicensingClients.Count -gt 0) {
+                Stop-ProcessIds -ProcessIds $newLicensingClients
+            }
         }
         $contextOutput | Set-Content -LiteralPath $contextLogPath
         if (($contextOutput -join "`n") -match '(?i)access denied') {

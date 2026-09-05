@@ -6,7 +6,7 @@ namespace SaltyGame.EditorTools
     static class SimulationReportSerialization
     {
         public static SimulationSpeciesActivityRecord[] CreateActivity(
-            SpeciesSimulationMetrics metrics,
+            ISpeciesSimulationMetricsView metrics,
             IReadOnlyList<SpeciesId> species)
         {
             var activity = new SimulationSpeciesActivityRecord[species.Count];
@@ -53,7 +53,7 @@ namespace SaltyGame.EditorTools
         }
 
         public static SimulationSpeciesBehaviorRecord[] CreateBehavior(
-            SpeciesSimulationMetrics metrics,
+            ISpeciesSimulationMetricsView metrics,
             IReadOnlyList<SpeciesId> species)
         {
             var records = new List<SimulationSpeciesBehaviorRecord>();
@@ -74,7 +74,7 @@ namespace SaltyGame.EditorTools
         }
 
         public static SimulationSpeciesBehaviorTransitionRecord[] CreateBehaviorTransitions(
-            SpeciesSimulationMetrics metrics)
+            ISpeciesSimulationMetricsView metrics)
         {
             var source = metrics.BehaviorTransitions;
             var records = new SimulationSpeciesBehaviorTransitionRecord[source.Count];
@@ -88,6 +88,7 @@ namespace SaltyGame.EditorTools
                     age = transition.Age,
                     x = transition.X,
                     y = transition.Y,
+                    tick = transition.Tick,
                     previousState = transition.PreviousState.ToString(),
                     currentState = transition.CurrentState.ToString(),
                 };
@@ -97,7 +98,7 @@ namespace SaltyGame.EditorTools
         }
 
         public static SimulationSpeciesTrackedBehaviorRecord[] CreateTrackedBehavior(
-            SpeciesSimulationMetrics metrics,
+            ISpeciesSimulationMetricsView metrics,
             IReadOnlyList<SpeciesId> species)
         {
             var records = new List<SimulationSpeciesTrackedBehaviorRecord>();
@@ -123,7 +124,7 @@ namespace SaltyGame.EditorTools
             return records.ToArray();
         }
 
-        public static SimulationSpeciesDeathRecord[] CreateDeathEvents(SpeciesSimulationMetrics metrics)
+        public static SimulationSpeciesDeathRecord[] CreateDeathEvents(ISpeciesSimulationMetricsView metrics)
         {
             var source = metrics.DeathEvents;
             var records = new SimulationSpeciesDeathRecord[source.Count];
@@ -192,7 +193,7 @@ namespace SaltyGame.EditorTools
             return records;
         }
 
-        public static SimulationSpeciesCombatRollRecord[] CreateCombatRolls(SpeciesSimulationMetrics metrics)
+        public static SimulationSpeciesCombatRollRecord[] CreateCombatRolls(ISpeciesSimulationMetricsView metrics)
         {
             var source = metrics.CombatRollEvents;
             var records = new SimulationSpeciesCombatRollRecord[source.Count];
@@ -219,7 +220,7 @@ namespace SaltyGame.EditorTools
         }
 
         public static SimulationSpeciesCombatCooldownSuppressionRecord[] CreateCombatCooldownSuppressions(
-            SpeciesSimulationMetrics metrics)
+            ISpeciesSimulationMetricsView metrics)
         {
             var source = metrics.CombatCooldownSuppressionEvents;
             var records = new SimulationSpeciesCombatCooldownSuppressionRecord[source.Count];
@@ -276,7 +277,16 @@ namespace SaltyGame.EditorTools
         {
             var startingPopulation = run.PopulationHistory[0].GetCount(species);
             var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
-            var statLine = run.Metrics.CreateHerbivoreStatLine(
+            return CreateHerbivoreStatLine(run.Metrics, species, startingPopulation, finalPopulation);
+        }
+
+        public static SimulationHerbivoreStatLineRecord CreateHerbivoreStatLine(
+            ISpeciesSimulationMetricsView metrics,
+            SpeciesId species,
+            int startingPopulation,
+            int finalPopulation)
+        {
+            var statLine = metrics.CreateHerbivoreStatLine(
                 species,
                 startingPopulation,
                 finalPopulation);
@@ -312,6 +322,74 @@ namespace SaltyGame.EditorTools
                 APS = statLine.ActualPreyScore,
                 APSStatus = GetMetricStatusText(statLine.ActualPreyScoreStatus),
             };
+        }
+
+        public static SimulationPhaseResultRecord[] CreatePhaseResults(
+            IReadOnlyList<SimulationPhaseResult> phases,
+            IReadOnlyList<SpeciesId> species,
+            SpeciesId statSpecies)
+        {
+            if (phases == null || phases.Count == 0)
+            {
+                return new SimulationPhaseResultRecord[0];
+            }
+
+            var records = new SimulationPhaseResultRecord[phases.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var phase = phases[index];
+                records[index] = new SimulationPhaseResultRecord
+                {
+                    contractVersion = SimulationPhaseResult.ContractVersion,
+                    phaseIndex = phase.PhaseIndex,
+                    windowStartTickExclusive = phase.WindowStartTickExclusive,
+                    windowEndTickInclusive = phase.WindowEndTickInclusive,
+                    rulesetFingerprint = phase.RulesetFingerprint,
+                    effectiveUpgradeLoadout = CreateUpgradeLoadout(phase.EffectiveUpgradeLoadout),
+                    openingPopulation = CreatePopulationHistory(new[] { phase.OpeningPopulation }, species),
+                    closingPopulation = CreatePopulationHistory(new[] { phase.ClosingPopulation }, species),
+                    activity = CreateActivity(phase.Metrics, species),
+                    behavior = CreateBehavior(phase.Metrics, species),
+                    behaviorTransitions = CreateBehaviorTransitions(phase.Metrics),
+                    trackedBehavior = CreateTrackedBehavior(phase.Metrics, species),
+                    deathEvents = CreateDeathEvents(phase.Metrics),
+                    combatRolls = CreateCombatRolls(phase.Metrics),
+                    combatCooldownSuppressions = CreateCombatCooldownSuppressions(phase.Metrics),
+                    herbivoreStatLine = statSpecies.IsValid
+                        ? CreateHerbivoreStatLine(
+                            phase.Metrics,
+                            statSpecies,
+                            phase.OpeningPopulation.GetCount(statSpecies),
+                            phase.ClosingPopulation.GetCount(statSpecies))
+                        : null,
+                };
+            }
+
+            return records;
+        }
+
+        public static SimulationUpgradeAcquisitionRecord[] CreateUpgradeAcquisitions(
+            IReadOnlyList<SimulationUpgradeAcquisition> acquisitions)
+        {
+            if (acquisitions == null || acquisitions.Count == 0)
+            {
+                return new SimulationUpgradeAcquisitionRecord[0];
+            }
+
+            var records = new SimulationUpgradeAcquisitionRecord[acquisitions.Count];
+            for (var index = 0; index < records.Length; index++)
+            {
+                var acquisition = acquisitions[index];
+                records[index] = new SimulationUpgradeAcquisitionRecord
+                {
+                    effectiveTick = acquisition.EffectiveTick,
+                    phaseIndex = acquisition.PhaseIndex,
+                    order = acquisition.Order,
+                    upgrade = CreateUpgradeLoadout(new[] { acquisition.Snapshot })[0],
+                };
+            }
+
+            return records;
         }
 
         static string GetMetricStatusText(SpeciesHerbivoreMetricStatus status)
@@ -412,6 +490,7 @@ namespace SaltyGame.EditorTools
         public int age;
         public int x;
         public int y;
+        public int tick;
         public string previousState;
         public string currentState;
     }
@@ -464,6 +543,15 @@ namespace SaltyGame.EditorTools
     }
 
     [System.Serializable]
+    sealed class SimulationUpgradeAcquisitionRecord
+    {
+        public int effectiveTick;
+        public int phaseIndex;
+        public int order;
+        public SimulationUpgradeRecord upgrade;
+    }
+
+    [System.Serializable]
     sealed class SimulationSpeciesCombatRollRecord
     {
         public string attackerSpeciesId;
@@ -488,6 +576,27 @@ namespace SaltyGame.EditorTools
         public int y;
         public int tick;
         public int remainingTicks;
+    }
+
+    [System.Serializable]
+    sealed class SimulationPhaseResultRecord
+    {
+        public int contractVersion;
+        public int phaseIndex;
+        public int windowStartTickExclusive;
+        public int windowEndTickInclusive;
+        public string rulesetFingerprint;
+        public SimulationUpgradeRecord[] effectiveUpgradeLoadout;
+        public SimulationPopulationSnapshotRecord[] openingPopulation;
+        public SimulationPopulationSnapshotRecord[] closingPopulation;
+        public SimulationSpeciesActivityRecord[] activity;
+        public SimulationSpeciesBehaviorRecord[] behavior;
+        public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
+        public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
+        public SimulationSpeciesDeathRecord[] deathEvents;
+        public SimulationSpeciesCombatRollRecord[] combatRolls;
+        public SimulationSpeciesCombatCooldownSuppressionRecord[] combatCooldownSuppressions;
+        public SimulationHerbivoreStatLineRecord herbivoreStatLine;
     }
 
     [System.Serializable]

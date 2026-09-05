@@ -5,8 +5,9 @@ become a master changelog.
 
 ## Current focus
 
-**CF-0 — Contract and fixtures** is complete. **CF-1 — continuation parity
-foundation** and the controlled CF-2/CF-3 preview path are implemented locally.
+**CF-0 — Contract and fixtures** is complete. **CF-1 — continuation parity,
+CF-2 boundary upgrades, and the controlled CF-3 preview path** are implemented
+and freshly verified on `NF/ConsecutiveRuns`.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
@@ -15,9 +16,16 @@ same-run resume, explicit End, and manual inspection. Continuous terminal
 completion is results-only; upgrades are offered at phase boundaries, and a
 new expedition is an explicit next action. Continuous phases remain the
 default player flow; uninterrupted single-run mode is Developer Mode-only.
-Phase result/telemetry windows, checkpoint replay, and EX-010 remain gated on
-the later packages. The full Unity suite needs a fresh run after the currently
-open editor is closed.
+Phase result/telemetry windows and ordered acquisition timing are now captured
+by the runtime and report serializers. Boundary checkpoints can be copied,
+restored, and resumed with deterministic runner output. An opt-in headless
+schedule now applies cumulative per-phase loadouts and emits the same phase
+contract; its generic smoke path passes. EX-010 remains prepared but not
+executed, pending its contract-specific schedule and human approval.
+
+Latest verification: Unity EditMode 210/210 passed and PlayMode 17/18 passed
+with one intentional graphics-only skip (2026-09-05). The PlayMode suite is
+green with no failed tests.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)

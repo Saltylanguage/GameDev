@@ -1,6 +1,6 @@
 # Consecutive simulation phases — documentation coverage
 
-**Date:** 2026-09-04. **Status:** CF-0 contract and fixture closure complete; implementation closure pending.
+**Date:** 2026-09-05. **Status:** CF-0 through CF-3 are verified; CF-4 phase telemetry and direct-report validator parity are implemented; the CF-5 checkpoint seam and opt-in headless schedule are implemented and smoke-verified. EX-010 remains unexecuted.
 **Parent:** [Architecture review and plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ## Scope and audit method
@@ -19,9 +19,11 @@ The table below is the project-wide closure list for the implementation pass.
 CF-0 is now closed: the lifecycle, boundary-effect, above-cap energy and
 phase/expedition result decisions are locked in the [canonical plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md),
 and the [schema-21 fresh legacy fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/README.md)
-is preserved with provenance. “Implementation closure pending” below means
-the runtime producers and consumers still need to be changed and verified; it
-does not reopen the product contract.
+is preserved with provenance. The latest implementation pass adds versioned
+phase windows, ordered acquisition timing, checkpoint copy/restore, and fresh
+Unity evidence. Remaining closure work is EX-010 contract-specific schedule
+parity, documentation cleanup, and human review; it does not reopen the
+product contract.
 
 ## Active design and engineering documents
 
@@ -53,12 +55,12 @@ does not reopen the product contract.
 | [S1 Stat-Line tickets](SPRINT_1_SPECIES_STAT_LINE_TICKETS.md) | Added mapping to new window/ledger/serialization/replay retests; original acceptance retained. | Sim reviews phase and expedition semantics and new acceptance evidence. |
 | [Species analytics guidance](Species%20Design/SPECIES_STATISTICS_ANALYTICS_GUIDANCE.md) | Window context and pooled-count rates explicit. | Keep stable stat names, denominators and validity states consistent with code. |
 | [Herbivore validation](HERBIVORE_STATISTICS_VALIDATION.md) | Applicability note and existing cause/litter/denominator limitations linked. | Revise formulas only after accepted stat decisions; independently validate actual new reports. |
-| [Simulation tooling](UNITY_SIMULATION_TOOLING.md) | Current fresh-window mode versus proposed continuation contracts distinguished. | Update command examples, schemas, checkpoint/schedule support, failures and compatibility gates. |
+| [Simulation tooling](UNITY_SIMULATION_TOOLING.md) | Current fresh-window mode versus continuation contracts distinguished; direct ForestEdge/Hare Stat-Line bundle and generic phase schedule now validate locally. | Document phase-aware report fields, checkpoint boundary limits, and the EX-010-specific schedule gate. |
 | [Research plan](Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md) | v1.15 dependency notice; no P3 promotion or experimental scope change. | Lock EX-010 only after shared runtime/report/checkpoint gates. |
 | [Research paper](Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md), [change-impact brief](Research/CHANGE_IMPACT_ANALYSIS_RESEARCH_BRIEF.md) | Current applicability overlay; old results do not establish continuation. | New dated analysis/evidence for changed claims; do not rewrite historical results. |
 | [Research index](Research/README.md), [experiment index](Research/Experiments/README.md) | Link evidence validity register at retrieval entry points. | Index new phase-aware studies and supersession links when they exist. |
 | [Predictive AI architecture map](Architecture%20Maps/PREDICTIVE_AI_RESEARCH_ARCHITECTURE_AND_FLOWS.md) | Checkpoint/schedule/window dependency connected to EX-010. | Update actual envelope and producer/consumer versions after implementation. |
-| [EX-010 proposal](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md) | Concrete implementation dependencies and lineage split requirements added. | Human-approved schedule/controls/outcomes, then new preregistration and evidence. |
+| [EX-010 proposal](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md) | Concrete implementation dependencies and lineage split requirements added. | Draft contract is prepared; human approval and EX-010-specific schedule parity are still required before execution. |
 | [New experiment report template](Research/Templates/EXPERIMENT_REPORT_TEMPLATE.md) | Added lifecycle, window, checkpoint, schedule and termination fields. | Verify templates against actual serializers and validity handling. |
 | [Upgrade concerns](Planning%20Concerns/upgrade-system.md), [Stat-Line/AI concerns](Planning%20Concerns/STATLINE_PREDICTIVE_AI_CROSSOVER.md) | Linked review without changing accepted triggers/severity/status. | Review proposed CF concerns; update accepted statuses only from evidence or explicit decisions. |
 | [Stat-Line card](https://trello.com/c/pZ4qG2DM), [research card](https://trello.com/c/DViOsvbd) | Planning notices with validity limits and retests; the S2.3 card owner is reconciled to Josh. | Keep scope, list placement, and completion state synchronized with the sprint record; preserve historical handoffs. |
@@ -106,12 +108,15 @@ Changing those now would falsely document APIs or behavior that do not exist.
       `20 seconds`, `200 ticks`, `phase`, `resume`, and `upgrade` again across
       first-party docs/code/help; classify each remaining reference as current,
       explicit fresh research, historical, or unrelated.
-- [ ] All report/template/validator versions and commands agree; no migration
-      relies solely on a banner while contradictory current instructions remain.
+- [ ] All report/template/validator versions and commands agree; current JSON,
+      Markdown and CSV phase fields, direct Stat-Line export and generic
+      schedule command are aligned, but EX-010-specific schedule parity still
+      needs its final pass.
 - [ ] Historical claim limits are reachable from active research/tooling indexes.
 - [ ] Sim/Josh review and board/repository ownership reconciliation are recorded.
-- [ ] New handoff links actual tests/build/visual evidence and the shared revision.
+- [x] New handoff links actual tests, report/bundle evidence, and the branch
+      baseline; no graphics screenshot was required for this code/report gate.
 
-These implementation boxes remain open because Josh requested review and
-planning before runtime changes; the CF-0 contract and fixture checkbox above
-is closed.
+These implementation boxes remain open for EX-010-specific command, document,
+and human-review closure; the runtime phase/checkpoint seam, generic schedule,
+and direct validator parity now have focused tests and fresh Unity evidence.

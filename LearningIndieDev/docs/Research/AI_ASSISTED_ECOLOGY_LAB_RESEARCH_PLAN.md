@@ -1,21 +1,24 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.15<br>
+**Version:** 1.17<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
 ## Executive position
 
-**2026-09-04 dependency update:** CF-0 has locked the continued-gameplay
-contract in the [project-wide architecture plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
-Gameplay preserves one world across upgrade/skip breaks; runtime implementation
-and EX-010 execution remain pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+**2026-09-05 dependency update:** CF-0 through CF-3 are implemented and freshly
+verified on `NF/ConsecutiveRuns`. The runtime now preserves one world across
+upgrade/skip breaks and publishes versioned phase windows and boundary
+checkpoints. Direct ForestEdge/Hare runs also emit a validated Stat-Line CSV.
+The opt-in headless schedule also smoke-tests generic continuation and
+cumulative loadout timing; EX-010 execution remains pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
 defines the required checkpoint, acquisition schedule, forecast horizon,
 phase/expedition stat versions and lineage-aware validation split. EX-009's
 accepted launch-time finding remains bounded; prior forecasts and reports are
 not retrofitted into continuation evidence. Review new contracts with Sim before
-scoring new window semantics; this update does not promote P3 or approve runs.
+scoring new window semantics; this update does not promote P3 or approve
+EX-010 execution.
 
 This project may be onto a distinctive combination of systems:
 
@@ -725,8 +728,10 @@ started. Its zero-delta result is useful evidence about launch-time additive
 application, but it cannot stand in for upgrades acquired after the simulation
 has already evolved.
 
-**Status:** Proposed follow-up; blocked until the continue-from-current-state
-gameplay flow and a reproducible simulation checkpoint/resume seam exist.
+**Status:** Preparation complete on `NF/ConsecutiveRuns`; execution remains
+blocked pending EX-010-specific schedule parity, final Stat-Line meaning review
+and human approval of the draft contract. The current runtime has same-world continuation, versioned
+phase windows, ordered acquisition timing, and boundary checkpoint copy/restore.
 
 **Method to define before execution:** Human-approve a segmented contract with a
 fixed seed, initial state, segment lengths, upgrade acquisition ticks, and
@@ -741,7 +746,9 @@ regime. No result is generalized to other upgrade types or schedules without
 new coverage.
 
 The working package is documented in [EX-010 - Sequential Upgrade
-Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
+Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md), with
+the proposed execution fields collected in its
+[draft contract](Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md).
 
 ### EX-004 - Replay-to-explanation
 
@@ -1010,3 +1017,5 @@ rule.
 | 1.13 | 2026-09-04 | Recorded the adapter-backed EX-007 reruns, completed the same-held-out EX-009 order comparison, and bounded the commutativity result to the tested additive upgrades and configuration. |
 | 1.14 | 2026-09-04 | Recorded human acceptance of EX-007 and EX-009, and added proposed EX-010 to track sequential upgrade acquisition after simulation continuation is implemented. |
 | 1.15 | 2026-09-04 | Linked the consecutive-phase architecture review, Stat-Line dependency and explicit evidence applicability/retest contract; no historical result or experiment decision changed. |
+| 1.16 | 2026-09-05 | Recorded verified CF-1 through CF-3 continuation work, phase-window telemetry, boundary checkpoints, and the EX-010 draft execution contract; EX-010 remains unexecuted pending approval and headless schedule parity. |
+| 1.17 | 2026-09-05 | Recorded direct Stat-Line bundle parity and the opt-in generic headless continuation schedule; EX-010 remains unexecuted pending its contract-specific schedule and human approval. |

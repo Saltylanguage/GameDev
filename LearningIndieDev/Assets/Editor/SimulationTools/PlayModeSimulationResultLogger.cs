@@ -13,7 +13,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 7;
+        const int ReportSchemaVersion = 8;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -72,6 +72,12 @@ namespace SaltyGame.EditorTools
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
                 trackedBehavior = SimulationReportSerialization.CreateTrackedBehavior(run.Metrics, species),
                 deathEvents = SimulationReportSerialization.CreateDeathEvents(run.Metrics),
+                phaseResults = SimulationReportSerialization.CreatePhaseResults(
+                    run.PhaseResults,
+                    species,
+                    run.PlayerSpeciesId),
+                upgradeAcquisitionTimeline = SimulationReportSerialization.CreateUpgradeAcquisitions(
+                    run.UpgradeAcquisitionTimeline),
             };
         }
 
@@ -88,6 +94,7 @@ namespace SaltyGame.EditorTools
             builder.AppendLine($"- Final player population: `{report.finalPlayerPopulation}`");
             builder.AppendLine($"- Ruleset fingerprint: `{report.rulesetFingerprint}`");
             builder.AppendLine($"- Upgrade loadout: `{report.upgradeLoadout.Length}` ordered contract snapshot(s)");
+            builder.AppendLine($"- Phase windows: `{report.phaseResults.Length}` versioned result(s)");
             builder.AppendLine();
             if (report.upgradeLoadout.Length > 0)
             {
@@ -112,6 +119,23 @@ namespace SaltyGame.EditorTools
                     }
 
                     builder.AppendLine($"| {upgrade.order} | {upgrade.upgradeId} | {upgrade.targetSpeciesId} | {modifiers} | `{upgrade.fingerprint}` |");
+                }
+
+                builder.AppendLine();
+            }
+
+            if (report.phaseResults.Length > 0)
+            {
+                builder.AppendLine("## Phase windows");
+                builder.AppendLine();
+                builder.AppendLine("| Phase | Window (exclusive → inclusive) | Ruleset | Effective upgrades |");
+                builder.AppendLine("|---:|---|---|---:|");
+                for (var index = 0; index < report.phaseResults.Length; index++)
+                {
+                    var phase = report.phaseResults[index];
+                    builder.AppendLine(
+                        $"| {phase.phaseIndex} | ({phase.windowStartTickExclusive}, {phase.windowEndTickInclusive}] | "
+                        + $"`{phase.rulesetFingerprint}` | {phase.effectiveUpgradeLoadout.Length} |");
                 }
 
                 builder.AppendLine();
@@ -239,6 +263,8 @@ namespace SaltyGame.EditorTools
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;
             public SimulationSpeciesTrackedBehaviorRecord[] trackedBehavior;
             public SimulationSpeciesDeathRecord[] deathEvents;
+            public SimulationPhaseResultRecord[] phaseResults;
+            public SimulationUpgradeAcquisitionRecord[] upgradeAcquisitionTimeline;
         }
     }
 }

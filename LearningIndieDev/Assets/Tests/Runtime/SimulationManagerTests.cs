@@ -307,6 +307,125 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ContinuousRunPublishesVersionedPhaseWindowsAndUpgradeTimeline()
+        {
+            var data = new CellularSimData(
+                width: 2,
+                height: 1,
+                startingProbabilities: new Dictionary<SpeciesId, float>(),
+                speciesRules: SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 0.4f,
+                stepInterval: 0.1f).WithRunTicks(4, 0.1f);
+            var run = new SimulationRunState(
+                CreateContinuityFixture(),
+                SpeciesIds.Herbivore,
+                seed: 42,
+                durationSeconds: data.RunDurationSeconds);
+            run.ConfigureContinuousPhases(2);
+            var manager = new SimulationManager();
+            manager.SetRunner(new SpeciesSimulationRunner(run, data));
+            var upgrade = new SpeciesUpgradeSnapshot(
+                "phase-window-upgrade",
+                "Phase Window Upgrade",
+                "Phase window test",
+                SpeciesIds.Herbivore,
+                0,
+                new[]
+                {
+                    new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
+                });
+            var nextRules = new Dictionary<SpeciesId, SpeciesRules>(data.SpeciesRules)
+            {
+                [SpeciesIds.Herbivore] = upgrade.Apply(data.SpeciesRules[SpeciesIds.Herbivore]),
+            };
+
+            Assert.That(manager.Start(), Is.True);
+            AdvanceTicks(manager, 2);
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(1));
+            Assert.That(run.PhaseResults[0].PhaseIndex, Is.EqualTo(1));
+            Assert.That(run.PhaseResults[0].WindowStartTickExclusive, Is.EqualTo(0));
+            Assert.That(run.PhaseResults[0].WindowEndTickInclusive, Is.EqualTo(2));
+
+            Assert.That(
+                manager.ContinueWithBoundaryState(nextRules, SpeciesExperimentalOptions.None, new[] { upgrade }),
+                Is.True);
+            AdvanceTicks(manager, 2);
+
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(2));
+            Assert.That(run.PhaseResults[1].WindowStartTickExclusive, Is.EqualTo(2));
+            Assert.That(run.PhaseResults[1].WindowEndTickInclusive, Is.EqualTo(4));
+            Assert.That(run.PhaseResults[1].EffectiveUpgradeLoadout, Has.Count.EqualTo(1));
+            Assert.That(run.UpgradeAcquisitionTimeline, Has.Count.EqualTo(1));
+            Assert.That(run.UpgradeAcquisitionTimeline[0].EffectiveTick, Is.EqualTo(2));
+            Assert.That(run.UpgradeAcquisitionTimeline[0].PhaseIndex, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void CheckpointRoundTripPreservesBoundaryStateAndForkIsolation()
+        {
+            var run = new SimulationRunState(
+                CreateContinuityFixture(),
+                SpeciesIds.Herbivore,
+                seed: 42,
+                durationSeconds: 2f,
+                targetTicks: 20);
+            run.ConfigureContinuousPhases(10);
+            var manager = new SimulationManager();
+            manager.SetRunner(new SpeciesSimulationRunner(run, SpeciesRuleDefaults.Create(), 0.1f));
+            Assert.That(manager.Start(), Is.True);
+            AdvanceTicks(manager, 10);
+
+            var checkpoint = run.CreateCheckpoint();
+            var restored = checkpoint.Restore();
+            Assert.That(restored.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
+            Assert.That(restored.Tick, Is.EqualTo(run.Tick));
+            Assert.That(restored.PhaseIndex, Is.EqualTo(run.PhaseIndex));
+            Assert.That(restored.PhaseStartTick, Is.EqualTo(run.PhaseStartTick));
+            Assert.That(restored.PhaseEndTick, Is.EqualTo(run.PhaseEndTick));
+            Assert.That(restored.PopulationHistory, Has.Count.EqualTo(run.PopulationHistory.Count));
+            AssertGridEqual(run.Cells, restored.Cells);
+
+            restored.Cells.SetCell(0, 0, SpeciesCell.Empty);
+            Assert.That(run.Cells.GetCell(0, 0).IsOccupied, Is.True);
+        }
+
+        [Test]
+        public void CheckpointRunnerResumesWithTheSameTrajectory()
+        {
+            var data = new CellularSimData(
+                width: 2,
+                height: 1,
+                startingProbabilities: new Dictionary<SpeciesId, float>(),
+                speciesRules: SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 0.4f,
+                stepInterval: 0.1f).WithRunTicks(4, 0.1f);
+            var original = new SimulationRunState(
+                CreateContinuityFixture(),
+                SpeciesIds.Herbivore,
+                seed: 42,
+                durationSeconds: data.RunDurationSeconds);
+            original.ConfigureContinuousPhases(2);
+            var originalManager = new SimulationManager();
+            originalManager.SetRunner(new SpeciesSimulationRunner(original, data));
+            Assert.That(originalManager.Start(), Is.True);
+            AdvanceTicks(originalManager, 2);
+            var checkpoint = originalManager.Run.CreateCheckpoint();
+
+            Assert.That(originalManager.ContinueWithoutUpgrade(), Is.True);
+            AdvanceTicks(originalManager, 2);
+
+            var resumedManager = new SimulationManager();
+            resumedManager.SetRunner(SpeciesSimulationRunner.RestoreCheckpoint(checkpoint, data));
+            Assert.That(resumedManager.ContinueWithoutUpgrade(), Is.True);
+            AdvanceTicks(resumedManager, 2);
+
+            Assert.That(resumedManager.Run.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            AssertGridEqual(original.Cells, resumedManager.Run.Cells);
+            AssertPopulationHistoryEqual(original, resumedManager.Run);
+        }
+
+        [Test]
         public void ContinuousRestartFromDecisionBoundaryRestoresInitialState()
         {
             var initialCells = CreateContinuityFixture();

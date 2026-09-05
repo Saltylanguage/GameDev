@@ -14,6 +14,9 @@ param(
     [ValidateRange(0, 1000000)]
     [int]$RunTicks = 0,
     [ValidateRange(0, 1000000)]
+    [int]$PhaseLengthTicks = 0,
+    [string]$PhaseUpgradeSchedule = '',
+    [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
@@ -53,6 +56,7 @@ CellSim Run [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-Ru
              [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide] [-UpgradeValueOverride 0.75]
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
+             [-PhaseLengthTicks 200] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
 CellSim Report [-ReportPath artifacts/.../report.json]
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]
@@ -72,7 +76,7 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
-        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
+        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath

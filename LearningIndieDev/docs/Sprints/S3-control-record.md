@@ -17,7 +17,7 @@ S2 review confirms the remaining work and capacity.
 | Sprint ID | S3 |
 | Goal | Close the remaining M1 implementation gates and leave the project easy to inspect and continue. |
 | Capacity | Josh 20h; Sim 20h; 40h planning capacity. |
-| Entry state | S2 remains active; CF-1 is in progress; the launch-time upgrade catalog and Lab shell are already in place. |
+| Entry state | S2 remains active; CF-1/CF-2 runtime work and the controlled CF-3 preview path are implemented; CF-4 and generic CF-5 evidence integration are verified, with EX-010-specific closure remaining. |
 | Primary outcome | One complete ten-phase Forest Edge run can be continued, upgraded, reported, and reviewed without silently rebuilding the world. |
 | M2 relationship | This sprint prepares M2; species/build co-design moves to S4. |
 
@@ -63,8 +63,8 @@ S2 review confirms the remaining work and capacity.
 
 | Priority | Risk | Why it matters | Owner | Exit evidence |
 | --- | --- | --- | --- | --- |
-| P0 | Boundary upgrades and rewards are not yet part of the continuous flow. | The default player path can pause and continue, but cannot yet make the intended upgrade decision in the same world. | Josh | A matched continuation test shows Skip and one upgrade resuming at the next tick with no reinitialization. |
-| P0 | Phase-aware Stat-Line and report semantics are not fully integrated. | Fresh-window evidence could be mistaken for continued-world evidence. | Josh, with Sim review | Phase/expedition windows, acquisition timing, and validity status agree across report, Stat-Line, adapter, and validator. |
+| P0 | Phase-aware Stat-Line and report semantics still need final review. | Fresh-window evidence could be mistaken for continued-world evidence. | Josh, with Sim review | Phase/expedition windows, acquisition timing, and validity status agree across report, Stat-Line, adapter, and validator. |
+| P0 | EX-010-specific checkpoint/schedule parity is not finished. | EX-010 could be run with a different schedule than the game or without a replayable boundary state. | Josh | Checkpoint round trip and the EX-010 schedule parity check pass before execution. |
 | P1 | Sim's current board load is roughly 32h against the 20h planning budget. | The active evidence work cannot all finish inside S2 without re-scoping or carry-over. | Josh + Sim | S2 review explicitly keeps, splits, or carries each Sim card. |
 | P1 | The continuation work is still an uncommitted working-tree batch. | A milestone decision cannot rely on a baseline that another session cannot reproduce. | Josh | Focused commits or a documented checkpoint exist before M1 acceptance. |
 | P1 | The new 12h upgrade-expansion card may expand catalog scope before the M1 gate is closed. | More content could consume capacity without improving the core loop. | Josh + Sim | Card is re-scoped, carried forward, or explicitly accepted as non-M1 work. |

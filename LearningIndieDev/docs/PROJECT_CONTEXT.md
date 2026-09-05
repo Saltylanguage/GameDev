@@ -165,8 +165,10 @@ settle them in foundational grid code.
 - An expedition receives a frozen base-data snapshot at launch. Authoring edits
   affect a new expedition, not the current world. Player upgrades deliberately
   create a new immutable effective rules snapshot at a frozen phase boundary;
-  they never mutate rules mid-tick or reinitialize cells. This boundary update
-  is part of the pending consecutive-phase migration.
+  they never mutate rules mid-tick or reinitialize cells. The retained-run
+  boundary path is implemented in the current `NF/ConsecutiveRuns` branch, with
+  phase-window telemetry and checkpoint handoff contracts now available for
+  research integration.
 - Initial-grid creation remains a factory concern; simulation stepping remains a
   domain concern; `Grid<T>` remains a generic data container.
 - `SpeciesId` is now the primary stable identity for species rules, cells,

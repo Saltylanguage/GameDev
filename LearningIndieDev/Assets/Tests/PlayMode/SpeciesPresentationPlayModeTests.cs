@@ -367,6 +367,10 @@ namespace SaltyGame.PlayModeTests
                 out var settingsMessage);
             Assert.That(settingsApplied, Is.True, settingsMessage);
 
+            // Player mode reapplies the VM's continuous settings on start. Keep
+            // this test's boundary short enough to observe the decision state.
+            viewModel.GetType().GetProperty("RunTicksText")?.SetValue(viewModel, "40");
+            viewModel.GetType().GetProperty("PhaseLengthTicksText")?.SetValue(viewModel, "4");
             viewModel.GetType().GetProperty("DeveloperMode")?.SetValue(viewModel, false);
             var playerStartCommand = viewModel.GetType().GetProperty("StartCommand")?.GetValue(viewModel);
             playerStartCommand?.GetType().GetMethod("Execute")?.Invoke(playerStartCommand, new object[] { null });

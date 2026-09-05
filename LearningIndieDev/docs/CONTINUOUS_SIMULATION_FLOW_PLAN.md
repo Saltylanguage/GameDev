@@ -1,7 +1,7 @@
 # Consecutive simulation phases — architecture review and migration plan
 
-**Status:** CF-0 is complete. CF-1 lifecycle and the controlled CF-2/CF-3 preview path are implemented locally; current Unity-suite revalidation remains pending while the editor is open. CF-4 through CF-6 remain gated.
-**Reviewed:** 2026-09-04, branch `NF/ConsecutiveRuns`, source review baseline `f8ccbdb4`.
+**Status:** CF-0 through CF-2 are implemented and freshly verified. CF-3 has a passing controlled preview path. CF-4 telemetry windows and direct-report validator parity are implemented; CF-5 checkpoint and opt-in headless schedule wiring are implemented and smoke-verified. EX-010 remains gated until the human-approved contract and final integration gate are complete.
+**Reviewed:** 2026-09-05, branch `NF/ConsecutiveRuns`, source review baseline `38a5addf`.
 **Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.
 **Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. The CF-0 contract below is locked by Josh; runtime packages and balance changes remain separate implementation decisions.
 
@@ -241,18 +241,19 @@ inheriting Josh's runtime or research responsibilities.
 | Package | Proposed owner | Estimate | Dependency and concrete exit gate |
 | --- | --- | ---: | --- |
 | CF-0 Contract and fixtures | Josh, with Sim for metrics | 4–6h | **Complete 2026-09-04.** Locked phase/end/restart and initialization-only effect policies; froze the state and report contract; preserved the [fresh legacy fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/README.md) with provenance. |
-| CF-1 Continuous domain lifecycle | Josh | 8–12h | **Runtime slice implemented.** Same runner/world, absolute clock and prior grid survive skip boundaries; focused lifecycle tests pass. Current Unity-suite revalidation is pending while the editor is open. |
-| CF-2 Boundary upgrades and rewards | Josh | 6–10h | **Boundary mechanics implemented; package remains open.** Phase survivor data is settled once, live and legacy offers install the same immutable snapshots, launch-only offers are blocked, and duplicate decisions are guarded. Phase result/telemetry schema work remains in CF-4. |
-| CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented; package remains open.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain. |
-| CF-4 Telemetry and Stat-Line | Named telemetry implementer; Sim reviews, Josh integrates | 8–12h | CF-0/1. Versioned phase/expedition windows, ledgers reconcile, serializer/validator/CSV/UI agree, old/new comparisons guarded. |
-| CF-5 Research checkpoints and schedules | Josh | 8–12h | CF-1/2/4. Domain checkpoint round trip and fork isolation pass; gameplay/headless decision schedules match; EX-010 input can be frozen. |
+| CF-1 Continuous domain lifecycle | Josh | 8–12h | **Implemented and verified.** Same runner/world, absolute clock and prior grid survive skip boundaries; fresh Unity EditMode/PlayMode suites pass. |
+| CF-2 Boundary upgrades and rewards | Josh | 6–10h | **Implemented and verified.** Phase survivor data is settled once, live and legacy offers install the same immutable snapshots, launch-only offers are blocked, and duplicate decisions are guarded. |
+| CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented and verified.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain separate. |
+| CF-4 Telemetry and Stat-Line | Josh; Sim reviews metric meaning | 8–12h | **Runtime/report slice implemented and validator parity closed.** Versioned phase windows, pooled acquisition timing, metric deltas and event filtering flow through JSON/Markdown/CSV and the PlayMode report; direct ForestEdge/Hare runs now emit the validated Stat-Line CSV. Final Stat-Line meaning review remains. |
+| CF-5 Research checkpoints and schedules | Josh | 8–12h | **Checkpoint seam and opt-in headless schedule implemented and verified.** Round-trip/fork isolation, deterministic runner resume, and a no-upgrade plus generic boundary-loadout schedule pass; the EX-010 contract-specific schedule and human freeze remain. |
 | CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | CF-1–5. All verification gates, documentation audit and evidence validity notices complete; explicit review decision. |
 | Total | Replan capacity explicitly | 44–68h | EX-010 experimental execution/balance work is additional and requires its own approved protocol. |
 
 CF-3 and CF-4 can proceed alongside each other once their shared contract is
 stable. Do not release a player continuation change before CF-4: otherwise new
-play evidence would still be labelled using old semantics. Checkpoint research
-work may be delivered later, but EX-010 remains blocked until CF-5 passes.
+play evidence would still be labelled using old semantics. The generic CF-5
+schedule path is ready, but EX-010 remains blocked until its contract-specific
+schedule and approval pass.
 
 ## CF-0 closure — contract and fixture
 
@@ -315,10 +316,11 @@ now consume them. The remaining work is verification and delivery coordination:
 
 1. Assign CF-1 through CF-6 owners and capacity, keeping Josh responsible for
    lifecycle/report integration and Sim responsible for metric meaning review.
-2. Freeze concrete serializer/lifecycle version identifiers from the branch at
-   implementation time, then run the producer/consumer parity gates.
-3. Approve EX-010's schedule, outcomes and fresh validation panel separately
-   after checkpoint capability and the shared report contract are verified.
+2. **Completed for the current integration batch:** freeze concrete
+   serializer/lifecycle version identifiers and run the producer/consumer
+   parity gates, including a generic headless schedule smoke test.
+3. Approve EX-010's authored schedule, outcomes and fresh validation panel
+   separately after its contract-specific parity review.
 
 These items do not change the locked same-world Continue, launch-only effect,
 above-cap energy, Restart, or phase/expedition window decisions.

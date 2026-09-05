@@ -4,14 +4,15 @@ This is the repeatable execution layer for the cellular-automata prototype. It
 turns an Inspector-authored scenario, a set of seeds, and the same simulation
 code used by the game into reviewable test results and JSON experiment reports.
 
-**Consecutive-phase migration notice (2026-09-04):** the current batch contract
-is a fresh simulation window; Play Mode writes its latest completed window.
-Neither is a checkpoint/acquisition-timeline contract. Planned continuation
-requires versioned phase and expedition outputs, immutable artifact lineage,
-scheduled upgrades and compatible readers/validators. Existing commands keep
-their declared fresh-run meaning. See the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
-and [evidence validity register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
-Do not use old reports as evidence of continued-world behavior.
+**Consecutive-phase migration notice (2026-09-05):** the game-side run and
+Play Mode report now expose versioned phase windows, ordered upgrade acquisition
+timing, and boundary checkpoints. The existing `CellSim Run` command remains a
+fresh independent window by default; its opt-in schedule flags provide a
+generic continuation smoke path without silently changing old commands. The
+EX-010-specific schedule remains a CF-5 follow-up. See the
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) and [evidence validity
+register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md). Do not use old reports as
+evidence of continued-world behavior.
 
 > **Current status:** ready for a closed-editor batch run. The tools deliberately
 > refuse to start when this Unity project has an active `Temp/UnityLockfile`.
@@ -46,8 +47,10 @@ flowchart LR
   scenario path, per-species activity, behavior-state ticks, tracked entity
   transitions, per-death cause events, and the ordered per-run upgrade contract
   snapshots (including modifier values and fingerprints); the Markdown is the
-  quick human/agent summary. The Play Mode report schema is 7 after this
-  addition; older reports remain readable as historical artifacts.
+  quick human/agent summary. The Play Mode report schema is 8 after this
+  addition; phase-aware reports also include phase windows, acquisition timing,
+  and the checkpoint-compatible state contract. Older reports remain readable
+  as historical artifacts.
 
 ### Deterministic simulation experiments
 
@@ -99,6 +102,7 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -UpgradeValueOverride 0.75
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -UpgradeValueOverride 0.75 -PreContactAvoidanceChance 0.10
+.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -PhaseLengthTicks 40 -PhaseUpgradeSchedule 'none;none;none'
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
 .\CellSim.cmd Compare -BaselinePath artifacts\cellular-experiment-...\report.json -ReportPath artifacts\cellular-experiment-...\report.json
@@ -110,6 +114,36 @@ flee speed and `+0.08` avoidance; each level through level 10 adds another
 `+0.08` avoidance, reaching a maximum of `0.80`. The legacy ID
 `threat-response` remains accepted for historical reports and loadouts.
 
+For a continuous run, capture a checkpoint only while the run is frozen at a
+decision boundary (`SimulationRunState.CreateCheckpoint()` or
+`SpeciesSimulationRunner.CreateCheckpoint()`). The checkpoint copies the
+current grid, absolute tick, phase metadata, population history, effective
+upgrade snapshots, acquisition timeline, and completed phase results. Restore
+it with `SimulationRunCheckpoint.Restore()` or
+`SpeciesSimulationRunner.RestoreCheckpoint(...)`; mutating the restored grid
+does not mutate the source run. This is a deterministic research handoff, not
+player save/load, and it does not turn the existing fresh-window CLI into a
+scheduled continuation runner.
+
+For a bounded headless continuation smoke test, supply both a phase length and
+an explicit cumulative loadout schedule:
+
+```powershell
+.\CellSim.cmd Run `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -PlayerSpeciesId hare `
+    -RunTicks 120 `
+    -PhaseLengthTicks 40 `
+    -PhaseUpgradeSchedule 'none;stronger-block;stronger-block-2'
+```
+
+Each semicolon-delimited entry describes the full loadout effective for that
+phase; `none` means an empty loadout. The command records acquisition timing
+and phase windows in the schema-25 report. This generic schedule path is an
+integration smoke test, not authorization to execute a research experiment;
+EX-010 still needs its own human-approved schedule and authored intervention
+contract.
+
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
 commands below when their full options are needed:
@@ -118,7 +152,7 @@ commands below when their full options are needed:
 | --- | --- |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
 | `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. |
+| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
@@ -237,7 +271,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-Experiment report schema 23 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 25 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
 experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling
@@ -261,7 +295,7 @@ snapshot's modifiers and fingerprints, plus `upgradeLoadoutFingerprint`. The
 older `-UpgradeId` and `-UpgradeSequence` arguments remain available for
 historical experiments and diagnostic arms.
 
-The current experiment JSON schema is `23`. Historical schema-6 EX-002 and
+The current experiment JSON schema is `25`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -271,7 +305,7 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 23 also records the selected combat
+identity, tick, age, and position. Schema 25 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
 its modifiers, totals, and outcome. Authored upgrade runs also record the
 catalog path used to resolve the immutable snapshots. Threat Exposure
@@ -280,8 +314,12 @@ dose-response runs may use
 production catalog. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
-optional test-suite or comparison summaries. Authored upgrade runs additionally
-record the prediction-input metadata used to resolve and apply their snapshots.
+optional test-suite or comparison summaries. Continued runs additionally record
+versioned phase windows with opening/closing snapshots, raw metric/event
+windows, effective loadouts, and ordered acquisition records. CSV adds phase
+count/window columns, and `New-CellSimReport.ps1` rejects malformed windows
+before producing analysis. Authored upgrade runs additionally record the
+prediction-input metadata used to resolve and apply their snapshots.
 
 Every Unity batch entry point runs the same preflight before doing project work:
 it refuses an active Editor/Unity process, removes only a stale project-local

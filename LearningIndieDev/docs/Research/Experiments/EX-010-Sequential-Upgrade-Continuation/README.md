@@ -1,7 +1,8 @@
 # EX-010 — Sequential upgrade continuation
 
 **Experiment ID:** `EXP-010`
-**Status:** Proposed follow-up; blocked until continuation/resume exists
+**Status:** Preparation complete; execution blocked pending human contract
+approval, EX-010-specific schedule parity, and the CF-5 gate
 **Parent:** `EXP-009` / `EXP-007`
 **Decision owner:** Human design owner
 **Feature owner:** Josh
@@ -52,10 +53,15 @@ Development/held-out splitting must keep an expedition and its checkpoint
 branches together. This is planning detail, not a locked experiment schedule
 or authorization to execute EX-010.
 
-The game and headless runner need a reproducible checkpoint/resume path that
-captures the evolving simulation state and the immutable upgrade snapshot at
-acquisition. Until that seam exists, EX-010 remains a tracked proposal rather
-than executable evidence.
+The game-side domain now exposes a reproducible boundary checkpoint that copies
+the evolving grid, absolute tick, population history, ordered acquisition
+timeline, and completed phase results. The runner can restore that checkpoint
+with its previous grid so deterministic continuation can be compared. The
+existing `CellSim Run` command is still a fresh-window command; headless
+the generic segmented schedule path is smoke-verified, but the EX-010-specific
+schedule remains open. Until
+those gates and human approval are complete, EX-010 remains planning material,
+not executable evidence.
 
 ## Success criteria
 
@@ -69,8 +75,9 @@ than executable evidence.
 
 ## Follow-up status
 
-This package is intentionally not part of the current S2 implementation slice.
-It remains open so the question is not lost. Revisit it when the intended
-continue-from-current-state gameplay flow is implemented; otherwise retain it
-as an explicit remaining research item rather than silently closing EX-009 as
-the answer to a different question.
+The contract fields are collected in
+[CONTRACT_DRAFT.md](CONTRACT_DRAFT.md). This draft is intentionally not a
+result and does not authorize execution. Revisit it for human approval after
+the CF-4 Stat-Line meaning and EX-010-specific CF-5 schedule gates pass; retain it as an explicit
+remaining research item rather than silently closing EX-009 as the answer to a
+different question.

@@ -81,6 +81,39 @@ namespace SaltyGame
         public SimulationRunState Run { get; }
         public float StepSeconds => stepSeconds;
 
+        public SimulationRunCheckpoint CreateCheckpoint()
+        {
+            return Run.CreateCheckpoint(previousCells);
+        }
+
+        public static SpeciesSimulationRunner RestoreCheckpoint(
+            SimulationRunCheckpoint checkpoint,
+            CellularSimData simulationData,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
+            SpeciesExperimentalOptions experimentalOptions = null)
+        {
+            if (checkpoint == null)
+            {
+                throw new ArgumentNullException(nameof(checkpoint));
+            }
+
+            if (simulationData == null)
+            {
+                throw new ArgumentNullException(nameof(simulationData));
+            }
+
+            var runner = new SpeciesSimulationRunner(
+                checkpoint.Restore(),
+                simulationData,
+                combatResolutionMode,
+                attackOpportunityMode,
+                experimentalOptions,
+                checkpoint.UpgradeLoadout);
+            runner.previousCells = checkpoint.CopyPreviousCells();
+            return runner;
+        }
+
         public void Start()
         {
             Run.Start();

@@ -85,6 +85,18 @@ namespace SaltyGame
                 BlockedNoBirthLocation + (outcome == SpeciesReproductionOutcome.BlockedNoBirthLocation ? 1 : 0),
                 SuccessfulAttempts + (outcome == SpeciesReproductionOutcome.SuccessfulAttempt ? 1 : 0));
         }
+
+        internal SpeciesReproductionActivity Subtract(SpeciesReproductionActivity baseline)
+        {
+            return new SpeciesReproductionActivity(
+                Candidates - baseline.Candidates,
+                BlockedEnergy - baseline.BlockedEnergy,
+                BlockedMateRequirement - baseline.BlockedMateRequirement,
+                BlockedGroupLimit - baseline.BlockedGroupLimit,
+                FailedChanceRoll - baseline.FailedChanceRoll,
+                BlockedNoBirthLocation - baseline.BlockedNoBirthLocation,
+                SuccessfulAttempts - baseline.SuccessfulAttempts);
+        }
     }
 
     public readonly struct SpeciesDeathEvent
@@ -189,6 +201,7 @@ namespace SaltyGame
             int age,
             int x,
             int y,
+            int tick,
             SpeciesBehaviorState previousState,
             SpeciesBehaviorState currentState)
         {
@@ -197,6 +210,7 @@ namespace SaltyGame
             Age = age;
             X = x;
             Y = y;
+            Tick = tick;
             PreviousState = previousState;
             CurrentState = currentState;
         }
@@ -206,6 +220,7 @@ namespace SaltyGame
         public int Age { get; }
         public int X { get; }
         public int Y { get; }
+        public int Tick { get; }
         public SpeciesBehaviorState PreviousState { get; }
         public SpeciesBehaviorState CurrentState { get; }
     }
@@ -349,6 +364,31 @@ namespace SaltyGame
                 CrowdingDeaths + crowdingDeaths,
                 WiltDeaths + wiltDeaths,
                 PopulationLimitRemovals + populationLimitRemovals);
+        }
+
+        internal SpeciesSimulationActivity Subtract(SpeciesSimulationActivity baseline)
+        {
+            return new SpeciesSimulationActivity(
+                Births - baseline.Births,
+                FoodConsumed - baseline.FoodConsumed,
+                FoodActionAttempts - baseline.FoodActionAttempts,
+                FoodActionSuccesses - baseline.FoodActionSuccesses,
+                FoodActionFailures - baseline.FoodActionFailures,
+                MovementSteps - baseline.MovementSteps,
+                DamageDealt - baseline.DamageDealt,
+                CombatKills - baseline.CombatKills,
+                CombatOpportunities - baseline.CombatOpportunities,
+                CombatAttempts - baseline.CombatAttempts,
+                CombatHits - baseline.CombatHits,
+                CombatBlocked - baseline.CombatBlocked,
+                CombatDamageApplications - baseline.CombatDamageApplications,
+                CombatNonLethalHits - baseline.CombatNonLethalHits,
+                CombatLethalHits - baseline.CombatLethalHits,
+                Deaths - baseline.Deaths,
+                StarvationDeaths - baseline.StarvationDeaths,
+                CrowdingDeaths - baseline.CrowdingDeaths,
+                WiltDeaths - baseline.WiltDeaths,
+                PopulationLimitRemovals - baseline.PopulationLimitRemovals);
         }
     }
 
@@ -591,7 +631,29 @@ namespace SaltyGame
         public SpeciesHerbivoreMetricStatus ActualPreyScoreStatus { get; }
     }
 
-    public sealed class SpeciesSimulationMetrics
+    public interface ISpeciesSimulationMetricsView
+    {
+        SpeciesSimulationActivity GetActivity(SpeciesId species);
+        SpeciesReproductionActivity GetReproductionActivity(SpeciesId species);
+        int GetStateTicks(SpeciesId species, SpeciesBehaviorState state);
+        int GetStateTransitions(SpeciesId species);
+        int GetHerbivoreEncounters(SpeciesId species);
+        int GetHerbivorePreyed(SpeciesId species);
+        int GetPredatorActiveHerbivoreSteps(SpeciesId species);
+        int GetEncounteredHerbivoreSteps(SpeciesId species);
+        bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior);
+        IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions { get; }
+        IReadOnlyList<SpeciesDeathEvent> DeathEvents { get; }
+        IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents { get; }
+        IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents { get; }
+        int ControlledOpportunityScheduled { get; }
+        int ControlledOpportunityEligible { get; }
+        int ControlledOpportunityUnfulfilledNoTarget { get; }
+        int ControlledOpportunityUnfulfilledInvalidated { get; }
+        SpeciesHerbivoreStatLine CreateHerbivoreStatLine(SpeciesId species, int startingPopulation, int finalPopulation);
+    }
+
+    public sealed class SpeciesSimulationMetrics : ISpeciesSimulationMetricsView
     {
         readonly Dictionary<SpeciesId, SpeciesSimulationActivity> activityBySpecies =
             new Dictionary<SpeciesId, SpeciesSimulationActivity>();
@@ -814,6 +876,7 @@ namespace SaltyGame
                     age,
                     x,
                     y,
+                    currentTick,
                     previousState,
                     currentState));
             }
@@ -1188,6 +1251,355 @@ namespace SaltyGame
                 currentTick,
                 cause,
                 cell.IsCreature));
+        }
+
+        internal SpeciesSimulationMetricsSnapshot CreateSnapshot()
+        {
+            return new SpeciesSimulationMetricsSnapshot(
+                activityBySpecies,
+                reproductionBySpecies,
+                stateTicksBySpecies,
+                stateTransitionsBySpecies,
+                herbivoreEncountersBySpecies,
+                herbivorePreyedBySpecies,
+                predatorActiveHerbivoreStepsBySpecies,
+                encounteredHerbivoreStepsBySpecies,
+                controlledOpportunityScheduled,
+                controlledOpportunityEligible,
+                controlledOpportunityUnfulfilledNoTarget,
+                controlledOpportunityUnfulfilledInvalidated);
+        }
+
+        internal SpeciesSimulationMetricsWindow CreateWindow(
+            SpeciesSimulationMetricsSnapshot baseline,
+            int startTickExclusive,
+            int endTickInclusive)
+        {
+            var species = new HashSet<SpeciesId>(activityBySpecies.Keys);
+            species.UnionWith(reproductionBySpecies.Keys);
+            species.UnionWith(stateTicksBySpecies.Keys);
+            species.UnionWith(stateTransitionsBySpecies.Keys);
+            species.UnionWith(herbivoreEncountersBySpecies.Keys);
+            species.UnionWith(herbivorePreyedBySpecies.Keys);
+            species.UnionWith(predatorActiveHerbivoreStepsBySpecies.Keys);
+            species.UnionWith(encounteredHerbivoreStepsBySpecies.Keys);
+
+            var activity = new Dictionary<SpeciesId, SpeciesSimulationActivity>();
+            var reproduction = new Dictionary<SpeciesId, SpeciesReproductionActivity>();
+            var stateTicks = new Dictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>>();
+            var stateTransitions = new Dictionary<SpeciesId, int>();
+            var herbivoreEncounters = new Dictionary<SpeciesId, int>();
+            var herbivorePreyed = new Dictionary<SpeciesId, int>();
+            var predatorActiveHerbivoreSteps = new Dictionary<SpeciesId, int>();
+            var encounteredHerbivoreSteps = new Dictionary<SpeciesId, int>();
+            foreach (var speciesId in species)
+            {
+                activity[speciesId] = GetActivity(speciesId).Subtract(baseline.GetActivity(speciesId));
+                reproduction[speciesId] = GetReproductionActivity(speciesId).Subtract(baseline.GetReproductionActivity(speciesId));
+                var states = new Dictionary<SpeciesBehaviorState, int>();
+                foreach (SpeciesBehaviorState state in Enum.GetValues(typeof(SpeciesBehaviorState)))
+                {
+                    var current = GetStateTicks(speciesId, state);
+                    var before = baseline.GetStateTicks(speciesId, state);
+                    if (current - before != 0)
+                    {
+                        states[state] = current - before;
+                    }
+                }
+
+                stateTicks[speciesId] = states;
+                stateTransitions[speciesId] = GetStateTransitions(speciesId) - baseline.GetStateTransitions(speciesId);
+                herbivoreEncounters[speciesId] = GetHerbivoreEncounters(speciesId) - baseline.GetHerbivoreEncounters(speciesId);
+                herbivorePreyed[speciesId] = GetHerbivorePreyed(speciesId) - baseline.GetHerbivorePreyed(speciesId);
+                predatorActiveHerbivoreSteps[speciesId] = GetPredatorActiveHerbivoreSteps(speciesId)
+                    - baseline.GetPredatorActiveHerbivoreSteps(speciesId);
+                encounteredHerbivoreSteps[speciesId] = GetEncounteredHerbivoreSteps(speciesId)
+                    - baseline.GetEncounteredHerbivoreSteps(speciesId);
+            }
+
+            var filteredDeaths = deathEvents.FindAll(value => value.Tick > startTickExclusive && value.Tick <= endTickInclusive);
+            var filteredRolls = combatRollEvents.FindAll(value => value.Tick > startTickExclusive && value.Tick <= endTickInclusive);
+            var filteredSuppressions = combatCooldownSuppressionEvents.FindAll(
+                value => value.Tick > startTickExclusive && value.Tick <= endTickInclusive);
+            var filteredTransitions = behaviorTransitions.FindAll(
+                value => value.Tick > startTickExclusive && value.Tick <= endTickInclusive);
+            var tracked = new Dictionary<SpeciesId, SpeciesTrackedBehavior>(trackedBehaviors);
+            return new SpeciesSimulationMetricsWindow(
+                activity,
+                reproduction,
+                stateTicks,
+                stateTransitions,
+                herbivoreEncounters,
+                herbivorePreyed,
+                predatorActiveHerbivoreSteps,
+                encounteredHerbivoreSteps,
+                controlledOpportunityScheduled - baseline.ControlledOpportunityScheduled,
+                controlledOpportunityEligible - baseline.ControlledOpportunityEligible,
+                controlledOpportunityUnfulfilledNoTarget - baseline.ControlledOpportunityUnfulfilledNoTarget,
+                controlledOpportunityUnfulfilledInvalidated - baseline.ControlledOpportunityUnfulfilledInvalidated,
+                filteredTransitions,
+                filteredDeaths,
+                filteredRolls,
+                filteredSuppressions,
+                tracked);
+        }
+    }
+
+    internal sealed class SpeciesSimulationMetricsSnapshot
+    {
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesSimulationActivity> activity;
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesReproductionActivity> reproduction;
+        readonly IReadOnlyDictionary<SpeciesId, IReadOnlyDictionary<SpeciesBehaviorState, int>> stateTicks;
+        readonly IReadOnlyDictionary<SpeciesId, int> stateTransitions;
+        readonly IReadOnlyDictionary<SpeciesId, int> herbivoreEncounters;
+        readonly IReadOnlyDictionary<SpeciesId, int> herbivorePreyed;
+        readonly IReadOnlyDictionary<SpeciesId, int> predatorActiveHerbivoreSteps;
+        readonly IReadOnlyDictionary<SpeciesId, int> encounteredHerbivoreSteps;
+
+        internal SpeciesSimulationMetricsSnapshot(
+            IReadOnlyDictionary<SpeciesId, SpeciesSimulationActivity> activity,
+            IReadOnlyDictionary<SpeciesId, SpeciesReproductionActivity> reproduction,
+            IReadOnlyDictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>> stateTicks,
+            IReadOnlyDictionary<SpeciesId, int> stateTransitions,
+            IReadOnlyDictionary<SpeciesId, int> herbivoreEncounters,
+            IReadOnlyDictionary<SpeciesId, int> herbivorePreyed,
+            IReadOnlyDictionary<SpeciesId, int> predatorActiveHerbivoreSteps,
+            IReadOnlyDictionary<SpeciesId, int> encounteredHerbivoreSteps,
+            int controlledOpportunityScheduled,
+            int controlledOpportunityEligible,
+            int controlledOpportunityUnfulfilledNoTarget,
+            int controlledOpportunityUnfulfilledInvalidated)
+        {
+            this.activity = new Dictionary<SpeciesId, SpeciesSimulationActivity>(activity);
+            this.reproduction = new Dictionary<SpeciesId, SpeciesReproductionActivity>(reproduction);
+            var stateCopy = new Dictionary<SpeciesId, IReadOnlyDictionary<SpeciesBehaviorState, int>>();
+            foreach (var entry in stateTicks)
+            {
+                stateCopy[entry.Key] = new Dictionary<SpeciesBehaviorState, int>(entry.Value);
+            }
+
+            this.stateTicks = stateCopy;
+            this.stateTransitions = new Dictionary<SpeciesId, int>(stateTransitions);
+            this.herbivoreEncounters = new Dictionary<SpeciesId, int>(herbivoreEncounters);
+            this.herbivorePreyed = new Dictionary<SpeciesId, int>(herbivorePreyed);
+            this.predatorActiveHerbivoreSteps = new Dictionary<SpeciesId, int>(predatorActiveHerbivoreSteps);
+            this.encounteredHerbivoreSteps = new Dictionary<SpeciesId, int>(encounteredHerbivoreSteps);
+            ControlledOpportunityScheduled = controlledOpportunityScheduled;
+            ControlledOpportunityEligible = controlledOpportunityEligible;
+            ControlledOpportunityUnfulfilledNoTarget = controlledOpportunityUnfulfilledNoTarget;
+            ControlledOpportunityUnfulfilledInvalidated = controlledOpportunityUnfulfilledInvalidated;
+        }
+
+        public int ControlledOpportunityScheduled { get; }
+        public int ControlledOpportunityEligible { get; }
+        public int ControlledOpportunityUnfulfilledNoTarget { get; }
+        public int ControlledOpportunityUnfulfilledInvalidated { get; }
+
+        public SpeciesSimulationActivity GetActivity(SpeciesId species)
+        {
+            return activity.TryGetValue(species, out var value) ? value : default;
+        }
+
+        public SpeciesReproductionActivity GetReproductionActivity(SpeciesId species)
+        {
+            return reproduction.TryGetValue(species, out var value) ? value : default;
+        }
+
+        public int GetStateTicks(SpeciesId species, SpeciesBehaviorState state)
+        {
+            return stateTicks.TryGetValue(species, out var values)
+                && values.TryGetValue(state, out var value)
+                ? value
+                : 0;
+        }
+
+        public int GetStateTransitions(SpeciesId species)
+        {
+            return stateTransitions.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetHerbivoreEncounters(SpeciesId species)
+        {
+            return herbivoreEncounters.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetHerbivorePreyed(SpeciesId species)
+        {
+            return herbivorePreyed.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetPredatorActiveHerbivoreSteps(SpeciesId species)
+        {
+            return predatorActiveHerbivoreSteps.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetEncounteredHerbivoreSteps(SpeciesId species)
+        {
+            return encounteredHerbivoreSteps.TryGetValue(species, out var value) ? value : 0;
+        }
+    }
+
+    public sealed class SpeciesSimulationMetricsWindow : ISpeciesSimulationMetricsView
+    {
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesSimulationActivity> activity;
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesReproductionActivity> reproduction;
+        readonly IReadOnlyDictionary<SpeciesId, IReadOnlyDictionary<SpeciesBehaviorState, int>> stateTicks;
+        readonly IReadOnlyDictionary<SpeciesId, int> stateTransitions;
+        readonly IReadOnlyDictionary<SpeciesId, int> herbivoreEncounters;
+        readonly IReadOnlyDictionary<SpeciesId, int> herbivorePreyed;
+        readonly IReadOnlyDictionary<SpeciesId, int> predatorActiveHerbivoreSteps;
+        readonly IReadOnlyDictionary<SpeciesId, int> encounteredHerbivoreSteps;
+        readonly IReadOnlyDictionary<SpeciesId, SpeciesTrackedBehavior> trackedBehaviors;
+
+        internal SpeciesSimulationMetricsWindow(
+            IReadOnlyDictionary<SpeciesId, SpeciesSimulationActivity> activity,
+            IReadOnlyDictionary<SpeciesId, SpeciesReproductionActivity> reproduction,
+            IReadOnlyDictionary<SpeciesId, Dictionary<SpeciesBehaviorState, int>> stateTicks,
+            IReadOnlyDictionary<SpeciesId, int> stateTransitions,
+            IReadOnlyDictionary<SpeciesId, int> herbivoreEncounters,
+            IReadOnlyDictionary<SpeciesId, int> herbivorePreyed,
+            IReadOnlyDictionary<SpeciesId, int> predatorActiveHerbivoreSteps,
+            IReadOnlyDictionary<SpeciesId, int> encounteredHerbivoreSteps,
+            int controlledOpportunityScheduled,
+            int controlledOpportunityEligible,
+            int controlledOpportunityUnfulfilledNoTarget,
+            int controlledOpportunityUnfulfilledInvalidated,
+            IReadOnlyList<SpeciesBehaviorTransition> behaviorTransitions,
+            IReadOnlyList<SpeciesDeathEvent> deathEvents,
+            IReadOnlyList<SpeciesCombatRollEvent> combatRollEvents,
+            IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> combatCooldownSuppressionEvents,
+            IReadOnlyDictionary<SpeciesId, SpeciesTrackedBehavior> trackedBehaviors)
+        {
+            this.activity = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, SpeciesSimulationActivity>(
+                new Dictionary<SpeciesId, SpeciesSimulationActivity>(activity));
+            this.reproduction = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, SpeciesReproductionActivity>(
+                new Dictionary<SpeciesId, SpeciesReproductionActivity>(reproduction));
+            var stateCopy = new Dictionary<SpeciesId, IReadOnlyDictionary<SpeciesBehaviorState, int>>();
+            foreach (var entry in stateTicks)
+            {
+                stateCopy[entry.Key] = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesBehaviorState, int>(
+                    new Dictionary<SpeciesBehaviorState, int>(entry.Value));
+            }
+
+            this.stateTicks = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, IReadOnlyDictionary<SpeciesBehaviorState, int>>(stateCopy);
+            this.stateTransitions = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(stateTransitions));
+            this.herbivoreEncounters = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(herbivoreEncounters));
+            this.herbivorePreyed = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(herbivorePreyed));
+            this.predatorActiveHerbivoreSteps = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(predatorActiveHerbivoreSteps));
+            this.encounteredHerbivoreSteps = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(encounteredHerbivoreSteps));
+            this.trackedBehaviors = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, SpeciesTrackedBehavior>(
+                new Dictionary<SpeciesId, SpeciesTrackedBehavior>(trackedBehaviors));
+            BehaviorTransitions = new List<SpeciesBehaviorTransition>(behaviorTransitions).AsReadOnly();
+            DeathEvents = new List<SpeciesDeathEvent>(deathEvents).AsReadOnly();
+            CombatRollEvents = new List<SpeciesCombatRollEvent>(combatRollEvents).AsReadOnly();
+            CombatCooldownSuppressionEvents = new List<SpeciesCombatCooldownSuppressionEvent>(combatCooldownSuppressionEvents).AsReadOnly();
+            ControlledOpportunityScheduled = controlledOpportunityScheduled;
+            ControlledOpportunityEligible = controlledOpportunityEligible;
+            ControlledOpportunityUnfulfilledNoTarget = controlledOpportunityUnfulfilledNoTarget;
+            ControlledOpportunityUnfulfilledInvalidated = controlledOpportunityUnfulfilledInvalidated;
+        }
+
+        public const int ContractVersion = 1;
+        public int ControlledOpportunityScheduled { get; }
+        public int ControlledOpportunityEligible { get; }
+        public int ControlledOpportunityUnfulfilledNoTarget { get; }
+        public int ControlledOpportunityUnfulfilledInvalidated { get; }
+        public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions { get; }
+        public IReadOnlyList<SpeciesDeathEvent> DeathEvents { get; }
+        public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents { get; }
+        public IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents { get; }
+        public IReadOnlyDictionary<SpeciesId, SpeciesTrackedBehavior> TrackedBehaviors => trackedBehaviors;
+
+        public SpeciesSimulationActivity GetActivity(SpeciesId species)
+        {
+            return activity.TryGetValue(species, out var value) ? value : default;
+        }
+
+        public SpeciesReproductionActivity GetReproductionActivity(SpeciesId species)
+        {
+            return reproduction.TryGetValue(species, out var value) ? value : default;
+        }
+
+        public int GetStateTicks(SpeciesId species, SpeciesBehaviorState state)
+        {
+            return stateTicks.TryGetValue(species, out var values)
+                && values.TryGetValue(state, out var value)
+                ? value
+                : 0;
+        }
+
+        public int GetStateTransitions(SpeciesId species)
+        {
+            return stateTransitions.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetHerbivoreEncounters(SpeciesId species)
+        {
+            return herbivoreEncounters.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetHerbivorePreyed(SpeciesId species)
+        {
+            return herbivorePreyed.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetPredatorActiveHerbivoreSteps(SpeciesId species)
+        {
+            return predatorActiveHerbivoreSteps.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public int GetEncounteredHerbivoreSteps(SpeciesId species)
+        {
+            return encounteredHerbivoreSteps.TryGetValue(species, out var value) ? value : 0;
+        }
+
+        public bool TryGetTrackedBehavior(SpeciesId species, out SpeciesTrackedBehavior behavior)
+        {
+            return trackedBehaviors.TryGetValue(species, out behavior);
+        }
+
+        public SpeciesHerbivoreStatLine CreateHerbivoreStatLine(
+            SpeciesId species,
+            int startingPopulation,
+            int finalPopulation)
+        {
+            var starved = 0;
+            var crowding = 0;
+            foreach (var death in DeathEvents)
+            {
+                if (!death.IsCreature || death.Species != species)
+                {
+                    continue;
+                }
+
+                if (death.Cause == SpeciesDeathCause.Starvation)
+                {
+                    starved++;
+                }
+
+                if (death.Cause == SpeciesDeathCause.Crowding)
+                {
+                    crowding++;
+                }
+            }
+
+            return new SpeciesHerbivoreStatLine(
+                species,
+                startingPopulation,
+                GetPredatorActiveHerbivoreSteps(species),
+                GetEncounteredHerbivoreSteps(species),
+                GetHerbivoreEncounters(species),
+                GetHerbivorePreyed(species),
+                starved,
+                GetReproductionActivity(species).Candidates,
+                GetActivity(species).Births,
+                crowding,
+                finalPopulation);
         }
     }
 }

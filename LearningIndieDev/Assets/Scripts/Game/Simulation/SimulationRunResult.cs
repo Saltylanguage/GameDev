@@ -133,7 +133,12 @@ namespace SaltyGame
         readonly Grid<SpeciesCell> initialCells;
         readonly List<SpeciesPopulationSnapshot> populationHistory;
         readonly List<SpeciesUpgradeSnapshot> upgradeLoadout;
+        readonly List<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
+        readonly List<SimulationPhaseResult> phaseResults;
         readonly SpeciesSimulationMetrics metrics;
+        SpeciesSimulationMetricsSnapshot phaseMetricsStart;
+        SpeciesPopulationSnapshot phasePopulationStart;
+        bool phaseOpen;
         int phaseLengthTicks;
         int nextBoundaryTick;
 
@@ -174,8 +179,14 @@ namespace SaltyGame
             PopulationHistory = populationHistory;
             upgradeLoadout = new List<SpeciesUpgradeSnapshot>();
             UpgradeLoadout = upgradeLoadout.AsReadOnly();
+            upgradeAcquisitionTimeline = new List<SimulationUpgradeAcquisition>();
+            UpgradeAcquisitionTimeline = upgradeAcquisitionTimeline.AsReadOnly();
+            phaseResults = new List<SimulationPhaseResult>();
+            PhaseResults = phaseResults.AsReadOnly();
             metrics = new SpeciesSimulationMetrics();
             Metrics = metrics;
+            phasePopulationStart = populationHistory[0];
+            phaseMetricsStart = metrics.CreateSnapshot();
         }
 
         public Grid<SpeciesCell> Cells { get; private set; }
@@ -197,31 +208,55 @@ namespace SaltyGame
         public SimulationRunStatus Status { get; private set; }
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory { get; }
         public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
+        public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline { get; }
+        public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public SpeciesSimulationMetrics Metrics { get; }
 
         internal void SetUpgradeLoadout(IEnumerable<SpeciesUpgradeSnapshot> upgrades)
         {
-            upgradeLoadout.Clear();
-            if (upgrades == null)
+            var incoming = new List<SpeciesUpgradeSnapshot>();
+            if (upgrades != null)
             {
-                return;
+                foreach (var upgrade in upgrades)
+                {
+                    if (upgrade == null)
+                    {
+                        throw new ArgumentException("Upgrade loadout cannot contain null entries.", nameof(upgrades));
+                    }
+
+                    if (upgrade.TargetSpecies != PlayerSpeciesId)
+                    {
+                        throw new ArgumentException(
+                            $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{PlayerSpeciesId}'.",
+                            nameof(upgrades));
+                    }
+
+                    incoming.Add(upgrade);
+                }
             }
 
-            foreach (var upgrade in upgrades)
+            upgradeLoadout.Clear();
+            foreach (var upgrade in incoming)
             {
-                if (upgrade == null)
+                var alreadyRecorded = false;
+                for (var index = 0; index < upgradeAcquisitionTimeline.Count; index++)
                 {
-                    throw new ArgumentException("Upgrade loadout cannot contain null entries.", nameof(upgrades));
-                }
-
-                if (upgrade.TargetSpecies != PlayerSpeciesId)
-                {
-                    throw new ArgumentException(
-                        $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{PlayerSpeciesId}'.",
-                        nameof(upgrades));
+                    if (upgradeAcquisitionTimeline[index].Snapshot.Fingerprint == upgrade.Fingerprint)
+                    {
+                        alreadyRecorded = true;
+                        break;
+                    }
                 }
 
                 upgradeLoadout.Add(upgrade);
+                if (!alreadyRecorded)
+                {
+                    upgradeAcquisitionTimeline.Add(new SimulationUpgradeAcquisition(
+                        upgrade,
+                        Tick,
+                        PhaseIndex,
+                        upgradeLoadout.Count - 1));
+                }
             }
         }
 
@@ -270,6 +305,9 @@ namespace SaltyGame
             PhaseIndex = 1;
             PhaseStartTick = 0;
             PhaseEndTick = 0;
+            phasePopulationStart = populationHistory[populationHistory.Count - 1];
+            phaseMetricsStart = metrics.CreateSnapshot();
+            phaseOpen = true;
         }
 
         public void Start()
@@ -280,6 +318,12 @@ namespace SaltyGame
             }
 
             Status = SimulationRunStatus.Running;
+            if (SupportsContinuation && !phaseOpen)
+            {
+                phasePopulationStart = populationHistory[populationHistory.Count - 1];
+                phaseMetricsStart = metrics.CreateSnapshot();
+                phaseOpen = true;
+            }
         }
 
         public void Pause()
@@ -322,6 +366,19 @@ namespace SaltyGame
             populationHistory.Clear();
             populationHistory.Add(SpeciesPopulationSnapshot.Create(Cells, tick: 0));
             metrics.Clear();
+            phaseResults.Clear();
+            upgradeAcquisitionTimeline.Clear();
+            phasePopulationStart = populationHistory[0];
+            phaseMetricsStart = metrics.CreateSnapshot();
+            phaseOpen = SupportsContinuation;
+            for (var index = 0; index < upgradeLoadout.Count; index++)
+            {
+                upgradeAcquisitionTimeline.Add(new SimulationUpgradeAcquisition(
+                    upgradeLoadout[index],
+                    0,
+                    PhaseIndex,
+                    index));
+            }
         }
 
         public bool ContinueWithoutUpgrade()
@@ -335,6 +392,9 @@ namespace SaltyGame
             PhaseStartTick = Tick;
             PhaseEndTick = 0;
             nextBoundaryTick += phaseLengthTicks;
+            phasePopulationStart = populationHistory[populationHistory.Count - 1];
+            phaseMetricsStart = metrics.CreateSnapshot();
+            phaseOpen = true;
             Status = SimulationRunStatus.Running;
             return true;
         }
@@ -345,6 +405,11 @@ namespace SaltyGame
                 && Status != SimulationRunStatus.AwaitingDecision)
             {
                 return false;
+            }
+
+            if (SupportsContinuation && phaseOpen)
+            {
+                ClosePhase(Tick);
             }
 
             Status = SimulationRunStatus.Complete;
@@ -383,13 +448,266 @@ namespace SaltyGame
             if ((TargetTicks > 0 && Tick >= TargetTicks)
                 || (TargetTicks == 0 && ElapsedSeconds >= DurationSeconds))
             {
+                if (SupportsContinuation && phaseOpen)
+                {
+                    ClosePhase(Tick);
+                }
+
                 Status = SimulationRunStatus.Complete;
             }
             else if (SupportsContinuation && Tick >= nextBoundaryTick)
             {
                 PhaseEndTick = Tick;
+                ClosePhase(Tick);
                 Status = SimulationRunStatus.AwaitingDecision;
             }
+        }
+
+        public SimulationRunCheckpoint CreateCheckpoint()
+        {
+            return CreateCheckpoint(null);
+        }
+
+        internal SimulationRunCheckpoint CreateCheckpoint(Grid<SpeciesCell> previousCells)
+        {
+            if (!SupportsContinuation || Status != SimulationRunStatus.AwaitingDecision)
+            {
+                throw new InvalidOperationException("Checkpoints can only be captured at a continuous phase decision boundary.");
+            }
+
+            return new SimulationRunCheckpoint(
+                Cells,
+                PlayerSpeciesId,
+                Seed,
+                DurationSeconds,
+                TargetTicks,
+                RulesetFingerprint,
+                PhaseLengthTicks,
+                PhaseIndex,
+                PhaseStartTick,
+                PhaseEndTick,
+                ElapsedSeconds,
+                Tick,
+                UpgradeLoadout,
+                PopulationHistory,
+                UpgradeAcquisitionTimeline,
+                PhaseResults,
+                previousCells);
+        }
+
+        void ClosePhase(int endTickInclusive)
+        {
+            if (!SupportsContinuation || !phaseOpen)
+            {
+                return;
+            }
+
+            var closingPopulation = populationHistory[populationHistory.Count - 1];
+            phaseResults.Add(new SimulationPhaseResult(
+                PhaseIndex,
+                phasePopulationStart.Tick,
+                endTickInclusive,
+                phasePopulationStart,
+                closingPopulation,
+                UpgradeLoadout,
+                RulesetFingerprint,
+                metrics.CreateWindow(phaseMetricsStart, phasePopulationStart.Tick, endTickInclusive)));
+            phaseOpen = false;
+        }
+
+        internal static SimulationRunState Restore(SimulationRunCheckpoint checkpoint)
+        {
+            if (checkpoint == null)
+            {
+                throw new ArgumentNullException(nameof(checkpoint));
+            }
+
+            var run = new SimulationRunState(
+                checkpoint.CopyCells(),
+                checkpoint.PlayerSpeciesId,
+                checkpoint.Seed,
+                checkpoint.DurationSeconds,
+                checkpoint.TargetTicks);
+            if (!string.IsNullOrWhiteSpace(checkpoint.RulesetFingerprint))
+            {
+                run.SetRulesetFingerprint(checkpoint.RulesetFingerprint);
+            }
+
+            if (checkpoint.PhaseLengthTicks > 0)
+            {
+                run.ConfigureContinuousPhases(checkpoint.PhaseLengthTicks);
+            }
+
+            run.Cells = checkpoint.CopyCells();
+            run.ElapsedSeconds = checkpoint.ElapsedSeconds;
+            run.Tick = checkpoint.Tick;
+            run.PhaseIndex = checkpoint.PhaseIndex;
+            run.PhaseStartTick = checkpoint.PhaseStartTick;
+            run.PhaseEndTick = checkpoint.PhaseEndTick;
+            run.nextBoundaryTick = checkpoint.PhaseEndTick + checkpoint.PhaseLengthTicks;
+            run.Status = SimulationRunStatus.AwaitingDecision;
+            run.populationHistory.Clear();
+            run.populationHistory.AddRange(checkpoint.PopulationHistory);
+            run.SetUpgradeLoadout(checkpoint.UpgradeLoadout);
+            run.upgradeAcquisitionTimeline.Clear();
+            run.upgradeAcquisitionTimeline.AddRange(checkpoint.UpgradeAcquisitionTimeline);
+            run.phaseResults.Clear();
+            run.phaseResults.AddRange(checkpoint.PhaseResults);
+            run.phasePopulationStart = run.populationHistory[run.populationHistory.Count - 1];
+            run.phaseMetricsStart = run.metrics.CreateSnapshot();
+            run.phaseOpen = false;
+            return run;
+        }
+    }
+
+    public readonly struct SimulationUpgradeAcquisition
+    {
+        internal SimulationUpgradeAcquisition(
+            SpeciesUpgradeSnapshot snapshot,
+            int effectiveTick,
+            int phaseIndex,
+            int order)
+        {
+            Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+            EffectiveTick = effectiveTick;
+            PhaseIndex = phaseIndex;
+            Order = order;
+        }
+
+        public SpeciesUpgradeSnapshot Snapshot { get; }
+        public int EffectiveTick { get; }
+        public int PhaseIndex { get; }
+        public int Order { get; }
+    }
+
+    public sealed class SimulationPhaseResult
+    {
+        internal SimulationPhaseResult(
+            int phaseIndex,
+            int windowStartTickExclusive,
+            int windowEndTickInclusive,
+            SpeciesPopulationSnapshot openingPopulation,
+            SpeciesPopulationSnapshot closingPopulation,
+            IReadOnlyList<SpeciesUpgradeSnapshot> effectiveUpgradeLoadout,
+            string rulesetFingerprint,
+            SpeciesSimulationMetricsWindow metrics)
+        {
+            if (windowEndTickInclusive < windowStartTickExclusive)
+            {
+                throw new ArgumentOutOfRangeException(nameof(windowEndTickInclusive));
+            }
+
+            PhaseIndex = phaseIndex;
+            WindowStartTickExclusive = windowStartTickExclusive;
+            WindowEndTickInclusive = windowEndTickInclusive;
+            OpeningPopulation = openingPopulation;
+            ClosingPopulation = closingPopulation;
+            var upgrades = new List<SpeciesUpgradeSnapshot>();
+            if (effectiveUpgradeLoadout != null)
+            {
+                foreach (var upgrade in effectiveUpgradeLoadout)
+                {
+                    if (upgrade == null)
+                    {
+                        throw new ArgumentException("Phase upgrades cannot contain null entries.", nameof(effectiveUpgradeLoadout));
+                    }
+
+                    upgrades.Add(upgrade);
+                }
+            }
+
+            EffectiveUpgradeLoadout = upgrades.AsReadOnly();
+            RulesetFingerprint = rulesetFingerprint;
+            Metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+        }
+
+        public const int ContractVersion = 1;
+        public int PhaseIndex { get; }
+        public int WindowStartTickExclusive { get; }
+        public int WindowEndTickInclusive { get; }
+        public SpeciesPopulationSnapshot OpeningPopulation { get; }
+        public SpeciesPopulationSnapshot ClosingPopulation { get; }
+        public IReadOnlyList<SpeciesUpgradeSnapshot> EffectiveUpgradeLoadout { get; }
+        public string RulesetFingerprint { get; }
+        public SpeciesSimulationMetricsWindow Metrics { get; }
+    }
+
+    public sealed class SimulationRunCheckpoint
+    {
+        readonly Grid<SpeciesCell> cells;
+        readonly IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout;
+        readonly IReadOnlyList<SpeciesPopulationSnapshot> populationHistory;
+        readonly IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
+        readonly IReadOnlyList<SimulationPhaseResult> phaseResults;
+        readonly Grid<SpeciesCell> previousCells;
+
+        internal SimulationRunCheckpoint(
+            Grid<SpeciesCell> cells,
+            SpeciesId playerSpeciesId,
+            int seed,
+            float durationSeconds,
+            int targetTicks,
+            string rulesetFingerprint,
+            int phaseLengthTicks,
+            int phaseIndex,
+            int phaseStartTick,
+            int phaseEndTick,
+            float elapsedSeconds,
+            int tick,
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout,
+            IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
+            IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline,
+            IReadOnlyList<SimulationPhaseResult> phaseResults,
+            Grid<SpeciesCell> previousCells)
+        {
+            this.cells = cells.Copy();
+            PlayerSpeciesId = playerSpeciesId;
+            Seed = seed;
+            DurationSeconds = durationSeconds;
+            TargetTicks = targetTicks;
+            RulesetFingerprint = rulesetFingerprint;
+            PhaseLengthTicks = phaseLengthTicks;
+            PhaseIndex = phaseIndex;
+            PhaseStartTick = phaseStartTick;
+            PhaseEndTick = phaseEndTick;
+            ElapsedSeconds = elapsedSeconds;
+            Tick = tick;
+            this.upgradeLoadout = new List<SpeciesUpgradeSnapshot>(upgradeLoadout).AsReadOnly();
+            this.populationHistory = new List<SpeciesPopulationSnapshot>(populationHistory).AsReadOnly();
+            this.upgradeAcquisitionTimeline = new List<SimulationUpgradeAcquisition>(upgradeAcquisitionTimeline).AsReadOnly();
+            this.phaseResults = new List<SimulationPhaseResult>(phaseResults).AsReadOnly();
+            this.previousCells = previousCells == null ? null : previousCells.Copy();
+        }
+
+        public SpeciesId PlayerSpeciesId { get; }
+        public int Seed { get; }
+        public float DurationSeconds { get; }
+        public int TargetTicks { get; }
+        public string RulesetFingerprint { get; }
+        public int PhaseLengthTicks { get; }
+        public int PhaseIndex { get; }
+        public int PhaseStartTick { get; }
+        public int PhaseEndTick { get; }
+        public float ElapsedSeconds { get; }
+        public int Tick { get; }
+        public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout => upgradeLoadout;
+        public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory => populationHistory;
+        public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline => upgradeAcquisitionTimeline;
+        public IReadOnlyList<SimulationPhaseResult> PhaseResults => phaseResults;
+
+        public Grid<SpeciesCell> CopyCells()
+        {
+            return cells.Copy();
+        }
+
+        internal Grid<SpeciesCell> CopyPreviousCells()
+        {
+            return previousCells?.Copy();
+        }
+
+        public SimulationRunState Restore()
+        {
+            return SimulationRunState.Restore(this);
         }
     }
 
@@ -401,7 +719,9 @@ namespace SaltyGame
             int playerPopulation,
             int currencyEarned,
             string rulesetFingerprint = null,
-            IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout = null)
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout = null,
+            IReadOnlyList<SimulationPhaseResult> phaseResults = null,
+            IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline = null)
         {
             Ticks = ticks;
             DurationSeconds = durationSeconds;
@@ -425,6 +745,14 @@ namespace SaltyGame
             }
 
             UpgradeLoadout = copiedUpgradeLoadout.AsReadOnly();
+            var copiedPhaseResults = phaseResults == null
+                ? new List<SimulationPhaseResult>()
+                : new List<SimulationPhaseResult>(phaseResults);
+            PhaseResults = copiedPhaseResults.AsReadOnly();
+            var copiedAcquisitions = upgradeAcquisitionTimeline == null
+                ? new List<SimulationUpgradeAcquisition>()
+                : new List<SimulationUpgradeAcquisition>(upgradeAcquisitionTimeline);
+            UpgradeAcquisitionTimeline = copiedAcquisitions.AsReadOnly();
         }
 
         public int Ticks { get; }
@@ -433,6 +761,8 @@ namespace SaltyGame
         public int CurrencyEarned { get; }
         public string RulesetFingerprint { get; }
         public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
+        public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
+        public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline { get; }
     }
 
     public static class SimulationRunResults
@@ -458,7 +788,9 @@ namespace SaltyGame
                 playerPopulation,
                 playerPopulation,
                 run.RulesetFingerprint,
-                run.UpgradeLoadout);
+                run.UpgradeLoadout,
+                run.PhaseResults,
+                run.UpgradeAcquisitionTimeline);
         }
     }
 }
