@@ -1,10 +1,10 @@
 # EX-010 — Sequential upgrade continuation
 
-**Experiment ID:** `EXP-010`  
-**Status:** Proposed follow-up; blocked until continuation/resume exists  
-**Parent:** `EXP-009` / `EXP-007`  
-**Decision owner:** Human design owner  
-**Feature owner:** Josh  
+**Experiment ID:** `EXP-010`
+**Status:** Proposed follow-up; blocked until continuation/resume exists
+**Parent:** `EXP-009` / `EXP-007`
+**Decision owner:** Human design owner
+**Feature owner:** Josh
 **Scenario:** ForestEdge and Hare are the initial candidate fixture; final
 scenario and values require a human-approved contract
 
