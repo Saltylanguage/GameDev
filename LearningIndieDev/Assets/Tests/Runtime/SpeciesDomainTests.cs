@@ -35,10 +35,22 @@ namespace SaltyGame.Tests
         {
             var first = new SpeciesCell(SpeciesIds.Herbivore);
             var second = new SpeciesCell(SpeciesIds.Herbivore);
+            var fractional = first.WithEntity(
+                first.SpeciesId,
+                first.Health,
+                first.Energy,
+                first.Age,
+                first.FoodEaten,
+                first.FoodReserve,
+                energyRemainder: 0.4f);
 
             Assert.That(first.EntityId, Is.GreaterThan(0));
             Assert.That(second.EntityId, Is.Not.EqualTo(first.EntityId));
             Assert.That(first.WithBehaviorState(SpeciesBehaviorState.Hunting).EntityId, Is.EqualTo(first.EntityId));
+            Assert.That(fractional.WithBehaviorState(SpeciesBehaviorState.Hunting).EnergyRemainder, Is.EqualTo(0.4f));
+            Assert.That(fractional.WithAttackCooldown(2).EnergyRemainder, Is.EqualTo(0.4f));
+            Assert.That(fractional.WithEntity(SpeciesIds.Carnivore, 1, 0, 0, 0, 0f).EnergyRemainder, Is.Zero);
+            Assert.That(fractional.WithoutEntity().EnergyRemainder, Is.Zero);
             Assert.That(SpeciesCell.Empty.EntityId, Is.EqualTo(0));
         }
 
@@ -335,7 +347,9 @@ namespace SaltyGame.Tests
 
             Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount + 2));
             Assert.That(toughHide.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus));
-            Assert.That(digestion.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 1));
+            Assert.That(
+                digestion.DigestionEnergyBonus,
+                Is.EqualTo(rules.DigestionEnergyBonus + SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel).Within(0.0001f));
             Assert.That(digestion.Metabolism, Is.EqualTo(rules.Metabolism));
             Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + 1));
             Assert.That(crowding.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
@@ -407,6 +421,10 @@ namespace SaltyGame.Tests
             var rules = CreateRules();
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId);
+            Assert.That(upgrade.Value, Is.EqualTo(SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel).Within(0.0001f));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.EfficientDigestionId),
+                Is.EqualTo(SpeciesUpgradeCatalog.EfficientDigestionMaxLevel));
             Assert.That(progression.CanPurchase(upgrade), Is.False);
             Assert.That(progression.TryPurchase(upgrade), Is.False);
             progression.AddCurrency(55);
@@ -415,7 +433,8 @@ namespace SaltyGame.Tests
                 Assert.That(progression.CanPurchase(upgrade), Is.True);
                 Assert.That(progression.TryPurchase(upgrade), Is.True);
                 Assert.That(progression.CurrentRules.DigestionEnergyBonus,
-                    Is.EqualTo(rules.DigestionEnergyBonus + level));
+                    Is.EqualTo(rules.DigestionEnergyBonus + level * SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel)
+                        .Within(0.0001f));
                 Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
             }
             var cappedRules = progression.CurrentRules;
@@ -423,6 +442,9 @@ namespace SaltyGame.Tests
             Assert.That(progression.TryPurchase(upgrade), Is.False);
             Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
             Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(
+                progression.CurrentRules.DigestionEnergyBonus,
+                Is.EqualTo(rules.DigestionEnergyBonus + 1f).Within(0.0001f));
             Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
             Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount));
         }
@@ -2472,6 +2494,58 @@ namespace SaltyGame.Tests
 
             Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(3));
             Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(4f));
+        }
+
+        [Test]
+        public void EfficientDigestionAccumulatesFractionalEnergyDeterministically()
+        {
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Plant, foodReserve: 20f));
+            var plantRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                energyValue: 1,
+                metabolism: 0,
+                role: SpeciesRole.Plant);
+            var herbivoreRules = new SpeciesRules(
+                movementSpeed: 1f,
+                movementPattern: right,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: right,
+                dietTarget: SpeciesIds.Plant,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                forageBelowEnergy: 20,
+                metabolism: 0,
+                digestionEnergyBonus: SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel);
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Plant] = plantRules,
+                [SpeciesIds.Herbivore] = herbivoreRules,
+            };
+
+            var next = source;
+            for (var step = 0; step < 20; step++)
+            {
+                next = SpeciesSimulation.Step(next, rules, seed: 42);
+            }
+
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(23));
+            Assert.That(next.GetCell(0, 0).EnergyRemainder, Is.EqualTo(0f).Within(0.0001f));
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(0f));
         }
 
         [Test]

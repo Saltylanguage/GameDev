@@ -61,7 +61,8 @@ namespace SaltyGame
             SpeciesBehaviorState behaviorState = SpeciesBehaviorState.Wandering,
             int behaviorStateTicks = 0,
             long entityId = 0,
-            int attackCooldownTicksRemaining = 0)
+            int attackCooldownTicksRemaining = 0,
+            float energyRemainder = 0f)
         {
             if (health < 0)
             {
@@ -71,6 +72,11 @@ namespace SaltyGame
             if (energy < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(energy), energy, "Energy cannot be negative.");
+            }
+
+            if (energyRemainder < 0f || energyRemainder >= 1f || float.IsNaN(energyRemainder) || float.IsInfinity(energyRemainder))
+            {
+                throw new ArgumentOutOfRangeException(nameof(energyRemainder), energyRemainder, "Energy remainder must be between zero and one.");
             }
 
             if (age < 0)
@@ -118,6 +124,7 @@ namespace SaltyGame
             SpeciesId = species;
             Health = health;
             Energy = energy;
+            EnergyRemainder = energyRemainder;
             Age = age;
             FoodEaten = foodEaten;
             FoodReserve = foodReserve;
@@ -229,6 +236,7 @@ namespace SaltyGame
         public float TerrainEnergy { get; }
         public int Health { get; }
         public int Energy { get; }
+        public float EnergyRemainder { get; }
         public int Age { get; }
         public int FoodEaten { get; }
         public float FoodReserve { get; }
@@ -245,13 +253,15 @@ namespace SaltyGame
             int foodEaten,
             float foodReserve,
             bool isAlpha = false,
-            long entityId = 0)
+            long entityId = 0,
+            float? energyRemainder = null)
         {
             var resolvedEntityId = entityId > 0
                 ? entityId
                 : IsCreature && SpeciesId == species
                     ? EntityId
                     : AllocateEntityId();
+            var resolvedEnergyRemainder = energyRemainder ?? (IsCreature && SpeciesId == species ? EnergyRemainder : 0f);
             return new SpeciesCell(
                 species,
                 true,
@@ -271,7 +281,8 @@ namespace SaltyGame
                 behaviorState: BehaviorState,
                 behaviorStateTicks: BehaviorStateTicks,
                 entityId: resolvedEntityId,
-                attackCooldownTicksRemaining: AttackCooldownTicksRemaining);
+                attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
+                energyRemainder: resolvedEnergyRemainder);
         }
 
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
@@ -300,7 +311,8 @@ namespace SaltyGame
                 state,
                 ticks,
                 EntityId,
-                AttackCooldownTicksRemaining);
+                AttackCooldownTicksRemaining,
+                EnergyRemainder);
         }
 
         public SpeciesCell WithAttackCooldown(int ticks)
@@ -334,7 +346,8 @@ namespace SaltyGame
                 BehaviorState,
                 BehaviorStateTicks,
                 EntityId,
-                ticks);
+                ticks,
+                EnergyRemainder);
         }
 
         public SpeciesCell WithoutEntity()
@@ -412,7 +425,8 @@ namespace SaltyGame
                 behaviorState: BehaviorState,
                 behaviorStateTicks: BehaviorStateTicks,
                 entityId: EntityId,
-                attackCooldownTicksRemaining: AttackCooldownTicksRemaining);
+                attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
+                energyRemainder: EnergyRemainder);
         }
     }
 }

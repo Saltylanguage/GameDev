@@ -33,7 +33,7 @@ namespace SaltyGame
             int litterMaximum = 1,
             int? attackModifier = null,
             int? damageAmount = null,
-            int digestionEnergyBonus = 0,
+            float digestionEnergyBonus = 0f,
             int crowdingTolerance = 0,
             float fleeMovementSpeedBonus = 0f)
         {
@@ -57,7 +57,7 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(damageAmount), damageAmount, "Damage amount cannot be negative.");
             }
 
-            if (digestionEnergyBonus < 0)
+            if (digestionEnergyBonus < 0f || float.IsNaN(digestionEnergyBonus) || float.IsInfinity(digestionEnergyBonus))
             {
                 throw new ArgumentOutOfRangeException(nameof(digestionEnergyBonus), digestionEnergyBonus, "Digestion energy bonus cannot be negative.");
             }
@@ -214,7 +214,7 @@ namespace SaltyGame
         public int MaximumEnergy { get; }
         public int LitterMinimum { get; }
         public int LitterMaximum { get; }
-        public int DigestionEnergyBonus { get; }
+        public float DigestionEnergyBonus { get; }
         public int CrowdingTolerance { get; }
         public float FleeMovementSpeedBonus { get; }
     }

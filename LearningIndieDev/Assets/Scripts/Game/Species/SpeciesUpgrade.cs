@@ -79,7 +79,7 @@ namespace SaltyGame
                     blockAmount += (int)Value;
                     break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
-                    digestionEnergyBonus += (int)Value;
+                    digestionEnergyBonus += Value;
                     break;
                 case SpeciesUpgradeType.CrowdingTolerance:
                     crowdingTolerance += (int)Value;
@@ -138,6 +138,7 @@ namespace SaltyGame
         public const int ToughHideMaxLevel = 10;
         public const string EfficientDigestionId = "efficient-digestion";
         public const int EfficientDigestionMaxLevel = 10;
+        public const float EfficientDigestionBonusPerLevel = 0.1f;
 
         public static int GetMaxLevel(string upgradeId)
         {
@@ -192,7 +193,11 @@ namespace SaltyGame
                 case ToughHideId:
                     return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 case EfficientDigestionId:
-                    return new SpeciesUpgrade(EfficientDigestionId, 5, SpeciesUpgradeType.DigestionEnergyBonus, 1f);
+                    return new SpeciesUpgrade(
+                        EfficientDigestionId,
+                        5,
+                        SpeciesUpgradeType.DigestionEnergyBonus,
+                        EfficientDigestionBonusPerLevel);
                 case CrowdingToleranceId:
                     return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
                 case ThreatExposureId:

@@ -2406,16 +2406,35 @@ namespace SaltyGame
             int energyValue,
             float foodAmount = 1f)
         {
+            var availableEnergy = cell.EnergyRemainder + energyValue + rules.DigestionEnergyBonus;
+            var energyGain = (int)Math.Floor(availableEnergy);
+            var nextEnergy = rules.MaximumEnergy > 0
+                ? Math.Min(rules.MaximumEnergy, cell.Energy + energyGain)
+                : cell.Energy + energyGain;
+            var energyRemainder = rules.MaximumEnergy > 0 && nextEnergy >= rules.MaximumEnergy
+                ? 0f
+                : availableEnergy - energyGain;
+            if (energyRemainder < 0.000001f)
+            {
+                energyRemainder = 0f;
+            }
+            else if (energyRemainder >= 1f - 0.000001f)
+            {
+                energyGain++;
+                nextEnergy = rules.MaximumEnergy > 0
+                    ? Math.Min(rules.MaximumEnergy, cell.Energy + energyGain)
+                    : cell.Energy + energyGain;
+                energyRemainder = 0f;
+            }
             return cell.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
-                rules.MaximumEnergy > 0
-                    ? Math.Min(rules.MaximumEnergy, cell.Energy + energyValue + rules.DigestionEnergyBonus)
-                    : cell.Energy + energyValue + rules.DigestionEnergyBonus,
+                nextEnergy,
                 cell.Age,
                 cell.FoodEaten + 1,
                 cell.FoodReserve + foodAmount,
-                cell.IsAlpha);
+                cell.IsAlpha,
+                energyRemainder: energyRemainder);
         }
 
         static bool ShouldForage(SpeciesCell cell, SpeciesRules rules)

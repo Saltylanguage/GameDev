@@ -108,7 +108,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v1";
+        public const string Version = "species-attribute-registry-v2";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -254,7 +254,7 @@ namespace SaltyGame
                     litterMaximum += (int)value;
                     break;
                 case SpeciesAttributeTarget.DigestionEnergyBonus:
-                    digestionEnergyBonus += (int)value;
+                    digestionEnergyBonus += value;
                     break;
                 case SpeciesAttributeTarget.CrowdingTolerance:
                     crowdingTolerance += (int)value;
@@ -327,7 +327,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.MaximumEnergy, "Maximum Energy", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.MaximumEnergy),
                 Definition(SpeciesAttributeIds.LitterMinimum, "Minimum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMinimum),
                 Definition(SpeciesAttributeIds.LitterMaximum, "Maximum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMaximum),
-                Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.DigestionEnergyBonus),
+                Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.DigestionEnergyBonus),
                 Definition(SpeciesAttributeIds.CrowdingTolerance, "Crowding Tolerance", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingTolerance),
                 Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Flee Movement Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
             };
