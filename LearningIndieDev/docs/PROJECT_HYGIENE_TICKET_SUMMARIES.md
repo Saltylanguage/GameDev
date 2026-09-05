@@ -27,16 +27,17 @@ Unity validation required by the project standards.
 ### P1-022 — Reconcile the terrain tiling contract
 
 **Priority:** P1  
-**Status:** Proposed decision/reconciliation ticket  
+**Status:** Resolved in code and documentation; visual Unity acceptance remains open
 **Owner:** Presentation/art owner + Sim  
 **Size:** Medium  
 **Evidence:** `TerrainTileResolver` and its tests implement 47 normalized
-eight-neighbor blob masks; `TerrainTilePreviewWindow` loads `Art/Terrain/Blob/128`;
-`CELLULAR_SPRITE_TILING_PLAN.md` describes a 15-piece four-cardinal dual-grid
-model under `Art/Terrain/Standardized/128`.
+eight-neighbor blob masks; `TerrainTilePreviewWindow` loads the named
+`Art/Terrain/Blob/128/{Grass,Desert}` families; the tiling plan and linked art
+documents now describe that same model and path. The older 16-mask artifacts
+remain historical.
 
-**Goal:** Select one authoritative terrain-mask model and make the code, tests,
-editor preview, art paths, atlas assumptions, and documentation agree.
+**Goal:** Keep one authoritative terrain-mask model across the code, tests,
+editor preview, art paths, atlas assumptions, and documentation.
 
 **Acceptance criteria:**
 
@@ -45,8 +46,8 @@ editor preview, art paths, atlas assumptions, and documentation agree.
   mask count and art path.
 - Any art/atlas change is validated in Unity; no renderer-only state enters the
   simulation model.
-- A focused diff explains whether the 47-mask implementation or 15-piece plan
-  was retained and why.
+- The focused reconciliation records that the 47-mask implementation is
+  authoritative and the superseded 15-piece plan is not used by the preview.
 
 **Non-goals:** New terrain mechanics, Tilemap/RuleTile adoption, or an
 unmeasured renderer rewrite.
@@ -54,7 +55,7 @@ unmeasured renderer rewrite.
 ### P1-023 — Refresh current project and engineering guidance
 
 **Priority:** P1  
-**Status:** Proposed documentation authority ticket  
+**Status:** Resolved for current guidance; historical Island claims remain scoped
 **Owner:** Josh + repository maintainer  
 **Size:** Small-medium  
 **Evidence:** `FRAMEWORK.md` refers to a missing Bootstrap scene and validator;
@@ -62,7 +63,7 @@ Build Settings, the standards, the adoption plan, Noesis defines, and Play Mode
 assembly facts no longer agree.
 
 **Goal:** Establish which documentation is current guidance and clearly date or
-archive historical Island Survivor/bootstrap assumptions.
+scope historical Island Survivor/bootstrap assumptions.
 
 **Acceptance criteria:**
 
@@ -76,6 +77,12 @@ archive historical Island Survivor/bootstrap assumptions.
 
 **Non-goals:** Choosing a new UI technology, changing the build scene order, or
 repairing the Unity machine state.
+
+**Result:** `FRAMEWORK.md` remains explicitly historical for the deprecated
+Bootstrap/Island slice. The standards and adoption plan now name the active
+Main Menu → Lab → CellularAutomataPrototype flow, current ScriptableObject
+authoring assets, focused Play Mode coverage, and the adopted Noesis ViewModel
+path while preserving the deprecated validator's scope.
 
 ### P2-007 — Complete the `SpeciesArchetype` migration
 
@@ -294,7 +301,7 @@ rule changes.
 ### P2-016 — Remove or document duplicated neighbor-pattern definitions
 
 **Priority:** P2  
-**Status:** Small refactor/decision ticket  
+**Status:** Resolved; editor generation now consumes runtime defaults
 **Owner:** Sim/tooling owner  
 **Size:** Small  
 **Dependency:** Confirm runtime/Editor assembly boundaries and asset-generation
@@ -312,6 +319,11 @@ Editor scenario asset generator.
 - No generic pattern framework is added for the sake of removing two literals.
 
 **Non-goals:** Changing species behavior or regenerating unrelated scenarios.
+
+**Result:** `CreateSpeciesScenarioAssets` copies the ordered offsets exposed by
+`SpeciesRuleDefaults.CreateCardinalPattern()` and `CreateMoorePattern()` into
+fresh arrays for serialization. The duplicate editor literals were removed;
+runtime behavior and asset-generation boundaries are unchanged.
 
 ### P2-017 — Decide retention of `PrepareEx002Variants`
 

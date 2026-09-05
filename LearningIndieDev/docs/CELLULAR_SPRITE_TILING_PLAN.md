@@ -23,9 +23,10 @@
   shared by the runtime board, tests, and the editor preview window.
 - The species preview no longer has a legacy IMGUI board or settings fallback;
   the Noesis shell is now the single runtime presentation path.
-- `TerrainTilePreviewWindow` loads the current terrain sheet from
-  `Assets/Art/Terrain`, and animal atlas entries are resolved by stable sprite
-  names before optional Fox/Rabbit scene overrides are layered on top.
+- `TerrainTilePreviewWindow` loads the named terrain families from
+  `Assets/Art/Terrain/Blob/128/{Grass,Desert}`, and animal atlas entries are
+  resolved by stable sprite names before optional Fox/Rabbit scene overrides
+  are layered on top.
 - Animal presentation remains scene-wired through a `SpriteAtlas` and stable
   sprite names; the board does not load art from `Resources`.
 - Terrain art is now a named 47-mask blob set under

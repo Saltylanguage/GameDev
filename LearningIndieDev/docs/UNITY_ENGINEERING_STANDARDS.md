@@ -5,7 +5,7 @@ Scope: `LearningIndieDev` first-party code and assets
 Baseline audited: Unity `6000.4.6f1`, URP `17.4.0`, project revision `0b051c2e5d54`  
 Last audited: 2026-08-02
 
-This is a practical standard for the current island-survival prototype. It is intentionally small enough to use during feature work. Existing code is not automatically compliant; the adoption plan defines when it should change.
+This is a practical standard for the active cellular-automata slice and the deprecated Island Survivor prototype. It is intentionally small enough to use during feature work. Existing code is not automatically compliant; the adoption plan defines when it should change.
 
 ## How to read this document
 
@@ -19,7 +19,7 @@ Every rule below includes its intent, a project-specific example, enforcement st
 
 ## 1. Project principles
 
-1. **MUST keep the playable loop simple and explicit.** The current loop is `GameRuntime -> WorldRuntime -> InteractionController -> ActivityController -> InventoryState -> GameHud`. New work should fit a demonstrated boundary before introducing a new framework.
+1. **MUST keep the playable loop simple and explicit.** The active product flow is `MainMenu -> Lab -> CellularAutomataPrototype`, with explicit simulation and Noesis presentation composition. The deprecated Island Survivor slice retains `GameRuntime -> WorldRuntime -> InteractionController -> ActivityController -> InventoryState -> GameHud`. New work should fit a demonstrated boundary before introducing a new framework.
    - Why: the project is an early prototype and the existing vertical slice is easy to reason about.
    - Correct: add a new activity through `IActivity` and `IActivityTarget` before changing bootstrap or UI.
    - Discouraged: add a global `GameServices` registry so one feature can find inventory.
@@ -127,7 +127,7 @@ Approved future uses: shared immutable definitions, configuration, item/activity
 
 Correct future example: `WoodChoppingDefinition` stores authored health, reward, and timing values; `WoodChoppingActivity` stores health/elapsed runtime state; a future save DTO stores persistent progress. Discouraged: mutate a shared `ResourceCatalog` to hold the current player's inventory.
 
-Current usage: no first-party gameplay ScriptableObjects are present; template `Readme` and URP settings are not gameplay architecture. Event channels and runtime sets are **TBD** until a concrete cross-scene use exists.
+Current usage: first-party `CellularSimDataAsset`, `ScenarioDefinitionAsset`, species-definition assets, and `SpeciesUpgradeAsset` hold authored definitions; runtime state remains in plain C# objects. Template `Readme` and URP settings are not gameplay architecture. Event channels and runtime sets are **TBD** until a concrete cross-scene use exists.
 
 Enforcement: documentation/review only now; a future asset validator may check naming, folder placement, and mutability conventions. Exception: Unity/package assets follow their owner.
 
@@ -144,7 +144,7 @@ Use the smallest pattern that solves a demonstrated problem.
 | Command | UI/input actions need queueing, undo, or replay | Wrapper around a direct method call | Optional; experimental `DelegateCommand` is isolated/guarded |
 | State | Many explicit transitions make branching unreadable | Enum wrapper with no behavior benefit | `GameState` is a simple enum; no state framework |
 | Observer | Decoupled notifications across a real boundary | Events replacing a direct call | Use sparingly; no gameplay event bus |
-| MVP/MVVM | Complex UI with independent view state/testing | Imposing it on the current simple `OnGUI` HUD | Noesis path is experimental/TBD |
+| MVP/MVVM | Complex UI with independent view state/testing | Imposing it on the deprecated simple `OnGUI` HUD | Active Noesis screens use ViewModels; legacy HUD remains separate |
 | Strategy | Multiple interchangeable rules with real variation | Interface for every class | `IActivity` is a valid boundary |
 | Flyweight | Many shared immutable definitions | Premature data indirection | TBD |
 | Dirty Flag | Expensive derived UI/world rebuilds | Flagging cheap direct reads | TBD |
@@ -262,7 +262,7 @@ and performance baselines/tests. These are staged requirements, not immediate
 refactor work. Historical test totals must cite their source commit and artifact;
 do not present a rolling count as current evidence.
 
-Enforcement: Unity Test Framework execution and bootstrap menu validation can be run now; coverage and Play Mode gates are planned. Exception: prototype-only features may start with a focused Edit Mode test or a documented manual validation path.
+Enforcement: Unity Test Framework execution and the deprecated Island menu validator can be run when the Unity host is available; current UI/simulation work uses focused Edit Mode and Play Mode suites, while broader coverage and performance gates remain planned. Exception: prototype-only features may start with a focused Edit Mode test or a documented manual validation path.
 
 ## 13. Productivity and Editor tooling
 
