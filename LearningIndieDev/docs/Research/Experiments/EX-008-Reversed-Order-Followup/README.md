@@ -37,4 +37,8 @@ The five run bundles are recorded in the audit table in the EX-007
 Because the original forward-order joint arm used held-out seeds 101–105 and
 this reversed-order arm uses 106–110, the follow-up is not an order-only causal
 test. The same-held-out-seed comparison is tracked as
-[EX-009](../EX-009-Same-Heldout-Order-Comparison/README.md).
+[EX-009](../EX-009-Same-Heldout-Order-Comparison/README.md), which is now
+accepted as a bounded launch-time commutativity result for the two additive
+upgrades. The intended question of acquiring an upgrade between simulation
+segments and continuing from the current state is separate and is tracked as
+proposed [EX-010](../EX-010-Sequential-Upgrade-Continuation/README.md).

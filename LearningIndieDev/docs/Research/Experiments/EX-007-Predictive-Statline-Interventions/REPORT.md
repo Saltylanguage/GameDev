@@ -1,6 +1,6 @@
 # EX-007 — What happened when we changed the Hare
 
-**Status:** Runs complete; human review pending
+**Status:** Runs complete; bounded finding accepted; balance review remains
 **Prediction ID:** `PRED-EXP-007-0001`
 
 ## The short version

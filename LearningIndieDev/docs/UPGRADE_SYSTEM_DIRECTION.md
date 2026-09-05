@@ -116,6 +116,11 @@ The prototype Simulation scene now references the explicit production assets;
 its reward panel presents authored options and applies snapshots, while the
 legacy reward path remains available for the BEV experimental mode.
 
+**Timing boundary:** EX-009 verified only a complete loadout applied before a
+run starts. The intended continue-from-current-state flow, where upgrades can
+be acquired between simulation segments, is a separate future question tracked
+as [EX-010](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
+
 ## Relationship to species mastery
 
 Species-type research answers, “What can members of this ecological type learn?” Species mastery answers, “What is special about this particular species?”

@@ -8,14 +8,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-09-04
-- Report state: the earlier UI/ControlLibrary batch is committed and pushed, but
-  the current follow-up documentation, XAML, and tooling batch is still local
-  and uncommitted. The current EX-007/EX-008 run bundles pass the strict artifact
-  validator with Unity logs. Graphics-capable Unity acceptance remains blocked by
-  Unity's machine-level UPM/licensing IPC state; the P3 research gate remains
-  open pending human review; the same-held-out EX-009 comparison is now
-  complete and the first trustworthy upgrade catalog is in place. The current
-  adapter-backed evidence/documentation checkpoint is being committed.
+- Report state: the earlier UI/ControlLibrary batch is committed and pushed, and
+  the adapter-backed research/documentation batch is checkpointed locally. The
+  current EX-007/EX-008/EX-009 run bundles pass the strict artifact validator
+  with Unity logs. Graphics-capable Unity acceptance remains blocked by Unity's
+  machine-level UPM/licensing IPC state; the P3 research gate remains open
+  because EX-003 and broader promotion review are unresolved. The same-held-out
+  EX-009 comparison is complete, the first trustworthy upgrade catalog is in
+  place, and EX-010 tracks the future sequential-continuation question.
 
 ## Triage rules
 
@@ -101,12 +101,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - **Status:** Open; no balance or production claim should be made yet.
 - **Evidence:** EX-007/EX-008 effect direction and size still vary by seed
-  panel, and the EX-007 human decision is pending. EX-009 now provides a clean
-  same-held-out order result: the two current additive upgrades matched on all
-  five pairs. That is a bounded implementation result, not a balance result.
-- **Next action:** Record the EX-007 human decision and keep all balance or
-  interaction claims bounded to the validated scenario, values, telemetry, and
-  seed panels.
+  panel, and the EX-007 human decision accepts only a bounded model-scoped
+  finding. EX-009 provides a clean same-held-out order result: the two current
+  additive upgrades matched on all five pairs. That is a bounded implementation
+  result, not a balance result.
+- **Next action:** Keep all balance or interaction claims bounded to the
+  validated scenario, values, telemetry, and seed panels. Revisit the proposed
+  EX-010 sequential-continuation study only after active-run checkpoint/resume
+  exists.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
@@ -162,18 +164,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-021 — P3 bound-AI-discovery gate is not yet met
 
-- **Status:** Carry-forward; P3 is not closed. EX-007/EX-008 evidence is
-  assembled, EX-009's same-seed comparison is complete, and EX-007's human
-  decision is pending. EX-003 still has no execution package.
+- **Status:** Carry-forward; P3 is not closed. EX-007's bounded decision and
+  EX-009's launch-time decision are accepted, but EX-003 still has no
+  execution package and EX-010 remains proposed for the future continuation
+  flow.
 - **Evidence:** The earlier `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is a
   historical 03:35 snapshot that predates the later EX-007/EX-008 bundles. The
   current local `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md`
   records the assembled evidence and pending human decision; the 11 current
   EX-007/EX-008 bundles pass the strict artifact validator with Unity logs.
 - **Next action:** Mark the old gate snapshot as historical in the current
-  status trail, obtain the human EX-007 decision, decide whether EX-003 needs
-  to be executed or the exit gate revised, and only then decide whether P3
-  passes. Keep P4 work preparatory only.
+  status trail, decide whether EX-003 needs to be executed or the exit gate
+  revised, and only then decide whether P3 passes. Keep P4 work preparatory;
+  revisit EX-010 only after active-run continuation exists.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
@@ -202,6 +205,20 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Next action:** Add a focused commutativity regression test and reopen an
   order-specific experiment only if future upgrades introduce stateful or
   non-additive behavior.
+- **Likely owner:** Josh.
+- **Confidence:** High.
+
+### P2-021 — Sequential upgrade continuation remains untested
+
+- **Status:** Open future research item; intentionally outside the current S2
+  implementation slice.
+- **Evidence:** EX-009 was accepted only for a complete loadout applied before
+  the run started. The intended game flow acquires upgrades between simulation
+  segments and continues from the current state, which introduces acquisition
+  timing and accumulated-state effects that EX-009 cannot measure.
+- **Next action:** Revisit proposed EX-010 after the active-run
+  checkpoint/resume flow exists. If the flow is not implemented, retain EX-010
+  as explicit remaining work rather than treating EX-009 as its answer.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 

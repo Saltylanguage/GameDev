@@ -1,6 +1,6 @@
 # EX-007 — How well did the prediction do?
 
-**Status:** Scored against training and held-out reports; human decision pending
+**Status:** Scored against training and held-out reports; bounded finding accepted
 **Prediction ID:** `PRED-EXP-007-0001`
 
 ## The prediction in ordinary language

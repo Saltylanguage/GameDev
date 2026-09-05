@@ -25,3 +25,4 @@ into the documentation tree.
 - [EX-007 - Predictive Statline Interventions](EX-007-Predictive-Statline-Interventions/README.md)
 - [EX-008 - Reversed Upgrade-Order Follow-up](EX-008-Reversed-Order-Followup/README.md)
 - [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](EX-009-Same-Heldout-Order-Comparison/README.md)
+- [EX-010 - Sequential Upgrade Continuation](EX-010-Sequential-Upgrade-Continuation/README.md)

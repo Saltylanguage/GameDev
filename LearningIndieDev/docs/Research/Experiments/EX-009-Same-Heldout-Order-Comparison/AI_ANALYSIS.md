@@ -3,7 +3,7 @@
 **Analysis:** `ANL-RPT-RUN-009-0001-v1`  
 **Experiment:** `EXP-009`  
 **Source report:** `REPORT.md`  
-**Status:** Scored; human decision pending
+**Status:** Scored; bounded launch-time result accepted
 **Generated:** 2026-09-04
 
 Both ordered loadouts now have complete adapter-backed schema-23 bundles on the
@@ -33,6 +33,12 @@ local implementation result. It does not establish commutativity for upgrades
 that share fields, use caps or multipliers, alter prerequisites, or introduce
 stateful side effects. The five-seed panel is also too small to serve as a
 standalone balance or promotion study.
+
+The result also does not answer the intended continue-from-current-state flow,
+where an upgrade is acquired between simulation segments. Acquisition timing
+and accumulated simulation state can change later outcomes even when the
+launch-time loadout order commutes. That question is tracked separately as
+proposed EX-010.
 
 ## Validation note
 

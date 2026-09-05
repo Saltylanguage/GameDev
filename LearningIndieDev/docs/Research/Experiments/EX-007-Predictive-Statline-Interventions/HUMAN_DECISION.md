@@ -1,15 +1,16 @@
 # EX-007 — Human decision
 
 **Decision ID:** `DEC-EXP-007-0001`  
-**Decision:** Pending human review
+**Decision:** Accept — bounded model-scoped evidence
 **Owner:** Human design owner  
-**Date prepared:** 2026-09-03
+**Date prepared:** 2026-09-04
 
-## The decision in one sentence
+## Key Observation
 
-The experiment supports a cautious statement that the tested Hare upgrades can
-change population outcomes in ForestEdge, but it does not yet support a stable
-effect size or a reliable interaction claim.
+Under the tested ForestEdge/Hare configuration, faster movement increased final
+Hare population across both seed panels and crowding tolerance reduced crowding
+deaths, but effect size, interaction, and balance remain unresolved and are
+outside the scope of EX-007 for now.
 
 ## Decisive observations
 
@@ -22,7 +23,7 @@ effect size or a reliable interaction claim.
 
 ## Choose one
 
-- [ ] **Accept** the bounded claim as written.
+- [x] **Accept** the bounded claim as written.
 - [ ] **Reject** the claim and treat this experiment as inconclusive.
 - [ ] **Revise** the claim, likely by narrowing the prediction and adding a
   crowding-tolerance-only arm before making an interaction claim.
@@ -39,11 +40,16 @@ effect size or a reliable interaction claim.
 
 This decision applies only to the ForestEdge scenario, Hare player, declared
 seed panels, exact upgrade values, telemetry, and 20-second observation window.
-It does not approve a production balance change or make a claim about fun,
-quality, or continuous upgrade scaling.
+It records accepted model-scoped evidence only. It does not approve a
+production balance change or make a claim about fun, quality, continuous
+upgrade scaling, a stable interaction effect, or behavior after an upgrade is
+acquired between continuing simulation segments.
 
 ## Follow-up after the decision
 
 Record the reviewer's choice, review time, and any requested rerun. EX-008 has
 already added the missing crowding-tolerance-only arm; EX-009 now covers the
-remaining clean same-held-out-seed comparison of the two joint orders.
+clean same-held-out-seed comparison of the two joint orders. The separate
+sequential-continuation question is tracked as proposed EX-010 and should be
+revisited if the intended continue-from-current-state gameplay flow is
+implemented.

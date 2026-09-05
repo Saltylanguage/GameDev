@@ -63,13 +63,15 @@ loadouts, and the locked EX-009 order comparison completed on the same held-out
 seeds with zero deltas across the recorded outcomes and available telemetry.
 The raw bundles and a diffable paired table are linked from the experiment
 packages. This closes the implementation handoff; it does not close the human
-balance or promotion decision.
+balance decision or authorize a production balance change.
 
 ## Next block — connect research and balance review
 
 This was the coordinated block with two closely related parts. The catalog and
 adapter bridge are complete; the remaining work is evidence review, a human
-decision, and any follow-up tests the decision requests.
+balance review, and any follow-up tests the decision requests. The bounded
+EX-007 and EX-009 decisions are now recorded; neither promotes a production
+balance change.
 
 ### Part 1: Use the same upgrade in research
 
@@ -90,8 +92,8 @@ are testing the same upgrade while quietly using different values or order.
 values, order, and run signature. The report records the full prediction input
 and snapshot fingerprints, so the research path no longer needs a separate
 handwritten version of the intervention. This gate is complete. The remaining
-human work is to review EX-007 and decide whether a balance or promotion test
-is warranted.
+human work is to decide whether a separate balance or player-experience test is
+warranted.
 
 ### Part 2: Review the evidence and player experience
 
@@ -106,8 +108,17 @@ proof that an upgrade is balanced and ready.
 **Done when:** The matched runs are repeatable, the UI is readable at the target
 resolutions, and the handoff records accepted behavior, tuning questions, and
 explicit cuts. No balance conclusion is based on one seed. The research-side
-matched-run and order checks are complete; the EX-007 human decision is the
-remaining acceptance item.
+matched-run and order checks are complete, and the bounded human decisions are
+recorded. Player-experience and balance follow-up remain separate work.
+
+## Carried-forward research item
+
+**EX-010 — Sequential upgrade continuation** is proposed but intentionally not
+part of this S2 implementation commitment. It asks what changes when upgrades
+are acquired between simulation segments and the player continues from the
+current state. It depends on the active-run checkpoint/resume flow, which is
+currently out of scope. Keep it visible in the research index and Loose Ends;
+do not treat EX-009's launch-time result as an answer to EX-010.
 
 ## Evidence we will use
 

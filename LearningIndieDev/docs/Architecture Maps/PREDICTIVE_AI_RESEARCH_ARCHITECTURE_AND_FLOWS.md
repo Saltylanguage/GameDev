@@ -16,7 +16,7 @@ flowchart LR
     P0["P0 — Frame<br/>Protocol, IDs, ownership<br/>EX-001 brief"]
     P1["P1 — Trust the instrument<br/>Determinism, fingerprints, replay<br/>EX-001 · EX-001B"]
     P2["P2 — Diagnose outcomes<br/>Causal interventions<br/>EX-002"]
-    P3["P3 — Bound AI discovery<br/>Predictions, uncertainty, validation<br/>EX-003 · EX-007 · EX-008 · EX-009"]
+    P3["P3 — Bound AI discovery<br/>Predictions, uncertainty, validation<br/>EX-003 · EX-007 · EX-008 · EX-009 · EX-010"]
     P4["P4 — Translate to design<br/>Explanations, upgrades, events<br/>EX-004 · EX-005 · EX-006"]
     P5["P5 — Validate collaboration<br/>More scenarios and contributors"]
     P6["P6 — Promotion decision<br/>Product · tooling · studio process"]
@@ -24,7 +24,7 @@ flowchart LR
     P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6
 
     NOW["Current gate<br/>EX-007 evidence complete<br/>Human decision pending<br/>EX-003 unresolved"]
-    ORDER["EX-009 same-seed check complete<br/>A/B matched for current additive pair<br/>Add commutativity regression test"]
+    ORDER["EX-009 accepted for launch-time pair<br/>A/B matched for current additive pair<br/>EX-010 tracks mid-run continuation"]
 
     NOW -.-> P3
     ORDER -.-> P3

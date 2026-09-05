@@ -1,9 +1,11 @@
 # P3 Predictive AI — Cohesive Results Report
 
-**Scope:** EX-007 baseline experiment plus the reversed-order follow-up
+**Scope:** EX-007 baseline experiment, EX-008 reversed-order follow-up, and
+EX-009 same-held-out order comparison
 **Scenario:** `ForestEdge.asset`
 **Species:** Hare
-**Status:** Evidence assembled; human accept/reject/revise decision pending
+**Status:** Bounded EX-007 and EX-009 decisions accepted; balance and P3
+promotion review remain open
 
 ## What we tested
 
@@ -93,17 +95,19 @@ calibration from one experiment.
 4. The training aggregates for the forward and reversed joint sequences match,
    which is consistent with these two rule changes being order-independent in
    the current implementation.
+5. EX-009 tested both joint orders on the same held-out seeds (106–110). All
+   five pairs matched across the recorded outcomes and telemetry, supporting a
+   bounded launch-time commutativity result for these two additive upgrades.
 
 ## What remains unproven
 
-The follow-up held-out seeds differ from the original forward-order held-out
-seeds. Therefore it does **not** prove that sequence order has no effect. To
-answer that question cleanly, run both joint sequences on the same held-out
-seeds (for example 106–110) and compare them pairwise.
-
-The evidence also does not establish balance, fun, long-run stability, transfer
-to another scenario, or behavior at other upgrade values. Those require new
-contracts and new runs.
+EX-009 closes the same-held-out launch-time order gap, but the evidence still
+does not establish balance, fun, long-run stability, transfer to another
+scenario, or behavior at other upgrade values. It also does not answer the
+intended game flow where an upgrade is acquired between simulation segments and
+the player continues from the current state. That timing/state question is
+tracked as proposed EX-010 and requires a checkpoint/resume seam plus a new
+human-approved contract.
 
 ## Evidence locations
 
@@ -111,4 +115,6 @@ contracts and new runs.
 - Prediction scoring: [EX-007 AI_ANALYSIS.md](EX-007-Predictive-Statline-Interventions/AI_ANALYSIS.md)
 - Original paired deltas: `artifacts/EX-007-20260903-1535/paired-deltas.csv`
 - Follow-up paired deltas: `artifacts/EX-008-20260903/paired-deltas.csv`
-- Human decision record: [HUMAN_DECISION.md](EX-007-Predictive-Statline-Interventions/HUMAN_DECISION.md) (pending)
+- Same-held-out order report: [EX-009 REPORT.md](EX-009-Same-Heldout-Order-Comparison/REPORT.md)
+- Same-held-out paired deltas: [EX-009 paired-deltas.csv](EX-009-Same-Heldout-Order-Comparison/paired-deltas.csv)
+- Human decision record: [HUMAN_DECISION.md](EX-007-Predictive-Statline-Interventions/HUMAN_DECISION.md) (bounded claim accepted)

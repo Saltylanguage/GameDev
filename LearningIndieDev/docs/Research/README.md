@@ -32,6 +32,7 @@ not redefine the program.
 - [EX-007 - Predictive Statline Interventions](Experiments/EX-007-Predictive-Statline-Interventions/README.md)
 - [EX-008 - Reversed Upgrade-Order Follow-up](Experiments/EX-008-Reversed-Order-Followup/README.md)
 - [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md)
+- [EX-010 - Sequential Upgrade Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md)
 
 Reusable brief, report, and AI-analysis templates are stored in
 [Templates](Templates/).

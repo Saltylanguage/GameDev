@@ -1,7 +1,7 @@
 # EX-009 — Same-held-out-seed upgrade-order comparison
 
 **Experiment ID:** `EXP-009`  
-**Status:** Both same-seed arms complete; order result available; human review pending
+**Status:** Bounded launch-time result accepted; sequential-continuation follow-up proposed
 **Parent:** `EXP-007` / exploratory follow-up `EXP-008`  
 **Decision owner:** Human design owner  
 **Scenario:** `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset`  
@@ -100,6 +100,11 @@ This supports an order-independent result for these two additive upgrades,
 values, scenario, ruleset, telemetry, and held-out seeds. It is not a universal
 claim that every future upgrade combination commutes; shared state, caps,
 multipliers, prerequisites, or side effects would require their own test.
+
+This result is specifically about applying the complete loadout before the run
+starts. The intended player flow will allow upgrades to be acquired between
+simulation segments and then continue from the current state. That timing/state
+question is separate and is tracked as proposed EX-010.
 
 ## Historical preflight record
 

@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.13<br>
+**Version:** 1.14<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -651,6 +651,12 @@ the ruleset is unchanged; derived StatLine values are versioned telemetry and
 must not be treated as byte-for-byte historical parity across schema/code
 revisions.
 
+**Human decision:** The bounded model-scoped finding is accepted. The accepted
+scope is that faster movement increased final Hare population across both seed
+panels and crowding tolerance reduced crowding deaths. Effect size, interaction,
+balance, and behavior after mid-run acquisition remain unresolved and are not
+part of EX-007's decision.
+
 ### EX-008 - Reversed upgrade-order follow-up
 
 **Question:** Does applying the same Hare upgrades in the opposite order change
@@ -692,6 +698,40 @@ adapter. All five per-seed outcome and available telemetry comparisons are
 identical; the bounded result supports commutativity for these two additive
 upgrades under the locked conditions. The prior Unity preflight failures remain
 historical operational records, not current research blockers.
+
+**Human decision:** Accepted as a bounded launch-time result. This does not
+answer the intended continue-from-current-state flow, where upgrades can be
+acquired between simulation segments and accumulated state can change later
+outcomes.
+
+### EX-010 - Sequential upgrade continuation
+
+**Question:** When a player acquires upgrades between simulation segments and
+continues from the current state, how do acquisition timing and order affect the
+later simulation outcome?
+
+**Why this is separate:** EX-009 applied the complete loadout before the run
+started. Its zero-delta result is useful evidence about launch-time additive
+application, but it cannot stand in for upgrades acquired after the simulation
+has already evolved.
+
+**Status:** Proposed follow-up; blocked until the continue-from-current-state
+gameplay flow and a reproducible simulation checkpoint/resume seam exist.
+
+**Method to define before execution:** Human-approve a segmented contract with a
+fixed seed, initial state, segment lengths, upgrade acquisition ticks, and
+matched A/B orderings. Capture the checkpoint state and upgrade snapshot at each
+acquisition, then compare the full later trajectory and final outcomes. Keep
+launch-time loadout order and mid-run acquisition timing as separate factors.
+
+**Success:** Complete same-seed segmented bundles show whether order, timing, or
+accumulated state changes the outcome. The report distinguishes a true order
+effect from a timing/state effect and names the tested segment and upgrade
+regime. No result is generalized to other upgrade types or schedules without
+new coverage.
+
+The working package is documented in [EX-010 - Sequential Upgrade
+Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
 
 ### EX-004 - Replay-to-explanation
 
@@ -869,13 +909,14 @@ Every research bundle should preserve:
   scoped to that protocol.
 - CIA-001 remains proposed research work, not validated predictive capability.
   EX-007 now has complete training and held-out run/report/analysis evidence;
-  its human decision remains pending. The current adapter-backed reruns also
-  verify that its research fixture values can be consumed through the same
-  snapshot path used by authored game loadouts. EX-008 added a crowding-only
-  arm and a reversed sequence, but used a different held-out panel from the
-  original forward sequence. EX-009 has now closed that same-held-out-seed gap:
-  both orders completed on 106–110 and matched exactly on the recorded outcome
-  and telemetry fields. Its human decision remains pending.
+  its bounded human decision is accepted. The current adapter-backed reruns
+  also verify that its research fixture values can be consumed through the same
+  snapshot path used by authored game loadouts. EX-008 added a crowding-only arm
+  and a reversed sequence, but used a different held-out panel from the
+  original forward sequence. EX-009 closed that same-held-out-seed gap: both
+  orders completed on 106–110 and matched exactly on the recorded outcome and
+  telemetry fields, and its bounded launch-time result is accepted. EX-010 is a
+  proposed follow-up for the unimplemented continue-from-current-state flow.
 
 The first research package should be small enough to complete without blocking
 the current production lane:
@@ -957,3 +998,4 @@ rule.
 | 1.11 | 2026-09-03 | Added EX-009 to close the same-held-out-seed gap in the EX-007/EX-008 upgrade-order comparison; recorded the current Unity preflight blocker. |
 | 1.12 | 2026-09-03 | Reordered the experiment portfolio by implementation dependencies and added the missing EX-008 entry. |
 | 1.13 | 2026-09-04 | Recorded the adapter-backed EX-007 reruns, completed the same-held-out EX-009 order comparison, and bounded the commutativity result to the tested additive upgrades and configuration. |
+| 1.14 | 2026-09-04 | Recorded human acceptance of EX-007 and EX-009, and added proposed EX-010 to track sequential upgrade acquisition after simulation continuation is implemented. |

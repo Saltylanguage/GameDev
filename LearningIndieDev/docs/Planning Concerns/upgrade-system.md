@@ -61,9 +61,11 @@ and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 - **Smallest mitigation:** Preserve authored purchase order; define scope, stacking, exclusion, and prerequisite behavior explicitly; record order in the snapshot, fingerprint, and report; run paired A→B, B→A, and all relevant order variants in research tests rather than assuming equivalence.
 - **Progress:** EX-009 completed the locked A→B/B→A comparison on the same
   held-out seeds (106–110). The two additive upgrades produced identical
-  outcomes and available telemetry in all five pairs. A focused commutativity
-  regression test remains the appropriate follow-up as future stateful upgrade
-  types are introduced.
+  outcomes and available telemetry in all five pairs, so the launch-time result
+  is accepted within that scope. This does not resolve upgrades acquired between
+  continuing simulation segments; acquisition timing and accumulated state are
+  tracked as proposed EX-010. A focused commutativity regression test remains
+  the appropriate follow-up as future stateful upgrade types are introduced.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
 

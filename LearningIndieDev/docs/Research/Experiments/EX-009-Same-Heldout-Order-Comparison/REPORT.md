@@ -7,7 +7,7 @@
 **Focus:** Same-seed outcome differences, deterministic application, telemetry completeness  
 **Location:** `artifacts/cellular-experiment-20260904-192559/` and
 `artifacts/cellular-experiment-20260904-192703/`
-**Status:** Complete; human review pending
+**Status:** Complete; bounded launch-time result accepted
 **Generated:** 2026-09-04
 
 ## Locked A/B inputs
@@ -55,16 +55,20 @@ generalize to future stateful or non-additive upgrades.
 ## Human decision
 
 **Decision ID:** `DEC-EXP-009-0001`  
-**Decision:** Pending  
+**Decision:** Accept — bounded launch-time order result
 **Owner:** Human design owner  
-**Key Observation:** Both ordered loadouts produced identical outcomes on all
-five shared held-out seeds; the observed result supports commutativity for this
-specific pair of additive upgrades and configuration.
+**Key Observation:** Upgrade order matched across the recorded outcomes and
+telemetry for all five pairs. While this is indicative of commutativity for the
+launch-time loadout, the intended game flow will let the player acquire
+upgrades between simulation segments and continue from the current state. The
+time of acquisition and accumulated state can therefore change the outcome;
+EX-009 does not answer that sequential-continuation question.
 **Evidence References:** [EX-009 README](README.md),
 [paired deltas](paired-deltas.csv), Arm A and Arm B bundles above.
-**Scope:** This is a bounded model-behavior result, not a balance, fun, or
-production approval and not a universal order theorem.
-**Follow-up:** Add a focused commutativity regression test and reopen an
-order-specific research comparison only if upgrade application becomes
-stateful, capped, multiplicative, prerequisite-driven, or otherwise
-non-commutative.
+**Scope:** This accepts only the bounded launch-time model-behavior result for
+ForestEdge/Hare, the declared additive values, telemetry, and held-out seeds
+106–110. It is not a balance, fun, or production approval and not a universal
+order theorem.
+**Follow-up:** Add a focused launch-time commutativity regression test. Track
+the sequential-continuation question as proposed EX-010 and revisit it if the
+continue-from-current-state gameplay flow is implemented.
