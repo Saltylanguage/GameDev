@@ -15,8 +15,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   machine-level UPM/licensing IPC state; the P3 research gate remains open
   because EX-003 and broader promotion review are unresolved. BoardSnapshot
   fixture repair, the terrain documentation contract, the editor pattern drift,
-  XAML whitespace, and historical ID ambiguity are resolved or explicitly
-  bounded below. EX-010 remains the future sequential-continuation question.
+  XAML whitespace, historical ID ambiguity, and the S2 register mapping are
+  resolved or explicitly bounded below. EX-010 remains the future
+  sequential-continuation question.
 
 ## Triage rules
 
@@ -240,17 +241,17 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-027 — Sprint 2 task register is not uniquely mapped to board work
 
-- **Status:** Partially resolved; the duplicate labels are gone and the active
-  correctness cards have verified board links, but the full S2 register is not
-  yet mapped row-by-row.
-- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` no longer contains the duplicate
-  `S2.2`/`S2.3` labels. The active S2.3 card is [Upgrade loadout report/stat-line
-  integration](https://trello.com/c/pZ4qG2DM), and the two correctness cards are
-  [Fox mating/eating telemetry discrepancy](https://trello.com/c/BkJwxhkw) and
-  [BoardSnapshot fixture repair](https://trello.com/c/Cy2TOMOh); their owners and
-  acceptance text are visible in Trello.
-- **Next action:** Add stable IDs and links for the remaining S2 rows during the
-  sprint review; do not infer completion from the control card alone.
+- **Status:** Partially resolved; every row now has a stable ID and board link,
+  but owner/status reconciliation remains for the sprint review.
+- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` and
+  `docs/Sprints/S2-control-record.md` now assign stable IDs and verified Trello
+  links to every listed work row. The duplicate board prefixes are disambiguated
+  as `S2.2A/B` and `S2.3A/B`, and the Fox/BoardSnapshot reserve cards have
+  explicit `S2-CORR-*` IDs. The board currently assigns the parallel S2.3A and
+  S2-QA cards to Sim while the repository plan assigns the implementation lane
+  to Josh; that discrepancy is recorded rather than hidden.
+- **Next action:** Reconcile card ownership, list placement, and completion
+  status during the S2 review; do not infer completion from the control card.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 

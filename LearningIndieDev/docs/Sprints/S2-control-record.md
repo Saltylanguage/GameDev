@@ -28,6 +28,28 @@ the identity, capacity, ownership, board disposition, and exit gate.
   the backlog. The unrelated blocked bug-triage card remains blocked.
 - No Sprint 1 task was carried: cards 51–53, 62, and 72 remain complete.
 
+### Register-to-board mapping
+
+The repository register uses suffixes where Trello has separate cards with the
+same S2 work-package prefix. Links below are the current board records.
+The repository owner column remains authoritative for the local plan; the
+parallel evidence cards for S2.3A and S2-QA are currently assigned to Sim on
+the board and must be reconciled at review rather than silently reassigned.
+
+| Repository ID | Work package | Board card | List at review |
+| --- | --- | --- | --- |
+| S2.1 | Upgrade contract and boundary | [772a1U6k](https://trello.com/c/772a1U6k) | ✅ Done |
+| S2.2A | Catalog design and acceptance matrix | [7e5KhUen](https://trello.com/c/7e5KhUen) | Current Work |
+| S2.2B | First catalog slice implementation | [KhHBo2tf](https://trello.com/c/KhHBo2tf) | ✅ Done |
+| S2.3A | Deterministic application and contribution evidence | [JORLMXG3](https://trello.com/c/JORLMXG3) | ✅ Done |
+| S2.3B | Upgrade loadout report/stat-line integration | [pZ4qG2DM](https://trello.com/c/pZ4qG2DM) | Current Work |
+| S2.4 | Review and balance evidence | [SSwZkrI1](https://trello.com/c/SSwZkrI1) | ✅ Done |
+| EX-002 | Intervention surface and causal-gate preparation | [PVqz2g5n](https://trello.com/c/PVqz2g5n) | ✅ Done |
+| S2-QA | Catalog fixtures and invalid-combination tests | [OLZYtNS9](https://trello.com/c/OLZYtNS9) | ✅ Done |
+| S2-UI | Player-facing upgrade preview and result summary | [iKcmYkuy](https://trello.com/c/iKcmYkuy) | ✅ Done |
+| S2-CORR-FOX | Fox mating/eating telemetry discrepancy | [BkJwxhkw](https://trello.com/c/BkJwxhkw) | Current Work |
+| S2-CORR-BOARD | BoardSnapshot fixture repair | [Cy2TOMOh](https://trello.com/c/Cy2TOMOh) | ✅ Done |
+
 ## Scope boundary
 
 The 2026-09-04 [consecutive-phase review](../CONTINUOUS_SIMULATION_FLOW_PLAN.md)
@@ -35,7 +57,8 @@ identifies additional runtime and evidence work beyond the accepted launch-time
 slice. It is proposed for explicit capacity planning, not automatically committed
 to S2. Continuing a phase in memory is distinct from player file saves. The
 [impact notice](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) calls out required
-Stat-Line/research retests; the S2.3 ownership is now aligned to Josh.
+Stat-Line/research retests. The S2.3B report/stat-line integration card is
+Josh-owned; S2.3A deterministic application is complete under Sim's lane.
 
 S2 is a temporary per-run upgrade slice. It does not implement file saves,
 wallet mutation, permanent Lab research, Archive or Expedition flows, a

@@ -17,9 +17,9 @@ to the “next run” in the prototype describe current behavior; target gamepla
 continues the next phase of the same expedition.
 
 [Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) records
-the continued-flow retests. The S2.3 board card is now Josh-owned, matching
-this plan; Sim is not assigned to the upgrade stream and remains in the
-separate telemetry/fixture lane below.
+the continued-flow retests. The S2.3 report/stat-line card is Josh-owned,
+matching this plan; the separate deterministic application card is complete,
+and Sim remains in the telemetry/fixture lane below.
 
 Give the player a small, understandable upgrade choice during a Forest Edge
 run. The game and the research tools should use the same upgrade definition so
@@ -50,17 +50,17 @@ should be confirmed when the next sprint is kicked off.
 
 ## Work at a glance
 
-| Work | Owner | Effort | Status |
-| --- | --- | ---: | --- |
-| Write down the upgrade rules | Josh | 4h | Complete |
-| Create the first catalog and authoring path | Josh | 8h | Complete; seven production assets and the catalog validator are ready |
-| Apply upgrades consistently and show what changed | Josh | 8h | Complete |
-| Add catalog fixtures and invalid-combination tests | Josh | 3h | Complete; 200/200 Edit Mode tests pass |
-| Show upgrade choices and the result in the game | Josh | 4h | Complete; 200/200 Edit Mode and 14/14 runnable Play Mode tests pass |
-| Connect upgrades to research and review balance evidence | Josh | 6h | Adapter-backed fixture path and bounded EX-007/EX-009 decisions complete; production balance and player-experience follow-up remain separate |
-| EX-002 research intervention preparation | Josh | 5h | Separate research lane |
-| Fox mating/eating telemetry discrepancy | Sim | 3h | Separate Sim lane |
-| BoardSnapshot test-fixture repair | Sim | 2h | Separate Sim lane |
+| ID | Work | Owner | Effort | Board card | Status |
+| --- | --- | --- | ---: | --- | --- |
+| S2.1 | Write down the upgrade rules | Josh | 4h | [Contract and boundary](https://trello.com/c/772a1U6k) | Complete |
+| S2.2A/B | Create the first catalog and authoring path | Josh | 8h | [Design matrix](https://trello.com/c/7e5KhUen), [implementation](https://trello.com/c/KhHBo2tf) | Complete; seven production assets and the catalog validator are ready |
+| S2.3A | Apply upgrades consistently and show what changed | Josh | 8h | [Deterministic application](https://trello.com/c/JORLMXG3), [player preview](https://trello.com/c/iKcmYkuy) | Complete |
+| S2-QA | Add catalog fixtures and invalid-combination tests | Josh | 3h | [Catalog fixtures](https://trello.com/c/OLZYtNS9) | Complete; 200/200 Edit Mode tests pass |
+| S2-UI | Show upgrade choices and the result in the game | Josh | 4h | [Player-facing preview/result](https://trello.com/c/iKcmYkuy) | Complete; 200/200 Edit Mode and 14/14 runnable Play Mode tests pass |
+| S2.3B/S2.4 | Connect upgrades to research and review balance evidence | Josh | 6h | [Report/stat-line integration](https://trello.com/c/pZ4qG2DM), [balance review](https://trello.com/c/SSwZkrI1) | Adapter-backed fixture path and bounded EX-007/EX-009 decisions complete; production balance and player-experience follow-up remain separate |
+| EX-002 | EX-002 research intervention preparation | Josh | 5h | [Intervention preparation](https://trello.com/c/PVqz2g5n) | Separate research lane |
+| S2-CORR-FOX | Fox mating/eating telemetry discrepancy | Sim | 3h | [Fox telemetry](https://trello.com/c/BkJwxhkw) | Separate Sim lane |
+| S2-CORR-BOARD | BoardSnapshot test-fixture repair | Sim | 2h | [BoardSnapshot fixture](https://trello.com/c/Cy2TOMOh) | Separate Sim lane |
 
 ## Completed work
 
