@@ -1,6 +1,6 @@
 # Consecutive simulation phases — documentation coverage
 
-**Date:** 2026-09-04. **Status:** Planning pass; implementation closure pending.
+**Date:** 2026-09-04. **Status:** CF-0 contract and fixture closure complete; implementation closure pending.
 **Parent:** [Architecture review and plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ## Scope and audit method
@@ -16,12 +16,19 @@ notices to active documents. It does not claim that every proposed API, code
 comment, tool help string or acceptance checkbox has already been migrated.
 The table below is the project-wide closure list for the implementation pass.
 
+CF-0 is now closed: the lifecycle, boundary-effect, above-cap energy and
+phase/expedition result decisions are locked in the [canonical plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md),
+and the [schema-21 fresh legacy fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/README.md)
+is preserved with provenance. “Implementation closure pending” below means
+the runtime producers and consumers still need to be changed and verified; it
+does not reopen the product contract.
+
 ## Active design and engineering documents
 
 | Document | Planning-pass disposition | Implementation closure |
 | --- | --- | --- |
 | [GDD](GDD_TEMPLATE.md) | Rewrote player promise, core flow and progression around one expedition with purchase/skip continuation. | Replace pending labels when runtime gates pass; retain unresolved pacing/mechanic decisions until accepted. |
-| [Product brief](PRODUCT_BRIEF.md) | Explicit same-world continuity, optional Skip, phase versus terminal results, acquisition-time replay and distinction from disk saves. | Confirm final cadence/terminal contract and actual outcomes. |
+| [Product brief](PRODUCT_BRIEF.md) | Explicit same-world continuity, optional Skip, phase versus terminal results, acquisition-time replay and distinction from disk saves. | Verify runtime against the locked cadence/terminal contract and actual outcomes; the longer presentation target remains separate. |
 | [Project context](PROJECT_CONTEXT.md) | Durable continuity direction and immutable base/per-phase rules boundary. | Update current implementation state, remove superseded prototype descriptions in touched sections. |
 | [TDD](TDD_TEMPLATE.md) | Added lifecycle invariants and canonical implementation/evidence links. | Fill actual APIs, checkpoint format and validation results; unrelated template placeholders remain unrelated. |
 | [Working state](WORKING_STATE.md) | Added plan, impact and audit entry points. | Link final integration handoff; keep history out of this index. |
@@ -42,7 +49,7 @@ The table below is the project-wide closure list for the implementation pass.
 | Document / surface | Planning-pass disposition | Implementation closure |
 | --- | --- | --- |
 | [Roadmap](../ROADMAP.md), [incomplete-feature plan](INCOMPLETE_FEATURES_ACTION_PLAN.md), [future sprint roadmap](FUTURE_SPRINT_ROADMAP.md) | New foundational dependency and explicit capacity planning. | Schedule packages; no silent addition to S2. |
-| [S2 execution plan](NEXT_WORK_BUCKET_PLAN.md), [S2 control record](Sprints/S2-control-record.md) | Accepted launch-time implementation distinguished from proposed continuation; Sim/card discrepancy recorded. | Josh reconciles owner/estimate and records the actual sprint allocation. |
+| [S2 execution plan](NEXT_WORK_BUCKET_PLAN.md), [S2 control record](Sprints/S2-control-record.md) | Accepted launch-time implementation distinguished from proposed continuation; S2.3 owner is aligned to Josh. | Keep the board mapping and actual sprint allocation current as the continuation work is scheduled. |
 | [S1 Stat-Line tickets](SPRINT_1_SPECIES_STAT_LINE_TICKETS.md) | Added mapping to new window/ledger/serialization/replay retests; original acceptance retained. | Sim reviews phase and expedition semantics and new acceptance evidence. |
 | [Species analytics guidance](Species%20Design/SPECIES_STATISTICS_ANALYTICS_GUIDANCE.md) | Window context and pooled-count rates explicit. | Keep stable stat names, denominators and validity states consistent with code. |
 | [Herbivore validation](HERBIVORE_STATISTICS_VALIDATION.md) | Applicability note and existing cause/litter/denominator limitations linked. | Revise formulas only after accepted stat decisions; independently validate actual new reports. |
@@ -54,7 +61,7 @@ The table below is the project-wide closure list for the implementation pass.
 | [EX-010 proposal](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md) | Concrete implementation dependencies and lineage split requirements added. | Human-approved schedule/controls/outcomes, then new preregistration and evidence. |
 | [New experiment report template](Research/Templates/EXPERIMENT_REPORT_TEMPLATE.md) | Added lifecycle, window, checkpoint, schedule and termination fields. | Verify templates against actual serializers and validity handling. |
 | [Upgrade concerns](Planning%20Concerns/upgrade-system.md), [Stat-Line/AI concerns](Planning%20Concerns/STATLINE_PREDICTIVE_AI_CROSSOVER.md) | Linked review without changing accepted triggers/severity/status. | Review proposed CF concerns; update accepted statuses only from evidence or explicit decisions. |
-| [Stat-Line card](https://trello.com/c/pZ4qG2DM), [research card](https://trello.com/c/DViOsvbd) | Planning notices with conflicts, invalid claims and retests; no reassignment or completion claims. | Confirm owner acknowledgment, reconcile scope and update shared commit after authorized push. |
+| [Stat-Line card](https://trello.com/c/pZ4qG2DM), [research card](https://trello.com/c/DViOsvbd) | Planning notices with validity limits and retests; the S2.3 card owner is reconciled to Josh. | Keep scope, list placement, and completion state synchronized with the sprint record; preserve historical handoffs. |
 
 ## Documents intentionally retained, with explicit applicability
 
@@ -90,6 +97,8 @@ Changing those now would falsely document APIs or behavior that do not exist.
 
 ## Closure checks
 
+- [x] CF-0 decisions and the versioned fresh legacy fixture are recorded in the
+      canonical plan and evidence-impact notice.
 - [ ] Every active design statement about the loop matches the accepted contract.
 - [ ] All runtime/API/help/copy changes describe executed behavior, with no stale
       `Complete`/restart aliases at the reward boundary.
@@ -103,4 +112,6 @@ Changing those now would falsely document APIs or behavior that do not exist.
 - [ ] Sim/Josh review and board/repository ownership reconciliation are recorded.
 - [ ] New handoff links actual tests/build/visual evidence and the shared revision.
 
-These boxes remain open because the user requested review and planning first.
+These implementation boxes remain open because Josh requested review and
+planning before runtime changes; the CF-0 contract and fixture checkbox above
+is closed.

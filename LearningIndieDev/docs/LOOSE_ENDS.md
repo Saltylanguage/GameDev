@@ -15,7 +15,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   machine-level UPM/licensing IPC state; the P3 research gate remains open
   because EX-003 and broader promotion review are unresolved. The same-held-out
   EX-009 comparison is complete, the first trustworthy upgrade catalog is in
-  place, and EX-010 tracks the future sequential-continuation question.
+  place, EX-010 tracks the future sequential-continuation question, and the
+  Noesis/XAML default font is now wired to the imported Pixeloid Sans asset.
 
 ## Triage rules
 
@@ -23,18 +24,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-03)
+## Current open items (2026-09-04)
 
 ### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
 
-- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource edits
-  are local; runtime acceptance pending.
+- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource/font
+  edits are local; runtime acceptance pending.
 - **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
   `HeaderedContentControl` window style/resources, four palette variants, and
   the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
-  the changed XAML and `git diff --check` is clean apart from Unity's standard
-  blank-value metadata whitespace. No Unity screenshot or graphics Play Mode
-  result exists for this batch yet.
+  the changed XAML. `Assets/Noesis.settings.asset` now points `defaultFont` at
+  the imported Pixeloid Sans Noesis font, and the Pixeloid Sans/Bold/Mono `.meta`
+  files use `Noesis.NoesisGUI.Editor::NoesisFontImporter`, so Noesis/XAML text
+  inherits the project font without per-element assignments. `git diff --check`
+  still reports the known XAML trailing whitespace tracked by P2-019. No Unity
+  screenshot or graphics Play Mode result exists for this batch yet.
 - **Next action:** Repair the Unity Hub/licensing IPC state, rerun the graphics
   acceptance command, and review the desktop scene at the target resolutions.
 - **Likely owner:** Josh + UI owner.
@@ -193,21 +197,6 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh + current contributors.
 - **Confidence:** High.
 
-### P1-025 — EX-009 same-held-out upgrade-order comparison is complete
-
-- **Status:** Resolved for the locked question; keep the historical preflight
-  failures as operational records.
-- **Evidence:** Both adapter-backed arms passed validation on seeds 106–110:
-  `artifacts/cellular-experiment-20260904-192559` and
-  `artifacts/cellular-experiment-20260904-192703`. The paired table in the
-  EX-009 package records zero deltas across all compared outcome and telemetry
-  fields.
-- **Next action:** Add a focused commutativity regression test and reopen an
-  order-specific experiment only if future upgrades introduce stateful or
-  non-additive behavior.
-- **Likely owner:** Josh.
-- **Confidence:** High.
-
 ### P2-021 — Sequential upgrade continuation remains untested
 
 - **Status:** Open future research item; intentionally outside the current S2
@@ -220,6 +209,22 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   checkpoint/resume flow exists. If the flow is not implemented, retain EX-010
   as explicit remaining work rather than treating EX-009 as its answer.
 - **Likely owner:** Josh.
+- **Confidence:** High.
+
+### P2-022 — Legacy Unity IMGUI text is outside the Noesis default-font path
+
+- **Status:** Noesis/XAML now inherits Pixeloid Sans globally; legacy IMGUI
+  surfaces still inherit Unity's `GUI.skin.font` and are intentionally
+  unchanged.
+- **Evidence:** `Assets/Noesis.settings.asset` configures the Noesis
+  `defaultFont`, while `Assets/Scripts/Game/Presentation/GameHud.cs:24-29` and
+  `Assets/Scripts/Game/Debug/RuntimeDebugPanel.cs:28` create styles from
+  `GUI.skin.label`. These are separate rendering paths and do not consume the
+  Noesis setting.
+- **Next action:** Decide whether the retained debug/IMGUI surfaces should also
+  use Pixeloid; if so, set the shared IMGUI skin font at one composition point
+  and verify the result without changing player-facing Noesis contracts.
+- **Likely owner:** Josh + UI owner.
 - **Confidence:** High.
 
 ### P1-026 — Detached worker lacks the latest Unity lifecycle tooling
@@ -308,23 +313,6 @@ Ticket summaries for these items are recorded in
   prototype and record gameplay-scale visual evidence for all families. Do not
   refactor the resolver from the superseded dual-grid plan.
 - **Likely owner:** Presentation/art owner + Sim.
-- **Confidence:** High.
-
-### P1-023 — Bootstrap, scene, Play Mode, and Noesis standards docs have drifted
-
-- **Status:** Current guidance is refreshed locally; historical Bootstrap/Island
-  references remain intentionally dated, and no scene/package change was made.
-- **Evidence:** `FRAMEWORK.md:3-6,47-49` now labels the Bootstrap/Island
-  Survivor guidance historical and identifies the active Main Menu → Lab →
-  CellularAutomataPrototype flow. `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` and
-  `docs/UNITY_ENGINEERING_STANDARDS.md` now match the current scene, Play Mode,
-  starter-`BaseViewModel`, and direct Noesis import facts; the historical
-  Island validator remains explicitly scoped to the deprecated prototype. No
-  scene, package, or runtime implementation change was made in this cleanup.
-- **Next action:** Review the documentation diff, then run the current focused
-  scene/test validation after Unity IPC recovery. Keep historical claims
-  explicitly dated instead of silently mixing them with current instructions.
-- **Likely owner:** Josh + repository maintainer.
 - **Confidence:** High.
 
 ### P2-007 — Legacy `SpeciesArchetype` compatibility surface is not retired
@@ -897,3 +885,29 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   of silently losing queue state.
 - **Result:** Queue state is now auditable even when Unity preflight blocks a
   run. The remaining blocker is machine state, not worker publication.
+
+### R-011 — EX-009 same-held-out upgrade-order comparison completed
+
+- **Former item:** P1-025.
+- **Evidence:** Both adapter-backed arms passed validation on seeds 106–110:
+  `artifacts/cellular-experiment-20260904-192559` and
+  `artifacts/cellular-experiment-20260904-192703`. The paired table in the
+  EX-009 package records zero deltas across all compared outcome and telemetry
+  fields.
+- **Result:** The locked order question is resolved. Add a focused
+  commutativity regression test and reopen an order-specific experiment only if
+  future upgrades introduce stateful or non-additive behavior. Historical
+  preflight failures remain preserved as operational records.
+
+### R-012 — Current standards documentation reconciled
+
+- **Former item:** P1-023.
+- **Evidence:** `FRAMEWORK.md:3-6,47-49` now labels the Bootstrap/Island
+  Survivor guidance historical and identifies the active Main Menu → Lab →
+  CellularAutomataPrototype flow. `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` and
+  `docs/UNITY_ENGINEERING_STANDARDS.md` now match the current scene, Play Mode,
+  starter-`BaseViewModel`, and direct Noesis import facts; the historical
+  Island validator remains explicitly scoped to the deprecated prototype.
+- **Result:** The documentation drift is resolved without changing scenes,
+  packages, or runtime code. Future Unity visual/test acceptance remains tracked
+  by the UI and preflight items rather than this documentation closure.

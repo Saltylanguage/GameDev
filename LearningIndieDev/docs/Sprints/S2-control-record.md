@@ -21,7 +21,8 @@ the identity, capacity, ownership, board disposition, and exit gate.
 
 ## Board disposition
 
-- The S2 cards listed in the active task register are in Trello `Current Work`.
+- S2 work uses the sprint workflow lists: `🛠️ In Progress` for work being
+  actively done and `Current Work` for current-sprint work not yet started.
 - The S2 control card is in `🛠️ In Progress` while the sprint is active.
 - `Species roster and scenario co-design` is not selected for S2 and returns to
   the backlog. The unrelated blocked bug-triage card remains blocked.
@@ -34,7 +35,7 @@ identifies additional runtime and evidence work beyond the accepted launch-time
 slice. It is proposed for explicit capacity planning, not automatically committed
 to S2. Continuing a phase in memory is distinct from player file saves. The
 [impact notice](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) calls out required
-Stat-Line/research retests and the repository/live S2.3 ownership mismatch.
+Stat-Line/research retests; the S2.3 ownership is now aligned to Josh.
 
 S2 is a temporary per-run upgrade slice. It does not implement file saves,
 wallet mutation, permanent Lab research, Archive or Expedition flows, a
@@ -48,3 +49,19 @@ production.
 - **Final review:** run the fixed-seed comparison, record accepted behavior,
   tuning questions, and explicit carry-over. Font, layout, and visual-feedback
   review are a separate work track and are not part of S2.
+
+## M1 delivery risk snapshot
+
+M1 is not expected to close at the end of S2. The following items must be
+reviewed explicitly rather than being treated as silently complete:
+
+| Priority | Risk | S2 end-state needed |
+| --- | --- | --- |
+| P0 | The continuous flow can pause and continue, but phase upgrades and rewards are not yet applied to the same world. | Carry the boundary upgrade/reward work into the proposed S3 M1 closeout sprint, with a matched continuation test. |
+| P0 | Phase-aware Stat-Line and report semantics are not fully wired through the adapter and validator. | Record the gap and keep fresh-window evidence separate from continued-world evidence. |
+| P1 | The current board lists more Sim work than the 20-hour S2 planning budget can hold. | Keep, split, or carry each Sim card during the S2 review; do not assume all can finish in this sprint. |
+| P1 | Continuation work remains an uncommitted working-tree batch. | Create a reviewable checkpoint before using it as M1 acceptance evidence. |
+
+The proposed extra sprint is recorded in
+[`S3-control-record.md`](S3-control-record.md). The former species/build
+co-design sprint moves to S4 in the product roadmap.

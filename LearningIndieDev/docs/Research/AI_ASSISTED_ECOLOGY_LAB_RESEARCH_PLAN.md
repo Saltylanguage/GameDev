@@ -7,10 +7,10 @@
 
 ## Executive position
 
-**2026-09-04 dependency update:** continued gameplay is now under
-[project-wide architecture review](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
-It preserves one world across upgrade/skip breaks; implementation and EX-010
-execution remain pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+**2026-09-04 dependency update:** CF-0 has locked the continued-gameplay
+contract in the [project-wide architecture plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+Gameplay preserves one world across upgrade/skip breaks; runtime implementation
+and EX-010 execution remain pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
 defines the required checkpoint, acquisition schedule, forecast horizon,
 phase/expedition stat versions and lineage-aware validation split. EX-009's
 accepted launch-time finding remains bounded; prior forecasts and reports are

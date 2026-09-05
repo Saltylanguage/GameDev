@@ -8,9 +8,10 @@ live asset reference. An asset is resolved into an immutable
 **Continuation migration pending:** a per-run upgrade lasts for the entire
 expedition, across all simulation phases. Continued play needs the resolved
 snapshot plus its acquisition/effective tick; the current launch-only metadata
-does not supply that timeline. Starting-only fields are not automatically live
-creature grants. In particular, Seed Pouches needs an eligibility/effect
-decision before it can remain a phase-break offer. See the
+does not supply that timeline. Starting-only fields are launch-only under the
+locked CF-0 contract and are not live creature grants. In particular, Seed
+Pouches is not a phase-break offer unless a separately designed live-state or
+newborn mechanic replaces that restriction. See the
 [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
 [Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
 

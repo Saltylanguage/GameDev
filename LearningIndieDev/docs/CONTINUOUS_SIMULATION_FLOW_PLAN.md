@@ -1,9 +1,9 @@
 # Consecutive simulation phases — architecture review and migration plan
 
-**Status:** Review and plan only; runtime implementation is not authorized by this task.
+**Status:** CF-0 is complete. CF-1 lifecycle and the controlled CF-2/CF-3 preview path are implemented locally; current Unity-suite revalidation remains pending while the editor is open. CF-4 through CF-6 remain gated.
 **Reviewed:** 2026-09-04, branch `NF/ConsecutiveRuns`, source review baseline `f8ccbdb4`.
 **Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.
-**Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. Recommendations below are not accepted implementation or balance decisions.
+**Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. The CF-0 contract below is locked by Josh; runtime packages and balance changes remain separate implementation decisions.
 
 ## Outcome and terminology
 
@@ -11,25 +11,78 @@ One expedition owns one evolving ecosystem. At each simulation-phase boundary,
 the ecosystem freezes while the player buys an upgrade or skips it. Continue
 advances that same ecosystem under the resulting rules. It does not generate a
 new board, reset creatures, change the initial seed, or erase earlier history.
-This direction is requested by Josh; the detailed migration remains proposed.
+This same-world direction and the CF-0 contract are locked. The first runtime
+lifecycle, boundary-upgrade and player-flow slices now consume that contract;
+telemetry windows, checkpoint replay and research execution remain separate
+implementation tasks.
 
 Use these terms consistently:
 
 | Term | Meaning |
 | --- | --- |
 | Expedition / gameplay run | One launch through terminal results, containing consecutive phases. |
-| Phase / segment | A bounded observation window within that expedition; currently 20 simulation seconds at a 0.1-second step, normally 200 ticks. |
+| Phase / segment | A bounded observation window within that expedition; 200 ticks is the current product target, while the prototype exposes the phase length for tuning. |
 | Decision boundary | A frozen, completed-tick state; one upgrade or an explicit skip can be committed. |
 | Research run | One execution under an experiment contract; it can deliberately be a fresh single window or a multi-phase expedition. |
 | Restart / new expedition | An explicit destructive-in-game action that discards the current expedition; never an alias for Continue. |
 | Checkpoint | Sufficient state for deterministic research reproduction; distinct from a player-facing disk save. |
 
-The product brief already specifies five 200-tick phases, four decisions, and
-extinction at a completed tick. It also targets two-to-three-minute viewing
-phases and a 12–18 minute session, whereas the prototype runs 200 ticks in about
-20 seconds. Preserve the current prototype cadence during the architecture
-migration; Josh must confirm presentation speed and the product timing target
-separately. Do not silently turn a 20-second phase into a whole expedition.
+## Locked CF-0 contract (2026-09-04)
+
+Josh approved the following decisions for the migration. They define the
+behavior that CF-1 through CF-6 must implement; they do not claim that those
+runtime packages are already complete.
+
+| Lifecycle point | Locked transition and effect |
+| --- | --- |
+| Fresh launch | Create the expedition origin and initial world once. Starting population, starting energy and starting reserve effects are eligible here only. |
+| Running | Advance the retained runner from the next absolute tick. The current grid, prior source grid, entity identities, cooldowns, resources, history and cumulative raw counters remain in place. |
+| Frozen decision boundary | After the exact completed phase tick, freeze the world and publish one phase result. No simulation tick, healing, refill, regrowth or respawn occurs while frozen; any explicitly defined boundary accounting is idempotent and recorded once. |
+| Continue | Purchase one valid upgrade or commit an explicit Skip, then resume the same world at the next absolute tick with the new effective rules. Continue never calls the initial-grid factory. |
+| Explicit End | From Running or the frozen boundary, finalize the expedition once with its current state and settlement status. No later upgrade or Continue is legal. |
+| Restart | A deliberate developer action abandons the current attempt and starts a new expedition from the original launch configuration with a new attempt identity. It is not a phase retry; retry semantics require a separately recorded checkpoint and reward rollback contract. |
+| Terminal completion | Extinction, the final product phase, or explicit End moves the expedition to Complete exactly once. A terminal result does not offer another upgrade. |
+
+The product cadence is ten phases, with 200 ticks as the current per-phase
+gameplay target, while the current prototype presentation remains a configurable
+phase length. Fresh
+single-window research remains a declared independent mode of the same step
+engine.
+
+Initialization-only upgrades (including starting population, starting energy
+and starting reserve) are launch-only. They are not offered as if they mutate
+existing creatures at a decision boundary. Live behavior modifiers take effect
+on the next tick after acquisition and do not grant a refill, heal, cooldown
+reset, or replay of past opportunities.
+
+When a signed maximum-energy change makes an existing creature temporarily sit
+above the new maximum, preserve its current energy exactly at the boundary.
+Do not add a migration-time clamp or refill. Subsequent energy gains follow the
+normal authored maximum rule; an immediate clamp, loss, or grant would be a
+separately specified mechanic with its own telemetry and tests.
+
+### Result and window contract
+
+Each phase result is a bounded observation, not an expedition result. It records
+the expedition/attempt and phase identity, `windowStartTickExclusive`,
+`windowEndTickInclusive`, actual opening and closing state, raw counter deltas,
+timestamped events, the rules/loadout effective in that interval, and every
+acquisition decision tick plus effective-from tick. Early End, extinction or a
+failed run preserves the actual last tick and marks the phase partial,
+invalid, unreconciled or aborted as applicable; it is never padded with
+fictional exposure.
+
+The final expedition result records the terminal outcome and absolute tick,
+all phase results, the complete acquisition timeline, and aggregated raw
+counters. Expedition rates are recomputed from pooled numerators and
+denominators; phase ratios are not averaged. Shared boundary samples may be
+shown in both adjacent phase summaries, but each event and exposure belongs to
+one declared window. These meanings are the contract Stat-Line, predictive AI,
+telemetry producers and validators consume.
+
+The product brief's ten-phase termination and the prototype's configurable
+viewing cadence are recorded above as locked migration inputs. Do not silently
+turn a 20-second phase into a whole expedition.
 
 ```mermaid
 flowchart TD
@@ -53,7 +106,7 @@ baseline; use the named methods after lines move.
 | --- | --- | --- | --- |
 | CF-01 | P0 | `SpeciesSimulationPreview.PlayNextSimulation` (1023) calls `PrepareNextRun` (1149). That method calls the initial-grid factory with `seed + runNumber`, creates a new run/runner, resets UI flags, and increments `runNumber`. | Both purchase and skip eventually rebuild the ecosystem. Split initial launch from phase continuation; only explicit new-expedition paths may call the factory. |
 | CF-02 | P0 | `SimulationRunState` in `SimulationRunResult.cs` (134–299) has one duration, clock, history and `Complete` status. `SpeciesSimulationRunner.AdvanceOneTick` (101) refuses completion and uses `Run.Seed + Run.Tick`; the runner also owns `previousCells`. | Merely copying cells into a new run reuses early random seeds, loses perception history, and changes event ticks. Preserve the runner, absolute tick and prior grid; introduce a resumable phase boundary distinct from terminal completion. |
-| CF-03 | P0 | `HandleRunCompleted` (611) creates results, invokes a report event, adds survivor-count currency and offers upgrades for every completion. There is no five-phase or extinction termination here. `SimulationManager` raises completion only once per runner. | New phases need separate, exactly-once boundary and expedition-end transitions. Otherwise rewards may stop, duplicate, or be offered after extinction. Add terminal precedence and a phase-scoped reward ledger. |
+| CF-03 | P0 | `HandleRunCompleted` (611) creates results, invokes a report event, adds survivor-count currency and offers upgrades for every completion. There is no ten-phase or extinction termination here. `SimulationManager` raises completion only once per runner. | New phases need separate, exactly-once boundary and expedition-end transitions. Otherwise rewards may stop, duplicate, or be offered after extinction. Add terminal precedence and a phase-scoped reward ledger. |
 | CF-04 | P0 | Runner data/rules/options are readonly construction inputs. `PurchaseReward` changes progression, while `CreateSimulationData` rereads the selected scenario asset during preparation. | A retained runner would keep old rules unless given an explicit boundary update. Freeze base scenario/configuration once; validate and atomically install the next immutable rules/options snapshot. Do not reread mutable scenario assets each phase. |
 | CF-05 | P0 | `CreateHerbivoreStatLine` uses all accumulated deaths/counters; serializer takes population from the first and last history entries. Report upgrade records contain order but no acquisition tick. | A phase-two report can silently mix phase population with expedition counters, or attribute pre-upgrade events to the latest loadout. Version window semantics and record the acquisition timeline before claiming continued-play telemetry is trustworthy. |
 | CF-06 | P1 | `Gardeners_SeedPouches.asset` modifies starting reserve and starting energy. `SpeciesInitialGridFactory.CreateCell` reads them; explicit population placement uses reserve zero. Creature offspring in `SpeciesSimulation` (2344–2356) use transferred reproduction energy and reserve zero. | Seed Pouches cannot automatically benefit existing Hares, and cannot simply be described as a newborn bonus. Review initialization-only effects and their existing explicit-population inconsistency. Do not charge for a mid-expedition no-op or invent a refill. |
@@ -62,7 +115,7 @@ baseline; use the named methods after lines move.
 | CF-09 | P1 | `PlayModeSimulationResultLogger` writes only `playmode-last-run.*` on completion (16–39). `StopSimulation` clears state through `ResetToStart`; no corresponding partial-report event is present. | Latest-file overwrite cannot represent an expedition or preserve abort evidence. Write immutable phase/final bundles and keep a latest pointer only as a convenience. Record early termination and report-write failure. |
 | CF-10 | P1 | Batch runner applies the whole loadout before `RunSimulation` (242); paired runner has independent prior-grid state and terminal guards. CLI/queue wrappers primarily accept launch loadouts; `CellSim.ps1` does not forward the newer authored-asset options. | Headless continuation needs the same boundary operation as gameplay, a schedule contract, and complete option/manifest propagation. Existing independent trials remain explicitly supported. Never silently reinterpret old command lines. |
 | CF-11 | P1 | `New-CellSimReport.ps1` (377–393) checks some configuration fields but not lifecycle/metric versions, checkpoint lineage, schedule, or all experimental option values; bundle validator expects one CSV row per seed. | Updating only the JSON producer is insufficient. Comparators, validators, CSV and visual replay must reject unsupported or mismatched lifecycle contracts and validate phases separately from seed count. |
-| CF-12 | P1 | GDD describes “run next simulation”; product brief describes five phases; Sprint 2 calls the launch-time upgrade slice complete and excludes active-run resume. | Clarify committed intent, implemented prototype, and new work separately. Preserve accepted historical delivery evidence and replan continuation explicitly instead of silently marking S2 incomplete or expanding its capacity. |
+| CF-12 | P1 | GDD describes “run next simulation”; product brief describes ten phases; Sprint 2 calls the launch-time upgrade slice complete and excludes active-run resume. | Clarify committed intent, implemented prototype, and new work separately. Preserve accepted historical delivery evidence and replan continuation explicitly instead of silently marking S2 incomplete or expanding its capacity. |
 
 These are source-supported findings. The report inspected an existing schema-23
 EX-009 bundle: one record per seed, 200 ticks, no phase/checkpoint/schedule fields.
@@ -75,7 +128,7 @@ Keep the current dependency direction: View → ViewModel → Helper → Domain.
 Use explicit methods and existing classes; no global bus, replacement grid
 engine, generic modifier framework, or new package is needed.
 
-| Owner | Proposed responsibility |
+| Owner | Target responsibility (runtime implementation pending) |
 | --- | --- |
 | `SimulationRunState` | Current world, base seed, absolute tick, expedition history/metrics, phase index/start/end ticks, lifecycle and terminal outcome. |
 | `SpeciesSimulationRunner` | One stepping context for the expedition: current immutable effective rules/options and prior source grid. Boundary rule installation is explicit and legal only while frozen. |
@@ -110,7 +163,7 @@ and step interval; viewing speed and wall time are separate. Specify and test
 conversion of non-integral duration/step authoring values before replacing the
 old float completion condition; retain explicit compatibility for old fixtures.
 
-Recommended lifecycle: Ready → Running ↔ Paused; Running → AwaitingDecision at
+Locked lifecycle: Ready → Running ↔ Paused; Running → AwaitingDecision at
 a nonterminal boundary; AwaitingDecision → Running on Continue; Running or a
 boundary → Complete on terminal outcome or explicit end. Boundary selection can
 have a pending/committed decision value without adding a second UI state machine.
@@ -122,7 +175,7 @@ Document and test this deliberate scheduling distinction.
 
 After each tick, check extinction before the normal phase reward. At the final
 phase, finalize victory/narrow survival/defeat without offering another upgrade.
-The product's five-phase limit belongs to the expedition; diagnostic fresh runs
+The product's ten-phase limit belongs to the expedition; diagnostic fresh runs
 retain their specified duration/termination policy. No engine loop should wait
 forever when a headless run reaches a decision boundary.
 
@@ -148,12 +201,13 @@ registry contract remain the authority for signed additive values.
 
 For live behavior rules (movement, vision, metabolism, block, crowding and
 reproduction), the new rule governs subsequent ticks. It does not restore energy,
-erase stress, reset cooldowns or replay past opportunities. Josh must resolve
-initialization-only effects before they remain eligible at phase breaks. The
-smallest proposed policy is launch-only eligibility for those effects; a direct
-state grant or new newborn behavior would be a separately specified mechanic.
-Also specify how reduced maximum energy handles existing above-cap creatures;
-do not add hidden clamping or healing during this migration.
+erase stress, reset cooldowns or replay past opportunities. The locked
+initialization-only policy makes starting-population, starting-energy and
+starting-reserve effects eligible only at fresh launch; a direct state grant or
+newborn behavior would be a separately specified mechanic. If a signed maximum
+energy change leaves an existing creature above the new maximum, preserve its
+current energy at the boundary. Do not add hidden clamping or healing during
+this migration; later gains use the authored maximum rule.
 
 ### Checkpoint and research replay
 
@@ -186,10 +240,10 @@ inheriting Josh's runtime or research responsibilities.
 
 | Package | Proposed owner | Estimate | Dependency and concrete exit gate |
 | --- | --- | ---: | --- |
-| CF-0 Contract and fixtures | Josh, with Sim for metrics | 4–6h | Confirm phase/end/restart and initialization-only effect policies; freeze state and report contract; capture fresh legacy fixture provenance. |
-| CF-1 Continuous domain lifecycle | Josh | 8–12h | CF-0. Same runner/world, absolute clock and prior grid survive skip boundaries; exact boundary and terminal tests pass. |
-| CF-2 Boundary upgrades and rewards | Josh | 6–10h | CF-1. Atomic application, immutable phase results, launch metadata retained, invalid/no-op offers handled, reward idempotency proven. |
-| CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | CF-1/2. Purchase, skip, Continue, pause, end, restart and Lab routes work without unintended reinitialization; target-resolution review. |
+| CF-0 Contract and fixtures | Josh, with Sim for metrics | 4–6h | **Complete 2026-09-04.** Locked phase/end/restart and initialization-only effect policies; froze the state and report contract; preserved the [fresh legacy fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/README.md) with provenance. |
+| CF-1 Continuous domain lifecycle | Josh | 8–12h | **Runtime slice implemented.** Same runner/world, absolute clock and prior grid survive skip boundaries; focused lifecycle tests pass. Current Unity-suite revalidation is pending while the editor is open. |
+| CF-2 Boundary upgrades and rewards | Josh | 6–10h | **Boundary mechanics implemented; package remains open.** Phase survivor data is settled once, live and legacy offers install the same immutable snapshots, launch-only offers are blocked, and duplicate decisions are guarded. Phase result/telemetry schema work remains in CF-4. |
+| CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented; package remains open.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain. |
 | CF-4 Telemetry and Stat-Line | Named telemetry implementer; Sim reviews, Josh integrates | 8–12h | CF-0/1. Versioned phase/expedition windows, ledgers reconcile, serializer/validator/CSV/UI agree, old/new comparisons guarded. |
 | CF-5 Research checkpoints and schedules | Josh | 8–12h | CF-1/2/4. Domain checkpoint round trip and fork isolation pass; gameplay/headless decision schedules match; EX-010 input can be frozen. |
 | CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | CF-1–5. All verification gates, documentation audit and evidence validity notices complete; explicit review decision. |
@@ -200,41 +254,39 @@ stable. Do not release a player continuation change before CF-4: otherwise new
 play evidence would still be labelled using old semantics. Checkpoint research
 work may be delivered later, but EX-010 remains blocked until CF-5 passes.
 
-## Immediate readiness — CF-0 contract and fixtures
+## CF-0 closure — contract and fixture
 
-CF-0 is the first implementation-ready block. It prepares the shared contract
-and small test fixtures before anyone changes the live simulation flow. Josh
-owns the work; Sim reviews the meaning of phase and expedition measurements.
+CF-0 is complete. It prepared the shared contract and a versioned compatibility
+fixture before anyone changes the live simulation flow. Josh owns the work; Sim
+reviews the meaning of phase and expedition measurements.
 
-### Prepare now
+### Locked outputs
 
-- Write down the lifecycle names and transitions: fresh launch, running,
-  frozen decision boundary, Continue, explicit End, Restart, and terminal
-  completion.
-- Decide which effects are valid at a phase boundary. The recommended default
-  is launch-only eligibility for starting-population or starting-energy effects
-  until a live-state rule is deliberately designed.
-- Capture how a phase result differs from a whole-expedition result, including
-  raw counters, window boundaries, partial/invalid states and acquisition ticks.
-- Record the above-cap energy policy for a signed maximum-energy change; do not
-  hide a clamp or refill in the migration.
-- Preserve one fresh legacy report as a versioned fixture so old readers and
-  new continued-world readers can be checked side by side.
+- [x] Lifecycle names and transitions are recorded in the locked contract above.
+- [x] Boundary eligibility is launch-only for starting population, starting
+      energy and starting reserve; no mid-expedition no-op purchase is implied.
+- [x] Phase versus expedition results define raw counters, declared windows,
+      partial/invalid states and acquisition decision/effective ticks.
+- [x] Above-cap energy is preserved at a signed maximum change; no migration
+      clamp or refill is hidden, and later gains use the authored cap rule.
+- [x] The [schema-21 fresh legacy report fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/report.json)
+      is byte-for-byte preserved with source, configuration and SHA-256
+      provenance.
 
 ### CF-0 outputs and stop gate
 
-The block is ready to hand to CF-1 when the decisions above are recorded, the
-fresh fixture has its seed/configuration/schema provenance, and the proposed
-phase/expedition fields have one owner and one meaning. No runtime behavior,
-serialized asset, report schema, or EX-010 experiment is changed merely by
-preparing this checklist. If a decision is still open, leave it open and stop
-at the contract boundary rather than coding around it.
+The block is ready to hand to CF-1. The decisions above are recorded, the fresh
+fixture has its seed/configuration/schema provenance, and the phase/expedition
+fields have one owner and one meaning. No runtime behavior, serialized asset,
+report schema, or EX-010 experiment was changed by closing CF-0. Runtime
+implementation must consume this contract rather than reopen the same-world
+decision or silently introduce a reset fallback.
 
 ## Required verification
 
 | Gate | Fixture and assertion |
 | --- | --- |
-| No-upgrade identity | Compare 400 uninterrupted ticks with 200 + Skip + 200 using the same initial/checkpoint identity. Compare every cell field, prior-grid-sensitive behavior, event order and totals; repeat for five phases. Only boundary metadata may differ. |
+| No-upgrade identity | Compare two adjacent phase windows with 200 + Skip + 200 using the same initial/checkpoint identity. Compare every cell field, prior-grid-sensitive behavior, event order and totals; repeat across the ten-phase expedition. Only boundary metadata may differ. |
 | Boundary fidelity | End a phase with damaged/hungry/aged/alpha creatures, depleted resources, an active attack cooldown and moving prey visible to a Tracker. Assert exact frozen state through purchase/skip and no phantom tick at Continue. |
 | Command/state validity | Exercise pause at tick 199, exact boundary 200, large delta time, repeated Continue/purchase, invalid purchase, insufficient currency, missing requirements, skip, explicit end and restart. Verify no double payment or reward. |
 | Upgrade timing | Control, upgrade at launch, upgrade after tick 200, and skip from a common checkpoint. Confirm the first changed rule is used at tick 201, with no prior event relabelled and no duplicate loadout application. |
@@ -246,7 +298,7 @@ at the contract boundary rather than coding around it.
 | Producer/consumer parity | Schema fixtures for legacy fresh, continued, truncated and incompatible runs; JSON, CSV, Markdown, Stat-Line and UI agree. Comparison rejects missing/incompatible contracts. Report output does not alter simulation. |
 | Research equivalence | Same resolved schedule produces matching gameplay/headless checkpoints. EX-009 stays a launch-time mode; paired diagnostics retain their own regression coverage. |
 | Unity integration | Existing Edit Mode and Play Mode suites, graphics-capable board/scene checks at 1280×720 and 1920×1080, Windows development build and smoke test. Preserve every `.meta`, GUID and serialized reference. |
-| Duration and memory | Verify exact ticks at authored duration conversion edges; measure a five-phase session and the longest supported diagnostic window. Inspect retained history/events before proposing optimization; never truncate evidence silently. |
+| Duration and memory | Verify exact ticks at authored duration conversion edges; measure a ten-phase session and the longest supported diagnostic window. Inspect retained history/events before proposing optimization; never truncate evidence silently. |
 
 Use existing manager/domain/upgrade/player-selection/adapter/catalog tests plus
 the presentation, Lab and cave-preview Play Mode suites as the regression base.
@@ -255,25 +307,21 @@ fresh research runs; add phase-boundary expectations for gameplay instead of
 blindly changing every completion assertion. Keep island and generic grid/Life
 prototypes behaviorally isolated; their resets are unrelated.
 
-## Decisions needed before implementation
+## Remaining planning and verification
 
-1. **Josh:** confirm five-phase product termination for gameplay and retain the
-   20-second prototype viewing cadence during this migration. The longer product
-   pacing target needs a separate speed decision.
-2. **Josh:** accept launch-only eligibility for initialization-only upgrades or
-   specify a concrete state/newborn effect and its cost/validation. Decide
-   above-cap energy handling for signed maximum-energy changes.
-3. **Josh:** define explicit developer Restart as expedition-origin restart or
-   a named phase retry. Recommendation: expedition-origin restart with a new
-   attempt identity; phase retry requires a checkpoint and reward rollback.
-4. **Josh + Sim:** accept the phase/expedition metric window contract and the
-   cause/validity handling in the linked impact review. Freeze version numbers
-   when implementing, after inspecting the then-current branch.
-5. **Josh:** assign packages and capacity; approve EX-010's schedule, outcomes and
-   fresh validation panel separately after checkpoint capability is verified.
+The CF-0 mechanics and evidence contract are accepted and must not be reopened
+as an implementation shortcut. CF-1 and the controlled CF-2/CF-3 runtime slices
+now consume them. The remaining work is verification and delivery coordination:
 
-The requested Continue behavior is settled. These decisions resolve mechanics,
-delivery and evidence details without reopening whether the board should reset.
+1. Assign CF-1 through CF-6 owners and capacity, keeping Josh responsible for
+   lifecycle/report integration and Sim responsible for metric meaning review.
+2. Freeze concrete serializer/lifecycle version identifiers from the branch at
+   implementation time, then run the producer/consumer parity gates.
+3. Approve EX-010's schedule, outcomes and fresh validation panel separately
+   after checkpoint capability and the shared report contract are verified.
+
+These items do not change the locked same-world Continue, launch-only effect,
+above-cap energy, Restart, or phase/expedition window decisions.
 
 ## Proposed concerns for review
 

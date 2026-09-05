@@ -130,12 +130,13 @@ remains untested under proposed
 [EX-010](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
 
 **Catalog applicability:** `gardeners-seed-pouches` changes starting reserve and
-energy. It has no defined grant to existing creatures at an upgrade break, and
-current creature births do not inherit those starting values. Before offering
-it during continued play, Josh must choose launch-only eligibility or specify
-a new live-state/newborn mechanic. The plan recommends launch-only eligibility;
-no asset or mechanic is changed by this documentation review. Signed maximum
-energy changes also need an explicit existing-creature policy.
+energy. It has no grant to existing creatures at an upgrade break, and current
+creature births do not inherit those starting values. Under the locked CF-0
+contract it is eligible only at fresh launch; a live-state/newborn mechanic
+would require a separate product decision. No asset or mechanic is changed by
+this documentation review. A signed maximum-energy change preserves existing
+energy at the boundary, including temporary above-cap values; later gains use
+the authored cap rule.
 
 ## Relationship to species mastery
 

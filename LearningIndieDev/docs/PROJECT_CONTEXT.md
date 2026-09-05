@@ -63,9 +63,10 @@ windows. See the [architecture migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.m
 [evidence impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md), and
 [documentation audit](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md).
 
-The current 20-second/200-tick prototype window is a phase, not a whole
-expedition. The product brief's five-phase limit and longer presentation pacing
-must be distinguished from that prototype. In-memory continuation does not
+The current prototype window is a configurable phase, not a whole expedition;
+200 ticks at a 0.1-second step remains the per-phase target. The product brief's
+ten-phase limit and longer presentation pacing must be distinguished from that
+prototype. In-memory continuation does not
 introduce player disk save/load. Stat-Line and predictive-AI evidence must name
 the phase/expedition window and upgrade acquisition timing.
 

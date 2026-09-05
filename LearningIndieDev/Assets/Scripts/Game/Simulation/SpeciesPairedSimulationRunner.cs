@@ -33,6 +33,9 @@ namespace SaltyGame
                 throw new ArgumentException("Paired runs must use the same step interval.", nameof(blockPlusTwoData));
             }
 
+            BaselineRun.SetTargetTicks(baselineData.RunTicks);
+            BlockPlusTwoRun.SetTargetTicks(blockPlusTwoData.RunTicks);
+
             CombatResolutionMode = combatResolutionMode;
             OpportunityControl = new SpeciesPairedOpportunityControl();
         }
@@ -55,8 +58,10 @@ namespace SaltyGame
             }
 
             if (BaselineRun.Status == SimulationRunStatus.Paused
+                || BaselineRun.Status == SimulationRunStatus.AwaitingDecision
                 || BaselineRun.Status == SimulationRunStatus.Complete
                 || BlockPlusTwoRun.Status == SimulationRunStatus.Paused
+                || BlockPlusTwoRun.Status == SimulationRunStatus.AwaitingDecision
                 || BlockPlusTwoRun.Status == SimulationRunStatus.Complete)
             {
                 return false;

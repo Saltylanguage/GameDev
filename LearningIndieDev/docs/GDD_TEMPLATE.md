@@ -1,6 +1,6 @@
 # [Bio OS] (placeholder) - Game Design Document
 
-> Status: Draft; consecutive-phase direction committed, implementation pending | Owner: Josh Campbell | Last updated: 2026-09-04 | Decision horizon: prototype / vertical slice
+> Status: Draft; ten-phase direction committed, controlled preview implemented, telemetry/reporting pending | Owner: Josh Campbell | Last updated: 2026-09-05 | Decision horizon: prototype / vertical slice
 
 ## How to use this document
 
@@ -48,10 +48,11 @@ rules remain governed by the product brief and scientific-data economy plan.
 6. Repeat until the expedition ends; show final results and return to the Lab.
 7. Only an explicit new expedition or restart creates a new starting world.
 
-The prototype phase is currently 20 simulation seconds at a 0.1-second step.
-The [product brief](PRODUCT_BRIEF.md) specifies five 200-tick phases and four
-decision breaks for the vertical slice. Its longer viewing-time target remains
-a separate pacing decision. A reward break is not a new expedition, and ordinary
+The prototype exposes the phase length for tuning; 200 ticks at a 0.1-second
+step remains the current per-phase target.
+The [product brief](PRODUCT_BRIEF.md) specifies ten phases, with 200 ticks as
+the current per-phase target, and nine decision breaks for the vertical slice.
+Its longer viewing-time target remains a separate pacing decision. A reward break is not a new expedition, and ordinary
 Continue is not a restart or a player disk-save operation.
 
 Implementation, unresolved mechanic details, cross-project retests and document
@@ -114,8 +115,9 @@ Temporary upgrades are acquired at frozen phase boundaries and remain in
 purchase order for the rest of the expedition. Skipping preserves both the
 current world and the existing build. An upgrade changes subsequent rules; it
 does not implicitly refill energy, respawn creatures, or reset terrain.
-Initialization-only upgrades need an explicit eligibility/effect decision before
-being offered mid-expedition. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md).
+Initialization-only upgrades are launch-only under the locked CF-0 contract;
+they are not offered as mid-expedition grants. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md)
+and the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ### Between-run progression
 
@@ -197,4 +199,5 @@ initial slice; in-memory phase continuation is required.
 | Date | Change | Reason | Impacted sections |
 |---|---|---|---|
 | 2026-09-04 | Make consecutive phases and purchase/skip continuation explicit. | The prototype currently rebuilds the world between windows; the requested design preserves it. Runtime migration is planned, not implemented. | Player promise, core loop, run end, progression |
+| 2026-09-04 | Lock CF-0 lifecycle, boundary-effect and result-window decisions; preserve a fresh legacy report fixture. | Josh approved the same-world Continue contract, launch-only initialization effects, explicit Restart, above-cap energy handling and phase/expedition accounting before runtime work. | Core loop, progression, simulation evidence |
 | [Date] | [Change] | [Reason] | [Sections] |

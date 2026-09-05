@@ -9,6 +9,7 @@ namespace SaltyGame
         Ready,
         Running,
         Paused,
+        AwaitingDecision,
         Complete,
     }
 
@@ -133,12 +134,15 @@ namespace SaltyGame
         readonly List<SpeciesPopulationSnapshot> populationHistory;
         readonly List<SpeciesUpgradeSnapshot> upgradeLoadout;
         readonly SpeciesSimulationMetrics metrics;
+        int phaseLengthTicks;
+        int nextBoundaryTick;
 
         public SimulationRunState(
             Grid<SpeciesCell> cells,
             SpeciesId playerSpecies,
             int seed,
-            float durationSeconds)
+            float durationSeconds,
+            int targetTicks = 0)
         {
             if (cells == null)
             {
@@ -150,12 +154,19 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(durationSeconds), durationSeconds, "Run duration must be greater than zero.");
             }
 
+            if (targetTicks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetTicks), targetTicks, "Target ticks cannot be negative.");
+            }
+
             initialCells = cells.Copy();
             Cells = cells;
             PlayerSpeciesId = playerSpecies;
             Seed = seed;
             DurationSeconds = durationSeconds;
+            TargetTicks = targetTicks;
             Status = SimulationRunStatus.Ready;
+            PhaseIndex = 1;
             populationHistory = new List<SpeciesPopulationSnapshot>
             {
                 SpeciesPopulationSnapshot.Create(cells, tick: 0),
@@ -175,6 +186,12 @@ namespace SaltyGame
         public int Seed { get; }
         public string RulesetFingerprint { get; private set; }
         public float DurationSeconds { get; }
+        public int TargetTicks { get; private set; }
+        public bool SupportsContinuation => phaseLengthTicks > 0;
+        public int PhaseLengthTicks => phaseLengthTicks;
+        public int PhaseIndex { get; private set; }
+        public int PhaseStartTick { get; private set; }
+        public int PhaseEndTick { get; private set; }
         public float ElapsedSeconds { get; private set; }
         public int Tick { get; private set; }
         public SimulationRunStatus Status { get; private set; }
@@ -218,6 +235,43 @@ namespace SaltyGame
             RulesetFingerprint = fingerprint;
         }
 
+        internal void SetTargetTicks(int targetTicks)
+        {
+            if (targetTicks <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(targetTicks), targetTicks, "Target ticks must be greater than zero.");
+            }
+
+            if (TargetTicks > 0 && TargetTicks != targetTicks)
+            {
+                throw new InvalidOperationException("The run tick target cannot change after the run is configured.");
+            }
+
+            TargetTicks = targetTicks;
+        }
+
+        public void ConfigureContinuousPhases(int phaseLengthTicks)
+        {
+            if (Status != SimulationRunStatus.Ready)
+            {
+                throw new InvalidOperationException("Continuous phases must be configured before the run starts.");
+            }
+
+            if (phaseLengthTicks <= 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(phaseLengthTicks),
+                    phaseLengthTicks,
+                    "Phase length must be greater than zero.");
+            }
+
+            this.phaseLengthTicks = phaseLengthTicks;
+            nextBoundaryTick = phaseLengthTicks;
+            PhaseIndex = 1;
+            PhaseStartTick = 0;
+            PhaseEndTick = 0;
+        }
+
         public void Start()
         {
             if (Status != SimulationRunStatus.Ready)
@@ -250,18 +304,51 @@ namespace SaltyGame
 
         public void Restart()
         {
-            if (Status != SimulationRunStatus.Running && Status != SimulationRunStatus.Paused)
+            if (Status != SimulationRunStatus.Running
+                && Status != SimulationRunStatus.Paused
+                && Status != SimulationRunStatus.AwaitingDecision)
             {
-                throw new InvalidOperationException("Only a running or paused simulation can be restarted.");
+                throw new InvalidOperationException("Only a running, paused, or decision-boundary simulation can be restarted.");
             }
 
             Cells = initialCells.Copy();
             ElapsedSeconds = 0f;
             Tick = 0;
+            PhaseIndex = 1;
+            PhaseStartTick = 0;
+            PhaseEndTick = 0;
+            nextBoundaryTick = phaseLengthTicks;
             Status = SimulationRunStatus.Ready;
             populationHistory.Clear();
             populationHistory.Add(SpeciesPopulationSnapshot.Create(Cells, tick: 0));
             metrics.Clear();
+        }
+
+        public bool ContinueWithoutUpgrade()
+        {
+            if (!SupportsContinuation || Status != SimulationRunStatus.AwaitingDecision)
+            {
+                return false;
+            }
+
+            PhaseIndex++;
+            PhaseStartTick = Tick;
+            PhaseEndTick = 0;
+            nextBoundaryTick += phaseLengthTicks;
+            Status = SimulationRunStatus.Running;
+            return true;
+        }
+
+        public bool End()
+        {
+            if (Status != SimulationRunStatus.Running
+                && Status != SimulationRunStatus.AwaitingDecision)
+            {
+                return false;
+            }
+
+            Status = SimulationRunStatus.Complete;
+            return true;
         }
 
         public void Advance(Grid<SpeciesCell> nextCells, float stepSeconds)
@@ -287,13 +374,21 @@ namespace SaltyGame
             }
 
             Cells = nextCells;
-            ElapsedSeconds = Math.Min(DurationSeconds, ElapsedSeconds + stepSeconds);
+            ElapsedSeconds = SupportsContinuation
+                ? ElapsedSeconds + stepSeconds
+                : Math.Min(DurationSeconds, ElapsedSeconds + stepSeconds);
             Tick++;
             populationHistory.Add(SpeciesPopulationSnapshot.Create(nextCells, Tick));
 
-            if (ElapsedSeconds >= DurationSeconds)
+            if ((TargetTicks > 0 && Tick >= TargetTicks)
+                || (TargetTicks == 0 && ElapsedSeconds >= DurationSeconds))
             {
                 Status = SimulationRunStatus.Complete;
+            }
+            else if (SupportsContinuation && Tick >= nextBoundaryTick)
+            {
+                PhaseEndTick = Tick;
+                Status = SimulationRunStatus.AwaitingDecision;
             }
         }
     }

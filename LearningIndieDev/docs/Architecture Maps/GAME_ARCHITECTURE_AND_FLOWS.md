@@ -18,7 +18,7 @@ flowchart TB
     SETUP["Prepare Expedition<br/>Scenario · Species · Seed · Unlocks"]
 
     SIM["Simulate 200 ticks<br/>Forest Edge: Fern → Hare → Fox"]
-    END{"Extinct or<br/>phase five complete?"}
+    END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
     UPGRADE["Choose one upgrade or skip<br/>World remains frozen"]
     RULESET["Update ordered, fingerprinted<br/>Hare ruleset"]
@@ -29,19 +29,19 @@ flowchart TB
     START --> MENU --> LAB --> SETUP --> SIM
     SIM --> END
 
-    END -->|"No: phases 1–4"| SUMMARY --> UPGRADE --> RULESET
+    END -->|"No: phases 1–9"| SUMMARY --> UPGRADE --> RULESET
     RULESET -->|"Continue same world and next tick"| SIM
     END -->|"Yes"| RESULTS --> REWARD --> LAB
 ```
 
-The vertical-slice contract is five 200-tick phases, four upgrade decisions,
+The vertical-slice contract is ten phases, with 200 ticks as the current
+per-phase target, and nine upgrade decisions,
 and an immediate end after a completed tick causes extinction. The player
 changes the species rules rather than directly commanding individual cells.
 
-This is the target player loop. The current preview still reinitializes between
-windows; its replacement is [planned](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
-Phases retain creatures, resources, time and history. Only a new expedition or
-explicit restart creates a new board. The current 20-second prototype phase and
+This is the target player loop. The controlled preview now retains creatures,
+resources, time and history through its phase decisions. Only a new expedition
+or explicit restart creates a new board. The configurable prototype phase and
 the product's longer viewing-time target are separate pacing settings.
 
 ## 2. Runtime architecture
