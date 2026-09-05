@@ -457,9 +457,11 @@ Ticket summaries for these items are recorded in
 - **Evidence:** Empty directory shells remain under `Assets/Audio`,
   `Materials`, `ThirdParty`, several `Assets/Project/**` paths,
   `Assets/UI/Prefabs`, `PuzzleUI`, `Textures`, `UI/EcoSim/Scripts`,
-  `UI/GalapagOS/Art`, `UI/MainMenu/XAML`, and other placeholder locations.
-  Several are intentional future ownership boundaries, so directory absence
-  would not necessarily improve the project.
+  `UI/MainMenu/XAML`, and other placeholder locations. The GalapagOS art
+  directory is now populated by the active icon batch and is no longer an
+  empty-directory candidate. Several remaining shells are intentional future
+  ownership boundaries, so directory absence would not necessarily improve the
+  project.
 - **Next action:** Remove only directories with no named owner or planned
   near-term use, as part of a single structure cleanup. Preserve any folder
   `.meta` files required by the chosen Unity layout and do not mix this with
