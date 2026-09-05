@@ -19,7 +19,7 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             float stepSeconds,
             int maxPopulation = 0,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
@@ -57,7 +57,7 @@ namespace SaltyGame
         public SpeciesSimulationRunner(
             SimulationRunState run,
             CellularSimData simulationData,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)

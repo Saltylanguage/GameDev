@@ -1169,9 +1169,7 @@ namespace SaltyGame
             var nextRunner = new SpeciesSimulationRunner(
                 run,
                 simulationData,
-                combatResolutionMode: bevExperimentalFeaturesEnabled
-                    ? SpeciesCombatResolutionMode.OpposedRoll
-                    : SpeciesCombatResolutionMode.LegacyFixedDamage,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
                 experimentalOptions: experimentalOptions,
                 upgradeLoadout: progression?.AppliedRunUpgrades);
             if (simulationHelper != null)

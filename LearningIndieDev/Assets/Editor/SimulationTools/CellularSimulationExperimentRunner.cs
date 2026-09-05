@@ -36,7 +36,7 @@ namespace SaltyGame.EditorTools
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
         const string CombatModeArgument = "-combatMode";
-        const string DefaultCombatMode = "legacy-fixed-damage";
+        const string DefaultCombatMode = "opposed-roll";
         const string AttackOpportunityModeArgument = "-attackOpportunityMode";
         const string DefaultAttackOpportunityMode = "natural";
         const string ExperimentalFeaturesArgument = "-experimentalFeatures";

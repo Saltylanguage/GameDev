@@ -207,7 +207,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -PlayerSpeciesId hare `
     -UpgradeAssetSequence trailblazer-long-stride,warren-guarded-burrow
 
-# Opt-in D&D-style opposed combat arm; legacy fixed damage remains the default.
+# Opposed-roll combat is the default. Legacy fixed damage remains available
+# only for explicit historical replay or compatibility checks.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
     -SeedStart 10100 `

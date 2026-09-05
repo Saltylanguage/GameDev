@@ -100,7 +100,7 @@ namespace SaltyGame
             CellularSimData simulationData,
             int seed,
             SpeciesSimulationMetrics metrics = null,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             Grid<SpeciesCell> previousSource = null)
@@ -132,7 +132,7 @@ namespace SaltyGame
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
             SpeciesSimulationMetrics metrics = null,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             Grid<SpeciesCell> previousSource = null)

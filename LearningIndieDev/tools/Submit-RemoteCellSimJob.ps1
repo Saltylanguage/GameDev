@@ -8,7 +8,7 @@ param(
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
     [ValidateRange(0, 1000000)] [double]$UpgradeValueOverride = 0,
-    [ValidateSet('legacy-fixed-damage', 'opposed-roll')] [string]$CombatMode = 'legacy-fixed-damage',
+    [ValidateSet('legacy-fixed-damage', 'opposed-roll')] [string]$CombatMode = 'opposed-roll',
     [ValidateSet('natural', 'fixed-rate-diagnostic', 'paired-lockstep-diagnostic')]
     [string]$AttackOpportunityMode = 'natural',
     [string]$ExperimentalFeatures = '',

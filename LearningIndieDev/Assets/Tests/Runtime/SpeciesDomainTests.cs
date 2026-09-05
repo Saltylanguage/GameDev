@@ -730,10 +730,17 @@ namespace SaltyGame.Tests
             };
 
             var legacyMetrics = new SpeciesSimulationMetrics();
-            var legacy = SpeciesSimulation.Step(source, rules, seed: 42, metrics: legacyMetrics);
+            var legacy = SpeciesSimulation.Step(
+                source,
+                rules,
+                seed: 42,
+                metrics: legacyMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.LegacyFixedDamage);
             Assert.That(legacy.GetCell(1, 0).Health, Is.EqualTo(1));
             Assert.That(legacyMetrics.CombatRollEvents, Is.Empty);
 
+            var defaultMetrics = new SpeciesSimulationMetrics();
+            var defaultMode = SpeciesSimulation.Step(source, rules, seed: 42, metrics: defaultMetrics);
             var opposedMetrics = new SpeciesSimulationMetrics();
             var opposed = SpeciesSimulation.Step(
                 source,
@@ -741,6 +748,10 @@ namespace SaltyGame.Tests
                 seed: 42,
                 metrics: opposedMetrics,
                 combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll);
+
+            Assert.That(defaultMetrics.CombatRollEvents.Count, Is.EqualTo(1));
+            Assert.That(defaultMode.GetCell(1, 0).Health, Is.EqualTo(opposed.GetCell(1, 0).Health));
+
             var replayMetrics = new SpeciesSimulationMetrics();
             var replay = SpeciesSimulation.Step(
                 source,
