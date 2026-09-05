@@ -7,6 +7,12 @@
 This plan adapts MVVM to Unity and Noesis without moving simulation rules into
 the UI layer.
 
+The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is a new
+lifecycle dependency, not a reversal of T0–T7 composition acceptance. Purchase
+or Skip followed by Continue must stay in the Simulation scene and retain its
+world. Domain state owns phase versus terminal outcomes; the shell projects
+them. Player disk save/load remains a separate feature.
+
 The durable review rules for this architecture are recorded in [SG-003 — UI
 Architecture and MVVM Boundaries](Studio%20Guidelines/SG-003-UI-MVVM-ARCHITECTURE.md).
 The T0 state, snapshot, command, handoff, and composition contracts are recorded

@@ -4,6 +4,15 @@ This is the repeatable execution layer for the cellular-automata prototype. It
 turns an Inspector-authored scenario, a set of seeds, and the same simulation
 code used by the game into reviewable test results and JSON experiment reports.
 
+**Consecutive-phase migration notice (2026-09-04):** the current batch contract
+is a fresh simulation window; Play Mode writes its latest completed window.
+Neither is a checkpoint/acquisition-timeline contract. Planned continuation
+requires versioned phase and expedition outputs, immutable artifact lineage,
+scheduled upgrades and compatible readers/validators. Existing commands keep
+their declared fresh-run meaning. See the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+and [evidence validity register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+Do not use old reports as evidence of continued-world behavior.
+
 > **Current status:** ready for a closed-editor batch run. The tools deliberately
 > refuse to start when this Unity project has an active `Temp/UnityLockfile`.
 > They never close a pre-existing editor or touch unsaved editor work; each

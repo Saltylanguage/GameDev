@@ -4,6 +4,13 @@
 
 ## Outcome
 
+**Flow clarification, 2026-09-04:** an expedition contains consecutive phases
+in the same ecosystem. Phase summaries and purchase/skip decisions stay in the
+Simulation scene; Continue does not relaunch through Lab. Terminal results or
+an explicit end return to Lab. In-memory continuation is covered by the
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md), separately from this
+plan's player save/load and permanent-economy milestones.
+
 Build the player-facing shell around the cellular-automata runs:
 
 ```text

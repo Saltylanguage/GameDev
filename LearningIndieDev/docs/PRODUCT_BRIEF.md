@@ -10,7 +10,11 @@ The slice succeeds when a new player can finish a run, describe what their upgra
 
 The player selects the curated slice scenario and begins with a fixed player species and base ruleset. During simulation phases, the player observes the live board, pauses or changes speed, and inspects cells and species. The player does not directly move individual cells or edit raw parameters.
 
-The primary decisions are upgrade choices. At each reward break, the player chooses one of three upgrades. Every option previews the affected rule, valid range, tradeoff, and expected board consequence. The chosen upgrade becomes part of the run's ordered, fingerprinted ruleset for all later phases.
+The primary decisions are upgrade choices. At each reward break, the player
+chooses an eligible upgrade from the offered options or explicitly skips it.
+Every option previews the affected rule, valid range, tradeoff, and expected
+board consequence. The chosen upgrade becomes part of the expedition's ordered,
+fingerprinted ruleset for all later phases. Skipping preserves the current build.
 
 ## Run and decision cadence
 
@@ -21,10 +25,22 @@ The flow is:
 1. Scenario briefing and starting ruleset.
 2. Simulate 200 ticks with pause, speed, and inspection controls available.
 3. Show a short phase summary and offer three upgrades.
-4. Apply one choice, clearly preview the change, and continue.
+4. Apply one choice or record a skip, clearly preview any change, and continue
+   the same ecosystem from its next tick.
 5. After phase five—or immediate extinction—show results, accomplishments, and earned unlocks.
 
 There is no real-time decision timer. Simulation pauses automatically during upgrade selection. A player therefore makes four build decisions per completed run, after phases one through four.
+
+Each phase preserves the board, creature/resource state, age, energy, cooldowns,
+initial seed, absolute tick and accumulated history. A phase summary does not
+restart the expedition. Explicitly ending or restarting the expedition is a
+separate action. This is required design; the current prototype still creates
+fresh worlds between windows. The [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+records the implementation and validation work.
+
+The prototype currently presents 200 ticks in about 20 seconds at normal speed.
+The two-to-three-minute viewing target above remains a separate pacing decision;
+the continuity migration does not silently change the configured step interval.
 
 ## Success, failure, and rewards
 
@@ -32,15 +48,25 @@ There is no real-time decision timer. Simulation pauses automatically during upg
 - **Narrow survival:** the species remains alive but finishes below the threshold. The run completes and records accomplishments, but does not grant the scenario-completion unlock.
 - **Defeat:** the player species reaches zero population. The run ends immediately after the completed tick that caused extinction.
 
-After every phase except the last, surviving players choose one run upgrade. Phase summaries show population change, births, deaths by cause, food consumed, movement, combat, and notable upgrade contributions.
+After every phase except the last, surviving players may choose one run upgrade
+or skip. Phase summaries show that phase's population change, births, deaths by
+cause, food consumed, movement, combat, and notable upgrade contributions.
+Final results distinguish whole-expedition totals from individual phases.
 
 The final results screen awards accomplishments for explicit feats such as victory, population recovery, efficient feeding, or surviving a named pressure. The first vertical slice grants **one predetermined meta-progression unlock on the first victory**. Unlock content may be a scenario, species, or eligible upgrade, but cannot provide raw permanent stat bonuses to the starting species.
 
 ## Persistence and replay
 
-The slice saves settings, completed accomplishments, and versioned meta-progression unlocks. A completed run records its seed, scenario ID, base ruleset fingerprint, ordered upgrade loadout, and final result for reproduction and comparison.
+The slice saves settings, completed accomplishments, and versioned
+meta-progression unlocks. A completed expedition records its seed, scenario ID,
+base ruleset fingerprint, phase boundaries, ordered upgrades with acquisition
+ticks and resolved values, and final result for reproduction and comparison.
 
-An active run is **not** saved or resumed in the initial slice. Starting over is explicit. The results flow returns the player to a next-run screen where the earned unlock is visible and usable when applicable.
+An active expedition is **not saved to disk or restored after application exit**
+in the initial slice. In-memory continuation across decision breaks is required.
+Research checkpoints are a separate reproduction contract. Starting over is
+explicit. Final results return the player to a next-expedition screen where the
+earned unlock is visible and usable when applicable.
 
 ## Launch target
 
@@ -53,7 +79,8 @@ The presentation target is readable at 1920×1080 and remains functional at 1280
 - Direct control of individual cells, action-game combat, or mid-tick rule editing.
 - Balancing every authored species or shipping multiple full scenarios.
 - A universal rule scripting, modifier, behavior-plugin, or event-bus framework.
-- Active-run save/resume, online multiplayer, leaderboards, or live services.
+- Player disk save/load of unfinished expeditions, online multiplayer,
+  leaderboards, or live services.
 - Steam Deck verification, console/mobile ports, or platform achievements.
 - Large-scale procedural worlds, cave production, colony construction, ant tunnels, or beaver dams.
 - Final-volume art, music, sound effects, localization, or accessibility coverage before the slice direction is validated.

@@ -2,6 +2,12 @@
 
 ## Purpose
 
+The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is a
+foundational dependency for the complete upgrade loop: the next phase preserves
+the ecosystem after purchase or Skip. The present fresh-window behavior is not
+that acceptance gate. Its proposed packages include telemetry/research retests
+and require explicit capacity planning; this note does not reschedule work.
+
 This plan converts the stable-but-incomplete feature inventory into an ordered
 production sequence. The goal is to finish one coherent vertical slice rather
 than continue expanding the number of partially usable systems.

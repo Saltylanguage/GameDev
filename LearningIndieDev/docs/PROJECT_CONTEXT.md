@@ -53,6 +53,22 @@ changes, and do not treat research references as approved implementation work.
 
 ## Cellular-automata roguelike concept
 
+**Consecutive-phase direction (2026-09-04):** one expedition retains one evolving
+ecosystem across simulation phases. At a reward break, buying an upgrade or
+skipping it is followed by Continue from the same board and next absolute tick.
+Creature/resource state, prior perception state, seed, progression and telemetry
+survive. Only an explicit new expedition/restart resets the world. This is
+required design, not current implementation: the preview still rebuilds between
+windows. See the [architecture migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md),
+[evidence impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md), and
+[documentation audit](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md).
+
+The current 20-second/200-tick prototype window is a phase, not a whole
+expedition. The product brief's five-phase limit and longer presentation pacing
+must be distinguished from that prototype. In-memory continuation does not
+introduce player disk save/load. Stat-Line and predictive-AI evidence must name
+the phase/expedition window and upgrade acquisition timing.
+
 The central design opportunity is to make cellular-automata rules the player's
 build, progression, and interaction language rather than using cellular automata
 only as a behind-the-scenes map generator. A cell's offsets, effects, thresholds,
@@ -145,9 +161,11 @@ settle them in foundational grid code.
 - The next architecture step is a `CellularSimData` scenario definition that
   groups global settings, starting population settings, species rules, and
   terrain data for one simulation ruleset.
-- A simulation receives a run-start snapshot of this data. Editing, replacing,
-  adding, or removing definitions affects the next run and never mutates an
-  active run's state.
+- An expedition receives a frozen base-data snapshot at launch. Authoring edits
+  affect a new expedition, not the current world. Player upgrades deliberately
+  create a new immutable effective rules snapshot at a frozen phase boundary;
+  they never mutate rules mid-tick or reinitialize cells. This boundary update
+  is part of the pending consecutive-phase migration.
 - Initial-grid creation remains a factory concern; simulation stepping remains a
   domain concern; `Grid<T>` remains a generic data container.
 - `SpeciesId` is now the primary stable identity for species rules, cells,

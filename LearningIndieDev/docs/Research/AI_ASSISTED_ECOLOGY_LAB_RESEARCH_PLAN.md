@@ -1,11 +1,21 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
 **Status:** Proposed research program  
-**Version:** 1.14<br>
+**Version:** 1.15<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
 ## Executive position
+
+**2026-09-04 dependency update:** continued gameplay is now under
+[project-wide architecture review](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+It preserves one world across upgrade/skip breaks; implementation and EX-010
+execution remain pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+defines the required checkpoint, acquisition schedule, forecast horizon,
+phase/expedition stat versions and lineage-aware validation split. EX-009's
+accepted launch-time finding remains bounded; prior forecasts and reports are
+not retrofitted into continuation evidence. Review new contracts with Sim before
+scoring new window semantics; this update does not promote P3 or approve runs.
 
 This project may be onto a distinctive combination of systems:
 
@@ -999,3 +1009,4 @@ rule.
 | 1.12 | 2026-09-03 | Reordered the experiment portfolio by implementation dependencies and added the missing EX-008 entry. |
 | 1.13 | 2026-09-04 | Recorded the adapter-backed EX-007 reruns, completed the same-held-out EX-009 order comparison, and bounded the commutativity result to the tested additive upgrades and configuration. |
 | 1.14 | 2026-09-04 | Recorded human acceptance of EX-007 and EX-009, and added proposed EX-010 to track sequential upgrade acquisition after simulation continuation is implemented. |
+| 1.15 | 2026-09-04 | Linked the consecutive-phase architecture review, Stat-Line dependency and explicit evidence applicability/retest contract; no historical result or experiment decision changed. |

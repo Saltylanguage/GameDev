@@ -7,6 +7,13 @@
 
 ## Abstract
 
+**Current applicability note (2026-09-04):** the
+[continuation impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+distinguishes fresh-window evidence from state-conditioned, sequential upgrades.
+The architecture is planned and EX-010 remains unexecuted. Results cited in this
+paper retain their original scope and do not establish continued-play balance,
+timing effects or predictive calibration for later phases.
+
 Predictive AI is a proposed development and design system for answering a
 practical question: when a model-representable feature, rule, asset value, or
 system change is introduced, what observable outputs are likely to change, over

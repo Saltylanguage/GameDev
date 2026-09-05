@@ -8,6 +8,14 @@
 
 ## Scope override
 
+**2026-09-04 dependency notice:** the original ticket scope and acceptance remain
+historical. Continued gameplay introduces phase and expedition windows with
+acquisition-timed upgrades; single-window acceptance does not verify them.
+The [Stat-Line impact review](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) maps
+S1-STAT-01–06 and current S2.3 to the new contract and retests. Sim reviews stat
+meaning; Josh owns the lifecycle migration and must reconcile S2 ownership
+before assigning work. No ticket is reopened or re-estimated by this notice.
+
 These tickets take precedence over Sim's remaining unstarted Sprint 1 Main Menu
 and Lab work. Existing shell work is not deleted; unfinished Sim-owned items are
 paused and carried forward explicitly after this work. Josh's existing review,

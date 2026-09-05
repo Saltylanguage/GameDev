@@ -12,6 +12,13 @@ and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 
 ## Active concerns
 
+The [2026-09-04 consecutive-phase plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+reviews the future continuation seam and its
+[Stat-Line/research impact](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+Acquisition timing and initialization-only upgrade eligibility need explicit
+implementation decisions. This reference does not change the accepted triggers,
+severities, statuses or waivers below.
+
 ### UPG-C01 — Runtime/editor mapping drift
 
 - **Severity:** Extreme

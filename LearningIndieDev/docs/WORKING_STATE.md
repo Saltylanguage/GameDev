@@ -3,8 +3,20 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+## Current focus
+
+The next proposed work block is **CF-0 — Contract and fixtures** from the
+[consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md). This is a
+preparation gate for the same-world continuation feature: record the lifecycle,
+phase/expedition evidence meaning, initialization-only upgrade policy, and a
+versioned fresh-run fixture before changing runtime code. Implementation remains
+pending those decisions; EX-010 remains blocked until the later checkpoint gate.
+
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)
+- Consecutive simulation phases — review and migration plan: [`CONTINUOUS_SIMULATION_FLOW_PLAN.md`](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+- Stat-Line, predictive AI and telemetry applicability: [`CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md`](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+- Simulation-flow documentation coverage: [`CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md`](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md)
 - Vertical-slice scenario, roster, and builds: [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md)
 - Future scientific-data economy: [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md)
 - Future permanent and per-run upgrade systems: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)

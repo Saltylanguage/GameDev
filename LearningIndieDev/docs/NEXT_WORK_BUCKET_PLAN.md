@@ -7,6 +7,20 @@
 
 ## Goal
 
+**New dependency review, 2026-09-04:** the
+[consecutive-phase plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) covers continuing
+the same ecosystem after an upgrade or Skip. The completed work below describes
+the existing launch-time/fresh-window slice, not continued-world acceptance.
+Its test evidence and historical scope remain valid. The new packages are
+proposed and are not silently added to S2's committed capacity. References below
+to the “next run” in the prototype describe current behavior; target gameplay
+continues the next phase of the same expedition.
+
+[Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) records
+retests and the S2.3 ownership discrepancy: the live card assigns Sim 3h while
+this plan excludes Sim from the upgrade stream. Josh must reconcile scope and
+allocation before implementation; this review makes no reassignment.
+
 Give the player a small, understandable upgrade choice during a Forest Edge
 run. The game and the research tools should use the same upgrade definition so
 we can trust the results we collect.

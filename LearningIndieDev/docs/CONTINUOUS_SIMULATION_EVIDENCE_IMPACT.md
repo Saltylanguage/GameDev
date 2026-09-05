@@ -1,8 +1,8 @@
 # Continued simulation — Stat-Line, predictive AI and telemetry impact
 
 **Status:** Proposed migration contracts and dependency notice; no telemetry
-producer, historical report, prediction, or acceptance decision is changed.  
-**Date:** 2026-09-04. **Runtime/research owner:** Josh. **Stat meaning reviewer:** Sim.  
+producer, historical report, prediction, or acceptance decision is changed.
+**Date:** 2026-09-04. **Runtime/research owner:** Josh. **Stat meaning reviewer:** Sim.
 **Parent:** [Consecutive simulation flow plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ## Meaning of the change

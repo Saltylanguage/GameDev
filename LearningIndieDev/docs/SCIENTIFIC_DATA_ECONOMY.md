@@ -18,6 +18,15 @@ The first implementation should use the fewest categories needed by its content.
 
 ## Earning data
 
+An expedition contains consecutive simulation phases in the same ecosystem.
+Phase summaries and purchase/skip breaks do not reset unspent currency,
+accomplishments or world state. Phase earnings and final settlement must be
+identified separately and applied once; repeated Continue or viewing a summary
+cannot award them again. The current survivor-count reward is a prototype,
+not a validated continued-expedition economy. See the
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md); earning amounts, loss rules
+and permanent Lab integration remain deferred.
+
 Data should reward meaningful discoveries and accomplishments, not raw tick count. Candidate triggers include:
 
 - first observation of a behavior or upgrade activation;
