@@ -17,9 +17,9 @@ to the “next run” in the prototype describe current behavior; target gamepla
 continues the next phase of the same expedition.
 
 [Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) records
-the continued-flow retests. The S2.3 report/stat-line card is Josh-owned,
-matching this plan; the separate deterministic application card is complete,
-and Sim remains in the telemetry/fixture lane below.
+the continued-flow retests. The S2.3 report/stat-line card is Josh-owned and
+complete; the separate deterministic application card is also complete, and
+Sim remains in the telemetry/fixture lane below.
 
 Give the player a small, understandable upgrade choice during a Forest Edge
 run. The game and the research tools should use the same upgrade definition so
@@ -125,15 +125,16 @@ on one seed. The research-side matched-run and order checks are complete, and
 the bounded human decisions are recorded. Player-experience, balance, and
 visual-feedback follow-up remain separate work.
 
-## Next bucket — continuation parity foundation
+## Continuation parity and EX-010 preparation checkpoint
 
-**Status:** CF-0 contract and fixture complete. CF-1 lifecycle and the
-controlled CF-2/CF-3 preview path are implemented and covered by managed
-builds/focused tests; current Unity-suite revalidation is pending while the
-editor is open. Telemetry and experiment integration remain.
+**Status:** CF-0 through CF-5 implementation work is complete and smoke-
+verified on `NF/ConsecutiveRuns`. Phase-window telemetry, checkpoint
+copy/restore, direct Stat-Line output, and the opt-in headless schedule are
+implemented. EX-010-specific schedule authoring and human approval remain.
 **Owner:** Josh, with Sim reviewing the phase and expedition measurements.
-**Effort:** CF-1 is estimated at 8–12h. These are proposed packages, not an
-automatic change to the completed S2 capacity.
+**Effort:** The completed implementation was checkpointed in `79423b4e`; the
+EX-010-specific schedule/approval follow-up is estimated at 3h and remains a
+separate research task.
 
 ### Goal
 
@@ -214,9 +215,11 @@ cross-over concerns remain in the [Stat-Line/Predictive AI concern record](Plann
 **EX-010 — Sequential upgrade continuation** is proposed but intentionally not
 part of this S2 implementation commitment. It asks what changes when upgrades
 are acquired between simulation segments and the player continues from the
-current state. It depends on the active-run checkpoint/resume flow, which is
-currently out of scope. Keep it visible in the research index and Loose Ends;
-do not treat EX-009's launch-time result as an answer to EX-010.
+current state. The active-run checkpoint/resume seam and generic schedule path
+now exist, but EX-010 still needs its authored schedule, human approval, and
+experiment-specific run. Keep it visible in the research index and Loose Ends;
+do not treat EX-009's launch-time result or generic smoke runs as an answer to
+EX-010.
 
 ## Evidence for the completed launch-time slice
 

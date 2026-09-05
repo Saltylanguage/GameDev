@@ -8,17 +8,19 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ## Status
 
 - Last reviewed: 2026-09-05
-- Report state: the current continuation implementation is checkpointed at
-  `1d345a93`; the low-risk cleanup is checkpointed at `745e630b` and the S2
-  register mapping at `824444fe`. The current
-  EX-007/EX-008/EX-009 run bundles pass the strict artifact validator with Unity
-  logs. Graphics-capable Unity acceptance remains blocked by Unity's
-  machine-level UPM/licensing IPC state; the P3 research gate remains open
-  because EX-003 and broader promotion review are unresolved. BoardSnapshot
-  fixture repair, the terrain documentation contract, the editor pattern drift,
-  XAML whitespace, historical ID ambiguity, and the S2 register mapping are
-  resolved or explicitly bounded below. EX-010 remains the future
-  sequential-continuation question.
+- Report state: the continuation implementation and evidence-preparation
+  checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
+  and S2-register checkpoints retained in history). Unity Edit Mode is green at
+  210/210 and Play Mode is green at 17/18 with one intentional graphics-only
+  skip. The current EX-007/EX-008/EX-009 run bundles and the new continuation
+  smoke bundles pass the strict artifact validator with Unity logs. Graphics-
+  capable Unity acceptance remains blocked by Unity's machine-level
+  UPM/licensing IPC state; the P3 research gate remains open because EX-003 and
+  broader promotion review are unresolved. BoardSnapshot fixture repair, the
+  terrain documentation contract, the editor pattern drift, XAML whitespace,
+  historical ID ambiguity, and the S2 register mapping are resolved or
+  explicitly bounded below. EX-010 preparation is complete, but its
+  contract-specific schedule, human approval, and execution remain gated.
 
 ## Triage rules
 
@@ -67,14 +69,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-016 — First trustworthy upgrade catalog needs balance review
 
-- **Status:** Catalog and authoring path are complete; balance/promotion review
-  remains open.
+- **Status:** Catalog and authoring path are complete; the bounded EX-007
+  decision is accepted, while balance/promotion review remains open.
 - **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` records seven authored
-  production assets, the catalog validator, snapshot adapter, and the completed
-  EX-009 same-seed check. The remaining questions are design balance, player
-  readability, and whether the EX-007 evidence should be accepted or revised.
-- **Next action:** Record the EX-007 human decision and name any balance or
-  playtest follow-up; keep Lab/permanent upgrades out of this slice.
+  production assets, the catalog validator, snapshot adapter, the completed
+  EX-009 same-seed check, and the bounded EX-007 decision. The remaining
+  questions are design balance, player readability, and any follow-up needed
+  before promotion.
+- **Next action:** Name any balance or playtest follow-up; keep Lab/permanent
+  upgrades out of this slice.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
@@ -113,9 +116,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   additive upgrades matched on all five pairs. That is a bounded implementation
   result, not a balance result.
 - **Next action:** Keep all balance or interaction claims bounded to the
-  validated scenario, values, telemetry, and seed panels. Revisit the proposed
-  EX-010 sequential-continuation study only after active-run checkpoint/resume
-  exists.
+  validated scenario, values, telemetry, and seed panels. EX-010 now has a
+  prepared contract and generic schedule smoke coverage, but still needs its
+  authored schedule, human approval, and experiment-specific run.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
@@ -160,31 +163,39 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-021 — P3 bound-AI-discovery gate is not yet met
 
 - **Status:** Carry-forward; P3 is not closed. EX-007's bounded decision and
-  EX-009's launch-time decision are accepted, but EX-003 still has no
-  execution package and EX-010 remains proposed for the future continuation
-  flow.
+  EX-009's launch-time decision are accepted, EX-003 still has no execution
+  package, and EX-010 is prepared but not yet approved or executed.
 - **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is now explicitly
   labeled as a historical 03:35 snapshot. The current local
   `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md` records the
   assembled EX-007/EX-008/EX-009 evidence and bounded human decisions; the
-  current bundles pass the strict artifact validator with Unity logs.
+  current bundles pass the strict artifact validator with Unity logs. Commit
+  `79423b4e` and handoff `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`
+  record the CF-4/CF-5 integration and EX-010 draft contract.
 - **Next action:** Decide whether EX-003 needs to be executed or the exit gate
   revised, and only then decide whether P3 passes. Keep P4 work preparatory;
-  revisit EX-010 only after active-run continuation exists.
+  finish EX-010 schedule parity and human approval before running it.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P2-021 — Sequential upgrade continuation remains untested
 
-- **Status:** Open future research item; intentionally outside the current S2
-  implementation slice.
+- **Status:** Preparation complete; experiment execution remains open and
+  intentionally gated on a contract-specific schedule and human approval.
 - **Evidence:** EX-009 was accepted only for a complete loadout applied before
   the run started. The intended game flow acquires upgrades between simulation
   segments and continues from the current state, which introduces acquisition
-  timing and accumulated-state effects that EX-009 cannot measure.
-- **Next action:** Revisit proposed EX-010 after the active-run
-  checkpoint/resume flow exists. If the flow is not implemented, retain EX-010
-  as explicit remaining work rather than treating EX-009 as its answer.
+  timing and accumulated-state effects that EX-009 cannot measure. The current
+  branch adds phase-window telemetry, deterministic checkpoint copy/restore,
+  and an opt-in headless schedule. The generic `none;stronger-block;
+  stronger-block-2` smoke run passed strict validation, but it is not EX-010
+  evidence. See commit `79423b4e`, handoff
+  `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`, and the draft
+  contract at `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md`.
+- **Next action:** Finalize the authored EX-010 schedule and record a human
+  Accept/Revise decision. Only then run the experiment and retain its
+  experiment-specific report bundle; do not treat the generic smoke run as
+  predictive evidence.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
