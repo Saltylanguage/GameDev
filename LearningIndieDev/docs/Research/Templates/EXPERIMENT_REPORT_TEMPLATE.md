@@ -31,6 +31,17 @@
 | Seed range |  |
 | Grid/configuration |  |
 | Build/commit |  |
+| Lifecycle mode/version (fresh window or continued expedition) |  |
+| Metric contract version and phase/expedition scope |  |
+| Origin/checkpoint hash and lineage |  |
+| Absolute tick window and termination policy |  |
+| Resolved upgrade acquisition/effective-tick schedule |  |
+
+For continued-world studies, apply the
+[continuation evidence contract](../../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+Use actual duration for partial outcomes and keep dependent phases/forks within
+one seed lineage. These fields are for new reports; do not fill them into old
+evidence by guessing missing state or acquisition timing.
 
 ## Observed results
 

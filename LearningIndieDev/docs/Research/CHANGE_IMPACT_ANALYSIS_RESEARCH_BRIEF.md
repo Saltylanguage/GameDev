@@ -10,6 +10,12 @@ is canonical. This brief preserves the focused change-impact research question,
 literature signals, and CIA-001 proposal; it does not define a separate
 protocol.
 
+For continued-simulation inputs, the current dependency and applicability
+contract is the [continuation impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+A final loadout alone cannot identify an intervention applied to an evolved
+world; include checkpoint state/lineage, acquisition timing and forecast window.
+This requirement does not promote the adjacent research capability into scope.
+
 The first source pass is logged in [Predictive Change Impact Analysis - Source Readings](CHANGE_IMPACT_ANALYSIS_SOURCE_READINGS.md), with each article kept separate from project-level deductions.
 
 ## Scope correction

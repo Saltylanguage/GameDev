@@ -42,6 +42,16 @@ The design must keep two factors separate:
 
 ## Required implementation seam
 
+The implementation dependency is now scoped in
+[CF-1 through CF-5](../../../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+The [shared evidence impact](../../../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+adds concrete requirements: current and previous grids, absolute tick and
+deterministic entity allocation, immutable rules/acquisition timeline,
+phase/expedition metric windows, forecast horizon and checkpoint lineage.
+Development/held-out splitting must keep an expedition and its checkpoint
+branches together. This is planning detail, not a locked experiment schedule
+or authorization to execute EX-010.
+
 The game and headless runner need a reproducible checkpoint/resume path that
 captures the evolving simulation state and the immutable upgrade snapshot at
 acquisition. Until that seam exists, EX-010 remains a tracked proposal rather

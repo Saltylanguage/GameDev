@@ -9,6 +9,13 @@
 
 ## The useful idea
 
+**Continuation context:** a phase stat line describes one window in an evolving
+expedition. Carry-over creatures are not new starting spawns; rates need that
+window's raw numerators, denominators and populations. Pool raw counts before
+computing expedition rates. Upgrade attribution needs acquisition/effective
+ticks. See the [shared impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+for proposed contracts and Sim/Josh retests; continuation is not implemented yet.
+
 Baseball analytics is a helpful model because it compares players who create
 value in very different ways and under different conditions. Species statistics
 have the same problem. A predator, herbivore, scavenger, and plant should not be

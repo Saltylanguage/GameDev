@@ -9,6 +9,13 @@ owner, estimate, acceptance evidence, and capacity impact are written down.
 
 ## Planning principles
 
+Before scheduling continued-world upgrade or balance acceptance, allocate the
+[consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md). It spans
+domain lifecycle, upgrades, presentation, telemetry/Stat-Line and research
+checkpoints. Its proposed 44–68h estimate is separate from committed S2 capacity.
+In-memory phase continuation is required gameplay; player disk save/load remains
+its own later decision. EX-010 execution follows the checkpoint and contract gates.
+
 - Keep one primary playable or product outcome per sprint.
 - Separate design readiness from implementation commitment. A design spike can
   prepare later work without pulling the full feature into the current sprint.

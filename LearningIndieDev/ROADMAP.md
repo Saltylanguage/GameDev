@@ -10,6 +10,15 @@ outcomes.
 
 ## Product goal
 
+**Foundational dependency, 2026-09-04:** the
+[consecutive-phase migration](docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md) makes
+purchase/skip decisions continue the same evolving world. Its code, telemetry,
+Stat-Line, research and documentation gates are proposed work, not completed M1
+behavior or an automatic addition to S2 capacity. Separate phase results from
+expedition completion and player disk save/load. Existing single-window balance
+evidence has the [applicability limits](docs/CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+recorded in the review.
+
 Deliver a run-based game in which the player develops a species by choosing
 cellular-automata upgrades, watches those rules interact with other species and
 the environment, and earns persistent scenario, species, and upgrade unlocks

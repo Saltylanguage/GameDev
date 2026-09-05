@@ -29,6 +29,13 @@ the identity, capacity, ownership, board disposition, and exit gate.
 
 ## Scope boundary
 
+The 2026-09-04 [consecutive-phase review](../CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+identifies additional runtime and evidence work beyond the accepted launch-time
+slice. It is proposed for explicit capacity planning, not automatically committed
+to S2. Continuing a phase in memory is distinct from player file saves. The
+[impact notice](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) calls out required
+Stat-Line/research retests and the repository/live S2.3 ownership mismatch.
+
 S2 is a temporary per-run upgrade slice. It does not implement file saves,
 wallet mutation, permanent Lab research, Archive or Expedition flows, a
 general modifier/plugin framework, broad roster expansion, or final art/audio
@@ -38,6 +45,6 @@ production.
 
 - **Mid-sprint:** verify contract/catalog decisions and one reproducible
   baseline-versus-upgrade run before expanding the catalog.
-- **Final review:** run the fixed-seed comparison, inspect the player-facing
-  preview/result language at the target resolutions, record accepted behavior,
-  tuning questions, and explicit carry-over.
+- **Final review:** run the fixed-seed comparison, record accepted behavior,
+  tuning questions, and explicit carry-over. Font, layout, and visual-feedback
+  review are a separate work track and are not part of S2.

@@ -4,6 +4,12 @@ Status: **measurement protocol proposed; no product budget accepted**
 
 ## Purpose
 
+The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) adds a
+required measurement case: a complete five-phase expedition retaining history,
+events, tracked entities and prior-grid state across decision breaks. Compare
+tick cost, boundary/report latency and memory across the whole supported horizon.
+An old 20-second fresh-window profile is not a continued-expedition budget.
+
 Establish a reproducible Windows player baseline before optimization or new
 profiling dependencies. Until minimum supported hardware is selected, results
 are machine baselines rather than product requirements.

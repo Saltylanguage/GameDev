@@ -27,6 +27,15 @@ profile, run, reward, or simulation state.
 
 ## 2. Flow state
 
+**Continuation update, implementation pending (2026-09-04):** reward breaks
+freeze a phase within one expedition. `SimulationRewards -> SimulationPlay`
+must retain the same domain world and advance its next absolute tick after a
+purchase or Skip. A phase summary is distinct from `SimulationFinalReport`.
+The existing four engine statuses below describe the current implementation;
+the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) proposes a resumable
+decision-boundary status distinct from terminal completion. Neither the
+ViewModel nor XAML may implement that lifecycle independently.
+
 The application and simulation managers own these states. XAML visual states
 only present them:
 
@@ -198,13 +207,21 @@ RestartRun()
 StopRun()
 SelectReward(optionId)
 ContinueWithoutReward()
-StartNextRun()
+ContinueExpedition()  // next phase in the same world; proposed replacement for StartNextRun
 ReturnToLab()
 ```
 
 Each command is validated by its helper/manager. A disabled command must not
 execute, and invalid requests return a clear failure/status result rather than
 partially changing state.
+
+Keep actual `PlayNextSimulationCommand` bindings compatible until the runtime
+and XAML migration lands together; the proposed name above is not an existing
+API claim. Phase continuation does not load a scene. Return to Lab ends the
+expedition through a recorded terminal/abort transition; launch remains the
+new-expedition boundary. UI snapshots need phase identity, absolute/window time,
+decision availability and the effective rules revision so a boundary-only
+upgrade refreshes even when the simulation tick has not advanced.
 
 ## 5. Scene and profile handoff
 

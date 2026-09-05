@@ -1,5 +1,12 @@
 # Predictive AI research architecture and flows
 
+**Continuation dependency (2026-09-04):** the
+[runtime migration](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
+[evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) connect
+EX-010 to replayable evolved checkpoints, acquisition schedules and explicit
+forecast/stat windows. EX-009 remains a launch-time comparison; no existing
+prediction or report is reinterpreted as sequential-continuation evidence.
+
 > Status: Needs Review  
 > Last reviewed: 2026-09-04
 > Scope: Program roadmap, experiment operation, evidence lineage, and experiment selection

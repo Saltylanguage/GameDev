@@ -7,6 +7,14 @@
 
 ## Outcome
 
+The [consecutive-phase migration](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) is a
+dependency for validating these outcomes across upgrade breaks. Preserve the
+same resources and creatures, and measure recovery/pressure across absolute
+ticks. The treatment's ecological growth/pressure/recovery phases are not new
+worlds or interchangeable with UI decision windows. Fresh-window mechanic
+evidence remains useful; late-phase balance and initialization-only upgrades
+need the [explicit retests](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+
 Deliver a playable, measurable Forest Edge slice in which:
 
 - Grass supports Hare growth without being the primary source of tension.

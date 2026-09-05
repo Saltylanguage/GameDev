@@ -10,6 +10,13 @@
 
 ## Short version
 
+**2026-09-04 planning reference:** the
+[continuation impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+records the new phase/expedition window, acquisition-timing and retest dependency.
+The existing concerns below keep their recorded scope, severity and status.
+The [runtime plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) contains proposed
+additional concerns for review, not newly accepted restrictions.
+
 The two workstreams fit together well:
 
 - Sim's stat line gives us clear, repeatable facts about what happened.

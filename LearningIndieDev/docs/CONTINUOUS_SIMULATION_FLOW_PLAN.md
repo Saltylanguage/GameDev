@@ -1,8 +1,8 @@
 # Consecutive simulation phases — architecture review and migration plan
 
-**Status:** Review and plan only; runtime implementation is not authorized by this task.  
-**Reviewed:** 2026-09-04, branch `NF/UpgradeContract`, baseline `f8ccbdb4`.  
-**Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.  
+**Status:** Review and plan only; runtime implementation is not authorized by this task.
+**Reviewed:** 2026-09-04, branch `NF/ConsecutiveRuns`, source review baseline `f8ccbdb4`.
+**Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.
 **Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. Recommendations below are not accepted implementation or balance decisions.
 
 ## Outcome and terminology
@@ -199,6 +199,36 @@ CF-3 and CF-4 can proceed alongside each other once their shared contract is
 stable. Do not release a player continuation change before CF-4: otherwise new
 play evidence would still be labelled using old semantics. Checkpoint research
 work may be delivered later, but EX-010 remains blocked until CF-5 passes.
+
+## Immediate readiness — CF-0 contract and fixtures
+
+CF-0 is the first implementation-ready block. It prepares the shared contract
+and small test fixtures before anyone changes the live simulation flow. Josh
+owns the work; Sim reviews the meaning of phase and expedition measurements.
+
+### Prepare now
+
+- Write down the lifecycle names and transitions: fresh launch, running,
+  frozen decision boundary, Continue, explicit End, Restart, and terminal
+  completion.
+- Decide which effects are valid at a phase boundary. The recommended default
+  is launch-only eligibility for starting-population or starting-energy effects
+  until a live-state rule is deliberately designed.
+- Capture how a phase result differs from a whole-expedition result, including
+  raw counters, window boundaries, partial/invalid states and acquisition ticks.
+- Record the above-cap energy policy for a signed maximum-energy change; do not
+  hide a clamp or refill in the migration.
+- Preserve one fresh legacy report as a versioned fixture so old readers and
+  new continued-world readers can be checked side by side.
+
+### CF-0 outputs and stop gate
+
+The block is ready to hand to CF-1 when the decisions above are recorded, the
+fresh fixture has its seed/configuration/schema provenance, and the proposed
+phase/expedition fields have one owner and one meaning. No runtime behavior,
+serialized asset, report schema, or EX-010 experiment is changed merely by
+preparing this checklist. If a decision is still open, leave it open and stop
+at the contract boundary rather than coding around it.
 
 ## Required verification
 
