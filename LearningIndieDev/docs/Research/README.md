@@ -26,6 +26,12 @@ not redefine the program.
 
 ## Experiment packages
 
+Read the [continued-simulation evidence validity register](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+before reusing historical results for the new game flow. EX-001 through EX-009
+retain their declared fresh-window scope; EX-010 depends on the
+[planned checkpoint/continuation work](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+Raw evidence, preregistrations and completed human decisions remain unchanged.
+
 - [EX-001 - Reproducibility Baseline](Experiments/EX-001-Reproducibility-Baseline/README.md)
 - [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md)
 - [EX-002 - Herbivore Collapse Attribution](Experiments/EX-002-Herbivore-Collapse-Attribution/README.md)

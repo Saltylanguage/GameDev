@@ -7,15 +7,18 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-04
-- Report state: the earlier UI/ControlLibrary batch is committed and pushed, and
-  the adapter-backed research/documentation batch is checkpointed locally. The
-  current EX-007/EX-008/EX-009 run bundles pass the strict artifact validator
-  with Unity logs. Graphics-capable Unity acceptance remains blocked by Unity's
+- Last reviewed: 2026-09-05
+- Report state: the current continuation implementation is checkpointed at
+  `1d345a93`; the low-risk cleanup is checkpointed at `745e630b` and the S2
+  register mapping at `824444fe`. The current
+  EX-007/EX-008/EX-009 run bundles pass the strict artifact validator with Unity
+  logs. Graphics-capable Unity acceptance remains blocked by Unity's
   machine-level UPM/licensing IPC state; the P3 research gate remains open
-  because EX-003 and broader promotion review are unresolved. The same-held-out
-  EX-009 comparison is complete, the first trustworthy upgrade catalog is in
-  place, and EX-010 tracks the future sequential-continuation question.
+  because EX-003 and broader promotion review are unresolved. BoardSnapshot
+  fixture repair, the terrain documentation contract, the editor pattern drift,
+  XAML whitespace, historical ID ambiguity, and the S2 register mapping are
+  resolved or explicitly bounded below. EX-010 remains the future
+  sequential-continuation question.
 
 ## Triage rules
 
@@ -23,18 +26,21 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-03)
+## Current open items (2026-09-05)
 
 ### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
 
-- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource edits
-  are local; runtime acceptance pending.
+- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource/font
+  edits are checkpointed locally; runtime acceptance remains pending.
 - **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
   `HeaderedContentControl` window style/resources, four palette variants, and
   the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
-  the changed XAML and `git diff --check` is clean apart from Unity's standard
-  blank-value metadata whitespace. No Unity screenshot or graphics Play Mode
-  result exists for this batch yet.
+  the changed XAML. `Assets/Noesis.settings.asset` now points `defaultFont` at
+  the imported Pixeloid Sans Noesis font, and the Pixeloid Sans/Bold/Mono `.meta`
+  files use `Noesis.NoesisGUI.Editor::NoesisFontImporter`, so Noesis/XAML text
+  inherits the project font without per-element assignments. `git diff --check`
+  is clean for this follow-up. No Unity screenshot or graphics Play Mode result
+  exists for this batch yet.
 - **Next action:** Repair the Unity Hub/licensing IPC state, rerun the graphics
   acceptance command, and review the desktop scene at the target resolutions.
 - **Likely owner:** Josh + UI owner.
@@ -152,13 +158,13 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-006 — Sprint rollover and S2 control record need a fresh checkpoint
 
-- **Status:** S2 control record now exists locally but is not committed; the
-  sprint checkpoint remains non-durable.
-- **Evidence:** `docs/Sprints/S1-control-record.md` still describes the August
-  17–30 window, while the new local `docs/Sprints/S2-control-record.md` and
-  `docs/NEXT_WORK_BUCKET_PLAN.md` activate S2 for September 3–16.
-- **Next action:** Review the S1/S2 transition, reconcile the board and plan,
-  then commit the S2 control record with its acceptance criteria.
+- **Status:** Resolved for the repository checkpoint; S2 remains active.
+- **Evidence:** Commit `1d345a93` includes the durable
+  `docs/Sprints/S2-control-record.md` and `docs/NEXT_WORK_BUCKET_PLAN.md` for
+  the September 3–16 window. `docs/Sprints/S1-control-record.md` remains the
+  historical August 17–30 record.
+- **Next action:** Keep the board mapping synchronized during the S2 review;
+  that follow-up remains tracked by P1-027.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
@@ -168,13 +174,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   EX-009's launch-time decision are accepted, but EX-003 still has no
   execution package and EX-010 remains proposed for the future continuation
   flow.
-- **Evidence:** The earlier `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is a
-  historical 03:35 snapshot that predates the later EX-007/EX-008 bundles. The
-  current local `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md`
-  records the assembled evidence and pending human decision; the 11 current
-  EX-007/EX-008 bundles pass the strict artifact validator with Unity logs.
-- **Next action:** Mark the old gate snapshot as historical in the current
-  status trail, decide whether EX-003 needs to be executed or the exit gate
+- **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is now explicitly
+  labeled as a historical 03:35 snapshot. The current local
+  `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md` records the
+  assembled EX-007/EX-008/EX-009 evidence and bounded human decisions; the
+  current bundles pass the strict artifact validator with Unity logs.
+- **Next action:** Decide whether EX-003 needs to be executed or the exit gate
   revised, and only then decide whether P3 passes. Keep P4 work preparatory;
   revisit EX-010 only after active-run continuation exists.
 - **Likely owner:** Josh.
@@ -182,30 +187,15 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-024 — Current follow-up batch is not durably checkpointed
 
-- **Status:** Open; the branch is synced with `origin/UI/ControlLibrary`, but
-  the current follow-up is only in the working tree.
-- **Evidence:** `git status` reports 26 modified tracked files and 12 untracked
-  files, including `LOOSE_ENDS.md`, the S2 control record, EX-007/EX-008/EX-009
-  research records, three new handoffs, XAML, and `tools/UnityTooling.ps1`.
-- **Next action:** Review the batch, split it into coherent commits, and push or
-  otherwise record the accepted checkpoint before changing branches or handing
-  work off.
+- **Status:** Resolved for the continuation implementation; the follow-up is
+  checkpointed locally and this new hygiene pass remains reviewable.
+- **Evidence:** Commit `1d345a93` records the ten-phase continuation flow on
+  branch `NF/ConsecutiveRuns`. The previously reported 26 modified and 12
+  untracked files are no longer present; only the focused cleanup files from
+  this review are now local changes.
+- **Next action:** Push the accepted local checkpoints before handing the branch
+  off; do not describe them as shared until they are pushed.
 - **Likely owner:** Josh + current contributors.
-- **Confidence:** High.
-
-### P1-025 — EX-009 same-held-out upgrade-order comparison is complete
-
-- **Status:** Resolved for the locked question; keep the historical preflight
-  failures as operational records.
-- **Evidence:** Both adapter-backed arms passed validation on seeds 106–110:
-  `artifacts/cellular-experiment-20260904-192559` and
-  `artifacts/cellular-experiment-20260904-192703`. The paired table in the
-  EX-009 package records zero deltas across all compared outcome and telemetry
-  fields.
-- **Next action:** Add a focused commutativity regression test and reopen an
-  order-specific experiment only if future upgrades introduce stateful or
-  non-additive behavior.
-- **Likely owner:** Josh.
 - **Confidence:** High.
 
 ### P2-021 — Sequential upgrade continuation remains untested
@@ -222,6 +212,22 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
+### P2-022 — Legacy Unity IMGUI text is outside the Noesis default-font path
+
+- **Status:** Noesis/XAML now inherits Pixeloid Sans globally; legacy IMGUI
+  surfaces still inherit Unity's `GUI.skin.font` and are intentionally
+  unchanged.
+- **Evidence:** `Assets/Noesis.settings.asset` configures the Noesis
+  `defaultFont`, while `Assets/Scripts/Game/Presentation/GameHud.cs:24-29` and
+  `Assets/Scripts/Game/Debug/RuntimeDebugPanel.cs:28` create styles from
+  `GUI.skin.label`. These are separate rendering paths and do not consume the
+  Noesis setting.
+- **Next action:** Decide whether the retained debug/IMGUI surfaces should also
+  use Pixeloid; if so, set the shared IMGUI skin font at one composition point
+  and verify the result without changing player-facing Noesis contracts.
+- **Likely owner:** Josh + UI owner.
+- **Confidence:** High.
+
 ### P1-026 — Detached worker lacks the latest Unity lifecycle tooling
 
 - **Status:** The cleanup change is local to `UI/ControlLibrary`; the detached
@@ -236,48 +242,55 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-027 — Sprint 2 task register is not uniquely mapped to board work
 
-- **Status:** Active S2 work is named and owner-assigned in the local plan, but
-  its board mapping is not independently auditable from the repository.
-- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` uses duplicate `S2.2` and `S2.3`
-  labels for separate tasks and provides no stable card IDs or links; the local
-  S2 control record asserts Trello list placement without recording the mapping.
-- **Next action:** Assign stable task IDs, card links, dependencies, and
-  acceptance checks to every S2 row, reconcile them with Trello, and commit the
-  checkpoint.
+- **Status:** Partially resolved; every row now has a stable ID and board link,
+  but owner/status reconciliation remains for the sprint review.
+- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` and
+  `docs/Sprints/S2-control-record.md` now assign stable IDs and verified Trello
+  links to every listed work row. The duplicate board prefixes are disambiguated
+  as `S2.2A/B` and `S2.3A/B`, and the Fox/BoardSnapshot reserve cards have
+  explicit `S2-CORR-*` IDs. The board currently assigns the parallel S2.3A and
+  S2-QA cards to Sim while the repository plan assigns the implementation lane
+  to Josh; that discrepancy is recorded rather than hidden.
+- **Next action:** Reconcile card ownership, list placement, and completion
+  status during the S2 review; do not infer completion from the control card.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
 ### P1-028 — S2 correctness tasks are absent from the active ledger
 
-- **Status:** The S2 plan assigns `Fox mating/eating telemetry discrepancy`
-  and `BoardSnapshot test-fixture repair`, but neither has a current ledger
-  entry or a separate acceptance record.
-- **Evidence:** Both tasks appear in the active register in
-  `docs/NEXT_WORK_BUCKET_PLAN.md`; the historical ledger entries for Fox
-  telemetry are not in the current open-items section.
-- **Next action:** Give each task a stable ID and acceptance check, or close it
-  with focused test/evidence results before the S2 review.
+- **Status:** BoardSnapshot repair is resolved; Fox telemetry instrumentation is
+  implemented and covered, while its Trello card remains open for owner review.
+- **Evidence:** The [BoardSnapshot card](https://trello.com/c/Cy2TOMOh) is in
+  `✅ Done`; `SimulationManagerTests.BoardSnapshotCopiesCellsAndSpeciesRoles`
+  now uses the correct `(x, y)` fixture and was included in the 187/187 Edit
+  Mode artifact recorded in the 2026-09-03 upgrade handoff. The [Fox telemetry
+  card](https://trello.com/c/BkJwxhkw) remains in `Current Work`; current
+  `SpeciesSimulationMetrics` exposes reproduction outcomes and food-action
+  attempts/successes/failures, and `SpeciesSimulation` records those resolver
+  results at the action sites. No new full Unity acceptance is claimed here.
+- **Next action:** Josh/Sim should review the current Fox report fields and close
+  or carry the card in Trello; keep the historical evidence boundaries intact.
 - **Likely owner:** Sim + Josh.
 - **Confidence:** High.
 
 ### P2-019 — Pending XAML batch has pre-commit whitespace errors
 
-- **Status:** Non-functional cleanup remains in the working tree.
-- **Evidence:** `git diff --check` reports trailing whitespace in
-  `Assets/UI/GalapagOS/XAML/Panels/V_Panel_GalapagOS_Desktop.xaml:74-77`.
-- **Next action:** Remove the trailing whitespace before committing the UI
-  follow-up.
+- **Status:** Resolved; the affected XAML lines are whitespace-clean.
+- **Evidence:** The trailing whitespace at
+  `Assets/UI/GalapagOS/XAML/Panels/V_Panel_GalapagOS_Desktop.xaml:74-77` was
+  removed and `git diff --check` now passes for the working tree.
+- **Next action:** Preserve the cleanup when the current UI follow-up is pushed.
 - **Likely owner:** UI owner.
 - **Confidence:** High.
 
 ### P2-020 — Historical Loose Ends IDs are not unique
 
-- **Status:** Documentation ambiguity; no runtime impact.
-- **Evidence:** The historical section contains two separate entries both
-  labeled `P1-006`: the named dual-grid terrain preview item and the editor
+- **Status:** Resolved; the related historical entries now use distinct IDs.
+- **Evidence:** The historical section now uses `P1-006` for the named
+  dual-grid terrain preview item and `P1-006b` for the editor
   smart-tiling preview path fix.
-- **Next action:** Renumber one historical entry and update any references,
-  preserving the historical text and decisions.
+- **Next action:** Preserve the historical text and decisions; use the distinct
+  IDs when referring to either terrain-preview entry.
 - **Likely owner:** Repository maintainer.
 - **Confidence:** High.
 
@@ -308,23 +321,6 @@ Ticket summaries for these items are recorded in
   prototype and record gameplay-scale visual evidence for all families. Do not
   refactor the resolver from the superseded dual-grid plan.
 - **Likely owner:** Presentation/art owner + Sim.
-- **Confidence:** High.
-
-### P1-023 — Bootstrap, scene, Play Mode, and Noesis standards docs have drifted
-
-- **Status:** Current guidance is refreshed locally; historical Bootstrap/Island
-  references remain intentionally dated, and no scene/package change was made.
-- **Evidence:** `FRAMEWORK.md:3-6,47-49` now labels the Bootstrap/Island
-  Survivor guidance historical and identifies the active Main Menu → Lab →
-  CellularAutomataPrototype flow. `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` and
-  `docs/UNITY_ENGINEERING_STANDARDS.md` now match the current scene, Play Mode,
-  starter-`BaseViewModel`, and direct Noesis import facts; the historical
-  Island validator remains explicitly scoped to the deprecated prototype. No
-  scene, package, or runtime implementation change was made in this cleanup.
-- **Next action:** Review the documentation diff, then run the current focused
-  scene/test validation after Unity IPC recovery. Keep historical claims
-  explicitly dated instead of silently mixing them with current instructions.
-- **Likely owner:** Josh + repository maintainer.
 - **Confidence:** High.
 
 ### P2-007 — Legacy `SpeciesArchetype` compatibility surface is not retired
@@ -467,16 +463,15 @@ Ticket summaries for these items are recorded in
 
 ### P2-016 — Editor scenario generation duplicates runtime pattern definitions
 
-- **Status:** Small refactor candidate; keep behavior unchanged for now.
-- **Evidence:** `Assets/Editor/SimulationTools/CreateSpeciesScenarioAssets.cs:24-32,350-361`
-  constructs Cardinal and Moore neighbor arrays while
-  `Assets/Scripts/Game/Species/SpeciesRuleDefaults.cs:8-20,99-106` maintains
-  equivalent runtime patterns. This creates a drift risk when a pattern changes.
-- **Next action:** Decide whether a shared pure C# pattern helper is safe across
-  runtime and Editor assemblies. If so, centralize the definitions and add a
-  parity test; otherwise document the intentional editor/runtime isolation.
-  Do not introduce an abstraction solely to reduce two short literals without
-  checking assembly and asset-generation constraints.
+- **Status:** Resolved; editor generation consumes the runtime defaults.
+- **Evidence:** `Assets/Editor/SimulationTools/CreateSpeciesScenarioAssets.cs`
+  now copies the ordered offsets from
+  `SpeciesRuleDefaults.CreateCardinalPattern()` and `CreateMoorePattern()` into
+  fresh arrays for serialization. The duplicate literals were removed; runtime
+  behavior, generated values, and Editor/runtime assembly boundaries are
+  unchanged.
+- **Next action:** Keep the runtime pattern order stable when changing these
+  defaults; no additional abstraction is needed.
 - **Likely owner:** Sim/tooling owner.
 - **Confidence:** Medium.
 
@@ -621,7 +616,7 @@ from an older entry without checking its cited artifacts.
   all 16 four-corner masks. No runtime screenshot records acceptance yet.
 - **Next action:** Run the named dual-grid preview and cellular prototype,
   record visual evidence, and include the refactor in a focused reviewed commit.
-### P1-006 — Editor smart-tiling preview path fix
+### P1-006b — Editor smart-tiling preview path fix
 
 - **Status:** Resolved and evidenced.
 - **Evidence:** Commit `771ca50` is pushed. The 16-mask preview artifacts are
@@ -790,10 +785,10 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
 
 - **Status:** Resolved; the implementation summary now reflects the accepted
   reproducibility gates.
-- **Evidence:** `docs/Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md` says
-  under “What is implemented so far” that current-code reproducibility is still
-  needed, while its later EX-001/EX-001B sections and the accepted experiment
-  packages record that the current-code reproducibility gates passed.
+- **Evidence:** `docs/Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md:236-262`
+  now states that the authored Forest Edge current-code reproducibility result
+  is accepted; the later EX-001/EX-001B sections retain the bounded scope and
+  the accepted experiment packages provide the supporting records.
 - **Next action:** Preserve the remaining causal, calibration, and workflow-
   value boundaries in future research edits.
 - **Likely owner:** Research documentation maintainer.
@@ -897,3 +892,29 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   of silently losing queue state.
 - **Result:** Queue state is now auditable even when Unity preflight blocks a
   run. The remaining blocker is machine state, not worker publication.
+
+### R-011 — EX-009 same-held-out upgrade-order comparison completed
+
+- **Former item:** P1-025.
+- **Evidence:** Both adapter-backed arms passed validation on seeds 106–110:
+  `artifacts/cellular-experiment-20260904-192559` and
+  `artifacts/cellular-experiment-20260904-192703`. The paired table in the
+  EX-009 package records zero deltas across all compared outcome and telemetry
+  fields.
+- **Result:** The locked order question is resolved. Add a focused
+  commutativity regression test and reopen an order-specific experiment only if
+  future upgrades introduce stateful or non-additive behavior. Historical
+  preflight failures remain preserved as operational records.
+
+### R-012 — Current standards documentation reconciled
+
+- **Former item:** P1-023.
+- **Evidence:** `FRAMEWORK.md:3-6,47-49` now labels the Bootstrap/Island
+  Survivor guidance historical and identifies the active Main Menu → Lab →
+  CellularAutomataPrototype flow. `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` and
+  `docs/UNITY_ENGINEERING_STANDARDS.md` now match the current scene, Play Mode,
+  starter-`BaseViewModel`, and direct Noesis import facts; the historical
+  Island validator remains explicitly scoped to the deprecated prototype.
+- **Result:** The documentation drift is resolved without changing scenes,
+  packages, or runtime code. Future Unity visual/test acceptance remains tracked
+  by the UI and preflight items rather than this documentation closure.

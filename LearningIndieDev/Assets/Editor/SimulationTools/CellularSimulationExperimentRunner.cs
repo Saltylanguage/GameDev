@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 23;
+        const int ReportSchemaVersion = 24;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -32,6 +32,7 @@ namespace SaltyGame.EditorTools
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
+        const string RunTicksArgument = "-runTicks";
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
@@ -232,6 +233,7 @@ namespace SaltyGame.EditorTools
                 seedCount = options.SeedCount,
                 gridWidth = loadedData.Width,
                 gridHeight = loadedData.Height,
+                runTicks = loadedData.RunTicks,
                 runDurationSeconds = loadedData.RunDurationSeconds,
                 stepIntervalSeconds = loadedData.StepInterval,
                 runs = runs,
@@ -362,6 +364,7 @@ namespace SaltyGame.EditorTools
                 seedCount = options.SeedCount,
                 gridWidth = selectedData.Width,
                 gridHeight = selectedData.Height,
+                runTicks = selectedData.RunTicks,
                 runDurationSeconds = selectedData.RunDurationSeconds,
                 stepIntervalSeconds = selectedData.StepInterval,
                 runs = selectedRuns,
@@ -516,27 +519,30 @@ namespace SaltyGame.EditorTools
 
         static CellularSimData ApplyOverrides(CellularSimData data, CommandLineOptions options)
         {
-            if (options.GridWidth == 0 && options.GridHeight == 0)
+            var hasWindowOverride = options.RunTicks > 0
+                || options.RunDurationSeconds > 0f
+                || options.StepIntervalSeconds > 0f;
+            var updatedData = data;
+            if (hasWindowOverride)
             {
-                return options.RunDurationSeconds == 0f && options.StepIntervalSeconds == 0f
-                    ? data
+                var stepInterval = options.StepIntervalSeconds == 0f
+                    ? data.StepInterval
+                    : options.StepIntervalSeconds;
+                updatedData = options.RunTicks > 0
+                    ? data.WithRunTicks(options.RunTicks, stepInterval)
                     : data.WithRunWindow(
                         options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
-                        options.StepIntervalSeconds == 0f ? data.StepInterval : options.StepIntervalSeconds);
+                        stepInterval);
             }
 
-            return new CellularSimData(
-                options.GridWidth == 0 ? data.Width : options.GridWidth,
-                options.GridHeight == 0 ? data.Height : options.GridHeight,
-                data.StartingProbabilities,
-                data.SpeciesRules,
-                options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
-                options.StepIntervalSeconds == 0f ? data.StepInterval : options.StepIntervalSeconds,
-                data.MaxPopulation,
-                data.MinPopulation,
-                data.TerrainDefinitions,
-                data.AlphaOffspringRules,
-                data.StartingPopulations);
+            if (options.GridWidth == 0 && options.GridHeight == 0)
+            {
+                return updatedData;
+            }
+
+            return updatedData.WithGridSize(
+                options.GridWidth == 0 ? updatedData.Width : options.GridWidth,
+                options.GridHeight == 0 ? updatedData.Height : options.GridHeight);
         }
 
         static SpeciesExperimentalOptions GetExperimentalOptions(CommandLineOptions options)
@@ -967,6 +973,7 @@ namespace SaltyGame.EditorTools
             public float PreContactAvoidanceChance { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
+            public int RunTicks { get; private set; }
             public float RunDurationSeconds { get; private set; }
             public float StepIntervalSeconds { get; private set; }
             public string OutputPath { get; private set; }
@@ -999,6 +1006,15 @@ namespace SaltyGame.EditorTools
                     GetEffectiveUpgrade(upgradeLoadout[0], upgradeValueOverride);
                 }
 
+                var runTicks = GetIntValue(arguments, RunTicksArgument, 0, allowZero: true);
+                var runDurationSeconds = GetFloatValue(arguments, RunDurationArgument);
+                if (runTicks > 0 && runDurationSeconds > 0f)
+                {
+                    throw new ArgumentException(
+                        $"Use either '{RunTicksArgument}' or '{RunDurationArgument}', not both.",
+                        RunTicksArgument);
+                }
+
                 return new CommandLineOptions
                 {
                     ScenarioPath = GetOptionalValue(arguments, ScenarioPathArgument),
@@ -1023,7 +1039,8 @@ namespace SaltyGame.EditorTools
                     PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
-                    RunDurationSeconds = GetFloatValue(arguments, RunDurationArgument),
+                    RunTicks = runTicks,
+                    RunDurationSeconds = runDurationSeconds,
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
                 };
@@ -1280,6 +1297,7 @@ namespace SaltyGame.EditorTools
             public int seedCount;
             public int gridWidth;
             public int gridHeight;
+            public int runTicks;
             public float runDurationSeconds;
             public float stepIntervalSeconds;
             public ExperimentRun[] runs;

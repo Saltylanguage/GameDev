@@ -19,6 +19,11 @@ into the documentation tree.
 
 ## Packages
 
+**Applicability overlay:** [continued simulation impact](../../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+records which existing claims do not transfer to phases in an evolved world.
+It does not rewrite these packages' observations or decisions. EX-010 remains
+proposed until the shared continuation/checkpoint seam and its contract pass review.
+
 - [EX-001 - Reproducibility Baseline](EX-001-Reproducibility-Baseline/README.md)
 - [EX-001B - Cross-Scenario Determinism](EX-001B-Cross-Scenario-Determinism/README.md)
 - [EX-002 - Herbivore Collapse Attribution](EX-002-Herbivore-Collapse-Attribution/README.md)

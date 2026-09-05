@@ -4,6 +4,15 @@ This is the repeatable execution layer for the cellular-automata prototype. It
 turns an Inspector-authored scenario, a set of seeds, and the same simulation
 code used by the game into reviewable test results and JSON experiment reports.
 
+**Consecutive-phase migration notice (2026-09-04):** the current batch contract
+is a fresh simulation window; Play Mode writes its latest completed window.
+Neither is a checkpoint/acquisition-timeline contract. Planned continuation
+requires versioned phase and expedition outputs, immutable artifact lineage,
+scheduled upgrades and compatible readers/validators. Existing commands keep
+their declared fresh-run meaning. See the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+and [evidence validity register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+Do not use old reports as evidence of continued-world behavior.
+
 > **Current status:** ready for a closed-editor batch run. The tools deliberately
 > refuse to start when this Unity project has an active `Temp/UnityLockfile`.
 > They never close a pre-existing editor or touch unsaved editor work; each
@@ -84,6 +93,7 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Visuals -ReplayReportPath artifacts\cellular-experiment-...\report.json -ReplaySeed 10100
 .\CellSim.cmd Run
 .\CellSim.cmd Run -SeedCount 50
+.\CellSim.cmd Run -RunTicks 100
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
@@ -108,7 +118,7 @@ commands below when their full options are needed:
 | --- | --- |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
 | `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range; `-RunDurationSeconds` and `-StepIntervalSeconds` override the run window without changing the authored scenario asset. |
+| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |

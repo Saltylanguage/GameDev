@@ -12,6 +12,9 @@ namespace SaltyGame
         [SerializeField, Min(1)] int height = 20;
         [SerializeField, Min(0.01f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
+        [SerializeField, Min(0)]
+        [Tooltip("Exact ticks per run. Zero keeps the legacy duration field; the default 20 seconds at a 0.1 second step is 200 ticks.")]
+        int runTicks;
         [SerializeField, Min(0)] int maxPopulation;
         [SerializeField, Min(0)] int minPopulation;
         [SerializeField] SpeciesDefinition[] species = CreateDefaultSpecies();
@@ -46,12 +49,15 @@ namespace SaltyGame
                 }
             }
 
+            var effectiveRunDurationSeconds = runTicks > 0
+                ? (float)(runTicks * (double)stepInterval)
+                : runDurationSeconds;
             return new CellularSimData(
                 width,
                 height,
                 probabilities,
                 rules,
-                runDurationSeconds,
+                effectiveRunDurationSeconds,
                 stepInterval,
                 maxPopulation,
                 minPopulation,

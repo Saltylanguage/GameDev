@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
@@ -43,6 +44,50 @@ namespace SaltyGame
         public int Cost { get; }
         public SpeciesUpgradeType Type { get; }
         public float Value { get; }
+
+        public SpeciesUpgradeSnapshot CreateSnapshot(SpeciesId targetSpecies)
+        {
+            var modifiers = new List<SpeciesUpgradeModifier>();
+            switch (Type)
+            {
+                case SpeciesUpgradeType.MovementSpeed:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, Value));
+                    break;
+                case SpeciesUpgradeType.AttackAmount:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.AttackAmount, Value));
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.AttackModifier, Value));
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DamageAmount, Value));
+                    break;
+                case SpeciesUpgradeType.AttackModifier:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.AttackModifier, Value));
+                    break;
+                case SpeciesUpgradeType.DamageAmount:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DamageAmount, Value));
+                    break;
+                case SpeciesUpgradeType.BlockAmount:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, Value));
+                    break;
+                case SpeciesUpgradeType.DigestionEnergyBonus:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DigestionEnergyBonus, Value));
+                    break;
+                case SpeciesUpgradeType.CrowdingTolerance:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.CrowdingTolerance, Value));
+                    break;
+                case SpeciesUpgradeType.FleeMovementSpeedBonus:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.FleeMovementSpeedBonus, Value));
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
+            }
+
+            return new SpeciesUpgradeSnapshot(
+                Id,
+                SpeciesUpgradeCatalog.GetDisplayName(Id),
+                "Legacy upgrade converted to the run upgrade contract.",
+                targetSpecies,
+                Cost,
+                modifiers);
+        }
 
         public SpeciesRules Apply(SpeciesRules rules)
         {

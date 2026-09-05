@@ -11,6 +11,15 @@ This document separates four claims:
 3. simulation behavior and event accumulation;
 4. causal effects of rule changes.
 
+**2026-09-04 applicability notice:** the existing formulas and validation results
+below refer to their original single-window contracts. They do not validate
+phase/expedition aggregation in continued play. The
+[impact review](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) specifies the new
+window retests and explicitly records existing limitations around population-
+limit deaths, multiple births per candidate, HPS/EHS/ECN reconstruction and
+experimental composites. Those formula decisions require Sim/Josh review;
+historical results are preserved.
+
 The independent validation path uses the raw count fields from an actual
 simulation report as inputs. It does not consume the game's already-computed
 metric values to calculate anything.

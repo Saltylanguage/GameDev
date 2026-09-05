@@ -53,6 +53,40 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void LegacyUpgradeSnapshotPreservesLegacyAttackEffects()
+        {
+            var legacy = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId);
+            var snapshot = legacy.CreateSnapshot(SpeciesIds.Herbivore);
+            var rules = CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null);
+
+            var result = snapshot.Apply(rules);
+
+            Assert.That(snapshot.Id, Is.EqualTo(legacy.Id));
+            Assert.That(snapshot.TargetSpecies, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(snapshot.Modifiers.Count, Is.EqualTo(3));
+            Assert.That(result.AttackAmount, Is.EqualTo(rules.AttackAmount + 1));
+            Assert.That(result.AttackModifier, Is.EqualTo(rules.AttackModifier + 1));
+            Assert.That(result.DamageAmount, Is.EqualTo(rules.DamageAmount + 1));
+        }
+
+        [Test]
+        public void StartingOnlySnapshotCannotApplyAfterRunStart()
+        {
+            var snapshot = new SpeciesUpgradeSnapshot(
+                "seed-pouches-test",
+                "Seed Pouches Test",
+                "Test launch-only upgrade",
+                SpeciesIds.Herbivore,
+                5,
+                new[]
+                {
+                    new SpeciesUpgradeModifier(SpeciesAttributeIds.StartingEnergy, -1f),
+                });
+
+            Assert.That(snapshot.CanApplyAfterRunStart, Is.False);
+        }
+
+        [Test]
         public void SnapshotFingerprintIncludesModifierOrderAndValues()
         {
             var first = new SpeciesUpgradeSnapshot(

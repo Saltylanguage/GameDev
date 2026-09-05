@@ -12,7 +12,7 @@ identity, capacity, ownership, checkpoints, and board disposition.
 | Field | Value |
 | --- | --- |
 | Sprint ID | S1 |
-| Status | Active |
+| Status | Closed |
 | Start | 2026-08-17 |
 | End | 2026-08-30 |
 | Goal | Launch → Main Menu → Lab Overview → Research preview using representative UI data. |

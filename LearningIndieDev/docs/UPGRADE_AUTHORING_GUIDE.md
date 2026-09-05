@@ -2,8 +2,18 @@
 
 This is the repeatable workflow for creating a species per-run upgrade. The
 authoring asset is a Unity `ScriptableObject`; the simulation never consumes a
-live asset reference. At launch, the asset is resolved into an immutable
-`SpeciesUpgradeSnapshot`.
+live asset reference. An asset is resolved into an immutable
+`SpeciesUpgradeSnapshot` for launch or a recorded acquisition boundary.
+
+**Continuation migration pending:** a per-run upgrade lasts for the entire
+expedition, across all simulation phases. Continued play needs the resolved
+snapshot plus its acquisition/effective tick; the current launch-only metadata
+does not supply that timeline. Starting-only fields are launch-only under the
+locked CF-0 contract and are not live creature grants. In particular, Seed
+Pouches is not a phase-break offer unless a separately designed live-state or
+newborn mechanic replaces that restriction. See the
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
+[Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
 
 ## Current catalog
 

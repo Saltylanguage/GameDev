@@ -10,6 +10,15 @@ outcomes.
 
 ## Product goal
 
+**Foundational dependency, 2026-09-04:** the
+[consecutive-phase migration](docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md) makes
+purchase/skip decisions continue the same evolving world. Its code, telemetry,
+Stat-Line, research and documentation gates are proposed work, not completed M1
+behavior or an automatic addition to S2 capacity. Separate phase results from
+expedition completion and player disk save/load. Existing single-window balance
+evidence has the [applicability limits](docs/CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+recorded in the review.
+
 Deliver a run-based game in which the player develops a species by choosing
 cellular-automata upgrades, watches those rules interact with other species and
 the environment, and earns persistent scenario, species, and upgrade unlocks
@@ -302,21 +311,40 @@ and visible.
 Exit: at least one numeric, one spatial, one conditional, and one tradeoff
 upgrade can be selected, previewed, observed, and reproduced.
 
-### Sprint 3 - Species/build co-design
+### Sprint 3 - M1 closeout and project hygiene
+
+Primary outcome: the first trustworthy upgrade loop is complete enough to
+review, and the project is easy to inspect and continue.
+
+- Finish the same-world continuation and boundary decision seam.
+- Add the smallest upgrade/reward path needed to prove one upgrade or Skip
+  resumes the same run at the next tick.
+- Align phase-aware Stat-Line, report, adapter, and validator semantics.
+- Reconcile active work, handoffs, tests, artifacts, and board mappings.
+
+Exit: no unresolved M1 P0 risk remains; one complete five-phase Forest Edge
+path can be continued, upgraded, reported, and reviewed without raw developer
+fields or silent reinitialization.
+
+The proposed control record is
+[`docs/Sprints/S3-control-record.md`](docs/Sprints/S3-control-record.md).
+
+### Sprint 4 - Species/build co-design
 
 Primary outcome: three builds produce distinct strategies rather than only
 different final numbers.
 
 - Select and tune the smallest vertical-slice roster from the existing species
   assets.
-- Run fixed-seed baselines, parameter sweeps, and representative visual reviews.
+- Run fixed-seed baselines and comparisons, including held-out seeds.
 - Remove or revise upgrades that rarely activate, always win, or feel identical.
-- Add tooling only for a comparison task that has become repeatedly expensive.
+- Define the first reactive-species pressure/counter pairs without building a
+  generic rubber-band system.
 
 Exit: three named builds have distinct behavior, strengths, weaknesses, and
 scenario interactions, with both simulation evidence and an in-game review.
 
-### Sprint 4 - Presentation and feedback pass
+### Sprint 5 - Presentation and feedback pass
 
 Primary outcome: a new player can read the board and understand important
 changes without developer explanation.
@@ -332,7 +360,7 @@ changes without developer explanation.
 Exit: a short comprehension playtest can identify species roles, current
 pressure, selected upgrade effect, and run outcome cause.
 
-### Sprint 5 - Roguelike loop
+### Sprint 6 - Roguelike loop
 
 Primary outcome: one completed run changes the choices available in the next.
 
@@ -345,7 +373,7 @@ Primary outcome: one completed run changes the choices available in the next.
 Exit: a fresh profile can complete a run, earn a defined unlock, restart the
 game, and use that unlock in a subsequent run.
 
-### Sprint 6 - Vertical-slice validation
+### Sprint 7 - Vertical-slice validation
 
 Primary outcome: an external player can complete and replay the slice without
 developer intervention.

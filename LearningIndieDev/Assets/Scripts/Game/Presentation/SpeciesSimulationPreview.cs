@@ -11,12 +11,15 @@ namespace SaltyGame
         Ready,
         Running,
         Paused,
+        PhaseDecision,
         Rewards,
         Results,
     }
 
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
+        public const int ContinuousExpeditionPhaseCount = 10;
+
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
         enum PatternPreset
@@ -164,6 +167,9 @@ namespace SaltyGame
             public float carnivoreProbability;
             public float runDurationSeconds;
             public float stepInterval;
+            public int runTicks;
+            public bool continuousPhasesEnabled;
+            public int phaseLengthTicks;
             public int maxPopulation;
             public int minPopulation;
             public SpeciesRuleDraft plant;
@@ -193,6 +199,15 @@ namespace SaltyGame
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
+        [SerializeField, Min(0)]
+        [Tooltip("Exact ticks per run. Zero keeps the legacy duration field; the default 20 seconds at a 0.1 second step is 200 ticks.")]
+        int runTicks;
+        [SerializeField]
+        [Tooltip("Developer test path: freeze the same run at each configured phase boundary instead of creating a new run.")]
+        bool continuousPhasesEnabled = true;
+        [SerializeField, Min(1)]
+        [Tooltip("Ticks between decision boundaries when continuous phases are enabled.")]
+        int phaseLengthTicks = 100;
 
         [Header("Bev Experimental Features")]
         [SerializeField] bool bevExperimentalFeaturesEnabled;
@@ -228,6 +243,10 @@ namespace SaltyGame
         string settingsMessage;
         string lastExperimentalUpgradeId;
         int experimentalOfferRotation;
+        bool phaseDecisionCommitted;
+        int lastSettledPhaseIndex = -1;
+        bool selectedUpgradeAppliedToCurrentRun;
+        string phaseRewardMessage;
 
         const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
@@ -264,14 +283,25 @@ namespace SaltyGame
                 return FormatAuthoredRewardOption(authoredRewardOptions[rewardIndex]);
             }
 
-            return SpeciesUpgradeCatalog.GetDisplayName(GetRewardOptionId(rewardIndex));
+            if (rewardIndex < 0 || rewardIndex >= rewardOptions.Length)
+            {
+                return string.Empty;
+            }
+
+            var legacyUpgrade = rewardOptions[rewardIndex];
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}\nCost: {1} data — {2}",
+                SpeciesUpgradeCatalog.GetDisplayName(legacyUpgrade.Id),
+                legacyUpgrade.Cost,
+                GetLegacyRewardStatus(legacyUpgrade));
         }
 
         public string GetSelectedUpgradeSummary()
         {
             if (selectedUpgradeSnapshot != null)
             {
-                return FormatSnapshotSummary(selectedUpgradeSnapshot);
+                return FormatSnapshotSummary(selectedUpgradeSnapshot, selectedUpgradeAppliedToCurrentRun);
             }
 
             return selectedUpgrade == null
@@ -284,8 +314,16 @@ namespace SaltyGame
         public int BaseSeed => seed;
         public int MaximumPopulation => maxPopulation;
         public int MinimumPopulation => minPopulation;
-        public float RunDurationSeconds => runDurationSeconds;
+        public float RunDurationSeconds => runTicks > 0
+            ? (float)(runTicks * (double)stepInterval)
+            : runDurationSeconds;
         public float StepInterval => stepInterval;
+        public int RunTicks => runTicks > 0
+            ? runTicks
+            : CellularSimData.CalculateRunTicks(runDurationSeconds, stepInterval);
+        public bool ContinuousPhasesEnabled => continuousPhasesEnabled;
+        public int PhaseLengthTicks => phaseLengthTicks;
+        public int ContinuousPhaseCount => ContinuousExpeditionPhaseCount;
         public float PlantProbability => plantProbability;
         public float HerbivoreProbability => herbivoreProbability;
         public float CarnivoreProbability => carnivoreProbability;
@@ -300,6 +338,7 @@ namespace SaltyGame
         public int SelectedScenarioIndex => selectedScenarioIndex;
         public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
+        public string PhaseRewardMessage => phaseRewardMessage ?? string.Empty;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
 
         public bool TryApplyLaunchRequest(SimulationLaunchRequest launch, out string validationMessage)
@@ -466,16 +505,19 @@ namespace SaltyGame
             if (simulationHelper != null)
             {
                 simulationHelper.RunCompleted -= HandleRunCompleted;
+                simulationHelper.PhaseBoundaryReached -= HandlePhaseBoundaryReached;
             }
 
             if (simulationManager != null)
             {
                 simulationManager.RunCompleted -= HandleRunCompleted;
+                simulationManager.PhaseBoundaryReached -= HandlePhaseBoundaryReached;
                 simulationManager = null;
             }
 
             simulationHelper = helper;
             simulationHelper.RunCompleted += HandleRunCompleted;
+            simulationHelper.PhaseBoundaryReached += HandlePhaseBoundaryReached;
             if (existingRunner != null)
             {
                 simulationHelper.SetRunner(existingRunner);
@@ -567,11 +609,13 @@ namespace SaltyGame
             if (simulationHelper != null)
             {
                 simulationHelper.RunCompleted += HandleRunCompleted;
+                simulationHelper.PhaseBoundaryReached += HandlePhaseBoundaryReached;
             }
             else
             {
                 simulationManager = new SimulationManager();
                 simulationManager.RunCompleted += HandleRunCompleted;
+                simulationManager.PhaseBoundaryReached += HandlePhaseBoundaryReached;
             }
 
             playerSpecies = new SpeciesId(string.IsNullOrWhiteSpace(playerSpeciesKey)
@@ -600,11 +644,38 @@ namespace SaltyGame
             if (simulationManager != null)
             {
                 simulationManager.RunCompleted -= HandleRunCompleted;
+                simulationManager.PhaseBoundaryReached -= HandlePhaseBoundaryReached;
             }
 
             if (simulationHelper != null)
             {
                 simulationHelper.RunCompleted -= HandleRunCompleted;
+                simulationHelper.PhaseBoundaryReached -= HandlePhaseBoundaryReached;
+            }
+        }
+
+        void HandlePhaseBoundaryReached(SimulationRunState run)
+        {
+            if (continuousPhasesEnabled
+                && run != null
+                && run.Status == SimulationRunStatus.AwaitingDecision)
+            {
+                if (lastSettledPhaseIndex == run.PhaseIndex)
+                {
+                    return;
+                }
+
+                var phaseResult = SimulationRunResults.Create(run);
+                progression?.AddCurrency(phaseResult.CurrencyEarned);
+                lastSettledPhaseIndex = run.PhaseIndex;
+                phaseDecisionCommitted = false;
+                phaseRewardMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "Phase {0} complete: {1} data earned from current survivors.",
+                    run.PhaseIndex,
+                    phaseResult.CurrencyEarned);
+                PrepareRewardOptions();
+                previewState = SpeciesPreviewState.PhaseDecision;
             }
         }
 
@@ -618,8 +689,18 @@ namespace SaltyGame
             result = SimulationRunResults.Create(run);
             RunCompleted?.Invoke(this, run);
             progression.AddCurrency(result.CurrencyEarned);
-            PrepareRewardOptions();
             rewardGranted = true;
+
+            // Continuous runs only offer upgrades at phase boundaries. A
+            // terminal result must not fall back into the legacy reward flow.
+            if (continuousPhasesEnabled && run?.SupportsContinuation == true)
+            {
+                rewardMessage = string.Empty;
+                previewState = SpeciesPreviewState.Results;
+                return;
+            }
+
+            PrepareRewardOptions();
             previewState = SpeciesPreviewState.Rewards;
         }
 
@@ -668,6 +749,67 @@ namespace SaltyGame
             bool randomizeSeed,
             out string validationMessage)
         {
+            return TryApplyGlobalSettingsCore(
+                widthValue,
+                heightValue,
+                seedValue,
+                maximumPopulationValue,
+                minimumPopulationValue,
+                runDurationValue,
+                stepIntervalValue,
+                plantProbabilityValue,
+                herbivoreProbabilityValue,
+                carnivoreProbabilityValue,
+                randomizeSeed,
+                runWindowIsTicks: false,
+                out validationMessage);
+        }
+
+        public bool TryApplyGlobalSettingsForTicks(
+            string widthValue,
+            string heightValue,
+            string seedValue,
+            string maximumPopulationValue,
+            string minimumPopulationValue,
+            string runTicksValue,
+            string stepIntervalValue,
+            string plantProbabilityValue,
+            string herbivoreProbabilityValue,
+            string carnivoreProbabilityValue,
+            bool randomizeSeed,
+            out string validationMessage)
+        {
+            return TryApplyGlobalSettingsCore(
+                widthValue,
+                heightValue,
+                seedValue,
+                maximumPopulationValue,
+                minimumPopulationValue,
+                runTicksValue,
+                stepIntervalValue,
+                plantProbabilityValue,
+                herbivoreProbabilityValue,
+                carnivoreProbabilityValue,
+                randomizeSeed,
+                runWindowIsTicks: true,
+                out validationMessage);
+        }
+
+        bool TryApplyGlobalSettingsCore(
+            string widthValue,
+            string heightValue,
+            string seedValue,
+            string maximumPopulationValue,
+            string minimumPopulationValue,
+            string runWindowValue,
+            string stepIntervalValue,
+            string plantProbabilityValue,
+            string herbivoreProbabilityValue,
+            string carnivoreProbabilityValue,
+            bool randomizeSeed,
+            bool runWindowIsTicks,
+            out string validationMessage)
+        {
             validationMessage = string.Empty;
             if (previewState != SpeciesPreviewState.Ready || sessionStarted)
             {
@@ -676,16 +818,29 @@ namespace SaltyGame
                 return false;
             }
 
-            if (!TryParseInt(widthValue, "Grid width", out var parsedWidth)
-                || !TryParseInt(heightValue, "Grid height", out var parsedHeight)
-                || !TryParseInt(seedValue, "Base seed", out var parsedSeed)
-                || !TryParseInt(maximumPopulationValue, "Maximum population", out var parsedMaximumPopulation)
-                || !TryParseInt(minimumPopulationValue, "Minimum population", out var parsedMinimumPopulation)
-                || !TryParseFloat(runDurationValue, "Run duration", out var parsedRunDuration)
-                || !TryParseFloat(stepIntervalValue, "Step interval", out var parsedStepInterval)
-                || !TryParseFloat(plantProbabilityValue, "Plant probability", out var parsedPlantProbability)
-                || !TryParseFloat(herbivoreProbabilityValue, "Herbivore probability", out var parsedHerbivoreProbability)
-                || !TryParseFloat(carnivoreProbabilityValue, "Carnivore probability", out var parsedCarnivoreProbability))
+            var parsedWidth = 0;
+            var parsedHeight = 0;
+            var parsedSeed = 0;
+            var parsedMaximumPopulation = 0;
+            var parsedMinimumPopulation = 0;
+            var parsedRunTicks = 0;
+            var parsedRunDuration = 0f;
+            var parsedStepInterval = 0f;
+            var parsedPlantProbability = 0f;
+            var parsedHerbivoreProbability = 0f;
+            var parsedCarnivoreProbability = 0f;
+            if (!TryParseInt(widthValue, "Grid width", out parsedWidth)
+                || !TryParseInt(heightValue, "Grid height", out parsedHeight)
+                || !TryParseInt(seedValue, "Base seed", out parsedSeed)
+                || !TryParseInt(maximumPopulationValue, "Maximum population", out parsedMaximumPopulation)
+                || !TryParseInt(minimumPopulationValue, "Minimum population", out parsedMinimumPopulation)
+                || (runWindowIsTicks
+                    ? !TryParseInt(runWindowValue, "Run ticks", out parsedRunTicks)
+                    : !TryParseFloat(runWindowValue, "Run duration", out parsedRunDuration))
+                || !TryParseFloat(stepIntervalValue, "Step interval", out parsedStepInterval)
+                || !TryParseFloat(plantProbabilityValue, "Plant probability", out parsedPlantProbability)
+                || !TryParseFloat(herbivoreProbabilityValue, "Herbivore probability", out parsedHerbivoreProbability)
+                || !TryParseFloat(carnivoreProbabilityValue, "Carnivore probability", out parsedCarnivoreProbability))
             {
                 validationMessage = settingsMessage;
                 return false;
@@ -696,14 +851,78 @@ namespace SaltyGame
             seed = parsedSeed;
             maxPopulation = Mathf.Max(0, parsedMaximumPopulation);
             minPopulation = Mathf.Max(0, parsedMinimumPopulation);
-            runDurationSeconds = Mathf.Max(1f, parsedRunDuration);
             stepInterval = Mathf.Max(0.01f, parsedStepInterval);
+            if (runWindowIsTicks)
+            {
+                runTicks = Mathf.Max(1, parsedRunTicks);
+                runDurationSeconds = (float)(runTicks * (double)stepInterval);
+                if (float.IsNaN(runDurationSeconds) || float.IsInfinity(runDurationSeconds))
+                {
+                    validationMessage = "Run ticks and step interval produce an invalid run duration.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+            }
+            else
+            {
+                runTicks = 0;
+                runDurationSeconds = Mathf.Max(1f, parsedRunDuration);
+            }
+
             plantProbability = Mathf.Clamp01(parsedPlantProbability);
             herbivoreProbability = Mathf.Clamp01(parsedHerbivoreProbability);
             carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
             randomizeSeedOnStart = randomizeSeed;
             settingsMessage = "Global settings applied to the next run.";
             PrepareNextRun();
+            validationMessage = settingsMessage;
+            return true;
+        }
+
+        public bool TryApplyContinuousPhases(
+            bool enabled,
+            string phaseLengthValue,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (!SettingsEditable)
+            {
+                validationMessage = "Continuous phases can only be changed before a session starts.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (!enabled)
+            {
+                continuousPhasesEnabled = false;
+                settingsMessage = "Continuous phases disabled; runs use the normal terminal flow.";
+                validationMessage = settingsMessage;
+                return true;
+            }
+
+            if (!TryParseInt(phaseLengthValue, "Phase length", out var parsedPhaseLength))
+            {
+                validationMessage = settingsMessage;
+                return false;
+            }
+
+            if (parsedPhaseLength <= 0)
+            {
+                validationMessage = "Phase length must be greater than zero.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (parsedPhaseLength > int.MaxValue / ContinuousExpeditionPhaseCount)
+            {
+                validationMessage = "Phase length is too large for a ten-phase expedition.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            continuousPhasesEnabled = true;
+            phaseLengthTicks = parsedPhaseLength;
+            settingsMessage = $"Continuous phases enabled: {ContinuousExpeditionPhaseCount} phases, decision every {phaseLengthTicks} ticks.";
             validationMessage = settingsMessage;
             return true;
         }
@@ -929,6 +1148,10 @@ namespace SaltyGame
             selectedUpgrade = null;
             selectedUpgradeSnapshot = null;
             rewardMessage = string.Empty;
+            phaseRewardMessage = string.Empty;
+            phaseDecisionCommitted = false;
+            lastSettledPhaseIndex = -1;
+            selectedUpgradeAppliedToCurrentRun = false;
             previewState = SpeciesPreviewState.Running;
         }
 
@@ -936,7 +1159,8 @@ namespace SaltyGame
         {
             if (Run != null
                 && (Run.Status == SimulationRunStatus.Running
-                    || Run.Status == SimulationRunStatus.Paused))
+                    || Run.Status == SimulationRunStatus.Paused
+                    || Run.Status == SimulationRunStatus.AwaitingDecision))
             {
                 if (simulationHelper != null)
                 {
@@ -960,6 +1184,16 @@ namespace SaltyGame
                     && CanPurchaseAuthoredReward(authoredRewardOptions[rewardIndex]);
             }
 
+            if (previewState == SpeciesPreviewState.PhaseDecision)
+            {
+                return rewardIndex >= 0
+                    && rewardIndex < rewardOptions.Length
+                    && progression != null
+                    && !phaseDecisionCommitted
+                    && Run?.Status == SimulationRunStatus.AwaitingDecision
+                    && CanPurchaseLegacyBoundaryReward(rewardOptions[rewardIndex]);
+            }
+
             return previewState == SpeciesPreviewState.Rewards
                 && progression != null
                 && rewardIndex >= 0
@@ -972,6 +1206,11 @@ namespace SaltyGame
             if (!CanPurchaseReward(rewardIndex))
             {
                 return false;
+            }
+
+            if (previewState == SpeciesPreviewState.PhaseDecision)
+            {
+                return PurchaseBoundaryReward(rewardIndex);
             }
 
             if (usingAuthoredRewardOptions)
@@ -990,6 +1229,7 @@ namespace SaltyGame
 
                 selectedUpgrade = null;
                 selectedUpgradeSnapshot = authoredUpgrade;
+                selectedUpgradeAppliedToCurrentRun = false;
                 previewState = SpeciesPreviewState.Results;
                 rewardMessage = string.Empty;
                 return true;
@@ -1003,6 +1243,7 @@ namespace SaltyGame
 
             selectedUpgrade = upgrade;
             selectedUpgradeSnapshot = null;
+            selectedUpgradeAppliedToCurrentRun = false;
             if (bevExperimentalFeaturesEnabled)
             {
                 lastExperimentalUpgradeId = upgrade.Id;
@@ -1012,11 +1253,146 @@ namespace SaltyGame
             return true;
         }
 
+        bool PurchaseBoundaryReward(int rewardIndex)
+        {
+            if (Run == null
+                || Run.Status != SimulationRunStatus.AwaitingDecision
+                || phaseDecisionCommitted
+                || GetBoundaryUpgrade(rewardIndex) == null)
+            {
+                return false;
+            }
+
+            var authoredUpgrade = GetBoundaryUpgrade(rewardIndex);
+            if (authoredUpgrade == null
+                || !authoredUpgrade.CanApplyAfterRunStart
+                || !progression.TrySpend(authoredUpgrade.Cost))
+            {
+                return false;
+            }
+
+            if (!progression.TryApplyRunUpgrade(authoredUpgrade))
+            {
+                progression.AddCurrency(authoredUpgrade.Cost);
+                return false;
+            }
+
+            var nextRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            {
+                [playerSpecies] = progression.CurrentRules,
+            };
+            var continued = simulationHelper != null
+                ? simulationHelper.ContinueWithBoundaryState(
+                    nextRules,
+                    CreateExperimentalOptions(),
+                    progression.AppliedRunUpgrades)
+                : simulationManager != null
+                    && simulationManager.ContinueWithBoundaryState(
+                        nextRules,
+                        CreateExperimentalOptions(),
+                        progression.AppliedRunUpgrades);
+            if (!continued)
+            {
+                // The status check above makes this an unreachable path in the
+                // single-threaded preview, but do not present a successful
+                // purchase when the retained run could not resume.
+                return false;
+            }
+
+            rules = nextRules;
+            selectedUpgrade = null;
+            selectedUpgradeSnapshot = authoredUpgrade;
+            selectedUpgradeAppliedToCurrentRun = true;
+            phaseDecisionCommitted = true;
+            previewState = SpeciesPreviewState.Running;
+            rewardMessage = string.Empty;
+            return true;
+        }
+
+        bool CanPurchaseLegacyBoundaryReward(SpeciesUpgrade upgrade)
+        {
+            if (upgrade == null || progression.GetUpgradeLevel(upgrade.Id) > 0)
+            {
+                return false;
+            }
+
+            var snapshot = upgrade.CreateSnapshot(playerSpecies);
+            return snapshot.CanApplyAfterRunStart
+                && progression.Currency >= snapshot.Cost;
+        }
+
+        string GetLegacyRewardStatus(SpeciesUpgrade upgrade)
+        {
+            if (progression == null)
+            {
+                return "UNAVAILABLE";
+            }
+
+            if (previewState == SpeciesPreviewState.PhaseDecision
+                && progression.GetUpgradeLevel(upgrade.Id) > 0)
+            {
+                return "OWNED";
+            }
+
+            return progression.Currency < upgrade.Cost
+                ? $"NEED {upgrade.Cost - progression.Currency} more data"
+                : "AVAILABLE";
+        }
+
+        SpeciesUpgradeSnapshot GetBoundaryUpgrade(int rewardIndex)
+        {
+            return usingAuthoredRewardOptions
+                ? rewardIndex >= 0 && rewardIndex < authoredRewardOptions.Length
+                    ? authoredRewardOptions[rewardIndex]
+                    : null
+                : rewardIndex >= 0 && rewardIndex < rewardOptions.Length
+                    ? rewardOptions[rewardIndex].CreateSnapshot(playerSpecies)
+                    : null;
+        }
+
         public void ContinueWithoutUpgrade()
         {
-            if (previewState == SpeciesPreviewState.Rewards)
+            if (previewState == SpeciesPreviewState.PhaseDecision)
+            {
+                if (phaseDecisionCommitted)
+                {
+                    return;
+                }
+
+                var continued = simulationHelper != null
+                    ? simulationHelper.ContinueWithoutUpgrade()
+                    : simulationManager != null && simulationManager.ContinueWithoutUpgrade();
+                if (continued)
+                {
+                    phaseDecisionCommitted = true;
+                    previewState = SpeciesPreviewState.Running;
+                }
+            }
+            else if (previewState == SpeciesPreviewState.Rewards)
             {
                 previewState = SpeciesPreviewState.Results;
+            }
+        }
+
+        public void EndSimulation()
+        {
+            if (Run == null
+                || (Run.Status != SimulationRunStatus.Running
+                    && Run.Status != SimulationRunStatus.AwaitingDecision))
+            {
+                return;
+            }
+
+            var ended = simulationHelper != null
+                ? simulationHelper.EndRun()
+                : simulationManager != null && simulationManager.End();
+            if (ended
+                && previewState != SpeciesPreviewState.Rewards
+                && previewState != SpeciesPreviewState.Results)
+            {
+                previewState = continuousPhasesEnabled && Run?.SupportsContinuation == true
+                    ? SpeciesPreviewState.Results
+                    : SpeciesPreviewState.Rewards;
             }
         }
 
@@ -1075,6 +1451,9 @@ namespace SaltyGame
                 carnivoreProbability = carnivoreProbability,
                 runDurationSeconds = runDurationSeconds,
                 stepInterval = stepInterval,
+                runTicks = runTicks,
+                continuousPhasesEnabled = continuousPhasesEnabled,
+                phaseLengthTicks = phaseLengthTicks,
                 maxPopulation = maxPopulation,
                 minPopulation = minPopulation,
                 plant = GetRuleDraftOrDefault(SpeciesIds.Plant),
@@ -1118,6 +1497,9 @@ namespace SaltyGame
             carnivoreProbability = Mathf.Clamp01(saved.carnivoreProbability);
             runDurationSeconds = Mathf.Max(1f, saved.runDurationSeconds);
             stepInterval = Mathf.Max(0.01f, saved.stepInterval);
+            runTicks = Mathf.Max(0, saved.runTicks);
+            continuousPhasesEnabled = saved.continuousPhasesEnabled;
+            phaseLengthTicks = Mathf.Max(1, saved.phaseLengthTicks);
             maxPopulation = Mathf.Max(0, saved.maxPopulation);
             minPopulation = Mathf.Max(0, saved.minPopulation);
             // Saved defaults may come from a different scenario. Do not add
@@ -1154,25 +1536,39 @@ namespace SaltyGame
             };
             rules = currentRules;
             var simulationData = CreateSimulationData();
+            var continuousRun = continuousPhasesEnabled
+                && phaseLengthTicks > 0
+                && phaseLengthTicks <= int.MaxValue / ContinuousExpeditionPhaseCount;
+            if (continuousPhasesEnabled && !continuousRun)
+            {
+                continuousPhasesEnabled = false;
+                settingsMessage = "Continuous phases disabled because the phase length is invalid for a ten-phase expedition.";
+            }
+
+            var targetTicks = continuousRun
+                ? phaseLengthTicks * ContinuousExpeditionPhaseCount
+                : simulationData.RunTicks;
+            var durationSeconds = continuousRun
+                ? (float)(targetTicks * (double)simulationData.StepInterval)
+                : simulationData.RunDurationSeconds;
 
             var run = new SimulationRunState(
                 SpeciesInitialGridFactory.Create(simulationData, seed + runNumber),
                 playerSpecies,
                 seed + runNumber,
-                simulationData.RunDurationSeconds);
-            var experimentalOptions = bevExperimentalFeaturesEnabled
-                ? new SpeciesExperimentalOptions(
-                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
-                    foxAttackCooldownTicks,
-                    progression?.PreContactAvoidanceChance ?? 0f)
-                : SpeciesExperimentalOptions.None;
+                durationSeconds,
+                targetTicks);
+            if (continuousRun)
+            {
+                run.ConfigureContinuousPhases(phaseLengthTicks);
+            }
             var nextRunner = new SpeciesSimulationRunner(
                 run,
                 simulationData,
                 combatResolutionMode: bevExperimentalFeaturesEnabled
                     ? SpeciesCombatResolutionMode.OpposedRoll
                     : SpeciesCombatResolutionMode.LegacyFixedDamage,
-                experimentalOptions: experimentalOptions,
+                experimentalOptions: CreateExperimentalOptions(),
                 upgradeLoadout: progression?.AppliedRunUpgrades);
             if (simulationHelper != null)
             {
@@ -1186,9 +1582,13 @@ namespace SaltyGame
             rewardGranted = false;
             selectedUpgrade = null;
             selectedUpgradeSnapshot = null;
+            selectedUpgradeAppliedToCurrentRun = false;
             authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
             usingAuthoredRewardOptions = false;
             rewardMessage = string.Empty;
+            phaseRewardMessage = string.Empty;
+            phaseDecisionCommitted = false;
+            lastSettledPhaseIndex = -1;
             previewState = SpeciesPreviewState.Ready;
             runNumber++;
         }
@@ -1235,14 +1635,31 @@ namespace SaltyGame
             experimentalOfferRotation++;
         }
 
+        SpeciesExperimentalOptions CreateExperimentalOptions()
+        {
+            return bevExperimentalFeaturesEnabled
+                ? new SpeciesExperimentalOptions(
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    foxAttackCooldownTicks,
+                    progression?.PreContactAvoidanceChance ?? 0f)
+                : SpeciesExperimentalOptions.None;
+        }
+
         bool CanPurchaseAuthoredReward(SpeciesUpgradeSnapshot upgrade)
         {
-            if (previewState != SpeciesPreviewState.Rewards
+            if ((previewState != SpeciesPreviewState.Rewards
+                    && previewState != SpeciesPreviewState.PhaseDecision)
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
                 || progression.GetUpgradeLevel(upgrade.Id) > 0
                 || progression.Currency < upgrade.Cost)
+            {
+                return false;
+            }
+
+            if (previewState == SpeciesPreviewState.PhaseDecision
+                && (!continuousPhasesEnabled || phaseDecisionCommitted || !upgrade.CanApplyAfterRunStart))
             {
                 return false;
             }
@@ -1288,6 +1705,12 @@ namespace SaltyGame
                 return "OWNED";
             }
 
+            if (previewState == SpeciesPreviewState.PhaseDecision
+                && !upgrade.CanApplyAfterRunStart)
+            {
+                return "LAUNCH ONLY";
+            }
+
             var missingPrerequisites = upgrade.PrerequisiteUpgradeIds
                 .Where(id => progression.GetUpgradeLevel(id) == 0)
                 .ToArray();
@@ -1311,13 +1734,16 @@ namespace SaltyGame
             return "AVAILABLE";
         }
 
-        static string FormatSnapshotSummary(SpeciesUpgradeSnapshot upgrade)
+        static string FormatSnapshotSummary(SpeciesUpgradeSnapshot upgrade, bool appliedToCurrentRun = false)
         {
             var modifiers = string.Join(
                 ", ",
                 upgrade.Modifiers.Select(
                     FormatModifierForDisplay));
-            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {modifiers}. Applied to the next run.";
+            var timing = appliedToCurrentRun
+                ? "Applied to this run and carried into the next run."
+                : "Applied to the next run.";
+            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {modifiers}. {timing}";
         }
 
         static string FormatModifierForDisplay(SpeciesUpgradeModifier modifier)
@@ -1528,6 +1954,7 @@ namespace SaltyGame
                 var authoredData = SelectedScenario.CreateRuntimeData();
                 return authoredData
                     .WithGridSize(width, height)
+                    .WithRunTicks(RunTicks, stepInterval)
                     .WithSpeciesRules(playerSpecies, rules[playerSpecies]);
             }
 
@@ -1541,7 +1968,9 @@ namespace SaltyGame
                     [SpeciesIds.Carnivore] = carnivoreProbability,
                 },
                 rules,
-                runDurationSeconds,
+                runTicks > 0
+                    ? (float)(runTicks * (double)stepInterval)
+                    : runDurationSeconds,
                 stepInterval,
                 maxPopulation,
                 minPopulation);
@@ -1559,6 +1988,7 @@ namespace SaltyGame
             height = authoredData.Height;
             runDurationSeconds = authoredData.RunDurationSeconds;
             stepInterval = authoredData.StepInterval;
+            runTicks = authoredData.RunTicks;
             maxPopulation = authoredData.MaxPopulation;
             minPopulation = authoredData.MinPopulation;
             rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);

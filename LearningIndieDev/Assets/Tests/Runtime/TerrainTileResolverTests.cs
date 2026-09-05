@@ -21,7 +21,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void DiagonalOnlyConnectionsAreRemoved()
+        public void DiagonalOnlyContactsPromoteAdjacentCardinals()
         {
             Assert.That(TerrainTileResolver.NormalizeMask(TerrainTileResolver.NorthEast),
                 Is.EqualTo(TerrainTileResolver.North | TerrainTileResolver.NorthEast | TerrainTileResolver.East));

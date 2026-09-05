@@ -5,13 +5,13 @@ namespace SaltyGame
 {
     public sealed class SpeciesSimulationRunner
     {
-        readonly CellularSimData simulationData;
-        readonly IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
+        CellularSimData simulationData;
+        IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         readonly float stepSeconds;
         readonly int maxPopulation;
         readonly SpeciesCombatResolutionMode combatResolutionMode;
         readonly SpeciesAttackOpportunityMode attackOpportunityMode;
-        readonly SpeciesExperimentalOptions experimentalOptions;
+        SpeciesExperimentalOptions experimentalOptions;
         Grid<SpeciesCell> previousCells;
 
         public SpeciesSimulationRunner(
@@ -70,6 +70,10 @@ namespace SaltyGame
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
+            if (Run.TargetTicks == 0)
+            {
+                Run.SetTargetTicks(simulationData.RunTicks);
+            }
             Run.SetUpgradeLoadout(upgradeLoadout);
             Run.SetRulesetFingerprint(simulationData.Fingerprint);
         }
@@ -98,6 +102,51 @@ namespace SaltyGame
             previousCells = null;
         }
 
+        public bool InstallBoundaryState(
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
+            SpeciesExperimentalOptions nextExperimentalOptions,
+            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout)
+        {
+            if (Run.Status != SimulationRunStatus.AwaitingDecision)
+            {
+                return false;
+            }
+
+            if (nextRules == null)
+            {
+                throw new ArgumentNullException(nameof(nextRules));
+            }
+
+            if (simulationData != null)
+            {
+                var updatedData = simulationData;
+                foreach (var entry in nextRules)
+                {
+                    if (!updatedData.SpeciesRules.TryGetValue(entry.Key, out var currentRules)
+                        || !ReferenceEquals(currentRules, entry.Value))
+                    {
+                        updatedData = updatedData.WithSpeciesRules(entry.Key, entry.Value);
+                    }
+                }
+
+                simulationData = updatedData;
+                rules = updatedData.SpeciesRules;
+                Run.SetRulesetFingerprint(updatedData.Fingerprint);
+                if (Run.TargetTicks == 0)
+                {
+                    Run.SetTargetTicks(updatedData.RunTicks);
+                }
+            }
+            else
+            {
+                rules = nextRules;
+            }
+
+            experimentalOptions = nextExperimentalOptions ?? SpeciesExperimentalOptions.None;
+            Run.SetUpgradeLoadout(nextUpgradeLoadout);
+            return true;
+        }
+
         public bool AdvanceOneTick()
         {
             if (Run.Status == SimulationRunStatus.Ready)
@@ -105,7 +154,9 @@ namespace SaltyGame
                 Start();
             }
 
-            if (Run.Status == SimulationRunStatus.Paused || Run.Status == SimulationRunStatus.Complete)
+            if (Run.Status == SimulationRunStatus.Paused
+                || Run.Status == SimulationRunStatus.AwaitingDecision
+                || Run.Status == SimulationRunStatus.Complete)
             {
                 return false;
             }

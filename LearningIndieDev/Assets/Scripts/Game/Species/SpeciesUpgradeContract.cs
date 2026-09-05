@@ -131,6 +131,26 @@ namespace SaltyGame
         public string RegistryFingerprint => SpeciesAttributeRegistry.Fingerprint;
         public string Fingerprint { get; }
 
+        // These modifiers only affect how a fresh world is seeded. Offering an
+        // upgrade with either one at a frozen phase boundary would charge for
+        // an effect that cannot change the existing world.
+        public bool CanApplyAfterRunStart
+        {
+            get
+            {
+                foreach (var modifier in modifiers)
+                {
+                    if (modifier.AttributeId == SpeciesAttributeIds.StartingEnergy
+                        || modifier.AttributeId == SpeciesAttributeIds.StartingFoodReserve)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+        }
+
         public SpeciesRules Apply(SpeciesRules rules)
         {
             if (rules == null)

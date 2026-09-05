@@ -4,6 +4,14 @@
 
 ## Treatment premise
 
+**Continuation scope (2026-09-04):** the 20-second fixture below remains a
+bounded balance experiment. Target gameplay continues its evolved ecosystem
+across decision breaks; it does not refill resources or replace Hare/Fox
+populations. Existing single-window outcomes do not establish later-phase
+recovery, long-run stability or sequential upgrade balance. The
+[migration plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
+[retest register](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) cover this gap.
+
 The hare is not a complete gameplay unit by itself. Grass supplies the baseline
 energy economy; the fox creates the readable threat that turns abundance into a
 decision. We should therefore balance this pair as a small interaction system,

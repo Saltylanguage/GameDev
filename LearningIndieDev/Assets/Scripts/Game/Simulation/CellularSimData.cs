@@ -45,9 +45,11 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(speciesRules));
             }
 
-            if (runDurationSeconds <= 0f)
+            if (float.IsNaN(runDurationSeconds)
+                || float.IsInfinity(runDurationSeconds)
+                || runDurationSeconds <= 0f)
             {
-                throw new ArgumentOutOfRangeException(nameof(runDurationSeconds), runDurationSeconds, "Run duration must be greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(runDurationSeconds), runDurationSeconds, "Run duration must be finite and greater than zero.");
             }
 
             if (stepInterval <= 0f)
@@ -278,6 +280,7 @@ namespace SaltyGame
         public int Height { get; }
         public float RunDurationSeconds { get; }
         public float StepInterval { get; }
+        public int RunTicks => CalculateRunTicks(RunDurationSeconds, StepInterval);
         public int MaxPopulation { get; }
         public int MinPopulation { get; }
         public string Fingerprint { get; }
@@ -396,6 +399,44 @@ namespace SaltyGame
                 terrainDefinitions,
                 alphaOffspringRules,
                 startingPopulations);
+        }
+
+        public CellularSimData WithRunTicks(int runTicks, float stepInterval)
+        {
+            if (runTicks <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(runTicks), runTicks, "Run ticks must be greater than zero.");
+            }
+
+            if (stepInterval <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stepInterval), stepInterval, "Simulation step must be greater than zero.");
+            }
+
+            return WithRunWindow((float)(runTicks * (double)stepInterval), stepInterval);
+        }
+
+        public static int CalculateRunTicks(float runDurationSeconds, float stepInterval)
+        {
+            if (float.IsNaN(runDurationSeconds)
+                || float.IsInfinity(runDurationSeconds)
+                || runDurationSeconds <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(runDurationSeconds), runDurationSeconds, "Run duration must be finite and greater than zero.");
+            }
+
+            if (stepInterval <= 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(stepInterval), stepInterval, "Simulation step must be greater than zero.");
+            }
+
+            // The small tolerance keeps an authored duration such as 0.3s at a
+            // 0.1s step from becoming four ticks because of float division.
+            var calculatedTicks = Math.Ceiling(
+                (double)runDurationSeconds / stepInterval - 0.000001d);
+            return calculatedTicks >= int.MaxValue
+                ? int.MaxValue
+                : Math.Max(1, (int)calculatedTicks);
         }
 
         public CellularSimData WithGridSize(int width, int height)

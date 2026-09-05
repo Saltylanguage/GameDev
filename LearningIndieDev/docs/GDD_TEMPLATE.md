@@ -1,6 +1,6 @@
 # [Bio OS] (placeholder) - Game Design Document
 
-> Status: Draft | Owner: [Josh Campbell] | Last updated: [2026-08-18] | Decision horizon: [prototype / vertical slice / alpha / release]
+> Status: Draft; ten-phase direction committed, controlled preview implemented, telemetry/reporting pending | Owner: Josh Campbell | Last updated: 2026-09-05 | Decision horizon: prototype / vertical slice
 
 ## How to use this document
 
@@ -13,7 +13,14 @@ Bio Os is an ecology simulation game that follows the trends of incremental game
 
 ### Player promise
 [What the player repeatedly gets to do, feel, and master.]
-The player will follow a rapid game loop where they make a decision, see the results of the new simulation, get evaluated and awarded currency (or penalty), return to the ecology lab, spend their currency on upgrades and new features, and run another simluation. As players understand the interactions within an ecosystem and unlock new upgrades and species/biome features they will master the ability to create successful species and balanced ecologies.
+The player prepares an expedition, observes its evolving ecosystem, reviews each
+simulation phase, and buys an upgrade or skips it before continuing the same
+world. Creatures and resources carry their current state into the next phase.
+When the expedition ends, the player reviews its result and returns to the Lab
+for the applicable progression and preparation for a new expedition. As players
+understand species interactions and unlock upgrades, species and biomes, they
+learn to create successful species and balanced ecologies. Currency and loss
+rules remain governed by the product brief and scientific-data economy plan.
 
 
 ### Design pillars
@@ -30,13 +37,26 @@ The player will follow a rapid game loop where they make a decision, see the res
 
 ## 2. Core game loop
 
-1.Player decisions (species selection, upgrades, settings)
-2. Player Starts the simulation
-3. Simulation Runs
-4. Results screen
-5. Player Decision (continue/end)
-6. if continue -> select upgrade. else go back to step 1.
-7. Run next simulation
+**Committed direction; runtime migration pending:**
+
+1. Select the scenario, species and starting options; launch one expedition.
+2. Create its ecosystem once and advance a simulation phase.
+3. Freeze after the phase's final completed tick and show a phase summary.
+4. If the expedition continues, buy one eligible upgrade or explicitly skip it.
+5. Continue from the frozen ecosystem under the resulting rules. Preserve the
+   board, creatures, resources, ages, energy, cooldowns and accumulated history.
+6. Repeat until the expedition ends; show final results and return to the Lab.
+7. Only an explicit new expedition or restart creates a new starting world.
+
+The prototype exposes the phase length for tuning; 200 ticks at a 0.1-second
+step remains the current per-phase target.
+The [product brief](PRODUCT_BRIEF.md) specifies ten phases, with 200 ticks as
+the current per-phase target, and nine decision breaks for the vertical slice.
+Its longer viewing-time target remains a separate pacing decision. A reward break is not a new expedition, and ordinary
+Continue is not a restart or a player disk-save operation.
+
+Implementation, unresolved mechanic details, cross-project retests and document
+coverage are in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ### Moment-to-moment cadence
 
@@ -47,7 +67,9 @@ The player will follow a rapid game loop where they make a decision, see the res
   
 - Decision points:- [selecting a species to simulate, selecting a biome, selecting upgrades, choosing when to end the run]
   
-- Run end: [Species collapse, player either ends run because they think the run will be a bad result, or they reach the time cap.]
+- Run end: player-species extinction after a completed tick, an explicit player
+  decision to end the expedition, or its final phase. A normal phase time limit
+  opens a decision break rather than recreating the ecosystem.
 
 ## 3. Player agency and controls
 
@@ -89,11 +111,21 @@ For each species, define:
 
 ### In-run progression
 
-[How upgrades are earned, selected, combined, and communicated.]
+Temporary upgrades are acquired at frozen phase boundaries and remain in
+purchase order for the rest of the expedition. Skipping preserves both the
+current world and the existing build. An upgrade changes subsequent rules; it
+does not implicitly refill energy, respawn creatures, or reset terrain.
+Initialization-only upgrades are launch-only under the locked CF-0 contract;
+they are not offered as mid-expedition grants. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md)
+and the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ### Between-run progression
 
-[Unlocks, persistent upgrades, scenario/species unlocks, and reset rules.]
+Temporary run evolution ends when the expedition ends, not at each phase
+summary. Lab unlocks and future permanent research follow their separate
+[progression](UPGRADE_SYSTEM_DIRECTION.md) and [economy](SCIENTIFIC_DATA_ECONOMY.md)
+contracts. Player save/load of an unfinished expedition remains outside the
+initial slice; in-memory phase continuation is required.
 
 ### Upgrade template
 
@@ -166,4 +198,6 @@ For each species, define:
 
 | Date | Change | Reason | Impacted sections |
 |---|---|---|---|
+| 2026-09-04 | Make consecutive phases and purchase/skip continuation explicit. | The prototype currently rebuilds the world between windows; the requested design preserves it. Runtime migration is planned, not implemented. | Player promise, core loop, run end, progression |
+| 2026-09-04 | Lock CF-0 lifecycle, boundary-effect and result-window decisions; preserve a fresh legacy report fixture. | Josh approved the same-world Continue contract, launch-only initialization effects, explicit Restart, above-cap energy handling and phase/expedition accounting before runtime work. | Core loop, progression, simulation evidence |
 | [Date] | [Change] | [Reason] | [Sections] |

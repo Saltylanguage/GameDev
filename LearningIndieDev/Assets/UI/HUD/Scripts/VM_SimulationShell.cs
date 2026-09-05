@@ -61,19 +61,22 @@ namespace SaltyGame
         string experimentalHerbivoreStatLineSummary;
         string experimentalUpgradeCountText;
         string currencyText;
+        string phaseRewardText;
         string settingsMessage;
         string gridWidthText;
         string gridHeightText;
         string baseSeedText;
         string maximumPopulationText;
         string minimumPopulationText;
-        string runDurationText;
+        string runTicksText;
+        string phaseLengthTicksText;
         string stepIntervalText;
         string plantProbabilityText;
         string herbivoreProbabilityText;
         string carnivoreProbabilityText;
         string foxAttackCooldownTicksText;
         bool randomizeSeedOnStart;
+        bool continuousPhasesEnabled;
         bool bevExperimentalFeaturesEnabled;
         bool canEditSettings;
         bool developerMode;
@@ -89,6 +92,8 @@ namespace SaltyGame
         bool canResume;
         bool canRestart;
         bool canStop;
+        bool canEnd;
+        bool canContinueWithoutUpgrade;
         bool canPurchaseRewardOption1;
         bool canPurchaseRewardOption2;
         bool canPurchaseRewardOption3;
@@ -97,6 +102,9 @@ namespace SaltyGame
         string rewardOption2Text;
         string rewardOption3Text;
         string selectedUpgradeSummaryText;
+        string resultsTitleText;
+        string resultsMessageText;
+        string playNextSimulationText;
         string[] scenarioOptions = Array.Empty<string>();
         int selectedScenarioIndex;
         string scenarioText;
@@ -108,6 +116,7 @@ namespace SaltyGame
         Visibility settingsVisibility;
         Visibility runningVisibility;
         Visibility pausedVisibility;
+        Visibility phaseDecisionVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
         Visibility experimentalHerbivoreStatLineSummaryVisibility;
@@ -122,6 +131,7 @@ namespace SaltyGame
         public DelegateCommand ResumeCommand { get; private set; }
         public DelegateCommand RestartCommand { get; private set; }
         public DelegateCommand StopCommand { get; private set; }
+        public DelegateCommand EndCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
         public DelegateCommand PurchaseRewardOption1Command { get; private set; }
         public DelegateCommand PurchaseRewardOption2Command { get; private set; }
@@ -139,6 +149,7 @@ namespace SaltyGame
         public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
         public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
+        public string PhaseRewardText => phaseRewardText;
         public string ScenarioText => scenarioText;
         public string PlayerSpeciesText => playerSpeciesText;
         public string RosterText => rosterText;
@@ -168,10 +179,15 @@ namespace SaltyGame
             get => minimumPopulationText;
             set => Set(ref minimumPopulationText, value, nameof(MinimumPopulationText));
         }
-        public string RunDurationText
+        public string RunTicksText
         {
-            get => runDurationText;
-            set => Set(ref runDurationText, value, nameof(RunDurationText));
+            get => runTicksText;
+            set => Set(ref runTicksText, value, nameof(RunTicksText));
+        }
+        public string PhaseLengthTicksText
+        {
+            get => phaseLengthTicksText;
+            set => Set(ref phaseLengthTicksText, value, nameof(PhaseLengthTicksText));
         }
         public string StepIntervalText
         {
@@ -207,6 +223,11 @@ namespace SaltyGame
         {
             get => randomizeSeedOnStart;
             set => Set(ref randomizeSeedOnStart, value, nameof(RandomizeSeedOnStart));
+        }
+        public bool ContinuousPhasesEnabled
+        {
+            get => continuousPhasesEnabled;
+            set => Set(ref continuousPhasesEnabled, value, nameof(ContinuousPhasesEnabled));
         }
         public bool CanEditSettings => canEditSettings;
         public bool DeveloperMode
@@ -283,6 +304,8 @@ namespace SaltyGame
         public bool CanResume => canResume;
         public bool CanRestart => canRestart;
         public bool CanStop => canStop;
+        public bool CanEnd => canEnd;
+        public bool CanContinueWithoutUpgrade => canContinueWithoutUpgrade;
         public bool CanPurchaseRewardOption1 => canPurchaseRewardOption1;
         public bool CanPurchaseRewardOption2 => canPurchaseRewardOption2;
         public bool CanPurchaseRewardOption3 => canPurchaseRewardOption3;
@@ -290,6 +313,9 @@ namespace SaltyGame
         public string RewardOption2Text => rewardOption2Text;
         public string RewardOption3Text => rewardOption3Text;
         public string SelectedUpgradeSummaryText => selectedUpgradeSummaryText;
+        public string ResultsTitleText => resultsTitleText;
+        public string ResultsMessageText => resultsMessageText;
+        public string PlayNextSimulationText => playNextSimulationText;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
         public bool CanReturnToLab => resultsVisibility == Visibility.Visible
             && sceneTransition != null
@@ -345,6 +371,7 @@ namespace SaltyGame
         public Visibility SettingsVisibility => settingsVisibility;
         public Visibility RunningVisibility => runningVisibility;
         public Visibility PausedVisibility => pausedVisibility;
+        public Visibility PhaseDecisionVisibility => phaseDecisionVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
         public Visibility ExperimentalHerbivoreStatLineSummaryVisibility => experimentalHerbivoreStatLineSummaryVisibility;
@@ -698,11 +725,12 @@ namespace SaltyGame
 
         void Awake()
         {
-            StartCommand = new DelegateCommand(() => preview?.StartSimulation());
+            StartCommand = new DelegateCommand(StartSimulation);
             PauseCommand = new DelegateCommand(() => preview?.PauseSimulation());
             ResumeCommand = new DelegateCommand(() => preview?.ResumeSimulation());
             RestartCommand = new DelegateCommand(() => preview?.RestartSimulation());
             StopCommand = new DelegateCommand(() => preview?.StopSimulation());
+            EndCommand = new DelegateCommand(() => preview?.EndSimulation());
             ResetCommand = new DelegateCommand(() => preview?.ResetToStart());
             PurchaseRewardOption1Command = new DelegateCommand(() => preview?.PurchaseReward(0));
             PurchaseRewardOption2Command = new DelegateCommand(() => preview?.PurchaseReward(1));
@@ -793,6 +821,23 @@ namespace SaltyGame
             Set(ref currencyText, preview.Progression == null
                 ? "Currency: 0"
                 : $"Currency: {preview.Progression.Currency}", nameof(CurrencyText));
+            Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
+            var isContinuousRun = preview.ContinuousPhasesEnabled
+                && run?.SupportsContinuation == true;
+            Set(
+                ref resultsTitleText,
+                isContinuousRun ? "Expedition complete" : "Species update",
+                nameof(ResultsTitleText));
+            Set(
+                ref resultsMessageText,
+                isContinuousRun
+                    ? "The expedition is complete. Start a new expedition when ready."
+                    : "The player update is applied. Continue into the next run when ready.",
+                nameof(ResultsMessageText));
+            Set(
+                ref playNextSimulationText,
+                isContinuousRun ? "START NEW EXPEDITION" : "PLAY NEXT SIMULATION",
+                nameof(PlayNextSimulationText));
             SyncScenarioPresentation(run);
             if (force || state == SpeciesPreviewState.Ready)
             {
@@ -804,8 +849,24 @@ namespace SaltyGame
             Set(ref canEditSettings, preview.SettingsEditable, nameof(CanEditSettings));
             Set(ref canPause, runStatus == SimulationRunStatus.Running, nameof(CanPause));
             Set(ref canResume, runStatus == SimulationRunStatus.Paused, nameof(CanResume));
-            Set(ref canRestart, runStatus == SimulationRunStatus.Running || runStatus == SimulationRunStatus.Paused, nameof(CanRestart));
-            Set(ref canStop, runStatus == SimulationRunStatus.Running || runStatus == SimulationRunStatus.Paused, nameof(CanStop));
+            Set(
+                ref canRestart,
+                runStatus == SimulationRunStatus.Running
+                    || runStatus == SimulationRunStatus.Paused
+                    || runStatus == SimulationRunStatus.AwaitingDecision,
+                nameof(CanRestart));
+            Set(
+                ref canStop,
+                runStatus == SimulationRunStatus.Running
+                    || runStatus == SimulationRunStatus.Paused
+                    || runStatus == SimulationRunStatus.AwaitingDecision,
+                nameof(CanStop));
+            Set(
+                ref canEnd,
+                runStatus == SimulationRunStatus.Running
+                    || runStatus == SimulationRunStatus.AwaitingDecision,
+                nameof(CanEnd));
+            Set(ref canContinueWithoutUpgrade, state == SpeciesPreviewState.PhaseDecision, nameof(CanContinueWithoutUpgrade));
             Set(ref rewardOption1Text, preview.GetRewardOptionDisplayName(0), nameof(RewardOption1Text));
             Set(ref rewardOption2Text, preview.GetRewardOptionDisplayName(1), nameof(RewardOption2Text));
             Set(ref rewardOption3Text, preview.GetRewardOptionDisplayName(2), nameof(RewardOption3Text));
@@ -822,6 +883,7 @@ namespace SaltyGame
                 nameof(SettingsVisibility));
             Set(ref runningVisibility, state == SpeciesPreviewState.Running ? Visibility.Visible : Visibility.Collapsed, nameof(RunningVisibility));
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
+            Set(ref phaseDecisionVisibility, state == SpeciesPreviewState.PhaseDecision ? Visibility.Visible : Visibility.Collapsed, nameof(PhaseDecisionVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
@@ -844,6 +906,7 @@ namespace SaltyGame
                 nameof(RewardOption3Visibility));
             Set(ref boardVisibility,
                 state == SpeciesPreviewState.Running
+                    || state == SpeciesPreviewState.PhaseDecision
                     ? Visibility.Visible
                     : Visibility.Collapsed,
                 nameof(BoardVisibility));
@@ -856,13 +919,22 @@ namespace SaltyGame
                 return;
             }
 
-            if (!preview.TryApplyGlobalSettings(
+            if (!preview.TryApplyContinuousPhases(
+                !DeveloperMode || ContinuousPhasesEnabled,
+                PhaseLengthTicksText,
+                out _))
+            {
+                Refresh(true);
+                return;
+            }
+
+            if (!preview.TryApplyGlobalSettingsForTicks(
                 GridWidthText,
                 GridHeightText,
                 BaseSeedText,
                 MaximumPopulationText,
                 MinimumPopulationText,
-                RunDurationText,
+                RunTicksText,
                 StepIntervalText,
                 PlantProbabilityText,
                 HerbivoreProbabilityText,
@@ -879,6 +951,25 @@ namespace SaltyGame
                 FoxAttackCooldownTicksText,
                 out _);
             Refresh(true);
+        }
+
+        void StartSimulation()
+        {
+            if (preview == null)
+            {
+                return;
+            }
+
+            if (!DeveloperMode && !preview.ContinuousPhasesEnabled)
+            {
+                ApplySettings();
+                if (!preview.ContinuousPhasesEnabled)
+                {
+                    return;
+                }
+            }
+
+            preview.StartSimulation();
         }
 
         void ApplySpeciesRules()
@@ -1029,7 +1120,8 @@ namespace SaltyGame
             BaseSeedText = preview.BaseSeed.ToString(CultureInfo.InvariantCulture);
             MaximumPopulationText = preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture);
             MinimumPopulationText = preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture);
-            RunDurationText = preview.RunDurationSeconds.ToString("0.###", CultureInfo.InvariantCulture);
+            RunTicksText = preview.RunTicks.ToString(CultureInfo.InvariantCulture);
+            PhaseLengthTicksText = preview.PhaseLengthTicks.ToString(CultureInfo.InvariantCulture);
             StepIntervalText = preview.StepInterval.ToString("0.###", CultureInfo.InvariantCulture);
             PlantProbabilityText = preview.PlantProbability.ToString("0.###", CultureInfo.InvariantCulture);
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
@@ -1037,6 +1129,7 @@ namespace SaltyGame
             BevExperimentalFeaturesEnabled = preview.BevExperimentalFeaturesEnabled;
             FoxAttackCooldownTicksText = preview.FoxAttackCooldownTicks.ToString(CultureInfo.InvariantCulture);
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
+            ContinuousPhasesEnabled = preview.ContinuousPhasesEnabled;
         }
 
         void SyncPlayerSpeciesOptions()
@@ -1159,6 +1252,8 @@ namespace SaltyGame
                     return "SIMULATION IN PROGRESS";
                 case SpeciesPreviewState.Paused:
                     return "SIMULATION PAUSED";
+                case SpeciesPreviewState.PhaseDecision:
+                    return "PHASE COMPLETE — DECISION REQUIRED";
                 case SpeciesPreviewState.Rewards:
                     return "CHOOSE YOUR REWARD";
                 case SpeciesPreviewState.Results:
@@ -1170,7 +1265,14 @@ namespace SaltyGame
 
         static string GetRunStatusText(SimulationRunState run)
         {
-            return run == null ? "Ready to configure" : run.Status.ToString();
+            if (run == null)
+            {
+                return "Ready to configure";
+            }
+
+            return run.Status == SimulationRunStatus.AwaitingDecision
+                ? "Phase complete — waiting for your decision"
+                : run.Status.ToString();
         }
 
         static string GetRunDetailsText(SimulationRunState run)
@@ -1182,9 +1284,10 @@ namespace SaltyGame
 
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "Seed {0}  |  Tick {1}  |  {2:0.0}/{3:0.0}s",
+                "Seed {0}  |  Tick {1}/{2}  |  {3:0.0}/{4:0.0}s",
                 run.Seed,
                 run.Tick,
+                run.TargetTicks > 0 ? run.TargetTicks.ToString(CultureInfo.InvariantCulture) : "?",
                 run.ElapsedSeconds,
                 run.DurationSeconds);
         }

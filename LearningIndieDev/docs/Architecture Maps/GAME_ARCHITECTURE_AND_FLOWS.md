@@ -1,7 +1,7 @@
 # Game architecture and flows
 
 > Status: Living reference  
-> Last reviewed: 2026-09-03  
+> Last reviewed: 2026-09-04
 > Scope: Player loop, runtime boundaries, and production progression
 
 This document compresses the current game structure into three complementary
@@ -18,9 +18,9 @@ flowchart TB
     SETUP["Prepare Expedition<br/>Scenario · Species · Seed · Unlocks"]
 
     SIM["Simulate 200 ticks<br/>Forest Edge: Fern → Hare → Fox"]
-    END{"Extinct or<br/>phase five complete?"}
+    END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
-    UPGRADE["Choose one upgrade<br/>Trailblazer · Warren · Gardeners"]
+    UPGRADE["Choose one upgrade or skip<br/>World remains frozen"]
     RULESET["Update ordered, fingerprinted<br/>Hare ruleset"]
 
     RESULTS["Results<br/>Victory · Narrow Survival · Defeat"]
@@ -29,13 +29,20 @@ flowchart TB
     START --> MENU --> LAB --> SETUP --> SIM
     SIM --> END
 
-    END -->|"No: phases 1–4"| SUMMARY --> UPGRADE --> RULESET --> SIM
+    END -->|"No: phases 1–9"| SUMMARY --> UPGRADE --> RULESET
+    RULESET -->|"Continue same world and next tick"| SIM
     END -->|"Yes"| RESULTS --> REWARD --> LAB
 ```
 
-The vertical-slice contract is five 200-tick phases, four upgrade decisions,
+The vertical-slice contract is ten phases, with 200 ticks as the current
+per-phase target, and nine upgrade decisions,
 and an immediate end after a completed tick causes extinction. The player
 changes the species rules rather than directly commanding individual cells.
+
+This is the target player loop. The controlled preview now retains creatures,
+resources, time and history through its phase decisions. Only a new expedition
+or explicit restart creates a new board. The configurable prototype phase and
+the product's longer viewing-time target are separate pacing settings.
 
 ## 2. Runtime architecture
 
@@ -47,7 +54,7 @@ flowchart TB
     DOMAIN["Plain C# Domain<br/>Simulation · Progression · Results"]
 
     ASSETS["Scenario and Species Assets"]
-    DATA["Immutable Run-Start Data<br/>CellularSimData · SpeciesRules"]
+    DATA["Frozen Expedition Base Data<br/>Immutable Effective Rules per Phase"]
     SAVE["Versioned Profile<br/>Settings and Unlocks"]
 
     SHELL["Read-Only UI Snapshots"]
@@ -106,4 +113,3 @@ upgrade, observe it changing the ecosystem, and understand why the run changed?
 - [Unity MVVM architecture plan](../UNITY_MVVM_ARCHITECTURE_PLAN.md)
 - [Upgrade-system direction](../UPGRADE_SYSTEM_DIRECTION.md)
 - [Current work-bucket plan](../NEXT_WORK_BUCKET_PLAN.md)
-

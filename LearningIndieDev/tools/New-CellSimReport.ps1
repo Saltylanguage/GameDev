@@ -72,6 +72,17 @@ function Get-FinalPopulation {
     return 0
 }
 
+function Get-RunTicks {
+    param([object]$Report)
+
+    $runTicks = $Report.PSObject.Properties['runTicks']
+    if ($null -ne $runTicks -and $runTicks.Value -gt 0) {
+        return [int]$runTicks.Value
+    }
+
+    return [int](@($Report.runs | ForEach-Object { $_.ticks } | Measure-Object -Maximum).Maximum)
+}
+
 function Get-SnapshotAtTick {
     param(
         [object]$Run,
@@ -190,8 +201,9 @@ function Add-TestResults {
         return
     }
 
-    $xmlFiles = Get-ChildItem -LiteralPath $ArtifactDirectory -Filter '*-results.xml' -File -ErrorAction SilentlyContinue |
+    $xmlFiles = @(Get-ChildItem -LiteralPath $ArtifactDirectory -Filter '*-results.xml' -File -ErrorAction SilentlyContinue |
         Sort-Object Name
+    )
     if ($xmlFiles.Count -eq 0) {
         $Lines.Add('## Test suite')
         $Lines.Add('')
@@ -380,6 +392,7 @@ function Add-Comparison {
         -and $Baseline.playerSpeciesId -eq $Report.playerSpeciesId `
         -and $Baseline.gridWidth -eq $Report.gridWidth `
         -and $Baseline.gridHeight -eq $Report.gridHeight `
+        -and (Get-RunTicks -Report $Baseline) -eq (Get-RunTicks -Report $Report) `
         -and $Baseline.runDurationSeconds -eq $Report.runDurationSeconds `
         -and $Baseline.stepIntervalSeconds -eq $Report.stepIntervalSeconds `
         -and $Baseline.combatResolutionMode -eq $Report.combatResolutionMode `
@@ -440,7 +453,8 @@ $lines.Add('')
 $lines.Add(('- Ruleset fingerprint: `{0}`' -f $report.rulesetFingerprint))
 $lines.Add(('- Scenario asset: `{0}`' -f $report.scenarioAssetPath))
 $lines.Add("- Seeds: $($report.seedStart) through $($report.seedStart + $report.seedCount - 1) ($($report.seedCount) runs)")
-$lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
+$reportRunTicks = Get-RunTicks -Report $report
+$lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); run: $reportRunTicks ticks; duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
 $lines.Add(('- Player species: `{0}`' -f $report.playerSpeciesId))
 $lines.Add(('- Attack opportunity mode: `{0}`' -f $report.attackOpportunityMode))
 $lines.Add('')

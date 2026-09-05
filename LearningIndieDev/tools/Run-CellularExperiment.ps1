@@ -9,6 +9,8 @@ param(
     [ValidateRange(0, 4096)]
     [int]$GridHeight = 0,
     [ValidateRange(0, 1000000)]
+    [int]$RunTicks = 0,
+    [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
@@ -170,6 +172,14 @@ if ($GridWidth -gt 0) {
 
 if ($GridHeight -gt 0) {
     $arguments += @('-gridHeight', $GridHeight)
+}
+
+if ($RunTicks -gt 0 -and $RunDurationSeconds -gt 0) {
+    throw 'Use either -RunTicks or -RunDurationSeconds, not both.'
+}
+
+if ($RunTicks -gt 0) {
+    $arguments += @('-runTicks', $RunTicks)
 }
 
 if ($RunDurationSeconds -gt 0) {

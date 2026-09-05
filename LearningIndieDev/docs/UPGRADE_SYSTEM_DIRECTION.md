@@ -9,7 +9,9 @@ Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concer
 The upgrade system has two distinct layers:
 
 1. **Species-type research** is permanent progression purchased at the Lab for Plants, Herbivores, and Carnivores.
-2. **Run evolution** is a temporary branching build assembled during one simulation and reset when that run ends.
+2. **Run evolution** is a temporary branching build assembled during one
+   expedition and reset when that expedition ends. Its consecutive simulation
+   phases share the same evolving ecosystem and acquired upgrades.
 
 Scientific data funds both layers, creating a choice between immediate adaptation and long-term research. See [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
@@ -54,7 +56,11 @@ Each node should communicate:
 - the behavior and telemetry that will reveal its effect;
 - whether it excludes an incompatible branch.
 
-Run upgrades are stored as an ordered part of the deterministic effective ruleset and disappear after results are resolved.
+Run upgrades are stored in acquisition order with resolved values and ticks.
+They survive phase summaries and disappear only after the expedition ends.
+Buying an upgrade or skipping it must continue the same world; neither creates
+a new starting population. Runtime migration is pending under the
+[consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ## Example herbivore branches
 
@@ -90,8 +96,9 @@ not player rewards. Same-build prerequisites and cross-build hybrids remain
 future decisions until these nodes independently demonstrate their declared
 mechanics and costs.
 
-The run-start snapshot and fingerprint must include every effect, tradeoff, and
-ordered selection. The current contract supports an ordered list of immutable
+The launch snapshot and each subsequent acquisition record must include every
+effect, tradeoff, ordered selection and effective tick. The current contract
+supports an ordered list of immutable
 snapshots; each snapshot still targets one species and uses signed additive
 modifiers only. This preserves A→B versus B→A evidence without introducing
 clamping, multiplication, or other V1 operations.
@@ -117,9 +124,19 @@ its reward panel presents authored options and applies snapshots, while the
 legacy reward path remains available for the BEV experimental mode.
 
 **Timing boundary:** EX-009 verified only a complete loadout applied before a
-run starts. The intended continue-from-current-state flow, where upgrades can
-be acquired between simulation segments, is a separate future question tracked
-as [EX-010](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
+fresh run starts. Continuation is required game direction and its runtime work
+is now [planned](CONTINUOUS_SIMULATION_FLOW_PLAN.md). Its timing/state evidence
+remains untested under proposed
+[EX-010](Research/Experiments/EX-010-Sequential-Upgrade-Continuation/README.md).
+
+**Catalog applicability:** `gardeners-seed-pouches` changes starting reserve and
+energy. It has no grant to existing creatures at an upgrade break, and current
+creature births do not inherit those starting values. Under the locked CF-0
+contract it is eligible only at fresh launch; a live-state/newborn mechanic
+would require a separate product decision. No asset or mechanic is changed by
+this documentation review. A signed maximum-energy change preserves existing
+energy at the boundary, including temporary above-cap values; later gains use
+the authored cap rule.
 
 ## Relationship to species mastery
 

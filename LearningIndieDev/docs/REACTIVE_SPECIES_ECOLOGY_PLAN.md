@@ -6,6 +6,13 @@
 
 ## Intended player experience
 
+This future design operates on the same ecosystem across decision phases, as
+specified by the [continuation direction](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+An ecological response cannot rely on respawning opponents or refilling terrain
+at an upgrade break. The continuation migration does not authorize reactive
+counter-upgrades or new behavior; their timing and balance remain a separate
+experiment, with applicability tracked in the [impact review](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+
 An upgrade should change the ecology, not just increase a number. When one
 species gains an advantage, the other species should receive a readable way to
 respond. The player should be able to identify the current pressure, choose a

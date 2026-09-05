@@ -2,6 +2,12 @@
 
 ## Purpose
 
+The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is a
+foundational dependency for the complete upgrade loop: the next phase preserves
+the ecosystem after purchase or Skip. The present fresh-window behavior is not
+that acceptance gate. Its proposed packages include telemetry/research retests
+and require explicit capacity planning; this note does not reschedule work.
+
 This plan converts the stable-but-incomplete feature inventory into an ordered
 production sequence. The goal is to finish one coherent vertical slice rather
 than continue expanding the number of partially usable systems.
@@ -120,10 +126,10 @@ Define a small explicit catalog, not a general modifier framework. It must cover
 For every upgrade, record the affected rule, valid range, stacking/exclusion
 rule, visible preview, expected consequence, counterplay, and telemetry.
 
-### 2.2 Five-phase run contract
+### 2.2 Ten-phase run contract
 
-- Implement five 200-tick phases with automatic pause at reward breaks.
-- Offer three meaningful choices after phases one through four.
+- Implement ten phases, with 200 ticks as the current per-phase target, with automatic pause at reward breaks.
+- Offer three meaningful choices after phases one through nine.
 - Record the ordered upgrade loadout in the effective ruleset and result.
 - Implement victory, narrow survival, defeat, phase summaries, and immediate
   extinction according to `PRODUCT_BRIEF.md`.
@@ -232,7 +238,7 @@ the following are true:
 - Smart tiling has passed the 47-mask and live-board checks.
 - Forest Edge has a trustworthy fixed-seed baseline and reconciled telemetry.
 - Trailblazer, Warren, and Gardeners are understandable and measurably distinct.
-- A player can complete the five-phase run without developer fields.
+- A player can complete the ten-phase run without developer fields.
 - Results explain the outcome and award one persistent unlock.
 - Main Menu → Lab → Run → Results → next Lab is navigable and tested.
 - One fresh profile can restart and use the unlock.
