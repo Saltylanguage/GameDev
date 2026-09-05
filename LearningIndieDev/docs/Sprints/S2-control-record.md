@@ -45,6 +45,6 @@ production.
 
 - **Mid-sprint:** verify contract/catalog decisions and one reproducible
   baseline-versus-upgrade run before expanding the catalog.
-- **Final review:** run the fixed-seed comparison, inspect the player-facing
-  preview/result language at the target resolutions, record accepted behavior,
-  tuning questions, and explicit carry-over.
+- **Final review:** run the fixed-seed comparison, record accepted behavior,
+  tuning questions, and explicit carry-over. Font, layout, and visual-feedback
+  review are a separate work track and are not part of S2.

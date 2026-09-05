@@ -113,17 +113,17 @@ warranted.
 
 **Intention:** Decide what is working and what still needs tuning.
 
-**Needed:** Matched baseline-versus-upgrade runs, a small review of the preview
-and result text, and a short written decision record.
+**Needed:** Matched baseline-versus-upgrade runs and a short written decision
+record. Font, layout, and visual-feedback review are a separate work track.
 
 **Problem solved:** A single interesting run or unclear UI could be mistaken for
 proof that an upgrade is balanced and ready.
 
-**Done when:** The matched runs are repeatable, the UI is readable at the target
-resolutions, and the handoff records accepted behavior, tuning questions, and
-explicit cuts. No balance conclusion is based on one seed. The research-side
-matched-run and order checks are complete, and the bounded human decisions are
-recorded. Player-experience and balance follow-up remain separate work.
+**Done when:** The matched runs are repeatable and the handoff records accepted
+behavior, tuning questions, and explicit cuts. No balance conclusion is based
+on one seed. The research-side matched-run and order checks are complete, and
+the bounded human decisions are recorded. Player-experience, balance, and
+visual-feedback follow-up remain separate work.
 
 ## Carried-forward research item
 
@@ -161,6 +161,7 @@ effect changes direction.
 - Lab currency, permanent research, save/load, or active-run resume;
 - a general upgrade plug-in framework;
 - new species or scenario content beyond the Forest Edge slice;
+- font, layout, and visual-feedback review;
 - final-volume art, audio, or broad UI framework work;
 - unrelated deferred mechanics such as scent or generalized event systems.
 
