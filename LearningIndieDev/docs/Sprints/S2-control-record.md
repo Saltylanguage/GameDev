@@ -17,7 +17,7 @@ the identity, capacity, ownership, board disposition, and exit gate.
 | Goal | A player can inspect, choose, and verify a temporary upgrade in a deterministic Forest Edge run. |
 | Capacity | Josh 20h; Sim 20h; 40h committed. |
 | Entry state | Sprint 1 is closed; its Windows build/review gate is accepted. |
-| Exit criteria | A documented catalog covers numeric, spatial, conditional, and tradeoff effects; one temporary selection is applied reproducibly; the effective loadout/fingerprint and contribution evidence are reported; focused tests and a fixed-seed comparison pass; remaining balance questions are documented. |
+| Exit criteria | A documented V1 catalog covers the supported numeric/additive and tradeoff effects; unsupported spatial and conditional effects are explicitly deferred; one temporary selection is applied reproducibly; the effective loadout/fingerprint and contribution evidence are reported; focused tests and a fixed-seed comparison pass; remaining balance questions are documented. |
 
 ## Board disposition
 
@@ -42,7 +42,7 @@ the board and must be reconciled at review rather than silently reassigned.
 | Repository ID | Work package | Board card | List at review |
 | --- | --- | --- | --- |
 | S2.1 | Upgrade contract and boundary | [772a1U6k](https://trello.com/c/772a1U6k) | ✅ Done |
-| S2.2A | Catalog design and acceptance matrix | [7e5KhUen](https://trello.com/c/7e5KhUen) | Current Work |
+| S2.2A | Catalog design and acceptance matrix | [7e5KhUen](https://trello.com/c/7e5KhUen) | ✅ Done |
 | S2.2B | First catalog slice implementation | [KhHBo2tf](https://trello.com/c/KhHBo2tf) | ✅ Done |
 | S2.3A | Deterministic application and contribution evidence | [JORLMXG3](https://trello.com/c/JORLMXG3) | ✅ Done |
 | S2.3B | Upgrade loadout report/stat-line integration | [pZ4qG2DM](https://trello.com/c/pZ4qG2DM) | ✅ Done |
@@ -87,7 +87,7 @@ reviewed explicitly rather than being treated as silently complete:
 
 | Priority | Risk | S2 end-state needed |
 | --- | --- | --- |
-| P0 | The continuous flow can pause and continue, but phase upgrades and rewards are not yet applied to the same world. | Carry the boundary upgrade/reward work into the proposed S3 M1 closeout sprint, with a matched continuation test. |
+| P0 | The continuous flow now has a same-world boundary upgrade and reward path, but the full integrated M1 acceptance review is still open. | Carry the final integrated regression and evidence review into the proposed S3 M1 closeout sprint. |
 | P0 | Phase-aware Stat-Line meaning still needs final review. | Keep fresh-window evidence separate from continued-world evidence until Sim confirms field and denominator meaning. |
 | P1 | The current board lists more Sim work than the 20-hour S2 planning budget can hold. | Keep, split, or carry each Sim card during the S2 review; do not assume all can finish in this sprint. |
 | P1 | The continuation checkpoint is new and has not yet been promoted as M1 acceptance evidence. | Use committed checkpoint `79423b4e` and its verification artifacts during the S2 review; do not treat smoke runs as EX-010 evidence. |

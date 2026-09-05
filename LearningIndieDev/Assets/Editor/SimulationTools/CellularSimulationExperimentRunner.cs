@@ -1611,9 +1611,16 @@ namespace SaltyGame.EditorTools
         static string SerializeReport(ExperimentReport report, bool includeHerbivoreStatLine)
         {
             var json = JsonUtility.ToJson(report, true);
-            return includeHerbivoreStatLine
-                ? json
-                : Regex.Replace(json, @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?", string.Empty);
+            if (includeHerbivoreStatLine)
+            {
+                return json;
+            }
+
+            var withoutStatLine = Regex.Replace(
+                json,
+                @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?",
+                string.Empty);
+            return Regex.Replace(withoutStatLine, @",(\s*[}\]])", "$1");
         }
 
         [Serializable]

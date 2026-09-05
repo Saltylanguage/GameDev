@@ -119,6 +119,8 @@ resolves a declared production or research catalog into ordered immutable
 snapshots and records the catalog path, prediction input, and fingerprints in
 the report. The older string-loadout arguments remain available for historical
 experiments and diagnostic arms.
+The row-by-row authoring contract and its current acceptance state are tracked
+in [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
 The prototype Simulation scene now references the explicit production assets;
 its reward panel presents authored options and applies snapshots, while the
 legacy reward path remains available for the BEV experimental mode.

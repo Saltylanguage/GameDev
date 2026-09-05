@@ -231,13 +231,16 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-027 — Sprint 2 task register is not uniquely mapped to board work
 
-- **Status:** Partially resolved; every row now has a stable ID and board link,
-  but owner/status reconciliation remains for the sprint review.
+- **Status:** Mostly resolved; every row now has a stable ID and board link,
+  and S2.2A's repository and Trello status are synchronized. Remaining
+  owner/status reconciliation is still for the sprint review.
 - **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` and
   `docs/Sprints/S2-control-record.md` now assign stable IDs and verified Trello
   links to every listed work row. The duplicate board prefixes are disambiguated
   as `S2.2A/B` and `S2.3A/B`, and the Fox/BoardSnapshot reserve cards have
-  explicit `S2-CORR-*` IDs. The board currently assigns the parallel S2.3A and
+  explicit `S2-CORR-*` IDs. The S2.2A card is now in `✅ Done` with the
+  repository's V1 acceptance scope and evidence. The board currently assigns
+  the parallel S2.3A and
   S2-QA cards to Sim while the repository plan assigns the implementation lane
   to Josh; that discrepancy is recorded rather than hidden. The latest board
   pass now places completed CF-1, S2.3B, and EX-010 preparation in `✅ Done`,

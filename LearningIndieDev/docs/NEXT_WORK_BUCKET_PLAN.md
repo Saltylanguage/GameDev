@@ -53,10 +53,10 @@ should be confirmed when the next sprint is kicked off.
 | ID | Work | Owner | Effort | Board card | Status |
 | --- | --- | --- | ---: | --- | --- |
 | S2.1 | Write down the upgrade rules | Josh | 4h | [Contract and boundary](https://trello.com/c/772a1U6k) | Complete |
-| S2.2A/B | Create the first catalog and authoring path | Josh | 8h | [Design matrix](https://trello.com/c/7e5KhUen), [implementation](https://trello.com/c/KhHBo2tf) | Complete; seven production assets and the catalog validator are ready |
+| S2.2A/B | Create the first catalog and authoring path | Josh | 8h | [Acceptance matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md), [implementation](https://trello.com/c/KhHBo2tf) | Complete for the approved V1 numeric/additive contract; seven production assets, exact fixture coverage, and the catalog validator are ready. Spatial/conditional effects are deferred as a separate contract package |
 | S2.3A | Apply upgrades consistently and show what changed | Josh | 8h | [Deterministic application](https://trello.com/c/JORLMXG3), [player preview](https://trello.com/c/iKcmYkuy) | Complete |
-| S2-QA | Add catalog fixtures and invalid-combination tests | Josh | 3h | [Catalog fixtures](https://trello.com/c/OLZYtNS9) | Complete; 200/200 Edit Mode tests pass |
-| S2-UI | Show upgrade choices and the result in the game | Josh | 4h | [Player-facing preview/result](https://trello.com/c/iKcmYkuy) | Complete; 200/200 Edit Mode and 14/14 runnable Play Mode tests pass |
+| S2-QA | Add catalog fixtures and invalid-combination tests | Josh | 3h | [Catalog fixtures](https://trello.com/c/OLZYtNS9) | Complete; 210/210 Edit Mode tests pass |
+| S2-UI | Show upgrade choices and the result in the game | Josh | 4h | [Player-facing preview/result](https://trello.com/c/iKcmYkuy) | Complete; 210/210 Edit Mode and 14/14 runnable Play Mode tests pass |
 | S2.3B/S2.4 | Connect upgrades to research and review balance evidence | Josh | 6h | [Report/stat-line integration](https://trello.com/c/pZ4qG2DM), [balance review](https://trello.com/c/SSwZkrI1) | Adapter-backed fixture path and bounded EX-007/EX-009 decisions complete; production balance and player-experience follow-up remain separate |
 | EX-002 | EX-002 research intervention preparation | Josh | 5h | [Intervention preparation](https://trello.com/c/PVqz2g5n) | Separate research lane |
 | S2-CORR-FOX | Fox mating/eating telemetry discrepancy | Sim | 3h | [Fox telemetry](https://trello.com/c/BkJwxhkw) | Separate Sim lane |

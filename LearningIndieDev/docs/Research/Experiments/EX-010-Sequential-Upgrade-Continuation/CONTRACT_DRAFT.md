@@ -8,6 +8,11 @@
 contract is approved, the schedule is run through the same game/headless seam,
 and every bundle passes validation.
 
+The production upgrade authoring contract is summarized in the [Species
+Per-Run Upgrade Acceptance Matrix](../../../UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
+EX-010's historical research fixtures remain separate from that production
+catalog so their declared values do not change during this experiment.
+
 ## Question
 
 When two per-run upgrades are acquired during one evolving expedition, does

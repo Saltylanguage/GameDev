@@ -152,7 +152,7 @@ commands below when their full options are needed:
 | --- | --- |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
 | `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. |
+| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. The wrapper waits briefly for the report file to become readable before parsing it. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
@@ -436,6 +436,8 @@ and automation ideas this tooling supports, see
 - **"Could not find Unity"**: pass the editor executable explicitly, for example
   `-UnityPath 'C:\Program Files\Unity\Hub\Editor\6000.4.6f1\Editor\Unity.exe'`.
 - **A batch run fails**: read the log adjacent to the XML or JSON result first;
-  it contains Unity compiler and Test Runner details.
+  it contains Unity compiler and Test Runner details. If Unity has just exited,
+  the wrapper retries report parsing for a bounded period so a partially flushed
+  JSON file is not mistaken for a completed report.
 - **A scenario cannot be found**: pass a project-relative `Assets/...` path to a
   `CellularSimDataAsset`, not an operating-system path outside the project.

@@ -177,6 +177,29 @@ if ($GridHeight -gt 0) {
     $arguments += @('-gridHeight', $GridHeight)
 }
 
+function Read-JsonWithRetry {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+        [ValidateRange(1, 60)]
+        [int]$TimeoutSeconds = 10
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $lastError = $null
+    do {
+        try {
+            return Get-Content -LiteralPath $Path -Raw -ErrorAction Stop | ConvertFrom-Json
+        }
+        catch {
+            $lastError = $_
+            Start-Sleep -Milliseconds 250
+        }
+    } while ((Get-Date) -lt $deadline)
+
+    throw "Could not read a complete JSON report at '$Path' within $TimeoutSeconds seconds. Last error: $($lastError.Exception.Message)"
+}
+
 if ($RunTicks -gt 0 -and $RunDurationSeconds -gt 0) {
     throw 'Use either -RunTicks or -RunDurationSeconds, not both.'
 }
@@ -247,7 +270,7 @@ $manifest = [ordered]@{
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
 $statLinePath = $null
-$report = Get-Content -LiteralPath $reportPath -Raw | ConvertFrom-Json
+$report = Read-JsonWithRetry -Path $reportPath
 if ([string]$report.playerSpeciesId -eq 'hare' -and
     [string]$report.experimentalFeatures -eq 'bev-experimental') {
     & (Join-Path $PSScriptRoot 'Validate-HerbivoreStatLine.ps1') `

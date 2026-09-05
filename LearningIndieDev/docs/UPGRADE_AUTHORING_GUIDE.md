@@ -29,6 +29,9 @@ The initial production catalog contains seven Hare upgrades:
 
 These values are starting hypotheses, not accepted balance.
 
+The exact contract and acceptance state for every production row is tracked in
+the [Species Per-Run Upgrade Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
+
 ## First example
 
 The first worked example is:
@@ -146,6 +149,8 @@ The Editor fixture tests automatically resolve every asset under `Production/`
 and reject duplicate stable IDs. When intentionally changing one of the named
 first-catalog fixtures, update its expected contract in
 `Assets/Tests/Editor/SpeciesUpgradeAssetCatalogTests.cs` in the same change.
+Keep the matrix and its fixture expectations in sync when adding or changing a
+production asset.
 
 ## Catalog validator
 
