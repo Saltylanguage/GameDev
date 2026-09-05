@@ -1,8 +1,8 @@
 # EX-010 — Sequential upgrade continuation
 
 **Experiment ID:** `EXP-010`
-**Status:** Preparation complete; execution blocked pending human contract
-approval, EX-010-specific schedule parity, and the CF-5 gate
+**Status:** Preparation complete; paused pending Sim's semantic review, human
+contract approval, EX-010-specific schedule parity, and the CF-5 gate
 **Parent:** `EXP-009` / `EXP-007`
 **Decision owner:** Human design owner
 **Feature owner:** Josh

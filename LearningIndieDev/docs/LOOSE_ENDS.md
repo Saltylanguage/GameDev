@@ -180,8 +180,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-021 — Sequential upgrade continuation remains untested
 
-- **Status:** Preparation complete; experiment execution remains open and
-  intentionally gated on a contract-specific schedule and human approval.
+- **Status:** Preparation complete; work is paused while Sim reviews the
+  phase-aware Stat-Line meanings. Experiment execution remains gated on that
+  review, the contract-specific schedule, and human approval.
 - **Evidence:** EX-009 was accepted only for a complete loadout applied before
   the run started. The intended game flow acquires upgrades between simulation
   segments and continues from the current state, which introduces acquisition

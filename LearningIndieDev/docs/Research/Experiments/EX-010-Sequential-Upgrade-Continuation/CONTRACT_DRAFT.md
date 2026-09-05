@@ -2,7 +2,7 @@
 
 **Experiment:** `EXP-010` — Sequential upgrade continuation
 **Contract:** `EX-010-DRAFT-1`
-**Status:** Prepared, not approved, not executed
+**Status:** Prepared; paused pending Sim's semantic review and human approval; not executed
 **Owner:** Josh
 **Evidence rule:** No result from this draft is research evidence until the
 contract is approved, the schedule is run through the same game/headless seam,
