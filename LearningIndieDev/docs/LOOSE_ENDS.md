@@ -9,7 +9,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - Last reviewed: 2026-09-05
 - Report state: the current continuation implementation is checkpointed at
-  `1d345a93`; this follow-up cleanup is local and reviewable. The current
+  `1d345a93`; the low-risk cleanup is checkpointed at `745e630b` and the S2
+  register mapping at `824444fe`. The current
   EX-007/EX-008/EX-009 run bundles pass the strict artifact validator with Unity
   logs. Graphics-capable Unity acceptance remains blocked by Unity's
   machine-level UPM/licensing IPC state; the P3 research gate remains open
@@ -30,7 +31,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 ### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
 
 - **Status:** Earlier UI batch committed/pushed; follow-up panel/resource/font
-  edits are local; runtime acceptance pending.
+  edits are checkpointed locally; runtime acceptance remains pending.
 - **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
   `HeaderedContentControl` window style/resources, four palette variants, and
   the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
@@ -192,8 +193,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   branch `NF/ConsecutiveRuns`. The previously reported 26 modified and 12
   untracked files are no longer present; only the focused cleanup files from
   this review are now local changes.
-- **Next action:** Review and commit this cleanup batch before handing the branch
-  off; do not describe it as shared until it is pushed.
+- **Next action:** Push the accepted local checkpoints before handing the branch
+  off; do not describe them as shared until they are pushed.
 - **Likely owner:** Josh + current contributors.
 - **Confidence:** High.
 
@@ -278,8 +279,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Evidence:** The trailing whitespace at
   `Assets/UI/GalapagOS/XAML/Panels/V_Panel_GalapagOS_Desktop.xaml:74-77` was
   removed and `git diff --check` now passes for the working tree.
-- **Next action:** Preserve the cleanup when the current UI follow-up is
-  checkpointed.
+- **Next action:** Preserve the cleanup when the current UI follow-up is pushed.
 - **Likely owner:** UI owner.
 - **Confidence:** High.
 
