@@ -635,11 +635,18 @@ namespace SaltyGame.EditorTools
             }
 
             var threatExposureLevel = 0;
+            var levels = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var upgradeId in upgradeIds)
             {
                 var upgrade = GetEffectiveUpgrade(upgradeId, upgradeValueOverride);
                 if (upgrade != null)
                 {
+                    levels.TryGetValue(upgrade.Id, out var level);
+                    if (level >= SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id))
+                    {
+                        throw new ArgumentException($"Upgrade '{upgrade.Id}' exceeds its maximum level.", nameof(upgradeIds));
+                    }
+                    levels[upgrade.Id] = level + 1;
                     if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
                     {
                         threatExposureLevel++;

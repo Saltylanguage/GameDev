@@ -964,7 +964,7 @@ namespace SaltyGame
                 && progression != null
                 && rewardIndex >= 0
                 && rewardIndex < rewardOptions.Length
-                && progression.Currency >= rewardOptions[rewardIndex].Cost;
+                && progression.CanPurchase(rewardOptions[rewardIndex]);
         }
 
         public bool PurchaseReward(int rewardIndex)

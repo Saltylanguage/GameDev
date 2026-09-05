@@ -617,15 +617,6 @@ namespace SaltyGame
                             continue;
                         }
 
-                        if (target.IsCreature)
-                        {
-                            metrics?.RecordCombatOpportunity(attacker.SpeciesId);
-                            if (isCarnivoreHerbivoreInteraction)
-                            {
-                                metrics?.RecordHerbivoreEncounter(target.SpeciesId);
-                            }
-                        }
-
                         var currentTarget = target;
                         if (target.IsCreature
                             && (!next.TryGetCell(targetX, targetY, out currentTarget)
@@ -638,6 +629,17 @@ namespace SaltyGame
                             }
 
                             continue;
+                        }
+
+                        // An earlier attacker may already have killed this source-grid target.
+                        // Only surviving targets start a new encounter.
+                        if (target.IsCreature)
+                        {
+                            metrics?.RecordCombatOpportunity(attacker.SpeciesId);
+                            if (isCarnivoreHerbivoreInteraction)
+                            {
+                                metrics?.RecordHerbivoreEncounter(target.SpeciesId);
+                            }
                         }
 
                         var damage = useSplitCombatStats

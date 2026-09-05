@@ -377,6 +377,79 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ToughHidePurchasesStopAtTenWithoutSpendingOrApplyingAgain()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId);
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            progression.AddCurrency(55);
+            for (var level = 1; level <= 10; level++)
+            {
+                Assert.That(progression.CanPurchase(upgrade), Is.True);
+                Assert.That(progression.TryPurchase(upgrade), Is.True);
+                Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
+                Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
+            }
+            var cappedRules = progression.CurrentRules;
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+            Assert.That(progression.PreContactAvoidanceChance, Is.Zero);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ToughHideBlocksPreserveEncountersButDeadTargetsDoNot(bool blocked)
+        {
+            var horizontal = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
+            var fox = new SpeciesRules(0f, EmptyPattern, horizontal, 1, EmptyPattern, 0,
+                horizontal, SpeciesIds.Herbivore, EmptyPattern, 0, reproductionChance: 0f,
+                startingEnergy: 1, metabolism: 0, role: SpeciesRole.Carnivore,
+                awareness: new SpeciesAwarenessRules(visionRange: 1), forageBelowEnergy: 5,
+                attackModifier: blocked ? 0 : 20, damageAmount: 1);
+            var hare = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+                EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f,
+                energyValue: 3, metabolism: 0, role: SpeciesRole.Herbivore);
+            if (blocked)
+            {
+                var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId);
+                for (var level = 0; level < 10; level++) hare = upgrade.Apply(hare);
+            }
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = fox,
+                [SpeciesIds.Herbivore] = hare,
+            };
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(4, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics,
+                experimentalOptions: new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId));
+            Assert.That(metrics.GetHerbivoreEncounters(SpeciesIds.Herbivore), Is.EqualTo(blocked ? 2 : 1));
+            Assert.That(metrics.CombatRollEvents, Has.Count.EqualTo(blocked ? 2 : 1));
+            Assert.That(metrics.GetHerbivorePreyed(SpeciesIds.Herbivore), Is.EqualTo(blocked ? 0 : 1));
+            Assert.That(metrics.GetPredatorActiveHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(2));
+            Assert.That(metrics.GetEncounteredHerbivoreSteps(SpeciesIds.Herbivore), Is.EqualTo(2));
+            if (blocked)
+            {
+                Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(1));
+                foreach (var x in new[] { 0, 2 })
+                {
+                    Assert.That(next.GetCell(x, 0).FoodEaten, Is.Zero);
+                    Assert.That(next.GetCell(x, 0).FoodReserve, Is.Zero);
+                    Assert.That(next.GetCell(x, 0).Energy, Is.EqualTo(1));
+                }
+            }
+        }
+
+        [Test]
         public void ExperimentalHerbivoreOffersKeepTheChosenPathAndCycleTheOtherThree()
         {
             var initial = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(null, rotation: 0, seed: 42);

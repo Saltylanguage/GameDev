@@ -59,15 +59,20 @@ namespace SaltyGame
             return true;
         }
 
-        public bool TryPurchase(SpeciesUpgrade upgrade)
+        public bool CanPurchase(SpeciesUpgrade upgrade)
         {
             if (upgrade == null)
             {
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
-                && GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.ThreatExposureMaxLevel)
+            return Currency >= upgrade.Cost
+                && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+        }
+
+        public bool TryPurchase(SpeciesUpgrade upgrade)
+        {
+            if (!CanPurchase(upgrade))
             {
                 return false;
             }
