@@ -108,6 +108,10 @@ GameObject:
   - component: {fileID: 100005}
   - component: {fileID: 100006}
   - component: {fileID: 100007}
+  - component: {fileID: 100008}
+  - component: {fileID: 100009}
+  - component: {fileID: 100010}
+  - component: {fileID: 100011}
   m_Layer: 0
   m_Name: GalapagOS Desktop Test Camera
   m_TagString: MainCamera
@@ -126,7 +130,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 100013}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &100002
@@ -192,7 +197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29355477be96127469aed699dd82b4be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Noesis.NoesisGUI::NoesisView
-  _xaml: {fileID: -8414808784256213763, guid: 4c7e9b1a2d6f4e8a9b0c1d3e5f7a2b6c, type: 3}
+  _xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
   _texture: {fileID: 0}
   _isPPAAEnabled: 0
   _tessellationMaxPixelError: 0.4
@@ -281,9 +286,214 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a7c4e9d12b6f4a8c93e5d0f17b2a6c55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.GalapagOSDesktopNoesisHost
+  desktopCamera: {fileID: 100002}
   view: {fileID: 100003}
   viewModel: {fileID: 100005}
-  xaml: {fileID: -8414808784256213763, guid: 4c7e9b1a2d6f4e8a9b0c1d3e5f7a2b6c, type: 3}
+  xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
+  simulationCamera: {fileID: 100014}
+  simulationView: {fileID: 100015}
+  simulationXaml: {fileID: -8414808784256213763, guid: d9f8c2b3e8e74769a9f0d8c1b3a6e542, type: 3}
+  simulationPreview: {fileID: 100008}
+  simulationViewModel: {fileID: 100009}
+  simulationBoardViewModel: {fileID: 100010}
+  animalAtlas: {fileID: 100100200, guid: 4f65e1e4d733ccc4d8113314e433af9b, type: 3}
+  terrainAtlas: {fileID: 100100200, guid: c97b93d070e278c44be95a371f6c3bc6, type: 3}
+  foxSprite: {fileID: 21300000, guid: f4778a5b151cd84468e8c0311713747b, type: 3}
+  rabbitSprite: {fileID: 21300000, guid: ccd6d5fc02e74e64b8efbb4c373fa1f4, type: 3}
+--- !u!1 &100012
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 100013}
+  - component: {fileID: 100014}
+  - component: {fileID: 100015}
+  m_Layer: 0
+  m_Name: GalapagOS Simulation View
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &100013
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 100001}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!20 &100014
+Camera:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100012}
+  m_Enabled: 0
+  serializedVersion: 2
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.02, g: 0.025, b: 0.04, a: 1}
+  m_projectionMatrixMode: 1
+  m_GateFitMode: 2
+  m_FOVAxisMode: 0
+  m_Iso: 200
+  m_ShutterSpeed: 0.005
+  m_Aperture: 16
+  m_FocusDistance: 10
+  m_FocalLength: 50
+  m_BladeCount: 5
+  m_Curvature: {x: 2, y: 11}
+  m_BarrelClipping: 0.25
+  m_Anamorphism: 0
+  m_SensorSize: {x: 36, y: 24}
+  m_LensShift: {x: 0, y: 0}
+  m_NormalizedViewPortRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+  near clip plane: 0.3
+  far clip plane: 1000
+  field of view: 60
+  orthographic: 1
+  orthographic size: 5
+  m_Depth: -1
+  m_CullingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_RenderingPath: -1
+  m_TargetTexture: {fileID: 0}
+  m_TargetDisplay: 0
+  m_TargetEye: 3
+  m_HDR: 1
+  m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
+  m_OcclusionCulling: 1
+  m_StereoConvergence: 10
+  m_StereoSeparation: 0.022
+--- !u!114 &100015
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100012}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 29355477be96127469aed699dd82b4be, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Noesis.NoesisGUI::NoesisView
+  _xaml: {fileID: -8414808784256213763, guid: d9f8c2b3e8e74769a9f0d8c1b3a6e542, type: 3}
+  _texture: {fileID: 0}
+  _isPPAAEnabled: 0
+  _tessellationMaxPixelError: 0.4
+  _renderFlags: 16
+  _dpiScale: 1
+  _continuousRendering: 1
+  _enableExternalUpdate: 0
+  _enableKeyboard: 1
+  _enableMouse: 1
+  _enableTouch: 1
+  _enableActions: 0
+  _emulateTouch: 0
+  _useRealTimeClock: 0
+  _clearStencil: 0
+  _actions: {fileID: -944628639613478452, guid: 9f67088567c2b5040b62090c14e352e3, type: 3}
+  _actionMap: Gamepad
+  _actionsRepeatDelay: 0.5
+  _actionsRepeatRate: 0.1
+  _xrTrackingOrigin: {fileID: 0}
+  _renderPassEvent: 550
+--- !u!114 &100007
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b6d8e1f2a934c57b0e1d6f8a9c2357e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_Simulation
+--- !u!114 &100008
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b5c6d7e8f90112233445566778899aa, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.SpeciesSimulationPreview
+  simulationHelper: {fileID: 100007}
+  authoredUpgradeCatalog:
+  - {fileID: 11400000, guid: 124ea44a7bfb43f38937e725db8b8ce6, type: 2}
+  - {fileID: 11400000, guid: 6ca04dd13bf0bd54198e6dff91d3609e, type: 2}
+  - {fileID: 11400000, guid: f1a9b1e2c3d44567890123456789abcd, type: 2}
+  - {fileID: 11400000, guid: b2c3d4e5f607489a9bcdef0123456789, type: 2}
+  - {fileID: 11400000, guid: c3d4e5f6071849ab8cdef0123456789a, type: 2}
+  - {fileID: 11400000, guid: d4e5f60718294abc9def0123456789ab, type: 2}
+  - {fileID: 11400000, guid: e5f60718293a4bcd9ef0123456789abc, type: 2}
+--- !u!114 &100009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f2e84f3e4ef4b1b9a42db5f13f5b771, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_SimulationShell
+--- !u!114 &100010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2e3f4a5b6c74899a0b1c2d3e4f56789, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_SimulationBoard
+--- !u!114 &100011
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48c1cdcb54b84094be779a6399307bcf, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  simulationHelper: {fileID: 100007}
+  speciesPreview: {fileID: 100008}
+  backgroundCamera: {fileID: 100002}
+  scenarioOptions:
+  - {fileID: 11400000, guid: 5d79fd199263e2d40909cea7567a4ce6, type: 2}
+  - {fileID: 11400000, guid: 206fce3dc4215ca4ea82745886382948, type: 2}
+  - {fileID: 11400000, guid: 413061eae5fbb7245aef3a3f7e9be293, type: 2}
+  - {fileID: 11400000, guid: 1e7a1d0d79a389e419c9ace023b1de9d, type: 2}
+  selectedScenarioIndex: -1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

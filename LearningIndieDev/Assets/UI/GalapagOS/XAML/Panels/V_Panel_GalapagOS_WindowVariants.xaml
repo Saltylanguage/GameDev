@@ -42,33 +42,24 @@
       <HeaderedContentControl Margin="14,-7,2,23" Grid.Row="0" Grid.Column="0" Header="PLANT / VERDANT"
                               Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
         <HeaderedContentControl.Resources>
-          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF4F783B" />
-          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#FFDCE9A6" Offset="0" />
-            <GradientStop Color="#FF6A9B74" Offset="1" />
-          </LinearGradientBrush>
-          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FF6A9B74" />
-          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF253A20" />
-          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFC5D370" />
+          <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF6F7E3A" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFC5D370" />
+          <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF372C15" />
+          <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFE8EDB2" />
           <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#FF4F783B" Offset="0" />
-            <GradientStop Color="#FF9BCB73" Offset="1" />
+            <GradientStop Color="#FFE1E8A5" Offset="0" />
+            <GradientStop Color="#FFB4C55F" Offset="1" />
           </LinearGradientBrush>
-          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FFFCEEC0" />
-          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF365329" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIcon" Color="#FF372C15" />
+          <SolidColorBrush x:Key="GalapagOS.Window.CloseIconStroke" Color="#FF6F7E3A" />
         </HeaderedContentControl.Resources>
       </HeaderedContentControl>
 
       <!-- Carnivore: red, coral, and pink create urgency without collapsing into orange. -->
-      <HeaderedContentControl Grid.Row="0" Grid.Column="1" Margin="16,0,0,16"
-                              Header="CARNIVORE / PREDATOR"
+      <HeaderedContentControl Margin="16,-7,0,23" Grid.Row="0" Grid.Column="1" HorizontalAlignment="Center" Header="CARNIVORE / PREDATOR"
                               Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
         <HeaderedContentControl.Resources>
           <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF8D3345" />
-          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#FFFFC8DD" Offset="0" />
-            <GradientStop Color="#FFC94E5B" Offset="1" />
-          </LinearGradientBrush>
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFBB848E" />
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF4A1D2A" />
           <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFF08080" />
@@ -89,15 +80,10 @@
       </HeaderedContentControl>
 
       <!-- Herbivore option 1: yellow/gold only, deliberately avoiding orange and green. -->
-      <HeaderedContentControl Grid.Row="1" Grid.Column="0" Margin="0,16,16,0"
-                              Header="HERBIVORE / SUNLIT"
+      <HeaderedContentControl Margin="8,16,8,0" Grid.Column="0" Grid.Row="1" VerticalAlignment="Top" Header="HERBIVORE / SUNLIT"
                               Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
         <HeaderedContentControl.Resources>
           <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF9C7B1B" />
-          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#FFFFF2BF" Offset="0" />
-            <GradientStop Color="#FFFDCA47" Offset="1" />
-          </LinearGradientBrush>
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFE5C65A" />
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF4D3A13" />
           <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFFFF7D6" />
@@ -118,15 +104,11 @@
       </HeaderedContentControl>
 
       <!-- Herbivore option 2: cool lavender/sky suggests gentleness, alertness, and flight. -->
-      <HeaderedContentControl Grid.Row="1" Grid.Column="1" Margin="16,16,0,0"
+      <HeaderedContentControl Grid.Row="1" Grid.Column="1" Margin="16,16,0,0" HorizontalAlignment="Center" VerticalAlignment="Top"
                               Header="HERBIVORE / TWILIGHT"
                               Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
         <HeaderedContentControl.Resources>
           <SolidColorBrush x:Key="GalapagOS.Window.BorderBrush" Color="#FF70638E" />
-          <LinearGradientBrush x:Key="GalapagOS.Window.BodyBackground" StartPoint="0.5,0" EndPoint="0.5,1">
-            <GradientStop Color="#FFEDE5F5" Offset="0" />
-            <GradientStop Color="#FFA2D2FF" Offset="1" />
-          </LinearGradientBrush>
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFCDB4DB" />
           <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF302A49" />
           <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFFFC8DD" />

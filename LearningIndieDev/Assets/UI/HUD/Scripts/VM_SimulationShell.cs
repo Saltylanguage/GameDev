@@ -112,6 +112,7 @@ namespace SaltyGame
         string rosterText;
         Helper_SceneTransition sceneTransition;
         Helper_ProfileSession profileSession;
+        Action desktopClose;
         readonly StringBuilder rosterTextBuilder = new StringBuilder();
         Visibility settingsVisibility;
         Visibility runningVisibility;
@@ -142,6 +143,7 @@ namespace SaltyGame
         public DelegateCommand SaveSettingsCommand { get; private set; }
         public DelegateCommand ApplySpeciesRulesCommand { get; private set; }
         public DelegateCommand ReturnToLabCommand { get; private set; }
+        public DelegateCommand CloseWindowCommand { get; private set; }
 
         public string StateTitle => stateTitle;
         public string RunStatusText => runStatusText;
@@ -320,6 +322,14 @@ namespace SaltyGame
         public bool CanReturnToLab => resultsVisibility == Visibility.Visible
             && sceneTransition != null
             && profileSession?.Current?.HasLoadedProfile == true;
+        // The first production slice disables close for an active run. If a
+        // confirmation surface is added later, it must use explicit End
+        // semantics rather than aliasing Stop or Restart.
+        public bool CanCloseWindow => (lastState == SpeciesPreviewState.Ready
+                || lastState == SpeciesPreviewState.Results)
+            && (desktopClose != null
+                || (sceneTransition != null
+                    && profileSession?.Current?.HasLoadedProfile == true));
         public string[] ScenarioOptions => scenarioOptions;
         public string[] PlayerSpeciesOptions => playerSpeciesOptions;
         public int SelectedScenarioIndex
@@ -396,23 +406,21 @@ namespace SaltyGame
             Refresh(true);
         }
 
-        public void BindToView(NoesisView view)
-        {
-            if (view == null || view.Content == null)
-            {
-                return;
-            }
-
-            view.Content.DataContext = this;
-            Refresh(true);
-        }
-
         public void BindSceneTransition(Helper_SceneTransition transition, Helper_ProfileSession profile)
         {
             sceneTransition = transition;
             profileSession = profile;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
             ReturnToLabCommand?.RaiseCanExecuteChanged();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
+            CloseWindowCommand?.RaiseCanExecuteChanged();
+        }
+
+        public void BindDesktopClose(Action close)
+        {
+            desktopClose = close;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
+            CloseWindowCommand?.RaiseCanExecuteChanged();
         }
 
         public void SetSpriteVisuals(
@@ -741,20 +749,12 @@ namespace SaltyGame
             SaveSettingsCommand = new DelegateCommand(SaveSettings);
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
             ReturnToLabCommand = new DelegateCommand(ReturnToLab, () => CanReturnToLab);
+            CloseWindowCommand = new DelegateCommand(CloseWindow, () => CanCloseWindow);
         }
 
         void Start()
         {
-            if (preview == null)
-            {
-                preview = FindAnyObjectByType<SpeciesSimulationPreview>();
-            }
-
             LoadRuleValues();
-
-            var view = GetComponent<NoesisView>();
-            BindToView(view);
-
             Refresh(true);
         }
 
@@ -888,6 +888,8 @@ namespace SaltyGame
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
             ReturnToLabCommand?.RaiseCanExecuteChanged();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
+            CloseWindowCommand?.RaiseCanExecuteChanged();
             Set(
                 ref experimentalHerbivoreStatLineSummaryVisibility,
                 showExperimentalHerbivoreStatLine
@@ -905,10 +907,7 @@ namespace SaltyGame
                 preview.RewardOptionCount > 2 ? Visibility.Visible : Visibility.Collapsed,
                 nameof(RewardOption3Visibility));
             Set(ref boardVisibility,
-                state == SpeciesPreviewState.Running
-                    || state == SpeciesPreviewState.PhaseDecision
-                    ? Visibility.Visible
-                    : Visibility.Collapsed,
+                Visibility.Visible,
                 nameof(BoardVisibility));
         }
 
@@ -1001,6 +1000,24 @@ namespace SaltyGame
         void ReturnToLab()
         {
             if (CanReturnToLab)
+            {
+                sceneTransition.LoadLab(profileSession.Current);
+            }
+        }
+
+        void CloseWindow()
+        {
+            if (desktopClose != null)
+            {
+                if (CanCloseWindow)
+                {
+                    desktopClose();
+                }
+
+                return;
+            }
+
+            if (CanCloseWindow)
             {
                 sceneTransition.LoadLab(profileSession.Current);
             }
