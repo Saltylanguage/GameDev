@@ -3,7 +3,8 @@
 **Date:** 2026-09-06
 **Purpose:** Plain-language summary of the Josh/Sim meeting decisions.
 **Status:** The Stat-Line meaning review is complete for the decisions below.
-EX-010 is still not executed.
+EX-010 is executed for the original sequence and its matched reverse-order
+comparison. Findings are ready for Sim's review.
 
 ## What we agreed
 
@@ -51,14 +52,20 @@ EX-010 is still not executed.
 - After the runs, Sim should review the full phase reports, final report, and
   chronological deltas and confirm the findings directly.
 
-## What Josh still needs to finish
+## What was completed
 
-- Put the exact six upgrade IDs and three Skip positions into the final
-  research schedule.
-- Lock the scenario, options, and final contract before running.
-- Run the same preselected schedule on development seeds `1–20` and held-out
-  seeds `106–110`.
-- Verify the game and headless paths produce the same phase boundaries and
-  upgrade timeline.
-- Keep the full Stat-Line in reports and show only a simpler version in the
-  player UI.
+- The exact six upgrade IDs and three Skip positions were locked in the
+  original contract, then a matched reverse-order sequence was run for the
+  order comparison.
+- The scenario, options, tick boundaries, and seed panels were held constant.
+- Development seeds `1–20` and held-out seeds `106–110` completed all ten
+  phases in both sequences.
+- The reports include independent phase Stat-Lines, chronological deltas, and
+  independent final Stat-Lines.
+
+## What happens next
+
+- Sim reviews the full phase reports, final reports, and chronological deltas.
+- Sim confirms that the bounded order-effect finding is stated accurately.
+- Until that review, the result is ready for review rather than a final human
+  decision.

@@ -20,8 +20,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   BoardSnapshot fixture repair, the
   terrain documentation contract, the editor pattern drift, XAML whitespace,
   historical ID ambiguity, and the S2 register mapping are resolved or
-  explicitly bounded below. EX-010 preparation is complete, but its
-  contract-specific schedule, human approval, and execution remain gated.
+  explicitly bounded below. EX-010's original and matched alternate sequences
+  are now executed; broader promotion review remains open.
 
 ### Decisions recorded this pass
 
@@ -169,43 +169,36 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - **Status:** Carry-forward; P3 is not closed. EX-007's bounded decision and
   EX-009's launch-time decision are accepted, EX-003 still has no execution
-  package, and EX-010 is prepared but not yet approved or executed.
+  package, and EX-010 now has a matched alternate-order result with bounded
+  findings; broader promotion review remains open.
 - **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is now explicitly
   labeled as a historical 03:35 snapshot. The current local
   `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md` records the
   assembled EX-007/EX-008/EX-009 evidence and bounded human decisions; the
-  current bundles pass the strict artifact validator with Unity logs. Commit
-  `79423b4e` and handoff `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`
-  record the CF-4/CF-5 integration and EX-010 draft contract.
+  current bundles pass the strict artifact validator with Unity logs. The
+  original and alternate EX-010 bundles and their paired comparison are
+  recorded in the experiment report.
 - **Next action:** Decide whether EX-003 needs to be executed or the exit gate
   revised, and only then decide whether P3 passes. Keep P4 work preparatory;
-  finish EX-010 schedule parity and human approval before running it.
+  review the EX-010 paired comparison before deciding whether P3 passes; keep
+  any broader claim bounded to the tested scenario and sequences.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
-### P2-021 — Sequential upgrade continuation remains untested
+### P2-021 — Sequential upgrade continuation comparison completed
 
-- **Status:** Preparation complete; Josh and Sim confirmed the phase-aware
-  Stat-Line meanings on 2026-09-06. Experiment execution remains gated on the
-  contract-specific schedule and human approval.
-- **Evidence:** EX-009 was accepted only for a complete loadout applied before
-  the run started. The intended game flow acquires upgrades between simulation
-  segments and continues from the current state, which introduces acquisition
-  timing and accumulated-state effects that EX-009 cannot measure. The current
-  branch adds phase-window telemetry, deterministic checkpoint copy/restore,
-  and an opt-in headless schedule. The generic `none;stronger-block;
-  stronger-block-2` smoke run passed strict validation, but it is not EX-010
-  evidence. See commit `79423b4e`, handoff
-  `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`, the meeting
-  brief at `docs/handoffs/2026-09-06-0250-josh-sim-ex010-statline-decision-brief.md`,
-  and the draft contract at
-  `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md`.
-  The corresponding approval gate is tracked on the
-  [EX-010 schedule/approval card](https://trello.com/c/LyMlLztN).
-- **Next action:** Finalize the authored EX-010 schedule and record a human
-  Accept/Revise decision. Only then run the experiment and retain its
-  experiment-specific report bundle; do not treat the generic smoke run as
-  predictive evidence.
+- **Status:** The original and matched reverse-order sequences were executed on
+  2026-09-06 after Josh and Sim confirmed the phase-aware Stat-Line meanings.
+- **Evidence:** Both sequences used development seeds 1–20 and held-out seeds
+  106–110, with all ten 200-tick phases completed. Both bundles and the EX-010
+  report validators are `VALID`. The paired comparison shows that order
+  changes later phase and final outcomes in this scenario, while the direction
+  is not uniform enough to rank one order generally. See the execution report
+  at `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/REPORT.md`
+  and comparison artifacts `ex010-sequence-comparison-20260906-053441`.
+- **Next action:** Review the phase/final Stat-Lines with Sim. Keep the finding
+  bounded to this scenario and these two sequences; any further sequence needs
+  a new approved contract.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
