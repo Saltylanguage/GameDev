@@ -157,6 +157,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
 
             var preview = runtime.SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null);
             var phaseSettingsApplied = preview.TryApplyContinuousPhases(
                 enabled: true,
                 phaseLengthValue: "2",
@@ -181,6 +184,23 @@ namespace SaltyGame.PlayModeTests
             preview.StartSimulation();
             var run = preview.Run;
 
+            // Pausing changes only simulation progression. The same shell and
+            // board remain the active presentation while the player decides
+            // when to resume.
+            preview.PauseSimulation();
+            yield return null;
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(
+                viewModel.GetType().GetProperty("BoardVisibility")?.GetValue(viewModel)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(
+                viewModel.GetType().GetProperty("CanCloseWindow")?.GetValue(viewModel),
+                Is.EqualTo(false));
+
+            preview.ResumeSimulation();
+
             var timeout = Time.realtimeSinceStartup + 5f;
             while (preview.State != SpeciesPreviewState.PhaseDecision
                    && Time.realtimeSinceStartup < timeout)
@@ -194,15 +214,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(run.TargetTicks, Is.EqualTo(20));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
 
-            var viewModel = GameObject.Find("Prototype Camera")
-                ?.GetComponent("SaltyGame.VM_SimulationShell");
-            Assert.That(viewModel, Is.Not.Null);
             Assert.That(
                 viewModel.GetType().GetProperty("PhaseDecisionVisibility")?.GetValue(viewModel)?.ToString(),
                 Is.EqualTo("Visible"));
             Assert.That(
                 viewModel.GetType().GetProperty("BoardVisibility")?.GetValue(viewModel)?.ToString(),
                 Is.EqualTo("Visible"));
+            Assert.That(
+                viewModel.GetType().GetProperty("CanCloseWindow")?.GetValue(viewModel),
+                Is.EqualTo(false));
 
             preview.ContinueWithoutUpgrade();
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));

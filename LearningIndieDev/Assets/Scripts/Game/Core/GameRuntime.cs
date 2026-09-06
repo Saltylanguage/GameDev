@@ -51,10 +51,6 @@ namespace SaltyGame
             Player = new PlayerController(World.PlayerTransform, Input, Activities);
             Interaction = new InteractionController(World.PlayerTransform, Input, Activities, Survival, World.Targets);
 
-            var hud = gameObject.AddComponent<GameHud>();
-            hud.Initialize(this);
-            var debug = gameObject.AddComponent<RuntimeDebugPanel>();
-            debug.Initialize(this);
             State = GameState.Playing;
         }
 
@@ -62,9 +58,6 @@ namespace SaltyGame
         {
             if (!initialized || Input == null || Activities == null || Player == null || Interaction == null || World == null)
                 return;
-
-            if (Input.DebugPressed)
-                RuntimeDebugPanel.Toggle();
 
             if (State == GameState.Paused)
                 return;
