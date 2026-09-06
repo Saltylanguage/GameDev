@@ -21,17 +21,6 @@ namespace SaltyGame.EditorTools
             EnsureFolder(SpeciesRoot);
             EnsureFolder(ScenarioRoot);
 
-            var cardinal = new[]
-            {
-                Vector2Int.up, Vector2Int.right, Vector2Int.down, Vector2Int.left,
-            };
-            var moore = new[]
-            {
-                new Vector2Int(-1, 1), new Vector2Int(0, 1), new Vector2Int(1, 1),
-                new Vector2Int(-1, 0), new Vector2Int(1, 0),
-                new Vector2Int(-1, -1), new Vector2Int(0, -1), new Vector2Int(1, -1),
-            };
-
             var plants = new[]
             {
                 CreatePlant("fern", 20f, 0.01f),
@@ -347,17 +336,11 @@ namespace SaltyGame.EditorTools
                 startingPopulation);
         }
 
-        static Vector2Int[] Cardinal() => new[]
-        {
-            Vector2Int.up, Vector2Int.right, Vector2Int.down, Vector2Int.left,
-        };
+        private static Vector2Int[] Cardinal() =>
+            new List<Vector2Int>(SpeciesRuleDefaults.CreateCardinalPattern().Offsets).ToArray();
 
-        static Vector2Int[] Moore() => new[]
-        {
-            new Vector2Int(-1, 1), new Vector2Int(0, 1), new Vector2Int(1, 1),
-            new Vector2Int(-1, 0), new Vector2Int(1, 0),
-            new Vector2Int(-1, -1), new Vector2Int(0, -1), new Vector2Int(1, -1),
-        };
+        private static Vector2Int[] Moore() =>
+            new List<Vector2Int>(SpeciesRuleDefaults.CreateMoorePattern().Offsets).ToArray();
 
         static T GetOrCreate<T>(string fileName, string directory = SpeciesRoot) where T : ScriptableObject
         {

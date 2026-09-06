@@ -244,8 +244,15 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         if (-not (Test-Path -LiteralPath $reportCsvPath -PathType Leaf)) {
             throw "Unity completed without writing expected CSV to '$reportCsvPath'."
         }
-        $statLineCsvPath = Join-Path $result.ArtifactDirectory 'statline.csv'
-        $statLineCount = Export-HerbivoreStatLineCsv -ReportPath $result.Report -OutputPath $statLineCsvPath
+        $statLineCsvPath = [string]$result.StatLine
+        if ([string]::IsNullOrWhiteSpace($statLineCsvPath) -or
+            -not (Test-Path -LiteralPath $statLineCsvPath -PathType Leaf)) {
+            $statLineCsvPath = Join-Path $result.ArtifactDirectory 'statline.csv'
+            $statLineCount = Export-HerbivoreStatLineCsv -ReportPath $result.Report -OutputPath $statLineCsvPath
+        }
+        else {
+            $statLineCount = @(Import-Csv -LiteralPath $statLineCsvPath).Count
+        }
         if ($parameters.ContainsKey('ExperimentalFeatures') -and
             [string]$parameters.ExperimentalFeatures -eq 'bev-experimental' -and
             $statLineCount -ne $parameters.SeedCount) {

@@ -18,33 +18,35 @@ fingerprinted ruleset for all later phases. Skipping preserves the current build
 
 ## Run and decision cadence
 
-A run contains **five simulation phases of 200 ticks each**. Normal speed targets roughly one phase every two to three minutes, producing a **12–18 minute run** including inspection and choices.
+A run contains **ten simulation phases**. Each phase uses the configured phase length; 200 ticks is the current product target. Normal speed targets roughly one phase every two to three minutes, producing a **20–30 minute run** including inspection and choices.
 
 The flow is:
 
 1. Scenario briefing and starting ruleset.
-2. Simulate 200 ticks with pause, speed, and inspection controls available.
+2. Simulate the configured phase length, with 200 ticks as the current target,
+   with pause, speed, and inspection controls available.
 3. Show a short phase summary and offer three upgrades.
 4. Apply one choice or record a skip, clearly preview any change, and continue
    the same ecosystem from its next tick.
-5. After phase five—or immediate extinction—show results, accomplishments, and earned unlocks.
+5. After phase ten—or immediate extinction—show results, accomplishments, and earned unlocks.
 
-There is no real-time decision timer. Simulation pauses automatically during upgrade selection. A player therefore makes four build decisions per completed run, after phases one through four.
+There is no real-time decision timer. Simulation pauses automatically during upgrade selection. A player therefore makes nine build decisions per completed run, after phases one through nine.
 
 Each phase preserves the board, creature/resource state, age, energy, cooldowns,
 initial seed, absolute tick and accumulated history. A phase summary does not
 restart the expedition. Explicitly ending or restarting the expedition is a
-separate action. This is required design; the current prototype still creates
-fresh worlds between windows. The [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
-records the implementation and validation work.
+separate action. The controlled prototype now keeps the same world through its
+phase decisions; telemetry and full product validation remain in the
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
-The prototype currently presents 200 ticks in about 20 seconds at normal speed.
+The prototype can tune phase length for testing; a configured 200-tick phase
+takes about 20 seconds at normal speed.
 The two-to-three-minute viewing target above remains a separate pacing decision;
 the continuity migration does not silently change the configured step interval.
 
 ## Success, failure, and rewards
 
-- **Victory:** the player species remains alive at the end of phase five and finishes at or above the scenario's authored survival population threshold.
+- **Victory:** the player species remains alive at the end of phase ten and finishes at or above the scenario's authored survival population threshold.
 - **Narrow survival:** the species remains alive but finishes below the threshold. The run completes and records accomplishments, but does not grant the scenario-completion unlock.
 - **Defeat:** the player species reaches zero population. The run ends immediately after the completed tick that caused extinction.
 

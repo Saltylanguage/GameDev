@@ -1,5 +1,11 @@
 # P3 gate review — Bound AI discovery
 
+> Historical snapshot from 2026-09-03 03:35. This review predates the later
+> EX-007/EX-008 bundles and the EX-009 held-out order comparison. Use the
+> [current cohesive report](Experiments/P3-Predictive-AI-Cohesive-Report.md)
+> and its linked human decisions for the updated evidence state; this record's
+> original queued-work observations remain unchanged.
+
 **Date:** 2026-09-03 03:35
 **Decision:** Not passed; carry the phase forward as an evidence-gated continuation.
 **Decision owner:** Josh + Sim

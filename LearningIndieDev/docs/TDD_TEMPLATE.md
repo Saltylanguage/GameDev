@@ -62,7 +62,7 @@ This is the engineering source of truth for implementation boundaries, data cont
 
 ### Consecutive-phase lifecycle
 
-Required design, implementation pending: retain one domain run/runner across
+Locked design, implementation pending: retain one domain run/runner across
 reward breaks, with an absolute tick, prior source grid, evolving cells,
 progression and accumulated telemetry. A phase boundary is resumable; terminal
 completion is not. Apply validated immutable upgrade snapshots only at frozen
@@ -70,10 +70,10 @@ boundaries. Keep authoring changes and explicit new-expedition initialization
 separate from Continue.
 
 The [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is the
-current implementation proposal, including state ownership, clocks, checkpoint
+current migration plan, including state ownership, clocks, checkpoint
 contents, atomic upgrade/reward handling and tests. The
 [evidence contract impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) defines the
-proposed phase/expedition reporting split and compatibility requirements. These
+locked phase/expedition reporting split and compatibility requirements. These
 plans do not claim that the existing runtime already supports continuation.
 
 ### Tick order

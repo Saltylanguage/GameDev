@@ -9,6 +9,11 @@ param(
     [ValidateRange(0, 4096)]
     [int]$GridHeight = 0,
     [ValidateRange(0, 1000000)]
+    [int]$RunTicks = 0,
+    [ValidateRange(0, 1000000)]
+    [int]$PhaseLengthTicks = 0,
+    [string]$PhaseUpgradeSchedule = '',
+    [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
@@ -172,6 +177,45 @@ if ($GridHeight -gt 0) {
     $arguments += @('-gridHeight', $GridHeight)
 }
 
+function Read-JsonWithRetry {
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+        [ValidateRange(1, 60)]
+        [int]$TimeoutSeconds = 10
+    )
+
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $lastError = $null
+    do {
+        try {
+            return Get-Content -LiteralPath $Path -Raw -ErrorAction Stop | ConvertFrom-Json
+        }
+        catch {
+            $lastError = $_
+            Start-Sleep -Milliseconds 250
+        }
+    } while ((Get-Date) -lt $deadline)
+
+    throw "Could not read a complete JSON report at '$Path' within $TimeoutSeconds seconds. Last error: $($lastError.Exception.Message)"
+}
+
+if ($RunTicks -gt 0 -and $RunDurationSeconds -gt 0) {
+    throw 'Use either -RunTicks or -RunDurationSeconds, not both.'
+}
+
+if ($RunTicks -gt 0) {
+    $arguments += @('-runTicks', $RunTicks)
+}
+
+if ($PhaseLengthTicks -gt 0) {
+    $arguments += @('-phaseLengthTicks', $PhaseLengthTicks)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($PhaseUpgradeSchedule)) {
+    $arguments += @('-phaseUpgradeSchedule', $PhaseUpgradeSchedule)
+}
+
 if ($RunDurationSeconds -gt 0) {
     $arguments += @('-runDurationSeconds', $RunDurationSeconds.ToString([Globalization.CultureInfo]::InvariantCulture))
 }
@@ -225,10 +269,24 @@ $manifest = [ordered]@{
 }
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
+$statLinePath = $null
+$report = Read-JsonWithRetry -Path $reportPath
+if ([string]$report.playerSpeciesId -eq 'hare' -and
+    [string]$report.experimentalFeatures -eq 'bev-experimental') {
+    & (Join-Path $PSScriptRoot 'Validate-HerbivoreStatLine.ps1') `
+        -ReportPath $reportPath `
+        -OutputDirectory $artifactDirectory | Out-Host
+    $statLinePath = Join-Path $artifactDirectory 'statline.csv'
+    if (-not (Test-Path -LiteralPath $statLinePath -PathType Leaf)) {
+        throw "Stat-Line validation completed without writing expected CSV to '$statLinePath'."
+    }
+}
+
 [pscustomobject]@{
     ArtifactDirectory = $artifactDirectory
     Manifest = $manifestPath
     Preflight = $preflight
     Report = $reportPath
+    StatLine = $statLinePath
     UnityLog = $logPath
 }

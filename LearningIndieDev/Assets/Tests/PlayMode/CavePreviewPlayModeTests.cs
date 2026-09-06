@@ -24,6 +24,12 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime.SpeciesPreview.Run, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
 
+            var continuousSettingsApplied = runtime.SpeciesPreview.TryApplyContinuousPhases(
+                enabled: false,
+                phaseLengthValue: string.Empty,
+                out var continuousMessage);
+            Assert.That(continuousSettingsApplied, Is.True, continuousMessage);
+
             var replay = TryGetReplayConfiguration();
             if (replay != null)
             {

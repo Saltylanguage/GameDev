@@ -75,10 +75,16 @@ what it does and does not authorize.
 
 ### DR-007 — Unify local and worker artifact packaging
 
+**Status (2026-09-05): Complete for the current Stat-Line contract.** Direct
+ForestEdge/Hare experimental runs now invoke the same validator/export contract
+before returning, and the worker reuses that generated CSV when packaging.
+The strict bundle check passes on a fresh two-seed artifact.
+
 **Goal:** Make every valid run produce the same five-file bundle.
 
-**Smallest implementation:** Reuse the worker's existing StatLine exporter from
-the direct local path and run the same validators before success.
+**Smallest implementation:** Run the Stat-Line validator/exporter at the direct
+run boundary and reuse its CSV during worker packaging. Keep the strict bundle
+checker as the final gate.
 
 **Acceptance:** A direct `Run-CellularExperiment.ps1` invocation produces and
 validates `report.json`, `report.csv`, `statline.csv`, `manifest.json`, and

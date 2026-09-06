@@ -160,9 +160,22 @@
                             <TextBox Text="{Binding MinimumPopulationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <TextBlock Text="Run duration (seconds)" Foreground="White" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding RunDurationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBlock Text="Run ticks (single-run mode)" Foreground="White" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding RunTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
+                        <CheckBox Content="Use continuous phases (default)"
+                                  IsChecked="{Binding ContinuousPhasesEnabled, Mode=TwoWay}"
+                                  Foreground="White"
+                                  Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Continuous phase (ticks)" Foreground="White" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding PhaseLengthTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                        </StackPanel>
+                        <TextBlock Text="Continuous mode runs 10 phases. Phase length controls each simulation; run ticks is used only in Developer single-run mode."
+                                   Foreground="#FFD9E7F0"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,2,0,0"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Step interval (seconds)" Foreground="White" Width="250" VerticalAlignment="Center"/>
                             <TextBox Text="{Binding StepIntervalText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
@@ -432,6 +445,13 @@
                             Width="74"
                             Height="42"/>
                 </StackPanel>
+                <Button Content="END"
+                        Command="{Binding EndCommand}"
+                        IsEnabled="{Binding CanEnd}"
+                        Width="74"
+                        Height="42"
+                        HorizontalAlignment="Left"
+                        Margin="0,8,0,0"/>
             </StackPanel>
         </Border>
 
@@ -473,20 +493,110 @@
             </StackPanel>
         </Border>
 
-        <Border Visibility="{Binding RewardsVisibility}"
+        <Border Visibility="{Binding PhaseDecisionVisibility}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
-                Width="520"
-                Padding="28"
+                Width="820"
+                Padding="32"
                 Background="#F51B2A38"
                 CornerRadius="10">
             <StackPanel>
-                <TextBlock Text="Run complete"
+                <TextBlock Text="PHASE COMPLETE"
+                           Foreground="#FFF1C27D"
+                           FontSize="24"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="The world is frozen at the phase boundary. Spend phase data on one live upgrade, or skip and keep going."
+                           Foreground="#FFD9E7F0"
+                           FontSize="16"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Margin="0,12,0,12"/>
+                <TextBlock Text="{Binding PhaseRewardText}"
+                           Foreground="#FFF1C27D"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           TextWrapping="Wrap"
+                           HorizontalAlignment="Center"
+                           TextAlignment="Center"
+                           Margin="0,0,0,12"/>
+                <TextBlock Text="{Binding RunDetailsText}"
+                           Foreground="White"
+                           FontSize="14"
+                           HorizontalAlignment="Center"
+                           Margin="0,0,0,18"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Command="{Binding PurchaseRewardOption1Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption1}"
+                            Width="240"
+                            Height="112"
+                            Margin="0,0,10,0">
+                        <TextBlock Text="{Binding RewardOption1Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
+                    <Button Command="{Binding PurchaseRewardOption2Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption2}"
+                            Width="240"
+                            Height="112"
+                            Margin="0,0,10,0">
+                        <TextBlock Text="{Binding RewardOption2Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
+                    <Button Command="{Binding PurchaseRewardOption3Command}"
+                            IsEnabled="{Binding CanPurchaseRewardOption3}"
+                            Visibility="{Binding RewardOption3Visibility}"
+                            Width="240"
+                            Height="112">
+                        <TextBlock Text="{Binding RewardOption3Text}"
+                                   TextWrapping="Wrap"
+                                   TextAlignment="Center"/>
+                    </Button>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="SKIP / CONTINUE"
+                            Command="{Binding ContinueWithoutUpgradeCommand}"
+                            IsEnabled="{Binding CanContinueWithoutUpgrade}"
+                            Width="166"
+                            Height="50"
+                            Margin="0,0,8,0"/>
+                    <Button Content="RESTART"
+                            Command="{Binding RestartCommand}"
+                            IsEnabled="{Binding CanRestart}"
+                            Width="102"
+                            Height="50"
+                            Margin="0,0,8,0"/>
+                    <Button Content="STOP"
+                            Command="{Binding StopCommand}"
+                            IsEnabled="{Binding CanStop}"
+                            Width="74"
+                            Height="50"/>
+                    <Button Content="END"
+                            Command="{Binding EndCommand}"
+                            IsEnabled="{Binding CanEnd}"
+                            Width="74"
+                            Height="50"
+                            Margin="8,0,0,0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <Border Visibility="{Binding RewardsVisibility}"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Width="820"
+                Padding="32"
+                Background="#F51B2A38"
+                CornerRadius="10">
+            <StackPanel>
+                <TextBlock Text="SINGLE RUN COMPLETE"
                            Foreground="White"
                            FontSize="24"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="Choose an upgrade for your player species."
+                <TextBlock Text="Choose an upgrade for your player species to carry into the next simulation."
                            Foreground="#FFD9E7F0"
                            FontSize="16"
                            TextWrapping="Wrap"
@@ -519,18 +629,18 @@
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                     <Button Command="{Binding PurchaseRewardOption1Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
-                            Width="130"
-                            Height="50"
-                            Margin="0,0,8,0">
+                            Width="240"
+                            Height="112"
+                            Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption1Text}"
                                    TextWrapping="Wrap"
                                    TextAlignment="Center"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
-                            Width="130"
-                            Height="50"
-                            Margin="0,0,8,0">
+                            Width="240"
+                            Height="112"
+                            Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption2Text}"
                                    TextWrapping="Wrap"
                                    TextAlignment="Center"/>
@@ -538,8 +648,8 @@
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
-                            Width="130"
-                            Height="50">
+                            Width="240"
+                            Height="112">
                         <TextBlock Text="{Binding RewardOption3Text}"
                                    TextWrapping="Wrap"
                                    TextAlignment="Center"/>
@@ -560,12 +670,12 @@
                 Background="#F51B2A38"
                 CornerRadius="10">
             <StackPanel>
-                <TextBlock Text="Species update"
+                <TextBlock Text="{Binding ResultsTitleText}"
                            Foreground="White"
                            FontSize="24"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"/>
-                <TextBlock Text="The player update is applied. Continue into the next run when ready."
+                <TextBlock Text="{Binding ResultsMessageText}"
                            Foreground="#FFD9E7F0"
                            FontSize="16"
                            TextWrapping="Wrap"
@@ -603,7 +713,7 @@
                            TextAlignment="Center"
                            Margin="0,-8,0,12"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="PLAY NEXT SIMULATION"
+                    <Button Content="{Binding PlayNextSimulationText}"
                             Command="{Binding PlayNextSimulationCommand}"
                             IsEnabled="{Binding CanPlayNextSimulation}"
                             Width="250"

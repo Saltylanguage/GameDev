@@ -13,8 +13,10 @@ historical. Continued gameplay introduces phase and expedition windows with
 acquisition-timed upgrades; single-window acceptance does not verify them.
 The [Stat-Line impact review](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) maps
 S1-STAT-01–06 and current S2.3 to the new contract and retests. Sim reviews stat
-meaning; Josh owns the lifecycle migration and must reconcile S2 ownership
-before assigning work. No ticket is reopened or re-estimated by this notice.
+meaning; Josh owns the S2.3 lifecycle/report integration. No ticket is reopened
+or re-estimated by this notice. CF-0 has now locked the window boundaries,
+partial/invalid handling and pooled expedition arithmetic; those semantics are
+the required input to the new retests.
 
 These tickets take precedence over Sim's remaining unstarted Sprint 1 Main Menu
 and Lab work. Existing shell work is not deleted; unfinished Sim-owned items are

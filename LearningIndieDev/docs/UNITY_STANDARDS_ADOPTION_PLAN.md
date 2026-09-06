@@ -19,10 +19,15 @@ The audit found no missing `.meta` files for current Assets, no runtime-to-Edito
 ## Highest-value problems
 
 1. Keep bootstrap and generated-object ownership explicit as the world grows; teardown and scene transition behavior are not yet defined.
-2. Add tests at the narrowest boundary when new domain rules are added; the current Edit Mode coverage is good for the first slice but has no Play Mode coverage.
+2. Add tests at the narrowest boundary when new domain rules are added; the
+   current slice has focused Edit Mode and Play Mode coverage, while broader
+   coverage remains a staged goal.
 3. Establish a measured target hardware/frame-time budget before optimizing.
-4. Decide whether future authored activity data needs ScriptableObjects; do not create assets until shared authoring is a real need.
-5. Keep the optional Noesis/UI experiment isolated until its package path is portable and its conventions are deliberately adopted.
+4. Keep authored simulation, scenario, species-definition, and upgrade data in
+   ScriptableObjects while runtime state remains separate; do not add new asset
+   types until shared authoring is a real need.
+5. Keep legacy UI conventions isolated while the active Noesis/XAML path uses
+   its adopted ViewModel contracts and package-resolution checks.
 
 ## Low-risk immediate improvements
 

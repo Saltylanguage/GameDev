@@ -259,6 +259,52 @@ function Add-MarkdownTableRow {
     $script:lines.Add('| ' + ($escaped -join ' | ') + ' |')
 }
 
+function ConvertTo-StatLineCsvScalar {
+    param([object]$Value)
+
+    if ($null -eq $Value) { return '' }
+    if ($Value -is [bool]) { return $Value.ToString().ToLowerInvariant() }
+    if ($Value -is [System.IFormattable]) {
+        return $Value.ToString($null, [Globalization.CultureInfo]::InvariantCulture)
+    }
+
+    return [string]$Value
+}
+
+function ConvertTo-StatLineCsvField {
+    param([object]$Value)
+
+    $text = ConvertTo-StatLineCsvScalar $Value
+    return '"' + $text.Replace('"', '""') + '"'
+}
+
+function Get-StatLineCsvMetricValue {
+    param(
+        [Parameter(Mandatory)] [object]$Comparisons,
+        [Parameter(Mandatory)] [string]$Name
+    )
+
+    $comparison = @($Comparisons | Where-Object { $_.Name -eq $Name } | Select-Object -First 1)
+    if ($comparison.Count -ne 1) { return 'N/A' }
+
+    if ([string]$comparison[0].GameStatus -ne 'VALID') {
+        return [string]$comparison[0].GameStatus
+    }
+
+    return ConvertTo-StatLineCsvScalar $comparison[0].GameValue
+}
+
+function Get-StatLineCsvMetricStatus {
+    param(
+        [Parameter(Mandatory)] [object]$Comparisons,
+        [Parameter(Mandatory)] [string]$Name
+    )
+
+    $comparison = @($Comparisons | Where-Object { $_.Name -eq $Name } | Select-Object -First 1)
+    if ($comparison.Count -ne 1) { return 'N/A' }
+    return [string]$comparison[0].GameStatus
+}
+
 $resolvedReportPath = (Resolve-Path -LiteralPath $ReportPath -ErrorAction Stop).Path
 $report = Get-Content -Raw -LiteralPath $resolvedReportPath | ConvertFrom-Json
 $runs = @($report.runs)
@@ -369,6 +415,7 @@ foreach ($run in $runs) {
         SpeciesId = $statSpeciesId
         RawCounts = [ordered]@{ SPO = $SPO; HPS = $HPS; EHS = $EHS; ECN = $ECN; PREY = $PREY; STRV = $STRV; MAT = $MAT; BIR = $BIR; CRWD = $CRWD; FPO = $FPO }
         ExpectedFPO = $expectedFPO
+        FpoReconciled = [bool](Get-OptionalProperty -Object $stat -Name 'fpoReconciled')
         Comparisons = $comparisons
         RawCrossChecks = $rawCrossChecks
         HasRawCrossCheckLimitation = $hasRawCrossCheckLimitation
@@ -400,6 +447,44 @@ $result = [ordered]@{
 $jsonPath = Join-Path $OutputDirectory 'herbivore-stat-validation.json'
 $markdownPath = Join-Path $OutputDirectory 'herbivore-stat-validation.md'
 $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $jsonPath -Encoding utf8
+
+$csvHeaders = @(
+    'seed', 'speciesId', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
+    'FPO', 'expectedFPO', 'fpoReconciled',
+    'pAVI', 'pAVIStatus', 'eAVI', 'eAVIStatus', 'predAVG', 'predAVGStatus',
+    'sAVI', 'sAVIStatus', 'cAVI', 'cAVIStatus', 'bAVG', 'bAVGStatus', 'RFS', 'RFSStatus',
+    'APS', 'APSStatus'
+)
+$csvLines = [System.Collections.Generic.List[string]]::new()
+$csvLines.Add((@($csvHeaders | ForEach-Object { ConvertTo-StatLineCsvField $_ }) -join ','))
+foreach ($validationRun in $validationRuns | Sort-Object Seed) {
+    $raw = $validationRun.RawCounts
+    $values = @(
+        $validationRun.Seed,
+        $validationRun.SpeciesId,
+        $raw.SPO, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD,
+        $raw.FPO, $validationRun.ExpectedFPO, $validationRun.FpoReconciled,
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'pAVI'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'pAVI'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'eAVI'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'eAVI'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'predAVG'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'predAVG'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'sAVI'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'sAVI'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'cAVI'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'cAVI'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'bAVG'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'bAVG'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'RFS'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'RFS'),
+        (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'APS'),
+        (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'APS')
+    )
+    $csvLines.Add((@($values | ForEach-Object { ConvertTo-StatLineCsvField $_ }) -join ','))
+}
+$csvPath = Join-Path $OutputDirectory 'statline.csv'
+$csvLines | Set-Content -LiteralPath $csvPath -Encoding utf8
 
 $lines = [System.Collections.Generic.List[string]]::new()
 $lines.Add('')
@@ -465,6 +550,7 @@ $lines | Set-Content -LiteralPath $markdownPath -Encoding utf8
     Runs = $validationRuns.Count
     Json = $jsonPath
     Markdown = $markdownPath
+    Csv = $csvPath
 }
 
 if (-not $allPassed) {

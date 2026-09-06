@@ -5,12 +5,27 @@ become a master changelog.
 
 ## Current focus
 
-The next proposed work block is **CF-0 — Contract and fixtures** from the
-[consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md). This is a
-preparation gate for the same-world continuation feature: record the lifecycle,
-phase/expedition evidence meaning, initialization-only upgrade policy, and a
-versioned fresh-run fixture before changing runtime code. Implementation remains
-pending those decisions; EX-010 remains blocked until the later checkpoint gate.
+**CF-0 — Contract and fixtures** is complete. **CF-1 — continuation parity,
+CF-2 boundary upgrades, and the controlled CF-3 preview path** are implemented
+and freshly verified on `NF/ConsecutiveRuns`.
+The same-world lifecycle, phase/expedition evidence meaning, initialization-only
+upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
+locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+The preview now supports phase survivor data, live/legacy upgrade choices,
+same-run resume, explicit End, and manual inspection. Continuous terminal
+completion is results-only; upgrades are offered at phase boundaries, and a
+new expedition is an explicit next action. Continuous phases remain the
+default player flow; uninterrupted single-run mode is Developer Mode-only.
+Phase result/telemetry windows and ordered acquisition timing are now captured
+by the runtime and report serializers. Boundary checkpoints can be copied,
+restored, and resumed with deterministic runner output. An opt-in headless
+schedule now applies cumulative per-phase loadouts and emits the same phase
+contract; its generic smoke path passes. EX-010 remains prepared but not
+executed, pending its contract-specific schedule and human approval.
+
+Latest verification: Unity EditMode 210/210 passed and PlayMode 17/18 passed
+with one intentional graphics-only skip (2026-09-05). The PlayMode suite is
+green with no failed tests.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)
@@ -21,6 +36,7 @@ pending those decisions; EX-010 remains blocked until the later checkpoint gate.
 - Future scientific-data economy: [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md)
 - Future permanent and per-run upgrade systems: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)
 - Species per-run upgrade authoring workflow: [`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md)
+- Species per-run upgrade acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
 - Upgrade-system planning concerns: [`Planning concerns/upgrade-system.md`](Planning%20concerns/upgrade-system.md)
 - Main Menu, Lab, and progression delivery plan: [`MAIN_MENU_LAB_DELIVERY_PLAN.md`](MAIN_MENU_LAB_DELIVERY_PLAN.md)
 - Unity MVVM and GalapagOS UI architecture: [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md)
@@ -29,6 +45,7 @@ pending those decisions; EX-010 remains blocked until the later checkpoint gate.
 - Sprint 1 authoritative execution plan: [`SPRINT_1_PLAN.md`](SPRINT_1_PLAN.md)
 - Sprint Kickoff and carry-over workflow: [`SPRINT_KICKOFF_WORKFLOW.md`](SPRINT_KICKOFF_WORKFLOW.md)
 - Active production roadmap and sprint plan: [`../ROADMAP.md`](../ROADMAP.md)
+- Proposed Sprint 3 M1 closeout and hygiene plan: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
 - Stable-but-incomplete feature action plan: [`INCOMPLETE_FEATURES_ACTION_PLAN.md`](INCOMPLETE_FEATURES_ACTION_PLAN.md)
 - Proposed next work bucket: [`NEXT_WORK_BUCKET_PLAN.md`](NEXT_WORK_BUCKET_PLAN.md)
 - Sprint 1 species stat-line tickets: [`SPRINT_1_SPECIES_STAT_LINE_TICKETS.md`](SPRINT_1_SPECIES_STAT_LINE_TICKETS.md)

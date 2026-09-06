@@ -72,6 +72,91 @@ function Get-FinalPopulation {
     return 0
 }
 
+function Get-RunTicks {
+    param([object]$Report)
+
+    $runTicks = $Report.PSObject.Properties['runTicks']
+    if ($null -ne $runTicks -and $runTicks.Value -gt 0) {
+        return [int]$runTicks.Value
+    }
+
+    return [int](@($Report.runs | ForEach-Object { $_.ticks } | Measure-Object -Maximum).Maximum)
+}
+
+function Get-PhaseValidationIssues {
+    param([Parameter(Mandatory)] [object]$Report)
+
+    $issues = [System.Collections.Generic.List[string]]::new()
+    $runIndex = 0
+    foreach ($run in @($Report.runs)) {
+        $phaseProperty = $run.PSObject.Properties['phaseResults']
+        if ($null -eq $phaseProperty -or $null -eq $phaseProperty.Value) {
+            $runIndex++
+            continue
+        }
+
+        $phases = @($phaseProperty.Value)
+        $previousEnd = $null
+        $previousIndex = 0
+        foreach ($phase in $phases) {
+            if ($null -eq $phase) {
+                $issues.Add("run $runIndex contains a null phase result")
+                continue
+            }
+
+            if ($phase.contractVersion -ne 1) {
+                $issues.Add("run $runIndex phase $($phase.phaseIndex) has unsupported phase contract $($phase.contractVersion)")
+            }
+
+            if ($phase.windowEndTickInclusive -le $phase.windowStartTickExclusive) {
+                $issues.Add("run $runIndex phase $($phase.phaseIndex) has an empty or reversed window")
+            }
+
+            if ($phase.phaseIndex -ne ($previousIndex + 1)) {
+                $issues.Add("run $runIndex phase indices are not contiguous at $($phase.phaseIndex)")
+            }
+
+            if ($null -ne $previousEnd -and $phase.windowStartTickExclusive -ne $previousEnd) {
+                $issues.Add("run $runIndex phase $($phase.phaseIndex) does not start at the previous phase end")
+            }
+
+            $opening = @($phase.openingPopulation)
+            $closing = @($phase.closingPopulation)
+            if ($opening.Count -ne 1 -or $closing.Count -ne 1) {
+                $issues.Add("run $runIndex phase $($phase.phaseIndex) must have one opening and one closing snapshot")
+            }
+            else {
+                if ($opening[0].tick -ne $phase.windowStartTickExclusive) {
+                    $issues.Add("run $runIndex phase $($phase.phaseIndex) opening tick does not match its window")
+                }
+
+                if ($closing[0].tick -ne $phase.windowEndTickInclusive) {
+                    $issues.Add("run $runIndex phase $($phase.phaseIndex) closing tick does not match its window")
+                }
+            }
+
+            $previousEnd = $phase.windowEndTickInclusive
+            $previousIndex = $phase.phaseIndex
+        }
+
+        $acquisitionProperty = $run.PSObject.Properties['upgradeAcquisitionTimeline']
+        if ($null -ne $acquisitionProperty -and $null -ne $acquisitionProperty.Value) {
+            $lastTick = -1
+            foreach ($acquisition in @($acquisitionProperty.Value)) {
+                if ($acquisition.effectiveTick -lt $lastTick) {
+                    $issues.Add("run $runIndex upgrade acquisition ticks are not ordered")
+                }
+
+                $lastTick = $acquisition.effectiveTick
+            }
+        }
+
+        $runIndex++
+    }
+
+    return $issues.ToArray()
+}
+
 function Get-SnapshotAtTick {
     param(
         [object]$Run,
@@ -190,8 +275,9 @@ function Add-TestResults {
         return
     }
 
-    $xmlFiles = Get-ChildItem -LiteralPath $ArtifactDirectory -Filter '*-results.xml' -File -ErrorAction SilentlyContinue |
+    $xmlFiles = @(Get-ChildItem -LiteralPath $ArtifactDirectory -Filter '*-results.xml' -File -ErrorAction SilentlyContinue |
         Sort-Object Name
+    )
     if ($xmlFiles.Count -eq 0) {
         $Lines.Add('## Test suite')
         $Lines.Add('')
@@ -380,6 +466,7 @@ function Add-Comparison {
         -and $Baseline.playerSpeciesId -eq $Report.playerSpeciesId `
         -and $Baseline.gridWidth -eq $Report.gridWidth `
         -and $Baseline.gridHeight -eq $Report.gridHeight `
+        -and (Get-RunTicks -Report $Baseline) -eq (Get-RunTicks -Report $Report) `
         -and $Baseline.runDurationSeconds -eq $Report.runDurationSeconds `
         -and $Baseline.stepIntervalSeconds -eq $Report.stepIntervalSeconds `
         -and $Baseline.combatResolutionMode -eq $Report.combatResolutionMode `
@@ -412,6 +499,11 @@ if ($null -eq $report.runs -or $null -eq $report.finalPopulationSummary) {
     throw "'$resolvedReportPath' is not a CellSim experiment report."
 }
 
+$phaseValidationIssues = @(Get-PhaseValidationIssues -Report $report)
+if ($phaseValidationIssues.Count -gt 0) {
+    throw "Phase-window validation failed for '$resolvedReportPath': $($phaseValidationIssues -join '; ')"
+}
+
 $resolvedBaselinePath = $null
 $baseline = $null
 if (-not [string]::IsNullOrWhiteSpace($BaselinePath)) {
@@ -440,9 +532,15 @@ $lines.Add('')
 $lines.Add(('- Ruleset fingerprint: `{0}`' -f $report.rulesetFingerprint))
 $lines.Add(('- Scenario asset: `{0}`' -f $report.scenarioAssetPath))
 $lines.Add("- Seeds: $($report.seedStart) through $($report.seedStart + $report.seedCount - 1) ($($report.seedCount) runs)")
-$lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
+$reportRunTicks = Get-RunTicks -Report $report
+$lines.Add("- Grid: $($report.gridWidth) x $($report.gridHeight); run: $reportRunTicks ticks; duration: $(Get-Number $report.runDurationSeconds)s; step: $(Get-Number $report.stepIntervalSeconds)s")
 $lines.Add(('- Player species: `{0}`' -f $report.playerSpeciesId))
 $lines.Add(('- Attack opportunity mode: `{0}`' -f $report.attackOpportunityMode))
+$phaseRunCount = @($report.runs | Where-Object {
+        $property = $_.PSObject.Properties['phaseResults']
+        $null -ne $property -and $null -ne $property.Value -and @($property.Value).Count -gt 0
+    }).Count
+$lines.Add("- Phase-window validation: passed for $phaseRunCount run(s); legacy fresh-window reports without phase data remain supported.")
 $lines.Add('')
 
 $scheduledOpportunities = 0d

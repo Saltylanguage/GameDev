@@ -63,9 +63,10 @@ windows. See the [architecture migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.m
 [evidence impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md), and
 [documentation audit](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md).
 
-The current 20-second/200-tick prototype window is a phase, not a whole
-expedition. The product brief's five-phase limit and longer presentation pacing
-must be distinguished from that prototype. In-memory continuation does not
+The current prototype window is a configurable phase, not a whole expedition;
+200 ticks at a 0.1-second step remains the per-phase target. The product brief's
+ten-phase limit and longer presentation pacing must be distinguished from that
+prototype. In-memory continuation does not
 introduce player disk save/load. Stat-Line and predictive-AI evidence must name
 the phase/expedition window and upgrade acquisition timing.
 
@@ -164,8 +165,10 @@ settle them in foundational grid code.
 - An expedition receives a frozen base-data snapshot at launch. Authoring edits
   affect a new expedition, not the current world. Player upgrades deliberately
   create a new immutable effective rules snapshot at a frozen phase boundary;
-  they never mutate rules mid-tick or reinitialize cells. This boundary update
-  is part of the pending consecutive-phase migration.
+  they never mutate rules mid-tick or reinitialize cells. The retained-run
+  boundary path is implemented in the current `NF/ConsecutiveRuns` branch, with
+  phase-window telemetry and checkpoint handoff contracts now available for
+  research integration.
 - Initial-grid creation remains a factory concern; simulation stepping remains a
   domain concern; `Grid<T>` remains a generic data container.
 - `SpeciesId` is now the primary stable identity for species rules, cells,

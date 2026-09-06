@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace SaltyGame
 {
@@ -11,8 +12,10 @@ namespace SaltyGame
         SpeciesSimulationRunner runner;
         float accumulatedSeconds;
         bool completionRaised;
+        bool boundaryRaised;
 
         public event Action<SimulationRunState> RunCompleted;
+        public event Action<SimulationRunState> PhaseBoundaryReached;
 
         internal SpeciesSimulationRunner Runner => runner;
         public SimulationRunState Run => runner?.Run;
@@ -23,6 +26,7 @@ namespace SaltyGame
             runner = nextRunner ?? throw new ArgumentNullException(nameof(nextRunner));
             accumulatedSeconds = 0f;
             completionRaised = false;
+            boundaryRaised = false;
         }
 
         public bool Start()
@@ -62,7 +66,8 @@ namespace SaltyGame
         {
             if (runner == null
                 || (runner.Run.Status != SimulationRunStatus.Running
-                    && runner.Run.Status != SimulationRunStatus.Paused))
+                    && runner.Run.Status != SimulationRunStatus.Paused
+                    && runner.Run.Status != SimulationRunStatus.AwaitingDecision))
             {
                 return false;
             }
@@ -71,6 +76,7 @@ namespace SaltyGame
             runner.Start();
             accumulatedSeconds = 0f;
             completionRaised = false;
+            boundaryRaised = false;
             return true;
         }
 
@@ -78,7 +84,8 @@ namespace SaltyGame
         {
             if (runner == null
                 || (runner.Run.Status != SimulationRunStatus.Running
-                    && runner.Run.Status != SimulationRunStatus.Paused))
+                    && runner.Run.Status != SimulationRunStatus.Paused
+                    && runner.Run.Status != SimulationRunStatus.AwaitingDecision))
             {
                 return false;
             }
@@ -86,6 +93,49 @@ namespace SaltyGame
             runner = null;
             accumulatedSeconds = 0f;
             completionRaised = false;
+            boundaryRaised = false;
+            return true;
+        }
+
+        public bool ContinueWithoutUpgrade()
+        {
+            if (runner == null || !runner.Run.ContinueWithoutUpgrade())
+            {
+                return false;
+            }
+
+            accumulatedSeconds = 0f;
+            boundaryRaised = false;
+            return true;
+        }
+
+        public bool ContinueWithBoundaryState(
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
+            SpeciesExperimentalOptions nextExperimentalOptions,
+            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout)
+        {
+            if (runner == null
+                || runner.Run.Status != SimulationRunStatus.AwaitingDecision
+                || !runner.InstallBoundaryState(nextRules, nextExperimentalOptions, nextUpgradeLoadout)
+                || !runner.Run.ContinueWithoutUpgrade())
+            {
+                return false;
+            }
+
+            accumulatedSeconds = 0f;
+            boundaryRaised = false;
+            return true;
+        }
+
+        public bool End()
+        {
+            if (runner == null || !runner.Run.End())
+            {
+                return false;
+            }
+
+            accumulatedSeconds = 0f;
+            RaiseCompletionIfNeeded();
             return true;
         }
 
@@ -109,11 +159,28 @@ namespace SaltyGame
                 runner.AdvanceOneTick();
             }
 
-            if (runner.Run.Status == SimulationRunStatus.Complete && !completionRaised)
+            if (runner.Run.Status == SimulationRunStatus.AwaitingDecision)
             {
-                completionRaised = true;
-                RunCompleted?.Invoke(runner.Run);
+                accumulatedSeconds = 0f;
+                if (!boundaryRaised)
+                {
+                    boundaryRaised = true;
+                    PhaseBoundaryReached?.Invoke(runner.Run);
+                }
             }
+
+            RaiseCompletionIfNeeded();
+        }
+
+        void RaiseCompletionIfNeeded()
+        {
+            if (runner.Run.Status != SimulationRunStatus.Complete || completionRaised)
+            {
+                return;
+            }
+
+            completionRaised = true;
+            RunCompleted?.Invoke(runner.Run);
         }
     }
 }

@@ -1,6 +1,6 @@
 # consecutive-simulation-flow-review
 
-[Working state](../WORKING_STATE.md) | Status: ready-for-review
+[Working state](../WORKING_STATE.md) | Status: CF-0 complete; runtime migration ready for assignment
 
 - Owner: codex
 - Branch: NF/ConsecutiveRuns
@@ -11,8 +11,9 @@
 
 Completed Josh's requested review and plan for keeping one evolving ecosystem
 across simulation phases after an upgrade or Skip. Josh explicitly selected
-review/planning first. Runtime code, tools, assets and experiments were not
-changed or newly implemented.
+review/planning first. CF-0 is now complete: the contract is locked and one
+fresh legacy report is preserved as a versioned fixture. Runtime code, tools,
+assets and experiments were not changed or newly implemented by this task.
 
 Review started from `f8ccbdb4` on `NF/UpgradeContract`. During the session the
 workspace gained `62996b4a` (main plan) and `d252255a` (evidence impact); those
@@ -23,13 +24,16 @@ performed by this task.
 ## Changes
 
 - [Architecture review and migration plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md):
-  12 findings, state/clock/upgrade/checkpoint ownership, seven proposed packages,
-  44–68h planning estimate, verification gates and open decisions.
+  12 findings, locked CF-0 state/clock/upgrade/report decisions, seven proposed
+  packages, 44–68h planning estimate and verification gates.
 - [Evidence impact](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md): Stat-Line
   ticket mapping, prediction input changes, EX-010 prerequisites, telemetry
   producer/consumer coverage and explicit historical applicability register.
 - [Documentation audit](../CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md): active
   document changes and implementation closure list; historical evidence retained.
+- [Legacy fresh-run fixture](../fixtures/continuous-simulation/legacy-fresh-schema-21/README.md):
+  byte-for-byte schema-21 report with seed/configuration/hash provenance for
+  old-reader and continued-world reader comparisons.
 - Updated 35 existing design/planning/reference documents, including GDD,
   product brief, TDD, project context, architecture diagrams, upgrade/economy
   guidance, active work plans, Stat-Line and research entry points.
@@ -40,20 +44,31 @@ performed by this task.
   owner acknowledgment and acceptance remain pending. The research notice was
   shortened after the connector's 2048-character limit rejected its first form.
 
-## Decisions and assumptions
+## Locked decisions and assumptions
 
-- Agreed direction: Continue preserves the world through purchase and Skip.
-  The implementation details remain proposals, not approved architecture work.
-- One gameplay expedition contains consecutive phases; explicit fresh-window
-  research remains supported under its own lifecycle contract.
-- Keep prototype 20-second pacing distinct from the product brief's five
-  200-tick phases and longer viewing target; confirm final cadence before coding.
+- Continue preserves the same world through purchase and Skip. The runner,
+  absolute tick, prior grid, identities, cooldowns, resources and cumulative
+  history survive each boundary.
+- One gameplay expedition has five consecutive 200-tick phases. The prototype
+  keeps its 20-second viewing cadence during migration; fresh-window research
+  remains an explicit mode of the same step engine.
+- Starting population, starting energy and starting reserve effects are
+  launch-only. Live modifiers begin on the next tick and do not refill, heal or
+  reset existing state.
+- A signed maximum-energy change preserves current energy at the boundary,
+  including temporary above-cap values. Later gains use the authored cap; an
+  immediate clamp or grant requires a separately designed mechanic.
+- Explicit Restart abandons the attempt and starts a new expedition from its
+  original launch configuration with a new attempt identity. Phase retry is a
+  future checkpoint/rollback feature.
+- Phase results are windowed raw observations with actual partial/invalid
+  status and acquisition decision/effective ticks. Final expedition results
+  pool raw counters and recompute rates; they are not averages of phase ratios.
 - In-memory continuation and research checkpoint reproduction do not authorize
   player disk save/load, permanent Lab economy or EX-010 experimental execution.
 - Preserve completed reports/preregistrations/decisions; invalidate only their
-  use as support for untested continuation claims.
-- Proposed CF concerns remain unaccepted proposals. Existing concern records
-  received reference links without severity, trigger, scope or status changes.
+  use as support for untested continuation claims. Proposed CF concerns remain
+  unaccepted proposals; existing concern records retain their prior status.
 
 ## Validation
 
@@ -71,6 +86,11 @@ permissions through `tools/Invoke-UnityTests.ps1 -Mode All`:
 - Inspected the existing schema-23 EX-009 artifact
   `artifacts/cellular-experiment-20260904-192559/report.json`: one run per seed,
   200 ticks, no phase/acquisition/checkpoint fields.
+- Preserved the fresh schema-21 single-window report from
+  `artifacts/cellular-experiment-20260903-153000/report.json` at
+  `docs/fixtures/continuous-simulation/legacy-fresh-schema-21/report.json`.
+  The copied file is byte-identical (SHA-256
+  `D2DA974444DADE64C2B44D22EC2C570E109D4EF18EB48E328204EC941791230F`).
 - `git diff --check f8ccbdb4` passed after removing trailing Markdown whitespace
   in the new review documents. The final link pass checked **245 local links
   across 39 documents with zero missing targets**, including the two newly
@@ -91,14 +111,15 @@ reconcile this mismatch before assigning the proposed packages. No allocation
 was changed by the review.
 
 Player/UI/tool-help and actual telemetry schemas remain unchanged until runtime
-implementation. The documentation audit keeps those closure items open. EX-010
-remains blocked on verified checkpoint/continuation capability plus an approved
-experiment contract. No statement that old tests pass closes those gates.
+implementation. The documentation audit keeps those implementation closure
+items open. EX-010 remains blocked on verified checkpoint/continuation
+capability plus an approved experiment contract. No statement that old tests
+pass closes those gates.
 
 ## Next useful step
 
-Review CF-0 decisions: phase/end policy, initialization-only upgrade eligibility,
-above-cap energy behavior, explicit Restart semantics and phase/expedition stat
-contracts. Assign the migration with Sim's contract review and capture a fresh
-baseline at implementation time. Follow CF-1 through CF-6; keep historical
-fresh-run evidence and new continuation evidence distinguishable.
+Assign CF-1 through CF-6 with Sim's metric review, capture the implementation
+baseline on the then-current branch, and execute the gates in the canonical
+plan. Keep historical fresh-run evidence and new continuation evidence
+distinguishable; do not begin EX-010 until checkpoint and producer/consumer
+parity are verified.
