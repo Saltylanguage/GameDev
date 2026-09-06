@@ -2,7 +2,7 @@
 
 **Experiment:** `EXP-010` — Sequential upgrade continuation
 **Contract:** `EX-010-DRAFT-1`
-**Status:** Prepared; paused pending Sim's semantic review and human approval; not executed
+**Status:** Prepared; Stat-Line meaning review confirmed with Sim on 2026-09-06; schedule details and human approval remain; not executed
 **Owner:** Josh
 **Evidence rule:** No result from this draft is research evidence until the
 contract is approved, the schedule is run through the same game/headless seam,
@@ -15,8 +15,9 @@ catalog so their declared values do not change during this experiment.
 
 ## Question
 
-When two per-run upgrades are acquired during one evolving expedition, does
-acquisition order change the later trajectory or final outcome?
+Across one full ten-phase expedition, how do different preselected sequential
+upgrade histories affect the later phase Stat-Lines and the final expedition
+Stat-Line?
 
 ## Candidate fixture
 
@@ -24,28 +25,35 @@ acquisition order change the later trajectory or final outcome?
 | --- | --- | --- |
 | Scenario | `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset` | Confirm the scenario revision before execution. |
 | Player species | `hare` | Confirm the species and starting state. |
-| Upgrade 1 | `faster-movement` | Use the resolved runtime snapshot, not a live asset reference. |
-| Upgrade 2 | `crowding-tolerance` | Use the resolved runtime snapshot, not a live asset reference. |
+| Upgrade schedule | All six currently available upgrades, each used once, plus three explicit Skip decisions | Choose the exact stable IDs, order, and Skip positions before execution. |
 | Combat/options | Same as EX-009 | Lock the ruleset and option values in the final contract. |
 | Seed panel | Fresh development and held-out panels | Choose exact ranges without reusing a held-out panel as tuning data. |
 
 ## Candidate schedule
 
-The proposed first pass uses three equal segments. The first arm acquires
-Upgrade 1 at the first boundary and Upgrade 2 at the second. The second arm
-swaps those identities while keeping the initial state, boundary ticks, and
-seed identical.
+The agreed first pass uses ten equal 200-tick phases. Phase 1 starts with no
+upgrades. After each of phases 1 through 9, the player makes one preselected
+decision. Each research sequence contains all six upgrades once and three
+Skips. The exact nine decisions are fixed before the run and used for every
+seed. If EX-010 compares alternate sequences, each full sequence must be
+written down before execution; the meeting did not choose a second sequence.
 
-| Segment | Tick window | Arm A | Arm B |
-| --- | --- | --- | --- |
-| 1 | `(0, 200]` | No added upgrade | No added upgrade |
-| 2 | `(200, 400]` | `faster-movement` effective after tick 200 | `crowding-tolerance` effective after tick 200 |
-| 3 | `(400, 600]` | Both upgrades | Both upgrades |
+| Phase | Tick window | Decision before this phase |
+| --- | --- | --- |
+| 1 | `(0, 200]` | No added upgrade |
+| 2 | `(200, 400]` | Decision 1 |
+| 3 | `(400, 600]` | Decision 2 |
+| 4 | `(600, 800]` | Decision 3 |
+| 5 | `(800, 1000]` | Decision 4 |
+| 6 | `(1000, 1200]` | Decision 5 |
+| 7 | `(1200, 1400]` | Decision 6 |
+| 8 | `(1400, 1600]` | Decision 7 |
+| 9 | `(1600, 1800]` | Decision 8 |
+| 10 | `(1800, 2000]` | Decision 9 |
 
-The segment length is a proposal only. If the final contract uses another
-length, the same value must be used in both arms and recorded before any run.
-The first changed rule is effective on the next tick after the boundary; the
-boundary tick itself belongs to the preceding window.
+At a boundary, the simulation stops at the completed tick. The selected
+upgrade becomes active at that boundary, and the next tick uses it. A Skip
+keeps the current upgrade list unchanged.
 
 ## Required evidence per seed and arm
 
@@ -56,17 +64,21 @@ boundary tick itself belongs to the preceding window.
 - phase-window population snapshots and raw metric deltas;
 - event ledgers, validity status, and terminal outcome;
 - replayable checkpoint lineage and the exact report schema versions;
-- A/B pair identity proving the same seed and same schedule.
+- Sequence identity proving the same seed and preselected schedule; if an
+  alternate research sequence is added, its full schedule must also be fixed
+  before execution.
 
 ## Comparison and decision rules
 
-1. Compare Arm A and Arm B pairwise on the same seed and same phase windows.
-2. Report per-seed deltas before any panel summary; do not average unlike
-   windows or silently turn missing/invalid values into zero.
-3. Attribute a difference to order only within this matched schedule. A timing,
-   scenario, upgrade-value, or ruleset change requires a new experiment.
-4. Accept a bounded order finding only when all required bundles validate and the
-   direction is reported with its seed-level consistency and limitations.
+1. Report the complete Stat-Line for every phase and the independently
+   calculated final expedition Stat-Line.
+2. Show chronological per-stat deltas against the immediately preceding phase
+   or run; do not turn the full Stat-Line into a new combined score.
+3. If alternate sequences are compared, compare their complete reports under
+   the declared research design and have Josh and Sim review the findings
+   directly.
+4. Keep `N/A`, invalid, partial, and no-data states visible; never replace them
+   with zero for convenience.
 5. Reject or leave unresolved when the checkpoint, schedule, report, or metric
    contract is incomplete, mixed, or not reproducible.
 
@@ -74,6 +86,8 @@ boundary tick itself belongs to the preceding window.
 
 - [ ] Human approves the scenario, values, seed panels, segment length, options,
       outcomes, and acceptance thresholds.
+- [x] Josh and Sim confirm the phase-aware Herbivore Stat-Line meanings and
+      the independent phase/final reporting model (2026-09-06).
 - [ ] CF-4 phase-window serializer, validator, CSV, and Markdown outputs agree.
 - [ ] CF-5 checkpoint round trip and fork isolation pass.
 - [ ] Gameplay and headless schedule commands produce the same boundary ticks

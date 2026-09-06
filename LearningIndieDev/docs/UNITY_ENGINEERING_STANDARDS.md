@@ -19,7 +19,7 @@ Every rule below includes its intent, a project-specific example, enforcement st
 
 ## 1. Project principles
 
-1. **MUST keep the playable loop simple and explicit.** The active product flow is `MainMenu -> Lab -> CellularAutomataPrototype`, with explicit simulation and Noesis presentation composition. The deprecated Island Survivor slice retains `GameRuntime -> WorldRuntime -> InteractionController -> ActivityController -> InventoryState -> GameHud`. New work should fit a demonstrated boundary before introducing a new framework.
+1. **MUST keep the playable loop simple and explicit.** The active product flow is `MainMenu -> Lab -> CellularAutomataPrototype`, with explicit simulation and Noesis presentation composition. The deprecated Island Survivor slice retains its simulation composition (`GameRuntime -> WorldRuntime -> InteractionController -> ActivityController -> InventoryState`) without a supported runtime HUD. New work should fit a demonstrated boundary before introducing a new framework.
    - Why: the project is an early prototype and the existing vertical slice is easy to reason about.
    - Correct: add a new activity through `IActivity` and `IActivityTarget` before changing bootstrap or UI.
    - Discouraged: add a global `GameServices` registry so one feature can find inventory.
@@ -106,7 +106,7 @@ Enforcement: formatting whitespace and braces are enforced by `.editorconfig` fo
 
 ## 4. Unity component standards
 
-- **MonoBehaviours MUST** coordinate Unity lifecycle, scene references, input-facing behavior, and presentation. `GameRuntime`, `WorldRuntime`, `PlayerInputAdapter`, interactables, `GameHud`, and `RuntimeDebugPanel` are valid examples.
+- **MonoBehaviours MUST** coordinate Unity lifecycle, scene references, input-facing behavior, and presentation. `GameRuntime`, `WorldRuntime`, `PlayerInputAdapter`, and interactables are current examples.
 - **Plain C# classes SHOULD** own domain/simulation rules that do not require Unity lifecycle. `GameClock`, `InventoryState`, `ActivityController`, and activities are the current examples and are directly testable.
 - **ScriptableObjects MAY** hold authored definitions or configuration once the project has real shared data; they are not required for every feature.
 - **Components MUST** have one clear responsibility and explicit ownership of references.
@@ -144,7 +144,7 @@ Use the smallest pattern that solves a demonstrated problem.
 | Command | UI/input actions need queueing, undo, or replay | Wrapper around a direct method call | Optional; experimental `DelegateCommand` is isolated/guarded |
 | State | Many explicit transitions make branching unreadable | Enum wrapper with no behavior benefit | `GameState` is a simple enum; no state framework |
 | Observer | Decoupled notifications across a real boundary | Events replacing a direct call | Use sparingly; no gameplay event bus |
-| MVP/MVVM | Complex UI with independent view state/testing | Imposing it on the deprecated simple `OnGUI` HUD | Active Noesis screens use ViewModels; legacy HUD remains separate |
+| MVP/MVVM | Complex UI with independent view state/testing | Reintroducing a runtime UI path outside Noesis | Active Noesis screens use ViewModels; editor-only diagnostic UI remains separate |
 | Strategy | Multiple interchangeable rules with real variation | Interface for every class | `IActivity` is a valid boundary |
 | Flyweight | Many shared immutable definitions | Premature data indirection | TBD |
 | Dirty Flag | Expensive derived UI/world rebuilds | Flagging cheap direct reads | TBD |
@@ -236,16 +236,19 @@ Enforcement: `.meta` parity, YAML mode, enabled bootstrap, and forbidden generat
 ## 11. UI and presentation boundaries
 
 The active player-facing flow uses Noesis/XAML under `Assets/UI` with direct
-Noesis imports and the current generated/editor package resolution. The older
-Island Survivor bootstrap slice uses Unity built-in `OnGUI` in `GameHud` and
-`RuntimeDebugPanel`. uGUI and UI Toolkit modules are installed, but no
-first-party UI Toolkit runtime screen was found. No scripting define currently
-guards the first-party Noesis files; package-resolution and editor analytics
-remain documented risks.
+Noesis imports and the current generated/editor package resolution. The
+deprecated Island Survivor bootstrap retains its simulation composition only;
+its former runtime HUD and debug IMGUI surfaces are removed. The retained
+terrain diagnostic scene is a temporary exception pending an explicit removal
+or Noesis migration decision. Unity Editor utility windows may use editor-only
+IMGUI, but no player-facing runtime screen may use it. uGUI and UI Toolkit modules are installed, but no first-party UI
+Toolkit runtime screen was found. No scripting define currently guards the
+first-party Noesis files; package-resolution and editor analytics remain
+documented risks.
 
-Presentation **MUST** display state and send user intent without owning activity, inventory, or world rules. Refresh on meaningful state changes where practical; do not create unnecessary layout/canvas rebuilds. Use a presenter/view-model only when screen complexity or independent testing justifies it. Do not impose MVVM on the current simple HUD.
+Presentation **MUST** display state and send user intent without owning activity, inventory, or world rules. Refresh on meaningful state changes where practical; do not create unnecessary layout/canvas rebuilds. Use the established Noesis presenter/view-model path for runtime screens; do not reintroduce a runtime IMGUI HUD.
 
-Correct: `GameHud` reads `GameRuntime` and renders status. Discouraged: `GameHud` awards inventory or depletes targets. Editor UI and runtime UI must remain separate.
+Editor UI and runtime UI must remain separate. Runtime UI belongs in Noesis/XAML; editor-only diagnostic windows may use Unity IMGUI.
 
 Enforcement: assembly boundaries and code review; no UI architecture validator currently exists. Exception: the guarded Noesis experiment may retain its separate legacy convention until formally adopted.
 

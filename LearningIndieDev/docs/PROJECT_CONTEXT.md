@@ -113,15 +113,12 @@ settle them in foundational grid code.
   relevant presentation state changes.
 - The `CellularAutomataPrototype` scene now composes a Noesis shell through
   `SpeciesSimulationNoesisHost` and `VM_SimulationShell`. The shell
-  owns the running, paused, rewards, and results controls, while the existing
-  IMGUI panel remains the fallback authoring surface for species-specific rules.
+  owns the running, paused, rewards, results, global settings, and species-rule
+  authoring controls. No runtime IMGUI fallback remains.
 - The shell also edits global run settings (grid size, seed mode, population
   bounds, duration, step interval, and starting probabilities) through an
   explicit apply command. Settings are validated and applied only before a
   session starts, so an active run cannot be mutated underneath the simulation.
-- Species-rule authoring remains available through an explicit legacy-panel
-  handoff from the shell; it is hidden during normal Noesis settings flow so
-  the two authoring surfaces do not overlap.
 - The Noesis shell now also edits the complete current species-rule surface:
   movement, attack, block, diet, reproduction, energy, perception, crowding,
   wilt, food reserve, and seed-drop settings. The edit contract is plain data
@@ -243,6 +240,25 @@ settle them in foundational grid code.
 - Future custom rule work should stay focused on a concrete mechanic such as
   sight; editor work should add terrain presets or preview asset selection only
   when that authoring workflow is needed.
+
+## GalapagOS desktop direction
+
+- The official player-facing desktop inspiration baseline is the light pastel
+  eco-OS concept recorded in [`ART_STYLE_GUIDE.md`](../ART_STYLE_GUIDE.md) and
+  [`docs/Art Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png`](Art%20Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png).
+- The intended shell is **Meadow Desktop**: bright ecology backgrounds,
+  desktop icons, pale cream and light-green windows, dark-brown contrast, and
+  restrained pastel accents. **Lab Notebook** is the preferred treatment for
+  research and collection surfaces; controlled **Classic Eco OS** window
+  stacking is optional utility inspiration rather than a requirement for core
+  navigation.
+- The player desktop app ecosystem is planned in
+  [`GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md`](GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md),
+  with the detailed player-facing feature contract in
+  [`GALAPAGOS_DESKTOP_FEATURE_SET_PLAN.md`](GALAPAGOS_DESKTOP_FEATURE_SET_PLAN.md).
+  Core apps are Settings, Species Collection, Gene Lab, My PC, Music Player,
+  History/Data Record, Biome/Ecology Lab, and Expedition Planner, with Field
+  Guide, Research Inbox, and Habitat Gallery as recommended additions.
 
 ## Cellular simulation iconography direction
 

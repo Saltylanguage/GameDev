@@ -31,6 +31,7 @@ product contract.
 | --- | --- | --- |
 | [GDD](GDD_TEMPLATE.md) | Rewrote player promise, core flow and progression around one expedition with purchase/skip continuation. | Replace pending labels when runtime gates pass; retain unresolved pacing/mechanic decisions until accepted. |
 | [Product brief](PRODUCT_BRIEF.md) | Explicit same-world continuity, optional Skip, phase versus terminal results, acquisition-time replay and distinction from disk saves. | Verify runtime against the locked cadence/terminal contract and actual outcomes; the longer presentation target remains separate. |
+| [Game feature roadmap triage](GAME_FEATURE_ROADMAP_TRIAGE.md) | New game-designer rubric for player value, priority, dependencies, blockers, capacity and proposed landing windows. | Keep feature briefs and proposed sprint outcomes aligned as each feature is planned in detail. |
 | [Project context](PROJECT_CONTEXT.md) | Durable continuity direction and immutable base/per-phase rules boundary. | Update current implementation state, remove superseded prototype descriptions in touched sections. |
 | [TDD](TDD_TEMPLATE.md) | Added lifecycle invariants and canonical implementation/evidence links. | Fill actual APIs, checkpoint format and validation results; unrelated template placeholders remain unrelated. |
 | [Working state](WORKING_STATE.md) | Added plan, impact and audit entry points. | Link final integration handoff; keep history out of this index. |

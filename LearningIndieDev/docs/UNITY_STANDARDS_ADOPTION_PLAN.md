@@ -90,7 +90,8 @@ No gameplay refactor, asset move/rename, scene/prefab modification, package/Unit
   starter only through the focused cleanup ticket after final reference scan.
 - `Assets/TutorialInfo` is template content and may follow Unity's template conventions.
 - `WorldRuntime` creates placeholder sprites and uses hard-coded prototype values; authored data/prefab conversion needs a design decision, not an opportunistic cleanup.
-- `RuntimeDebugPanel.visible` is intentionally static development state; it is not approved as a general global-state pattern.
+- The former runtime debug panel and its static visibility state were removed
+  with the deprecated Island Survivor IMGUI HUD; do not reintroduce that path.
 - The former misspelled `Boostrap` scene was intentionally migrated to
   `IslandSurvivorPrototype` with its scene GUID preserved when the cellular-
   automata and island prototypes were separated.

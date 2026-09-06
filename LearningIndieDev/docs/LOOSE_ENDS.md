@@ -7,20 +7,39 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-05
+- Last reviewed: 2026-09-06
 - Report state: the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
   and S2-register checkpoints retained in history). Unity Edit Mode is green at
   210/210 and Play Mode is green at 17/18 with one intentional graphics-only
   skip. The current EX-007/EX-008/EX-009 run bundles and the new continuation
   smoke bundles pass the strict artifact validator with Unity logs. Graphics-
-  capable Unity acceptance remains blocked by Unity's machine-level
-  UPM/licensing IPC state; the P3 research gate remains open because EX-003 and
-  broader promotion review are unresolved. BoardSnapshot fixture repair, the
+  capable Unity acceptance remains open pending a graphics run; the latest
+  preflight reached licensing and UPM successfully. The P3 research gate
+  remains open because EX-003 and broader promotion review are unresolved.
+  BoardSnapshot fixture repair, the
   terrain documentation contract, the editor pattern drift, XAML whitespace,
   historical ID ambiguity, and the S2 register mapping are resolved or
   explicitly bounded below. EX-010 preparation is complete, but its
   contract-specific schedule, human approval, and execution remain gated.
+
+### Decisions recorded this pass
+
+- Workspace cleanliness is intentionally not tracked as a Loose End; ongoing
+  uncommitted work is expected in this project.
+- The player-facing expedition contract is ten phases. Project-wide wording
+  was reconciled to that contract, with no stale phase-count wording found.
+- The docs concept image is canonical at
+  `docs/Art Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png`;
+  the duplicate Unity asset and its `.meta` file were removed.
+- The GalapagOS desktop UI follow-up is now tracked by the
+  [screens and components ticket](https://trello.com/c/QDjvRK9V/95-galapagos-desktop-ui-screens-and-components).
+- Deprecated HUD/debug IMGUI and the orphan Life preview are closed under
+  R-015. The terrain diagnostic remains the sole runtime-IMGUI exception and
+  stays open under P2-022 while terrain work is on hold.
+- The GalapagOS desktop and Simulation now use separate Noesis compositions;
+  the desktop view receives its ViewModel DataContext during startup, and the
+  Simulation command no longer falls through to the generic app placeholder.
 
 ## Triage rules
 
@@ -28,43 +47,27 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-05)
+## Current open items (2026-09-06)
 
-### P1-014 — GalapagOS ControlLibrary runtime acceptance is blocked
+### P1-014 — GalapagOS ControlLibrary runtime acceptance remains open
 
-- **Status:** Earlier UI batch committed/pushed; follow-up panel/resource/font
-  edits are checkpointed locally; runtime acceptance remains pending.
-- **Evidence:** Commit `640d8f5d` adds the desktop test scene, shared
-  `HeaderedContentControl` window style/resources, four palette variants, and
-  the cleaned desktop panel on `UI/ControlLibrary`. XML parsing succeeds for
-  the changed XAML. `Assets/Noesis.settings.asset` now points `defaultFont` at
-  the imported Pixeloid Sans Noesis font, and the Pixeloid Sans/Bold/Mono `.meta`
-  files use `Noesis.NoesisGUI.Editor::NoesisFontImporter`, so Noesis/XAML text
-  inherits the project font without per-element assignments. `git diff --check`
-  is clean for this follow-up. The 2026-09-05 validation attempt stopped at
-  the preflight guard because Unity was already running (PID `52140`); no Unity
-  screenshot or graphics Play Mode result exists for this batch yet.
-- **Next action:** Repair the Unity Hub/licensing IPC state, rerun the graphics
-  acceptance command, and review the desktop scene at the target resolutions.
+- **Status:** The current desktop/simulation batch is ready for commit; direct
+  runtime routing is verified, while graphics-capable visual acceptance remains
+  pending.
+- **Ticket:** [GalapagOS Desktop UI - screens and components](https://trello.com/c/QDjvRK9V/95-galapagos-desktop-ui-screens-and-components).
+- **Evidence:** The batch adds the desktop test scene, shared
+  `HeaderedContentControl` window style/resources, reusable GalapagOS controls,
+  pastel art-direction documentation, and the dedicated Simulation Noesis
+  composition. XML parsing succeeds for the seven GalapagOS/HUD XAML files.
+  A fresh Unity Play Mode check initialized the desktop command and switched
+  from the desktop camera to the Simulation camera with a non-null board
+  snapshot. The full batch test command was not able to start because Unity
+  was already running (PID `16440`); no captured Game-view screenshot exists
+  for the full batch yet.
+- **Next action:** Close Unity through the normal user workflow, rerun the
+  graphics acceptance command, and review the desktop and Simulation scenes at
+  the target resolutions.
 - **Likely owner:** Josh + UI owner.
-- **Confidence:** High.
-
-### P1-015 — Unity preflight requires a normal host-permission context
-
-- **Status:** Mitigated; preflight passes when launched with normal host
-  permissions. Restricted Codex shells now fail fast with an actionable
-  diagnostic instead of launching Unity into a doomed IPC timeout.
-- **Evidence:** Normal-permission preflight passed in
-  `artifacts/unity-preflight-20260903-181807`: licensing and UPM connected and
-  all 65 packages registered. Restricted probes reported Windows Management
-  access denied for the licensing client's host-identity queries.
-- **Tooling follow-up:** `tools/UnityTooling.ps1` now performs the context
-  probe first and cleans only newly created UPM/licensing helpers for ten
-  seconds after Unity exits; late-spawned clients cannot survive a failed run.
-- **Next action:** Run Unity validation from a normal host-permission terminal,
-  or approve the elevated Unity preflight when invoking it through Codex. Do
-  not bypass the preflight gate.
-- **Likely owner:** Josh (host permissions) + tooling owner.
 - **Confidence:** High.
 
 ### P1-016 — First trustworthy upgrade catalog needs balance review
@@ -135,15 +138,17 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Repository maintainer + vendor/license owner.
 - **Confidence:** High.
 
-### P1-020 — Figma/Noesis pilot still lacks final visual evidence
+### P2-023 — Figma/Noesis pilot is probably obsolete
 
-- **Status:** Open and intentionally separate from the ControlLibrary commit.
+- **Status:** Low priority and deferred; the current pastel GalapagOS direction
+  supersedes the dark pilot for the active shell.
 - **Evidence:** `docs/handoffs/2026-08-25-codex-figma-noesis-pilot.md` records the
   pilot as incomplete because the Figma Starter quota was exhausted and the
   component/screenshot pass was not accepted. The new desktop scene has no
-  runtime screenshot yet because of P1-015.
-- **Next action:** Revisit the pilot only after runtime acceptance is available
-  and the visual target is explicit; do not expand the component surface first.
+  runtime screenshot yet because graphics acceptance remains open under
+  P1-014.
+- **Next action:** After the current GalapagOS UI work, decide whether to close
+  or archive the pilot. It does not block the current runtime acceptance path.
 - **Likely owner:** Presentation/UI owner.
 - **Confidence:** Medium-high.
 
@@ -180,9 +185,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P2-021 — Sequential upgrade continuation remains untested
 
-- **Status:** Preparation complete; work is paused while Sim reviews the
-  phase-aware Stat-Line meanings. Experiment execution remains gated on that
-  review, the contract-specific schedule, and human approval.
+- **Status:** Preparation complete; Josh and Sim confirmed the phase-aware
+  Stat-Line meanings on 2026-09-06. Experiment execution remains gated on the
+  contract-specific schedule and human approval.
 - **Evidence:** EX-009 was accepted only for a complete loadout applied before
   the run started. The intended game flow acquires upgrades between simulation
   segments and continues from the current state, which introduces acquisition
@@ -191,8 +196,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   and an opt-in headless schedule. The generic `none;stronger-block;
   stronger-block-2` smoke run passed strict validation, but it is not EX-010
   evidence. See commit `79423b4e`, handoff
-  `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`, and the draft
-  contract at `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md`.
+  `docs/handoffs/2026-09-05-0415-codex-cf4-cf5-ex010-prep.md`, the meeting
+  brief at `docs/handoffs/2026-09-06-0250-josh-sim-ex010-statline-decision-brief.md`,
+  and the draft contract at
+  `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md`.
   The corresponding approval gate is tracked on the
   [EX-010 schedule/approval card](https://trello.com/c/LyMlLztN).
 - **Next action:** Finalize the authored EX-010 schedule and record a human
@@ -200,22 +207,6 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   experiment-specific report bundle; do not treat the generic smoke run as
   predictive evidence.
 - **Likely owner:** Josh.
-- **Confidence:** High.
-
-### P2-022 — Legacy Unity IMGUI text is outside the Noesis default-font path
-
-- **Status:** Noesis/XAML now inherits Pixeloid Sans globally; legacy IMGUI
-  surfaces still inherit Unity's `GUI.skin.font` and are intentionally
-  unchanged.
-- **Evidence:** `Assets/Noesis.settings.asset` configures the Noesis
-  `defaultFont`, while `Assets/Scripts/Game/Presentation/GameHud.cs:24-29` and
-  `Assets/Scripts/Game/Debug/RuntimeDebugPanel.cs:28` create styles from
-  `GUI.skin.label`. These are separate rendering paths and do not consume the
-  Noesis setting.
-- **Next action:** Decide whether the retained debug/IMGUI surfaces should also
-  use Pixeloid; if so, set the shared IMGUI skin font at one composition point
-  and verify the result without changing player-facing Noesis contracts.
-- **Likely owner:** Josh + UI owner.
 - **Confidence:** High.
 
 ### P1-026 — Detached worker lacks the latest Unity lifecycle tooling
@@ -310,21 +301,19 @@ Ticket summaries for these items are recorded in
 - **Likely owner:** Sim/domain owner.
 - **Confidence:** High.
 
-### P2-008 — Orphan `CavePreview` and `LifeSimulationPreview` components await focused removal
+### P2-008 — Orphan `CavePreview` component awaits focused removal
 
 - **Status:** Static reference gate passed; deletion remains deferred until the
   focused Unity validation can run.
-- **Evidence:** The legacy audit records that
-  `Assets/Scripts/Game/Presentation/CavePreview.cs` and
-  `LifeSimulationPreview.cs` have no scene, prefab, or asset references; the
-  2026-09-05 GUID scan finds no serialized references outside each file’s own
-  `.meta`. The deterministic cave, Life domain code, and tests remain used and
-  must be retained. The Unity test attempt was stopped by the already-running
-  editor preflight guard.
+- **Evidence:** The legacy audit and 2026-09-05 GUID scan found no serialized
+  references for `Assets/Scripts/Game/Presentation/CavePreview.cs`; its
+  matching `.meta` remains. The orphan `LifeSimulationPreview` component was
+  removed after the same static reference gate passed. The deterministic cave,
+  Life domain code, and tests remain retained.
 - **Next action:** Close Unity through the normal user workflow, rerun the
   retained Edit Mode tests and targeted cellular Play Mode test, then delete
-  each source file together with its matching `.meta` in a focused commit only
-  if those checks pass.
+  `CavePreview.cs` and its `.meta` in a focused commit only if those checks
+  pass.
 - **Likely owner:** Sim/domain owner.
 - **Confidence:** High.
 
@@ -344,6 +333,21 @@ Ticket summaries for these items are recorded in
   and matching `.meta` files, plus `MainMenu/Scripts/BaseViewModel.cs` and its
   `.meta`, as one focused starter-scaffold cleanup.
 - **Likely owner:** UI owner.
+- **Confidence:** High.
+
+### P2-022 — Temporary terrain diagnostic still uses runtime IMGUI
+
+- **Status:** The deprecated Island Survivor HUD/debug IMGUI and orphan Life
+  preview were removed. `TerrainPaintPreview` remains as a separate manual
+  diagnostic scene while terrain work is on hold.
+- **Evidence:** `Assets/Scripts/Game/Presentation/TerrainPaintPreview.cs` still
+  implements `OnGUI`/`GUILayout`, and `Assets/Scenes/TerrainPaintTest.unity`
+  serializes that component. The editor terrain preview is a separate
+  editor-only utility.
+- **Next action:** When terrain work resumes, either migrate this diagnostic
+  surface to Noesis or explicitly remove the scene, script, and focused helper
+  test. Do not treat the diagnostic as player-facing UI.
+- **Likely owner:** Presentation/art owner + Josh.
 - **Confidence:** High.
 
 ### P2-010 — `Assets/UI/EcoSim` contains an unreferenced placeholder shell
@@ -829,7 +833,7 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   `docs/handoffs/2026-09-02-codex-control-library-and-loose-ends.md`.
 - **Result:** The source change has a focused commit boundary and is available
   on `origin/UI/ControlLibrary`. Runtime visual acceptance remains open under
-  current item P1-014 because Unity preflight is blocked by P1-015.
+  current item P1-014; the normal-host preflight gate is now resolved.
 
 ### R-009 — CellSim evidence-quality gate is implemented
 
@@ -904,3 +908,25 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   artifact recorded in the 2026-09-03 upgrade handoff.
 - **Result:** The fixture repair is closed. Fox telemetry review remains active
   under P1-028.
+
+### R-015 — Runtime IMGUI HUD/debug and orphan Life preview removed
+
+- **Evidence:** `GameHud.cs`, `RuntimeDebugPanel.cs`, and their `.meta` files
+  were removed from the deprecated Island Survivor runtime; `GameRuntime` no
+  longer adds those components or handles the F3 debug toggle. The unreferenced
+  `LifeSimulationPreview.cs` and `.meta` were also removed. The active
+  cellular simulation UI remains on the Noesis/XAML path.
+- **Result:** The former player/runtime HUD and debug IMGUI paths are retired.
+  Editor-only utility windows remain separate; `TerrainPaintPreview` is still a
+  diagnostic runtime scene and keeps P2-022 open until its explicit removal or
+  Noesis migration is approved.
+
+### R-016 — Unity normal-host preflight gate resolved
+
+- **Evidence:** `artifacts/unity-preflight-20260905-131655` records a successful
+  licensing context probe, a stable licensing handshake, Package Manager IPC,
+  registration of 65 packages, and a clean batchmode exit. A later elevated
+  attempt was stopped by the existing Unity editor guard, not by a permission
+  failure.
+- **Result:** The restricted-host-permission issue is closed. Graphics runtime
+  acceptance remains separately open under P1-014.

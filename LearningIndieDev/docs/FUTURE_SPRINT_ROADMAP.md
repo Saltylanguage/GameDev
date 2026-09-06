@@ -9,12 +9,13 @@ owner, estimate, acceptance evidence, and capacity impact are written down.
 
 ## Planning principles
 
-Before scheduling continued-world upgrade or balance acceptance, allocate the
-[consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md). It spans
-domain lifecycle, upgrades, presentation, telemetry/Stat-Line and research
-checkpoints. Its proposed 44–68h estimate is separate from committed S2 capacity.
-In-memory phase continuation is required gameplay; player disk save/load remains
-its own later decision. EX-010 execution follows the checkpoint and contract gates.
+The consecutive-phase migration now has its same-world runtime, phase-aware
+telemetry, checkpoints and generic schedule path through CF-5. M1 closeout and
+the EX-010 contract-specific gate remain open. In-memory phase continuation is
+required gameplay; player disk save/load remains its own later decision. EX-010
+execution follows the checkpoint and contract gates. Use the
+[game feature triage](GAME_FEATURE_ROADMAP_TRIAGE.md) to choose one player
+outcome at a time instead of treating this horizon as a pre-filled backlog.
 
 - Keep one primary playable or product outcome per sprint.
 - Separate design readiness from implementation commitment. A design spike can
@@ -135,5 +136,7 @@ Before moving a theme into `🎯 Upcoming Work`, record:
 4. The thinnest end-to-end slice and its acceptance evidence.
 5. The manual fallback if tooling slips or remains incomplete.
 
-The next planning step is to refine S2 candidates from this map after the S1
-review, not to populate every future sprint in advance.
+The next planning step is to refine the first game feature from the
+[triage document](GAME_FEATURE_ROADMAP_TRIAGE.md), beginning with the
+Expedition Decision Loop. This map remains a horizon, not a pre-filled sprint
+backlog.

@@ -11,6 +11,11 @@ and freshly verified on `NF/ConsecutiveRuns`.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+The game-design feature sequence is now triaged in
+[GAME_FEATURE_ROADMAP_TRIAGE.md](GAME_FEATURE_ROADMAP_TRIAGE.md), starting with
+the Expedition Decision Loop. The player-facing expedition contract is ten
+phases; remaining design work concerns duration, decision rhythm, rewards, and
+terminal outcomes.
 The preview now supports phase survivor data, live/legacy upgrade choices,
 same-run resume, explicit End, and manual inspection. Continuous terminal
 completion is results-only; upgrades are offered at phase boundaries, and a
@@ -39,6 +44,9 @@ green with no failed tests.
 - Species per-run upgrade acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
 - Upgrade-system planning concerns: [`Planning concerns/upgrade-system.md`](Planning%20concerns/upgrade-system.md)
 - Main Menu, Lab, and progression delivery plan: [`MAIN_MENU_LAB_DELIVERY_PLAN.md`](MAIN_MENU_LAB_DELIVERY_PLAN.md)
+- GalapagOS desktop art direction: [`../ART_STYLE_GUIDE.md`](../ART_STYLE_GUIDE.md)
+- GalapagOS desktop app ecosystem: [`GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md`](GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md)
+- GalapagOS desktop feature set: [`GALAPAGOS_DESKTOP_FEATURE_SET_PLAN.md`](GALAPAGOS_DESKTOP_FEATURE_SET_PLAN.md)
 - Unity MVVM and GalapagOS UI architecture: [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md)
 - Unity MVVM UI contracts: [`UNITY_MVVM_UI_CONTRACTS.md`](UNITY_MVVM_UI_CONTRACTS.md)
 - Sprint 0 closeout plan: [`SPRINT_0_CLOSEOUT_PLAN.md`](SPRINT_0_CLOSEOUT_PLAN.md)

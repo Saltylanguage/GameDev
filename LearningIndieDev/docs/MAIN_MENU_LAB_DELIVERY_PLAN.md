@@ -97,7 +97,7 @@ color or decorative metaphor alone.
 | Simulation | Finish/Extinction | Results | Earned, spent, banked, and lost data are explained. |
 | Results | Return to Lab | Lab Overview | Banked rewards and new unlocks are visible. |
 
-Back behavior is deterministic: overlays close first, Lab sub-pages return to Lab Overview, and Lab returns to Main Menu only through an explicit command. Leaving a run requires confirmation.
+Back behavior is deterministic: overlays close first, Lab sub-pages return to Lab Overview, and Lab returns to Main Menu only through an explicit command. The first simulation-window slice disables leaving an active run; a future confirmation overlay must use explicit End semantics.
 
 ## Presentation and technical boundaries
 

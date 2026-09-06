@@ -112,14 +112,16 @@ simulation rules.
 ### P2-008 — Remove orphan `CavePreview` and `LifeSimulationPreview`
 
 **Priority:** P2  
-**Status:** Ready after Unity validation is available  
+**Status:** Partially complete; the orphan `LifeSimulationPreview` component
+has been removed. The remaining `CavePreview` cleanup still waits for Unity
+validation.
 **Owner:** Sim/domain owner  
 **Size:** Small  
 **Dependency:** Repair Unity IPC/preflight; confirm retained Edit Mode and
 targeted cellular Play Mode tests can run.
 
-**Goal:** Remove the two unreferenced presentation components while retaining
-the deterministic cave/Life domain code and tests.
+**Goal:** Remove the unreferenced preview components while retaining the
+deterministic cave/Life domain code and tests.
 
 **Acceptance criteria:**
 
@@ -239,8 +241,9 @@ with a documented purpose.
 - The owner records whether Intro is retained for a defined future use.
 - If removed, `Intro.unity` and its `.meta` are deleted after a final reference
   scan and Build Settings check.
-- `GalapagOSDesktopTest` and `TerrainPaintTest` remain untouched as manual
-  acceptance scenes.
+- `GalapagOSDesktopTest` and `TerrainPaintTest` remain available as manual
+  acceptance scenes. The terrain scene remains on hold pending its explicit
+  removal or Noesis migration decision.
 - No scene-order or startup behavior changes as a side effect.
 
 ### P2-014 — Rename `MainMenu_Old` through a GUID-preserving migration
