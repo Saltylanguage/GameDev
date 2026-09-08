@@ -1,4 +1,4 @@
-# Island Chores Art Direction v1
+# Darwin UI Art Direction v1
 
 ## Direction
 
@@ -44,6 +44,8 @@ The player-facing GalapagOS desktop should follow the light, pastel eco-OS
 direction shown in the official concept board:
 
 - [GalapagOS Desktop UI concept options v1](docs/Art%20Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png)
+- [GalapagOS Desktop App Layout Concepts v1](docs/Art%20Direction/Concepts/GalapagOS_Desktop_App_Layout_Concepts_v1.md)
+- [GalapagOS Desktop App Layout Studies v1](docs/Art%20Direction/Concepts/GalapagOS_Desktop_App_Layout_Studies_v1.svg)
 
 The concept board is inspiration and layout direction, not a production UI
 asset. It establishes the following visual priorities:

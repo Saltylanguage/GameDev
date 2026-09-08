@@ -1,18 +1,21 @@
 # Predictive AI: An Auditable Change-Impact Research Program
 
-**Draft status:** Research paper draft v0.5<br>
-**Date:** 2026-08-15  
+**Draft status:** Research paper draft v0.6<br>
+**Created:** 2026-08-15<br>
+**Updated:** 2026-09-07<br>
 **Project:** LearningIndieDev  
 **Research area:** Predictive AI, deterministic simulation, evidence systems, and human-governed design decisions
 
 ## Abstract
 
-**Current applicability note (2026-09-04):** the
+**Current applicability note (2026-09-06):** the
 [continuation impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
 distinguishes fresh-window evidence from state-conditioned, sequential upgrades.
-The architecture is planned and EX-010 remains unexecuted. Results cited in this
-paper retain their original scope and do not establish continued-play balance,
-timing effects or predictive calibration for later phases.
+EX-010 now provides an accepted, bounded continued-world timing/order result.
+Results cited in this paper retain their original scope and do not establish
+continued-play balance, universal order effects, or predictive calibration for
+later phases. See the [P3 gate decision](P3_GATE_DECISION_2026-09-06.md) for
+the current bounded phase disposition.
 
 Predictive AI is a proposed development and design system for answering a
 practical question: when a model-representable feature, rule, asset value, or
@@ -246,8 +249,11 @@ The current foundation includes:
   mortality telemetry, including schema-5 per-death cause events;
 - population histories and per-species activity summaries;
 - tracked finite-state behavior transitions and death-path logging;
+- same-world ten-phase continuation with ordered boundary acquisitions;
+- phase and independent final Stat-Lines with versioned windows and deltas;
+- checkpoint round-trip/fork isolation and opt-in headless schedules;
 - headless `CellSim` commands for tests and seeded experiment runs;
-- Markdown and JSON/CSV report generation;
+- Markdown and JSON/CSV report generation with strict bundle validation;
 - controlled report comparison and replay manifest generation;
 - Noesis presentation and a custom board renderer that remain separate from the
   simulation domain;
@@ -256,19 +262,20 @@ The current foundation includes:
   program.
 
 These are implementation capabilities, not proof that the full research thesis
-has succeeded. Current-code reproducibility is accepted for the authored
-ForestEdge baseline and the bounded EX-001B cross-scenario check; the project
-still needs causal intervention studies, held-out validation, calibration
-measurements, and workflow-value evaluation.
+has succeeded. Current-code reproducibility, the bounded EX-002 causal package,
+EX-007/EX-009 held-out comparisons, and one EX-010 continued-world schedule are
+documented or accepted within their recorded limits. The project still lacks broad parameter/
+scenario generalization, calibration measurements, workflow-value evaluation,
+and production-balance evidence.
 
 ## 9. What has been learned so far
 
 ### Determinism is an advantage, not a conclusion
 
-The historical EX-001 pair matched across all 20 seeds after normalization,
-including run payloads and final summaries. This demonstrates that the report
-shape can capture strong repeatability evidence. It does not prove that the
-current checkout, another machine, or another scenario will reproduce.
+The current-code EX-001 pair and bounded EX-001B scenario pairs matched after
+normalization, including run payloads and final summaries. This demonstrates
+repeatability across the four tested authored scenarios. It does not prove that
+another machine, a future checkout, or an untested scenario will reproduce.
 
 ### Full histories are more valuable than final counts
 
@@ -289,8 +296,9 @@ mistaken for current evidence.
 ### Replay is its own validation problem
 
 A report can contain enough metadata to request replay without proving that the
-replay matches state, timing, or presentation. Representative and boundary
-seeds need explicit replay manifests and human inspection.
+replay matches state, timing, or presentation. The current checkpoint seam has
+round-trip and fork-isolation coverage and supported EX-010; cross-machine
+reproduction and graphics/presentation inspection remain separate gates.
 
 ### Instrument failures are research results
 
@@ -334,9 +342,10 @@ setup/environment anomalies rather than being mistaken for simulation
 divergence.
 
 The human design owner accepted EX-001B on 2026-08-15 as a bounded
-reproducibility result. This acceptance authorizes the next causal experiment,
-EX-002, but does not authorize universal cellular-automata claims, ecological
-finding transfer, or claims that the simulation is correct or balanced.
+reproducibility result. That acceptance authorized EX-002, which later completed
+within its own bounded contract. Neither decision authorizes universal cellular-
+automata claims, ecological finding transfer, or claims that the simulation is
+correct or balanced.
 
 ## 12. Evaluation program
 
@@ -354,15 +363,17 @@ The wider research program must answer ten questions:
 10. Can confidence and design-risk statements be calibrated against later runs
     and playtests?
 
-The staged evaluation path is:
+The program has completed bounded instrument-trust, intervention, joint/order,
+held-out, and one continued-world schedule step through P3. The remaining staged
+path is to:
 
-1. use the accepted EX-001 baseline as the instrument-trust reference;
-2. run paired single-variable interventions;
-3. add factorial or joint designs for interactions;
-4. validate predictions on held-out seeds, scenarios, and parameter ranges;
-5. measure analyst time, false positives, false negatives, and review burden;
-6. test translation into player-facing explanations;
-7. promote only the tooling and findings that earn human approval.
+1. select a human-owned P4 translation question and contract;
+2. test explanation or design-candidate usefulness without promoting balance;
+3. measure analyst time, false positives, false negatives, and review burden
+   under a dedicated P5 workflow-validity contract;
+4. broaden scenarios and parameter ranges only when seed/provenance/artifact
+   controls are ready; and
+5. promote only the tooling and findings that earn a separate P6 human decision.
 
 ## 13. Risks, limits, and guardrails
 
@@ -393,27 +404,29 @@ working, reviewable loop in which a human can identify the question, reproduce
 the relevant run, inspect the evidence, understand the AI analysis, and record
 what the result authorizes.
 
-The next milestones are:
+The completed bounded milestones are EX-001/EX-001B reproducibility, EX-002
+causal attribution, and the EX-007/EX-009/EX-010 P3 prediction and continuation
+sequence. P3 is closed under its recorded decision; no next experiment is
+selected.
 
-- preserve the known-good elevated Unity batch path and use the accepted EX-001 baseline;
-- create the first same-seed intervention experiment;
-- formalize a normalized evidence index without replacing source reports;
-- add replay/state comparison for selected seeds;
-- define held-out and range-coverage budgets;
-- measure prediction calibration and analyst workflow value;
-- proceed to EX-002 and test additional cross-scenario or cross-feature
-  generalization after the causal baseline is documented;
-- only then consider a prediction registry or safe recursive experiment lane.
+Future work should begin only with a new human-approved question and contract.
+Candidate directions are P4 replay-to-explanation and upgrade/event translation,
+then P5 collaboration validation and P6 promotion review. Before another
+confirmatory forecast, the evidence system should add a versioned metric
+dictionary, sealed context manifest, seed registry, explicit endpoint families,
+event-level scoring, complete provenance, and an artifact-retention decision.
 
 ## 15. Conclusion
 
 Predictive AI is best understood as a governed research and development
 workflow, not a single model. Its value would come from connecting bounded
 interventions, deterministic execution, rich evidence, AI-assisted reasoning,
-and human decisions in one traceable loop. The implementation already provides a
-credible foundation for that investigation. The evidence so far supports
-repeatability of a historical fixture and demonstrates the importance of
-instrument limitations; it does not yet support generalized predictive claims.
+and human decisions in one traceable loop. The implementation now supports
+bounded reproducibility, one causal package, launch-time additive-order evidence,
+and one accepted continued-world ten-phase timing/order comparison. Those results
+remain specific to their scenarios, upgrades, schedules, schemas, and seed
+panels; they do not support generalized predictive, calibration, balance, or
+workflow-value claims.
 
 The project should proceed by earning broader claims one validated range,
 intervention, and human decision at a time.
@@ -426,6 +439,11 @@ intervention, and human decision at a time.
 - [EX-001 experiment brief](Experiments/EX-001-Reproducibility-Baseline/EXP-001-brief.md)
 - [EX-001 current-code execution attempt](Experiments/EX-001-Reproducibility-Baseline/RPT-RUN-001-0003-0020.md)
 - [EX-001 current-code paired evidence](Experiments/EX-001-Reproducibility-Baseline/RPT-RUN-001-0004-0020.md)
+- [EX-002 experiment package](Experiments/EX-002-Herbivore-Collapse-Attribution/README.md)
+- [P3 cohesive report](Experiments/P3-Predictive-AI-Cohesive-Report.md)
+- [P3 gate decision](P3_GATE_DECISION_2026-09-06.md)
+- [EX-010 sequential-continuation package](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md)
+- [Research index and current status](README.md)
 - [Unity simulation tooling](../UNITY_SIMULATION_TOOLING.md)
 - [Studio guideline SG-001 - AI Generated Reports](../Studio%20Guidelines/AI_GENERATED_REPORTS.md)
 - [Studio guideline SG-002 - AI-Assisted Development](../Studio%20Guidelines/AI_ASSISTED_DEVELOPMENT.md)

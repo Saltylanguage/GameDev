@@ -1,4 +1,5 @@
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -34,10 +35,20 @@ namespace SaltyGame
         public string GameSpeedText => $"{gameSpeed:0.#}x";
         public string ActiveDesktopAppTitle => activeDesktopAppTitle ?? "GALAPAGOS APP";
         public string ActiveDesktopAppDescription => activeDesktopAppDescription ?? "Select a GalapagOS application to begin.";
+        public ObservableCollection<GalapagOSDesktopWindow> OpenDesktopWindows => openDesktopWindows;
 
         public Visibility StartMenuVisibility => startMenuOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility LabWindowVisibility => labWindowOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility DesktopAppVisibility => desktopAppOpen ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility GenericDesktopAppVisibility => activeDesktopAppTitle == "Settings" || activeDesktopAppTitle == "Gene Lab"
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        public Visibility SettingsSurfaceVisibility => activeDesktopAppTitle == "Settings"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility GeneLabSurfaceVisibility => activeDesktopAppTitle == "Gene Lab"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
         public Visibility VolumePanelVisibility => volumePanelOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility NotificationsPanelVisibility => notificationsPanelOpen ? Visibility.Visible : Visibility.Collapsed;
         public Visibility GameSpeedPanelVisibility => gameSpeedPanelOpen ? Visibility.Visible : Visibility.Collapsed;
@@ -88,12 +99,29 @@ namespace SaltyGame
                 return;
             }
 
+            if (HasOpenDesktopWindow(appName))
+            {
+                return;
+            }
+
             activeDesktopAppTitle = appName;
             activeDesktopAppDescription = GetDesktopAppDescription(appName);
             desktopAppOpen = true;
+            var slot = openDesktopWindows.Count;
+            GalapagOSDesktopWindow openedWindow = null;
+            openedWindow = new GalapagOSDesktopWindow(
+                appName,
+                activeDesktopAppDescription,
+                250f + (slot % 4) * 42f,
+                96f + (slot % 4) * 34f,
+                () => CloseDesktopWindow(openedWindow));
+            openDesktopWindows.Add(openedWindow);
             OnPropertyChanged(nameof(ActiveDesktopAppTitle));
             OnPropertyChanged(nameof(ActiveDesktopAppDescription));
             OnPropertyChanged(nameof(DesktopAppVisibility));
+            OnPropertyChanged(nameof(GenericDesktopAppVisibility));
+            OnPropertyChanged(nameof(SettingsSurfaceVisibility));
+            OnPropertyChanged(nameof(GeneLabSurfaceVisibility));
             Debug.Log($"GalapagOS desktop app opened: {appName}", this);
         }
 
@@ -101,6 +129,27 @@ namespace SaltyGame
         {
             desktopAppOpen = false;
             OnPropertyChanged(nameof(DesktopAppVisibility));
+        }
+
+        bool HasOpenDesktopWindow(string appName)
+        {
+            foreach (var window in openDesktopWindows)
+            {
+                if (window.Title == appName)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        void CloseDesktopWindow(GalapagOSDesktopWindow window)
+        {
+            if (window != null)
+            {
+                openDesktopWindows.Remove(window);
+            }
         }
 
         void CloseLabWindow()
@@ -116,7 +165,7 @@ namespace SaltyGame
                 case "Field Notes":
                     return "A field notebook for observations, tasks, and expedition notes.";
                 case "Gene Lab":
-                    return "Species research and upgrade trees will be organized here.";
+                    return "Permanent species research and future expedition choices will be organized here.";
                 case "Biome Data":
                     return "Biome conditions, ecology upgrades, and habitat trends will live here.";
                 case "My Collection":
@@ -154,7 +203,6 @@ namespace SaltyGame
                 volumePanelOpen = false;
                 notificationsPanelOpen = false;
                 gameSpeedPanelOpen = false;
-                desktopAppOpen = false;
             }
 
             NotifyPanelVisibility();
@@ -179,7 +227,6 @@ namespace SaltyGame
                 startMenuOpen = false;
                 notificationsPanelOpen = false;
                 gameSpeedPanelOpen = false;
-                desktopAppOpen = false;
             }
 
             NotifyPanelVisibility();
@@ -193,7 +240,6 @@ namespace SaltyGame
                 startMenuOpen = false;
                 volumePanelOpen = false;
                 gameSpeedPanelOpen = false;
-                desktopAppOpen = false;
             }
 
             NotifyPanelVisibility();
@@ -207,7 +253,6 @@ namespace SaltyGame
                 startMenuOpen = false;
                 volumePanelOpen = false;
                 notificationsPanelOpen = false;
-                desktopAppOpen = false;
             }
 
             NotifyPanelVisibility();
@@ -253,7 +298,6 @@ namespace SaltyGame
             volumePanelOpen = false;
             notificationsPanelOpen = false;
             gameSpeedPanelOpen = false;
-            desktopAppOpen = false;
             NotifyPanelVisibility();
         }
 
@@ -284,5 +328,110 @@ namespace SaltyGame
         string activeDesktopAppTitle;
         string activeDesktopAppDescription;
         Action simulationLauncher;
+        readonly ObservableCollection<GalapagOSDesktopWindow> openDesktopWindows = new ObservableCollection<GalapagOSDesktopWindow>();
+    }
+
+    public sealed class GalapagOSDesktopWindow : INotifyPropertyChanged
+    {
+        public GalapagOSDesktopWindow(string title, string description, float left, float top, Action close)
+        {
+            var isGeneLab = title == "Gene Lab";
+            Title = title;
+            Description = description;
+            Width = isGeneLab ? Mathf.Clamp(Screen.width - 64f, 960f, 1450f) : 620f;
+            Height = isGeneLab ? Mathf.Clamp(Screen.height - 116f, 560f, 820f) : 300f;
+            Left = isGeneLab ? Mathf.Max(24f, (Screen.width - Width) * 0.5f) : left;
+            Top = isGeneLab ? Mathf.Max(24f, (Screen.height - 76f - Height) * 0.5f) : top;
+            CloseCommand = new DelegateCommand(close);
+            ToggleGuardedBurrowCommand = new DelegateCommand(ToggleGuardedBurrow);
+        }
+
+        public string Title { get; }
+        public string Description { get; }
+        public float Left { get; }
+        public float Top { get; }
+        public float Width { get; }
+        public float Height { get; }
+        public DelegateCommand CloseCommand { get; }
+        public DelegateCommand ToggleGuardedBurrowCommand { get; }
+        public string GuardedBurrowStateText => guardedBurrowActive ? "UNLOCKED · ACTIVE" : "UNLOCKED · INACTIVE";
+        public string GuardedBurrowNodeStateText => guardedBurrowActive ? "✓  ACTIVE" : "UNLOCKED";
+        public string GuardedBurrowActionText => guardedBurrowActive ? "DEACTIVATE" : "ACTIVATE";
+        public string ActiveGenomeCapacityText => guardedBurrowActive ? "6 / 8" : "5 / 8";
+        public Visibility GuardedBurrowActiveVisibility => guardedBurrowActive ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility GuardedBurrowInactiveVisibility => guardedBurrowActive ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility GenericSurfaceVisibility => IsConceptSurface
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+        public Visibility SettingsSurfaceVisibility => Title == "Settings"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility GeneLabSurfaceVisibility => Title == "Gene Lab"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility SpeciesCollectionSurfaceVisibility => Title == "My Collection"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility MyPcSurfaceVisibility => Title == "My PC"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility MusicPlayerSurfaceVisibility => Title == "Music Player"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility HistorySurfaceVisibility => Title == "History / Data Record"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility BiomeSurfaceVisibility => Title == "Biome Data"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility ExpeditionPlannerSurfaceVisibility => Title == "Expedition Planner / Launchpad"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility FieldGuideSurfaceVisibility => Title == "Field Notes" || Title == "Field Guide / Journal"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility ResearchInboxSurfaceVisibility => Title == "Research Inbox / Bulletin"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility HabitatGallerySurfaceVisibility => Title == "Habitat Gallery / Museum"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        public Visibility QuickSearchSurfaceVisibility => Title == "Quick Search / Jump"
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        void ToggleGuardedBurrow()
+        {
+            guardedBurrowActive = !guardedBurrowActive;
+            OnPropertyChanged(nameof(GuardedBurrowStateText));
+            OnPropertyChanged(nameof(GuardedBurrowNodeStateText));
+            OnPropertyChanged(nameof(GuardedBurrowActionText));
+            OnPropertyChanged(nameof(ActiveGenomeCapacityText));
+            OnPropertyChanged(nameof(GuardedBurrowActiveVisibility));
+            OnPropertyChanged(nameof(GuardedBurrowInactiveVisibility));
+        }
+
+        void OnPropertyChanged([CallerMemberName] string propertyName = "")
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        bool IsConceptSurface => Title == "Settings"
+            || Title == "Gene Lab"
+            || Title == "My Collection"
+            || Title == "My PC"
+            || Title == "Music Player"
+            || Title == "History / Data Record"
+            || Title == "Biome Data"
+            || Title == "Expedition Planner / Launchpad"
+            || Title == "Field Notes"
+            || Title == "Field Guide / Journal"
+            || Title == "Research Inbox / Bulletin"
+            || Title == "Habitat Gallery / Museum"
+            || Title == "Quick Search / Jump";
+
+        bool guardedBurrowActive = true;
     }
 }

@@ -1,5 +1,9 @@
 # EX-009 — Analysis status
 
+> **Later disposition (2026-09-06):** EX-010 completed and received bounded
+> human acceptance for one continued-world schedule. This analysis keeps its
+> original launch-time scope.
+
 **Analysis:** `ANL-RPT-RUN-009-0001-v1`  
 **Experiment:** `EXP-009`  
 **Source report:** `REPORT.md`  
@@ -37,8 +41,8 @@ standalone balance or promotion study.
 The result also does not answer the intended continue-from-current-state flow,
 where an upgrade is acquired between simulation segments. Acquisition timing
 and accumulated simulation state can change later outcomes even when the
-launch-time loadout order commutes. That question is tracked separately as
-proposed EX-010.
+launch-time loadout order commutes. The later completed EX-010 addresses that
+question under one bounded schedule.
 
 ## Validation note
 

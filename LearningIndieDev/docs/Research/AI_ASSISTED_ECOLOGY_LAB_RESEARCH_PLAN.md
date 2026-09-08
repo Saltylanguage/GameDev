@@ -1,24 +1,22 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
-**Status:** Proposed research program  
-**Version:** 1.17<br>
+**Status:** Bounded program checkpoint; P0–P3 complete within recorded bounds, P4–P6 not started, no next experiment selected<br>
+**Version:** 1.19<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
 ## Executive position
 
-**2026-09-05 dependency update:** CF-0 through CF-3 are implemented and freshly
-verified on `NF/ConsecutiveRuns`. The runtime now preserves one world across
-upgrade/skip breaks and publishes versioned phase windows and boundary
-checkpoints. Direct ForestEdge/Hare runs also emit a validated Stat-Line CSV.
-The opt-in headless schedule also smoke-tests generic continuation and
-cumulative loadout timing; EX-010 execution remains pending. The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
-defines the required checkpoint, acquisition schedule, forecast horizon,
-phase/expedition stat versions and lineage-aware validation split. EX-009's
-accepted launch-time finding remains bounded; prior forecasts and reports are
-not retrofitted into continuation evidence. Review new contracts with Sim before
-scoring new window semantics; this update does not promote P3 or approve
-EX-010 execution.
+**2026-09-06 program update:** CF-0 through CF-5 are implemented and verified.
+The runtime preserves one world across upgrade/skip breaks and publishes
+versioned phase windows, boundary checkpoints, acquisition timing and
+independent phase/final Stat-Lines. EX-010's original and matched reverse-order
+sequences completed with valid development and held-out bundles, and Josh and
+Sim accepted the bounded finding. P3 is now closed as a bounded research phase;
+EX-003 is explicitly deferred as a separate workflow-validity experiment.
+The [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
+retains the scope and validity limits. This update does not promote a balance
+change, generalized predictive capability, or player-facing rule.
 
 This project may be onto a distinctive combination of systems:
 
@@ -589,7 +587,7 @@ excluded, and any environment or scenario-specific limitation is explicit.
 scenarios only. It does not prove that all cellular automata are deterministic or
 that ecological findings transfer between scenarios.
 
-The working package is documented in [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md). All four authored scenarios have complete matching pairs, and the human design owner accepted the bounded reproducibility result. EX-002 is the next causal experiment.
+The working package is documented in [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md). All four authored scenarios have complete matching pairs, and the human design owner accepted the bounded reproducibility result. EX-002 later completed as the bounded causal package described below.
 
 ### EX-002 - Herbivore collapse attribution
 
@@ -611,13 +609,17 @@ follow-up intervention, with the adapter's collapse rule, endpoint, validated
 range, and remaining instrument gaps recorded. A plausible narrative alone is
 insufficient, and no ecology-specific rule is promoted as universal.
 
-**Readiness note:** The EX-002 brief records the intervention surface and the
+**Disposition note:** The EX-002 brief records the intervention surface and the
 schema-5/6 run-window, tracked-FSM, per-death-cause, and reproduction-funnel
 telemetry. The matched schema-6 control, intervention matrix, and held-out
 check are complete for the bounded BaselineParity window. The newer schema-7
 food-action counters are a separate current-code instrument change; do not
 silently merge them into the historical matrix. The original batch-startup
-failure is historical; only a fresh unlocked Unity rerun remains pending.
+failure is historical. Two raw control bundles cited by the package
+(`cellular-experiment-20260818-210354` and `...210443`) are absent from this
+checkout, so the retained summaries and handoffs preserve the bounded
+interpretation but do not provide a complete raw re-audit. A fresh rerun is needed only for a
+new current-code or expanded claim, not to keep the historical package complete.
 
 ### EX-003 - AI recommendation validity
 
@@ -631,6 +633,13 @@ with the resulting report.
 
 **Measures:** Prediction accuracy, false-cause rate, useful recommendation rate,
 review time, and number of reruns required to clarify the proposal.
+
+**Decision (2026-09-06):** Archive/defer EX-003 as a standalone P3 experiment.
+No execution package or EX-003 result exists, so the project makes no claim
+about general AI recommendation quality, review-time savings, or useful-
+recommendation rate. EX-007's pre-registered held-out prediction work and
+human decision are sufficient for the narrower P3 phase closure; reopen EX-003
+only with a new human-approved workflow-value contract.
 
 ### EX-007 - Generalized predictive change impact
 
@@ -728,16 +737,16 @@ started. Its zero-delta result is useful evidence about launch-time additive
 application, but it cannot stand in for upgrades acquired after the simulation
 has already evolved.
 
-**Status:** Preparation complete on `NF/ConsecutiveRuns`; execution remains
-blocked pending EX-010-specific schedule parity, final Stat-Line meaning review
-and human approval of the draft contract. The current runtime has same-world continuation, versioned
-phase windows, ordered acquisition timing, and boundary checkpoint copy/restore.
+**Status:** Executed and accepted as bounded evidence. The original and matched
+reverse-order sequences completed on the approved schedule with valid
+development and held-out bundles. The current runtime has same-world
+continuation, versioned phase windows, ordered acquisition timing, and boundary
+checkpoint copy/restore.
 
-**Method to define before execution:** Human-approve a segmented contract with a
-fixed seed, initial state, segment lengths, upgrade acquisition ticks, and
-matched A/B orderings. Capture the checkpoint state and upgrade snapshot at each
-acquisition, then compare the full later trajectory and final outcomes. Keep
-launch-time loadout order and mid-run acquisition timing as separate factors.
+**Executed method:** Josh and Sim approved a segmented contract with a fixed
+seed panel, initial state, ten 200-tick phases, acquisition ticks, and matched
+original/reverse orderings. The run captured checkpoint state, upgrade
+snapshots, phase Stat-Lines and independent final outcomes.
 
 **Success:** Complete same-seed segmented bundles show whether order, timing, or
 accumulated state changes the outcome. The report distinguishes a true order
@@ -747,8 +756,8 @@ new coverage.
 
 The working package is documented in [EX-010 - Sequential Upgrade
 Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md), with
-the proposed execution fields collected in its
-[draft contract](Experiments/EX-010-Sequential-Upgrade-Continuation/CONTRACT_DRAFT.md).
+the result in its [execution report](Experiments/EX-010-Sequential-Upgrade-Continuation/REPORT.md)
+and the human decision in [HUMAN_DECISION.md](Experiments/EX-010-Sequential-Upgrade-Continuation/HUMAN_DECISION.md).
 
 ### EX-004 - Replay-to-explanation
 
@@ -829,15 +838,15 @@ Effort is approximate shared team effort and must not silently replace the
 current production sprint commitment. Start with one protected research package
 per sprint; increase capacity only when a gate earns it.
 
-| Phase | Approx. effort | Focus | Exit gate |
-|---|---:|---|---|
-| P0 - Frame the program | 1 sprint / 4-6 hours | IDs, hypotheses, rubric, ownership, report templates | EX-001 brief and decision protocol accepted |
-| P1 - Trust the instrument | 1-2 sprints / 10-20 hours | Reproducibility, cross-scenario coverage, fingerprints, replay, telemetry gaps | EX-001/EX-001B pass or known limits are explicit |
-| P2 - Diagnose outcomes | 1-2 sprints / 10-20 hours | Herbivore collapse, spatial diagnostics, and causal follow-ups | EX-002 has evidence-backed explanation |
-| P3 - Bound AI discovery | 2-3 sprints / 20-30 hours | AI hypotheses, change-impact maps, thresholds, calibration, and human approval | EX-003/EX-007 meet held-out prediction and false-cause gates |
-| P4 - Translate to design | 1-2 sprints / 10-20 hours | Upgrades, events, explanations, curator metrics | EX-004/EX-005 produce accepted design candidates |
-| P5 - Validate the collaboration loop | 2-3 sprints / 20-30 hours | Repeatability across scenarios and contributors | Workflow is useful beyond one fixture |
-| P6 - Promotion decision | 1 sprint / 4-10 hours | Production, studio practice, external research review | Decide what becomes product/tooling/process |
+| Phase | Status | Approx. effort | Focus | Exit gate |
+|---|---|---:|---|---|
+| P0 - Frame the program | Complete | 1 sprint / 4-6 hours | IDs, hypotheses, rubric, ownership, report templates | EX-001 brief and decision protocol accepted |
+| P1 - Trust the instrument | Complete within bounds | 1-2 sprints / 10-20 hours | Reproducibility, cross-scenario coverage, fingerprints, replay, telemetry gaps | EX-001/EX-001B pass or known limits are explicit |
+| P2 - Diagnose outcomes | Complete within bounds | 1-2 sprints / 10-20 hours | Herbivore collapse, spatial diagnostics, and causal follow-ups | EX-002 has evidence-backed explanation |
+| P3 - Bound AI discovery | Closed as bounded | 2-3 sprints / 20-30 hours | AI hypotheses, change-impact maps, thresholds, calibration, and human approval | Revised bounded gate accepted through EX-007/008/009/010; EX-003 deferred as a separate workflow-validity study |
+| P4 - Translate to design | Not started | 1-2 sprints / 10-20 hours | Upgrades, events, explanations, curator metrics | EX-004/EX-005 produce accepted design candidates |
+| P5 - Validate the collaboration loop | Not started | 2-3 sprints / 20-30 hours | Repeatability across scenarios and contributors | Workflow is useful beyond one fixture |
+| P6 - Promotion decision | Not started | 1 sprint / 4-10 hours | Production, studio practice, external research review | Decide what becomes product/tooling/process |
 
 The program may stop at any gate. A failed gate is valuable if it identifies
 which assumption was wrong.
@@ -911,7 +920,7 @@ Every research bundle should preserve:
 | A plausible combination is mistaken for novelty | Separate literature, prior-art, and legal review before claims |
 | Players see diagnostics instead of a game | Translate accepted findings into readable feedback and choices |
 
-## First execution plan
+## Current program status and next research selection
 
 ### Current program state
 
@@ -929,29 +938,29 @@ Every research bundle should preserve:
   its bounded human decision is accepted. The current adapter-backed reruns
   also verify that its research fixture values can be consumed through the same
   snapshot path used by authored game loadouts. EX-008 added a crowding-only arm
-  and a reversed sequence, but used a different held-out panel from the
-  original forward sequence. EX-009 closed that same-held-out-seed gap: both
-  orders completed on 106–110 and matched exactly on the recorded outcome and
-  telemetry fields, and its bounded launch-time result is accepted. EX-010 is a
-  proposed follow-up for the unimplemented continue-from-current-state flow.
+  and a reversed sequence, while EX-009 closed the same-held-out-seed gap for
+  launch-time order. EX-010 then executed the approved continued-world schedule
+  and received a bounded human acceptance from Josh and Sim. P3 is closed under
+  the [P3 gate decision](P3_GATE_DECISION_2026-09-06.md); broader workflow
+  validity and production promotion remain outside that decision.
 
-The first research package should be small enough to complete without blocking
-the current production lane:
+P0 through P3 are complete within their recorded bounds. No next experiment is
+selected. The historical packages remain evidence, not a standing instruction
+to rerun or expand them.
 
-1. Create and review the [EX-001 package](Experiments/EX-001-Reproducibility-Baseline/README.md).
-2. Run the existing Forest Edge baseline over a fixed seed range twice.
-3. Compare ruleset fingerprints, final grids, histories, and outcome summaries.
-4. Replay one representative and one boundary seed.
-5. Generate the SG-001 report bundle and a separate AI analysis.
-6. Record a human decision: pass, identify an instrument gap, or revise the
-   experiment.
-7. Record and review the accepted EX-001B cross-scenario extension.
-8. Preserve the completed EX-002 package and its bounded interpretation; create
-   a new protocol before expanding the intervention surface or telemetry.
+The next research selection must be a deliberate human-owned choice:
 
-This first package should avoid new simulation mechanics, generalized AI
-frameworks, dashboards, or autonomous code changes. It is a trust-building
-experiment for the evidence spine.
+1. Select a P4 design-translation question (EX-004, EX-005, or EX-006), or
+   explicitly keep research paused while product work proceeds.
+2. Approve a fresh contract, owner, evidence budget, seed roles, artifact
+   retention plan, and promotion boundary before execution.
+3. Treat any P5 collaboration validation or P6 promotion review as a new gate;
+   neither follows automatically from P3.
+
+Before another confirmatory predictive study, close or explicitly accept the
+remaining evidence-hygiene gaps: a versioned metric dictionary, sealed AI
+context manifest, seed registry, event-level confidence/scoring, endpoint
+families, complete run provenance, and raw-artifact retention.
 
 ## Promotion rules
 
@@ -1018,4 +1027,6 @@ rule.
 | 1.14 | 2026-09-04 | Recorded human acceptance of EX-007 and EX-009, and added proposed EX-010 to track sequential upgrade acquisition after simulation continuation is implemented. |
 | 1.15 | 2026-09-04 | Linked the consecutive-phase architecture review, Stat-Line dependency and explicit evidence applicability/retest contract; no historical result or experiment decision changed. |
 | 1.16 | 2026-09-05 | Recorded verified CF-1 through CF-3 continuation work, phase-window telemetry, boundary checkpoints, and the EX-010 draft execution contract; EX-010 remains unexecuted pending approval and headless schedule parity. |
-| 1.17 | 2026-09-05 | Recorded direct Stat-Line bundle parity and the opt-in generic headless continuation schedule; EX-010 remains unexecuted pending its contract-specific schedule and human approval. |
+| 1.17 | 2026-09-05 | Recorded direct Stat-Line bundle parity and the opt-in generic headless continuation schedule; EX-010 remained unexecuted pending its contract-specific schedule and human approval. |
+| 1.18 | 2026-09-06 | Recorded EX-010 execution and bounded human acceptance, deferred EX-003 as a standalone P3 workflow-validity study, and closed P3 under revised bounded exit criteria. |
+| 1.19 | 2026-09-07 | Refreshed the program status and indexes, recorded P0–P3 disposition and EX-002 raw-artifact availability, and made future P4–P6 work contingent on a new human-selected contract. |

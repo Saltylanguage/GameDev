@@ -1,14 +1,15 @@
 # Predictive AI research architecture and flows
 
-**Continuation dependency (2026-09-04):** the
+**Continuation status (2026-09-07):** the
 [runtime migration](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
 [evidence impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) connect
-EX-010 to replayable evolved checkpoints, acquisition schedules and explicit
-forecast/stat windows. EX-009 remains a launch-time comparison; no existing
+EX-010 to implemented replayable evolved checkpoints, acquisition schedules and
+explicit forecast/stat windows. EX-010 is accepted as bounded evidence and P3
+is closed. EX-009 remains a launch-time comparison; no existing
 prediction or report is reinterpreted as sequential-continuation evidence.
 
-> Status: Needs Review  
-> Last reviewed: 2026-09-04
+> Status: Current bounded program map; P4–P6 are not started
+> Last reviewed: 2026-09-07
 > Scope: Program roadmap, experiment operation, evidence lineage, and experiment selection
 
 These diagrams summarize the current Predictive AI research program and the
@@ -30,8 +31,8 @@ flowchart LR
 
     P0 --> P1 --> P2 --> P3 --> P4 --> P5 --> P6
 
-    NOW["Current gate<br/>EX-007 evidence complete<br/>Human decision pending<br/>EX-003 unresolved"]
-    ORDER["EX-009 accepted for launch-time pair<br/>A/B matched for current additive pair<br/>EX-010 tracks mid-run continuation"]
+    NOW["P3 bounded gate closed<br/>EX-007/009/010 accepted · EX-008 support<br/>EX-003 deferred"]
+    ORDER["EX-009 accepted for launch-time pair<br/>EX-010 accepted for one continued-world schedule<br/>Broader claims remain bounded"]
 
     NOW -.-> P3
     ORDER -.-> P3

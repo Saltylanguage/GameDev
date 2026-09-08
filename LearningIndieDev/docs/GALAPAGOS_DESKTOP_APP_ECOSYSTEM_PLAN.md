@@ -90,24 +90,26 @@ not progression purchases.
 
 ### 3. Gene Lab
 
-**Purpose:** Browse and eventually purchase organism-focused permanent research
-and upgrade trees.
+**Purpose:** Browse and eventually purchase permanent Genome options, then
+configure which unlocked options are active for the selected species.
 
 Suggested structure:
 
 - species picker shared with Species Collection;
-- Plant, Herbivore, and Carnivore research tabs;
+- Plant, Herbivore, and Carnivore filters for the species list;
 - a central branching tree with locked, available, affordable, selected,
-  purchased, and newly available states;
-- a detail panel showing prerequisites, data cost, effect, and what becomes
-  available next;
+  unlocked, active, inactive, and newly available states;
+- a detail panel showing prerequisites, data cost, species effect, ecological
+  consequence, active-capacity use, and what becomes available next;
 - a direct **Open in Species Collection** action;
 - a **Preview in Expedition Setup** action for choices that will affect a
   future launch.
 
-The Gene Lab must clearly distinguish permanent research from temporary
-per-expedition upgrades. Phase reward choices remain in the Simulation scene;
-the Gene Lab prepares the persistent choices available to future expeditions.
+The Gene Lab must clearly distinguish permanent Genome unlocks, the active
+Genome configuration, and temporary expedition Mutations. Active Genome nodes
+affect that species even when it is not player-controlled. Phase reward choices
+remain in Species Simulations; the Gene Lab prepares persistent options and a
+frozen active configuration for future simulations.
 
 ### 4. My PC
 
@@ -158,11 +160,12 @@ Suggested tabs:
 - Saved comparisons or favorite runs.
 
 Useful metrics include scenario, player species, seed, expedition/phase
-identity, final population, survival, data earned, upgrades acquired, births,
+identity, final population, survival, data earned, Genome state, Mutations
+acquired, births,
 food events, combat, and mortality causes where the evidence is valid.
 
 The screen should provide direct links to Species Collection, Gene Lab, and
-Biome Lab for the selected species, upgrade, or scenario. Expedition history
+Biome Lab for the selected species, Mutation, Genome, or scenario. Expedition history
 must distinguish an ongoing multi-phase expedition from a new expedition and
 must not collapse incomparable phase and expedition windows into one number.
 
@@ -176,7 +179,7 @@ Suggested structure:
 - biome/scenario tabs;
 - terrain and resource profile;
 - ecological pressures and compatible species;
-- biome-specific research and upgrade tree;
+- biome-specific research and possible habitat-project tree;
 - unlocked scenarios, field notes, and best documented runs;
 - direct **Open in Expedition Setup** action.
 
@@ -186,6 +189,10 @@ The boundary is simple:
 - Biome / Ecology Lab changes terrain, resources, environmental rules, and
   scenario access.
 
+Biome projects may eventually improve habitat capacity, recovery, or available
+niches. They remain separate from Genome nodes and should expand the player's
+ecosystem options rather than quietly guarantee a successful simulation.
+
 ### 8. Expedition Planner / Launchpad
 
 **Purpose:** Represent the existing Expedition Setup contract as a first-class
@@ -194,14 +201,16 @@ desktop app.
 Suggested features:
 
 - scenario and biome selection;
-- player species selection;
-- starting options and unlocked persistent choices;
+- mode selection between Species and Biome Simulation when available;
+- player species selection for Species Simulations;
+- starting options, permanent unlocks, and active Genome configurations;
 - a compact expedition summary;
 - launch, back, and confirmation behavior;
 - shortcuts from Species Collection, Gene Lab, Biome Lab, and History.
 
 This should be the most action-oriented app and the easiest route from desktop
-to a new expedition.
+to a new simulation. Species Simulation launch includes temporary Mutation
+eligibility; Biome Simulation launch explicitly excludes Mutations.
 
 ## Recommended additional apps
 
@@ -311,5 +320,9 @@ with a small set of apps before the full ecosystem is produced.
 3. Are desktop backgrounds static unlockable scenes, animated scenes, or both?
 4. Which personalization options are meaningful for the vertical slice without
    becoming a production sink?
-5. What is the first permanent Gene Lab catalog, and which upgrades remain
-   exclusively in the Simulation reward flow?
+5. What is the first Hare Genome catalog, and which choices remain exclusively
+   expedition Mutations in the Simulation reward flow?
+6. Does active Genome configuration use a reassignable capacity budget, and is
+   reallocation free between simulations?
+7. Do Biome projects remain optional tools, or does a small restoration baseline
+   gate advanced Biome challenges?

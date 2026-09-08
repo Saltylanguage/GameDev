@@ -1,5 +1,10 @@
 # Handoff — Cross-chat simulation and GalapagOS closeout
 
+> **Superseded status (2026-09-07):** The branch changes and EX-010 result are
+> now committed, EX-010 is accepted, and P1-014 graphics acceptance is closed.
+> Preserve the original snapshot below as history; use `WORKING_STATE.md` and
+> the 2026-09-07 graphics-acceptance handoff for current state.
+
 **Date:** 2026-09-06  
 **Owner:** Codex  
 **Branch:** `codex/simulation-window-production`  

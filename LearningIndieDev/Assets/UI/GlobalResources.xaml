@@ -259,8 +259,8 @@
           <ColumnDefinition Width="40" />
           <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <Border Width="34"
-                Height="34"
+        <Border Width="40"
+                Height="40"
                 Background="{DynamicResource Chrono_VanillaCream}"
                 BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
                 BorderThickness="1"
@@ -268,22 +268,21 @@
                 VerticalAlignment="Center">
           <Image x:Name="StartMenuAppIcon"
                  Source="{Binding (game:GalapagOSButton.IconSource), RelativeSource={RelativeSource TemplatedParent}}"
-                 Width="28"
-                 Height="28"
+                 Width="34"
+                 Height="34"
                  Stretch="Uniform"
                  HorizontalAlignment="Center"
                  VerticalAlignment="Center" />
         </Border>
-        <ContentPresenter Grid.Column="1"
-                          Content="{TemplateBinding Content}"
-                          ContentTemplate="{TemplateBinding ContentTemplate}"
-                          ContentStringFormat="{TemplateBinding ContentStringFormat}"
-                          Margin="8,0,4,0"
-                          VerticalAlignment="Center"
-                          TextElement.FontFamily="{TemplateBinding FontFamily}"
-                          TextElement.FontSize="{TemplateBinding FontSize}"
-                          TextElement.FontWeight="{TemplateBinding FontWeight}"
-                          TextElement.Foreground="{TemplateBinding Foreground}" />
+        <TextBlock Grid.Column="1"
+                   Text="{TemplateBinding Content}"
+                   Margin="8,0,4,0"
+                   VerticalAlignment="Center"
+                   TextWrapping="Wrap"
+                   FontFamily="{TemplateBinding FontFamily}"
+                   FontSize="{TemplateBinding FontSize}"
+                   FontWeight="{TemplateBinding FontWeight}"
+                   Foreground="{TemplateBinding Foreground}" />
       </Grid>
     </Border>
     <ControlTemplate.Triggers>
@@ -311,10 +310,10 @@
     <Setter Property="BorderThickness" Value="1" />
     <Setter Property="Foreground" Value="{DynamicResource Chrono_TreeBark}" />
     <Setter Property="Padding" Value="6" />
-    <Setter Property="Width" Value="174" />
-    <Setter Property="Height" Value="54" />
+    <Setter Property="Width" Value="246" />
+    <Setter Property="Height" Value="60" />
     <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
-    <Setter Property="FontSize" Value="13" />
+    <Setter Property="FontSize" Value="16" />
     <Setter Property="FontWeight" Value="Bold" />
     <Setter Property="HorizontalContentAlignment" Value="Left" />
     <Setter Property="VerticalContentAlignment" Value="Center" />

@@ -10,12 +10,16 @@
 
 ## Short version
 
-**2026-09-04 planning reference:** the
+**2026-09-07 applicability update:** P3 is closed as a bounded phase and EX-010
+has an accepted continued-world result. The concerns below remain active as
+guardrails for future research; they do not mean that P3 or EX-010 is pending.
+The
 [continuation impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
 records the new phase/expedition window, acquisition-timing and retest dependency.
 The existing concerns below keep their recorded scope, severity and status.
-The [runtime plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) contains proposed
-additional concerns for review, not newly accepted restrictions.
+The [runtime plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) records the implemented
+contract and proposed additional concerns for review, not newly accepted
+restrictions.
 
 The two workstreams fit together well:
 

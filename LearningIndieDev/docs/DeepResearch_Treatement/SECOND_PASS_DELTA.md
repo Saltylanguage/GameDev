@@ -1,11 +1,15 @@
 # Second-pass delta
 
+> **Applicability:** Historical reasoning record from 2026-09-03. It explains
+> the audit's correction but does not supersede the current
+> [research status](../Research/README.md).
+
 This note records what changed after a higher-effort review. It exists so the
 treatment does not quietly overwrite its own earlier reasoning.
 
 The full earlier interpretation is preserved in
 [AI analysis v1](ai-analysis-v1.md); [the v2 report](report-source.md) is the
-recommended current reading.
+recommended reading for that audit.
 
 ## Material corrections
 

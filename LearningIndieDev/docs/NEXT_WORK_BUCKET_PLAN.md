@@ -21,8 +21,8 @@ the continued-flow retests. The S2.3 report/stat-line card is Josh-owned and
 complete; the separate deterministic application card is also complete, and
 Sim remains in the telemetry/fixture lane below.
 
-Give the player a small, understandable upgrade choice during a Forest Edge
-run. The game and the research tools should use the same upgrade definition so
+Give the player a small, understandable Mutation choice during a Forest Edge
+run. The game and the research tools should use the same authored definition so
 we can trust the results we collect.
 
 ## What success looks like
@@ -56,7 +56,7 @@ should be confirmed when the next sprint is kicked off.
 | S2.2A/B | Create the first catalog and authoring path | Josh | 8h | [Acceptance matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md), [implementation](https://trello.com/c/KhHBo2tf) | Complete for the approved V1 numeric/additive contract; seven production assets, exact fixture coverage, and the catalog validator are ready. Spatial/conditional effects are deferred as a separate contract package |
 | S2.3A | Apply upgrades consistently and show what changed | Josh | 8h | [Deterministic application](https://trello.com/c/JORLMXG3), [player preview](https://trello.com/c/iKcmYkuy) | Complete |
 | S2-QA | Add catalog fixtures and invalid-combination tests | Josh | 3h | [Catalog fixtures](https://trello.com/c/OLZYtNS9) | Complete; 210/210 Edit Mode tests pass |
-| S2-UI | Show upgrade choices and the result in the game | Josh | 4h | [Player-facing preview/result](https://trello.com/c/iKcmYkuy) | Complete; 210/210 Edit Mode and 14/14 runnable Play Mode tests pass |
+| S2-UI | Show Mutation choices and the result in the game | Josh | 4h | [Player-facing preview/result](https://trello.com/c/iKcmYkuy) | Complete; 210/210 Edit Mode and 14/14 runnable Play Mode tests pass |
 | S2.3B/S2.4 | Connect upgrades to research and review balance evidence | Josh | 6h | [Report/stat-line integration](https://trello.com/c/pZ4qG2DM), [balance review](https://trello.com/c/SSwZkrI1) | Adapter-backed fixture path and bounded EX-007/EX-009 decisions complete; production balance and player-experience follow-up remain separate |
 | EX-002 | EX-002 research intervention preparation | Josh | 5h | [Intervention preparation](https://trello.com/c/PVqz2g5n) | Separate research lane |
 | S2-CORR-FOX | Fox mating/eating telemetry discrepancy | Sim | 3h | [Fox telemetry](https://trello.com/c/BkJwxhkw) | Separate Sim lane |
@@ -125,21 +125,22 @@ on one seed. The research-side matched-run and order checks are complete, and
 the bounded human decisions are recorded. Player-experience, balance, and
 visual-feedback follow-up remain separate work.
 
-## Continuation parity and EX-010 preparation checkpoint
+## Continuation parity and EX-010 execution checkpoint
 
-**Status:** CF-0 through CF-5 implementation work is complete and smoke-
-verified on `NF/ConsecutiveRuns`. Phase-window telemetry, checkpoint
-copy/restore, direct Stat-Line output, and the opt-in headless schedule are
-implemented. EX-010-specific schedule authoring and human approval remain.
+**Status:** CF-0 through CF-5 implementation work is complete and verified.
+Phase-window telemetry, checkpoint copy/restore, direct Stat-Line output, and
+the opt-in headless schedule are implemented. EX-010's approved original and
+matched reverse-order sequences are executed, validated, and accepted as
+bounded evidence by Josh and Sim.
 **Owner:** Josh, with Sim reviewing the phase and expedition measurements.
-**Effort:** The completed implementation was checkpointed in `79423b4e`; the
-EX-010-specific schedule/approval follow-up is estimated at 3h and remains a
-separate research task.
+**Effort:** The implementation was checkpointed in `79423b4e`; the EX-010
+schedule, execution, validation, and review are complete. P3 closure is
+recorded separately in the research gate decision.
 
 ### Goal
 
 Prove that Continue and Skip preserve the same evolving world before using the
-new flow to study mid-run upgrades. The first proof should be small enough to
+new flow to study mid-expedition Mutations. The first proof should be small enough to
 debug quickly and strict enough to catch a reset, an extra tick, or lost state.
 
 The 100-tick boundary is a test fixture only. It does not change the product
@@ -200,7 +201,7 @@ target of a normal 200-tick phase.
 
 ### Not part of this bucket
 
-- Full EX-010 execution or predictive calibration for continued play.
+- New predictive calibration or generalized AI validation for continued play.
 - Player-facing polish or a new prediction dashboard.
 - New upgrade design or balance conclusions.
 - Rewriting old EX-007, EX-008, or EX-009 evidence.
@@ -212,14 +213,13 @@ cross-over concerns remain in the [Stat-Line/Predictive AI concern record](Plann
 
 ## Carried-forward research item
 
-**EX-010 — Sequential upgrade continuation** is proposed but intentionally not
-part of this S2 implementation commitment. It asks what changes when upgrades
-are acquired between simulation segments and the player continues from the
-current state. The active-run checkpoint/resume seam and generic schedule path
-now exist, but EX-010 still needs its authored schedule, human approval, and
-experiment-specific run. Keep it visible in the research index and Loose Ends;
-do not treat EX-009's launch-time result or generic smoke runs as an answer to
-EX-010.
+**EX-010 — Sequential upgrade continuation** is complete as a bounded research
+package. It asks what changes when upgrades are acquired between simulation
+segments and the player continues from the current state. The approved original
+and matched reverse-order schedules now have valid development and held-out
+bundles plus a human decision. Keep the result bounded to its scenario,
+schedule, values, and seed panels; do not treat it as a balance or universal
+order conclusion.
 
 ## Evidence for the completed launch-time slice
 
@@ -243,9 +243,45 @@ effect changes direction.
 - **Final review:** Confirm game/research agreement, run the matched comparison,
   inspect the preview and result text, and record carry-over work.
 
+## Planned continuation — scalable Mutation and Genome balance
+
+This work does not reopen or enlarge the completed Sprint 2 commitment. It
+provides the required context for later changes to species, upgrade values,
+effect types, Genome progression, scenarios, and balance tools.
+
+The canonical work packages and gates are UB-0 through UB-7 in
+[`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md). All packages
+follow
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+
+The next useful balance slice is:
+
+1. Map the current registered stats to a small set of shared capabilities.
+2. Approve a Forest Edge reference panel with role-specific local and ecosystem
+   measurements.
+3. Calibrate provisional Adaptation Value estimates at several starting values.
+4. Test the existing Hare Mutation candidates at early, middle, and late
+   acquisition points, including likely paths and suspected synergies.
+5. Add the first Genome contract only after profile ownership separates
+   permanent node unlocks from the active per-species configuration.
+6. Freeze and apply each participating species' active Genome even when it is
+   not the selected player species. Test legal configurations at uneven and
+   highly developed unlock stages with separate Species and Biome scorecards;
+   Mutations never enter the Biome panel.
+
+This continuation is ready for sprint estimation only when its owner, reference
+panel, evidence window, and smallest end-to-end demonstration are named. Large
+nightly sweeps, optimizer pick-rate analysis, and a dashboard remain later
+accelerators rather than prerequisites.
+
+The continuation gate is not “all upgrades have the same value.” It is that
+their expected value, useful contexts, costs, counters, combinations, and wider
+ecological effects are understood well enough for Josh to approve, revise,
+restrict, or remove them.
+
 ## Out of scope for the completed S2 slice
 
-- Lab currency, permanent research, save/load, or disk checkpoint resume;
+- Lab currency, permanent Genome purchases, save/load, or disk checkpoint resume;
 - a general upgrade plug-in framework;
 - new species or scenario content beyond the Forest Edge slice;
 - font, layout, and visual-feedback review;

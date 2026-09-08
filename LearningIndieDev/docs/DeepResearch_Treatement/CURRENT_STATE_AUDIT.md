@@ -1,5 +1,10 @@
 # Current-state audit
 
+> **Applicability:** Historical snapshot from 2026-09-03. Use the
+> [research index](../Research/README.md) and
+> [P3 gate decision](../Research/P3_GATE_DECISION_2026-09-06.md) for current
+> status. Unclosed recommendations apply only if future research adopts them.
+
 This is an evidence audit of the predictive-AI research lane as found on
 2026-09-03. Priorities describe risk to the research claim, not production
 severity. “Observed” means directly supported by repository evidence;

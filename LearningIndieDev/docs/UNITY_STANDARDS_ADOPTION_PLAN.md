@@ -14,7 +14,7 @@ validator but is deprecated. The active path has no general bootstrap validator,
 save-data definitions, profiling budgets/captures, or stable UI/branch/large-file
 policies.
 
-The audit found no missing `.meta` files for current Assets, no runtime-to-Editor assembly reference, no Addressables installation, no first-party DOTS code, and no existing `.editorconfig` or analyzer configuration. `Assets/UI` and `Assets/TutorialInfo` retain inconsistent/template conventions and are excluded from immediate cleanup.
+The audit found no missing `.meta` files for current Assets, no runtime-to-Editor assembly reference, no Addressables installation, no first-party DOTS code, and no existing `.editorconfig` or analyzer configuration. The copied UI starter scaffold and Unity `TutorialInfo` template content were removed in the focused 2026-09-06 cleanup. A 2026-09-07 follow-up removed the unreferenced recovery and starter scenes, unreachable EX-002 generator, retired UI shells, and ownerless empty placeholders; deliberate ownership boundaries remain. Current populated `Assets/UI` conventions are still intentionally isolated from broad cleanup.
 
 ## Highest-value problems
 
@@ -85,10 +85,13 @@ No gameplay refactor, asset move/rename, scene/prefab modification, package/Unit
 ## Known exceptions and debt not to fix without context
 
 - `Assets/UI/DelegateCommand.cs` has legacy naming and an unused `canExcute` parameter; it is optional/experimental and should not be changed as collateral cleanup.
-- `Assets/UI/MainMenu/Scripts/BaseViewModel.cs` is an unreferenced starter demo;
-  the active Noesis UI uses the namespaced Main Menu/Lab contracts. Remove the
-  starter only through the focused cleanup ticket after final reference scan.
-- `Assets/TutorialInfo` is template content and may follow Unity's template conventions.
+- The unreferenced starter UI demos and `BaseViewModel` were removed on
+  2026-09-06. The active Noesis UI uses the namespaced Main Menu/Lab contracts.
+- Unity's unreferenced `Readme`/`TutorialInfo` template content was removed on
+  2026-09-06; do not recreate it as part of feature work.
+- The unused `Intro` and `_Recovery/0` scenes, one-shot EX-002 generator, and
+  ownerless empty placeholder trees were removed on 2026-09-07. EX-002's
+  authored assets and protocol remain the reproducibility record.
 - `WorldRuntime` creates placeholder sprites and uses hard-coded prototype values; authored data/prefab conversion needs a design decision, not an opportunistic cleanup.
 - The former runtime debug panel and its static visibility state were removed
   with the deprecated Island Survivor IMGUI HUD; do not reintroduce that path.

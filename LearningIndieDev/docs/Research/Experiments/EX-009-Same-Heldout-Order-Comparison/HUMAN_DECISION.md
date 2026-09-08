@@ -38,6 +38,7 @@ between continuing simulation segments.
 
 ## Follow-up
 
-The sequential-continuation question is tracked as proposed EX-010. Add a
-commutativity regression test for launch-time additive loadouts, then revisit
-EX-010 if the continue-from-current-state gameplay flow is implemented.
+The sequential-continuation question was executed separately as EX-010 after
+the continue-from-current-state gameplay flow was implemented. Keep the
+launch-time and continued-world decisions separate; this record still applies
+only to the two additive launch-time upgrades and its declared seed panel.

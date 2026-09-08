@@ -1,6 +1,6 @@
 # Main Menu and Lab Delivery Plan
 
-> Status: Approved planning baseline | Updated: 2026-08-25 | Target: vertical slice
+> Status: Approved planning baseline | Updated: 2026-09-06 | Target: vertical slice
 
 ## Outcome
 
@@ -19,7 +19,11 @@ Launch -> Main Menu -> GalapagOS Lab -> Expedition Setup -> Simulation
                     |---------- Results / Banking ---------|
 ```
 
-The first delivery may be entirely UI, but it must establish the screen flow and presentation boundaries that later receive profile saves, scientific data, permanent research, species mastery, and branching run upgrades. The Main Menu and GalapagOS Lab are separate player-facing scenes; the simulation remains a separate scene and domain boundary.
+The first delivery may be entirely UI, but it must establish the screen flow
+and presentation boundaries that later receive profile saves, scientific data,
+per-species Genome progression, species mastery, and branching expedition
+Mutations. The Main Menu and GalapagOS Lab are separate player-facing scenes;
+the simulation remains a separate scene and domain boundary.
 
 The implementation naming and layer contract are recorded in [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md). New ViewModels use `VM_*`, XAML views use `V_Panel_*`, and Unity helpers use `Helper_*`; legacy names migrate only when their feature is safely touched.
 
@@ -44,7 +48,9 @@ features for the slice.
 The Lab is the home base and primary between-run screen. Its information architecture is:
 
 - **Overview:** current research totals, recent discoveries, active unlocks, and the next useful objective.
-- **Research:** permanent Plant, Herbivore, and Carnivore skill trees.
+- **Gene Lab:** the selected species' permanently unlocked Genome options and
+  active configuration, with Plant, Herbivore, and Carnivore available as
+  browsing filters rather than permanent-buff targets.
 - **Species Archive:** discovered species, mastery status, behaviors, and species-specific unlocks.
 - **Expedition Setup:** scenario, player species, starting options, and launch command.
 - **Settings / Main Menu:** secondary navigation.
@@ -55,13 +61,14 @@ For the UI-only milestone, these surfaces use clearly labeled representative dat
 
 Scientific data is a primary Lab interaction, not a secondary status display.
 The Lab must make the relationship between experiments, collected data, and
-permanent research understandable from every spending surface.
+permanent Genome research understandable from every spending surface.
 
 - A persistent **data bar** shows Research, Plant, Herbivore, and Carnivore Data.
 - Species Mastery Data appears when a particular species is selected rather
   than crowding the global bar with every species balance.
-- Research nodes show their data type, full cost, prerequisites, unlocked
-  run content, and current affordable/unaffordable state before selection.
+- Genome nodes show their data type, full cost, prerequisites, unlocked and
+  active states, species effect, ecological consequence, and current
+  affordable/unaffordable state before selection.
 - A purchase preview explains which balances will be consumed and what becomes
   available. Permanent purchases require confirmation and show updated balances
   immediately after success.
@@ -69,12 +76,16 @@ permanent research understandable from every spending surface.
   a useful next research goal without choosing it for the player.
 - The Species Archive explains how to earn the selected species' mastery data
   and which mastery benefits or content it can unlock.
-- Expedition Setup shows which unlocked research options will be available in
-  the run, but permanent research is purchased only through the Lab.
+- Expedition Setup shows the frozen active Genome for every participating
+  species. Species Simulation setup also shows which Mutation options are
+  available to the selected species; Biome Simulation setup states that
+  Mutations are absent. Genome purchases and configuration occur through the
+  Gene Lab.
 
 The presentation language is an experimental biology workspace: simulations are
-**experiments**, currency is **data**, permanent nodes are **research projects**,
-and species progression represents **observation and mastery**. Visual motifs may
+**experiments**, currency is **data**, permanent species nodes are **Genome
+research**, and species progression represents **observation and ecological
+stewardship**. Visual motifs may
 use specimen cards, microscopes, petri dishes, branching phylogenetic diagrams,
 field notes, and analyzed samples. Theme must reinforce function: data types,
 costs, prerequisites, and purchase results remain readable without relying on
@@ -88,10 +99,11 @@ color or decorative metaphor alone.
 | Main Menu | Select Profile | Profile Selection state | Create/select a profile; Continue becomes available after a successful load. |
 | Main Menu | Continue | Lab Overview | The last loaded profile summary is visible. Disabled when no profile has been loaded. |
 | Main Menu | Quit | Application exit | Desktop application closes. |
-| Lab | Select Research | Research Trees | Currency totals and locked/unlocked states remain visible. |
-| Research Trees | Select project | Purchase Preview | Cost, prerequisites, benefit, and remaining balances are shown. |
-| Purchase Preview | Confirm research | Research Trees | Data is deducted once; the unlocked node and newly available paths are revealed. |
-| Lab | Select Species Archive | Species Archive | Type and species mastery are clearly distinguished. |
+| Lab | Select Gene Lab | Species Genome | Currency totals, selected species, locked/unlocked nodes, active nodes, and remaining configuration capacity remain visible. |
+| Species Genome | Select project | Purchase Preview | Cost, prerequisites, permanent species effect, ecological consequence, and remaining balances are shown. |
+| Purchase Preview | Confirm Genome research | Species Genome | Data is deducted once; the purchased node and newly available paths are revealed. |
+| Species Genome | Toggle an unlocked node | Species Genome | The active configuration and remaining capacity update without removing the permanent unlock. |
+| Lab | Select Species Archive | Species Archive | Genome state and species mastery are clearly distinguished. |
 | Lab | Prepare Expedition | Expedition Setup | Scenario, species, and starting choices are summarized before launch. |
 | Expedition Setup | Launch | Player Simulation | Selected IDs and profile-derived options form an explicit launch request. |
 | Simulation | Finish/Extinction | Results | Earned, spent, banked, and lost data are explained. |
@@ -108,9 +120,14 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 - Use explicit screen state and Noesis visual states for local overlays and polish; do not introduce a general navigation framework for this flow.
 - The cellular simulation remains a separate scene and domain boundary.
 - UI ViewModels expose presentation-ready values and explicit commands. XAML does not read simulation assets, `PlayerPrefs`, or mutable domain state directly.
-- A later profile service owns versioned meta-progression. The UI-only milestone may supply representative data through a small composition fixture, not through fake persisted state.
+- A later profile service owns versioned Genome unlocks, active per-species
+  configurations, and other meta-progression. The UI-only milestone may supply
+  representative data through a small composition fixture, not through fake
+  persisted state.
 - Expedition launch data contains stable scenario/species IDs and selected persistent options. The simulation receives an immutable run-start snapshot.
-- Scientific data, research unlocks, mastery, and completed-run settlement are domain concepts independent of Noesis.
+- Scientific data, Genome nodes, mastery, Mutations, and completed-run
+  settlement are domain concepts independent of Noesis. The UI does not
+  calculate Adaptation Value or approve balance.
 - The existing Dev Lab remains a developer/authoring surface and is not the player-facing Lab home base.
 
 ## UI-only acceptance criteria
@@ -119,14 +136,16 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 - Keyboard and mouse can complete the full navigation loop; focus state is always visible.
 - Layout is readable at 1920×1080 and functional at 1280×720.
 - Main Menu, Lab navigation, overlays, and Back behavior follow the screen-flow contract.
-- Research trees distinguish Plant, Herbivore, and Carnivore progression.
+- Gene Lab navigation can filter Plants, Herbivores, and Carnivores while every
+  displayed Genome belongs to one species.
 - The global data bar and contextual species-mastery balance are represented in
   the correct Lab surfaces.
-- Research-node prototypes demonstrate locked, available, affordable,
-  unaffordable, selected, purchased, and newly-unlocked states.
+- Genome-node prototypes demonstrate locked, available, affordable,
+  unaffordable, selected, purchased/unlocked, active, inactive, and
+  newly-unlocked states.
 - A representative purchase preview identifies every currency cost and resulting
   unlock without changing fake balances.
-- Species Archive distinguishes type research from species mastery.
+- Species Archive distinguishes permanent Genome state from species mastery.
 - Expedition Setup demonstrates Forest Edge + Hare and summarizes the selected run.
 - Placeholder balances, nodes, and mastery values are visibly marked as representative UI data.
 - The UI has empty, locked, affordable, unaffordable, selected, confirmation, and error visual states even where real services are not wired yet.
@@ -156,8 +175,8 @@ Deliverables:
 - `MainMenu.unity` as the enabled application entry scene with Profile Selection,
   Continue, and Quit;
 - a separate GalapagOS Lab scene with one Noesis root shell for Lab Overview,
-  Research, Species Archive, and Expedition Setup panels;
-- persistent scientific-data presentation plus representative research costs,
+  Gene Lab, Species Archive, and Expedition Setup panels;
+- persistent scientific-data presentation plus representative Genome costs,
   purchase previews, experiment returns, and species-mastery guidance;
 - keyboard/mouse focus, Back behavior, confirmations, responsive layout, and representative data;
 - navigation smoke coverage.
@@ -184,7 +203,7 @@ Exit gate: restart preserves settings and one test unlock; reset requires confir
 Deliverables:
 
 - Research, Plant, Herbivore, Carnivore, and current slice-species mastery balances only where each has a proven use;
-- one atomic wallet transaction for permanent research purchases, with explicit
+- one atomic wallet transaction for permanent Genome purchases, with explicit
   insufficient-data and invalid-prerequisite results;
 - capped/diminishing award rules based on completed simulation evidence;
 - run ledger separating earned, spent, banked, and lost data;
@@ -192,24 +211,34 @@ Deliverables:
 
 Exit gate: the results screen can explain every balance change and replaying the same recorded run produces the same settlement.
 
-### E4 — Permanent type research
+### E4 — First species Genome
 
 **Depends on:** E3 and approved first node catalog.
 
 Deliverables:
 
-- first small Herbivore research tree for the Hare slice;
-- locked, available, affordable, purchased, and prerequisite states;
+- first small Hare Genome tree for the slice;
+- locked, available, affordable, purchased/unlocked, active, inactive, and
+  prerequisite states;
 - biology-themed project descriptions, cost breakdowns, confirmation, and
   purchase-result feedback using the real scientific-data wallet;
-- permanent purchases that primarily unlock run choices or information;
-- Plant/Carnivore tabs may remain content-light until their first playable species needs them.
+- one permanent Hare improvement with a supported stat or explicit behaviour,
+  an ecological obligation, and the evidence required by
+  [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md);
+- separate saved unlock state and active configuration, with a representative
+  capacity limit and between-simulation toggle flow;
+- role filters and other species may remain content-light until their first
+  Genome work is ready.
 
-Exit gate: one Lab purchase survives restart and changes an eligible choice in the next run without silently mutating base simulation data.
+Exit gate: one Gene Lab purchase survives restart, can be activated or
+deactivated between simulations, and affects every Hare population only when
+active, including a run where Hare is not the selected species. The launch
+record includes the active Genome snapshot and authored base data remains
+unchanged.
 
-### E5 — Expedition contract and branching run upgrades
+### E5 — Expedition contract and branching Mutations
 
-**Depends on:** E1, the player/Dev Lab split, and the first trustworthy upgrade catalog.
+**Depends on:** E1, the player/Dev Lab split, and the first trustworthy Mutation catalog.
 
 Deliverables:
 
@@ -218,7 +247,9 @@ Deliverables:
 - branch prerequisites, exclusions, previews, costs, and ordered loadout recording;
 - offer logic that cannot strand a committed branch.
 
-Exit gate: three seeded Hare runs demonstrate visibly distinct builds and reproduce from scenario, seed, base fingerprint, and ordered upgrades.
+Exit gate: three seeded Hare runs demonstrate visibly distinct builds and
+reproduce from scenario, seed, frozen Genome fingerprints, and ordered
+Mutations.
 
 ### E6 — Mastery and complete home-base loop
 
@@ -228,10 +259,14 @@ Deliverables:
 
 - Hare mastery objectives based on varied behaviors;
 - Species Archive discovery/mastery presentation;
-- result-to-Lab reveal of data, mastery, research unlocks, and next objective;
-- one complete new-profile → run → reward → Lab purchase → changed next-run loop.
+- result-to-Lab reveal of data, mastery, Genome research, and next objective;
+- one complete new-profile → expedition → reward → Genome purchase → changed
+  next-expedition loop.
 
-Exit gate: an external player can explain how to earn mastery, how type research differs, and why they would try another species.
+Exit gate: an external player can explain how Mutations differ from Genome
+improvements, how a Genome affects its species when it is not controlled, and
+why restoring ecological balance can make another species the useful next
+choice.
 
 ## Dependency order
 
@@ -240,13 +275,15 @@ E0 UX contract
   -> E1 UI shell
        -> E2 profile/settings
             -> E3 data wallet/settlement
-                 -> E4 permanent research
+                 -> E4 first species Genome
                  -> E6 mastery/home-base loop
-       -> E5 expedition + run branches
+       -> E5 expedition + Mutation branches
             -> E6 mastery/home-base loop
 ```
 
-Art and audio exploration may accompany E1, but final-volume production waits for the UI shell and comprehension tests. Dev Lab separation and trustworthy upgrades remain prerequisites for connecting E5 to the simulation.
+Art and audio exploration may accompany E1, but final-volume production waits
+for the UI shell and comprehension tests. Dev Lab separation and trustworthy
+Mutations remain prerequisites for connecting E5 to the simulation.
 
 ## Planning and delivery workflow
 
@@ -281,10 +318,11 @@ Each epic follows the same lightweight workflow:
 
 Before E1 implementation begins:
 
-1. Produce low-fidelity layouts for Main Menu, Lab Overview, Research, Species Archive, and Expedition Setup.
+1. Produce low-fidelity layouts for Main Menu, Lab Overview, Gene Lab, Species Archive, and Expedition Setup.
 2. Define the representative UI data fixture and required visual states.
    Include all currency balances, one experiment-return summary, affordable and
-   unaffordable projects, a prerequisite chain, and one Hare mastery objective.
+   unaffordable Genome projects, a prerequisite chain, one ecological-effect
+   preview, and one Hare mastery objective.
 3. Decide whether the existing `MainMenu.unity` Noesis view can host the root shell without scene repair.
 4. Write the small screen-state/ViewModel contract and scene transition contract.
 5. Add Main Menu to Build Settings only when the shell can launch without trapping normal simulation development.
@@ -293,8 +331,9 @@ Before E1 implementation begins:
 
 - Final Lab art direction and environmental presentation beyond UI.
 - Multiple profiles/save slots and Steam Cloud conflict handling.
-- Exact data award rates, extinction loss, and permanent node costs.
-- Full Plant and Carnivore permanent trees.
-- Respec rules and late-game research-tree shape.
+- Exact data award rates, extinction loss, Genome node costs, active capacity,
+  node capacity costs, and any reallocation fee.
+- Full Genome trees for the wider species roster.
+- Late-game Genome-tree shape and how active capacity grows.
 - Active-run save/resume.
-- A generic navigation framework, skill-tree editor, or upgrade scripting system.
+- A generic navigation framework, skill-tree editor, or Mutation/Genome scripting system.

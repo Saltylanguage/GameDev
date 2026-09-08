@@ -48,8 +48,7 @@ acquired between continuing simulation segments.
 ## Follow-up after the decision
 
 Record the reviewer's choice, review time, and any requested rerun. EX-008 has
-already added the missing crowding-tolerance-only arm; EX-009 now covers the
-clean same-held-out-seed comparison of the two joint orders. The separate
-sequential-continuation question is tracked as proposed EX-010 and should be
-revisited if the intended continue-from-current-state gameplay flow is
-implemented.
+already added the missing crowding-tolerance-only arm; EX-009 covers the clean
+same-held-out-seed comparison of the two joint orders. EX-010 now covers the
+separate sequential-continuation question under its own approved contract.
+Its result remains bounded and does not change this decision's scope.

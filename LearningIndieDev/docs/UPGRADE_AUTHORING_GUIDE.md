@@ -1,23 +1,30 @@
-# Species Per-Run Upgrade Authoring Guide
+# Mutation (Per-Run Upgrade) Authoring Guide
 
-This is the repeatable workflow for creating a species per-run upgrade. The
+This is the repeatable workflow for creating a species **Mutation**. Existing
+Unity types and menu labels still say “Upgrade” for compatibility. The
 authoring asset is a Unity `ScriptableObject`; the simulation never consumes a
 live asset reference. An asset is resolved into an immutable
 `SpeciesUpgradeSnapshot` for launch or a recorded acquisition boundary.
 
-**Continuation migration pending:** a per-run upgrade lasts for the entire
-expedition, across all simulation phases. Continued play needs the resolved
-snapshot plus its acquisition/effective tick; the current launch-only metadata
-does not supply that timeline. Starting-only fields are launch-only under the
+**Continuation rule:** a Mutation lasts for the entire expedition after it is
+acquired, across all later simulation phases. The resolved snapshot,
+acquisition tick, and effective tick are recorded in the continued-run
+timeline. Starting-only fields remain launch-only under the
 locked CF-0 contract and are not live creature grants. In particular, Seed
 Pouches is not a phase-break offer unless a separately designed live-state or
 newborn mechanic replaces that restriction. See the
 [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) and
 [Stat-Line/research impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
 
-## Current catalog
+This guide covers the current signed-stat Mutation contract only. Permanent
+Genomes, one-time effects, and abilities require separate contracts; do not
+encode them as misleading numeric modifiers. All content and value changes
+follow
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 
-The initial production catalog contains seven Hare upgrades:
+## Current Mutation catalog
+
+The initial production catalog contains seven Hare Mutation candidates:
 
 - `trailblazer-long-stride` — Long Stride
 - `trailblazer-far-sight` — Far Sight
@@ -30,7 +37,7 @@ The initial production catalog contains seven Hare upgrades:
 These values are starting hypotheses, not accepted balance.
 
 The exact contract and acceptance state for every production row is tracked in
-the [Species Per-Run Upgrade Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
+the [Hare Mutation Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
 
 ## First example
 
@@ -76,19 +83,19 @@ partner to reproduce.
 
 ## V1 contract
 
-- One target species per upgrade.
+- One target species per Mutation.
 - Per-run scope only.
 - One stable attribute ID and one finite signed numeric value per modifier.
 - Additive modifiers only. Multiplication, set values, ranges, clamping, and
   conditional expressions are not supported in V1.
 - An attribute may appear only once in an upgrade.
-- Upgrade order is meaningful. Preserve the authored purchase order when
+- Mutation order is meaningful. Preserve the authored purchase order when
   constructing a loadout; do not sort it.
 
 ## What happens at runtime
 
 The authoring adapter calls `TryCreateSnapshot`. The validated snapshot captures
-the upgrade values, contract version, registry fingerprint, and deterministic
+the Mutation values, contract version, registry fingerprint, and deterministic
 fingerprint. `SimulationLaunchRequest` carries the ordered snapshots to the
 preview and runner. Launch preflight validates the complete loadout before any
 state is mutated. The run result and report preserve the same ordered metadata.
@@ -145,6 +152,18 @@ production assets.
 - [ ] Any balance claim is supported by a deterministic baseline comparison;
       authoring an asset alone does not validate its gameplay effect.
 
+Before requesting **balance approval**, also record in the acceptance matrix or
+species treatment:
+
+- [ ] The shared capability the Mutation changes.
+- [ ] Its useful environments, pressures, and acquisition window.
+- [ ] Its ecological cost, obligation, weakness, or lost alternative.
+- [ ] One direct measurement that proves the advertised effect.
+- [ ] At least one ecosystem measurement covering resources or another species.
+- [ ] Its provisional tier and Adaptation Value range, or `TBD` until calibrated.
+- [ ] The likely Mutation pairs or paths that need order and synergy testing.
+- [ ] The reference panel and evidence version used for the human decision.
+
 The Editor fixture tests automatically resolve every asset under `Production/`
 and reject duplicate stable IDs. When intentionally changing one of the named
 first-catalog fixtures, update its expected contract in
@@ -168,3 +187,4 @@ for runtime gameplay.
 - `Assets/Scripts/Game/Species/SpeciesAttributeRegistry.cs`
 - `Assets/Editor/SpeciesUpgradeAssetEditor.cs`
 - `docs/UPGRADE_SYSTEM_DIRECTION.md`
+- `docs/Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`

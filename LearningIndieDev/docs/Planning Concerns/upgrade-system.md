@@ -1,10 +1,11 @@
 # Planning concerns — Upgrade System
 
-**Scope:** Scriptable Object authoring, stable attribute IDs, runtime application,
-deterministic evidence, and the first production-quality species per-run upgrade
-slice; permanent Lab upgrades are future consumers of the contract, not current
-implementation scope; excludes Lab persistence and a generalized modifier/plugin
-framework.
+**Scope:** Mutation and Genome authoring, stable identities, unlocked and active
+Genome state, simulation-mode boundaries, runtime application, deterministic
+evidence, and the first production-quality species upgrade slice. The current
+implementation remains Mutation-only; Genome persistence and Biome Simulations
+are planning scope until scheduled. This record excludes a generalized
+modifier/plugin framework.
 **Canonical plan:** [`../UPGRADE_SYSTEM_DIRECTION.md`](../UPGRADE_SYSTEM_DIRECTION.md)
 and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 **Human owner:** Josh (sole feature owner and decision authority)
@@ -12,12 +13,13 @@ and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 
 ## Active concerns
 
-The [2026-09-04 consecutive-phase plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md)
-reviews the future continuation seam and its
+The [consecutive-phase plan](../CONTINUOUS_SIMULATION_FLOW_PLAN.md) reviews the
+continuation seam and its
 [Stat-Line/research impact](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
-Acquisition timing and initialization-only upgrade eligibility need explicit
-implementation decisions. This reference does not change the accepted triggers,
-severities, statuses or waivers below.
+EX-010's approved acquisition timing is now executed and accepted as bounded
+evidence; initialization-only upgrade eligibility and any new stateful effects
+still need explicit implementation decisions. This reference does not change
+the accepted triggers, severities, statuses or waivers below.
 
 ### UPG-C01 — Runtime/editor mapping drift
 
@@ -69,10 +71,10 @@ severities, statuses or waivers below.
 - **Progress:** EX-009 completed the locked A→B/B→A comparison on the same
   held-out seeds (106–110). The two additive upgrades produced identical
   outcomes and available telemetry in all five pairs, so the launch-time result
-  is accepted within that scope. This does not resolve upgrades acquired between
-  continuing simulation segments; acquisition timing and accumulated state are
-  tracked as proposed EX-010. A focused commutativity regression test remains
-  the appropriate follow-up as future stateful upgrade types are introduced.
+  is accepted within that scope. EX-010 now covers upgrades acquired between
+  continuing simulation segments under one approved schedule and records a
+  bounded order effect. A focused commutativity regression test remains the
+  appropriate follow-up as future stateful upgrade types are introduced.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
 
@@ -97,5 +99,27 @@ severities, statuses or waivers below.
 - **Smallest mitigation:** Introduce Scriptable Objects as an authoring adapter into the immutable runtime upgrade contract; preserve existing IDs and legacy behavior until parity tests pass; migrate consumers one seam at a time with baseline, snapshot, and report-regression tests.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
+
+### UPG-C07 — Active Genome follows selection instead of species identity
+
+- **Severity:** Extreme
+- **Status:** Acknowledged
+- **Trigger:** A Species or Biome Simulation resolves Genome effects only for the player-selected species, applies them by broad ecological role, confuses permanent unlocks with active nodes, or changes the active Genome after the simulation has started.
+- **Why it matters:** Background populations could lose or gain the wrong Genome effects depending on UI selection, making the simulation rules and its balance evidence non-reproducible.
+- **Evidence:** User direction on 2026-09-06: Genome nodes are permanently unlocked but toggleable; active Genome effects apply in both simulation modes and to a species even when it is not player-controlled.
+- **Smallest mitigation:** Store permanent unlocks separately from each species' active Genome; freeze every participating `SpeciesId`'s active Genome at launch, apply it to all populations of that species, and record the configuration and fingerprint with the run. Keep Mutations as a separate Species-Simulation-only layer.
+- **Owner:** Josh
+- **Recorded:** 2026-09-06, user-confirmed planning decision
+
+### UPG-C08 — Species and Biome goals are judged by one score
+
+- **Severity:** Extreme
+- **Status:** Acknowledged
+- **Trigger:** Focal-species results are used as the sole approval measure for Genome or Biome balance, or Biome-level results are used to invalidate a Mutation whose intended scope is one Species Simulation.
+- **Why it matters:** A Genome can intentionally help a species while harming a biome, and a useful ecosystem configuration can restrain a focal species; treating those outcomes as one notion of success would erase intended tradeoffs and make balance decisions misleading.
+- **Evidence:** User direction on 2026-09-06: Species Simulations and Biome Simulations may have different goals; Mutations never enter Biome Simulations; toggleable Genome configurations affect both modes and may make a biome more or less diverse, stable, or balanced.
+- **Smallest mitigation:** Use separate scorecards: judge Mutations against their Species Simulation goals and declared local interactions; judge active Genomes in both focal-species and Biome contexts; judge Biome configurations against scenario-specific diversity, stability, recovery, and balance goals. Permanent unlocks remain earned even when a configuration performs poorly.
+- **Owner:** Josh
+- **Recorded:** 2026-09-06, user-confirmed planning decision
 
 ## Closed concerns

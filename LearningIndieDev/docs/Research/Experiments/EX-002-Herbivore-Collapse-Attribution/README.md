@@ -16,11 +16,16 @@ extinction in its pre-telemetry-extension 20-seed EX-001B pair.
 
 - [Experiment brief](EXP-002-brief.md)
 
-The paired schema-6 BaselineParity control is recorded at
+The paired schema-6 BaselineParity control was recorded at
 `artifacts/cellular-experiment-20260818-210354/report.json` and
-`artifacts/cellular-experiment-20260818-210443/report.json`. The committed
+`artifacts/cellular-experiment-20260818-210443/report.json`; those two raw
+bundles are not present in the current checkout. The committed
 intervention matrix and held-out check are recorded in
 `docs/handoffs/2026-08-20-0255-codex-ex002-intervention-matrix.md`.
+
+The durable summaries preserve the bounded interpretation, but they are not a
+replacement for the missing raw control files. A future current-code or expanded
+claim must generate and retain a new complete bundle.
 
 ## Current interpretation boundary
 

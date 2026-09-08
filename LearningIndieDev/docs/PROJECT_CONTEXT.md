@@ -32,16 +32,41 @@ changes, and do not treat research references as approved implementation work.
   are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
+- Every species has two distinct upgrade systems. **Mutations** are nine acute
+  adaptations selected during one completed Species Simulation and reset when
+  it ends. Mutations never enter Biome Simulations. A species' **Genome** is a
+  permanent library of options unlocked with banked scientific data in the Gene
+  Lab.
+- The player can turn unlocked Genome nodes on or off between simulations. The
+  active Genome is frozen at launch and applies to every population of its
+  species, including when that species is not controlled by the player.
+  Species-Simulation rules combine natural rules, the active Genome, and the
+  selected species' ordered Mutations. Biome-Simulation rules combine natural
+  rules and each participating species' active Genome only.
+- Species Simulations may reward focal-species success. Biome Simulations judge
+  cross-species Genome configurations against scenario-specific biodiversity,
+  stability, balance, and recovery goals. A Genome option can help its species
+  while harming a biome without invalidating either mode.
+- The long-term objective is to develop a diverse, resilient ecosystem rather
+  than maximize one species, master every species, or complete every data set.
+  Improving one Genome may create a readable imbalance that encourages the
+  player to run and develop plants, herbivores, and predators in response.
+- Upgrade and species work follows
+  [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md):
+  use shared stats and capabilities for early value estimates, then require
+  matched species, matchup, and mode-appropriate ecosystem evidence before
+  approving balance.
 - Candidate upgrades act on relative grid positions. Examples include adding
   `+1 block` to the cell directly above the player or gaining an attack effect
   on horizontally adjacent cells. These examples communicate the direction;
   they are not a finalized combat model or rules API.
 - *Digseum* is a high-level reference for the intended iterative progression
   loop. It is inspiration for product direction, not a specification to copy.
-- The existing island-survival vertical slice, generic grid, grid patterns, and
-  cave-generation prototype are being retained. The island content is no longer
-  assumed to be the primary product direction, while the grid and cellular-
-  automata work are foundations for the new concept.
+- The Island Survivor prototype is deprecated. Its surviving scene, tests, and
+  assets are retained only as isolated historical reference until an explicit
+  archival or deletion task is approved. Generic grid, grid patterns, and the
+  cave-generation domain remain reference foundations for the active cellular-
+  automata work.
 - The current island, shoreline, and jungle entrance use an authored pixel-art
   tile workflow. Preserve those retained assets unless a feature explicitly
   replaces or repurposes them.
@@ -53,22 +78,32 @@ changes, and do not treat research references as approved implementation work.
 
 ## Cellular-automata roguelike concept
 
-**Consecutive-phase direction (2026-09-04):** one expedition retains one evolving
-ecosystem across simulation phases. At a reward break, buying an upgrade or
-skipping it is followed by Continue from the same board and next absolute tick.
-Creature/resource state, prior perception state, seed, progression and telemetry
-survive. Only an explicit new expedition/restart resets the world. This is
-required design, not current implementation: the preview still rebuilds between
-windows. See the [architecture migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md),
+**Continuous-state implementation (2026-09-06):** one expedition now retains one
+evolving ecosystem across all ten simulation phases. At a reward break, buying
+an upgrade or skipping it is followed by Continue from the same board and next
+absolute tick. Creature/resource state, prior perception state, seed,
+progression, telemetry, and the retained runner survive. Only an explicit new
+expedition/restart resets the world. CF-0 through CF-5, including phase/final
+Stat-Lines, boundary checkpoints, the opt-in headless schedule, and the approved
+EX-010 ten-phase comparison, are implemented and verified. See the
+[architecture migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md),
 [evidence impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md), and
 [documentation audit](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md).
 
 The current prototype window is a configurable phase, not a whole expedition;
 200 ticks at a 0.1-second step remains the per-phase target. The product brief's
 ten-phase limit and longer presentation pacing must be distinguished from that
-prototype. In-memory continuation does not
-introduce player disk save/load. Stat-Line and predictive-AI evidence must name
-the phase/expedition window and upgrade acquisition timing.
+prototype. In-memory continuation does not introduce player disk save/load.
+Stat-Line and predictive-AI evidence must name the phase/expedition window and
+upgrade acquisition timing.
+
+**Plan forward:** treat continuous state as the canonical runtime design. The
+graphics-capable desktop/Simulation gate is accepted at both target resolutions.
+Finish a current Windows build smoke and ten-phase duration/memory measurement,
+then complete the player-facing
+Mutation choices, outcome language, reward/persistence loop, and Genome design.
+Any new predictive-AI or balance claim requires its own approved research
+contract; it is not implied by the accepted EX-010 result.
 
 The central design opportunity is to make cellular-automata rules the player's
 build, progression, and interaction language rather than using cellular automata
@@ -156,9 +191,9 @@ settle them in foundational grid code.
 
 ## CellularSimData direction
 
-- The next architecture step is a `CellularSimData` scenario definition that
-  groups global settings, starting population settings, species rules, and
-  terrain data for one simulation ruleset.
+- `CellularSimData` is the implemented scenario definition that groups global
+  settings, starting population settings, species rules, and terrain data for
+  one simulation ruleset.
 - An expedition receives a frozen base-data snapshot at launch. Authoring edits
   affect a new expedition, not the current world. Player upgrades deliberately
   create a new immutable effective rules snapshot at a frozen phase boundary;
@@ -252,6 +287,9 @@ settle them in foundational grid code.
   research and collection surfaces; controlled **Classic Eco OS** window
   stacking is optional utility inspiration rather than a requirement for core
   navigation.
+- The GalapagOS desktop must support multiple player-facing app windows open
+  at the same time. Each window can be moved and closed independently; window
+  orchestration belongs to the desktop shell and must not leak into `VM_Lab`.
 - The player desktop app ecosystem is planned in
   [`GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md`](GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md),
   with the detailed player-facing feature contract in

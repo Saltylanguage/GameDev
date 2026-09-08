@@ -15,10 +15,11 @@ Unity validation required by the project standards.
 
 1. Resolve the two authority questions first: terrain tiling (`P1-022`) and
    current project/standards documentation (`P1-023`).
-2. Make the explicit keep/remove decisions for the low-risk artifacts
-   (`P2-010` through `P2-013` and `P2-017`/`P2-018`).
-3. After Unity IPC and UI acceptance recover, perform the focused orphan
-   cleanups (`P2-008` and `P2-009`).
+2. Make the explicit keep/remove decisions for the remaining low-risk artifacts
+   (`P2-012`, `P2-013`, and `P2-017`/`P2-018`); P2-008 through P2-011 are now
+   closed by the 2026-09-06 cleanup.
+3. UI graphics acceptance has recovered; verify terrain-specific visual work
+   through its normal reimport/test pass when terrain resumes.
 4. Schedule compatibility and structural refactors only after the current
    simulation/UI contracts are stable (`P2-007`, `P2-014`, `P2-015`, `P2-016`).
 
@@ -27,7 +28,7 @@ Unity validation required by the project standards.
 ### P1-022 — Reconcile the terrain tiling contract
 
 **Priority:** P1  
-**Status:** Resolved in code and documentation; visual Unity acceptance remains open
+**Status:** Contract resolved; terrain-specific visual work is deferred under P2-022
 **Owner:** Presentation/art owner + Sim  
 **Size:** Medium  
 **Evidence:** `TerrainTileResolver` and its tests implement 47 normalized
@@ -112,13 +113,12 @@ simulation rules.
 ### P2-008 — Remove orphan `CavePreview` and `LifeSimulationPreview`
 
 **Priority:** P2  
-**Status:** Partially complete; the orphan `LifeSimulationPreview` component
-has been removed. The remaining `CavePreview` cleanup still waits for Unity
-validation.
+**Status:** Resolved 2026-09-06; both orphan presentation components have been
+removed. The deterministic cave/Life domain code and tests remain retained.
 **Owner:** Sim/domain owner  
 **Size:** Small  
-**Dependency:** Repair Unity IPC/preflight; confirm retained Edit Mode and
-targeted cellular Play Mode tests can run.
+**Dependency:** Full Unity reimport/test confirmation remains part of the next
+normal graphics validation pass.
 
 **Goal:** Remove the unreferenced preview components while retaining the
 deterministic cave/Life domain code and tests.
@@ -137,11 +137,11 @@ active `SpeciesSimulationPreview`.
 ### P2-009 — Remove the copied UI starter scaffold
 
 **Priority:** P2  
-**Status:** Strong removal candidate; waiting for final UI acceptance  
+**Status:** Resolved 2026-09-06 after the final GUID/reference scan.
 **Owner:** UI owner  
 **Size:** Small  
-**Dependency:** Final GUID scan and confirmation that no design handoff still
-uses the starter demo.
+**Dependency:** None for cleanup; normal Unity reimport remains covered by the
+next graphics validation pass.
 
 **Goal:** Delete the unreferenced Yoda/progress-bar demo code and duplicate
 `TestUI.xaml` files.
@@ -163,11 +163,11 @@ Noesis package setup.
 ### P2-010 — Decide the fate of the `Assets/UI/EcoSim` placeholder shell
 
 **Priority:** P2  
-**Status:** Decision required  
+**Status:** Resolved 2026-09-06; the unreferenced placeholder tree was removed.
 **Owner:** UI/product owner  
 **Size:** Small-medium  
-**Dependency:** Confirm no future experiment, design review, or handoff owns
-the initial EcoSim scaffold.
+**Dependency:** None; no active scene, host, or GUID reference depended on the
+scaffold.
 
 **Goal:** Either remove the unreferenced EcoSim placeholder tree or document it
 as an explicitly retained prototype boundary.
@@ -186,10 +186,11 @@ as an explicitly retained prototype boundary.
 ### P2-011 — Remove or explicitly retain URP template onboarding
 
 **Priority:** P2  
-**Status:** Owner decision required  
+**Status:** Resolved 2026-09-06; the stale Unity Readme/TutorialInfo template
+tree was removed with matching `.meta` files.
 **Owner:** Josh + repository maintainer  
 **Size:** Small  
-**Dependency:** Confirm the project no longer needs Unity’s onboarding Readme.
+**Dependency:** None; no first-party scene, asset, or code reference remained.
 
 **Goal:** Resolve whether `Assets/Readme.asset` and `Assets/TutorialInfo/**`
 remain useful project content.
@@ -207,7 +208,7 @@ remain useful project content.
 ### P2-012 — Classify `_Recovery/0.unity`
 
 **Priority:** P2  
-**Status:** Owner decision required  
+**Status:** Resolved 2026-09-07 — removed
 **Owner:** Josh  
 **Size:** Small  
 **Dependency:** Confirm whether the scene is a deliberate recovery checkpoint.
@@ -225,10 +226,14 @@ remain useful project content.
 
 **Non-goals:** Reconstructing or merging the older cellular prototype.
 
+**Result:** A final Build Settings, name, and GUID scan found no consumer. The
+scene and its `.meta` were removed together; the current cellular scene was not
+changed.
+
 ### P2-013 — Remove or reserve `Assets/Scenes/Intro.unity`
 
 **Priority:** P2  
-**Status:** Archive/removal candidate  
+**Status:** Resolved 2026-09-07 — removed
 **Owner:** Josh + repository maintainer  
 **Size:** Small  
 **Dependency:** Confirm it is not reserved for a future splash or entry flow.
@@ -245,6 +250,9 @@ with a documented purpose.
   acceptance scenes. The terrain scene remains on hold pending its explicit
   removal or Noesis migration decision.
 - No scene-order or startup behavior changes as a side effect.
+
+**Result:** The untouched camera/light starter scene had no references and was
+not in Build Settings. The scene and `.meta` were removed together.
 
 ### P2-014 — Rename `MainMenu_Old` through a GUID-preserving migration
 
@@ -331,7 +339,7 @@ runtime behavior and asset-generation boundaries are unchanged.
 ### P2-017 — Decide retention of `PrepareEx002Variants`
 
 **Priority:** P2  
-**Status:** Retention/archive decision required  
+**Status:** Resolved 2026-09-07 — generator archived through Git history
 **Owner:** Sim/tooling owner  
 **Size:** Small  
 **Dependency:** EX-002 artifact retention and reproducibility policy.
@@ -351,10 +359,16 @@ reproducibility tool.
 **Non-goals:** Re-running blocked experiments or changing the intervention
 contract.
 
+**Result:** The script had no menu attribute or source callsite. Its four
+generated assets remain versioned, while `EX-002-MATRIX-PROTOCOL.md` preserves
+their paths, source settings, and exact intervention deltas. The script and
+`.meta` were removed without changing experiment evidence.
+
 ### P2-018 — Triage empty Unity directory shells
 
 **Priority:** P2  
-**Status:** Low-value structure cleanup  
+**Status:** Resolved 2026-09-07 — obsolete shells removed and deliberate
+boundaries retained
 **Owner:** Repository maintainer + feature owners  
 **Size:** Small-medium  
 **Dependency:** Each candidate has an explicit owner or confirmed no-use state.
@@ -362,9 +376,10 @@ contract.
 **Goal:** Remove empty folders that provide no current ownership value while
 preserving deliberate future feature boundaries.
 
-**Candidate groups:** `Assets/Audio`, `Materials`, `ThirdParty`, unused
-`Assets/Project/**` shells, `UI/Prefabs`, `PuzzleUI`, `Textures`,
-`UI/EcoSim/Scripts`, `UI/GalapagOS/Art`, and `UI/MainMenu/XAML`.
+**Reviewed groups:** `Assets/Audio`, `Materials`, `ThirdParty`, unused
+`Assets/Project/**` shells, `UI/Prefabs`, `PuzzleUI`, `Textures`, retired
+`UI/EcoSim` and `UI/MainMenu` shells, species art, runtime diagnostics, and
+Noesis-generated data directories.
 
 **Acceptance criteria:**
 
@@ -376,4 +391,10 @@ preserving deliberate future feature boundaries.
 
 **Non-goals:** Reorganizing populated feature folders or standardizing the whole
 repository tree.
+
+**Result:** Ownerless planning, retired UI, stale cellular-art, and generic
+placeholder shells were removed with their folder `.meta` files. `Audio`,
+`Materials`, `ThirdParty`, `Art/Species/Plants`, and `Scripts/Game/Debug` remain
+as explicit ownership boundaries; Noesis-generated empty data directories were
+left tool-managed.
 

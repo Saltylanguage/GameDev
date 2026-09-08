@@ -4,7 +4,11 @@ param(
     [string]$UnityPath,
     [string]$TestFilter,
     [string]$ReplayReportPath,
-    [int]$ReplaySeed = -1
+    [int]$ReplaySeed = -1,
+    [ValidateRange(320, 7680)]
+    [int]$ScreenWidth = 1280,
+    [ValidateRange(240, 4320)]
+    [int]$ScreenHeight = 720
 )
 
 . (Join-Path $PSScriptRoot 'UnityTooling.ps1')
@@ -20,11 +24,13 @@ $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $proje
 $resultPath = Join-Path $artifactDirectory 'PlayMode-results.xml'
 $logPath = Join-Path $artifactDirectory 'PlayMode.log'
 $previousEnvironment = @{}
-foreach ($name in @('CELLSIM_VISUAL_OUTPUT', 'CELLSIM_REPLAY_SCENARIO', 'CELLSIM_REPLAY_PLAYER_SPECIES_ID', 'CELLSIM_REPLAY_SEED', 'CELLSIM_REPLAY_GRID_WIDTH', 'CELLSIM_REPLAY_GRID_HEIGHT')) {
+foreach ($name in @('CELLSIM_VISUAL_OUTPUT', 'CELLSIM_VISUAL_WIDTH', 'CELLSIM_VISUAL_HEIGHT', 'CELLSIM_REPLAY_SCENARIO', 'CELLSIM_REPLAY_PLAYER_SPECIES_ID', 'CELLSIM_REPLAY_SEED', 'CELLSIM_REPLAY_GRID_WIDTH', 'CELLSIM_REPLAY_GRID_HEIGHT')) {
     $previousEnvironment[$name] = [Environment]::GetEnvironmentVariable($name)
 }
 
 $env:CELLSIM_VISUAL_OUTPUT = $artifactDirectory
+$env:CELLSIM_VISUAL_WIDTH = [string]$ScreenWidth
+$env:CELLSIM_VISUAL_HEIGHT = [string]$ScreenHeight
 if (-not [string]::IsNullOrWhiteSpace($ReplayReportPath)) {
     if ($ReplaySeed -lt 0) {
         throw 'Replay visuals require -ReplaySeed.'
@@ -72,8 +78,8 @@ $unityArguments = @(
     '-testPlatform', 'PlayMode',
     '-testResults', $resultPath,
     '-logFile', $logPath,
-    '-screen-width', '1280',
-    '-screen-height', '720',
+    '-screen-width', [string]$ScreenWidth,
+    '-screen-height', [string]$ScreenHeight,
     '-screen-fullscreen', '0'
 )
 if (-not [string]::IsNullOrWhiteSpace($TestFilter)) {

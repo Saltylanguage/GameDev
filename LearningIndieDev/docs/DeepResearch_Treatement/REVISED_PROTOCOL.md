@@ -1,5 +1,9 @@
 # Proposed P3 protocol vNext
 
+> **Applicability:** Historical 2026-09-03 proposal. P3 is now closed as
+> bounded; this protocol is not active work. Reconsider its controls only under
+> a new human-approved confirmatory research contract.
+
 This is a review proposal, not an automatic change to the canonical research
 plan. It preserves **Experiment → Run → Report → Analysis → Human Decision**
 and adds the minimum controls needed for a trustworthy predictive claim.

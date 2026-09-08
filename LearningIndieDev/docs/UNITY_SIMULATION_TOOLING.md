@@ -4,15 +4,24 @@ This is the repeatable execution layer for the cellular-automata prototype. It
 turns an Inspector-authored scenario, a set of seeds, and the same simulation
 code used by the game into reviewable test results and JSON experiment reports.
 
+Player-facing per-expedition upgrades are now called **Mutations**. Existing
+commands, file names, report fields, and C# types retain “upgrade” where needed
+for compatibility. Permanent per-species Genome unlocks, active Genome
+configuration, simulation-mode input, and provenance are planned additions;
+current reports must not be presented as Genome or Biome-Simulation evidence.
+Species, Mutation, Genome, matchup, and balance-tooling work follows
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+
 **Consecutive-phase migration notice (2026-09-05):** the game-side run and
 Play Mode report now expose versioned phase windows, ordered upgrade acquisition
 timing, and boundary checkpoints. The existing `CellSim Run` command remains a
 fresh independent window by default; its opt-in schedule flags provide a
 generic continuation smoke path without silently changing old commands. The
-EX-010-specific schedule remains a CF-5 follow-up. See the
-[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) and [evidence validity
-register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md). Do not use old reports as
-evidence of continued-world behavior.
+EX-010-specific schedule is complete and its bounded result is recorded in the
+experiment package. See the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md)
+and [evidence validity register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
+Do not use old reports as evidence of continued-world behavior, and do not
+generalize EX-010 beyond its approved scenario, schedule, and seed panels.
 
 > **Current status:** ready for a closed-editor batch run. The tools deliberately
 > refuse to start when this Unity project has an active `Temp/UnityLockfile`.
@@ -140,9 +149,10 @@ an explicit cumulative loadout schedule:
 Each semicolon-delimited entry describes the full loadout effective for that
 phase; `none` means an empty loadout. The command records acquisition timing
 and phase windows in the schema-25 report. This generic schedule path is an
-integration smoke test, not authorization to execute a research experiment;
-EX-010 still needs its own human-approved schedule and authored intervention
-contract.
+integration smoke test, not authorization to execute a research experiment.
+EX-010 used its own human-approved schedule and authored intervention contract;
+its bounded result is recorded in the experiment package. Any future research
+schedule needs a new approval and contract.
 
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
@@ -173,6 +183,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps
 # Graphics-enabled prototype checkpoints; Unity must be closed.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
     -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe'
+
+# Capture the same visual gate at the second target resolution.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
+    -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe' `
+    -ScreenWidth 1920 -ScreenHeight 1080
 
 # Focus the visual run on one test when needed; the default runs all PlayMode tests.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
@@ -266,7 +281,7 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | --- | --- |
 | `Test-UnityPreflight.ps1` | Lock/process cleanup, entitlement check, bounded licensing probe, and a preserved probe log |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
-| `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, four PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
+| `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, target-sized PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
 | `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |

@@ -41,13 +41,15 @@ The direction below is grounded in the current project material:
   establish compact, high-contrast geometric silhouettes with flat fills. The
   rabbit, fox, and terrain references are strong candidates for specimen cards
   and archive previews.
-- [`FIGMA_NOESIS_PILOT.md`](FIGMA_NOESIS_PILOT.md) and
-  `Assets/UI/DesignSystem/FigmaNoesisPilotResources.xaml` provide the most
-  complete current token proposal: dark slate surfaces, warm accent text,
-  8px controls, and 12px windows.
-- The older `GlobalResources.xaml` and GalapagOS window-variant preview contain
-  a bright lime/cream direction. They are useful exploration evidence, but the
-  Figma pilot is the cleaner foundation for a readable Lab shell.
+- [`FIGMA_NOESIS_PILOT.md`](FIGMA_NOESIS_PILOT.md) is a closed historical
+  experiment. Its `FigmaNoesisPilotResources.xaml` remains a live Lab resource
+  dictionary and preserves useful semantic keys, but its dark visual proposal is
+  not the current art-direction authority.
+- The canonical light pastel direction comes from `GlobalResources.xaml`, the
+  GalapagOS window/control resources, the accepted concept image, and the
+  graphics-tested desktop composition. New Lab work should converge on that
+  direction while migrating live semantic resources deliberately rather than
+  deleting or duplicating them.
 - The current [`V_Panel_Lab.xaml`](../Assets/UI/Lab/V_Panel_Lab.xaml) is a
   functional two-column prototype with representative feature templates. It is
   the correct behavior baseline, but not yet the final composition.
@@ -108,10 +110,10 @@ The first concept board explores three families:
 └───────────────┴──────────────────────────────────────────────────────────┘
 ```
 
-The shell should visually read as a desktop, but the vertical slice should
-keep one feature active at a time. The `C_GalapagOS_Window` treatment can
-provide the title bar and close affordance for feature windows and overlays;
-it should not force a full freeform-window manager into `VM_Lab`.
+The shell should visually read as a desktop and support multiple controlled
+feature windows at once. The `C_GalapagOS_Window` treatment provides the title
+bar, move surface, and close affordance; the desktop shell owns the open-window
+collection while `VM_Lab` remains responsible for feature state only.
 
 ## Layout contract
 
@@ -286,8 +288,9 @@ the most information-dense research surface.
    the lime/cream treatment retired to exploration status.
 2. Accept Expedition Workbench as the default composition, with Archive Desk
    patterns used inside Species Archive.
-3. Keep the desktop metaphor as controlled window chrome and navigation framing,
-   not a freeform multi-window manager for the vertical slice.
+3. Keep the desktop metaphor as controlled, movable multi-window chrome and
+   navigation framing. Window orchestration belongs to the desktop shell, not
+   `VM_Lab`.
 4. Keep the global data bar persistent and use contextual mastery data only on
    the selected species surface.
 

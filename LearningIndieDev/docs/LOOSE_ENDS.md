@@ -7,21 +7,24 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-06
+- Last reviewed: 2026-09-07
 - Report state: the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
   and S2-register checkpoints retained in history). Unity Edit Mode is green at
-  210/210 and Play Mode is green at 17/18 with one intentional graphics-only
-  skip. The current EX-007/EX-008/EX-009 run bundles and the new continuation
-  smoke bundles pass the strict artifact validator with Unity logs. Graphics-
-  capable Unity acceptance remains open pending a graphics run; the latest
-  preflight reached licensing and UPM successfully. The P3 research gate
-  remains open because EX-003 and broader promotion review are unresolved.
+  210/210. The full graphics-capable PlayMode acceptance batch is now green at
+  22/22, with GalapagOS desktop and Simulation captures at 1280x720 plus a
+  focused 1920x1080 run. The current EX-007/EX-008/EX-009 run bundles and the
+  new continuation smoke bundles pass the strict artifact validator with Unity
+  logs. P3 is now closed as a
+  bounded research phase under `DEC-P3-0001`; EX-003 is explicitly deferred as
+  a separate workflow-validity study and broader promotion remains out of
+  scope.
   BoardSnapshot fixture repair, the
   terrain documentation contract, the editor pattern drift, XAML whitespace,
   historical ID ambiguity, and the S2 register mapping are resolved or
   explicitly bounded below. EX-010's original and matched alternate sequences
-  are now executed; broader promotion review remains open.
+  are now executed and accepted by Josh and Sim; broader promotion review
+  remains intentionally out of scope.
 
 ### Decisions recorded this pass
 
@@ -35,11 +38,29 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - The GalapagOS desktop UI follow-up is now tracked by the
   [screens and components ticket](https://trello.com/c/QDjvRK9V/95-galapagos-desktop-ui-screens-and-components).
 - Deprecated HUD/debug IMGUI and the orphan Life preview are closed under
-  R-015. The terrain diagnostic remains the sole runtime-IMGUI exception and
-  stays open under P2-022 while terrain work is on hold.
+  R-015. The low-priority orphan/template cleanup is closed under R-018. The
+  terrain diagnostic remains the sole runtime-IMGUI exception and stays open
+  under P2-022 while terrain work is on hold.
 - The GalapagOS desktop and Simulation now use separate Noesis compositions;
   the desktop view receives its ViewModel DataContext during startup, and the
   Simulation command no longer falls through to the generic app placeholder.
+- Continuous state is implemented and canonical under CF-0 through CF-5. Sim
+  approved the EX-010 Stat-Line interpretation and target-resolution graphics
+  acceptance is complete. Remaining CF work is limited to a current Windows
+  build smoke and ten-phase duration/memory measurement, not lifecycle design.
+- The research index, canonical plan, paper, architecture map, experiment index,
+  historical DeepResearch treatment, and active feature plan now agree: P0–P3
+  are complete within their bounds, P4–P6 are not started, and no next research
+  experiment is selected.
+- Noesis Editor analytics is an accepted, non-blocking development risk at the
+  current project scale; no remediation is tracked unless the project or its
+  privacy requirements materially expand.
+- P1-014 graphics acceptance, P1-022's terrain-contract contradiction, and the
+  obsolete P2-023 Figma continuation are closed under R-023. The live pilot-
+  named Lab resource dictionary remains in use and was not removed.
+- The unreferenced recovery scene, starter `Intro` scene, unreachable EX-002
+  generator, and obsolete empty placeholder trees are closed under R-024.
+  Deliberate empty ownership boundaries remain documented and retained.
 
 ## Triage rules
 
@@ -47,44 +68,26 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-06)
+## Current open items (2026-09-07)
 
-### P1-014 — GalapagOS ControlLibrary runtime acceptance remains open
-
-- **Status:** The current desktop/simulation batch is ready for commit; direct
-  runtime routing is verified, while graphics-capable visual acceptance remains
-  pending.
-- **Ticket:** [GalapagOS Desktop UI - screens and components](https://trello.com/c/QDjvRK9V/95-galapagos-desktop-ui-screens-and-components).
-- **Evidence:** The batch adds the desktop test scene, shared
-  `HeaderedContentControl` window style/resources, reusable GalapagOS controls,
-  pastel art-direction documentation, and the dedicated Simulation Noesis
-  composition. XML parsing succeeds for the seven GalapagOS/HUD XAML files.
-  A fresh Unity Play Mode check initialized the desktop command and switched
-  from the desktop camera to the Simulation camera with a non-null board
-  snapshot. The full batch test command was not able to start because Unity
-  was already running (PID `16440`); no captured Game-view screenshot exists
-  for the full batch yet.
-- **Next action:** Close Unity through the normal user workflow, rerun the
-  graphics acceptance command, and review the desktop and Simulation scenes at
-  the target resolutions.
-- **Likely owner:** Josh + UI owner.
-- **Confidence:** High.
-
-### P1-016 — First trustworthy upgrade catalog needs balance review
+### P1-016 — First trustworthy upgrade catalog needs design and balance review
 
 - **Status:** Catalog and authoring path are complete; the bounded EX-007
-  decision is accepted, while balance/promotion review remains open.
+  decision is accepted, while player readability and balance/promotion review
+  remain open. This item now absorbs the overlapping former P1-018 finding.
 - **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` records seven authored
   production assets, the catalog validator, snapshot adapter, the completed
   EX-009 same-seed check, and the bounded EX-007 decision. The remaining
   questions are design balance, player readability, and any follow-up needed
-  before promotion.
-- **Next action:** Name any balance or playtest follow-up; keep Lab/permanent
-  upgrades out of this slice.
+  before promotion. EX-007/EX-008 effect direction and size vary by panel;
+  EX-009's zero-delta result is bounded implementation evidence, not balance.
+- **Next action:** Approve the Forest Edge reference panel and name the first
+  balance/playtest follow-up. Keep all claims bounded to their scenario, values,
+  telemetry, and seed panels; keep permanent Genome work separate.
 - **Likely owner:** Josh.
 - **Confidence:** High.
 
-### P1-017 — Worker result packaging and provenance disagree
+### P1-017 — Historical worker bundles remain incomplete
 
 - **Status:** Packaging contract fix is implemented; historical bundles remain
   incomplete, while the current EX-007/EX-008 local run bundles are complete and
@@ -104,111 +107,23 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   missing CSV/statline files.
 - **Next action:** Preserve compact summaries and provenance for the current
   valid bundles, keep the historical invalid/incomplete bundles clearly
-  excluded, and decide which current bundles qualify as P3 evidence. The
-  detached worker must receive the latest lifecycle tooling before another
-  remote run. Do not use the old diagnostic pair for the P3 gate.
+  excluded, and keep the bounded P3 decision linked to the accepted evidence.
+  The detached worker must receive the latest lifecycle tooling before another
+  remote run. Do not use the old diagnostic pair for a new claim.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-### P1-018 — Upgrade effect evidence is descriptive, not promotable
+### P1-026 — Remote worker branch lacks the latest Unity lifecycle tooling
 
-- **Status:** Open; no balance or production claim should be made yet.
-- **Evidence:** EX-007/EX-008 effect direction and size still vary by seed
-  panel, and the EX-007 human decision accepts only a bounded model-scoped
-  finding. EX-009 provides a clean same-held-out order result: the two current
-  additive upgrades matched on all five pairs. That is a bounded implementation
-  result, not a balance result.
-- **Next action:** Keep all balance or interaction claims bounded to the
-  validated scenario, values, telemetry, and seed panels. EX-010 now has a
-  prepared contract and generic schedule smoke coverage, but still needs its
-  authored schedule, human approval, and experiment-specific run.
-- **Likely owner:** Josh.
-- **Confidence:** High.
-
-### P1-019 — Embedded Noesis editor analytics requires a release decision
-
-- **Status:** Open security/privacy decision; not a player-build path.
-- **Evidence:** The vendor Editor-only assembly installs a Google Analytics
-  `unity_install` event on package version changes and contains a committed
-  credential. It is excluded from the Windows player but can make a network
-  request in the Editor during installation/update.
-- **Next action:** Obtain vendor/project approval for a supported disable/update
-  path and rotate the credential if genuine. Do not patch the embedded package
-  casually.
-- **Likely owner:** Repository maintainer + vendor/license owner.
-- **Confidence:** High.
-
-### P2-023 — Figma/Noesis pilot is probably obsolete
-
-- **Status:** Low priority and deferred; the current pastel GalapagOS direction
-  supersedes the dark pilot for the active shell.
-- **Evidence:** `docs/handoffs/2026-08-25-codex-figma-noesis-pilot.md` records the
-  pilot as incomplete because the Figma Starter quota was exhausted and the
-  component/screenshot pass was not accepted. The new desktop scene has no
-  runtime screenshot yet because graphics acceptance remains open under
-  P1-014.
-- **Next action:** After the current GalapagOS UI work, decide whether to close
-  or archive the pilot. It does not block the current runtime acceptance path.
-- **Likely owner:** Presentation/UI owner.
-- **Confidence:** Medium-high.
-
-### P2-005 — Large raw worker artifacts need a retention policy
-
-- **Status:** Open cleanup/operations concern.
-- **Evidence:** The two latest 100-seed JSON reports are approximately 52.2 MB
-  and 53.1 MB, with the completed queue holding roughly 122 MB of raw output.
-  The current `artifacts/` directory is ignored and has no Git-tracked files;
-  current EX-007/EX-008 reports therefore depend on local raw bundles.
-- **Next action:** Keep compact committed summaries, manifests, and paired
-  deltas; define when raw JSON/log bundles move to an external archive or are
-  pruned. Do not delete the current local evidence before that policy exists.
-- **Likely owner:** Repository maintainer + tooling owner.
-- **Confidence:** High.
-
-### P1-021 — P3 bound-AI-discovery gate is not yet met
-
-- **Status:** Carry-forward; P3 is not closed. EX-007's bounded decision and
-  EX-009's launch-time decision are accepted, EX-003 still has no execution
-  package, and EX-010 now has a matched alternate-order result with bounded
-  findings; broader promotion review remains open.
-- **Evidence:** `docs/Research/P3_GATE_REVIEW_2026-09-03.md` is now explicitly
-  labeled as a historical 03:35 snapshot. The current local
-  `docs/Research/Experiments/P3-Predictive-AI-Cohesive-Report.md` records the
-  assembled EX-007/EX-008/EX-009 evidence and bounded human decisions; the
-  current bundles pass the strict artifact validator with Unity logs. The
-  original and alternate EX-010 bundles and their paired comparison are
-  recorded in the experiment report.
-- **Next action:** Decide whether EX-003 needs to be executed or the exit gate
-  revised, and only then decide whether P3 passes. Keep P4 work preparatory;
-  review the EX-010 paired comparison before deciding whether P3 passes; keep
-  any broader claim bounded to the tested scenario and sequences.
-- **Likely owner:** Josh.
-- **Confidence:** High.
-
-### P2-021 — Sequential upgrade continuation comparison completed
-
-- **Status:** The original and matched reverse-order sequences were executed on
-  2026-09-06 after Josh and Sim confirmed the phase-aware Stat-Line meanings.
-- **Evidence:** Both sequences used development seeds 1–20 and held-out seeds
-  106–110, with all ten 200-tick phases completed. Both bundles and the EX-010
-  report validators are `VALID`. The paired comparison shows that order
-  changes later phase and final outcomes in this scenario, while the direction
-  is not uniform enough to rank one order generally. See the execution report
-  at `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/REPORT.md`
-  and comparison artifacts `ex010-sequence-comparison-20260906-053441`.
-- **Next action:** Review the phase/final Stat-Lines with Sim. Keep the finding
-  bounded to this scenario and these two sequences; any further sequence needs
-  a new approved contract.
-- **Likely owner:** Josh.
-- **Confidence:** High.
-
-### P1-026 — Detached worker lacks the latest Unity lifecycle tooling
-
-- **Status:** The cleanup change is local to `UI/ControlLibrary`; the detached
-  `codex/cellsim-worker` branch still has a different `UnityTooling.ps1`.
+- **Status:** The cleanup change is present in the current tree; the remote
+  `origin/codex/cellsim-worker` branch still has a different
+  `UnityTooling.ps1`. There is no local worker branch currently checked out.
 - **Evidence:** `docs/handoffs/2026-09-03-1130-codex-process-lifecycle-cleanup.md`
-  explicitly requires propagation before the next remote worker run, and the
-  local/worker tool hashes differ.
+  explicitly requires propagation before the next remote worker run. On
+  2026-09-07, the current script hashed to
+  `4e9a0ae4b3f0c986b586829b90ada58ebe76b36a`, while the copy on
+  `origin/codex/cellsim-worker` hashed to
+  `f14e6499be6de9ad07b2582c3737b26dd719b92e`.
 - **Next action:** Commit the lifecycle cleanup and propagate it to the worker
   branch, then verify worker-side process cleanup before another run.
 - **Likely owner:** Simulation/tooling owner.
@@ -218,7 +133,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 - **Status:** Mostly resolved; every row now has a stable ID and board link,
   and S2.2A's repository and Trello status are synchronized. Remaining
-  owner/status reconciliation is still for the sprint review.
+  owner/status reconciliation, including the Fox telemetry card formerly
+  tracked as P1-028, is still for the sprint review.
 - **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` and
   `docs/Sprints/S2-control-record.md` now assign stable IDs and verified Trello
   links to every listed work row. The duplicate board prefixes are disambiguated
@@ -228,29 +144,49 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   the parallel S2.3A and
   S2-QA cards to Sim while the repository plan assigns the implementation lane
   to Josh; that discrepancy is recorded rather than hidden. The latest board
-  pass now places completed CF-1, S2.3B, and EX-010 preparation in `✅ Done`,
-  with the EX-010 schedule/approval gate in `🎯 Upcoming Work`; Sim's active
-  telemetry lanes remain in `Current Work`.
+  pass places completed CF-1, S2.3B, and EX-010 execution in `✅ Done`; the
+  board's EX-010 schedule/approval label still predates the completed run and
+  needs synchronization. Sim's
+  active telemetry lanes remain in `Current Work`. Current code exposes the Fox
+  reproduction and food-action fields, but the card still needs owner review.
 - **Next action:** Reconcile card ownership, list placement, and completion
-  status during the S2 review; do not infer completion from the control card.
+  status during the S2 review, including closing or carrying the Fox telemetry
+  card; do not infer completion from the control card.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
-### P1-028 — S2 correctness tasks are absent from the active ledger
+### P1-029 — Mutation/Genome contract still has player-facing decisions open
 
-- **Status:** Fox telemetry instrumentation is implemented and covered, while
-  its Trello card remains open for owner review.
-- **Evidence:** The [Fox telemetry card](https://trello.com/c/BkJwxhkw) remains
-  in `Current Work`; current `SpeciesSimulationMetrics` exposes reproduction
-  outcomes and food-action attempts/successes/failures, and
-  `SpeciesSimulation` records those resolver results at the action sites. No
-  new full Unity acceptance is claimed here.
-- **Next action:** Josh/Sim should review the current Fox report fields and close
-  or carry the card in Trello; keep the historical evidence boundaries intact.
-- **Likely owner:** Sim + Josh.
+- **Status:** Direction is recorded, but several choices should be settled before
+  balance tooling or permanent progression work is implemented.
+- **Evidence:** The current model applies natural rules, then a permanent
+  per-species Genome, then ordered temporary expedition Mutations. The
+  [balance guideline handoff](handoffs/2026-09-06-1523-codex-mutation-genome-balance-guideline.md)
+  records unresolved choices about Skip accounting, Species Mastery visibility,
+  the Forest Edge reference panel, and the first one-time effect contract.
+- **Next action:** Josh should approve those choices (or explicitly defer them)
+  before numeric Adaptation Value budgets, Genome UI, or new effect types are
+  authored. Do not infer a contract from the existing upgrade shim.
+- **Likely owner:** Josh + design/simulation owners.
 - **Confidence:** High.
 
-## New hygiene candidates — 2026-09-03
+### P2-005 — Large raw worker artifacts need a retention policy
+
+- **Status:** Open cleanup/operations concern.
+- **Evidence:** The two latest 100-seed JSON reports are approximately 52.2 MB
+  and 53.1 MB, with the completed queue holding roughly 122 MB of raw output.
+  The current `artifacts/` directory is ignored and has no Git-tracked files;
+  current EX-007/EX-008 reports therefore depend on local raw bundles. EX-002's
+  two cited schema-6 control bundles are already absent from this checkout,
+  leaving only the durable summaries and handoffs for that part of its bounded
+  record.
+- **Next action:** Keep compact committed summaries, manifests, and paired
+  deltas; define when raw JSON/log bundles move to an external archive or are
+  pruned. Do not delete the current local evidence before that policy exists.
+- **Likely owner:** Repository maintainer + tooling owner.
+- **Confidence:** High.
+
+## Deferred hygiene candidates — originally audited 2026-09-03
 
 These are newly recorded removal, archival, documentation, and refactor
 candidates from the project hygiene review. They are triage markers, not
@@ -260,24 +196,6 @@ file/GUID.
 
 Ticket summaries for these items are recorded in
 [`PROJECT_HYGIENE_TICKET_SUMMARIES.md`](PROJECT_HYGIENE_TICKET_SUMMARIES.md).
-
-### P1-022 — Terrain tiling documentation and implementation disagree
-
-- **Status:** Resolver, preview path, and directly linked documentation now
-  reconcile locally; visual Unity acceptance remains open.
-- **Evidence:** `Assets/Scripts/Game/Presentation/TerrainTileResolver.cs:26-44`
-  implements an eight-neighbor blob resolver with 47 valid masks, and
-  `Assets/Tests/Runtime/TerrainTileResolverTests.cs:9-20` asserts that contract.
-  The current editor preview at
-  `Assets/Editor/SimulationTools/TerrainTilePreviewWindow.cs` now loads the
-  47 Grass/Desert assets from their family directories. The linked tiling,
-  art-production, MVVM, and Blob README documents now describe that same
-  eight-neighbor contract. The older 16-mask artifacts remain historical.
-- **Next action:** After Unity IPC recovery, open the preview and cellular
-  prototype and record gameplay-scale visual evidence for all families. Do not
-  refactor the resolver from the superseded dual-grid plan.
-- **Likely owner:** Presentation/art owner + Sim.
-- **Confidence:** High.
 
 ### P2-007 — Legacy `SpeciesArchetype` compatibility surface is not retired
 
@@ -292,40 +210,6 @@ Ticket summaries for these items are recorded in
   enum, implicit conversion, legacy properties, and overloads in a separate
   breaking cleanup. Until then, keep the shim and do not “simplify” it locally.
 - **Likely owner:** Sim/domain owner.
-- **Confidence:** High.
-
-### P2-008 — Orphan `CavePreview` component awaits focused removal
-
-- **Status:** Static reference gate passed; deletion remains deferred until the
-  focused Unity validation can run.
-- **Evidence:** The legacy audit and 2026-09-05 GUID scan found no serialized
-  references for `Assets/Scripts/Game/Presentation/CavePreview.cs`; its
-  matching `.meta` remains. The orphan `LifeSimulationPreview` component was
-  removed after the same static reference gate passed. The deterministic cave,
-  Life domain code, and tests remain retained.
-- **Next action:** Close Unity through the normal user workflow, rerun the
-  retained Edit Mode tests and targeted cellular Play Mode test, then delete
-  `CavePreview.cs` and its `.meta` in a focused commit only if those checks
-  pass.
-- **Likely owner:** Sim/domain owner.
-- **Confidence:** High.
-
-### P2-009 — Unused UI starter scaffold should be removed
-
-- **Status:** Static reference gate passed; deletion remains deferred until UI
-  acceptance and Unity reimport validation.
-- **Evidence:** `Assets/UI/MainMenu/Scripts/BaseViewModel.cs` is an unnamespaced
-  Yoda/progress-bar demo with its own `NoesisView` hookup and G/F key polling.
-  `Assets/UI/MainMenu/TestUI.xaml`, `Assets/UI/EcoSim/TestUI.xaml`,
-  `Assets/UI/GalapagOS/TestUI.xaml`, and `Assets/UI/HUD/TestUI.xaml` are byte-for-byte
-  identical starter demos. The 2026-09-05 GUID scan found no serialized
-  references outside their own `.meta` files, while the active Main Menu uses the separate
-  `MainMenu_Old/VM_MainMenu.cs` and `V_Panel_MainMenu.xaml` contract.
-- **Next action:** After the already-running Unity editor is closed, complete
-  the UI acceptance/reimport check, then remove the four `TestUI.xaml` files
-  and matching `.meta` files, plus `MainMenu/Scripts/BaseViewModel.cs` and its
-  `.meta`, as one focused starter-scaffold cleanup.
-- **Likely owner:** UI owner.
 - **Confidence:** High.
 
 ### P2-022 — Temporary terrain diagnostic still uses runtime IMGUI
@@ -343,62 +227,6 @@ Ticket summaries for these items are recorded in
 - **Likely owner:** Presentation/art owner + Josh.
 - **Confidence:** High.
 
-### P2-010 — `Assets/UI/EcoSim` contains an unreferenced placeholder shell
-
-- **Status:** Removal/archive candidate; ownership is not yet explicit.
-- **Evidence:** The folder contains only `TestUI.xaml` plus four small empty or
-  near-empty XAML shell/resource files under `XAML/Controls` and `XAML/Panels`.
-  The four production-looking EcoSim XAML GUIDs have no references outside
-  their own `.meta` files, and no EcoSim scene/host is present in the current
-  serialized reference scan.
-- **Next action:** Confirm that no future experiment or design handoff depends
-  on this initial scaffold, then remove the folder as a separate XAML cleanup;
-  otherwise rename/document it as an explicitly owned prototype boundary.
-- **Likely owner:** UI/product owner.
-- **Confidence:** Medium-high.
-
-### P2-011 — Unity URP template onboarding is stale project baggage
-
-- **Status:** Low-risk cleanup candidate; template ownership decision needed.
-- **Evidence:** `Assets/Readme.asset` and `Assets/TutorialInfo/**` are standard
-  URP template onboarding assets with no scene references. The only observed
-  links are internal Readme references to the template icon/editor script.
-  `docs/UNITY_STANDARDS_ADOPTION_PLAN.md` explicitly calls this template
-  content out as an exception, so it should not be removed opportunistically.
-- **Next action:** If the project no longer needs Unity’s onboarding Readme,
-  remove `Assets/Readme.asset` and the complete `Assets/TutorialInfo` tree,
-  including matching `.meta` files, in a focused cleanup; otherwise mark it as
-  intentionally retained template content.
-- **Likely owner:** Josh + repository maintainer.
-- **Confidence:** High for unreferenced; medium for removal.
-
-### P2-012 — `_Recovery/0.unity` is an unclassified recovery artifact
-
-- **Status:** Archive/removal candidate; do not touch until recovery value is
-  confirmed.
-- **Evidence:** `Assets/_Recovery/0.unity` is not in Build Settings and has no
-  name/GUID references outside itself. It is dated 2026-08-13 and contains a
-  snapshot-like cellular prototype composition, so it may still be useful as a
-  recovery point even though it is not part of the active scene graph.
-- **Next action:** Josh should decide whether this is a deliberate recovery
-  checkpoint. If not, archive or remove the scene and `.meta` in a standalone
-  cleanup; if yes, document its retention purpose and owner.
-- **Likely owner:** Josh.
-- **Confidence:** Medium.
-
-### P2-013 — `Assets/Scenes/Intro.unity` is an unused template scene
-
-- **Status:** Archive/removal candidate.
-- **Evidence:** `Intro.unity` is a basic camera/light scene, is not in current
-  Build Settings, has no first-party GUID/name references, and only appears to
-  come from the original project setup. It should not be confused with the
-  recent manual acceptance scenes `GalapagOSDesktopTest.unity` and
-  `TerrainPaintTest.unity`, which remain useful despite not being build scenes.
-- **Next action:** Confirm that Intro is not reserved as a future splash/entry
-  scene, then remove or archive it with its `.meta` in a focused scene cleanup.
-- **Likely owner:** Josh + repository maintainer.
-- **Confidence:** Medium-high.
-
 ### P2-014 — `MainMenu_Old` is active but now misleadingly named
 
 - **Status:** Refactor/rename candidate; definitely not a deletion candidate.
@@ -407,10 +235,10 @@ Ticket summaries for these items are recorded in
   `V_Panel_MainMenu.xaml`; `MainMenuPlayModeTests` also requires the active
   `VM_MainMenu` type. The current architecture names this the Main Menu
   contract, so the directory name now implies retirement incorrectly.
-- **Next action:** After graphics/UI acceptance, perform a Unity Editor folder
-  migration or an equivalent GUID-preserving rename, update documentation and
-  tests, and validate the scene. Do not rename the folder from the filesystem
-  as a casual cleanup.
+- **Next action:** After the current UI feature set stabilizes, perform a Unity
+  Editor folder migration or equivalent GUID-preserving rename, update
+  documentation and tests, and validate the scene. Do not rename the folder
+  from the filesystem as a casual cleanup.
 - **Likely owner:** UI owner.
 - **Confidence:** High.
 
@@ -426,45 +254,14 @@ Ticket summaries for these items are recorded in
   phases, telemetry/statline calculation, presentation/settings persistence,
   XAML shell orchestration, CLI/report serialization, and broad behavior
   fixtures.
-- **Next action:** Once the P3/Unity and UI acceptance gates are green, choose
-  one seam at a time: split simulation phases, separate metrics DTOs from
-  accumulation, extract presentation persistence/formatting, isolate report
-  writers, and partition tests by behavior. Preserve public/serialized names
-  until focused tests and Unity validation support each extraction.
+- **Next action:** P3 and baseline graphics acceptance are green, but do not
+  launch a broad refactor. When a named file blocks current M1 work, choose one
+  seam at a time: separate metrics DTOs from accumulation, extract presentation
+  persistence/formatting, isolate report writers, or partition tests by
+  behavior. Preserve public/serialized names until focused tests and Unity
+  validation support each extraction.
 - **Likely owner:** Sim + UI/tooling owners.
 - **Confidence:** High for complexity; medium for the exact split.
-
-### P2-017 — One-shot `PrepareEx002Variants` generator needs a retention decision
-
-- **Status:** Retention/archive candidate; keep while EX-002 reproducibility is
-  still active.
-- **Evidence:** `Assets/Editor/SimulationTools/PrepareEx002Variants.cs:10-48`
-  is a menu-driven generator with no source callsites beyond Unity’s menu
-  binding, but it produces the versioned EX-002 intervention assets used by
-  the experiment documentation and reports.
-- **Next action:** After the EX-002 artifact-retention/reproducibility policy
-  is explicit, either retain it as the documented regeneration tool or archive
-  the script and preserve a compact reproducibility record.
-- **Likely owner:** Sim/tooling owner.
-- **Confidence:** Medium-high.
-
-### P2-018 — Empty Unity directories need an ownership decision
-
-- **Status:** Low-value structural cleanup; no immediate action recommended.
-- **Evidence:** Empty directory shells remain under `Assets/Audio`,
-  `Materials`, `ThirdParty`, several `Assets/Project/**` paths,
-  `Assets/UI/Prefabs`, `PuzzleUI`, `Textures`, `UI/EcoSim/Scripts`,
-  `UI/MainMenu/XAML`, and other placeholder locations. The GalapagOS art
-  directory is now populated by the active icon batch and is no longer an
-  empty-directory candidate. Several remaining shells are intentional future
-  ownership boundaries, so directory absence would not necessarily improve the
-  project.
-- **Next action:** Remove only directories with no named owner or planned
-  near-term use, as part of a single structure cleanup. Preserve any folder
-  `.meta` files required by the chosen Unity layout and do not mix this with
-  gameplay changes.
-- **Likely owner:** Repository maintainer + feature owners.
-- **Confidence:** High that they are empty; low-medium that removal is useful.
 
 ## Historical open items — 2026-08-20
 
@@ -610,22 +407,6 @@ from an older entry without checking its cited artifacts.
   `04-results.png` in `artifacts/visual-evidence-20260820-025530/`.
 - **Next action:** Track label overlap and generic reward/results presentation
   under the upgrade/results work; do not reopen this completed art finding.
-
-### P1-012 — Embedded Noesis editor analytics requires a release decision
-
-- **Status:** Open security/privacy decision; not a player-build code path.
-- **Evidence:** The embedded vendor package's Editor-only assembly calls
-  `GoogleAnalyticsHelper.Install` from `NoesisUpdater` when the package version
-  changes. The helper sends a `unity_install` event to Google Analytics and
-  contains a committed credential. The Editor asmdef includes only `Editor`, so
-  the code is not compiled into the Windows player; the Editor can still make
-  the network request during package installation/update.
-- **Next action:** Obtain vendor/project approval to disable or update the
-  telemetry through a supported package mechanism, then rotate the credential
-  if it is genuine. Do not patch the embedded vendor package casually or copy
-  the value into project documentation.
-- **Likely owner:** Repository maintainer + vendor/license owner.
-- **Confidence:** High.
 
 ### P1-009 — EX-002 intervention matrix and held-out check
 
@@ -825,8 +606,8 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   desktop-panel cleanup. The companion handoff is
   `docs/handoffs/2026-09-02-codex-control-library-and-loose-ends.md`.
 - **Result:** The source change has a focused commit boundary and is available
-  on `origin/UI/ControlLibrary`. Runtime visual acceptance remains open under
-  current item P1-014; the normal-host preflight gate is now resolved.
+  on `origin/UI/ControlLibrary`. Runtime visual acceptance is closed under
+  P1-014; the normal-host preflight gate is also resolved.
 
 ### R-009 — CellSim evidence-quality gate is implemented
 
@@ -922,4 +703,100 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   attempt was stopped by the existing Unity editor guard, not by a permission
   failure.
 - **Result:** The restricted-host-permission issue is closed. Graphics runtime
-  acceptance remains separately open under P1-014.
+  acceptance is closed separately under P1-014.
+
+### R-017 — EX-010 sequential continuation comparison resolved
+
+- **Former item:** P2-021.
+- **Evidence:** The original and matched reverse-order sequences completed on
+  2026-09-06 using development seeds 1–20 and held-out seeds 106–110. All ten
+  200-tick phases completed, both bundles and the EX-010 validators are
+  `VALID`, and the paired report records a bounded order effect without a
+  general ranking. See `docs/Research/Experiments/EX-010-Sequential-Upgrade-Continuation/REPORT.md`.
+- **Result:** Execution, comparison, and Sim's interpretation review are
+  resolved. The bounded finding is recorded in `HUMAN_DECISION.md`; broader
+  promotion remains intentionally outside this item.
+
+### R-019 — P3 bounded research gate resolved
+
+- **Evidence:** `docs/Research/P3_GATE_DECISION_2026-09-06.md`, the accepted
+  EX-007 and EX-009 decisions, and the accepted EX-010 decision.
+- **Result:** P3 is closed with revised bounded exit criteria. EX-003 is
+  archived/deferred because it has no execution package; no generalized AI
+  recommendation or production-balance claim is promoted.
+
+### R-020 — EX-010 research status synchronized
+
+- **Evidence:** The EX-010 execution report, human decision, research plan,
+  continuation evidence review, documentation audit, Working State, and next
+  work plan now agree that the experiment is executed and accepted.
+- **Result:** The stale “prepared/unexecuted” status is closed. Historical gate
+  snapshots remain unchanged and are still labeled as historical.
+
+### R-021 — Continuous-flow and research status documentation synchronized
+
+- **Evidence:** `docs/PROJECT_CONTEXT.md`,
+  `docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md`, the canonical research plan and
+  paper, both research indexes, the P3 architecture map, the EX-010 Sim brief,
+  the historical DeepResearch treatment, and
+  `docs/INCOMPLETE_FEATURES_ACTION_PLAN.md` were reconciled on 2026-09-07.
+- **Result:** Continuous state and CF-0 through CF-5 are recorded as implemented;
+  Sim's semantic review is complete; P3 is closed as bounded; P4–P6 are not
+  started; historical snapshots are explicitly labeled; the missing EX-002 raw
+  controls are disclosed. No new research or balance claim was promoted.
+
+### R-022 — Noesis Editor analytics risk accepted at current scale
+
+- **Former items:** P1-019 and the historical duplicate P1-012.
+- **Evidence:** The embedded Noesis Editor assembly can send a Google Analytics
+  `unity_install` event when the package version changes. The assembly is
+  Editor-only and is not part of the Windows player; the request contains
+  development-environment metadata rather than gameplay state.
+- **Result:** Josh accepted this as a non-blocking development risk for the
+  current project scale. No disable, package patch, or credential remediation
+  is planned. Reopen only if the project scales up or its privacy/security
+  requirements change.
+
+### R-023 — Graphics, terrain-contract, pilot, and duplicate-ledger cleanup
+
+- **Former items:** P1-014, P1-022, P2-023, plus duplicate tracking entries
+  P1-018 and P1-028.
+- **Evidence:** The 2026-09-07 GalapagOS graphics handoff records 22/22 PlayMode
+  acceptance at 1280×720 and a focused 1920×1080 pass. Terrain code, tests,
+  preview paths, and active documentation agree on 47 valid normalized masks;
+  terrain-specific presentation remains on hold under P2-022. The dark
+  Figma/Noesis pilot is explicitly superseded by the pastel GalapagOS direction,
+  while its live Lab resource dictionary is retained. P1-018's balance boundary
+  is now part of P1-016, and P1-028's board review is now part of P1-027.
+- **Result:** Closed gates and duplicate records no longer appear as current
+  work. No live XAML resource, Unity asset, historical evidence, or unresolved
+  balance/board action was deleted or misclassified.
+
+### R-024 — Stale scenes, one-shot generator, and empty shells removed
+
+- **Former items:** P2-012, P2-013, P2-017, and P2-018.
+- **Evidence:** Final name, GUID, source-reference, and Build Settings checks
+  found no consumer for `_Recovery/0.unity` or the untouched camera/light
+  `Intro.unity` starter scene. `PrepareEx002Variants` had no menu attribute or
+  source callsite; its four generated assets remain versioned, and
+  `EX-002-MATRIX-PROTOCOL.md` preserves their paths and exact rule changes.
+  Empty placeholder folder GUIDs had no serialized consumers.
+- **Result:** The two scenes, unreachable generator, obsolete `Assets/Project`
+  planning tree, retired UI shells, stale `Resources/CellularArt` shell, and
+  other ownerless empty placeholders were removed with their matching `.meta`
+  files. Deliberate empty boundaries for audio, materials, third-party content,
+  plant art, and runtime diagnostics remain. All removals are recoverable from
+  Git history.
+
+### R-018 — Low-priority orphan and template cleanup resolved
+
+- **Evidence:** After repository-wide name/GUID scans found no active scene,
+  prefab, asset, or code dependency, the orphan `CavePreview` script/meta,
+  copied starter `BaseViewModel` and four `TestUI.xaml` pairs, the unreferenced
+  `Assets/UI/EcoSim` placeholder tree, and Unity's URP `Readme`/`TutorialInfo`
+  template tree were removed together with their matching `.meta` files.
+  Deterministic cave/Life domain code, active Main Menu/Lab/GalapagOS UI, and
+  research artifacts were retained.
+- **Result:** P2-008, P2-009, P2-010, and P2-011 are closed. A full Unity
+  graphics PlayMode pass later completed 22/22 on 2026-09-07, providing the
+  normal post-cleanup import/scene check for the covered UI paths.

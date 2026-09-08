@@ -12,6 +12,9 @@ EditorBuildSettings:
     path: Assets/Scenes/Lab.unity
     guid: 8e7d6c5b4a3928170f1e2d3c4b5a6978
   - enabled: 1
+    path: Assets/Scenes/GalapagOSDesktopTest.unity
+    guid: e8c1f3a64b7d49a0b2c5e6f7189d0a33
+  - enabled: 1
     path: Assets/Scenes/CellularAutomataPrototype.unity
     guid: 317411a1bdcd4ef29cb52d73d6ea77a3
   - enabled: 1

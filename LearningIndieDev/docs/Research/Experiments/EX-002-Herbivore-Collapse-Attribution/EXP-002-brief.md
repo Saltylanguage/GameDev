@@ -82,10 +82,12 @@ matrix now exist. The result is:
 - **Observed:** BaselineParity shows a candidate starvation-dominant proximate
   mortality pattern in aggregate data.
 - **Instrumented per-death result:** Paired schema-6 BaselineParity controls
-  exist at `artifacts/cellular-experiment-20260818-210354/report.json` and
-  `artifacts/cellular-experiment-20260818-210443/report.json`. All 20 runs
-  contain death events, and creature event counts reconcile with aggregate
-  activity. These are control results, not a causal intervention conclusion.
+  were recorded at `artifacts/cellular-experiment-20260818-210354/report.json`
+  and `artifacts/cellular-experiment-20260818-210443/report.json`, but those raw
+  bundles are absent from the current checkout. The retained record says all 20
+  runs contained death events and creature event counts reconciled with
+  aggregate activity. This supports the historical bounded interpretation but
+  is not independently re-auditable from those raw controls in this checkout.
 - **Causal conclusion:** Bounded support for the declared herbivore
   starting-energy intervention increasing final herbivore population in the
   tested BaselineParity window; the predation-relief arm is neutral. This does

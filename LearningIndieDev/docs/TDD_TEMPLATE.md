@@ -58,23 +58,42 @@ This is the engineering source of truth for implementation boundaries, data cont
 
 [Document asset ownership, scenario-specific values, reusable species definitions, validation, and runtime-data creation.] 
 
+### Species progression composition
+
+Document the effective-rule order explicitly:
+
+```text
+Scenario-authored natural rules
+    -> that SpeciesId's frozen active Genome
+        -> the selected species' ordered expedition Mutations, in Species Simulations only
+```
+
+Store permanent Genome unlocks separately from active node allocations. Record
+simulation mode, natural-rule, Genome-unlock, active-Genome,
+Mutation-loadout, capability/balance-model, and effective-rule versions or
+fingerprints where they affect reproduction, comparison, or save migration.
+Every scenario species receives its frozen active Genome whether or not it is
+player-controlled. Biome Simulations reject Mutation loadouts. Mutations and
+Genomes must not mutate the authored species or scenario assets.
+
 ## 4. Simulation pipeline
 
 ### Consecutive-phase lifecycle
 
-Locked design, implementation pending: retain one domain run/runner across
-reward breaks, with an absolute tick, prior source grid, evolving cells,
-progression and accumulated telemetry. A phase boundary is resumable; terminal
-completion is not. Apply validated immutable upgrade snapshots only at frozen
-boundaries. Keep authoring changes and explicit new-expedition initialization
-separate from Continue.
+Implemented canonical design: retain one domain run/runner across reward breaks,
+with an absolute tick, prior source grid, evolving cells, progression and
+accumulated telemetry. A phase boundary is resumable; terminal completion is
+not. Validated immutable upgrade snapshots apply only at frozen boundaries.
+Authoring changes and explicit new-expedition initialization remain separate
+from Continue.
 
 The [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is the
-current migration plan, including state ownership, clocks, checkpoint
+current lifecycle contract, including state ownership, clocks, checkpoint
 contents, atomic upgrade/reward handling and tests. The
 [evidence contract impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) defines the
-locked phase/expedition reporting split and compatibility requirements. These
-plans do not claim that the existing runtime already supports continuation.
+locked phase/expedition reporting split and compatibility requirements. CF-0
+through CF-5 and EX-010 verify the current continuation/reporting slice; player
+persistence and remaining integrated product acceptance are separate.
 
 ### Tick order
 
@@ -144,6 +163,11 @@ plans do not claim that the existing runtime already supports continuation.
 | Signal | Producer | Consumer | Cost | Retention |
 |---|---|---|---|---|
 | [Signal] | [Producer] | [Consumer] | [Cost] | [Retention] |
+
+Balance-related telemetry must keep direct effects, species outcomes, and
+ecosystem outcomes separate. An internal Adaptation Value estimate does not
+replace the recorded measurements required by
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 
 ## 8. Verification and operations
 

@@ -2,9 +2,9 @@
 
 **Date:** 2026-09-06
 **Purpose:** Plain-language summary of the Josh/Sim meeting decisions.
-**Status:** The Stat-Line meaning review is complete for the decisions below.
-EX-010 is executed for the original sequence and its matched reverse-order
-comparison. Findings are ready for Sim's review.
+**Status:** Complete. The Stat-Line meaning review and EX-010 result review are
+approved by Josh and Sim. EX-010 is executed for the original sequence and its
+matched reverse-order comparison.
 
 ## What we agreed
 
@@ -45,12 +45,11 @@ comparison. Findings are ready for Sim's review.
   `ECN = 0` makes `pAVI` `N/A`.
 - Reporting on or off must not change simulation outcomes.
 
-## What Sim needs to do
+## Sim review status
 
-- No runtime rewrite is being assigned to Sim.
+- No runtime rewrite was assigned to Sim.
 - Sim’s semantic confirmation for the rules above is complete.
-- After the runs, Sim should review the full phase reports, final report, and
-  chronological deltas and confirm the findings directly.
+- Sim reviewed the phase/final evidence and approved the bounded finding.
 
 ## What was completed
 
@@ -63,9 +62,8 @@ comparison. Findings are ready for Sim's review.
 - The reports include independent phase Stat-Lines, chronological deltas, and
   independent final Stat-Lines.
 
-## What happens next
+## Review completed
 
-- Sim reviews the full phase reports, final reports, and chronological deltas.
-- Sim confirms that the bounded order-effect finding is stated accurately.
-- Until that review, the result is ready for review rather than a final human
-  decision.
+Sim confirmed that the bounded order-effect finding is stated accurately. The
+completed decision and its limits are recorded in
+[EX-010 HUMAN_DECISION.md](../Research/Experiments/EX-010-Sequential-Upgrade-Continuation/HUMAN_DECISION.md).

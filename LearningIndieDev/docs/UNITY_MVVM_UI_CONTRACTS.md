@@ -1,7 +1,7 @@
 # Unity MVVM UI Contracts
 
-> Status: T0–T7 composition baseline; T2 board snapshot boundary and T7 naming migration implemented
-> Date: 2026-08-26
+> Status: T0–T7 composition baseline plus continuous-state runtime contract implemented; integrated shell acceptance remains
+> Date: 2026-09-07
 > Scope: Main Menu, GalapagOS Lab, and Simulation UI
 
 This document freezes the smallest contracts needed to migrate the current
@@ -27,14 +27,15 @@ profile, run, reward, or simulation state.
 
 ## 2. Flow state
 
-**Continuation update, implementation pending (2026-09-04):** reward breaks
-freeze a phase within one expedition. `SimulationRewards -> SimulationPlay`
-must retain the same domain world and advance its next absolute tick after a
-purchase or Skip. A phase summary is distinct from `SimulationFinalReport`.
-The existing four engine statuses below describe the current implementation;
-the [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) proposes a resumable
-decision-boundary status distinct from terminal completion. Neither the
-ViewModel nor XAML may implement that lifecycle independently.
+**Continuation update, implemented (2026-09-06):** reward breaks freeze a phase
+within one expedition. `SimulationRewards -> SimulationPlay` retains the same
+domain world and advances its next absolute tick after a purchase or Skip. A
+phase summary is distinct from `SimulationFinalReport`. The domain now exposes
+`Ready`, `Running`, `Paused`, `AwaitingDecision`, and `Complete`; the controlled
+preview consumes the decision-boundary flow. Target-resolution graphics
+acceptance is complete; full Lab/run/results feature navigation remains separate
+shell work. Neither the ViewModel nor XAML may implement the lifecycle
+independently.
 
 The application and simulation managers own these states. XAML visual states
 only present them:

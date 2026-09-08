@@ -1,5 +1,11 @@
 # Figma to Noesis pilot
 
+> **Disposition (2026-09-07):** Historical pilot; the unfinished Figma
+> component/screenshot follow-up is closed. The current pastel GalapagOS concept
+> and graphics-accepted Unity composition are canonical. The semantic
+> `FigmaNoesisPilotResources.xaml` file remains a live Lab dependency despite
+> its historical name and must not be deleted as orphaned content.
+
 This branch tests the smallest useful design-to-implementation loop without
 changing a live scene or replacing existing UI.
 
@@ -77,10 +83,9 @@ cost in NoesisGUI 3.2.13.
 5. Promote reviewed resources into application dictionaries or production views
    only after the pilot visually matches.
 
-## Next quota-window test
+## Closed follow-up
 
-When Figma MCP access resets, finish the `Window` component, create the six
-`Button` variants (`Primary|Secondary` by `Small|Medium|Large`), compose one
-preview instance, and capture metadata plus screenshots. That evidence is the
-gate for deciding whether this mapping should become a permanent project
-workflow.
+No quota-window continuation is scheduled. Reopen the Figma component and
+Code Connect experiment only if a future design-system task explicitly needs
+it. Current UI work should use the canonical GalapagOS direction and existing
+live Noesis resources rather than completing this pilot for its own sake.
