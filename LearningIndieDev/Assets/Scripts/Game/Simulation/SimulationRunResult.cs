@@ -236,12 +236,14 @@ namespace SaltyGame
             }
 
             upgradeLoadout.Clear();
-            foreach (var upgrade in incoming)
+            for (var loadoutIndex = 0; loadoutIndex < incoming.Count; loadoutIndex++)
             {
+                var upgrade = incoming[loadoutIndex];
                 var alreadyRecorded = false;
                 for (var index = 0; index < upgradeAcquisitionTimeline.Count; index++)
                 {
-                    if (upgradeAcquisitionTimeline[index].Snapshot.Fingerprint == upgrade.Fingerprint)
+                    if (upgradeAcquisitionTimeline[index].Order == loadoutIndex
+                        && upgradeAcquisitionTimeline[index].Snapshot.Fingerprint == upgrade.Fingerprint)
                     {
                         alreadyRecorded = true;
                         break;

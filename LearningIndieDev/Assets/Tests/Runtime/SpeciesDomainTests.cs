@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SaltyGame.Tests
 {
@@ -343,6 +345,7 @@ namespace SaltyGame.Tests
             var toughHide = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(rules);
             var digestion = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId).Apply(rules);
             var crowding = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).Apply(rules);
+            var reproductiveDrive = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).Apply(rules);
             var threatExposure = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).Apply(rules);
 
             Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount + 2));
@@ -353,6 +356,10 @@ namespace SaltyGame.Tests
             Assert.That(digestion.Metabolism, Is.EqualTo(rules.Metabolism));
             Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + 1));
             Assert.That(crowding.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
+            Assert.That(
+                reproductiveDrive.ReproductionChance,
+                Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel).Within(0.0001f));
+            Assert.That(reproductiveDrive.BlockAmount, Is.EqualTo(rules.BlockAmount));
             Assert.That(threatExposure.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
             Assert.That(threatExposure.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
         }
@@ -388,6 +395,107 @@ namespace SaltyGame.Tests
 
             var legacyUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LegacyThreatResponseId);
             Assert.That(legacyUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureId));
+            Assert.That(progression.GetUpgradeLevel(SpeciesUpgradeCatalog.LegacyThreatResponseId), Is.EqualTo(10));
+            Assert.That(progression.TryPurchase(legacyUpgrade), Is.False);
+        }
+
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        [TestCase(float.NegativeInfinity)]
+        public void UpgradeRejectsNonFiniteBonuses(float value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+                new SpeciesUpgrade("invalid", 5, SpeciesUpgradeType.ReproductionChance, value));
+        }
+
+        [Test]
+        public void InvalidUpgradeApplicationDoesNotSpendOrChangeProgression()
+        {
+            var rules = CreateReproductionRules(reproductionChance: 1f);
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            progression.AddCurrency(5);
+            Assert.Throws<ArgumentOutOfRangeException>(() => progression.TryPurchase(
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.CurrentRules, Is.SameAs(rules));
+            Assert.That(progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(progression.OrderedUpgradeIds, Is.Empty);
+            Assert.That(progression.AppliedRunUpgrades, Is.Empty);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void FiveHerbivoreSkillsStackIndependentlyAndStopAtTen(bool reverse)
+        {
+            var ids = new[] { "threat-exposure", "tough-hide", "efficient-digestion",
+                "reproductive-drive", "crowding-tolerance" };
+            if (reverse)
+            {
+                Array.Reverse(ids);
+            }
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            progression.AddCurrency(275);
+            for (var level = 1; level <= 10; level++)
+            {
+                foreach (var id in ids)
+                {
+                    Assert.That(progression.TryPurchase(SpeciesUpgradeCatalog.Create(id)), Is.True);
+                }
+                Assert.That(progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
+                Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f).Within(0.00001f));
+                Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
+                Assert.That(progression.CurrentRules.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 0.1f * level).Within(0.00001f));
+                Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(rules.ReproductionChance + 0.005f * level).Within(0.00001f));
+                Assert.That(progression.CurrentRules.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + level));
+                Assert.That(progression.CurrentRules.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
+                Assert.That(progression.CurrentRules.MaximumEnergy, Is.EqualTo(rules.MaximumEnergy));
+                Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+            }
+            var cappedRules = progression.CurrentRules;
+            foreach (var id in ids)
+            {
+                Assert.That(progression.GetUpgradeLevel(id), Is.EqualTo(10));
+                Assert.That(progression.TryPurchase(SpeciesUpgradeCatalog.Create(id)), Is.False);
+            }
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.Currency, Is.EqualTo(25));
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(50));
+            Assert.That(progression.AppliedRunUpgrades, Has.Count.EqualTo(50));
+            for (var index = 0; index < 50; index++)
+            {
+                Assert.That(progression.OrderedUpgradeIds[index], Is.EqualTo(ids[index % 5]));
+            }
+        }
+
+        [TestCase(0)]
+        [TestCase(1)]
+        [TestCase(2)]
+        public void ReproductiveDriveAndCrowdingToleranceDoNotBypassBirthEligibility(int blockedGate)
+        {
+            var rules = CreateReproductionRules(
+                reproductionChance: 0.04f,
+                reproductionFoodRequired: 2,
+                reproductionNeighborCount: 1,
+                maxReproductionGroupSize: 2);
+            for (var level = 0; level < 10; level++)
+            {
+                rules = SpeciesUpgradeCatalog.Create("reproductive-drive").Apply(rules);
+                rules = SpeciesUpgradeCatalog.Create("crowding-tolerance").Apply(rules);
+            }
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: blockedGate == 0 ? 1 : 10));
+            if (blockedGate == 2)
+            {
+                source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            }
+            var metrics = StepWithReproductionMetrics(source, rules, seed: 42);
+            var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+            Assert.That(reproduction.IsReconciled, Is.True);
+            Assert.That(blockedGate == 0 ? reproduction.BlockedEnergy
+                : blockedGate == 1 ? reproduction.BlockedMateRequirement
+                : reproduction.BlockedGroupLimit, Is.EqualTo(blockedGate == 2 ? 2 : 1));
         }
 
         [Test]
@@ -449,6 +557,74 @@ namespace SaltyGame.Tests
             Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount));
         }
 
+        [Test]
+        public void CrowdingTolerancePurchasesStopAtTenWithoutSpendingOrApplyingAgain()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId);
+            Assert.That(upgrade.Value, Is.EqualTo(SpeciesUpgradeCatalog.CrowdingToleranceBonusPerLevel));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.CrowdingToleranceId),
+                Is.EqualTo(SpeciesUpgradeCatalog.CrowdingToleranceMaxLevel));
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            progression.AddCurrency(55);
+            for (var level = 1; level <= SpeciesUpgradeCatalog.CrowdingToleranceMaxLevel; level++)
+            {
+                Assert.That(progression.CanPurchase(upgrade), Is.True);
+                Assert.That(progression.TryPurchase(upgrade), Is.True);
+                Assert.That(
+                    progression.CurrentRules.CrowdingTolerance,
+                    Is.EqualTo(rules.CrowdingTolerance + level * SpeciesUpgradeCatalog.CrowdingToleranceBonusPerLevel));
+                Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
+            }
+
+            var cappedRules = progression.CurrentRules;
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+            Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount));
+        }
+
+        [Test]
+        public void ReproductiveDrivePurchasesStopAtTenWithoutSpendingOrApplyingAgain()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId);
+            Assert.That(upgrade.Value, Is.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel).Within(0.0001f));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.ReproductiveDriveId),
+                Is.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel));
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            progression.AddCurrency(55);
+            for (var level = 1; level <= SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel; level++)
+            {
+                Assert.That(progression.CanPurchase(upgrade), Is.True);
+                Assert.That(progression.TryPurchase(upgrade), Is.True);
+                Assert.That(
+                    progression.CurrentRules.ReproductionChance,
+                    Is.EqualTo(rules.ReproductionChance + level * SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel)
+                        .Within(0.0001f));
+                Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
+            }
+
+            var cappedRules = progression.CurrentRules;
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(
+                progression.CurrentRules.ReproductionChance,
+                Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel * SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel)
+                    .Within(0.0001f));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+        }
+
         [TestCase(false)]
         [TestCase(true)]
         public void ToughHideBlocksPreserveEncountersButDeadTargetsDoNot(bool blocked)
@@ -498,14 +674,14 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ExperimentalHerbivoreOffersKeepTheChosenPathAndCycleTheOtherThree()
+        public void ExperimentalHerbivoreOffersKeepTheChosenPathAndCycleTheOtherFour()
         {
             var initial = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(null, rotation: 0, seed: 42);
             Assert.That(initial, Has.Length.EqualTo(2));
             Assert.That(initial[0].Id, Is.Not.EqualTo(initial[1].Id));
 
             var alternatives = new HashSet<string>();
-            for (var rotation = 0; rotation < 3; rotation++)
+            for (var rotation = 0; rotation < 4; rotation++)
             {
                 var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                     SpeciesUpgradeCatalog.ToughHideId,
@@ -516,7 +692,7 @@ namespace SaltyGame.Tests
                 alternatives.Add(offer[1].Id);
             }
 
-            Assert.That(alternatives, Has.Count.EqualTo(3));
+            Assert.That(alternatives, Has.Count.EqualTo(4));
 
             var legacyOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                 SpeciesUpgradeCatalog.LegacyThreatResponseId,

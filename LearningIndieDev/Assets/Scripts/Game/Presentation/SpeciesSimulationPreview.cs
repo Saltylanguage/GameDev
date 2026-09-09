@@ -1264,17 +1264,34 @@ namespace SaltyGame
             }
 
             var authoredUpgrade = GetBoundaryUpgrade(rewardIndex);
-            if (authoredUpgrade == null
-                || !authoredUpgrade.CanApplyAfterRunStart
-                || !progression.TrySpend(authoredUpgrade.Cost))
+            if (authoredUpgrade == null || !authoredUpgrade.CanApplyAfterRunStart)
             {
                 return false;
             }
 
-            if (!progression.TryApplyRunUpgrade(authoredUpgrade))
+            if (usingAuthoredRewardOptions)
             {
-                progression.AddCurrency(authoredUpgrade.Cost);
-                return false;
+                if (!progression.TrySpend(authoredUpgrade.Cost))
+                {
+                    return false;
+                }
+                if (!progression.TryApplyRunUpgrade(authoredUpgrade))
+                {
+                    progression.AddCurrency(authoredUpgrade.Cost);
+                    return false;
+                }
+            }
+            else
+            {
+                var upgrade = rewardOptions[rewardIndex];
+                if (!progression.TryPurchase(upgrade))
+                {
+                    return false;
+                }
+                if (bevExperimentalFeaturesEnabled)
+                {
+                    lastExperimentalUpgradeId = upgrade.Id;
+                }
             }
 
             var nextRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
@@ -1311,14 +1328,13 @@ namespace SaltyGame
 
         bool CanPurchaseLegacyBoundaryReward(SpeciesUpgrade upgrade)
         {
-            if (upgrade == null || progression.GetUpgradeLevel(upgrade.Id) > 0)
+            if (upgrade == null || !progression.CanPurchase(upgrade))
             {
                 return false;
             }
 
             var snapshot = upgrade.CreateSnapshot(playerSpecies);
-            return snapshot.CanApplyAfterRunStart
-                && progression.Currency >= snapshot.Cost;
+            return snapshot.CanApplyAfterRunStart;
         }
 
         string GetLegacyRewardStatus(SpeciesUpgrade upgrade)
@@ -1328,10 +1344,9 @@ namespace SaltyGame
                 return "UNAVAILABLE";
             }
 
-            if (previewState == SpeciesPreviewState.PhaseDecision
-                && progression.GetUpgradeLevel(upgrade.Id) > 0)
+            if (progression.GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id))
             {
-                return "OWNED";
+                return "MAX LEVEL";
             }
 
             return progression.Currency < upgrade.Cost
@@ -1565,9 +1580,7 @@ namespace SaltyGame
             var nextRunner = new SpeciesSimulationRunner(
                 run,
                 simulationData,
-                combatResolutionMode: bevExperimentalFeaturesEnabled
-                    ? SpeciesCombatResolutionMode.OpposedRoll
-                    : SpeciesCombatResolutionMode.LegacyFixedDamage,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
                 experimentalOptions: CreateExperimentalOptions(),
                 upgradeLoadout: progression?.AppliedRunUpgrades);
             if (simulationHelper != null)

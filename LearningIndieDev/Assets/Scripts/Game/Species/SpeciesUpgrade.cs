@@ -13,6 +13,7 @@ namespace SaltyGame
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
+        ReproductionChance,
     }
 
     public sealed class SpeciesUpgrade
@@ -29,9 +30,9 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(cost), cost, "Upgrade cost cannot be negative.");
             }
 
-            if (value <= 0f)
+            if (value <= 0f || float.IsNaN(value) || float.IsInfinity(value))
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Upgrade value must be greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Upgrade value must be finite and greater than zero.");
             }
 
             Id = id;
@@ -67,6 +68,9 @@ namespace SaltyGame
                 case SpeciesUpgradeType.BlockAmount:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, Value));
                     break;
+                case SpeciesUpgradeType.ReproductionChance:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ReproductionChance, Value));
+                    break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DigestionEnergyBonus, Value));
                     break;
@@ -101,6 +105,7 @@ namespace SaltyGame
             var attackModifier = rules.AttackModifier;
             var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
+            var reproductionChance = rules.ReproductionChance;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var crowdingTolerance = rules.CrowdingTolerance;
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
@@ -122,6 +127,9 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
+                    break;
+                case SpeciesUpgradeType.ReproductionChance:
+                    reproductionChance += Value;
                     break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     digestionEnergyBonus += Value;
@@ -147,7 +155,7 @@ namespace SaltyGame
                 rules.DietTargetId,
                 rules.ReproductionPattern,
                 rules.ReproductionNeighborCount,
-                rules.ReproductionChance,
+                reproductionChance,
                 rules.ReproductionFoodRequired,
                 rules.MaxReproductionGroupSize,
                 rules.StartingEnergy,
@@ -184,14 +192,21 @@ namespace SaltyGame
         public const string EfficientDigestionId = "efficient-digestion";
         public const int EfficientDigestionMaxLevel = 10;
         public const float EfficientDigestionBonusPerLevel = 0.1f;
+        public const string CrowdingToleranceId = "crowding-tolerance";
+        public const int CrowdingToleranceMaxLevel = 10;
+        public const int CrowdingToleranceBonusPerLevel = 1;
+        public const string ReproductiveDriveId = "reproductive-drive";
+        public const int ReproductiveDriveMaxLevel = 10;
+        public const float ReproductiveDriveChancePerLevel = 0.005f;
 
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
+                : upgradeId == CrowdingToleranceId ? CrowdingToleranceMaxLevel
+                : upgradeId == ReproductiveDriveId ? ReproductiveDriveMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
         }
-        public const string CrowdingToleranceId = "crowding-tolerance";
         public const string ThreatExposureId = "threat-exposure";
         public const string LegacyThreatResponseId = "threat-response";
         [Obsolete("Use ThreatExposureId.")]
@@ -211,6 +226,7 @@ namespace SaltyGame
             ToughHideId,
             EfficientDigestionId,
             CrowdingToleranceId,
+            ReproductiveDriveId,
             ThreatExposureId,
         };
 
@@ -244,7 +260,17 @@ namespace SaltyGame
                         SpeciesUpgradeType.DigestionEnergyBonus,
                         EfficientDigestionBonusPerLevel);
                 case CrowdingToleranceId:
-                    return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
+                    return new SpeciesUpgrade(
+                        CrowdingToleranceId,
+                        5,
+                        SpeciesUpgradeType.CrowdingTolerance,
+                        CrowdingToleranceBonusPerLevel);
+                case ReproductiveDriveId:
+                    return new SpeciesUpgrade(
+                        ReproductiveDriveId,
+                        5,
+                        SpeciesUpgradeType.ReproductionChance,
+                        ReproductiveDriveChancePerLevel);
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
@@ -326,6 +352,8 @@ namespace SaltyGame
                     return "EFFICIENT DIGESTION";
                 case CrowdingToleranceId:
                     return "CROWDING TOLERANCE";
+                case ReproductiveDriveId:
+                    return "REPRODUCTIVE DRIVE";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return "THREAT EXPOSURE";

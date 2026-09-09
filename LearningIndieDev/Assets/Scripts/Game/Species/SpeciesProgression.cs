@@ -27,6 +27,11 @@ namespace SaltyGame
 
         public int GetUpgradeLevel(string upgradeId)
         {
+            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
+            {
+                upgradeId = SpeciesUpgradeCatalog.ThreatExposureId;
+            }
+
             return !string.IsNullOrWhiteSpace(upgradeId)
                 && purchasedUpgradeLevels.TryGetValue(upgradeId, out var level)
                 ? level
@@ -77,28 +82,34 @@ namespace SaltyGame
                 return false;
             }
 
-            if (!TrySpend(upgrade.Cost))
-            {
-                return false;
-            }
-
             var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
+            var nextRules = CurrentRules;
+            var nextAvoidanceChance = PreContactAvoidanceChance;
             if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
             {
                 if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(nextLevel))
                 {
-                    CurrentRules = upgrade.Apply(CurrentRules);
+                    nextRules = upgrade.Apply(CurrentRules);
                 }
 
-                PreContactAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
+                nextAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
             }
             else
             {
-                CurrentRules = upgrade.Apply(CurrentRules);
+                nextRules = upgrade.Apply(CurrentRules);
             }
 
-            purchasedUpgradeLevels[upgrade.Id] = nextLevel;
-            orderedUpgradeIds.Add(upgrade.Id);
+            // Match the experiment runner's legacy provenance: catalog snapshots
+            // describe the upgrade; resolved rules/options retain level effects.
+            var snapshot = upgrade.CreateSnapshot(Definition.Id);
+            TrySpend(upgrade.Cost);
+            CurrentRules = nextRules;
+            PreContactAvoidanceChance = nextAvoidanceChance;
+            var upgradeId = SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
+                ? SpeciesUpgradeCatalog.ThreatExposureId : upgrade.Id;
+            purchasedUpgradeLevels[upgradeId] = nextLevel;
+            orderedUpgradeIds.Add(upgradeId);
+            appliedRunUpgrades.Add(snapshot);
             PurchasedUpgradeCount++;
             return true;
         }

@@ -355,6 +355,67 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator FiveHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossPhaseBoundaries()
+        {
+            var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
+                "reproductive-drive", "threat-exposure" };
+            for (var skillIndex = 0; skillIndex < ids.Length; skillIndex++)
+            {
+                yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+                yield return null;
+                var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+                Assert.That(preview.TryApplyExperimentalFeatures(true, "0", out var message), Is.True, message);
+                Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+                // The seed selects the first experimental offer deterministically.
+                Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                    "8", "8", skillIndex.ToString(CultureInfo.InvariantCulture),
+                    preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                    preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                    "10", "0.01", "0", "1", "0", false, out message), Is.True, message);
+                preview.StartSimulation();
+                var run = preview.Run;
+                var originalRules = preview.Progression.CurrentRules;
+                preview.Progression.AddCurrency(100);
+                var upgrade = SpeciesUpgradeCatalog.Create(ids[skillIndex]);
+                // Preload one level so nine reward boundaries reach the Level 10 cap.
+                Assert.That(preview.Progression.TryPurchase(upgrade), Is.True);
+                for (var phase = 1; phase <= 9; phase++)
+                {
+                    var timeout = Time.realtimeSinceStartup + 5f;
+                    while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+                    {
+                        yield return null;
+                    }
+                    Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                    Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(upgrade.Id));
+                    Assert.That(preview.CanPurchaseReward(0), Is.True);
+                    var currency = preview.Progression.Currency;
+                    Assert.That(preview.PurchaseReward(0), Is.True);
+                    Assert.That(preview.Run, Is.SameAs(run));
+                    Assert.That(run.Tick, Is.EqualTo(phase));
+                    Assert.That(preview.Progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(phase + 1));
+                    Assert.That(preview.Progression.Currency, Is.EqualTo(currency - 5));
+                    Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(phase + 1));
+                    Assert.That(run.UpgradeAcquisitionTimeline, Has.Count.EqualTo(phase + 1));
+                    Assert.That(run.UpgradeAcquisitionTimeline[phase].EffectiveTick, Is.EqualTo(phase));
+                    Assert.That(run.UpgradeAcquisitionTimeline[phase].Order, Is.EqualTo(phase));
+                    Assert.That(preview.ActiveSpeciesRules[preview.PlayerSpecies], Is.SameAs(preview.Progression.CurrentRules));
+                    if (upgrade.Id == "threat-exposure")
+                    {
+                        Assert.That(preview.Progression.CurrentRules.FleeMovementSpeedBonus,
+                            Is.EqualTo(originalRules.FleeMovementSpeedBonus + 0.75f));
+                        Assert.That(preview.Progression.PreContactAvoidanceChance,
+                            Is.EqualTo((phase + 1) * 0.08f).Within(0.00001f));
+                    }
+                    Assert.That(preview.PurchaseReward(0), Is.False, "A repeated click must not charge again.");
+                }
+                Assert.That(preview.Progression.CanPurchase(upgrade), Is.False);
+                StringAssert.Contains("MAX LEVEL", preview.GetRewardOptionDisplayName(0));
+                preview.EndSimulation();
+            }
+        }
+
+        [UnityTest]
         public IEnumerator PlayerModeUsesContinuousPhasesAndDeveloperModeCanSelectSingleRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
