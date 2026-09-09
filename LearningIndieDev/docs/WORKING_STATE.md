@@ -32,7 +32,13 @@ capabilities and provisional Adaptation Value estimates, but requires
 mode-appropriate direct-effect, matchup, and ecosystem evidence under
 [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). The seven
 existing Hare assets are provisional Mutation candidates; Genome runtime and
-profile work remain planned.
+profile work remain planned. Genome design and implementation are deferred from
+this work block but marked ASAP when upgrade implementation resumes. Named
+Genome loadouts are deferred and non-blocking, and Species Mastery remains
+deferred and non-gating. Skip is a valid current choice with no current bonus or
+penalty; any future reward-doubling for skipping is a separate deferred economy
+rule. Provisional scientific-data settlement remains open pending feature-owner
+approval.
 The preview now supports phase survivor data, live/legacy upgrade choices,
 same-run resume, explicit End, and manual inspection. Continuous terminal
 completion is results-only; upgrades are offered at phase boundaries, and a

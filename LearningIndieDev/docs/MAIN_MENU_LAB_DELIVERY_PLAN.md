@@ -331,9 +331,13 @@ Before E1 implementation begins:
 
 - Final Lab art direction and environmental presentation beyond UI.
 - Multiple profiles/save slots and Steam Cloud conflict handling.
-- Exact data award rates, extinction loss, Genome node costs, active capacity,
-  node capacity costs, and any reallocation fee.
+- Exact data award rates, extinction loss, Genome node costs, capacity growth,
+  node capacity costs, and any reallocation fee. The current active-capacity
+  baseline is 8 points per species, reallocated freely between simulations and
+  frozen at launch.
 - Full Genome trees for the wider species roster.
 - Late-game Genome-tree shape and how active capacity grows.
+- Named Genome loadouts and presets; these remain deferred and non-blocking.
+- Species Mastery progression; it remains deferred and non-gating.
 - Active-run save/resume.
 - A generic navigation framework, skill-tree editor, or Mutation/Genome scripting system.
