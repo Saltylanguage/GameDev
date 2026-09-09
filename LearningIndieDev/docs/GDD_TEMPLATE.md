@@ -116,10 +116,12 @@ For each species, define:
 
 Temporary Mutations are acquired at frozen phase boundaries and remain in
 purchase order for the rest of the expedition. A completed ten-phase
-expedition has nine Mutation decision points. Skipping preserves both the
-current world and the existing build while its final relationship to the
-nine-Mutation target remains an open player-flow decision. A Mutation changes subsequent rules; it
-does not implicitly refill energy, respawn creatures, or reset terrain.
+expedition has nine Mutation decision points. At each point, choosing a
+Mutation or explicitly skipping is valid. Skipping preserves both the current
+world and the existing build and has no current bonus or penalty. Any future
+reward-doubling or other incentive for skipping is a separate deferred economy
+rule. A Mutation changes subsequent rules; it does not implicitly refill
+energy, respawn creatures, or reset terrain.
 Initialization-only upgrades are launch-only under the locked CF-0 contract;
 they are not offered as mid-expedition grants. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md)
 and the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).

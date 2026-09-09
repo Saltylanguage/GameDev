@@ -23,6 +23,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime.SpeciesPreview, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.Run, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(runtime.SpeciesPreview.SelectedScenario, Is.Not.Null);
+            Assert.That(runtime.SpeciesPreview.SelectedScenario.name, Is.EqualTo("ForestEdge"));
+            Assert.That(runtime.SpeciesPreview.PlayerSpecies.Value, Is.EqualTo("hare"));
 
             var continuousSettingsApplied = runtime.SpeciesPreview.TryApplyContinuousPhases(
                 enabled: false,

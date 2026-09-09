@@ -108,6 +108,7 @@ the accepted triggers, severities, statuses or waivers below.
 - **Why it matters:** Background populations could lose or gain the wrong Genome effects depending on UI selection, making the simulation rules and its balance evidence non-reproducible.
 - **Evidence:** User direction on 2026-09-06: Genome nodes are permanently unlocked but toggleable; active Genome effects apply in both simulation modes and to a species even when it is not player-controlled.
 - **Smallest mitigation:** Store permanent unlocks separately from each species' active Genome; freeze every participating `SpeciesId`'s active Genome at launch, apply it to all populations of that species, and record the configuration and fingerprint with the run. Keep Mutations as a separate Species-Simulation-only layer.
+- **Progress:** Josh set an 8-point active capacity per species on 2026-09-09. Reallocation is free between runs and prohibited between phases. Node cost semantics remain open and must not be copied from Mutation currency costs.
 - **Owner:** Josh
 - **Recorded:** 2026-09-06, user-confirmed planning decision
 

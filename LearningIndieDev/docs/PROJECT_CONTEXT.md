@@ -32,11 +32,13 @@ changes, and do not treat research references as approved implementation work.
   are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
-- Every species has two distinct upgrade systems. **Mutations** are nine acute
-  adaptations selected during one completed Species Simulation and reset when
-  it ends. Mutations never enter Biome Simulations. A species' **Genome** is a
-  permanent library of options unlocked with banked scientific data in the Gene
-  Lab.
+- Every species has two distinct upgrade systems. **Mutations** are acute
+  adaptations offered at nine decision points during one completed Species
+  Simulation and reset when it ends. At each point, Skip is a valid choice with
+  no current bonus or penalty; any future reward-doubling for skipping is a
+  separate deferred economy rule. Mutations never enter Biome Simulations. A
+  species' **Genome** is a permanent library of options unlocked with banked
+  scientific data in the Gene Lab.
 - The player can turn unlocked Genome nodes on or off between simulations. The
   active Genome is frozen at launch and applies to every population of its
   species, including when that species is not controlled by the player.
@@ -51,6 +53,11 @@ changes, and do not treat research references as approved implementation work.
   than maximize one species, master every species, or complete every data set.
   Improving one Genome may create a readable imbalance that encourages the
   player to run and develop plants, herbivores, and predators in response.
+- Current progression boundary (2026-09-09): Genome design and implementation
+  are deferred from this work block but should start ASAP when upgrade work
+  resumes. Named Genome loadouts are deferred and non-blocking, and Species
+  Mastery is deferred and non-gating. Provisional scientific-data settlement
+  remains open pending feature-owner approval.
 - Upgrade and species work follows
   [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md):
   use shared stats and capabilities for early value estimates, then require
@@ -99,9 +106,11 @@ upgrade acquisition timing.
 
 **Plan forward:** treat continuous state as the canonical runtime design. The
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
-Finish a current Windows build smoke and ten-phase duration/memory measurement,
-then complete the player-facing
-Mutation choices, outcome language, reward/persistence loop, and Genome design.
+The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
+only the outer ten-phase duration/memory measurement, then complete the
+player-facing Mutation choices, outcome language, reward/persistence loop, and
+resume Genome design/implementation ASAP. Genome details remain intentionally
+open until that work starts.
 Any new predictive-AI or balance claim requires its own approved research
 contract; it is not implied by the accepted EX-010 result.
 
@@ -281,6 +290,11 @@ settle them in foundational grid code.
 - The official player-facing desktop inspiration baseline is the light pastel
   eco-OS concept recorded in [`ART_STYLE_GUIDE.md`](../ART_STYLE_GUIDE.md) and
   [`docs/Art Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png`](Art%20Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png).
+- The current de-facto simulation layout and visual north star for future
+  generated GalapagOS views is documented in
+  [`GalapagOS Simulation View — High-Fidelity Concept v1`](Art%20Direction/Concepts/GalapagOS_Simulation_View_High_Fidelity_v1.md).
+  It is a concept-quality reference only; runtime state and production assets
+  remain authored separately.
 - The intended shell is **Meadow Desktop**: bright ecology backgrounds,
   desktop icons, pale cream and light-green windows, dark-brown contrast, and
   restrained pastel accents. **Lab Notebook** is the preferred treatment for

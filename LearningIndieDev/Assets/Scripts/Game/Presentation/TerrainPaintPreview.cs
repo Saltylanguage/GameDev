@@ -10,6 +10,7 @@ namespace SaltyGame
         const int GridHeight = 12;
         const float ToolbarHeight = 88f;
         const float Margin = 16f;
+        static readonly Color UniversalBaseColor = new Color(0.35f, 0.2f, 0.1f);
 
         static readonly TerrainDefinition Desert = new TerrainDefinition(
             TerrainIds.Desert,
@@ -45,7 +46,7 @@ namespace SaltyGame
             GUILayout.BeginArea(new Rect(Margin, 8f, Screen.width - Margin * 2f, ToolbarHeight));
             GUILayout.BeginHorizontal("box");
             GUILayout.Label("Tile picker:", GUILayout.Width(72f));
-            DrawBrushButton("Bare", TerrainDefaults.Bare, desertTiles);
+            DrawBrushButton("Bare", TerrainDefaults.Bare, null);
             DrawBrushButton("Grass", TerrainDefaults.Grass, grassTiles);
             DrawBrushButton("Desert", Desert, desertTiles);
             GUILayout.Space(12f);
@@ -75,9 +76,16 @@ namespace SaltyGame
             }
 
             GUI.backgroundColor = previousColor;
-            if (tiles[TerrainTileResolver.FullMask] != null)
+            if (tiles != null && tiles[TerrainTileResolver.FullMask] != null)
             {
                 DrawSprite(tiles[TerrainTileResolver.FullMask], new Rect(rect.x + 15f, rect.y + 4f, 42f, 42f));
+            }
+            else
+            {
+                var previousContentColor = GUI.color;
+                GUI.color = UniversalBaseColor;
+                GUI.DrawTexture(new Rect(rect.x + 15f, rect.y + 4f, 42f, 42f), Texture2D.whiteTexture);
+                GUI.color = previousContentColor;
             }
 
             GUI.Label(new Rect(rect.x, rect.yMax - 20f, rect.width, 18f), label, GUI.skin.label);
@@ -116,21 +124,21 @@ namespace SaltyGame
 
         void DrawCell(SpeciesCell cell, Rect rect, int x, int y)
         {
-            if (desertTiles[TerrainTileResolver.FullMask] != null)
-            {
-                DrawSprite(desertTiles[TerrainTileResolver.FullMask], rect);
-            }
+            var previousColor = GUI.color;
+            GUI.color = UniversalBaseColor;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = previousColor;
 
-            if (TerrainVisualFamilies.Get(cell.TerrainId) == TerrainVisualFamily.Grass)
+            if (TerrainVisualFamilies.TryGet(cell.TerrainId, out var family))
             {
                 var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, cell.TerrainId);
-                if (grassTiles[mask] != null)
+                var tiles = family == TerrainVisualFamily.Grass ? grassTiles : desertTiles;
+                if (tiles[mask] != null)
                 {
-                    DrawSprite(grassTiles[mask], rect);
+                    DrawSprite(tiles[mask], rect);
                 }
             }
-            // Desert is the base layer; Bare/empty cells intentionally leave it
-            // visible so the painted terrain can be evaluated in context.
+            // Bare/empty cells intentionally show only the universal base.
 
             // Do not draw a box per cell: the blob sprites must meet across
             // boundaries, otherwise the diagnostic grid masks the transitions.

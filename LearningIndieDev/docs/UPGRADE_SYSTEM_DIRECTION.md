@@ -1,7 +1,9 @@
 # Upgrade System Direction — Mutations and Genomes
 
 Status: **approved product direction; the first Mutation contract exists, while
-Genome progression and the scalable balance model remain planned work**.
+Genome progression and the scalable balance model remain planned work**. Genome
+design and implementation are deferred from the current work block and are the
+next ASAP upgrade slice when upgrade implementation resumes.
 Feature owner: **Josh**. Sim is not assigned to this feature.
 Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concerns/upgrade-system.md).
 Balance guideline:
@@ -33,6 +35,23 @@ Scientific data connects both systems. The exact in-expedition Mutation cost
 and permanent Genome economy remain open in
 [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
+## Current decision boundary (2026-09-09)
+
+- Skip is a valid choice at every current Mutation decision point. It preserves
+  the current build and has no bonus or penalty today. Any future
+  reward-doubling or other incentive for skipping is a separate deferred
+  economy rule.
+- Genome design and implementation are deferred from this work block and
+  should start ASAP when upgrade implementation resumes. Keep the detailed
+  node, profile, persistence, and economy contract open; do not infer it from
+  the Gene Lab mock or the existing runtime shim.
+- Named Genome loadouts are deferred and non-blocking. A single active
+  configuration per species is sufficient for the next implementation slice.
+- Species Mastery is deferred and non-gating. Its later visibility or
+  node-reveal relationship to Genome remains open.
+- Provisional scientific-data settlement remains open pending feature-owner
+  approval.
+
 ## Permanent unlocks and the active Genome
 
 Each species has its own Genome tree. Purchasing a node unlocks that option
@@ -56,11 +75,11 @@ profile must store permanently unlocked node IDs separately from each species'
 active configuration. A simulation receives an immutable active Genome snapshot
 for every participating species at launch.
 
-A reassignable point or capacity budget is the leading way to stop every
-unlocked node from being active at once while preserving experimentation. The
-exact capacity, whether different nodes consume different amounts, and whether
-reallocation has a cost remain open decisions. The recommended starting bias is
-to make reallocation available between simulations and freeze it during a run.
+Each species has an **8-point active Genome capacity**. Unlocked nodes can be
+reallocated freely between simulations, but the active configuration is frozen
+from launch until that run ends. Whether every node costs one point or nodes
+have different authored costs remains open; implementation must not infer that
+rule from Mutation prices or the Gene Lab mock.
 
 Capacity cost should represent the size and flexibility of the species-level
 change, not whether the node is “good” for a biome. Biome impact is reported
@@ -122,10 +141,10 @@ than an unrelated sequence of bonuses. Early choices establish a direction;
 later choices deepen, modify, or occasionally hybridize that playstyle.
 
 The ten-phase expedition creates nine Mutation decision points. The approved
-direction is for a completed expedition to produce nine Mutations. The current
-prototype also supports Skip; whether Skip remains a counted decision or is
-removed from the final player flow must be resolved without changing the
-nine-Mutation progression target silently.
+direction keeps nine Mutation decision points in a completed expedition. The
+current flow allows a Mutation or a valid Skip at each point; a Skip leaves the
+current build unchanged and has no current bonus or penalty. Any future
+reward-doubling or other Skip incentive is a separate deferred economy rule.
 
 A simple run structure is:
 
@@ -210,6 +229,10 @@ the report. The older string-loadout arguments remain available for historical
 experiments and diagnostic arms.
 The row-by-row authoring contract and its current acceptance state are tracked
 in [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
+The shared capability map and bounded Forest Edge diagnostic panel are defined
+in [`UPGRADE_CAPABILITY_REFERENCE_PANEL.md`](UPGRADE_CAPABILITY_REFERENCE_PANEL.md).
+That panel is a working diagnostic contract, not approved balance or promotion
+evidence.
 The prototype Simulation scene now references the explicit production assets;
 its reward panel presents authored options and applies snapshots, while the
 legacy reward path remains available for the BEV experimental mode.
@@ -416,12 +439,15 @@ them to the completed Sprint 2 scope.
 
 ## Questions for later design
 
-- Does Skip remain part of the final nine-decision flow, or does every completed
-  expedition select exactly nine Mutations?
-- How much active Genome capacity does each species receive, how do nodes
-  consume it, and is reallocation free between simulations?
-- Does Species Mastery remain a separate progress measure, or does it become
-  the way Genome nodes are revealed?
+- If a later economy needs to reward skipping, what bonus or penalty (if any)
+  should it use? This is separate from the current valid Skip choice.
+- The current active-capacity baseline is 8 points per species, freely
+  reallocated between simulations and frozen at launch. Which authored node
+  costs, capacity growth, and economy rules should be used later?
+- Species Mastery is deferred and non-gating for the current slice. If it is
+  resumed later, should it remain informational or reveal Genome nodes?
+- Are named or preset Genome loadouts worth adding after the base active
+  configuration works? This is deferred and non-blocking.
 - When can a player hybridize two branches, and what is sacrificed?
 - Are Mutations purchased with in-expedition data, granted at phase breaks, or
   both?

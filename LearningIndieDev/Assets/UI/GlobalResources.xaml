@@ -33,6 +33,47 @@
   <SolidColorBrush x:Key="GalapagOS.Window.HeaderBackground" Color="#FFC5D370"/>
   <SolidColorBrush x:Key="GalapagOS.Window.HeaderForeground" Color="#FF372C15"/>
   <SolidColorBrush x:Key="GalapagOS.Window.Stripe" Color="#FFE8EDB2"/>
+  <!-- Reusable three-line horizontal stripe treatment for title bands and panel headers. -->
+  <LinearGradientBrush x:Key="GalapagOS.Brush.TopStripes" StartPoint="0,0" EndPoint="0,1">
+    <GradientStop Color="#00E8EDB2" Offset="0" />
+    <GradientStop Color="#00E8EDB2" Offset="0.22" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.22" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.30" />
+    <GradientStop Color="#00E8EDB2" Offset="0.30" />
+    <GradientStop Color="#00E8EDB2" Offset="0.44" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.44" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.52" />
+    <GradientStop Color="#00E8EDB2" Offset="0.52" />
+    <GradientStop Color="#00E8EDB2" Offset="0.66" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.66" />
+    <GradientStop Color="#FFE8EDB2" Offset="0.74" />
+    <GradientStop Color="#00E8EDB2" Offset="0.74" />
+    <GradientStop Color="#00E8EDB2" Offset="1" />
+  </LinearGradientBrush>
+
+  <!-- Shared monochrome vector primitives. Apply GalapagOS.Icon.Path to a Path and
+       provide one of these geometries through its Data property. -->
+  <Geometry x:Key="GalapagOS.Icon.Play">M4,2 L21,12 L4,22 Z</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.Pause">M3,2 H9 V22 H3 Z M15,2 H21 V22 H15 Z</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.Stop">M3,3 H21 V21 H3 Z</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.ZoomIn">M10,2 A8,8 0 1 0 10,18 A8,8 0 1 0 10,2 M16,16 L22,22 M10,6 V14 M6,10 H14</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.ZoomOut">M10,2 A8,8 0 1 0 10,18 A8,8 0 1 0 10,2 M16,16 L22,22 M6,10 H14</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.Checkmark">M3,12 L8,17 L21,4</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.Arrow">M3,9 H14 V4 L22,12 L14,20 V15 H3 Z</Geometry>
+  <Geometry x:Key="GalapagOS.Icon.Goalpost">M4,21 V3 H18 V21 M4,8 H18</Geometry>
+
+  <Style x:Key="GalapagOS.Icon.Path" TargetType="Path">
+    <Setter Property="Width" Value="18" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Stretch" Value="Uniform" />
+    <Setter Property="Fill" Value="Transparent" />
+    <Setter Property="Stroke" Value="{DynamicResource GalapagOS.Window.HeaderForeground}" />
+    <Setter Property="StrokeThickness" Value="2" />
+    <Setter Property="StrokeLineJoin" Value="Round" />
+    <Setter Property="StrokeStartLineCap" Value="Round" />
+    <Setter Property="StrokeEndLineCap" Value="Round" />
+  </Style>
+
   <LinearGradientBrush x:Key="GalapagOS.Window.CloseBackground" StartPoint="0.5,0" EndPoint="0.5,1">
     <GradientStop Color="#FFDCE7A0" Offset="0"/>
     <GradientStop Color="#FFB5C663" Offset="1"/>
@@ -527,14 +568,9 @@
                       <ColumnDefinition Width="*" />
                       <ColumnDefinition Width="40" />
                     </Grid.ColumnDefinitions>
-                    <Grid Grid.ColumnSpan="3">
-                      <Rectangle Height="3" Margin="0,8,0,0" VerticalAlignment="Top"
-                                 Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
-                      <Rectangle Height="3" Margin="0,16,0,0" VerticalAlignment="Top"
-                                 Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
-                      <Rectangle Height="3" Margin="0,24,0,0" VerticalAlignment="Top"
-                                 Fill="{DynamicResource GalapagOS.Window.Stripe}"/>
-                    </Grid>
+                    <Border Grid.ColumnSpan="3"
+                            Background="{DynamicResource GalapagOS.Brush.TopStripes}"
+                            IsHitTestVisible="False" />
                     <StackPanel Grid.Column="0"
                                 Orientation="Horizontal"
                                 HorizontalAlignment="Left">

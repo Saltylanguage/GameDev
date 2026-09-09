@@ -7,7 +7,7 @@ Add-Type -AssemblyName System.Drawing
 $size = 128
 $canonicalMasks = @(0, 1, 5, 7, 17, 21, 23, 29, 31, 85, 87, 95, 119, 127, 255)
 $families = @(
-    @{ Name = 'Grass'; Source = 'Assets\Art\Terrain\Standardized\128\Grass_Full_255.png' },
+    @{ Name = 'Grass'; Source = 'Assets\Art\Terrain\Standardized\128\Grass_Full.png' },
     @{ Name = 'Desert'; Source = 'Assets\Art\Terrain\Standardized\128\Desert_Full.png' }
 )
 $outputRoot = Join-Path $ProjectRoot 'Assets\Art\Terrain\Blob\128'

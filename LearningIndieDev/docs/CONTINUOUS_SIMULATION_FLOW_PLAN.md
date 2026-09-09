@@ -5,7 +5,7 @@ preview path, phase telemetry, checkpoint seam, direct Stat-Line output and
 opt-in headless schedule are closed for the current slice. EX-010 has executed
 on its approved contract and is accepted as bounded evidence; CF-6 is document
 and integration follow-up rather than an EX-010 execution gate.
-**Reviewed:** 2026-09-07, documentation and integration status refresh.
+**Reviewed:** 2026-09-09, documentation and integration status refresh.
 **Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.
 **Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. The CF-0 contract below is locked by Josh; runtime packages and balance changes remain separate implementation decisions.
 
@@ -250,13 +250,13 @@ inheriting Josh's runtime or research responsibilities.
 | CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented and verified.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain separate. |
 | CF-4 Telemetry and Stat-Line | Josh; Sim reviews metric meaning | 8–12h | **Implemented, verified, and semantically approved.** Versioned phase windows, pooled acquisition timing, metric deltas and event filtering flow through JSON/Markdown/CSV and the PlayMode report; direct ForestEdge/Hare runs emit the validated Stat-Line CSV. Sim approved the phase/final meanings used by EX-010. |
 | CF-5 Research checkpoints and schedules | Josh | 8–12h | **Checkpoint seam, opt-in headless schedule, and EX-010 contract-specific schedule implemented and verified.** Round-trip/fork isolation, deterministic runner resume, and the approved ten-phase schedule pass. |
-| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | **Partially complete.** Documentation, automated runtime/evidence coverage, and graphics checks at both target resolutions are complete. A current Windows development-build smoke and ten-phase duration/memory measurement remain product acceptance work. |
+| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | **Partially complete.** Documentation, automated runtime/evidence coverage, graphics checks at both target resolutions, the Windows player smoke, and the corrected ten-phase Forest Edge/Hare run are complete. Only the outer wall-duration and peak-memory measurement remains product acceptance work. |
 | Total | Replan capacity explicitly | 44–68h | EX-010 execution is complete; future balance or predictive-calibration work requires a new approved protocol. |
 
 CF-1 through CF-5 completed in dependency order and now share the locked
 lifecycle/report contract. The CF-5 schedule path and EX-010 contract-specific
 run are complete; future schedules need their own approved contract. Release
-acceptance remains bounded to the unfinished CF-6 checks named above.
+acceptance remains bounded to the unfinished CF-6 measurement named above.
 
 ## CF-0 closure — contract and fixture
 
@@ -288,9 +288,10 @@ fallback.
 ## Required verification
 
 Automated domain, report, checkpoint, schedule, EX-010, and graphics-capable
-1280×720/1920×1080 validation are complete for the current slice. A current
-Windows development-build smoke and ten-phase duration/memory measurement remain
-open; the table retains the complete acceptance contract.
+1280×720/1920×1080 validation are complete for the current slice. The current
+Windows development-player smoke also passed. The outer ten-phase wall-duration
+and peak-memory measurement remains open; the table retains the complete
+acceptance contract.
 
 | Gate | Fixture and assertion |
 | --- | --- |
@@ -321,8 +322,9 @@ The mechanics and evidence contract are implemented and accepted. The remaining
 work is bounded product acceptance and delivery coordination:
 
 1. Preserve the accepted graphics evidence at 1280×720 and 1920×1080.
-2. Run a current Windows development-build smoke and measure ten-phase duration
-   and retained-history memory.
+2. Preserve the successful Windows development-player smoke and run the remaining
+   outer ten-phase wall-duration and retained-history memory measurement with the
+   explicit Forest Edge/Hare scenario configuration.
 3. Preserve the EX-010 report and human decision as bounded research closure;
    any new schedule or predictive-calibration question is separate.
 

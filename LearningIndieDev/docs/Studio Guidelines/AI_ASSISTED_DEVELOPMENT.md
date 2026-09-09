@@ -2,7 +2,7 @@
 
 **Guideline ID:** SG-002  
 **Status:** Active  
-**Version:** 1.0  
+**Version:** 1.1
 **Adopted:** 2026-08-15  
 **Audience:** New and existing developers, designers, technical artists, producers, and AI agents working on the project.  
 **Related guideline:** [SG-001 — AI Generated Reports](AI_GENERATED_REPORTS.md)
@@ -53,6 +53,52 @@ When uncertain, prefer the smallest reversible action that produces useful evide
 7. Show what changed, what was verified, and what remains uncertain.
 
 Small, inspectable steps are easier to review, revert, hand off, and compare than large opaque batches.
+
+## Model and effort routing
+
+Use the least expensive model that can complete the work reliably. Luna is the
+default for cost-sensitive project work. Use Luna at **max** reasoning effort
+for substantial tasks; use **low** or **none** for lightweight interaction. Do
+not micromanage model effort on every turn—make one risk-based choice for the
+work block, then verify the outcome.
+
+### Green / Yellow / Red task risk
+
+| Risk | Task shape | Default response |
+| --- | --- | --- |
+| **Green** | Bounded, familiar, reversible work with clear acceptance criteria and a small regression surface. | Use Luna. Keep lightweight turns at low/none and substantial work at max effort. |
+| **Yellow** | Several systems are involved, the dependency map is understandable, or the task has moderate ambiguity or rework risk. | Use Luna at max effort with explicit checkpoints, evidence, and a stop condition. Escalate if a concrete trigger appears. |
+| **Red** | Novel architecture, foundational redesign, ambiguous or conflicting requirements, broad cross-system change, hard causal debugging, high-cost rework risk, or repeated Luna failure. | Escalate to Sol before continuing the risky path. Pause for human direction when the decision changes product scope, architecture, economy, or ownership. |
+
+Concrete escalation triggers include an incoherent dependency map, speculative
+changes that are not tied to evidence, repeated failed approaches, a failure
+whose cause crosses system boundaries, or acceptance criteria that cannot be
+tested. Escalation is a quality mechanism: it is cheaper to change the approach
+before a large implementation or evidence run than to repair an unverified
+result afterward.
+
+Evaluate success by outcome per usage, not token cost alone. Completion quality,
+evidence quality, rework avoided, time-to-decision, and usable project progress
+all matter; a cheaper result that is wrong, untestable, or costly to repair is
+not a successful optimization. Model availability and account limits vary by
+host; see the [official OpenAI model catalog](https://developers.openai.com/api/docs/models)
+for current model positioning.
+
+### Codex model-routing capability
+
+**Current Codex behavior:** Codex can inspect task context, assess risk,
+recommend escalation, and choose a model for a newly created or delegated task
+when the workflow permits that choice. It must not silently claim that an
+in-progress task changed models when no model/configuration update actually
+occurred. Record the model choice or handoff when it is material to the result.
+
+**Possible future or orchestrated behavior:** True automatic mid-task switching
+would require platform support for model/configuration updates or an
+orchestration layer with model-routing permissions. That layer would also need
+visibility into the task prompt and context, available models, usage and cost
+limits, and a state-preserving handoff so the new model can continue without
+losing the repository, evidence, or decisions. Until those capabilities exist,
+treat model changes as explicit task, session, or delegation-boundary actions.
 
 ## What developers can confidently do
 
@@ -210,3 +256,4 @@ Before calling work complete, confirm:
 | Version | Date | Change |
 |---|---|---|
 | 1.0 | 2026-08-15 | Initial studio guideline adopted. |
+| 1.1 | 2026-09-09 | Added risk-based model routing, effort defaults, escalation triggers, and Codex model-routing capability guidance. |

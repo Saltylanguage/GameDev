@@ -18,15 +18,15 @@ Fox opposition. Work is complete only when the player can understand a choice,
 observe its consequence, finish a run, receive a reward, and begin a meaningful
 next run.
 
-## Status at 2026-09-07
+## Status at 2026-09-09
 
 | Area | Current status | What remains |
 | --- | --- | --- |
 | Board and presentation | Graphics baseline accepted | Continue feature-specific screen/content work and any readability polish found during play. |
 | Simulation truth | Bounded baselines and telemetry are recorded | Balance promotion, especially Forest Edge carrying limits and trustworthy player-facing upgrade effects. |
 | Continuous ten-phase runtime | Implemented and canonical | Three player choices, terminal outcome presentation, results explanation, and integrated performance/build acceptance. |
-| Main Menu and Lab | UI foundation implemented | Real launch/result handoff, full navigation acceptance, and persistence-aware data. |
-| Profile and Genome | Not implemented | Versioned save/profile, one persistent unlock, and the open Mutation/Genome player contract. |
+| Main Menu and Lab | UI foundation and Lab/Simulation launch route implemented | Unify the production Lab with the GalapagOS home base, complete navigation acceptance, and replace representative progression data. |
+| Profile and Genome | Basic local profile identity exists; progression is not implemented | Versioned progression data, one persistent Genome unlock, and the open Mutation/Genome player contract. |
 | Research/tooling | P3 closed as bounded | No next experiment selected; evidence-hygiene controls and artifact retention remain prerequisites for future confirmatory work. |
 | Retained prototypes | Classified | Island Survivor is deprecated, Discord bridge is on hold, and other retained prototypes change only for a named need. |
 
@@ -54,10 +54,15 @@ state what “beautiful, readable, and pleasant to watch” means at gameplay sc
 ### V0.2 — Make smart tiling correct with the authored assets
 
 - Run the editor smart-tiling preview for all 47 normalized blob masks.
-- Confirm the mask convention (`N=1`, `E=2`, `S=4`, `W=8`) against the authored
-  terrain sheet and correct only the resolver lookup when an edge is wrong.
-- Verify grass and temporary desert/bare families, including isolated, straight,
-  corner, T, and surrounded tiles.
+- Record the current eight-neighbor bit order exactly as implemented:
+  `N=1`, `NE=2`, `E=4`, `SE=8`, `S=16`, `SW=32`, `W=64`, `NW=128`.
+  The current resolver promotes a diagonal contact by adding its adjacent
+  cardinals. The dedicated terrain task is reviewing whether flora should
+  instead discard unsupported diagonals, so do not treat the current
+  normalization as the final artist contract until Josh records that decision.
+- Verify the current Grass and Desert placeholder families, including isolated,
+  straight, corner, T, and surrounded tiles. The planned Dirt, biome, and flora
+  presentation roles are being separated in the dedicated terrain task.
 - Verify atlas import settings, texture filtering, transparency, and pixel
   scale at the target board size.
 - Keep neighbor masks and atlas indices presentation-only; do not move them into
@@ -94,8 +99,9 @@ the important current pressure without developer explanation.
 
 **Status:** Accepted for the current desktop/Simulation composition on 2026-09-07.
 The full 1280×720 graphics PlayMode batch passed 22/22 and the focused
-1920×1080 run captured the same route. The older Windows development build
-completed a bounded smoke; a current combined-build smoke remains open.
+1920×1080 run captured the same route. The current Windows development-player
+smoke passed on 2026-09-08. Only the outer ten-phase duration and peak-memory
+measurement remains open under CF-6.
 
 ## Phase 1 — Make the simulation truth trustworthy
 
@@ -171,15 +177,16 @@ combinations, and wider Hare / Fox / Fern consequences reviewed.
 
 ### 3.1 Main Menu and Lab foundation
 
-**Status:** The representative-data UI foundation and Sprint readiness closure
-are complete. Target-resolution graphics acceptance and the real wallet/
-simulation handoff remain part of the integrated player slice.
+**Status:** The representative-data UI foundation, stable Lab-to-Simulation
+launch request, results return route, target-resolution graphics acceptance,
+and Windows player smoke are complete. GalapagOS home-base consolidation and
+the real wallet/progression data remain part of the integrated player slice.
 
 - Preserve the closed Sprint 0 readiness decisions and recorded Sprint 1 ownership.
 - Preserve Main Menu → Lab Overview → Hare Genome preview in
   `MainMenu.unity` using representative data only.
-- Add visible focus, deterministic Back behavior, target-resolution checks, and
-  a Windows development-build smoke path.
+- Preserve visible focus, deterministic Back behavior, target-resolution checks,
+  and the verified Windows development-build smoke path.
 - Keep the player Lab separate from the current developer/authoring surface.
 
 **Exit:** the UI-only route is accepted before any real wallet or simulation
@@ -187,11 +194,15 @@ handoff is connected.
 
 ### 3.2 Expedition and results connection
 
-- Add Expedition Setup for Forest Edge + Hare.
-- Pass stable scenario/species IDs and selected options through an immutable
+**Status:** Stable scenario/species IDs flow through an immutable launch
+request, and the results surface can return to Lab. Full production navigation
+acceptance and persistence-backed result settlement remain open.
+
+- Preserve Expedition Setup for Forest Edge + Hare.
+- Preserve stable scenario/species IDs and selected options in the immutable
   launch request.
-- Connect simulation completion to Results and return to Lab without pretending
-  that representative data is persistent.
+- Replace representative result data only when settlement and persistence have
+  an authoritative owner.
 
 **Exit:** a player can navigate from Lab to a clearly identified run and back.
 
@@ -221,8 +232,9 @@ only when active—even when Hare is not the selected species.
 through EX-010. Raw-artifact retention and full provenance remain open controls
 for future confirmatory research.
 
-- Retain current automated-test and historical build-smoke logs as evidence;
-  run a fresh build smoke for release acceptance. Keep schema semantics explicit
+- Retain current automated-test and build-smoke logs as evidence; rerun the
+  build smoke when a release-candidate change invalidates the current result.
+  Keep schema semantics explicit
   across legacy fresh-window and current continued-world reports. Historical
   schema-6 EX-002 reports remain valid for their bounded window, while two cited
   raw control bundles are absent from this checkout.
@@ -292,13 +304,16 @@ the following are true:
 
 ## Current blockers and decisions
 
-1. The embedded Noesis editor analytics path requires a vendor/project privacy
-   decision before release; it is editor-only and not compiled into the player.
-2. A current Windows development-build smoke and ten-phase duration/memory
-   measurement remain; target-resolution graphics acceptance is complete.
-3. Forest Edge upgrade evidence does not support balance promotion. Any new
+1. The outer ten-phase wall-duration, peak-working-set, and peak-private-memory
+   measurement remains; Windows player smoke and target-resolution graphics
+   acceptance are complete.
+2. Forest Edge upgrade evidence does not support balance promotion. Any new
    upgrade/control claim needs a fresh bounded contract; P3 research closure does
    not approve player balance.
-4. The player-facing Mutation/Genome relationship, three-choice catalog,
+3. The player-facing Mutation/Genome relationship, three-choice catalog,
    terminal outcomes, reward settlement, and persistent unlock loop remain
    incomplete.
+
+The Noesis Editor analytics path is an accepted, non-blocking development risk
+at the current project scale. Reopen that decision only if the project or its
+privacy requirements materially expand.

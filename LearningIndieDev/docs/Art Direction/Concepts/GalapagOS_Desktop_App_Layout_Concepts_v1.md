@@ -4,6 +4,11 @@
 > Date: 2026-09-06  
 > Scope: Player-facing GalapagOS desktop applications other than Desktop Home and Simulation
 
+> The simulation view is documented separately in [GalapagOS Simulation View —
+> High-Fidelity Concept v1](GalapagOS_Simulation_View_High_Fidelity_v1.md). That
+> concept is the current de-facto layout and visual north star for future
+> generated GalapagOS views.
+
 ## Intent
 
 This packet turns the approved GalapagOS pastel eco-desktop direction into
@@ -255,6 +260,13 @@ terrain/grass evidence until a dedicated plant glyph is authored.
 **Focal object:** Branching upgrade tree  
 **Primary action:** Preview in Expedition Setup  
 **Secondary actions:** Switch Research Family, Open Species Collection
+
+**Polish candidate:** [Gene Lab UI — High-Fidelity Concept v2](Gene_Lab_UI_High_Fidelity_v2.png)
+
+This generated revision is the current visual candidate for review. It keeps
+the approved information architecture while bringing the shell, spacing,
+panel hierarchy, and research-tree presentation closer to the simulation-view
+north star. The earlier v1 image remains preserved as the prior reference.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐

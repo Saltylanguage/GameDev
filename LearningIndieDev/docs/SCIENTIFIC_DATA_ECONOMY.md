@@ -40,6 +40,12 @@ Data should reward meaningful discoveries and accomplishments, not raw tick coun
 
 Repeated common events need caps or diminishing returns so large populations cannot generate unlimited currency. Existing deterministic telemetry should be reused to evaluate rewards before adding new event infrastructure.
 
+> **Pending owner decision — provisional settlement:** the earning, spending,
+> phase-transfer, final-settlement, and extinction-loss rules are not resolved.
+> The current survivor-count reward is prototype plumbing only. Do not infer a
+> wallet contract from this document. Any future reward-doubling for Skip is a
+> separate deferred economy rule.
+
 ## Spending tension
 
 During an expedition, data may purchase temporary Mutations that affect the
@@ -74,10 +80,11 @@ be useful to its species and harmful to a biome. Highly developed Genome
 libraries should offer legal cross-species active configurations that form a
 richer and more resilient ecology; every possible configuration need not do so.
 
-The exact active-Genome budget is still open. A reassignable capacity or point
-limit could preserve meaningful builds without making unlocks reversible. The
-starting bias is to allow reallocation between simulations and freeze it once a
-simulation begins.
+The current planning baseline is an **8-point active Genome capacity per
+species**. Unlocked nodes can be reallocated freely between simulations, while
+the active configuration is frozen at launch. Authored node costs, capacity
+growth, and the broader Genome economy remain open; do not infer them from the
+Gene Lab mock or the runtime shim.
 
 Biome projects are a possible separate use for banked data. These would improve
 or reshape the habitat itself—such as water retention, habitat corridors, soil
@@ -94,7 +101,9 @@ defined in [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md) and
 
 ## Species mastery
 
-A possible mastery progression is:
+Species Mastery is deferred and non-gating for the current slice. The following
+is a possible later progression only; it does not currently reveal or unlock
+Genome nodes:
 
 1. **Observed:** unlock the species profile and basic statistics.
 2. **Studied:** reveal behavior details and upgrade affinities.
@@ -107,7 +116,8 @@ Mastery objectives should require varied species behaviors. Repeating the same s
 
 - Research Data plus the fewest role or species data categories that have a
   proven purchase use.
-- One mastery track for the vertical-slice player species.
+- Keep Species Mastery deferred and non-gating until the upgrade loop and
+  settlement contract are approved.
 - A choice to spend data during the run or bank it at the Lab.
 - A simple, clearly communicated consequence for extinction.
 - One small Hare Genome preview or purchase after its balance and persistence
@@ -124,7 +134,8 @@ Mastery objectives should require varied species behaviors. Repeating the same s
   grinding into the game's main objective?
 - What is the smallest Gene Lab Genome tree that demonstrates permanent unlocks
   and a reversible active configuration?
-- Does active Genome capacity increase through mastery, research, Biome
-  progress, or a fixed scenario rule?
+- Does active Genome capacity ever grow beyond the current 8-point baseline,
+  and if so is growth tied to research, Biome progress, or a fixed scenario
+  rule?
 - Are Biome projects a separate progression track, and does an introductory
   restoration project gate advanced Biome challenges?

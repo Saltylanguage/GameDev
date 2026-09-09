@@ -8,8 +8,12 @@ become a master changelog.
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
 checkpoint replay, the headless schedule, and the accepted EX-010 execution.
-CF-6 remains partially open for a current Windows build smoke and ten-phase
-duration/memory measurement; graphics acceptance is complete.
+CF-6 remains partially open for outer ten-phase duration/memory measurement;
+the Windows player smoke and corrected scenario run are complete, and graphics
+acceptance is complete.
+The active Lab → CellularAutomataPrototype route now explicitly defaults to
+Forest Edge with Hare; the separate GalapagOSDesktopTest scene retains its
+legacy-default setup for isolated acceptance.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
@@ -42,9 +46,10 @@ contract. EX-010 has now executed on the approved ten-phase schedule and was
 accepted by Josh and Sim as bounded evidence. P3 is closed under its revised
 bounded gate; P4–P6 are not started and no next research experiment is selected.
 
-Latest verification: Unity EditMode 210/210 passed. The full graphics-capable
-PlayMode suite passed 22/22 at 1280×720, followed by a focused 1920×1080 pass
-on 2026-09-07. Both suites are green with no failed tests.
+Latest verification: Unity EditMode passed 212/212 on 2026-09-09. The latest
+general PlayMode batch passed 21/22 with one intentional visual-capture skip
+and no failures. The retained graphics acceptance remains 22/22 at 1280×720,
+followed by a focused 1920×1080 pass on 2026-09-07.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)

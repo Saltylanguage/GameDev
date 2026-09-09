@@ -62,6 +62,23 @@ asset. It establishes the following visual priorities:
 - crisp pixel clusters, readable silhouettes, and hard edges rather than dark
   dashboards, neon, glassmorphism, or smooth vector UI.
 
+### Current simulation-view north star
+
+The current de-facto screen layout for the simulation, and the quality bar for
+future generated GalapagOS views, is
+[GalapagOS Simulation View — High-Fidelity Concept v1](docs/Art%20Direction/Concepts/GalapagOS_Simulation_View_High_Fidelity_v1.md),
+with its preserved reference image at
+[GalapagOS_Simulation_View_High_Fidelity_v1.png](docs/Art%20Direction/Concepts/GalapagOS_Simulation_View_High_Fidelity_v1.png).
+
+![GalapagOS simulation view north-star concept](docs/Art%20Direction/Concepts/GalapagOS_Simulation_View_High_Fidelity_v1.png)
+
+This is a high-fidelity concept and visual north star, not a production asset
+or a gameplay specification. Future generated views should match its pale
+green-and-cream GalapagOS shell, dark-brown contrast, board-first hierarchy,
+small uniform square-cell game board, Field Ledger, bottom control dock,
+phase timeline, and restrained field-notebook flourish. The interactive board,
+state, and production art remain runtime- and artist-authored.
+
 The intended shell direction is **Meadow Desktop**. Research and Species
 Collection may use the **Lab Notebook** treatment, while **Classic Eco OS**
 window stacking is reserved for controlled utility surfaces and should not make
@@ -86,6 +103,8 @@ The cream body is inset by `4px` on the left, right, and bottom. It remains
 flush to the header at the top, with rounded lower corners. Custom variants
 should keep this cream body and adjust the header/accent fill plus its darker
 same-hue stroke rather than returning to saturated full-window gradients.
+The reusable three-line header treatment is exposed as
+`GalapagOS.Brush.TopStripes` for title bands and panel headers.
 
 ### Approved GalapagOS control library entries
 
@@ -115,3 +134,9 @@ The first GalapagOS icon files live in `Assets/UI/GalapagOS/Art/Icons/` as
 concept/prototype assets. They establish the intended small pixel-art language
 for ecology, expedition, gene, and action symbols while remaining replaceable
 by final artist-authored assets.
+
+The shared vector primitives live in `Assets/UI/GlobalResources.xaml` as
+`Geometry` resources: `GalapagOS.Icon.Play`, `Pause`, `Stop`, `ZoomIn`,
+`ZoomOut`, `Checkmark`, `Arrow`, and `Goalpost`. Use them with
+`GalapagOS.Icon.Path` for simple monochrome controls; use authored raster art
+when an icon needs species identity, texture, or a larger illustrative role.

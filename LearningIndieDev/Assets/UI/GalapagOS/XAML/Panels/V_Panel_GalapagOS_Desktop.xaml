@@ -1364,6 +1364,11 @@
                   CornerRadius="8"
                   Padding="12">
             <Grid>
+              <Border Grid.RowSpan="2"
+                      Height="36"
+                      VerticalAlignment="Top"
+                      Background="{DynamicResource GalapagOS.Brush.TopStripes}"
+                      IsHitTestVisible="False" />
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

@@ -130,19 +130,20 @@ namespace SaltyGame
 
         void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
-            if (desertTerrainTiles != null)
-            {
-                DrawTerrainSprite(context, desertTerrainTiles, TerrainTileResolver.FullMask, cellRect);
-                if (TerrainVisualFamilies.Get(cell.TerrainId) == TerrainVisualFamily.Grass
-                    && grassTerrainTiles != null)
-                {
-                    DrawTerrainSprite(context, grassTerrainTiles, cell.TerrainVariantMask, cellRect);
-                }
-
-                return;
-            }
-
+            // Grass and Desert are peer transparent overlays. Bare terrain is
+            // the neutral layer beneath both families, not an alias for either.
             context.DrawRectangle(cell.IsPassable ? Brushes.SaddleBrown : Brushes.Black, null, cellRect);
+
+            if (TerrainVisualFamilies.TryGet(cell.TerrainId, out var family))
+            {
+                var tiles = family == TerrainVisualFamily.Grass
+                    ? grassTerrainTiles
+                    : desertTerrainTiles;
+                if (tiles != null)
+                {
+                    DrawTerrainSprite(context, tiles, cell.TerrainVariantMask, cellRect);
+                }
+            }
         }
 
         void DrawSpeciesSprite(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)

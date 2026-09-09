@@ -49,9 +49,10 @@ The flow is:
 
 There is no real-time decision timer. Simulation pauses automatically during
 Mutation selection. A player therefore has nine Mutation decision points per
-completed run, after phases one through nine. The final rule for Skip—whether
-it leaves one of nine opportunities empty or is removed so every completed
-expedition contains exactly nine Mutations—remains to be reconciled.
+completed run, after phases one through nine. At each point, choosing a
+Mutation or explicitly skipping is valid. Skip preserves the current build and
+has no current bonus or penalty. Any future reward-doubling or other incentive
+for skipping is a separate economy rule and remains deferred.
 
 Each phase preserves the board, creature/resource state, age, energy, cooldowns,
 initial seed, absolute tick and accumulated history. A phase summary does not
@@ -74,7 +75,8 @@ the continuity migration does not silently change the configured step interval.
 After every phase except the last, surviving players may choose one Mutation
 or skip. Phase summaries show that phase's population change, births, deaths by
 cause, food consumed, movement, combat, and notable upgrade contributions.
-Final results distinguish whole-expedition totals from individual phases.
+The current contract gives Skip no bonus or penalty. Final results distinguish
+whole-expedition totals from individual phases.
 
 The final results screen awards accomplishments for explicit feats such as
 victory, population recovery, efficient feeding, or surviving a named

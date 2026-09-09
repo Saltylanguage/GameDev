@@ -6,6 +6,13 @@
 
 > The art-direction revision is now in
 > [`GALAPAGOS_DESKTOP_UI_ART_DIRECTION_PASS.md`](GALAPAGOS_DESKTOP_UI_ART_DIRECTION_PASS.md).
+> The acceptance criteria and open decisions below describe this superseded
+> pre-acceptance draft and are retained for comparison. They are not current
+> project status. The light pastel desktop/Simulation composition passed the
+> graphics gate at 1280×720 and 1920×1080 on 2026-09-07; use
+> [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md) and the
+> [`graphics-acceptance handoff`](handoffs/2026-09-07-codex-galapagos-graphics-acceptance.md)
+> for current direction and evidence.
 
 ## Purpose
 
@@ -269,7 +276,7 @@ Implement visual compositions in this order:
 This order gets the emotional identity and primary player loop visible before
 the most information-dense research surface.
 
-### Acceptance pass
+### Historical acceptance criteria
 
 - Noesis XAML parses cleanly.
 - Keyboard and mouse can traverse every primary Lab destination.
@@ -278,11 +285,11 @@ the most information-dense research surface.
   labels are readable without relying on color alone.
 - The shell remains legible at 1280x720 and does not depend on overlapping
   windows to communicate the route.
-- Unity visual evidence is captured before the design is treated as runtime-
-  accepted. The prior GalapagOS control-library handoff explicitly records that
-  this visual gate is still open.
+- Unity visual evidence was required before the design could be treated as
+  runtime-accepted. The prior GalapagOS control-library handoff recorded that
+  gate as open at the time; the later 2026-09-07 graphics acceptance closed it.
 
-## Open decisions for review
+## Historical open decisions (superseded)
 
 1. Accept the dark slate Figma/Noesis pilot as the primary shell palette, with
    the lime/cream treatment retired to exploration status.

@@ -53,23 +53,30 @@ Sim owns stat meaning and telemetry review; Josh owns the lifecycle, upgrades an
 integration. This notice does not assign Sim the runtime refactor or change an
 existing sprint estimate.
 
-The current shared API is `SpeciesSimulationMetrics.CreateHerbivoreStatLine`.
-It combines accumulated counters/death events with supplied opening/closing
-population. `SimulationReportSerialization` currently supplies the first and last
-entries of the whole run history; `VM_SimulationShell` uses the same calculation.
-Neither path currently specifies an independent phase window.
+The shared Stat-Line calculation remains
+`SpeciesSimulationMetrics.CreateHerbivoreStatLine`. Phase closure now stores an
+independent `SimulationPhaseResult` with its exclusive/inclusive tick bounds,
+opening and closing populations, effective loadout, rules fingerprint, and a
+windowed metrics snapshot. `SimulationReportSerialization.CreatePhaseResults`
+serializes those phase windows and calculates each phase Stat-Line from its own
+metrics and populations. The final expedition Stat-Line is calculated
+independently from the complete run.
 
-| Existing work | Conflict / invalidated assumption | Required follow-up |
+The table below is the migration checklist that led to CF-4. Its resolutions are
+implemented and verified; it is retained to explain why the current contract is
+shaped this way.
+
+| Existing work | Conflict / invalidated assumption | Implemented resolution |
 | --- | --- | --- |
-| S1-STAT-01 field contract | “Run” and “starting population” are no longer unambiguous. | Implement the locked expedition/phase scope, tick interval, opening/closing sample, units and metric version. |
-| S1-STAT-02 raw ledger | Clearing counters/tracked entities at every break destroys continuity; repeating a boundary sample double counts events. | Preserve cumulative telemetry and record the locked window baselines; verify source events belong to exactly one phase. |
-| S1-STAT-03 derived rates | Whole-run counts cannot be combined with phase-only populations; averages of phase ratios do not reproduce expedition ratios. | Compute rates from raw numerator/denominator in the selected locked window; pool counts before computing an expedition rate. |
-| S1-STAT-04 / current S2.3 reporting | One loadout and effective fingerprint cannot describe all ticks of a continued expedition. | Implement acquisition timeline, phase identity and per-phase fingerprints in JSON, CSV, Markdown and thin UI projections. |
-| S1-STAT-05 validation | Same seed plus final loadout does not determine when the upgrades were applied or the state they changed. | Include lifecycle, initial/checkpoint identity, exact acquisition schedule and options; add segmentation/replay parity against the locked contract. |
-| S1-STAT-06 review | Earlier single-window acceptance does not establish multi-phase readiness. | Preserve old acceptance and add a new bounded continuation review/retest result. |
+| S1-STAT-01 field contract | “Run” and “starting population” are no longer unambiguous. | Phase and expedition scope, tick interval, opening/closing samples, units, and contract versions are explicit. |
+| S1-STAT-02 raw ledger | Clearing counters/tracked entities at every break destroys continuity; repeating a boundary sample double counts events. | Cumulative telemetry is preserved, window baselines are recorded, and adjacent windows partition events once. |
+| S1-STAT-03 derived rates | Whole-run counts cannot be combined with phase-only populations; averages of phase ratios do not reproduce expedition ratios. | Phase rates use their own raw windows; expedition rates are recomputed from pooled raw counts. |
+| S1-STAT-04 / S2.3 reporting | One loadout and effective fingerprint cannot describe all ticks of a continued expedition. | JSON, CSV, Markdown, and UI projections carry phase identity, effective loadout, fingerprints, and acquisition timing. |
+| S1-STAT-05 validation | Same seed plus final loadout does not determine when the upgrades were applied or the state they changed. | Lifecycle, checkpoint lineage, exact schedule, options, and segmentation/replay parity are covered. |
+| S1-STAT-06 review | Earlier single-window acceptance does not establish multi-phase readiness. | Historical acceptance remains bounded; Sim approved the separate EX-010 phase/final interpretation and result. |
 
-Current board target: [S2.3 — Upgrade loadout report/stat-line integration](https://trello.com/c/pZ4qG2DM).
-The card and the current repository S2 plan now both assign this work to Josh.
+Historical board target: [S2.3 — Upgrade loadout report/stat-line integration](https://trello.com/c/pZ4qG2DM).
+The implementation is complete. The card and the repository S2 plan assign it to Josh.
 Sim remains a reviewer of metric meaning, not an owner of the upgrade or
 lifecycle implementation. Do not silently turn that 3h card into the entire
 telemetry migration.

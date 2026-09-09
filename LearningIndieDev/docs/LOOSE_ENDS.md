@@ -7,11 +7,12 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-07
+- Last reviewed: 2026-09-09
 - Report state: the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
-  and S2-register checkpoints retained in history). Unity Edit Mode is green at
-  210/210. The full graphics-capable PlayMode acceptance batch is now green at
+  and S2-register checkpoints retained in history). Unity EditMode is green at
+  212/212. The latest general PlayMode batch passed 21/22 with one intentional
+  visual-capture skip and no failures. The retained graphics acceptance remains
   22/22, with GalapagOS desktop and Simulation captures at 1280x720 plus a
   focused 1920x1080 run. The current EX-007/EX-008/EX-009 run bundles and the
   new continuation smoke bundles pass the strict artifact validator with Unity
@@ -32,6 +33,24 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   uncommitted work is expected in this project.
 - The player-facing expedition contract is ten phases. Project-wide wording
   was reconciled to that contract, with no stale phase-count wording found.
+- Skip is a valid current choice at each Mutation decision point. It has no
+  current bonus or penalty; any future reward-doubling or other Skip incentive
+  is a separate deferred economy rule.
+- Genome design and implementation are deferred from this work block but are
+  marked ASAP when upgrade implementation resumes. Named Genome loadouts are
+  deferred and non-blocking, and Species Mastery remains deferred and
+  non-gating.
+- Provisional scientific-data settlement remains open pending feature-owner
+  approval. This pass does not resolve wallet, phase-transfer, or
+  extinction-loss semantics.
+- Current delivery plans now agree that independent phase windows and the
+  bounded EX-010 Stat-Line review are complete. The Windows player smoke also
+  passed; CF-6 now retains only the outer ten-phase duration and peak-memory
+  measurement.
+- Terrain planning now records the runtime's exact eight-neighbor bit order and
+  clearly labels `000`, diagonal, and layer semantics as an active art-contract
+  decision. The current resolver behavior is not presented as Chrono's final
+  delivery contract.
 - The docs concept image is canonical at
   `docs/Art Direction/Concepts/GalapagOS_Desktop_UI_Concept_Options_v1.png`;
   the duplicate Unity asset and its `.meta` file were removed.
@@ -40,14 +59,20 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - Deprecated HUD/debug IMGUI and the orphan Life preview are closed under
   R-015. The low-priority orphan/template cleanup is closed under R-018. The
   terrain diagnostic remains the sole runtime-IMGUI exception and stays open
-  under P2-022 while terrain work is on hold.
+  under P2-022 while the resumed terrain work determines its long-term role.
 - The GalapagOS desktop and Simulation now use separate Noesis compositions;
   the desktop view receives its ViewModel DataContext during startup, and the
   Simulation command no longer falls through to the generic app placeholder.
+- The active Lab → CellularAutomataPrototype route now explicitly defaults to
+  Forest Edge and Hare. The separate GalapagOSDesktopTest scene remains an
+  isolated acceptance surface with its legacy-default sentinel. The Hare data
+  asset and Rabbit presentation asset both resolve; the earlier missing-Hare
+  report was caused by a measurement wrapper that omitted `-scenarioPath`.
 - Continuous state is implemented and canonical under CF-0 through CF-5. Sim
   approved the EX-010 Stat-Line interpretation and target-resolution graphics
-  acceptance is complete. Remaining CF work is limited to a current Windows
-  build smoke and ten-phase duration/memory measurement, not lifecycle design.
+  acceptance is complete. The Windows player smoke and corrected scenario run
+  are complete; remaining CF work is limited to outer ten-phase
+  duration/memory measurement, not lifecycle design.
 - The research index, canonical plan, paper, architecture map, experiment index,
   historical DeepResearch treatment, and active feature plan now agree: P0–P3
   are complete within their bounds, P4–P6 are not started, and no next research
@@ -68,7 +93,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-07)
+## Current open items (2026-09-09)
 
 ### P1-016 — First trustworthy upgrade catalog needs design and balance review
 
@@ -157,17 +182,46 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-029 — Mutation/Genome contract still has player-facing decisions open
 
-- **Status:** Direction is recorded, but several choices should be settled before
-  balance tooling or permanent progression work is implemented.
+- **Status:** Direction is recorded. Genome design and implementation are
+  deferred from this work block and should start ASAP when upgrade work
+  resumes; the detailed node, profile, persistence, and economy contract stays
+  open.
 - **Evidence:** The current model applies natural rules, then a permanent
-  per-species Genome, then ordered temporary expedition Mutations. The
+  per-species Genome, then ordered temporary expedition Mutations. Skip is a
+  valid current choice with no bonus or penalty. The active planning baseline
+  is 8 points per species, reallocated freely between simulations and frozen at
+  launch; node costs and capacity growth remain open. Named Genome loadouts are
+  deferred/non-blocking, and Species Mastery is deferred/non-gating. The
   [balance guideline handoff](handoffs/2026-09-06-1523-codex-mutation-genome-balance-guideline.md)
-  records unresolved choices about Skip accounting, Species Mastery visibility,
-  the Forest Edge reference panel, and the first one-time effect contract.
-- **Next action:** Josh should approve those choices (or explicitly defer them)
-  before numeric Adaptation Value budgets, Genome UI, or new effect types are
-  authored. Do not infer a contract from the existing upgrade shim.
+  remains historical; the Forest Edge reference panel and first one-time
+  effect contract still need their own review. Provisional settlement remains
+  open pending feature-owner approval.
+- **Next action:** When upgrade implementation resumes, start with the
+  profile/launch snapshot contract and keep named loadouts and Mastery out of
+  the gate. Before wallet or permanent-purchase work, obtain owner approval for
+  provisional settlement and the remaining node/economy rules. Do not infer a
+  contract from the existing upgrade shim.
 - **Likely owner:** Josh + design/simulation owners.
+- **Confidence:** High.
+
+### P1-030 — CF-6 production build and performance evidence is not fully closed
+
+- **Status:** The Windows player smoke passed, and the corrected ten-phase
+  Forest Edge/Hare run completed. The outer duration and peak-memory sampling
+  still needs one valid rerun; two earlier performance bundles are invalid
+  because their wrapper omitted `-scenarioPath`.
+- **Evidence:** The successful player smoke is recorded under
+  `artifacts/windows-build-20260908-065954/`. The corrected scenario report is
+  `artifacts/cellular-experiment-20260908-123559/report.json`, which records
+  `ForestEdge`, `hare`, ten phases, and 2,000 total ticks. The invalid wrapper
+  records remain under `artifacts/ten-phase-performance-20260908-070937/` and
+  `artifacts/ten-phase-performance-20260908-071652/` and must not be used as
+  Forest Edge evidence.
+- **Next action:** Rerun the performance wrapper with the explicit scenario
+  path and capture wall duration, peak working set, and peak private memory.
+  Keep the invalid runs preserved as operational history but exclude them from
+  conclusions.
+- **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
 ### P2-005 — Large raw worker artifacts need a retention policy
@@ -216,14 +270,15 @@ Ticket summaries for these items are recorded in
 
 - **Status:** The deprecated Island Survivor HUD/debug IMGUI and orphan Life
   preview were removed. `TerrainPaintPreview` remains as a separate manual
-  diagnostic scene while terrain work is on hold.
+  diagnostic scene while the terrain delivery-readiness work is active.
 - **Evidence:** `Assets/Scripts/Game/Presentation/TerrainPaintPreview.cs` still
   implements `OnGUI`/`GUILayout`, and `Assets/Scenes/TerrainPaintTest.unity`
   serializes that component. The editor terrain preview is a separate
   editor-only utility.
-- **Next action:** When terrain work resumes, either migrate this diagnostic
-  surface to Noesis or explicitly remove the scene, script, and focused helper
-  test. Do not treat the diagnostic as player-facing UI.
+- **Next action:** After the terrain asset contract and presentation workflow
+  settle, either retain this as a clearly bounded developer diagnostic, migrate
+  it to Noesis, or explicitly remove the scene, script, and focused helper test.
+  Do not treat the diagnostic as player-facing UI.
 - **Likely owner:** Presentation/art owner + Josh.
 - **Confidence:** High.
 
@@ -764,7 +819,8 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
 - **Evidence:** The 2026-09-07 GalapagOS graphics handoff records 22/22 PlayMode
   acceptance at 1280×720 and a focused 1920×1080 pass. Terrain code, tests,
   preview paths, and active documentation agree on 47 valid normalized masks;
-  terrain-specific presentation remains on hold under P2-022. The dark
+  the diagnostic presentation remains tracked under P2-022 while the resumed
+  terrain work resolves the asset contract. The dark
   Figma/Noesis pilot is explicitly superseded by the pastel GalapagOS direction,
   while its live Lab resource dictionary is retained. P1-018's balance boundary
   is now part of P1-016, and P1-028's board review is now part of P1-027.
@@ -787,6 +843,35 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   files. Deliberate empty boundaries for audio, materials, third-party content,
   plant art, and runtime diagnostics remain. All removals are recoverable from
   Git history.
+
+### R-025 — Production simulation default is explicitly Forest Edge/Hare
+
+- **Former scope:** The ambiguous authored-scenario default discovered during
+  CF-6 acceptance.
+- **Evidence:** `Assets/Scenes/CellularAutomataPrototype.unity` now selects
+  scenario option `0` (`ForestEdge`) and serializes `playerSpeciesKey: hare`.
+  The Lab launch contract already requests `ForestEdge` and `hare`, while the
+  corrected batch run loaded the same scenario and species successfully. The
+  focused graphics-capable PlayMode check passed in
+  `artifacts/visual-evidence-20260908-161521/`.
+- **Result:** The active Lab → Simulation route no longer falls back to the
+  generic `plant`/`herbivore`/`carnivore` defaults. `GalapagOSDesktopTest`
+  remains unchanged as an isolated acceptance scene, and `OpenRange` remains
+  an explicit Deer/Wolf option rather than an implicit default.
+
+### R-026 — Current delivery-document drift reconciled
+
+- **Evidence:** `INCOMPLETE_FEATURES_ACTION_PLAN.md` now records the runtime's
+  eight-neighbor mask order without treating unsettled terrain semantics as a
+  final art contract. `CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md`,
+  `CONTINUOUS_SIMULATION_FLOW_PLAN.md`, and `GAME_FEATURE_ROADMAP_TRIAGE.md`
+  now agree with the implemented phase windows, accepted EX-010 Stat-Line
+  meaning, completed Windows smoke, and remaining CF-6 measurement. The
+  superseded GalapagOS direction draft now labels its old gate and decisions as
+  historical.
+- **Result:** Current planning no longer reopens completed simulation or visual
+  gates. The unresolved terrain-delivery questions remain assigned to their
+  dedicated task instead of being guessed into the documentation.
 
 ### R-018 — Low-priority orphan and template cleanup resolved
 
