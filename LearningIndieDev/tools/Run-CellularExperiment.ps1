@@ -13,6 +13,7 @@ param(
     [ValidateRange(0, 1000000)]
     [int]$PhaseLengthTicks = 0,
     [string]$PhaseUpgradeSchedule = '',
+    [string]$PhaseUpgradeAssetSchedule = '',
     [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
@@ -149,12 +150,23 @@ if (-not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
     $arguments += @('-upgradeSequence', $UpgradeSequence)
 }
 
-if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence)) {
+$hasAuthoredUpgradeInput = -not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence) -or -not [string]::IsNullOrWhiteSpace($PhaseUpgradeAssetSchedule)
+if ($hasAuthoredUpgradeInput) {
     if ($UpgradeId -ne 'none' -or -not [string]::IsNullOrWhiteSpace($UpgradeSequence)) {
-        throw 'Use either -UpgradeAssetSequence or the legacy -UpgradeId/-UpgradeSequence arguments, not both.'
+        throw 'Use authored upgrade inputs instead of the legacy -UpgradeId/-UpgradeSequence arguments, not both.'
     }
 
-    $arguments += @('-upgradeAssetSequence', $UpgradeAssetSequence)
+    $hasBothAuthoredInputs = -not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence) -and -not [string]::IsNullOrWhiteSpace($PhaseUpgradeAssetSchedule)
+    if ($hasBothAuthoredInputs) {
+        throw 'Use either -UpgradeAssetSequence or -PhaseUpgradeAssetSchedule, not both.'
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence)) {
+        $arguments += @('-upgradeAssetSequence', $UpgradeAssetSequence)
+    }
+    else {
+        $arguments += @('-phaseUpgradeAssetSchedule', $PhaseUpgradeAssetSchedule)
+    }
 
     if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetCatalogPath)) {
         $catalogPath = ConvertTo-UnityAssetPath -Path $UpgradeAssetCatalogPath -ProjectRoot $project -ParameterName 'UpgradeAssetCatalogPath'
@@ -162,7 +174,7 @@ if (-not [string]::IsNullOrWhiteSpace($UpgradeAssetSequence)) {
     }
 }
 elseif (-not [string]::IsNullOrWhiteSpace($UpgradeAssetCatalogPath)) {
-    throw 'Use -UpgradeAssetCatalogPath together with -UpgradeAssetSequence.'
+    throw 'Use -UpgradeAssetCatalogPath together with -UpgradeAssetSequence or -PhaseUpgradeAssetSchedule.'
 }
 
 if ($null -ne $assetPath) {
@@ -213,6 +225,10 @@ if ($PhaseLengthTicks -gt 0) {
 }
 
 if (-not [string]::IsNullOrWhiteSpace($PhaseUpgradeSchedule)) {
+    if (-not [string]::IsNullOrWhiteSpace($PhaseUpgradeAssetSchedule)) {
+        throw 'Use either -PhaseUpgradeSchedule or -PhaseUpgradeAssetSchedule, not both.'
+    }
+
     $arguments += @('-phaseUpgradeSchedule', $PhaseUpgradeSchedule)
 }
 

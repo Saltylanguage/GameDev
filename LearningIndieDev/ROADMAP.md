@@ -10,24 +10,24 @@ outcomes.
 
 ## Product goal
 
-**Foundational dependency, 2026-09-04:** the
-[consecutive-phase migration](docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md) makes
-purchase/skip decisions continue the same evolving world. Its code, telemetry,
-Stat-Line, research and documentation gates are proposed work, not completed M1
-behavior or an automatic addition to S2 capacity. Separate phase results from
-expedition completion and player disk save/load. Existing single-window balance
-evidence has the [applicability limits](docs/CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
-recorded in the review.
+**Foundational dependency, 2026-09-05:** the
+[consecutive-phase migration](docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md) now has
+the same-world runtime, phase-aware telemetry, checkpoints and generic schedule
+path through CF-5. M1 closeout and the EX-010 contract-specific research gate
+remain open. Separate phase results from expedition completion and player disk
+save/load. Existing single-window balance evidence has the
+[applicability limits](docs/CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) recorded
+in the review.
 
 Deliver a run-based game in which the player develops a species by choosing
 cellular-automata upgrades, watches those rules interact with other species and
 the environment, and earns persistent scenario, species, and upgrade unlocks
 from accomplishments during the run.
 
-Before feature production accelerates, capture the exact player action cadence,
-run-ending conditions, reward cadence, and launch target in a one-page product
-brief. These details remain decisions to make, not assumptions for foundational
-code.
+The next design task is to resolve the player-facing expedition shape: phase
+count, normal duration, decision rhythm, reward cadence and terminal outcomes.
+The [game feature triage](docs/GAME_FEATURE_ROADMAP_TRIAGE.md) keeps those
+decisions separate from implementation packages and proposed sprint windows.
 
 The active player-shell delivery sequence, including Main Menu, the Lab home
 base, profile persistence, scientific data, permanent research, branching run
@@ -322,7 +322,7 @@ review, and the project is easy to inspect and continue.
 - Align phase-aware Stat-Line, report, adapter, and validator semantics.
 - Reconcile active work, handoffs, tests, artifacts, and board mappings.
 
-Exit: no unresolved M1 P0 risk remains; one complete five-phase Forest Edge
+Exit: no unresolved M1 P0 risk remains; one complete ten-phase Forest Edge
 path can be continued, upgraded, reported, and reviewed without raw developer
 fields or silent reinitialization.
 

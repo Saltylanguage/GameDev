@@ -3,78 +3,85 @@
              xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
              xmlns:game="clr-namespace:SaltyGame"
              xmlns:noesis="clr-namespace:NoesisApp;assembly=Noesis.NoesisGUI">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../../GlobalResources.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
     <Viewbox Stretch="Uniform" StretchDirection="Both">
     <Grid Width="1280"
           Height="720"
           Margin="24">
-        <Border HorizontalAlignment="Center"
-                VerticalAlignment="Top"
-                Padding="18,12"
-                Background="#D9161F2B"
-                CornerRadius="8">
-            <StackPanel>
-                <TextBlock Text="CELLULAR SPECIES SIMULATION"
-                           Foreground="#FFF1C27D"
-                           FontSize="24"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"/>
-                <TextBlock Text="{Binding StateTitle}"
-                           Foreground="White"
-                           FontSize="18"
-                           HorizontalAlignment="Center"
-                           Margin="0,4,0,0"/>
-                <TextBlock Text="{Binding ScenarioText}"
-                           Foreground="#FFD9E7F0"
-                           FontSize="14"
-                           HorizontalAlignment="Center"
-                           Margin="0,4,0,0"/>
-                <TextBlock Text="{Binding PlayerSpeciesText}"
-                           Foreground="#FFFFD27D"
-                           FontSize="14"
-                           FontWeight="Bold"
-                           HorizontalAlignment="Center"
-                           Margin="0,2,0,0"/>
-                <TextBlock Text="{Binding RosterText}"
-                           Foreground="#FFD9E7F0"
-                           FontSize="13"
-                           HorizontalAlignment="Center"
-                           TextWrapping="Wrap"
-                           Margin="0,2,0,0"/>
-                <TextBlock Text="{Binding CurrencyText}"
-                           Foreground="#FFD9E7F0"
-                           FontSize="14"
-                           HorizontalAlignment="Center"
-                           Margin="0,4,0,0"/>
-            </StackPanel>
-        </Border>
+        <HeaderedContentControl x:Name="SimulationWindow"
+                                Header="CELLULAR SIMULATION"
+                                game:GalapagOSWindow.IconSource="../../GalapagOS/Art/Icons/GalapagOS_Icon_Clipboard.png"
+                                game:GalapagOSWindow.CloseCommand="{Binding CloseWindowCommand}"
+                                game:GalapagOSWindow.CloseEnabled="{Binding CanCloseWindow}"
+                                Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+            <Grid>
+                <Border HorizontalAlignment="Stretch"
+                        VerticalAlignment="Top"
+                        Padding="12,8"
+                        Background="{DynamicResource Chrono_VanillaCream}"
+                        BorderBrush="{DynamicResource Chrono_Sand}"
+                        BorderThickness="0,0,0,1">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding StateTitle}"
+                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                   FontSize="17"
+                                   FontWeight="Bold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding ScenarioText}"
+                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                   FontSize="14"
+                                   Margin="18,0,0,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding PlayerSpeciesText}"
+                                   Foreground="{DynamicResource Chrono_Olive}"
+                                   FontSize="14"
+                                   FontWeight="Bold"
+                                   Margin="18,0,0,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding RosterText}"
+                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                   FontSize="13"
+                                   TextWrapping="Wrap"
+                                   Margin="18,0,0,0"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding CurrencyText}"
+                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                   FontSize="14"
+                                   Margin="18,0,0,0"
+                                   VerticalAlignment="Center"/>
+                    </StackPanel>
+                </Border>
 
-        <Grid Visibility="{Binding BoardVisibility}"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Width="1240"
-              Height="660"
-              Margin="0,56,0,0"
-              ClipToBounds="True">
-            <game:SpeciesSimulationBoard x:Name="SimulationBoard"
-                                         HorizontalAlignment="Center"
-                                         VerticalAlignment="Center"
-                                         Width="1240"
-                                         Height="660">
-                <b:Interaction.Behaviors>
-                    <noesis:TranslateZoomRotateBehavior SupportedGestures="All"
-                                                         MinimumScale="0.75"
-                                                         MaximumScale="4"
-                                                         WheelSensitivity="0.15"
-                                                         ConstrainToParentBounds="True"/>
-                </b:Interaction.Behaviors>
-            </game:SpeciesSimulationBoard>
-        </Grid>
+                <Grid Visibility="{Binding BoardVisibility}"
+                      HorizontalAlignment="Stretch"
+                      VerticalAlignment="Stretch"
+                      Margin="0,56,0,0"
+                      ClipToBounds="True">
+                    <game:SpeciesSimulationBoard x:Name="SimulationBoard"
+                                                 HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Stretch">
+                        <b:Interaction.Behaviors>
+                            <noesis:TranslateZoomRotateBehavior SupportedGestures="All"
+                                                                 MinimumScale="0.75"
+                                                                 MaximumScale="4"
+                                                                 WheelSensitivity="0.15"
+                                                                 ConstrainToParentBounds="True"/>
+                        </b:Interaction.Behaviors>
+                    </game:SpeciesSimulationBoard>
+                </Grid>
 
         <Border Visibility="{Binding SettingsVisibility}"
-                HorizontalAlignment="Center"
+                HorizontalAlignment="Left"
                 VerticalAlignment="Top"
-                Margin="0,88,0,0"
-                Width="760"
+                Margin="28,88,0,0"
+                Width="620"
                 Height="608"
                 Padding="18"
                 Background="#F51B2A38"
@@ -732,6 +739,8 @@
                         Margin="0,14,0,0"/>
             </StackPanel>
         </Border>
+            </Grid>
+        </HeaderedContentControl>
     </Grid>
     </Viewbox>
 </UserControl>

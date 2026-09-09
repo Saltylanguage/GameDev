@@ -2,7 +2,7 @@
 
 **Experiment:** `EXP-010` — Sequential upgrade continuation
 **Contract:** `EX-010-DRAFT-1`
-**Status:** Prepared; paused pending Sim's semantic review and human approval; not executed
+**Status:** Approved for execution by Josh and Sim on 2026-09-06; authored schedule locked; not yet executed
 **Owner:** Josh
 **Evidence rule:** No result from this draft is research evidence until the
 contract is approved, the schedule is run through the same game/headless seam,
@@ -15,8 +15,9 @@ catalog so their declared values do not change during this experiment.
 
 ## Question
 
-When two per-run upgrades are acquired during one evolving expedition, does
-acquisition order change the later trajectory or final outcome?
+Across one full ten-phase expedition, how do the phase-by-phase Stat-Lines and
+the final expedition Stat-Line change as one fixed sequential upgrade history is
+applied?
 
 ## Candidate fixture
 
@@ -24,28 +25,33 @@ acquisition order change the later trajectory or final outcome?
 | --- | --- | --- |
 | Scenario | `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset` | Confirm the scenario revision before execution. |
 | Player species | `hare` | Confirm the species and starting state. |
-| Upgrade 1 | `faster-movement` | Use the resolved runtime snapshot, not a live asset reference. |
-| Upgrade 2 | `crowding-tolerance` | Use the resolved runtime snapshot, not a live asset reference. |
+| Upgrade schedule | The six production upgrades that can apply after a run starts, each used once, plus three explicit Skip decisions | Locked below; `gardeners-seed-pouches` is excluded because it is launch-only. |
 | Combat/options | Same as EX-009 | Lock the ruleset and option values in the final contract. |
 | Seed panel | Fresh development and held-out panels | Choose exact ranges without reusing a held-out panel as tuning data. |
 
 ## Candidate schedule
 
-The proposed first pass uses three equal segments. The first arm acquires
-Upgrade 1 at the first boundary and Upgrade 2 at the second. The second arm
-swaps those identities while keeping the initial state, boundary ticks, and
-seed identical.
+The approved first pass uses ten equal 200-tick phases. Phase 1 starts with no
+upgrades. After each of phases 1 through 9, the player makes one preselected
+decision. The fixed schedule uses all six upgrades that are eligible after run
+start once and three Skips, and is used for every seed.
 
-| Segment | Tick window | Arm A | Arm B |
-| --- | --- | --- | --- |
-| 1 | `(0, 200]` | No added upgrade | No added upgrade |
-| 2 | `(200, 400]` | `faster-movement` effective after tick 200 | `crowding-tolerance` effective after tick 200 |
-| 3 | `(400, 600]` | Both upgrades | Both upgrades |
+| Phase | Tick window | Decision before this phase |
+| --- | --- | --- |
+| 1 | `(0, 200]` | No added upgrade |
+| 2 | `(200, 400]` | Skip |
+| 3 | `(400, 600]` | `trailblazer-long-stride` |
+| 4 | `(600, 800]` | Skip |
+| 5 | `(800, 1000]` | `trailblazer-far-sight` |
+| 6 | `(1000, 1200]` | `warren-guarded-burrow` |
+| 7 | `(1200, 1400]` | `warren-room-to-breed` |
+| 8 | `(1400, 1600]` | Skip |
+| 9 | `(1600, 1800]` | `gardeners-careful-sowing` |
+| 10 | `(1800, 2000]` | `familial-bond-large-litters` |
 
-The segment length is a proposal only. If the final contract uses another
-length, the same value must be used in both arms and recorded before any run.
-The first changed rule is effective on the next tick after the boundary; the
-boundary tick itself belongs to the preceding window.
+At a boundary, the simulation stops at the completed tick. The selected
+upgrade becomes active at that boundary, and the next tick uses it. A Skip
+keeps the current upgrade list unchanged.
 
 ## Required evidence per seed and arm
 
@@ -56,29 +62,31 @@ boundary tick itself belongs to the preceding window.
 - phase-window population snapshots and raw metric deltas;
 - event ledgers, validity status, and terminal outcome;
 - replayable checkpoint lineage and the exact report schema versions;
-- A/B pair identity proving the same seed and same schedule.
+- Sequence identity proving the same seed and preselected schedule.
 
 ## Comparison and decision rules
 
-1. Compare Arm A and Arm B pairwise on the same seed and same phase windows.
-2. Report per-seed deltas before any panel summary; do not average unlike
-   windows or silently turn missing/invalid values into zero.
-3. Attribute a difference to order only within this matched schedule. A timing,
-   scenario, upgrade-value, or ruleset change requires a new experiment.
-4. Accept a bounded order finding only when all required bundles validate and the
-   direction is reported with its seed-level consistency and limitations.
-5. Reject or leave unresolved when the checkpoint, schedule, report, or metric
+1. Report the complete Stat-Line for every phase and the independently
+   calculated final expedition Stat-Line.
+2. Show chronological per-stat deltas against the immediately preceding phase
+   or run; do not turn the full Stat-Line into a new combined score.
+3. Keep `N/A`, invalid, partial, and no-data states visible; never replace them
+   with zero for convenience.
+4. Reject or leave unresolved when the checkpoint, schedule, report, or metric
    contract is incomplete, mixed, or not reproducible.
 
 ## Gate before execution
 
-- [ ] Human approves the scenario, values, seed panels, segment length, options,
-      outcomes, and acceptance thresholds.
+- [x] Josh and Sim approve the scenario, values, seed panels, segment length,
+      options, outcomes, and acceptance thresholds (2026-09-06).
+- [x] Josh and Sim confirm the phase-aware Herbivore Stat-Line meanings and
+      the independent phase/final reporting model (2026-09-06).
 - [ ] CF-4 phase-window serializer, validator, CSV, and Markdown outputs agree.
 - [ ] CF-5 checkpoint round trip and fork isolation pass.
 - [ ] Gameplay and headless schedule commands produce the same boundary ticks
       and acquisition timeline.
-- [ ] A clean branch/revision and artifact directory are recorded.
+- [ ] The source revision and artifact directory are recorded; unrelated
+      working-tree edits are disclosed in the manifest.
 - [ ] The experiment is then preregistered as an immutable contract before any
       held-out results are inspected.
 

@@ -35,6 +35,7 @@ namespace SaltyGame.EditorTools
         const string RunTicksArgument = "-runTicks";
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
         const string PhaseUpgradeScheduleArgument = "-phaseUpgradeSchedule";
+        const string PhaseUpgradeAssetScheduleArgument = "-phaseUpgradeAssetSchedule";
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
@@ -97,6 +98,12 @@ namespace SaltyGame.EditorTools
                     : SpeciesUpgradePredictionInputAdapter.Resolve(
                         options.AuthoredUpgradeLoadout,
                         options.AuthoredUpgradeCatalogPath);
+                var authoredPhaseUpgradeSnapshots = options.PhaseAuthoredUpgradeSchedule == null
+                    ? null
+                    : ResolveAuthoredPhaseSchedule(
+                        options.PhaseAuthoredUpgradeSchedule,
+                        options.AuthoredUpgradeCatalogPath,
+                        options.PlayerSpeciesId);
                 var outputPath = GetRequiredOutputPath(options.OutputPath);
                 var data = ApplyOverrides(
                     LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
@@ -107,7 +114,13 @@ namespace SaltyGame.EditorTools
                 {
                     var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
                         ? CreatePairedReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots)
-                        : CreateReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots);
+                        : CreateReport(
+                            data,
+                            options,
+                            outputPath,
+                            experimentalOptions,
+                            authoredUpgradeSnapshots,
+                            authoredPhaseUpgradeSnapshots);
                     File.WriteAllText(
                         outputPath,
                         SerializeReport(
@@ -149,7 +162,8 @@ namespace SaltyGame.EditorTools
             CommandLineOptions options,
             string outputPath,
             SpeciesExperimentalOptions experimentalOptions,
-            IReadOnlyList<SpeciesUpgradeSnapshot> authoredUpgradeSnapshots)
+            IReadOnlyList<SpeciesUpgradeSnapshot> authoredUpgradeSnapshots,
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots)
         {
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
             if (!data.SpeciesRules.ContainsKey(playerSpecies))
@@ -160,10 +174,13 @@ namespace SaltyGame.EditorTools
             }
 
             var phaseSchedule = options.PhaseUpgradeSchedule;
-            var scheduledInitialSnapshots = phaseSchedule == null
-                ? null
-                : CreateLegacyUpgradeSnapshots(phaseSchedule[0], options.PlayerSpeciesId);
-            var loadedData = phaseSchedule != null
+            var hasPhaseSchedule = phaseSchedule != null || authoredPhaseUpgradeSnapshots != null;
+            var scheduledInitialSnapshots = phaseSchedule != null
+                ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], options.PlayerSpeciesId)
+                : authoredPhaseUpgradeSnapshots == null
+                    ? null
+                    : authoredPhaseUpgradeSnapshots[0];
+            var loadedData = hasPhaseSchedule
                 ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, scheduledInitialSnapshots)
                 : authoredUpgradeSnapshots == null
                     ? ApplyLoadout(data, options)
@@ -171,11 +188,15 @@ namespace SaltyGame.EditorTools
             var species = GetSortedSpecies(loadedData.SpeciesRules);
             var orderedLoadout = phaseSchedule != null
                 ? phaseSchedule[0]
+                : authoredPhaseUpgradeSnapshots != null
+                    ? GetSnapshotIds(authoredPhaseUpgradeSnapshots[0])
                 : authoredUpgradeSnapshots == null
                     ? options.UpgradeLoadout
                     : GetSnapshotIds(authoredUpgradeSnapshots);
             var provenanceLoadout = phaseSchedule != null
                 ? GetPhaseScheduleProvenance(phaseSchedule)
+                : authoredPhaseUpgradeSnapshots != null
+                    ? GetPhaseScheduleSnapshotProvenance(authoredPhaseUpgradeSnapshots)
                 : GetProvenanceLoadout(options);
             if (authoredUpgradeSnapshots != null)
             {
@@ -199,6 +220,7 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     authoredUpgradeSnapshots,
                     phaseSchedule,
+                    authoredPhaseUpgradeSnapshots,
                     options.PhaseLengthTicks);
             }
 
@@ -217,19 +239,22 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     provenanceLoadout),
                 playerSpeciesId = playerSpecies.Value,
-                upgradeId = phaseSchedule != null
+                upgradeId = hasPhaseSchedule
                     ? "scheduled"
                     : orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
                 upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
                 upgradeValue = selectedUpgrade == null ? 0f : selectedUpgrade.Value,
                 orderedLoadout = orderedLoadout,
                 upgradeContractVersion = authoredUpgradeSnapshots == null
+                    && authoredPhaseUpgradeSnapshots == null
                     ? string.Empty
                     : SpeciesUpgradeSnapshot.ContractVersion,
                 upgradeCatalogPath = authoredUpgradeSnapshots == null
+                    && authoredPhaseUpgradeSnapshots == null
                     ? string.Empty
                     : options.AuthoredUpgradeCatalogPath,
                 upgradeRegistryFingerprint = authoredUpgradeSnapshots == null
+                    && authoredPhaseUpgradeSnapshots == null
                     ? string.Empty
                     : SpeciesAttributeRegistry.Fingerprint,
                 upgradeLoadoutFingerprint = authoredUpgradeSnapshots == null
@@ -249,11 +274,27 @@ namespace SaltyGame.EditorTools
                 seedCount = options.SeedCount,
                 gridWidth = loadedData.Width,
                 gridHeight = loadedData.Height,
-                runTicks = loadedData.RunTicks,
+                runTicks = hasPhaseSchedule
+                    ? checked(options.PhaseLengthTicks * (phaseSchedule == null
+                        ? authoredPhaseUpgradeSnapshots.Count
+                        : phaseSchedule.Length))
+                    : loadedData.RunTicks,
                 phaseLengthTicks = options.PhaseLengthTicks,
-                phaseCount = phaseSchedule == null ? 0 : phaseSchedule.Length,
-                phaseUpgradeSchedule = SerializePhaseSchedule(phaseSchedule),
-                runDurationSeconds = loadedData.RunDurationSeconds,
+                phaseCount = hasPhaseSchedule
+                    ? phaseSchedule == null
+                        ? authoredPhaseUpgradeSnapshots.Count
+                        : phaseSchedule.Length
+                    : 0,
+                phaseUpgradeSchedule = phaseSchedule != null
+                    ? SerializePhaseSchedule(phaseSchedule)
+                    : SerializePhaseSnapshotSchedule(authoredPhaseUpgradeSnapshots),
+                runDurationSeconds = hasPhaseSchedule
+                    ? options.PhaseLengthTicks
+                        * (phaseSchedule == null
+                            ? authoredPhaseUpgradeSnapshots.Count
+                            : phaseSchedule.Length)
+                        * loadedData.StepInterval
+                    : loadedData.RunDurationSeconds,
                 stepIntervalSeconds = loadedData.StepInterval,
                 runs = runs,
                 finalPopulationSummary = CreateFinalPopulationSummary(runs, species),
@@ -270,9 +311,10 @@ namespace SaltyGame.EditorTools
             SpeciesExperimentalOptions experimentalOptions,
             IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout,
             string[][] phaseSchedule,
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
             int phaseLengthTicks)
         {
-            if (phaseSchedule != null)
+            if (phaseSchedule != null || authoredPhaseUpgradeSnapshots != null)
             {
                 return RunScheduledSimulation(
                     data,
@@ -283,6 +325,7 @@ namespace SaltyGame.EditorTools
                     attackOpportunityMode,
                     experimentalOptions,
                     phaseSchedule,
+                    authoredPhaseUpgradeSnapshots,
                     phaseLengthTicks);
             }
 
@@ -323,16 +366,22 @@ namespace SaltyGame.EditorTools
             SpeciesAttackOpportunityMode attackOpportunityMode,
             SpeciesExperimentalOptions experimentalOptions,
             string[][] phaseSchedule,
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
             int phaseLengthTicks)
         {
-            if (phaseLengthTicks <= 0 || phaseSchedule == null || phaseSchedule.Length < 2)
+            var phaseCount = phaseSchedule == null
+                ? authoredPhaseUpgradeSnapshots == null ? 0 : authoredPhaseUpgradeSnapshots.Count
+                : phaseSchedule.Length;
+            if (phaseLengthTicks <= 0 || phaseCount < 2)
             {
                 throw new ArgumentException("A scheduled run requires at least two phases and a positive phase length.");
             }
 
-            var totalTicks = checked(phaseLengthTicks * phaseSchedule.Length);
+            var totalTicks = checked(phaseLengthTicks * phaseCount);
             var scheduledData = data.WithRunTicks(totalTicks, data.StepInterval);
-            var activeSnapshots = CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value);
+            var activeSnapshots = phaseSchedule != null
+                ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value)
+                : authoredPhaseUpgradeSnapshots[0];
             scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
             var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
             var run = new SimulationRunState(
@@ -358,15 +407,17 @@ namespace SaltyGame.EditorTools
                 }
 
                 var nextPhaseIndex = run.PhaseIndex;
-                if (nextPhaseIndex >= phaseSchedule.Length)
+                if (nextPhaseIndex >= phaseCount)
                 {
                     throw new InvalidOperationException(
                         $"Scheduled run reached an unexpected decision after phase {run.PhaseIndex}.");
                 }
 
-                activeSnapshots = CreateLegacyUpgradeSnapshots(
-                    phaseSchedule[nextPhaseIndex],
-                    playerSpecies.Value);
+                activeSnapshots = phaseSchedule != null
+                    ? CreateLegacyUpgradeSnapshots(
+                        phaseSchedule[nextPhaseIndex],
+                        playerSpecies.Value)
+                    : authoredPhaseUpgradeSnapshots[nextPhaseIndex];
                 var nextData = ApplySnapshotLoadout(
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
@@ -841,6 +892,75 @@ namespace SaltyGame.EditorTools
             return ids;
         }
 
+        static SpeciesUpgradeSnapshot[][] ResolveAuthoredPhaseSchedule(
+            IReadOnlyList<string[]> phaseSchedule,
+            string catalogPath,
+            string playerSpeciesId)
+        {
+            var resolved = new SpeciesUpgradeSnapshot[phaseSchedule.Count][];
+            var previous = Array.Empty<SpeciesUpgradeSnapshot>();
+            for (var phaseIndex = 0; phaseIndex < phaseSchedule.Count; phaseIndex++)
+            {
+                var current = SpeciesUpgradePredictionInputAdapter.Resolve(
+                    phaseSchedule[phaseIndex],
+                    catalogPath);
+                if (phaseIndex == 0 && current.Length > 0)
+                {
+                    throw new ArgumentException(
+                        "The first authored phase must contain no upgrades.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                if (current.Length < previous.Length)
+                {
+                    throw new ArgumentException(
+                        $"Authored phase {phaseIndex + 1} removes an upgrade from the cumulative loadout.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                for (var upgradeIndex = 0; upgradeIndex < previous.Length; upgradeIndex++)
+                {
+                    if (!string.Equals(
+                        current[upgradeIndex].Id,
+                        previous[upgradeIndex].Id,
+                        StringComparison.Ordinal))
+                    {
+                        throw new ArgumentException(
+                            $"Authored phase {phaseIndex + 1} changes the order of the cumulative loadout.",
+                            PhaseUpgradeAssetScheduleArgument);
+                    }
+                }
+
+                if (current.Length > previous.Length + 1)
+                {
+                    throw new ArgumentException(
+                        $"Authored phase {phaseIndex + 1} adds more than one upgrade at its boundary.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                if (current.Length == previous.Length + 1
+                    && !current[current.Length - 1].CanApplyAfterRunStart)
+                {
+                    throw new ArgumentException(
+                        $"Upgrade '{current[current.Length - 1].Id}' is launch-only and cannot be acquired after the run starts.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                if (current.Length > 0
+                    && current[current.Length - 1].TargetSpecies != new SpeciesId(playerSpeciesId))
+                {
+                    throw new ArgumentException(
+                        $"Upgrade '{current[current.Length - 1].Id}' targets '{current[current.Length - 1].TargetSpecies}', not '{playerSpeciesId}'.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                resolved[phaseIndex] = current;
+                previous = current;
+            }
+
+            return resolved;
+        }
+
         static IReadOnlyList<SpeciesUpgradeSnapshot> CreateLegacyUpgradeSnapshots(
             IReadOnlyList<string> upgradeIds,
             string playerSpeciesId)
@@ -893,6 +1013,39 @@ namespace SaltyGame.EditorTools
             }
 
             return serialized;
+        }
+
+        static string[] SerializePhaseSnapshotSchedule(
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> phaseSchedule)
+        {
+            if (phaseSchedule == null)
+            {
+                return new string[0];
+            }
+
+            var serialized = new string[phaseSchedule.Count];
+            for (var phaseIndex = 0; phaseIndex < phaseSchedule.Count; phaseIndex++)
+            {
+                serialized[phaseIndex] = phaseSchedule[phaseIndex].Length == 0
+                    ? DefaultUpgradeId
+                    : string.Join(",", GetSnapshotIds(phaseSchedule[phaseIndex]));
+            }
+
+            return serialized;
+        }
+
+        static string[] GetPhaseScheduleSnapshotProvenance(
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> phaseSchedule)
+        {
+            var provenance = new string[phaseSchedule.Count];
+            for (var phaseIndex = 0; phaseIndex < phaseSchedule.Count; phaseIndex++)
+            {
+                provenance[phaseIndex] = phaseSchedule[phaseIndex].Length == 0
+                    ? $"phase-{phaseIndex + 1}:none"
+                    : $"phase-{phaseIndex + 1}:{string.Join(",", GetSnapshotProvenanceLoadout(phaseSchedule[phaseIndex]))}";
+            }
+
+            return provenance;
         }
 
         static string[] GetSnapshotProvenanceLoadout(IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
@@ -1178,6 +1331,7 @@ namespace SaltyGame.EditorTools
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
             public string[][] PhaseUpgradeSchedule { get; private set; }
+            public string[][] PhaseAuthoredUpgradeSchedule { get; private set; }
             public float RunDurationSeconds { get; private set; }
             public float StepIntervalSeconds { get; private set; }
             public string OutputPath { get; private set; }
@@ -1186,9 +1340,11 @@ namespace SaltyGame.EditorTools
             {
                 var upgradeLoadout = ParseUpgradeLoadout(arguments);
                 var authoredUpgradeLoadout = ParseAuthoredUpgradeLoadout(arguments);
+                var phaseAuthoredUpgradeSchedule = ParseAuthoredPhaseUpgradeSchedule(arguments);
                 var authoredUpgradeCatalogPath = ParseAuthoredUpgradeCatalogPath(
                     arguments,
-                    authoredUpgradeLoadout);
+                    authoredUpgradeLoadout,
+                    phaseAuthoredUpgradeSchedule);
                 var upgradeValueOverride = GetFloatValue(arguments, UpgradeValueOverrideArgument);
                 if (authoredUpgradeLoadout != null
                     && (upgradeLoadout.Length > 0 || upgradeValueOverride > 0f))
@@ -1196,6 +1352,13 @@ namespace SaltyGame.EditorTools
                     throw new ArgumentException(
                         $"Use '{UpgradeAssetSequenceArgument}' instead of the legacy upgrade arguments when running authored upgrades.",
                         UpgradeAssetSequenceArgument);
+                }
+
+                if (authoredUpgradeLoadout != null && phaseAuthoredUpgradeSchedule != null)
+                {
+                    throw new ArgumentException(
+                        $"Use either '{UpgradeAssetSequenceArgument}' or '{PhaseUpgradeAssetScheduleArgument}', not both.",
+                        PhaseUpgradeAssetScheduleArgument);
                 }
 
                 if (upgradeValueOverride > 0f)
@@ -1213,25 +1376,35 @@ namespace SaltyGame.EditorTools
                 var runTicks = GetIntValue(arguments, RunTicksArgument, 0, allowZero: true);
                 var phaseLengthTicks = GetIntValue(arguments, PhaseLengthTicksArgument, 0, allowZero: true);
                 var phaseUpgradeSchedule = ParsePhaseUpgradeSchedule(arguments);
+                if (phaseUpgradeSchedule != null && phaseAuthoredUpgradeSchedule != null)
+                {
+                    throw new ArgumentException(
+                        $"Use either '{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}', not both.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
                 if (phaseLengthTicks > 0 && phaseUpgradeSchedule == null)
                 {
-                    throw new ArgumentException(
-                        $"'{PhaseLengthTicksArgument}' requires '{PhaseUpgradeScheduleArgument}'.",
-                        PhaseUpgradeScheduleArgument);
+                    if (phaseAuthoredUpgradeSchedule == null)
+                    {
+                        throw new ArgumentException(
+                            $"'{PhaseLengthTicksArgument}' requires '{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}'.",
+                            PhaseUpgradeScheduleArgument);
+                    }
                 }
 
-                if (phaseUpgradeSchedule != null && phaseLengthTicks <= 0)
+                if ((phaseUpgradeSchedule != null || phaseAuthoredUpgradeSchedule != null)
+                    && phaseLengthTicks <= 0)
                 {
                     throw new ArgumentException(
-                        $"'{PhaseUpgradeScheduleArgument}' requires '{PhaseLengthTicksArgument}'.",
+                        $"'{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}' requires '{PhaseLengthTicksArgument}'.",
                         PhaseLengthTicksArgument);
                 }
 
-                if (phaseUpgradeSchedule != null
+                if ((phaseUpgradeSchedule != null || phaseAuthoredUpgradeSchedule != null)
                     && (upgradeLoadout.Length > 0 || authoredUpgradeLoadout != null || upgradeValueOverride > 0f))
                 {
                     throw new ArgumentException(
-                        $"'{PhaseUpgradeScheduleArgument}' defines the launch and boundary loadouts; do not combine it with a launch upgrade.",
+                        $"'{PhaseUpgradeScheduleArgument}' and '{PhaseUpgradeAssetScheduleArgument}' define the launch and boundary loadouts; do not combine either with a launch upgrade.",
                         PhaseUpgradeScheduleArgument);
                 }
 
@@ -1270,6 +1443,7 @@ namespace SaltyGame.EditorTools
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
                     PhaseUpgradeSchedule = phaseUpgradeSchedule,
+                    PhaseAuthoredUpgradeSchedule = phaseAuthoredUpgradeSchedule,
                     RunDurationSeconds = runDurationSeconds,
                     StepIntervalSeconds = GetFloatValue(arguments, StepIntervalArgument),
                     OutputPath = GetOptionalValue(arguments, OutputPathArgument),
@@ -1331,6 +1505,59 @@ namespace SaltyGame.EditorTools
                 return parsed;
             }
 
+            static string[][] ParseAuthoredPhaseUpgradeSchedule(IReadOnlyList<string> arguments)
+            {
+                var schedule = GetOptionalValue(arguments, PhaseUpgradeAssetScheduleArgument);
+                if (schedule == null)
+                {
+                    return null;
+                }
+
+                if (string.IsNullOrWhiteSpace(schedule))
+                {
+                    throw new ArgumentException(
+                        $"'{PhaseUpgradeAssetScheduleArgument}' must contain semicolon-separated phase loadouts.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                var phases = schedule.Split(new[] { ';' }, StringSplitOptions.None);
+                if (phases.Length < 2)
+                {
+                    throw new ArgumentException(
+                        $"'{PhaseUpgradeAssetScheduleArgument}' must contain at least two phases.",
+                        PhaseUpgradeAssetScheduleArgument);
+                }
+
+                var parsed = new string[phases.Length][];
+                for (var phaseIndex = 0; phaseIndex < phases.Length; phaseIndex++)
+                {
+                    var phase = phases[phaseIndex].Trim();
+                    if (string.IsNullOrWhiteSpace(phase)
+                        || string.Equals(phase, DefaultUpgradeId, StringComparison.OrdinalIgnoreCase))
+                    {
+                        parsed[phaseIndex] = new string[0];
+                        continue;
+                    }
+
+                    var loadout = phase.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                    for (var upgradeIndex = 0; upgradeIndex < loadout.Length; upgradeIndex++)
+                    {
+                        loadout[upgradeIndex] = loadout[upgradeIndex].Trim();
+                        if (string.IsNullOrWhiteSpace(loadout[upgradeIndex])
+                            || string.Equals(loadout[upgradeIndex], DefaultUpgradeId, StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new ArgumentException(
+                                $"'{PhaseUpgradeAssetScheduleArgument}' contains an invalid upgrade at phase {phaseIndex + 1}.",
+                                PhaseUpgradeAssetScheduleArgument);
+                        }
+                    }
+
+                    parsed[phaseIndex] = loadout;
+                }
+
+                return parsed;
+            }
+
             static string[] ParseAuthoredUpgradeLoadout(IReadOnlyList<string> arguments)
             {
                 var sequence = GetOptionalValue(arguments, UpgradeAssetSequenceArgument);
@@ -1371,15 +1598,16 @@ namespace SaltyGame.EditorTools
 
             static string ParseAuthoredUpgradeCatalogPath(
                 IReadOnlyList<string> arguments,
-                string[] authoredUpgradeLoadout)
+                string[] authoredUpgradeLoadout,
+                string[][] phaseAuthoredUpgradeSchedule)
             {
                 var catalogPath = GetOptionalValue(arguments, UpgradeAssetCatalogPathArgument);
-                if (authoredUpgradeLoadout == null)
+                if (authoredUpgradeLoadout == null && phaseAuthoredUpgradeSchedule == null)
                 {
                     if (!string.IsNullOrWhiteSpace(catalogPath))
                     {
                         throw new ArgumentException(
-                            $"'{UpgradeAssetCatalogPathArgument}' requires '{UpgradeAssetSequenceArgument}'.",
+                            $"'{UpgradeAssetCatalogPathArgument}' requires '{UpgradeAssetSequenceArgument}' or '{PhaseUpgradeAssetScheduleArgument}'.",
                             UpgradeAssetCatalogPathArgument);
                     }
 

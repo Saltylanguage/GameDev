@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Noesis;
 using UnityEngine;
 using UnityEngine.U2D;
@@ -23,6 +24,8 @@ namespace SaltyGame
         [SerializeField] Sprite rabbitSprite;
         [SerializeField] bool enableNoesisUi = true;
 
+        SpeciesSimulationBoard simulationBoard;
+
         void Start()
         {
             if (!enableNoesisUi || xaml == null)
@@ -46,6 +49,14 @@ namespace SaltyGame
             view.Xaml = xaml;
             view.enabled = true;
 
+            if (view.Content == null)
+            {
+                Debug.LogError("SpeciesSimulationNoesisHost could not load its XAML content.", this);
+                return;
+            }
+
+            view.Content.DataContext = viewModel;
+
             if (Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch))
             {
                 if (!preview.TryApplyLaunchRequest(launch, out var validationMessage))
@@ -57,14 +68,60 @@ namespace SaltyGame
 
             viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
             viewModel.BindSceneTransition(sceneTransition, profileSession);
-            viewModel.BindToView(view);
 
             boardViewModel.Initialize(preview);
-            boardViewModel.SetSpriteVisuals(
+            simulationBoard = FindSimulationBoard(view.Content);
+            if (simulationBoard == null)
+            {
+                Debug.LogError("SpeciesSimulationNoesisHost could not find the SimulationBoard control in its XAML content.", this);
+                return;
+            }
+
+            simulationBoard.SetSpriteVisuals(
                 viewModel.AnimalSprites,
                 viewModel.GrassTerrainTiles,
                 viewModel.DesertTerrainTiles);
-            boardViewModel.BindToView(view);
+            boardViewModel.PropertyChanged += HandleBoardPropertyChanged;
+            ApplyBoardSnapshot();
+        }
+
+        void OnDestroy()
+        {
+            if (boardViewModel != null)
+            {
+                boardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
+            }
+        }
+
+        void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(VM_SimulationBoard.Snapshot))
+            {
+                ApplyBoardSnapshot();
+            }
+        }
+
+        void ApplyBoardSnapshot()
+        {
+            simulationBoard?.SetSnapshot(boardViewModel?.Snapshot);
+        }
+
+        static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)
+        {
+            if (root == null)
+            {
+                return null;
+            }
+
+            var board = root.FindName("SimulationBoard") as SpeciesSimulationBoard;
+            if (board != null)
+            {
+                return board;
+            }
+
+            var window = root.FindName("SimulationWindow") as HeaderedContentControl;
+            var windowContent = window?.Content as FrameworkElement;
+            return windowContent?.FindName("SimulationBoard") as SpeciesSimulationBoard;
         }
     }
 }

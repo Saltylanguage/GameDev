@@ -95,25 +95,47 @@ telemetry migration.
 - Separate population/exposure counts, ecological rates and currency. A final
   population reused at each reward break is not evidence of newly earned data.
 
+### Agreed reporting direction — 2026-09-06
+
+Josh and Sim agreed that every phase gets a complete, independent Stat-Line.
+The final expedition also gets its own independently calculated Stat-Line. The
+final values are not made by adding or averaging the phase reports.
+
+For the player-facing chronological comparison, “previous” means the phase or
+run that happened immediately before the current one in the same sequence. If
+both values are numeric, show `current - previous`. If either value is `N/A`,
+the delta is `N/A`; missing data is never turned into zero just to produce a
+number. The full report can show every field and delta, while the player UI
+shows a smaller, read-only version.
+
+These deltas are a view of progression, not a new score. The project keeps the
+complete human-readable Stat-Line as the source of truth and does not add new
+efficiency, fitness, ranking, or composite scoring functions.
+
+The six-upgrade, ten-phase research schedule will be fixed before execution.
+The same schedule is used for every seed; any alternate sequence used for a
+research comparison must also be fixed before its runs.
+
 ### Existing stat limitations requiring explicit retests
 
-1. The experimental Hare reconciliation `SPO + BIR - PREY - STRV - CRWD`
-   excludes other possible creature removals, including `PopulationLimit`.
-   Longer accumulated populations can expose this gap. Keep the legacy formula
-   and its failure visible until Sim accepts a revised cause-complete contract;
-   do not silently reinterpret PREY as all deaths.
-2. `bAVG = BIR / MAT` currently rejects `BIR > MAT` in both C# and the independent
-   validator. The reproduction system can produce multiple offspring per
-   successful candidate. Test multi-offspring fixtures and decide whether this
-   is offspring per opportunity (which may exceed one) or success probability
-   (which needs successful attempts). This is an existing semantic issue, not a
-   proven regression caused by continuation.
-3. HPS/EHS/ECN cannot currently be independently reconstructed from full event
-   lists; `VALIDATED_WITH_LIMITATIONS` remains limited after segmentation. Adding
-   scope metadata alone does not close the instrumentation gap.
-4. RFS/APS depend on population change, rates and validity. They are neither
-   additive across phases nor accepted universal species ratings. Keep their
-   experimental status and the existing Josh/Sim decision on their future role.
+1. The authoritative Herbivore formula is fixed:
+   `FPO = SPO + BIR - PREY - STRV - CRWD`. `PREY` means predator kills only;
+   other removal causes are not folded into `PREY` or added to this formula.
+   If another removal causes a mismatch, show the mismatch or limitation
+   clearly rather than changing the formula.
+2. `BIR` tracks the actual number of births. `bAVG = BIR / MAT`; if `MAT = 0`,
+   `bAVG` is `N/A`. Multiple births are not clamped or rejected. The `N/A`
+   remains visible in the Stat-Line, while APS treats that missing birth
+   contribution as zero for its own calculation.
+3. HPS is the sum of living herbivores on every step where a carnivore is
+   present, and qualifying steps remain tracked even if populations later go
+   extinct. `EHS = 0` is a valid perfect-avoidance result when exposure was
+   present. `ECN = 0` makes `pAVI` `N/A`. These meanings are already handled and
+   must not be replaced with new interpretations.
+4. A valid `bAVG = 0` produces an `RFS` of zero. A `bAVG = N/A` remains visible
+   as `N/A` in its own result; APS handles that missing contribution as zero.
+   RFS and APS remain the existing defined Stat-Line fields, not a reason to
+   add another score.
 5. Current experimental collection/display is conditional on BEV/herbivore mode.
    The general Stat-Line cannot claim equivalent coverage for every species or
    production mode without explicit instrumentation and tests.

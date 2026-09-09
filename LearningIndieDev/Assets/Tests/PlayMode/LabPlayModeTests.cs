@@ -124,6 +124,89 @@ namespace SaltyGame.PlayModeTests
             PlayerPrefs.Save();
         }
 
+        [UnityTest]
+        public IEnumerator SimulationWindowCloseIsDisabledDuringRunAndReturnsToLabAfterResults()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
+            yield return LoadLab();
+
+            var root = FindRoot();
+            var profile = root.GetComponent<Helper_ProfileSession>();
+            profile.CreateInitialProfile("Close Policy Test Profile");
+
+            var viewModel = FindViewModel();
+            foreach (var feature in (IEnumerable)GetProperty(viewModel, "Features"))
+            {
+                if ((string)GetProperty(feature, "FeatureId") == "ExpeditionSetup")
+                {
+                    Execute(GetProperty(feature, "OpenCommand"));
+                    break;
+                }
+            }
+
+            Execute(GetProperty(viewModel, "LaunchExpeditionCommand"));
+            yield return null;
+            yield return null;
+
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("CellularAutomataPrototype"));
+            var runtime = Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            var preview = runtime.SpeciesPreview;
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
+            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                "8",
+                "8",
+                preview.BaseSeed.ToString(),
+                preview.MaximumPopulation.ToString(),
+                preview.MinimumPopulation.ToString(),
+                "4",
+                "0.01",
+                preview.PlantProbability.ToString(),
+                preview.HerbivoreProbability.ToString(),
+                preview.CarnivoreProbability.ToString(),
+                randomizeSeed: false,
+                out var settingsMessage), Is.True, settingsMessage);
+
+            var simulationViewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(simulationViewModel, Is.Not.Null);
+            var closeCommand = GetProperty(simulationViewModel, "CloseWindowCommand");
+            preview.StartSimulation();
+            yield return null;
+
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.Results
+                   && Time.realtimeSinceStartup < timeout)
+            {
+                Assert.That(GetProperty(simulationViewModel, "CanCloseWindow"), Is.EqualTo(false));
+                Assert.That(CanExecute(closeCommand), Is.False);
+                if (preview.State == SpeciesPreviewState.PhaseDecision)
+                {
+                    preview.ContinueWithoutUpgrade();
+                }
+
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            yield return null;
+            Assert.That(GetProperty(simulationViewModel, "CanCloseWindow"), Is.EqualTo(true));
+            Assert.That(CanExecute(closeCommand), Is.True);
+
+            Execute(closeCommand);
+            timeout = Time.realtimeSinceStartup + 5f;
+            while (SceneManager.GetActiveScene().name != "Lab"
+                   && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo("Lab"));
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
+        }
+
         static IEnumerator LoadLab()
         {
             yield return SceneManager.LoadSceneAsync(LabScene);

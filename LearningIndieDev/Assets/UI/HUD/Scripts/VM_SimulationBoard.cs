@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using Noesis;
 using UnityEngine;
 
 namespace SaltyGame
@@ -11,13 +10,9 @@ namespace SaltyGame
     public sealed class VM_SimulationBoard : MonoBehaviour, INotifyPropertyChanged
     {
         SpeciesSimulationPreview preview;
-        SpeciesSimulationBoard board;
         SimulationRunState lastRun;
         int lastTick = -1;
         SimulationBoardSnapshot snapshot;
-        CroppedBitmap[] animalSprites;
-        CroppedBitmap[] grassTerrainTiles;
-        CroppedBitmap[] desertTerrainTiles;
         int selectedX = -1;
         int selectedY = -1;
 
@@ -31,33 +26,9 @@ namespace SaltyGame
             ? snapshot.GetCell(selectedX, selectedY)
             : default;
 
-        public void SetSpriteVisuals(
-            CroppedBitmap[] animals,
-            CroppedBitmap[] grassTerrain,
-            CroppedBitmap[] desertTerrain)
-        {
-            animalSprites = animals;
-            grassTerrainTiles = grassTerrain;
-            desertTerrainTiles = desertTerrain;
-            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
-        }
-
         public void Initialize(SpeciesSimulationPreview simulationPreview)
         {
             preview = simulationPreview ?? throw new ArgumentNullException(nameof(simulationPreview));
-            Refresh(true);
-        }
-
-        public void BindToView(NoesisView view)
-        {
-            if (view == null || view.Content == null)
-            {
-                return;
-            }
-
-            board = view.Content.FindName("SimulationBoard") as SpeciesSimulationBoard;
-            board?.SetSpriteVisuals(animalSprites, grassTerrainTiles, desertTerrainTiles);
-            board?.SetSnapshot(snapshot);
             Refresh(true);
         }
 
@@ -119,7 +90,6 @@ namespace SaltyGame
             lastRun = run;
             lastTick = tick;
             snapshot = SimulationBoardSnapshot.Create(run, preview.ActiveSpeciesRules, preview.PlayerSpecies);
-            board?.SetSnapshot(snapshot);
             if (!HasSelection)
             {
                 ClearSelection();

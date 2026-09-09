@@ -25,6 +25,5 @@ namespace SaltyGame
         public bool EatPressed => Keyboard.current != null && Keyboard.current.fKey.wasPressedThisFrame;
         public bool SleepPressed => Keyboard.current != null && Keyboard.current.rKey.wasPressedThisFrame;
         public bool CraftToolPressed => Keyboard.current != null && Keyboard.current.qKey.wasPressedThisFrame;
-        public bool DebugPressed => Keyboard.current != null && Keyboard.current.f3Key.wasPressedThisFrame;
     }
 }

@@ -1,13 +1,13 @@
 <Page x:Name="Panel_Root"
-  xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mc:Ignorable="d"
-  d:DesignWidth="1920"
-  d:DesignHeight="1080"
-  Background="#FF4D5052"
-  Foreground="#FFE1E9ED">
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+      xmlns:game="clr-namespace:SaltyGame"
+      mc:Ignorable="d"
+      d:DesignWidth="1920"
+      d:DesignHeight="1080">
   <Page.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -15,64 +15,935 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Page.Resources>
-  <Border x:Name="Root_Border">
-    <Grid x:Name="ContentGrid" Background="{DynamicResource Salty_SoftGreen}">
-      <!-- <ContentControl Width="700" Height="420" Margin="19,330,1201,330" Style="{StaticResource GalapagOS_WindowStyle}">
-        <StackPanel Margin="24" VerticalAlignment="Center" Background="#FFDAFF69">
-          <TextBlock x:Name="Label1" Text="{Binding DesktopTitle}" FontSize="28" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
-          <TextBlock x:Name="Label2" Text="{Binding WindowTitle}" FontSize="20" Margin="0,16,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
-          <TextBlock Text="{Binding StatusText}" Margin="0,24,0,0" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
-          <TextBlock Text="{Binding ViewModelType}" Margin="0,8,0,0" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" />
-        </StackPanel>
-      </ContentControl>
-      <ContentControl Margin="0,0,0,651" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}">
-        <StackPanel>
-          <Ellipse Width="50" Height="50" Fill="#FFF4F4F5" Stroke="#FF000000"/>
-          <Rectangle Width="100" Height="100" Fill="#FFF4F4F5" Stroke="#FF000000"/>
-          <Ellipse Width="60" Height="60" Fill="#FFF4F4F5" Stroke="#FF000000"/>
-        </StackPanel>
-      </ContentControl>
-      <ContentControl HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}">
-        <TextBlock Text="TextBlock" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF000000" FontSize="48" TextWrapping="Wrap"/>
-      </ContentControl>
-      <ContentControl Content="ContentControl" Margin="0,0,1182,651" HorizontalAlignment="Center" VerticalAlignment="Center" Style="{DynamicResource GalapagOS_WindowStyle}"/> -->
 
+  <Grid Background="{DynamicResource Chrono_AzureSky}">
+    <!-- Minimal desktop ground: enough atmosphere to read as a desktop without competing with the lab window. -->
+    <Canvas IsHitTestVisible="False">
+      <Ellipse Width="420" Height="420" Canvas.Left="80" Canvas.Top="-220"
+               Fill="#22FFFFFF" />
+      <Ellipse Width="520" Height="520" Canvas.Right="70" Canvas.Top="-280"
+               Fill="#18FCEEC0" />
+      <Path Data="M 0,940 L 280,780 L 520,900 L 770,730 L 1080,900 L 1360,760 L 1660,890 L 1920,760 L 1920,1080 L 0,1080 Z"
+            Fill="#FFC5D370" />
+      <Path Data="M 0,1010 L 300,900 L 600,980 L 930,860 L 1260,980 L 1580,870 L 1920,960 L 1920,1080 L 0,1080 Z"
+            Fill="#FF84A340" Opacity="0.46" />
+    </Canvas>
 
-<Grid x:Name="GalapagOS_Window" Margin="19,0,-19,0">
-              <Border x:Name="Window_Root_Border" Width="500" Height="250" HorizontalAlignment="Center" VerticalAlignment="Center" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="#FF000000" CornerRadius="6,6,6,6">
-                <Grid x:Name="WindowContentGrid">
-                  <Grid.Background>
-                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                      <GradientStop Color="#FFF3FFB6" Offset="0.9312354"/>
-                      <GradientStop Offset="1" Color="#FFCCE43E"/>
-                    </LinearGradientBrush>
-                  </Grid.Background>
-                  <Border x:Name="HeaderBorderContainer" Height="32" VerticalAlignment="Top" Background="#FFDFE99A" CornerRadius="8,8,0,0">
-                    <Grid x:Name="HeaderContentGrid">
-                      <Grid x:Name="StripeGridContainer">
-                        <Rectangle x:Name="Stripe1" Height="2" Margin="0,8,0,0" VerticalAlignment="Top" Fill="{DynamicResource Chrono_Lime}"/>
-                        <Rectangle x:Name="Stripe2" Height="2" Margin="0,16,0,0" VerticalAlignment="Top" Fill="{DynamicResource Chrono_Lime}"/>
-                        <Rectangle x:Name="Stripe3" Height="2" Margin="0,24,0,0" VerticalAlignment="Top" Fill="{DynamicResource Chrono_Lime}"/>
-                        <Button x:Name="CloseButton" Content="Button" HorizontalAlignment="Right" Template="{DynamicResource GalapagOS_CloseWindowButtonStyle}"/>
-                      </Grid>
-                      <Border x:Name="HeaderTextBorder" HorizontalAlignment="Left" CornerRadius="4,2,4,0">
-                        <Border.Background>
-                          <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1" Opacity="1">
-                            <GradientStop Offset="0" Color="#FFA9AA5A"/>
-                            <GradientStop Offset="1" Color="#FFEDFFA0"/>
-                          </LinearGradientBrush>
-                        </Border.Background>
-                        <Border.Effect>
-                          <DropShadowEffect Color="#1FB5B67D" BlurRadius="6" Direction="325" ShadowDepth="3"/>
-                        </Border.Effect>
-                        <TextBlock x:Name="HeaderText" Text="GalapagOS Window" Height="24" Margin="6,0,6,0" Foreground="{DynamicResource GalapagOS.Window.HeaderForeground}" StrokeThickness="2" FontSize="20" FontWeight="Bold" TextAlignment="Center"/>
-                      </Border>
-                    </Grid>
+    <Canvas Margin="0,0,0,76">
+      <Button Canvas.Left="32"
+              Canvas.Top="32"
+              Content="Field Notes"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="Field Notes">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+      <Button Canvas.Left="32"
+              Canvas.Top="160"
+              Content="Gene Lab"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="Gene Lab">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+      <Button Canvas.Left="32"
+              Canvas.Top="288"
+              Content="Simulation"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="Simulation">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+      <Button Canvas.Left="32"
+              Canvas.Top="416"
+              Content="Biome Data"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="Biome Data">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+      <Button Canvas.Left="32"
+              Canvas.Top="544"
+              Content="My Collection"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="My Collection">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+      <Button Canvas.Left="32"
+              Canvas.Top="672"
+              Content="Settings"
+              Style="{StaticResource GalapagOS.DesktopIcon}"
+              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+              game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
+              game:GalapagOSDesktopIcon.CommandParameter="Settings">
+        <b:Interaction.Behaviors>
+          <game:GalapagOSDesktopIconBehavior GridSize="32"
+                                              SnapToGrid="True"
+                                              ConstrainToParentBounds="True" />
+        </b:Interaction.Behaviors>
+      </Button>
+    </Canvas>
+
+    <Border x:Name="Taskbar"
+            Panel.ZIndex="20"
+            VerticalAlignment="Bottom"
+            Height="76"
+            Background="{DynamicResource Chrono_VanillaCream}"
+            BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+            BorderThickness="0,2,0,0">
+      <Grid Margin="8,6,18,6">
+        <Button x:Name="StartBar"
+                Width="142"
+                Height="58"
+                HorizontalAlignment="Left"
+                Padding="8"
+                Background="{DynamicResource Chrono_Olive}"
+                BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+                BorderThickness="1"
+                Foreground="{DynamicResource Chrono_VanillaCream}"
+                Command="{Binding ToggleStartMenuCommand}"
+                ToolTip="Open all apps"
+                Style="{StaticResource GalapagOS.TaskbarButton}">
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center">
+            <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                   Width="30"
+                   Height="30"
+                   Margin="0,0,7,0"
+                   Stretch="Uniform" />
+            <TextBlock Text="START"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="13"
+                       FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       Foreground="{DynamicResource Chrono_VanillaCream}" />
+          </StackPanel>
+        </Button>
+
+        <StackPanel Orientation="Horizontal"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center">
+          <Button Width="64"
+                  Height="58"
+                  Margin="8,0,0,0"
+                  Command="{Binding ToggleVolumeCommand}"
+                  ToolTip="Volume controls"
+                  Style="{StaticResource GalapagOS.TaskbarButton}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+              <Path Data="M2,9 H6 L11,4 V20 L6,15 H2 Z M14,8 C17,10 17,14 14,16 M17,5 C22,9 22,15 17,19"
+                    Stroke="{DynamicResource Chrono_TreeBark}"
+                    StrokeThickness="2"
+                    Fill="Transparent"
+                    HorizontalAlignment="Center" />
+              <TextBlock Text="VOL"
+                         Margin="0,2,0,0"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="10"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+            </StackPanel>
+          </Button>
+
+          <Button Width="78"
+                  Height="58"
+                  Margin="4,0,0,0"
+                  Command="{Binding ToggleNotificationsCommand}"
+                  ToolTip="Notifications"
+                  Style="{StaticResource GalapagOS.TaskbarButton}">
+            <Grid Width="64" Height="48">
+              <TextBlock Text="!"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="24"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center"
+                         VerticalAlignment="Center" />
+              <Border Width="20"
+                      Height="20"
+                      HorizontalAlignment="Right"
+                      VerticalAlignment="Top"
+                      Background="{DynamicResource Chrono_LightCoral}"
+                      BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+                      BorderThickness="1"
+                      CornerRadius="10">
+                <TextBlock Text="{Binding NotificationCountText}"
+                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center" />
+              </Border>
+              <TextBlock Text="LOG"
+                         Margin="0,31,0,0"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="10"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+            </Grid>
+          </Button>
+
+          <Border Width="194"
+                  Height="58"
+                  Margin="8,0,0,0"
+                  Padding="10,4"
+                  Background="{DynamicResource Chrono_LightCream}"
+                  BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+                  BorderThickness="1"
+                  CornerRadius="6"
+                  ToolTip="Day and night cycle">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="54" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="DAY"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource Chrono_Olive}"
+                         VerticalAlignment="Center"
+                         HorizontalAlignment="Center" />
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="{Binding DayPhaseText}"
+                           FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                           FontSize="10"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Chrono_Olive}" />
+                <TextBlock Text="{Binding DateText}"
+                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                           FontSize="10"
+                           Foreground="{DynamicResource Chrono_TreeBark}" />
+                <TextBlock Text="{Binding ClockText}"
+                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                           FontSize="13"
+                           FontWeight="Bold"
+                           Foreground="{DynamicResource Chrono_TreeBark}" />
+              </StackPanel>
+            </Grid>
+          </Border>
+
+          <Button Width="86"
+                  Height="58"
+                  Margin="8,0,0,0"
+                  Command="{Binding ToggleGameSpeedCommand}"
+                  ToolTip="Game speed controls"
+                  Style="{StaticResource GalapagOS.TaskbarButton}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+              <TextBlock Text=">>"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                         FontSize="18"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+              <TextBlock Text="{Binding GameSpeedText}"
+                         Margin="0,2,0,0"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="12"
+                         FontWeight="Bold"
+                         HorizontalAlignment="Center" />
+            </StackPanel>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <HeaderedContentControl x:Name="LabWindow"
+                            Visibility="{Binding LabWindowVisibility}"
+                            Width="1120"
+                            Height="720"
+                            Header="GALAPAGOS LAB"
+                            game:GalapagOSWindow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                            game:GalapagOSWindow.CloseCommand="{Binding CloseLabWindowCommand}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,48"
+                            Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="1" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+          <StackPanel Orientation="Horizontal">
+            <TextBlock Text="Welcome to the Lab"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="28"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource Chrono_TreeBark}" />
+            <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                   Width="38"
+                   Height="38"
+                   Margin="10,0,0,0"
+                   Stretch="Uniform"
+                   VerticalAlignment="Center" />
+          </StackPanel>
+          <TextBlock Text="Explore. Observe. Understand. Protect."
+                     Margin="0,6,0,0"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="16"
+                     Foreground="{DynamicResource Chrono_TreeBark}" />
+        </StackPanel>
+
+        <Rectangle Grid.Row="1"
+                   Margin="0,16,0,16"
+                   Height="1"
+                   Fill="Transparent"
+                   Stroke="{DynamicResource Chrono_Sand}"
+                   StrokeDashArray="8,5"
+                   StrokeThickness="3"
+                   Opacity="0.85" />
+
+        <Grid Grid.Row="2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="0.92*" />
+            <ColumnDefinition Width="1" />
+            <ColumnDefinition Width="1.08*" />
+          </Grid.ColumnDefinitions>
+
+          <Grid Grid.Column="0" Margin="0,0,24,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="190" />
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Orientation="Horizontal"
+                        Margin="0,0,0,10">
+              <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                     Width="28"
+                     Height="28"
+                     Margin="0,0,7,0"
+                     Stretch="Uniform"
+                     VerticalAlignment="Center" />
+              <TextBlock Text="TODAY IN THE LAB"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource Chrono_TreeBark}"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    Background="{DynamicResource Chrono_AzureSky}"
+                    BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+                    BorderThickness="2"
+                    CornerRadius="6"
+                    Padding="4">
+              <Viewbox Stretch="Fill">
+                <Canvas Width="360" Height="180">
+                  <Rectangle Width="360" Height="180" Fill="#FFA2D2FF" />
+                  <Path Data="M 0,118 L 76,54 L 140,108 L 212,32 L 300,105 L 360,62 L 360,180 L 0,180 Z"
+                        Fill="#FF84A340" />
+                  <Path Data="M 0,142 L 85,95 L 150,136 L 236,78 L 310,130 L 360,108 L 360,180 L 0,180 Z"
+                        Fill="#FFC5D370" />
+                  <Rectangle Canvas.Top="142" Width="360" Height="38" Fill="#FFFCEEC0" Opacity="0.86" />
+                  <Path Data="M8,158 C72,142 111,166 168,151 S274,145 352,158"
+                        Stroke="#FFA2D2FF"
+                        StrokeThickness="8"
+                        StrokeLineJoin="Round"
+                        Fill="Transparent" />
+                  <Ellipse Width="18" Height="18" Canvas.Left="44" Canvas.Top="25" Fill="#FFFFF9E8" />
+                  <Ellipse Width="12" Height="12" Canvas.Left="70" Canvas.Top="40" Fill="#FFFFF9E8" />
+                  <Ellipse Width="20" Height="20" Canvas.Left="284" Canvas.Top="18" Fill="#FFFFF9E8" />
+                </Canvas>
+              </Viewbox>
+            </Border>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        Margin="0,18,0,6">
+              <Image Source="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                     Width="28"
+                     Height="28"
+                     Margin="0,0,7,0"
+                     Stretch="Uniform"
+                     VerticalAlignment="Center" />
+              <TextBlock Text="NEXT ACTION"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource Chrono_TreeBark}"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="3">
+              <TextBlock Text="Analyze Fernlight samples"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="16"
+                         Foreground="{DynamicResource Chrono_TreeBark}" />
+              <TextBlock Text="in the Gene Lab."
+                         Margin="0,3,0,0"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="16"
+                         Foreground="{DynamicResource Chrono_TreeBark}" />
+            </StackPanel>
+
+            <Button Grid.Row="4"
+                    Content="Go to Gene Lab"
+                    Width="214"
+                    FontSize="14"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    HorizontalAlignment="Left"
+                    Style="{StaticResource GalapagOS.Button.Primary}" />
+          </Grid>
+
+          <Rectangle Grid.Column="1"
+                     Fill="Transparent"
+                     Stroke="{DynamicResource Chrono_Sand}"
+                     StrokeDashArray="8,5"
+                     StrokeThickness="3"
+                     Opacity="0.85" />
+
+          <Grid Grid.Column="2" Margin="24,0,0,0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto" />
+              <RowDefinition Height="*" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0"
+                        Orientation="Horizontal"
+                        Margin="0,0,0,10">
+              <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                     Width="28"
+                     Height="28"
+                     Margin="0,0,7,0"
+                     Stretch="Uniform"
+                     VerticalAlignment="Center" />
+              <TextBlock Text="CURRENT EXPEDITION"
+                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                         FontSize="15"
+                         FontWeight="Bold"
+                         Foreground="{DynamicResource Chrono_TreeBark}"
+                         VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    Background="{DynamicResource Chrono_LightCream}"
+                    BorderBrush="#FFD4C99B"
+                    BorderThickness="1"
+                    CornerRadius="6"
+                    Padding="14">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="1" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                  <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <Image Source="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                         Width="36"
+                         Height="36"
+                         Stretch="Uniform"
+                         VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1"
+                             Text="Fernlight Valley"
+                             VerticalAlignment="Center"
+                             FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                             FontSize="18"
+                             FontWeight="Bold"
+                             Foreground="{DynamicResource Chrono_TreeBark}" />
+                  <Border Grid.Column="2"
+                          Background="{DynamicResource Chrono_Lime}"
+                          BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+                          BorderThickness="1"
+                          CornerRadius="4"
+                          Padding="8,4">
+                    <TextBlock Text="68%"
+                               FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Foreground="{DynamicResource Chrono_TreeBark}" />
                   </Border>
                 </Grid>
-              </Border>
-              </Grid>
-              </Grid>
-              </Border>
 
+                <ProgressBar x:Name="ExpeditionProgress"
+                             Grid.Row="1"
+                             Margin="0,16,0,16"
+                             Minimum="0"
+                             Maximum="100"
+                             Value="20"
+                             Style="{StaticResource GalapagOS.ProgressBar}" />
+
+                <Rectangle Grid.Row="2"
+                           Fill="Transparent"
+                           Stroke="{DynamicResource Chrono_Sand}"
+                           StrokeDashArray="8,5"
+                           StrokeThickness="3"
+                           Opacity="0.7" />
+
+                <ContentControl Grid.Row="3"
+                                Margin="0,12,0,0"
+                                Style="{StaticResource GalapagOS.MetricStatRow}"
+                                game:GalapagOSMetricRow.Label="Explored"
+                                game:GalapagOSMetricRow.Value="68%"
+                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png" />
+                <ContentControl Grid.Row="4"
+                                Style="{StaticResource GalapagOS.MetricStatRow}"
+                                game:GalapagOSMetricRow.Label="Collected"
+                                game:GalapagOSMetricRow.Value="28/40"
+                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png" />
+                <ContentControl Grid.Row="5"
+                                Style="{StaticResource GalapagOS.MetricStatRow}"
+                                game:GalapagOSMetricRow.Label="Rare Genes"
+                                game:GalapagOSMetricRow.Value="3/8"
+                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png" />
+              </Grid>
+            </Border>
+
+            <StackPanel Grid.Row="2"
+                        Orientation="Horizontal"
+                        Margin="0,16,0,0">
+              <Button Content="View Expedition"
+                      Width="218"
+                      FontSize="14"
+                      Style="{StaticResource GalapagOS.Button.Primary}" />
+              <Button Content="All Expeditions"
+                      Width="194"
+                      FontSize="14"
+                      Margin="12,0,0,0"
+                      Style="{StaticResource GalapagOS.Button.Secondary}" />
+            </StackPanel>
+          </Grid>
+        </Grid>
+      </Grid>
+    </HeaderedContentControl>
+
+    <HeaderedContentControl x:Name="DesktopAppWindow"
+                            Visibility="{Binding DesktopAppVisibility}"
+                            Width="860"
+                            Height="520"
+                            Header="{Binding ActiveDesktopAppTitle}"
+                            game:GalapagOSWindow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                            game:GalapagOSWindow.CloseCommand="{Binding CloseDesktopAppCommand}"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Margin="0,0,0,76"
+                            Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="1" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0">
+          <TextBlock Text="GALAPAGOS DESKTOP APPLICATION"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="18"
+                     FontWeight="Bold"
+                     Foreground="{DynamicResource Chrono_TreeBark}" />
+          <TextBlock Text="A new workspace is taking shape."
+                     Margin="0,6,0,0"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="14"
+                     Foreground="{DynamicResource Chrono_TreeBark}" />
+        </StackPanel>
+
+        <Rectangle Grid.Row="1"
+                   Margin="0,16,0,16"
+                   Height="1"
+                   Fill="Transparent"
+                   Stroke="{DynamicResource Chrono_Sand}"
+                   StrokeDashArray="8,5"
+                   StrokeThickness="3"
+                   Opacity="0.85" />
+
+        <Border Grid.Row="2"
+                Background="{DynamicResource Chrono_LightCream}"
+                BorderBrush="{DynamicResource Chrono_Sand}"
+                BorderThickness="2"
+                CornerRadius="8"
+                Padding="28">
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="{Binding ActiveDesktopAppDescription}"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="20"
+                       Foreground="{DynamicResource Chrono_TreeBark}"
+                       TextWrapping="Wrap" />
+            <TextBlock Text="FEATURE SURFACE READY"
+                       Margin="0,24,0,0"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="14"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource Chrono_Olive}" />
+            <TextBlock Text="The detailed controls for this application will be added in its feature pass."
+                       Margin="0,8,0,0"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="14"
+                       Foreground="{DynamicResource Chrono_TreeBark}"
+                       TextWrapping="Wrap" />
+            <Button Content="Close"
+                    Width="140"
+                    Margin="0,28,0,0"
+                    HorizontalAlignment="Left"
+                    Command="{Binding CloseDesktopAppCommand}"
+                    Style="{StaticResource GalapagOS.Button.Secondary}" />
+          </StackPanel>
+        </Border>
+      </Grid>
+    </HeaderedContentControl>
+
+    <Button x:Name="StartMenuDismissLayer"
+            Visibility="{Binding StartMenuVisibility}"
+            Panel.ZIndex="10"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Stretch"
+            Margin="0,0,0,76"
+            Background="Transparent"
+            BorderBrush="Transparent"
+            BorderThickness="0"
+            Command="{Binding CloseStartMenuCommand}"
+            Focusable="False"
+            IsTabStop="False"
+            Style="{StaticResource GalapagOS.DismissLayer}" />
+
+    <Border x:Name="StartMenu"
+            Visibility="{Binding StartMenuVisibility}"
+            Panel.ZIndex="30"
+            HorizontalAlignment="Left"
+            VerticalAlignment="Bottom"
+            Width="390"
+            Height="570"
+            Margin="18,0,0,84"
+            Padding="12"
+            Background="{DynamicResource Chrono_LightCream}"
+            BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+            BorderThickness="3"
+            CornerRadius="8">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="48" />
+          <RowDefinition Height="24" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+          <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                 Width="34"
+                 Height="34"
+                 Margin="0,0,8,0"
+                 Stretch="Uniform" />
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="GALAPAGOS APPS"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                       FontSize="17"
+                       FontWeight="Bold"
+                       Foreground="{DynamicResource Chrono_TreeBark}" />
+            <TextBlock Text="FIELD STATION MENU"
+                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                       FontSize="10"
+                       Foreground="{DynamicResource Chrono_Olive}" />
+          </StackPanel>
+        </StackPanel>
+        <TextBlock Grid.Row="1"
+                   Text="13 AVAILABLE APPS · SELECT TO OPEN"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                   FontSize="10"
+                   Foreground="{DynamicResource Chrono_Olive}" />
+        <Grid Grid.Row="2">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <StackPanel Grid.Column="0">
+            <Button Content="Field Notes"
+                    Margin="0,0,6,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Field Notes" />
+            <Button Content="My Collection"
+                    Margin="0,0,6,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="My Collection" />
+            <Button Content="Gene Lab"
+                    Margin="0,0,6,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Gene Lab" />
+            <Button Content="My PC"
+                    Margin="0,0,6,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="My PC" />
+            <Button Content="History / Data Record"
+                    Margin="0,0,6,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="History / Data Record" />
+            <Button Content="Biome Data"
+                    Margin="0,0,6,0"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Biome Data" />
+          </StackPanel>
+          <StackPanel Grid.Column="1">
+            <Button Content="Simulation"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Simulation" />
+            <Button Content="Music Player"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Music Player" />
+            <Button Content="Expedition Planner"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Expedition Planner / Launchpad" />
+            <Button Content="Field Guide"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Field Guide / Journal" />
+            <Button Content="Research Inbox"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Research Inbox / Bulletin" />
+            <Button Content="Habitat Gallery"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Habitat Gallery / Museum" />
+            <Button Content="Settings"
+                    Margin="0,0,0,4"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Settings" />
+            <Button Content="Quick Search / Jump"
+                    Margin="0,0,0,0"
+                    Style="{StaticResource GalapagOS.StartMenuApp}"
+                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    Command="{Binding OpenDesktopIconCommand}"
+                    CommandParameter="Quick Search / Jump" />
+          </StackPanel>
+        </Grid>
+      </Grid>
+    </Border>
+
+    <Border x:Name="VolumePanel"
+            Visibility="{Binding VolumePanelVisibility}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Width="280"
+            Height="154"
+            Margin="0,0,354,84"
+            Padding="12"
+            Background="{DynamicResource Chrono_LightCream}"
+            BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+            BorderThickness="3"
+            CornerRadius="8">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="28" />
+          <RowDefinition Height="40" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="VOLUME CONTROLS"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                   FontSize="15"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource Chrono_TreeBark}" />
+        <TextBlock Grid.Row="1"
+                   Text="{Binding VolumeText}"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                   FontSize="22"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource Chrono_Olive}"
+                   VerticalAlignment="Center" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+          <Button Content="-"
+                  Width="52"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding VolumeDownCommand}" />
+          <Button Content="Mute"
+                  Width="76"
+                  Margin="8,0"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding ToggleMuteCommand}" />
+          <Button Content="+"
+                  Width="52"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding VolumeUpCommand}" />
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <Border x:Name="NotificationsPanel"
+            Visibility="{Binding NotificationsPanelVisibility}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Width="360"
+            Height="218"
+            Margin="0,0,148,84"
+            Padding="12"
+            Background="{DynamicResource Chrono_LightCream}"
+            BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+            BorderThickness="3"
+            CornerRadius="8">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="30" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="NOTIFICATIONS · 3 UNREAD"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                   FontSize="15"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource Chrono_TreeBark}" />
+        <Border Grid.Row="1"
+                Margin="0,4,0,2"
+                Padding="8,4"
+                Background="{DynamicResource Chrono_VanillaCream}"
+                BorderBrush="{DynamicResource Chrono_Sand}"
+                BorderThickness="1"
+                CornerRadius="4">
+          <TextBlock Text="QUEST READY · Analyze Fernlight samples"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="11"
+                     Foreground="{DynamicResource Chrono_TreeBark}"
+                     VerticalAlignment="Center" />
+        </Border>
+        <Border Grid.Row="2"
+                Margin="0,2"
+                Padding="8,4"
+                Background="{DynamicResource Chrono_VanillaCream}"
+                BorderBrush="{DynamicResource Chrono_Sand}"
+                BorderThickness="1"
+                CornerRadius="4">
+          <TextBlock Text="LEVEL UP · Field Researcher II"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="11"
+                     Foreground="{DynamicResource Chrono_TreeBark}"
+                     VerticalAlignment="Center" />
+        </Border>
+        <Border Grid.Row="3"
+                Margin="0,2,0,0"
+                Padding="8,4"
+                Background="{DynamicResource Chrono_VanillaCream}"
+                BorderBrush="{DynamicResource Chrono_Sand}"
+                BorderThickness="1"
+                CornerRadius="4">
+          <TextBlock Text="DATA UPDATE · +120 research data"
+                     FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                     FontSize="11"
+                     Foreground="{DynamicResource Chrono_TreeBark}"
+                     VerticalAlignment="Center" />
+        </Border>
+      </Grid>
+    </Border>
+
+    <Border x:Name="GameSpeedPanel"
+            Visibility="{Binding GameSpeedPanelVisibility}"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Width="232"
+            Height="154"
+            Margin="0,0,18,84"
+            Padding="12"
+            Background="{DynamicResource Chrono_LightCream}"
+            BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}"
+            BorderThickness="3"
+            CornerRadius="8">
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="30" />
+          <RowDefinition Height="34" />
+          <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock Text="GAME SPEED CONTROLS"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                   FontSize="13"
+                   FontWeight="Bold"
+                   Foreground="{DynamicResource Chrono_TreeBark}" />
+        <TextBlock Grid.Row="1"
+                   Text="Select simulation pace"
+                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                   FontSize="11"
+                   Foreground="{DynamicResource Chrono_Olive}"
+                   VerticalAlignment="Center" />
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+          <Button Content="0.5x"
+                  Width="52"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding SetGameSpeedCommand}"
+                  CommandParameter="0.5" />
+          <Button Content="1x"
+                  Width="44"
+                  Margin="6,0"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding SetGameSpeedCommand}"
+                  CommandParameter="1" />
+          <Button Content="2x"
+                  Width="44"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding SetGameSpeedCommand}"
+                  CommandParameter="2" />
+          <Button Content="4x"
+                  Width="44"
+                  Margin="6,0,0,0"
+                  Style="{StaticResource GalapagOS.Button.Secondary}"
+                  Command="{Binding SetGameSpeedCommand}"
+                  CommandParameter="4" />
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
 </Page>
