@@ -46,6 +46,15 @@ namespace SaltyGame.EditorTools
         static PlayModeRunReport CreateReport(SpeciesSimulationPreview preview, SimulationRunState run)
         {
             var species = SimulationReportSerialization.GetSpecies(run.PopulationHistory);
+            SpeciesRules playerRules = null;
+            var hasPlayerRules = preview.ActiveSpeciesRules != null
+                && preview.ActiveSpeciesRules.TryGetValue(run.PlayerSpeciesId, out playerRules);
+            var includeHerbivoreStatLine = preview.BevExperimentalFeaturesEnabled
+                && hasPlayerRules
+                && playerRules.Role == SpeciesRole.Herbivore;
+            var includePredatorStatLine = preview.BevExperimentalFeaturesEnabled
+                && hasPlayerRules
+                && playerRules.Role == SpeciesRole.Carnivore;
 
             return new PlayModeRunReport
             {
@@ -75,7 +84,9 @@ namespace SaltyGame.EditorTools
                 phaseResults = SimulationReportSerialization.CreatePhaseResults(
                     run.PhaseResults,
                     species,
-                    run.PlayerSpeciesId),
+                    run.PlayerSpeciesId,
+                    includeHerbivoreStatLine,
+                    includePredatorStatLine),
                 upgradeAcquisitionTimeline = SimulationReportSerialization.CreateUpgradeAcquisitions(
                     run.UpgradeAcquisitionTimeline),
             };

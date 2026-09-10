@@ -362,7 +362,7 @@
                                FontSize="16"
                                FontWeight="Bold"
                                Margin="0,0,0,2"/>
-                    <CheckBox Content="Enable Bev experimental combat and herbivore stat line"
+                    <CheckBox Content="Enable Bev experimental combat and species stat lines"
                               IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
                               Foreground="White"
                               Margin="0,3,0,0"/>
@@ -611,7 +611,7 @@
                            Margin="0,12,0,18"/>
                 <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
                             Margin="0,0,0,18">
-                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                    <TextBlock Text="BEV EXPERIMENTAL SPECIES STAT LINE"
                                Foreground="#FFF1C27D"
                                FontSize="14"
                                FontWeight="Bold"
@@ -697,7 +697,7 @@
                            Margin="0,0,0,18"/>
                 <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
                             Margin="0,0,0,18">
-                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                    <TextBlock Text="BEV EXPERIMENTAL SPECIES STAT LINE"
                                Foreground="#FFF1C27D"
                                FontSize="14"
                                FontWeight="Bold"

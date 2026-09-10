@@ -340,7 +340,7 @@ namespace SaltyGame
             SpeciesAttackOpportunity? forcedOpportunity,
             SpeciesExperimentalOptions experimentalOptions = null)
         {
-            RecordHerbivoreExposureStep(source, rules, metrics, experimentalOptions);
+            RecordSpeciesExposureStep(source, rules, metrics, experimentalOptions);
             ResolveAttacks(
                 source,
                 next,
@@ -364,36 +364,64 @@ namespace SaltyGame
             return next;
         }
 
-        static void RecordHerbivoreExposureStep(
+        static void RecordSpeciesExposureStep(
             Grid<SpeciesCell> source,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             SpeciesSimulationMetrics metrics,
             SpeciesExperimentalOptions experimentalOptions)
         {
             if (metrics == null || experimentalOptions == null
-                || !experimentalOptions.UsesHerbivoreStatLine)
+                || !experimentalOptions.UsesSpeciesStatLines)
             {
                 return;
             }
 
-            metrics.BeginHerbivoreExposureStep();
-            var hasCarnivore = false;
-            for (var y = 0; y < source.Height && !hasCarnivore; y++)
+            metrics.BeginExposureStep();
+            var presentSpecies = new HashSet<SpeciesId>();
+            for (var y = 0; y < source.Height; y++)
             {
                 for (var x = 0; x < source.Width; x++)
                 {
                     var cell = source.GetCell(x, y);
-                    if (cell.IsCreature
-                        && rules.TryGetValue(cell.SpeciesId, out var cellRules)
-                        && cellRules.Role == SpeciesRole.Carnivore)
+                    if (cell.IsCreature)
+                    {
+                        presentSpecies.Add(cell.SpeciesId);
+                    }
+                }
+            }
+
+            if (experimentalOptions.UsesHerbivoreStatLine)
+            {
+                var hasCarnivore = false;
+                foreach (var species in presentSpecies)
+                {
+                    if (rules.TryGetValue(species, out var speciesRules)
+                        && speciesRules.Role == SpeciesRole.Carnivore)
                     {
                         hasCarnivore = true;
                         break;
                     }
                 }
+
+                if (hasCarnivore)
+                {
+                    for (var y = 0; y < source.Height; y++)
+                    {
+                        for (var x = 0; x < source.Width; x++)
+                        {
+                            var cell = source.GetCell(x, y);
+                            if (cell.IsCreature
+                                && rules.TryGetValue(cell.SpeciesId, out var cellRules)
+                                && cellRules.Role == SpeciesRole.Herbivore)
+                            {
+                                metrics.RecordPredatorActiveHerbivoreStep(cell.SpeciesId);
+                            }
+                        }
+                    }
+                }
             }
 
-            if (!hasCarnivore)
+            if (!experimentalOptions.UsesPredatorStatLine)
             {
                 return;
             }
@@ -403,12 +431,16 @@ namespace SaltyGame
                 for (var x = 0; x < source.Width; x++)
                 {
                     var cell = source.GetCell(x, y);
-                    if (cell.IsCreature
-                        && rules.TryGetValue(cell.SpeciesId, out var cellRules)
-                        && cellRules.Role == SpeciesRole.Herbivore)
+                    if (!cell.IsCreature
+                        || !rules.TryGetValue(cell.SpeciesId, out var cellRules)
+                        || cellRules.Role != SpeciesRole.Carnivore
+                        || !cellRules.DietTargetId.HasValue
+                        || !presentSpecies.Contains(cellRules.DietTargetId.Value))
                     {
-                        metrics.RecordPredatorActiveHerbivoreStep(cell.SpeciesId);
+                        continue;
                     }
+
+                    metrics.RecordPreyActivePredatorStep(cell.SpeciesId);
                 }
             }
         }
@@ -487,8 +519,8 @@ namespace SaltyGame
         {
             var controlled = attackOpportunityMode == SpeciesAttackOpportunityMode.FixedRateDiagnostic;
             var paired = attackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic;
-            var collectHerbivoreStatLine = experimentalOptions != null
-                && experimentalOptions.UsesHerbivoreStatLine;
+            var collectSpeciesStatLines = experimentalOptions != null
+                && experimentalOptions.UsesSpeciesStatLines;
             var useSplitCombatStats = combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll
                 && experimentalOptions != null
                 && experimentalOptions.UsesSplitCombatStats;
@@ -594,10 +626,15 @@ namespace SaltyGame
                         SpeciesRules targetRules = null;
                         var hasTargetRules = target.IsCreature
                             && rules.TryGetValue(target.SpeciesId, out targetRules);
-                        var isCarnivoreHerbivoreInteraction = collectHerbivoreStatLine
+                        var isCarnivoreHerbivoreInteraction = collectSpeciesStatLines
                             && attackerRules.Role == SpeciesRole.Carnivore
                             && hasTargetRules
                             && targetRules.Role == SpeciesRole.Herbivore;
+                        var isPredatorPreyInteraction = collectSpeciesStatLines
+                            && attackerRules.Role == SpeciesRole.Carnivore
+                            && target.IsCreature
+                            && attackerRules.DietTargetId.HasValue
+                            && target.SpeciesId == attackerRules.DietTargetId.Value;
                         if (isCarnivoreHerbivoreInteraction
                             && experimentalOptions != null
                             && experimentalOptions.HasPreContactAvoidance
@@ -639,6 +676,11 @@ namespace SaltyGame
                             if (isCarnivoreHerbivoreInteraction)
                             {
                                 metrics?.RecordHerbivoreEncounter(target.SpeciesId);
+                            }
+
+                            if (isPredatorPreyInteraction)
+                            {
+                                metrics?.RecordPredatorEncounter(attacker.SpeciesId);
                             }
                         }
 
@@ -1582,6 +1624,14 @@ namespace SaltyGame
             var foodTarget = default(SpeciesPerceivedTarget);
             var hasFood = ShouldForage(currentCell, speciesRules)
                 && SpeciesPerception.TryFindFoodTarget(source, x, y, speciesRules, random, out foodTarget);
+            var trackedFoodTarget = default(SpeciesPerceivedTarget);
+            var hasTrackedFood = !hasFood
+                && ShouldForage(currentCell, speciesRules)
+                && SpeciesPerception.TryFindTrackedFoodTarget(
+                    source,
+                    currentCell,
+                    speciesRules,
+                    out trackedFoodTarget);
             var canSeekMate = speciesRules.ReproductionChance > 0f
                 && speciesRules.ReproductionNeighborCount > 0
                 && HasReproductionEnergy(currentCell, speciesRules)
@@ -1635,6 +1685,25 @@ namespace SaltyGame
                     currentCell,
                     speciesRules,
                     foodTarget,
+                    movementPass,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random,
+                    metrics))
+            {
+                return true;
+            }
+
+            if (hasTrackedFood
+                && TryMoveTowardPerceivedTarget(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    trackedFoodTarget,
                     movementPass,
                     plantEnergyValue,
                     moved,
@@ -1851,7 +1920,7 @@ namespace SaltyGame
             }
 
             next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
-            next.SetCell(targetX, targetY, currentTarget.WithEntity(
+            var movedCell = currentTarget.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
                 cell.Energy,
@@ -1859,7 +1928,17 @@ namespace SaltyGame
                 cell.FoodEaten,
                 cell.FoodReserve,
                 cell.IsAlpha,
-                entityId: cell.EntityId).WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
+                entityId: cell.EntityId);
+            if (cell.TrackingTargetEntityId > 0 && cell.TrackingTicksRemaining > 0)
+            {
+                movedCell = movedCell.WithTrackingTarget(
+                    cell.TrackingTargetEntityId,
+                    cell.TrackingTargetX,
+                    cell.TrackingTargetY,
+                    cell.TrackingTicksRemaining);
+            }
+
+            next.SetCell(targetX, targetY, movedCell.WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
             moved[GetIndex(source, x, y)] = true;
             moved[targetIndex] = true;
             claimed[targetIndex] = true;
@@ -2735,11 +2814,13 @@ namespace SaltyGame
                         continue;
                     }
 
+                    var trackedCell = UpdateTracking(source, next, x, y, cell, speciesRules, random);
+
                     var state = ChooseState(
                         source,
                         x,
                         y,
-                        cell,
+                        trackedCell,
                         speciesRules,
                         rules,
                         random,
@@ -2766,6 +2847,56 @@ namespace SaltyGame
                     metrics?.RecordState(cell.SpeciesId, state, transitioned);
                 }
             }
+        }
+
+        static SpeciesCell UpdateTracking(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules speciesRules,
+            System.Random random)
+        {
+            var updated = next.GetCell(x, y);
+            if (speciesRules.TrackingPersistenceSteps > 0
+                && ShouldForage(cell, speciesRules)
+                && SpeciesPerception.TryFindFoodTarget(
+                    source,
+                    x,
+                    y,
+                    speciesRules,
+                    random,
+                    out var visibleFood)
+                && visibleFood.Cell.IsCreature)
+            {
+                updated = updated.WithTrackingTarget(
+                    visibleFood.Cell.EntityId,
+                    visibleFood.Location.x,
+                    visibleFood.Location.y,
+                    speciesRules.TrackingPersistenceSteps);
+            }
+            else
+            {
+                var trackedFood = default(SpeciesPerceivedTarget);
+                var hasLiveTrackedFood = cell.TrackingTargetEntityId > 0
+                    && SpeciesPerception.TryFindTrackedFoodTarget(
+                        source,
+                        cell,
+                        speciesRules,
+                        out trackedFood);
+                var remaining = Math.Max(0, cell.TrackingTicksRemaining - 1);
+                updated = hasLiveTrackedFood && remaining > 0
+                    ? updated.WithTrackingTarget(
+                        cell.TrackingTargetEntityId,
+                        trackedFood.Location.x,
+                        trackedFood.Location.y,
+                        remaining)
+                    : updated.WithTrackingTarget(0, 0, 0, 0);
+            }
+
+            next.SetCell(x, y, updated);
+            return updated;
         }
 
         static SpeciesBehaviorState ChooseState(
@@ -2819,6 +2950,12 @@ namespace SaltyGame
                         ? SpeciesBehaviorState.Attacking
                         : SpeciesBehaviorState.Eating
                     : SpeciesBehaviorState.Hunting;
+            }
+
+            if (ShouldForage(cell, speciesRules)
+                && SpeciesPerception.TryFindTrackedFoodTarget(cells, cell, speciesRules, out _))
+            {
+                return SpeciesBehaviorState.Hunting;
             }
 
             if (speciesRules.ReproductionChance > 0f

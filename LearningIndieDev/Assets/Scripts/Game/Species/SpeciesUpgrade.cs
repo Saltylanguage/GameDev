@@ -13,7 +13,10 @@ namespace SaltyGame
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
+        VisionRange,
+        ForageBelowEnergy,
         ReproductionChance,
+        TrackingPersistenceSteps,
     }
 
     public sealed class SpeciesUpgrade
@@ -80,6 +83,15 @@ namespace SaltyGame
                 case SpeciesUpgradeType.FleeMovementSpeedBonus:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.FleeMovementSpeedBonus, Value));
                     break;
+                case SpeciesUpgradeType.VisionRange:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.VisionRange, Value));
+                    break;
+                case SpeciesUpgradeType.ForageBelowEnergy:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ForageBelowEnergy, Value));
+                    break;
+                case SpeciesUpgradeType.TrackingPersistenceSteps:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.TrackingPersistenceSteps, Value));
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
             }
@@ -109,6 +121,10 @@ namespace SaltyGame
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var crowdingTolerance = rules.CrowdingTolerance;
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
+            var visionRange = rules.Awareness.VisionRange;
+            var intelligence = rules.Awareness.Intelligence;
+            var forageBelowEnergy = rules.ForageBelowEnergy;
+            var trackingPersistenceSteps = rules.TrackingPersistenceSteps;
             switch (Type)
             {
                 case SpeciesUpgradeType.MovementSpeed:
@@ -140,6 +156,15 @@ namespace SaltyGame
                 case SpeciesUpgradeType.FleeMovementSpeedBonus:
                     fleeMovementSpeedBonus += Value;
                     break;
+                case SpeciesUpgradeType.VisionRange:
+                    visionRange += (int)Value;
+                    break;
+                case SpeciesUpgradeType.ForageBelowEnergy:
+                    forageBelowEnergy += (int)Value;
+                    break;
+                case SpeciesUpgradeType.TrackingPersistenceSteps:
+                    trackingPersistenceSteps += (int)Value;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
             }
@@ -165,9 +190,9 @@ namespace SaltyGame
                 rules.SeedDropChance,
                 rules.EnergyValue,
                 rules.Metabolism,
-                awareness: rules.Awareness,
+                awareness: new SpeciesAwarenessRules(visionRange, intelligence),
                 role: rules.Role,
-                forageBelowEnergy: rules.ForageBelowEnergy,
+                forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: rules.MaximumEnergy,
                 litterMinimum: rules.LitterMinimum,
                 litterMaximum: rules.LitterMaximum,
@@ -175,7 +200,8 @@ namespace SaltyGame
                 damageAmount: damageAmount,
                 digestionEnergyBonus: digestionEnergyBonus,
                 crowdingTolerance: crowdingTolerance,
-                fleeMovementSpeedBonus: fleeMovementSpeedBonus);
+                fleeMovementSpeedBonus: fleeMovementSpeedBonus,
+                trackingPersistenceSteps: trackingPersistenceSteps);
         }
     }
 
@@ -198,6 +224,21 @@ namespace SaltyGame
         public const string ReproductiveDriveId = "reproductive-drive";
         public const int ReproductiveDriveMaxLevel = 10;
         public const float ReproductiveDriveChancePerLevel = 0.005f;
+        public const string KeenSensesId = "keen-senses";
+        public const int KeenSensesMaxLevel = 10;
+        public const float KeenSensesTrackingStepsPerLevel = 1f;
+        public const string RelentlessPursuitId = "relentless-pursuit";
+        public const int RelentlessPursuitMaxLevel = 10;
+        public const float RelentlessPursuitMovementSpeedPerLevel = 0.15f;
+        public const string PiercingBiteId = "piercing-bite";
+        public const int PiercingBiteMaxLevel = 10;
+        public const float PiercingBiteAttackModifierPerLevel = 1f;
+        public const string HuntUrgencyId = "hunt-urgency";
+        public const int HuntUrgencyMaxLevel = 10;
+        public const float HuntUrgencyForageBelowEnergyPerLevel = 1f;
+        public const string BroodDriveId = "brood-drive";
+        public const int BroodDriveMaxLevel = 10;
+        public const float BroodDriveChancePerLevel = 0.01f;
 
         public static int GetMaxLevel(string upgradeId)
         {
@@ -205,6 +246,11 @@ namespace SaltyGame
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
                 : upgradeId == CrowdingToleranceId ? CrowdingToleranceMaxLevel
                 : upgradeId == ReproductiveDriveId ? ReproductiveDriveMaxLevel
+                : upgradeId == KeenSensesId ? KeenSensesMaxLevel
+                : upgradeId == RelentlessPursuitId ? RelentlessPursuitMaxLevel
+                : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
+                : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
+                : upgradeId == BroodDriveId ? BroodDriveMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
         }
         public const string ThreatExposureId = "threat-exposure";
@@ -271,6 +317,36 @@ namespace SaltyGame
                         5,
                         SpeciesUpgradeType.ReproductionChance,
                         ReproductiveDriveChancePerLevel);
+                case KeenSensesId:
+                    return new SpeciesUpgrade(
+                        KeenSensesId,
+                        5,
+                        SpeciesUpgradeType.TrackingPersistenceSteps,
+                        KeenSensesTrackingStepsPerLevel);
+                case RelentlessPursuitId:
+                    return new SpeciesUpgrade(
+                        RelentlessPursuitId,
+                        5,
+                        SpeciesUpgradeType.MovementSpeed,
+                        RelentlessPursuitMovementSpeedPerLevel);
+                case PiercingBiteId:
+                    return new SpeciesUpgrade(
+                        PiercingBiteId,
+                        5,
+                        SpeciesUpgradeType.AttackModifier,
+                        PiercingBiteAttackModifierPerLevel);
+                case HuntUrgencyId:
+                    return new SpeciesUpgrade(
+                        HuntUrgencyId,
+                        5,
+                        SpeciesUpgradeType.ForageBelowEnergy,
+                        HuntUrgencyForageBelowEnergyPerLevel);
+                case BroodDriveId:
+                    return new SpeciesUpgrade(
+                        BroodDriveId,
+                        5,
+                        SpeciesUpgradeType.ReproductionChance,
+                        BroodDriveChancePerLevel);
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
@@ -354,6 +430,16 @@ namespace SaltyGame
                     return "CROWDING TOLERANCE";
                 case ReproductiveDriveId:
                     return "REPRODUCTIVE DRIVE";
+                case KeenSensesId:
+                    return "KEEN SENSES";
+                case RelentlessPursuitId:
+                    return "RELENTLESS PURSUIT";
+                case PiercingBiteId:
+                    return "PIERCING BITE";
+                case HuntUrgencyId:
+                    return "HUNT URGENCY";
+                case BroodDriveId:
+                    return "BROOD DRIVE";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return "THREAT EXPOSURE";

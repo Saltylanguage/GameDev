@@ -126,7 +126,9 @@ namespace SaltyGame.EditorTools
                         SerializeReport(
                             report,
                             experimentalOptions.UsesHerbivoreStatLine
-                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore),
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore,
+                            experimentalOptions.UsesPredatorStatLine
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Carnivore),
                         new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
@@ -354,7 +356,9 @@ namespace SaltyGame.EditorTools
                 },
                 playerSpecies,
                 experimentalOptions.UsesHerbivoreStatLine
-                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                experimentalOptions.UsesPredatorStatLine
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
         }
 
         static ExperimentRun RunScheduledSimulation(
@@ -442,7 +446,9 @@ namespace SaltyGame.EditorTools
                 },
                 playerSpecies,
                 experimentalOptions.UsesHerbivoreStatLine
-                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
+                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                experimentalOptions.UsesPredatorStatLine
+                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -569,14 +575,18 @@ namespace SaltyGame.EditorTools
                     CreatePairedOpportunityControl(runner.OpportunityControl),
                     playerSpecies,
                     experimentalOptions.UsesHerbivoreStatLine
-                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                    experimentalOptions.UsesPredatorStatLine
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore),
                 BlockPlusTwo = CreateExperimentRun(
                     blockPlusTwoRun,
                     species,
                     CreatePairedOpportunityControl(runner.OpportunityControl),
                     playerSpecies,
                     experimentalOptions.UsesHerbivoreStatLine
-                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                    experimentalOptions.UsesPredatorStatLine
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore),
             };
         }
 
@@ -608,7 +618,8 @@ namespace SaltyGame.EditorTools
             IReadOnlyList<SpeciesId> species,
             ExperimentOpportunityControl opportunityControl,
             SpeciesId statSpecies,
-            bool includeHerbivoreStatLine)
+            bool includeHerbivoreStatLine,
+            bool includePredatorStatLine)
         {
             var result = SimulationRunResults.Create(run);
             return new ExperimentRun
@@ -630,11 +641,16 @@ namespace SaltyGame.EditorTools
                 phaseResults = SimulationReportSerialization.CreatePhaseResults(
                     result.PhaseResults,
                     species,
-                    statSpecies),
+                    statSpecies,
+                    includeHerbivoreStatLine,
+                    includePredatorStatLine),
                 upgradeAcquisitionTimeline = SimulationReportSerialization.CreateUpgradeAcquisitions(
                     result.UpgradeAcquisitionTimeline),
                 herbivoreStatLine = includeHerbivoreStatLine
                     ? SimulationReportSerialization.CreateHerbivoreStatLine(run, statSpecies)
+                    : null,
+                predatorStatLine = includePredatorStatLine
+                    ? SimulationReportSerialization.CreatePredatorStatLine(run, statSpecies)
                     : null,
                 opportunityControl = opportunityControl,
             };
@@ -1840,20 +1856,32 @@ namespace SaltyGame.EditorTools
             public SimulationPhaseResultRecord[] phaseResults;
             public SimulationUpgradeAcquisitionRecord[] upgradeAcquisitionTimeline;
             public SimulationHerbivoreStatLineRecord herbivoreStatLine;
+            public SimulationPredatorStatLineRecord predatorStatLine;
             public ExperimentOpportunityControl opportunityControl;
         }
 
-        static string SerializeReport(ExperimentReport report, bool includeHerbivoreStatLine)
+        static string SerializeReport(
+            ExperimentReport report,
+            bool includeHerbivoreStatLine,
+            bool includePredatorStatLine)
         {
             var json = JsonUtility.ToJson(report, true);
-            if (includeHerbivoreStatLine)
+            if (includeHerbivoreStatLine && includePredatorStatLine)
             {
                 return json;
             }
 
             var withoutStatLine = Regex.Replace(
                 json,
-                @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?",
+                includeHerbivoreStatLine
+                    ? @"(?!x)x"
+                    : @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?",
+                string.Empty);
+            withoutStatLine = Regex.Replace(
+                withoutStatLine,
+                includePredatorStatLine
+                    ? @"(?!x)x"
+                    : @"\s*""predatorStatLine"":\s*\{[^{}]*\},?",
                 string.Empty);
             return Regex.Replace(withoutStatLine, @",(\s*[}\]])", "$1");
         }

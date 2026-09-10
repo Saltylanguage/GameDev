@@ -774,13 +774,15 @@ namespace SaltyGame
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
             var tick = run == null ? -1 : run.Tick;
+            SpeciesRules playerRules = null;
             var isHerbivorePlayer = preview.ActiveSpeciesRules != null
-                && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out var playerRules)
+                && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out playerRules)
                 && playerRules.Role == SpeciesRole.Herbivore;
+            var isCarnivorePlayer = playerRules != null && playerRules.Role == SpeciesRole.Carnivore;
             var showExperimentalHerbivoreStatLine =
                 (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
-                && isHerbivorePlayer;
+                && (isHerbivorePlayer || isCarnivorePlayer);
             var showExperimentalUpgradeCount =
                 (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
@@ -802,7 +804,9 @@ namespace SaltyGame
             Set(
                 ref experimentalHerbivoreStatLineSummary,
                 showExperimentalHerbivoreStatLine
-                    ? GetExperimentalHerbivoreStatLineSummary(run, preview.PlayerSpecies)
+                    ? isHerbivorePlayer
+                        ? GetExperimentalHerbivoreStatLineSummary(run, preview.PlayerSpecies)
+                        : GetExperimentalPredatorStatLineSummary(run, preview.PlayerSpecies)
                     : string.Empty,
                 nameof(ExperimentalHerbivoreStatLineSummary));
             Set(
@@ -1343,6 +1347,49 @@ namespace SaltyGame
             summary.Append('\n');
             AppendMetric(summary, "RFS", statLine.ReplicationFitnessScore, statLine.ReplicationFitnessScoreStatus);
             AppendMetric(summary, "APS", statLine.ActualPreyScore, statLine.ActualPreyScoreStatus);
+            summary.Append('\n')
+                .Append("Expected FPO: ")
+                .Append(statLine.ExpectedFinalPopulation)
+                .Append("  |  Reconciled: ")
+                .Append(statLine.PopulationReconciled);
+            return summary.ToString();
+        }
+
+        static string GetExperimentalPredatorStatLineSummary(SimulationRunState run, SpeciesId species)
+        {
+            if (run == null || run.PopulationHistory.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var statLine = run.Metrics.CreatePredatorStatLine(
+                species,
+                run.PopulationHistory[0].GetCount(species),
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
+            var summary = new StringBuilder();
+            AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "PPS", statLine.PreyActivePredatorSteps);
+            AppendMetric(summary, "EPS", statLine.EncounteredPredatorSteps);
+            AppendMetric(summary, "ECN", statLine.Encounters);
+            summary.Append('\n');
+            AppendMetric(summary, "HAT", statLine.HuntAttempts);
+            AppendMetric(summary, "KIL", statLine.PreyKilled);
+            AppendMetric(summary, "STRV", statLine.Starved);
+            AppendMetric(summary, "MAT", statLine.Mating);
+            AppendMetric(summary, "BIR", statLine.Births);
+            summary.Append('\n');
+            AppendMetric(summary, "CRWD", statLine.Crowding);
+            AppendMetric(summary, "FPO", statLine.FinalPopulation);
+            AppendMetric(summary, "hAVG", statLine.HuntSuccessAverage, statLine.HuntSuccessAverageStatus);
+            AppendMetric(summary, "aAVG", statLine.PreyAccessAverage, statLine.PreyAccessAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "huntAVG", statLine.HuntingAverage, statLine.HuntingAverageStatus);
+            AppendMetric(summary, "sAVI", statLine.InverseStarvedAverage, statLine.InverseStarvedAverageStatus);
+            AppendMetric(summary, "cAVI", statLine.InverseCrowdingAverage, statLine.InverseCrowdingAverageStatus);
+            AppendMetric(summary, "bAVG", statLine.BirthAverage, statLine.BirthAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "RFS", statLine.ReplicationFitnessScore, statLine.ReplicationFitnessScoreStatus);
+            AppendMetric(summary, "AHS", statLine.ActualHuntScore, statLine.ActualHuntScoreStatus);
             summary.Append('\n')
                 .Append("Expected FPO: ")
                 .Append(statLine.ExpectedFinalPopulation)

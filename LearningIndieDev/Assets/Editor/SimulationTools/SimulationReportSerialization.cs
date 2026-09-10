@@ -324,10 +324,66 @@ namespace SaltyGame.EditorTools
             };
         }
 
+        public static SimulationPredatorStatLineRecord CreatePredatorStatLine(
+            SimulationRunState run,
+            SpeciesId species)
+        {
+            var startingPopulation = run.PopulationHistory[0].GetCount(species);
+            var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
+            return CreatePredatorStatLine(run.Metrics, species, startingPopulation, finalPopulation);
+        }
+
+        public static SimulationPredatorStatLineRecord CreatePredatorStatLine(
+            ISpeciesSimulationMetricsView metrics,
+            SpeciesId species,
+            int startingPopulation,
+            int finalPopulation)
+        {
+            var statLine = metrics.CreatePredatorStatLine(
+                species,
+                startingPopulation,
+                finalPopulation);
+            return new SimulationPredatorStatLineRecord
+            {
+                speciesId = statLine.Species.Value,
+                SPO = statLine.StartingPopulation,
+                PPS = statLine.PreyActivePredatorSteps,
+                EPS = statLine.EncounteredPredatorSteps,
+                ECN = statLine.Encounters,
+                HAT = statLine.HuntAttempts,
+                KIL = statLine.PreyKilled,
+                STRV = statLine.Starved,
+                MAT = statLine.Mating,
+                BIR = statLine.Births,
+                CRWD = statLine.Crowding,
+                FPO = statLine.FinalPopulation,
+                expectedFPO = statLine.ExpectedFinalPopulation,
+                fpoReconciled = statLine.PopulationReconciled,
+                hAVG = statLine.HuntSuccessAverage,
+                hAVGStatus = GetMetricStatusText(statLine.HuntSuccessAverageStatus),
+                aAVG = statLine.PreyAccessAverage,
+                aAVGStatus = GetMetricStatusText(statLine.PreyAccessAverageStatus),
+                huntAVG = statLine.HuntingAverage,
+                huntAVGStatus = GetMetricStatusText(statLine.HuntingAverageStatus),
+                sAVI = statLine.InverseStarvedAverage,
+                sAVIStatus = GetMetricStatusText(statLine.InverseStarvedAverageStatus),
+                cAVI = statLine.InverseCrowdingAverage,
+                cAVIStatus = GetMetricStatusText(statLine.InverseCrowdingAverageStatus),
+                bAVG = statLine.BirthAverage,
+                bAVGStatus = GetMetricStatusText(statLine.BirthAverageStatus),
+                RFS = statLine.ReplicationFitnessScore,
+                RFSStatus = GetMetricStatusText(statLine.ReplicationFitnessScoreStatus),
+                AHS = statLine.ActualHuntScore,
+                AHSStatus = GetMetricStatusText(statLine.ActualHuntScoreStatus),
+            };
+        }
+
         public static SimulationPhaseResultRecord[] CreatePhaseResults(
             IReadOnlyList<SimulationPhaseResult> phases,
             IReadOnlyList<SpeciesId> species,
-            SpeciesId statSpecies)
+            SpeciesId statSpecies,
+            bool includeHerbivoreStatLine,
+            bool includePredatorStatLine)
         {
             if (phases == null || phases.Count == 0)
             {
@@ -355,8 +411,15 @@ namespace SaltyGame.EditorTools
                     deathEvents = CreateDeathEvents(phase.Metrics),
                     combatRolls = CreateCombatRolls(phase.Metrics),
                     combatCooldownSuppressions = CreateCombatCooldownSuppressions(phase.Metrics),
-                    herbivoreStatLine = statSpecies.IsValid
+                    herbivoreStatLine = includeHerbivoreStatLine && statSpecies.IsValid
                         ? CreateHerbivoreStatLine(
+                            phase.Metrics,
+                            statSpecies,
+                            phase.OpeningPopulation.GetCount(statSpecies),
+                            phase.ClosingPopulation.GetCount(statSpecies))
+                        : null,
+                    predatorStatLine = includePredatorStatLine && statSpecies.IsValid
+                        ? CreatePredatorStatLine(
                             phase.Metrics,
                             statSpecies,
                             phase.OpeningPopulation.GetCount(statSpecies),
@@ -597,6 +660,7 @@ namespace SaltyGame.EditorTools
         public SimulationSpeciesCombatRollRecord[] combatRolls;
         public SimulationSpeciesCombatCooldownSuppressionRecord[] combatCooldownSuppressions;
         public SimulationHerbivoreStatLineRecord herbivoreStatLine;
+        public SimulationPredatorStatLineRecord predatorStatLine;
     }
 
     [System.Serializable]
@@ -631,5 +695,40 @@ namespace SaltyGame.EditorTools
         public string RFSStatus;
         public float APS;
         public string APSStatus;
+    }
+
+    [System.Serializable]
+    sealed class SimulationPredatorStatLineRecord
+    {
+        public string speciesId;
+        public int SPO;
+        public int PPS;
+        public int EPS;
+        public int ECN;
+        public int HAT;
+        public int KIL;
+        public int STRV;
+        public int MAT;
+        public int BIR;
+        public int CRWD;
+        public int FPO;
+        public int expectedFPO;
+        public bool fpoReconciled;
+        public float hAVG;
+        public string hAVGStatus;
+        public float aAVG;
+        public string aAVGStatus;
+        public float huntAVG;
+        public string huntAVGStatus;
+        public float sAVI;
+        public string sAVIStatus;
+        public float cAVI;
+        public string cAVIStatus;
+        public float bAVG;
+        public string bAVGStatus;
+        public float RFS;
+        public string RFSStatus;
+        public float AHS;
+        public string AHSStatus;
     }
 }

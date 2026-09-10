@@ -35,7 +35,8 @@ namespace SaltyGame
             int? damageAmount = null,
             float digestionEnergyBonus = 0f,
             int crowdingTolerance = 0,
-            float fleeMovementSpeedBonus = 0f)
+            float fleeMovementSpeedBonus = 0f,
+            int trackingPersistenceSteps = 0)
         {
             if (movementSpeed < 0f)
             {
@@ -70,6 +71,14 @@ namespace SaltyGame
             if (fleeMovementSpeedBonus < 0f)
             {
                 throw new ArgumentOutOfRangeException(nameof(fleeMovementSpeedBonus), fleeMovementSpeedBonus, "Flee movement speed bonus cannot be negative.");
+            }
+
+            if (trackingPersistenceSteps < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(trackingPersistenceSteps),
+                    trackingPersistenceSteps,
+                    "Tracking persistence steps cannot be negative.");
             }
 
             if (blockAmount < 0)
@@ -178,6 +187,7 @@ namespace SaltyGame
             DigestionEnergyBonus = digestionEnergyBonus;
             CrowdingTolerance = crowdingTolerance;
             FleeMovementSpeedBonus = fleeMovementSpeedBonus;
+            TrackingPersistenceSteps = trackingPersistenceSteps;
         }
 
         public float MovementSpeed { get; }
@@ -217,5 +227,6 @@ namespace SaltyGame
         public float DigestionEnergyBonus { get; }
         public int CrowdingTolerance { get; }
         public float FleeMovementSpeedBonus { get; }
+        public int TrackingPersistenceSteps { get; }
     }
 }

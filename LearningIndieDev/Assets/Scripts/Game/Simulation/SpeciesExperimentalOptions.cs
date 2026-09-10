@@ -59,5 +59,9 @@ namespace SaltyGame
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
         public bool UsesHerbivoreStatLine =>
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
+        public bool UsesPredatorStatLine =>
+            string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
+        public bool UsesSpeciesStatLines =>
+            UsesHerbivoreStatLine || UsesPredatorStatLine;
     }
 }

@@ -86,6 +86,7 @@ namespace SaltyGame
                 VisionRangeText = rules.Awareness.VisionRange.ToString(CultureInfo.InvariantCulture);
                 Intelligence = rules.Awareness.Intelligence;
                 IntelligenceText = rules.Awareness.Intelligence.ToString(CultureInfo.InvariantCulture);
+                TrackingPersistenceSteps = rules.TrackingPersistenceSteps;
                 ReproductionEnabled = rules.ReproductionChance > 0f;
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
@@ -142,6 +143,7 @@ namespace SaltyGame
             public string VisionRangeText;
             public int Intelligence;
             public string IntelligenceText;
+            public int TrackingPersistenceSteps;
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
@@ -959,7 +961,7 @@ namespace SaltyGame
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
             settingsMessage = enabled
-                ? $"Bev experimental features enabled: opposed-roll combat, herbivore stat line, two-of-four herbivore upgrades, fox cooldown {foxAttackCooldownTicks} ticks."
+                ? $"Bev experimental features enabled: opposed-roll combat, herbivore stat line and predator stat line, two-of-four herbivore upgrades, fox cooldown {foxAttackCooldownTicks} ticks."
                 : "Bev experimental features disabled; legacy combat retained.";
             PrepareNextRun();
             validationMessage = settingsMessage;
@@ -1813,7 +1815,8 @@ namespace SaltyGame
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,
                     litterMinimum: draft.LitterMinimum,
-                    litterMaximum: draft.LitterMaximum);
+                    litterMaximum: draft.LitterMaximum,
+                    trackingPersistenceSteps: draft.TrackingPersistenceSteps);
             }
 
             return result;

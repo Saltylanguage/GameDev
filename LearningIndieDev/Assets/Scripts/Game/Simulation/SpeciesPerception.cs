@@ -78,6 +78,53 @@ namespace SaltyGame
                 out target);
         }
 
+        public static bool TryFindTrackedFoodTarget(
+            Grid<SpeciesCell> cells,
+            SpeciesCell hunter,
+            SpeciesRules rules,
+            out SpeciesPerceivedTarget target)
+        {
+            if (cells == null)
+            {
+                throw new ArgumentNullException(nameof(cells));
+            }
+
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+
+            if (!hunter.IsCreature
+                || hunter.TrackingTargetEntityId <= 0
+                || hunter.TrackingTicksRemaining <= 0
+                || !rules.DietTargetId.HasValue)
+            {
+                target = default;
+                return false;
+            }
+
+            for (var y = 0; y < cells.Height; y++)
+            {
+                for (var x = 0; x < cells.Width; x++)
+                {
+                    var candidate = cells.GetCell(x, y);
+                    if (candidate.IsCreature
+                        && candidate.EntityId == hunter.TrackingTargetEntityId
+                        && IsDietTarget(candidate, rules.DietTargetId.Value))
+                    {
+                        target = new SpeciesPerceivedTarget(
+                            SpeciesMovementIntent.Food,
+                            new Vector2Int(x, y),
+                            candidate);
+                        return true;
+                    }
+                }
+            }
+
+            target = default;
+            return false;
+        }
+
         public static bool TryFindMateTarget(
             Grid<SpeciesCell> cells,
             int x,

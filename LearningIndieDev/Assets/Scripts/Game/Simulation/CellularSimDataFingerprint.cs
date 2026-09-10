@@ -134,6 +134,7 @@ namespace SaltyGame
             Append(builder, rules.DigestionEnergyBonus);
             Append(builder, rules.CrowdingTolerance);
             Append(builder, rules.FleeMovementSpeedBonus);
+            Append(builder, rules.TrackingPersistenceSteps);
         }
 
         static void AppendTerrain(StringBuilder builder, TerrainDefinition terrain)

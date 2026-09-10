@@ -365,6 +365,82 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PredatorSkillCandidatesApplyTheirNamedRulesAndShareLevelTenCaps()
+        {
+            var rules = CreateRules(
+                awareness: new SpeciesAwarenessRules(visionRange: 2),
+                movementSpeed: 1f,
+                role: SpeciesRole.Carnivore,
+                forageBelowEnergy: 3,
+                attackModifier: 2);
+
+            var keenSenses = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.KeenSensesId).Apply(rules);
+            var relentlessPursuit = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.RelentlessPursuitId).Apply(rules);
+            var piercingBite = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.PiercingBiteId).Apply(rules);
+            var huntUrgency = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.HuntUrgencyId).Apply(rules);
+            var broodDrive = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.BroodDriveId).Apply(rules);
+
+            Assert.That(keenSenses.Awareness.VisionRange, Is.EqualTo(2));
+            Assert.That(keenSenses.TrackingPersistenceSteps, Is.EqualTo(1));
+            Assert.That(relentlessPursuit.MovementSpeed, Is.EqualTo(1.15f).Within(0.0001f));
+            Assert.That(piercingBite.AttackModifier, Is.EqualTo(3));
+            Assert.That(huntUrgency.ForageBelowEnergy, Is.EqualTo(4));
+            Assert.That(
+                broodDrive.ReproductionChance,
+                Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.BroodDriveChancePerLevel)
+                    .Within(0.0001f));
+
+            Assert.That(SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.KeenSensesId), Is.EqualTo(10));
+            Assert.That(SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.RelentlessPursuitId), Is.EqualTo(10));
+            Assert.That(SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.PiercingBiteId), Is.EqualTo(10));
+            Assert.That(SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.HuntUrgencyId), Is.EqualTo(10));
+            Assert.That(SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.BroodDriveId), Is.EqualTo(10));
+        }
+
+        [Test]
+        public void KeenSensesPursuesLastKnownFoodPositionAfterVisionLoss()
+        {
+            var fox = new SpeciesId("fox");
+            var hare = new SpeciesId("hare");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var foxCell = new SpeciesCell(fox, energy: 0)
+                .WithTrackingTarget(99, 3, 0, 4);
+            var hareCell = new SpeciesCell(hare, energy: 1)
+                .WithEntity(hare, health: 1, energy: 1, age: 0, foodEaten: 0, foodReserve: 0f, entityId: 99);
+            var foxRules = new SpeciesRules(
+                awareness: new SpeciesAwarenessRules(visionRange: 1),
+                movementSpeed: 1f,
+                movementPattern: right,
+                attackPattern: right,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: right,
+                dietTarget: hare,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                metabolism: 0,
+                role: SpeciesRole.Carnivore,
+                forageBelowEnergy: 1,
+                trackingPersistenceSteps: 4);
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(0, 0, foxCell);
+            source.SetCell(2, 0, hareCell);
+
+            var next = SpeciesSimulation.Step(
+                source,
+                new Dictionary<SpeciesId, SpeciesRules> { [fox] = foxRules },
+                seed: 11);
+
+            var pursued = next.GetCell(1, 0);
+            Assert.That(pursued.SpeciesId, Is.EqualTo(fox));
+            Assert.That(pursued.BehaviorState, Is.EqualTo(SpeciesBehaviorState.Hunting));
+            Assert.That(pursued.TrackingTargetEntityId, Is.EqualTo(99));
+            Assert.That(pursued.TrackingTargetX, Is.EqualTo(2));
+            Assert.That(pursued.TrackingTicksRemaining, Is.EqualTo(3));
+        }
+
+        [Test]
         public void ThreatExposureProgressionGrantsSpeedAndCumulativeAvoidanceThroughLevelTen()
         {
             var rules = CreateRules();
@@ -3806,6 +3882,77 @@ namespace SaltyGame.Tests
             Assert.That(statLine.ExpectedFinalPopulation, Is.EqualTo(9));
             Assert.That(statLine.FinalPopulation, Is.EqualTo(8));
             Assert.That(statLine.PopulationReconciled, Is.False);
+        }
+
+        [Test]
+        public void ExperimentalPredatorStatLineCalculatesRatesFromReconciledCounts()
+        {
+            var statLine = new SpeciesPredatorStatLine(
+                SpeciesIds.Carnivore,
+                startingPopulation: 10,
+                preyActivePredatorSteps: 100,
+                encounteredPredatorSteps: 40,
+                encounters: 20,
+                huntAttempts: 20,
+                preyKilled: 5,
+                starved: 1,
+                mating: 4,
+                births: 3,
+                crowding: 1,
+                finalPopulation: 11);
+
+            Assert.That(statLine.HuntSuccessAverage, Is.EqualTo(0.25f).Within(0.0001f));
+            Assert.That(statLine.PreyAccessAverage, Is.EqualTo(0.4f).Within(0.0001f));
+            Assert.That(statLine.HuntingAverage, Is.EqualTo(0.325f).Within(0.0001f));
+            Assert.That(statLine.InverseStarvedAverage, Is.EqualTo(12f / 13f).Within(0.0001f));
+            Assert.That(statLine.InverseCrowdingAverage, Is.EqualTo(11f / 12f).Within(0.0001f));
+            Assert.That(statLine.BirthAverage, Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(statLine.ReplicationFitnessScore, Is.EqualTo(0.75f).Within(0.0001f));
+            Assert.That(statLine.ActualHuntScore, Is.EqualTo(0.9147436f).Within(0.0001f));
+            Assert.That(statLine.ActualHuntScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Valid));
+            Assert.That(statLine.PopulationReconciled, Is.True);
+        }
+
+        [Test]
+        public void ExperimentalPredatorStatLineDoesNotSubtractKillsFromPopulation()
+        {
+            var statLine = new SpeciesPredatorStatLine(
+                SpeciesIds.Carnivore,
+                startingPopulation: 10,
+                preyActivePredatorSteps: 1,
+                encounteredPredatorSteps: 1,
+                encounters: 5,
+                huntAttempts: 5,
+                preyKilled: 5,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 10);
+
+            Assert.That(statLine.ExpectedFinalPopulation, Is.EqualTo(10));
+            Assert.That(statLine.PopulationReconciled, Is.True);
+        }
+
+        [Test]
+        public void ExperimentalPredatorStatLineInvalidatesImpossibleHuntRate()
+        {
+            var statLine = new SpeciesPredatorStatLine(
+                SpeciesIds.Carnivore,
+                startingPopulation: 1,
+                preyActivePredatorSteps: 1,
+                encounteredPredatorSteps: 1,
+                encounters: 1,
+                huntAttempts: 1,
+                preyKilled: 2,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 1);
+
+            Assert.That(statLine.HuntSuccessAverageStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
+            Assert.That(statLine.ActualHuntScoreStatus, Is.EqualTo(SpeciesHerbivoreMetricStatus.Invalid));
         }
 
         [Test]
