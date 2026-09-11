@@ -29,8 +29,25 @@ namespace SaltyGame.PlayModeTests
             Assert.That(root.GetComponent("SaltyGame.SpeciesSimulationPreview"), Is.Not.Null);
             Assert.That(camera.GetComponent<Camera>(), Is.Not.Null);
             Assert.That(camera.GetComponent("NoesisView"), Is.Not.Null);
-            Assert.That(camera.GetComponent("SaltyGame.VM_SimulationShell"), Is.Not.Null);
+            var viewModel = camera.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null);
             Assert.That(camera.GetComponent("SaltyGame.VM_SimulationBoard"), Is.Not.Null);
+
+            var selectedScenarioIndex = viewModel.GetType().GetProperty("SelectedScenarioIndex");
+            var canStart = viewModel.GetType().GetProperty("CanStart");
+            Assert.That(selectedScenarioIndex, Is.Not.Null);
+            Assert.That(canStart, Is.Not.Null);
+
+            selectedScenarioIndex.SetValue(viewModel, 2);
+            Assert.That(root.GetComponent<CellularAutomataPrototypeRuntime>().SpeciesPreview.SelectedScenario.name,
+                Is.EqualTo("Wetland"));
+            Assert.That(canStart.GetValue(viewModel), Is.True);
+            selectedScenarioIndex.SetValue(viewModel, 1);
+            Assert.That(canStart.GetValue(viewModel), Is.True);
+            selectedScenarioIndex.SetValue(viewModel, 0);
+            Assert.That(canStart.GetValue(viewModel), Is.True);
+            selectedScenarioIndex.SetValue(viewModel, 2);
+            Assert.That(canStart.GetValue(viewModel), Is.True);
         }
 
         [UnityTest]
@@ -62,14 +79,14 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator BevExperimentalFeaturesShowHerbivoreStatLineAfterRun()
+        public IEnumerator DefaultFeaturesShowHerbivoreStatLineAfterRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
 
             var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
             Assert.That(runtime, Is.Not.Null);
-            Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.False);
+            Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.True);
             Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(0));
 
             var continuousSettingsApplied = runtime.SpeciesPreview.TryApplyContinuousPhases(
@@ -86,7 +103,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(applied, Is.True, message);
             Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.True);
             Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(2));
-            StringAssert.Contains("herbivore stat line", message);
+            StringAssert.Contains("species stat lines", message);
 
             var settingsApplied = runtime.SpeciesPreview.TryApplyGlobalSettings(
                 "8",
@@ -145,6 +162,52 @@ namespace SaltyGame.PlayModeTests
 
             runtime.SpeciesPreview.ContinueWithoutUpgrade();
             yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator DeveloperSettingsCanSetExactStartingPopulations()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null);
+            var viewModelType = viewModel.GetType();
+            viewModelType.GetProperty("DeveloperMode")?.SetValue(viewModel, true);
+            viewModelType.GetProperty("PlantStartingPopulationText")?.SetValue(viewModel, "3");
+            viewModelType.GetProperty("HerbivoreStartingPopulationText")?.SetValue(viewModel, "2");
+            viewModelType.GetProperty("CarnivoreStartingPopulationText")?.SetValue(viewModel, "1");
+            var applySettingsCommand = viewModelType.GetProperty("ApplySettingsCommand")?.GetValue(viewModel);
+            applySettingsCommand?.GetType().GetMethod("Execute")?.Invoke(applySettingsCommand, new object[] { null });
+
+            Assert.That(preview.PlantStartingPopulation, Is.EqualTo(3));
+            Assert.That(preview.HerbivoreStartingPopulation, Is.EqualTo(2));
+            Assert.That(preview.CarnivoreStartingPopulation, Is.EqualTo(1));
+            var settingsMessage = viewModelType.GetProperty("SettingsMessage")?.GetValue(viewModel) as string;
+            StringAssert.Contains("Starting populations: plant 3, herbivore 2, carnivore 1", settingsMessage);
+
+            preview.ResetToStart();
+            preview.StartSimulation();
+            var openingPopulation = preview.Run.PopulationHistory[0];
+            Assert.That(openingPopulation.GetCount(SpeciesIds.Plant), Is.EqualTo(3));
+            Assert.That(openingPopulation.GetCount(FindSpeciesId(preview, SpeciesRole.Herbivore)), Is.EqualTo(2));
+            Assert.That(openingPopulation.GetCount(FindSpeciesId(preview, SpeciesRole.Carnivore)), Is.EqualTo(1));
+        }
+
+        static SpeciesId FindSpeciesId(SpeciesSimulationPreview preview, SpeciesRole role)
+        {
+            foreach (var entry in preview.ActiveSpeciesRules)
+            {
+                if (entry.Value.Role == role)
+                {
+                    return entry.Key;
+                }
+            }
+
+            Assert.Fail($"No species with role {role} is active.");
+            return default;
         }
 
         [UnityTest]
@@ -303,10 +366,13 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("trailblazer-long-stride"));
+            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("tough-hide"));
+            StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(0));
+            StringAssert.Contains("Block Amount", preview.GetRewardOptionDisplayName(0));
+            StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(0));
             Assert.That(preview.CanPurchaseReward(0), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
-            var movementBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].MovementSpeed;
+            var blockBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount;
 
             Assert.That(preview.PurchaseReward(0), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
@@ -316,8 +382,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(1));
             Assert.That(run.UpgradeLoadout.Count, Is.EqualTo(1));
             Assert.That(
-                preview.ActiveSpeciesRules[preview.PlayerSpecies].MovementSpeed,
-                Is.EqualTo(movementBefore + 0.5f));
+                preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount,
+                Is.EqualTo(blockBefore + 2));
             Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary - 5));
 
             // A repeated click cannot purchase or apply the same boundary twice.
@@ -412,6 +478,43 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.Progression.CanPurchase(upgrade), Is.False);
                 StringAssert.Contains("MAX LEVEL", preview.GetRewardOptionDisplayName(0));
                 preview.EndSimulation();
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator PredatorPhaseRewardsUseAuthoredPredatorSkills()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            Assert.That(preview.TryApplyExperimentalFeatures(true, "0", out var message), Is.True, message);
+            Assert.That(preview.TrySetPlayerSpecies("fox", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                "8", "8", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "4", "0.01", "0", "1", "0", false, out message), Is.True, message);
+
+            preview.StartSimulation();
+            preview.Progression.AddCurrency(10);
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.RewardOptionCount, Is.EqualTo(2));
+            var predatorSkillIds = new[] { "relentless-pursuit", "piercing-bite", "hunt-urgency", "brood-drive" };
+            for (var index = 0; index < preview.RewardOptionCount; index++)
+            {
+                var optionId = preview.GetRewardOptionId(index);
+                Assert.That(Array.IndexOf(predatorSkillIds, optionId), Is.GreaterThanOrEqualTo(0));
+                StringAssert.DoesNotContain("FASTER", preview.GetRewardOptionDisplayName(index));
+                StringAssert.DoesNotContain("ATTACK", preview.GetRewardOptionDisplayName(index));
+                StringAssert.DoesNotContain("BLOCK", preview.GetRewardOptionDisplayName(index));
             }
         }
 

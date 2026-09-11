@@ -276,6 +276,14 @@ namespace SaltyGame
             ThreatExposureId,
         };
 
+        static readonly string[] ExperimentalPredatorUpgradeIds =
+        {
+            RelentlessPursuitId,
+            PiercingBiteId,
+            HuntUrgencyId,
+            BroodDriveId,
+        };
+
         public static SpeciesUpgrade Create(string id)
         {
             if (string.IsNullOrWhiteSpace(id))
@@ -453,34 +461,57 @@ namespace SaltyGame
             int rotation,
             int seed)
         {
-            if (rotation < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
-            }
-
             if (IsThreatExposureId(continuingUpgradeId))
             {
                 continuingUpgradeId = ThreatExposureId;
             }
 
-            var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);
+            return CreateExperimentalOffer(
+                continuingUpgradeId,
+                rotation,
+                seed,
+                ExperimentalHerbivoreUpgradeIds);
+        }
+
+        public static SpeciesUpgrade[] CreateExperimentalPredatorOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed)
+        {
+            return CreateExperimentalOffer(
+                continuingUpgradeId,
+                rotation,
+                seed,
+                ExperimentalPredatorUpgradeIds);
+        }
+
+        static SpeciesUpgrade[] CreateExperimentalOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed,
+            string[] upgradeIds)
+        {
+            if (rotation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
+            }
+
+            var primaryIndex = Array.IndexOf(upgradeIds, continuingUpgradeId);
             var seededValue = seed & int.MaxValue;
             var hasContinuingUpgrade = primaryIndex >= 0;
             if (!hasContinuingUpgrade)
             {
-                primaryIndex = seededValue % ExperimentalHerbivoreUpgradeIds.Length;
+                primaryIndex = seededValue % upgradeIds.Length;
             }
 
             var alternativeRotation = hasContinuingUpgrade
-                ? rotation % (ExperimentalHerbivoreUpgradeIds.Length - 1)
-                : (seededValue / ExperimentalHerbivoreUpgradeIds.Length)
-                    % (ExperimentalHerbivoreUpgradeIds.Length - 1);
-            var alternativeIndex = (primaryIndex + 1 + alternativeRotation)
-                % ExperimentalHerbivoreUpgradeIds.Length;
+                ? rotation % (upgradeIds.Length - 1)
+                : (seededValue / upgradeIds.Length) % (upgradeIds.Length - 1);
+            var alternativeIndex = (primaryIndex + 1 + alternativeRotation) % upgradeIds.Length;
             return new[]
             {
-                Create(ExperimentalHerbivoreUpgradeIds[primaryIndex]),
-                Create(ExperimentalHerbivoreUpgradeIds[alternativeIndex]),
+                Create(upgradeIds[primaryIndex]),
+                Create(upgradeIds[alternativeIndex]),
             };
         }
     }

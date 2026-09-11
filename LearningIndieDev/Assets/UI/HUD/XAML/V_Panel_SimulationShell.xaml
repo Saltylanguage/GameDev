@@ -8,14 +8,14 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="../../GlobalResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Style TargetType="TextBox">
+            <Style TargetType="TextBox" BasedOn="{StaticResource {x:Type TextBox}}">
                 <Setter Property="Foreground" Value="{DynamicResource Chrono_TreeBark}" />
                 <Setter Property="Background" Value="{DynamicResource Chrono_VanillaCream}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
                 <Setter Property="BorderThickness" Value="2" />
                 <Setter Property="Padding" Value="6,4" />
             </Style>
-            <Style TargetType="ComboBox">
+            <Style x:Key="GalapagOS.ComboBox" TargetType="ComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
                 <Setter Property="Foreground" Value="{DynamicResource Chrono_TreeBark}" />
                 <Setter Property="Background" Value="{DynamicResource Chrono_VanillaCream}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
@@ -246,14 +246,15 @@
                           HorizontalAlignment="Center"
                           Margin="0,0,0,10"/>
                 <StackPanel Visibility="{Binding PlayerSettingsVisibility}">
-                    <TextBlock Text="Choose a scenario, then start your expedition. Advanced simulation tuning is available in Developer Mode."
+                    <TextBlock Text="Choose a scenario and species, then start your expedition. Enable Developer Mode to edit the basic simulation controls."
                                Foreground="{DynamicResource Chrono_Olive}"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                Margin="0,0,0,10"/>
                     <StackPanel Orientation="Horizontal" Margin="0,3">
                         <TextBlock Text="Scenario" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                        <ComboBox ItemsSource="{Binding ScenarioOptions}"
+                        <ComboBox Style="{StaticResource GalapagOS.ComboBox}"
+                                  ItemsSource="{Binding ScenarioOptions}"
                                   SelectedIndex="{Binding SelectedScenarioIndex, Mode=TwoWay}"
                                   IsEnabled="{Binding CanEditSettings}"
                                   Width="300"
@@ -261,7 +262,8 @@
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" Margin="0,3">
                         <TextBlock Text="Player species" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                        <ComboBox ItemsSource="{Binding PlayerSpeciesOptions}"
+                        <ComboBox Style="{StaticResource GalapagOS.ComboBox}"
+                                  ItemsSource="{Binding PlayerSpeciesOptions}"
                                   SelectedIndex="{Binding SelectedPlayerSpeciesIndex, Mode=TwoWay}"
                                   IsEnabled="{Binding CanEditSettings}"
                                   Width="300"
@@ -272,15 +274,37 @@
                                FontSize="13"
                                TextWrapping="Wrap"
                                Margin="0,8,0,4"/>
+                    <TextBlock Text="{Binding SettingsMessage}"
+                               Foreground="{DynamicResource Chrono_Tangerine}"
+                               FontSize="13"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               Margin="0,8,0,8"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="APPLY SETTINGS"
+                                Command="{Binding ApplySettingsCommand}"
+                                IsEnabled="{Binding CanEditSettings}"
+                                Style="{StaticResource GalapagOS.Button.Primary}"
+                                Width="180"
+                                Height="42"
+                                Margin="0,0,8,0"/>
+                        <Button Content="SAVE DEFAULT"
+                                Command="{Binding SaveSettingsCommand}"
+                                IsEnabled="{Binding CanEditSettings}"
+                                Style="{StaticResource GalapagOS.Button.Secondary}"
+                                Width="150"
+                                Height="42"/>
+                    </StackPanel>
                 </StackPanel>
                 <ScrollViewer Height="270"
                               Visibility="{Binding DeveloperSettingsVisibility}"
                               IsEnabled="{Binding CanEditSettings}"
                               VerticalScrollBarVisibility="Auto">
                     <StackPanel>
-                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                        <StackPanel Orientation="Horizontal" Margin="0,3" Visibility="Collapsed">
                             <TextBlock Text="Scenario" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox ItemsSource="{Binding ScenarioOptions}"
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}"
+                                      ItemsSource="{Binding ScenarioOptions}"
                                       SelectedIndex="{Binding SelectedScenarioIndex, Mode=TwoWay}"
                                       IsEnabled="{Binding CanEditSettings}"
                                       Width="300"
@@ -288,27 +312,27 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Grid width" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding GridWidthText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding GridWidthText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Grid height" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding GridHeightText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding GridHeightText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Base seed" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding BaseSeedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding BaseSeedText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Maximum population" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MaximumPopulationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MaximumPopulationText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Minimum population" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MinimumPopulationText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MinimumPopulationText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Run ticks (single-run mode)" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding RunTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding RunTicksText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <CheckBox Content="Use continuous phases (default)"
                                   IsChecked="{Binding ContinuousPhasesEnabled, Mode=TwoWay}"
@@ -316,7 +340,7 @@
                                   Margin="0,8,0,0"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Continuous phase (ticks)" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding PhaseLengthTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding PhaseLengthTicksText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <TextBlock Text="Continuous mode runs 10 phases. Phase length controls each simulation; run ticks is used only in Developer single-run mode."
                                    Foreground="{DynamicResource Chrono_Olive}"
@@ -325,52 +349,66 @@
                                    Margin="0,2,0,0"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Step interval (seconds)" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding StepIntervalText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding StepIntervalText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Plant start chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding PlantProbabilityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding PlantProbabilityText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Herbivore start chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding HerbivoreProbabilityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding HerbivoreProbabilityText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Carnivore start chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding CarnivoreProbabilityText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding CarnivoreProbabilityText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
-                        <CheckBox Content="Randomize seed on start"
-                                  IsChecked="{Binding RandomizeSeedOnStart, Mode=TwoWay}"
-                                  Foreground="{DynamicResource Chrono_TreeBark}"
-                                  Margin="0,8,0,0"/>
+                        <TextBlock Text="Exact starting populations (0 is valid; all three zero uses scenario/probability defaults)"
+                                   Foreground="{DynamicResource Chrono_Olive}"
+                                   FontSize="12"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Plant starting count" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding PlantStartingPopulationText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Herbivore starting count" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding HerbivoreStartingPopulationText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,3">
+                            <TextBlock Text="Carnivore starting count" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding CarnivoreStartingPopulationText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
+                        </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
                 <TextBlock Text="{Binding SelectedRuleSpeciesTitle}"
-                           Visibility="{Binding DeveloperSettingsVisibility}"
+                           Visibility="Collapsed"
                            Foreground="{DynamicResource Chrono_Olive}"
                            FontSize="18"
                            FontWeight="Bold"
                            HorizontalAlignment="Center"
                            Margin="0,12,0,4"/>
-                <ComboBox ItemsSource="{Binding SpeciesTabs}"
-                          Visibility="{Binding DeveloperSettingsVisibility}"
+                <ComboBox Style="{StaticResource GalapagOS.ComboBox}"
+                          ItemsSource="{Binding SpeciesTabs}"
+                          Visibility="Collapsed"
                           SelectedIndex="{Binding SelectedRuleSpeciesIndex, Mode=TwoWay}"
                           IsEnabled="{Binding CanEditSettings}"
                           Height="34"
                           Margin="0,0,0,6"/>
                 <ScrollViewer Height="390"
-                              Visibility="{Binding DeveloperSettingsVisibility}"
+                              Visibility="Collapsed"
                               IsEnabled="{Binding CanEditSettings}"
                               VerticalScrollBarVisibility="Auto">
                     <StackPanel>
                         <CheckBox Content="Movement enabled" IsChecked="{Binding MovementEnabled, Mode=TwoWay}" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,3"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Movement speed" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MovementSpeedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MovementSpeedText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Movement pattern" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding MovementPattern, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding MovementPattern, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="Cardinal"/>
                                 <ComboBoxItem Content="Moore"/>
                             </ComboBox>
@@ -378,29 +416,29 @@
                         <CheckBox Content="Attack enabled" IsChecked="{Binding AttackEnabled, Mode=TwoWay}" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,3"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Attack amount" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding AttackAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding AttackAmountText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Attack pattern" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding AttackPattern, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding AttackPattern, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="Cardinal"/>
                                 <ComboBoxItem Content="Moore"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Block amount" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding BlockAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding BlockAmountText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Block pattern" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding BlockPattern, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding BlockPattern, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="Cardinal"/>
                                 <ComboBoxItem Content="Moore"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Diet target" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding DietTarget, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding DietTarget, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="None"/>
                                 <ComboBoxItem Content="Plant"/>
                                 <ComboBoxItem Content="Herbivore"/>
@@ -409,14 +447,14 @@
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Diet pattern" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding DietPattern, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding DietPattern, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="Cardinal"/>
                                 <ComboBoxItem Content="Moore"/>
                             </ComboBox>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Reproduction pattern" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <ComboBox SelectedIndex="{Binding ReproductionPattern, Mode=TwoWay}" Width="140">
+                            <ComboBox Style="{StaticResource GalapagOS.ComboBox}" SelectedIndex="{Binding ReproductionPattern, Mode=TwoWay}" Width="140">
                                 <ComboBoxItem Content="Cardinal"/>
                                 <ComboBoxItem Content="Moore"/>
                             </ComboBox>
@@ -424,132 +462,101 @@
                         <CheckBox Content="Reproduction enabled" IsChecked="{Binding ReproductionEnabled, Mode=TwoWay}" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,3"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Reproduction chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding ReproductionChanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding ReproductionChanceText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Nearby mate requirement" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding ReproductionNeighborCountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding ReproductionNeighborCountText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Energy transferred to offspring" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding ReproductionFoodRequiredText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding ReproductionFoodRequiredText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Maximum group size" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MaxReproductionGroupSizeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MaxReproductionGroupSizeText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Starting energy" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding StartingEnergyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding StartingEnergyText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Maximum energy reserve" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MaximumEnergyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MaximumEnergyText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Minimum litter size" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding LitterMinimumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding LitterMinimumText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Maximum litter size" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding LitterMaximumText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding LitterMaximumText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Forage at or below energy" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding ForageBelowEnergyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding ForageBelowEnergyText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Energy value" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding EnergyValueText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding EnergyValueText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Metabolism (- adds)" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding MetabolismText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding MetabolismText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Vision range" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding VisionRangeText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding VisionRangeText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Intelligence" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding IntelligenceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding IntelligenceText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <CheckBox Content="Wilt enabled" IsChecked="{Binding WiltEnabled, Mode=TwoWay}" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,3"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Wilt chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding WiltChanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding WiltChanceText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Crowding cost" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding CrowdingEnergyPenaltyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding CrowdingEnergyPenaltyText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Starting food reserve" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding StartingFoodReserveText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding StartingFoodReserveText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                         <CheckBox Content="Seed drops enabled" IsChecked="{Binding SeedDropEnabled, Mode=TwoWay}" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,3"/>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Seed drop chance" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding SeedDropChanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBox Text="{Binding SeedDropChanceText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}" Width="120"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-                <StackPanel Visibility="{Binding DeveloperSettingsVisibility}"
+                <StackPanel Visibility="Collapsed"
                             IsEnabled="{Binding CanEditSettings}"
                             Margin="0,10,0,0">
-                    <TextBlock Text="BEV EXPERIMENTAL FEATURES"
-                               Foreground="{DynamicResource Chrono_Olive}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Margin="0,0,0,2"/>
-                    <CheckBox Content="Enable Bev experimental combat and species stat lines"
-                              IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
-                              Foreground="{DynamicResource Chrono_TreeBark}"
-                              Margin="0,3,0,0"/>
                     <StackPanel Orientation="Horizontal" Margin="0,3">
                         <TextBlock Text="Fox attack cooldown (ticks; 0 = off)"
                                    Foreground="{DynamicResource Chrono_TreeBark}"
                                    Width="250"
                                    VerticalAlignment="Center"/>
-                        <TextBox Text="{Binding FoxAttackCooldownTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Text="{Binding FoxAttackCooldownTicksText, Mode=TwoWay, UpdateSourceTrigger=LostFocus}"
                                  Width="120"/>
                     </StackPanel>
-                    <TextBlock Text="Leave this unchecked to keep the legacy combat rules. Apply Settings before starting."
+                    <TextBlock Text="Apply Settings before starting."
                                Foreground="{DynamicResource Chrono_Olive}"
                                FontSize="12"
                                TextWrapping="Wrap"
                                Margin="0,2,0,0"/>
                 </StackPanel>
                 <Button Content="APPLY SPECIES RULES"
-                        Visibility="{Binding DeveloperSettingsVisibility}"
+                        Visibility="Collapsed"
                         Command="{Binding ApplySpeciesRulesCommand}"
                         IsEnabled="{Binding CanEditSettings}"
                         Style="{StaticResource GalapagOS.Button.Primary}"
                         Height="40"
                         Margin="0,8,0,0"/>
-                <TextBlock Text="{Binding SettingsMessage}"
-                           Foreground="{DynamicResource Chrono_Tangerine}"
-                           FontSize="13"
-                           TextWrapping="Wrap"
-                           HorizontalAlignment="Center"
-                           Margin="0,8,0,8"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="APPLY SETTINGS"
-                            Visibility="{Binding DeveloperSettingsVisibility}"
-                            Command="{Binding ApplySettingsCommand}"
-                            IsEnabled="{Binding CanEditSettings}"
-                            Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="180"
-                            Height="42"
-                            Margin="0,0,8,0"/>
-                    <Button Content="SAVE DEFAULT"
-                            Visibility="{Binding DeveloperSettingsVisibility}"
-                            Command="{Binding SaveSettingsCommand}"
-                            IsEnabled="{Binding CanEditSettings}"
-                            Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="150"
-                            Height="42"
-                            Margin="0,0,8,0"/>
                     <Button Content="START"
                             Command="{Binding StartCommand}"
                             IsEnabled="{Binding CanStart}"
@@ -713,31 +720,37 @@
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption1Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption2Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112">
+                            Height="136">
                         <TextBlock Text="{Binding RewardOption3Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -828,31 +841,37 @@
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption1Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption2Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112">
+                            Height="136">
                         <TextBlock Text="{Binding RewardOption3Text}"
+                                   FontSize="13"
                                    TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                                   TextAlignment="Center"
+                                   VerticalAlignment="Center"/>
                     </Button>
                 </StackPanel>
                 <Button Content="CONTINUE WITHOUT UPGRADE"

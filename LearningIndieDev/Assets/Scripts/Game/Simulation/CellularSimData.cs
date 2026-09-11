@@ -354,6 +354,11 @@ namespace SaltyGame
             return CreateUpdated(updatedProbabilities, speciesRules, alphaOffspringRules, startingPopulations);
         }
 
+        public CellularSimData WithStartingPopulations(IReadOnlyDictionary<SpeciesId, int> populations)
+        {
+            return CreateUpdated(startingProbabilities, speciesRules, alphaOffspringRules, populations);
+        }
+
         public CellularSimData WithAlphaOffspringRule(AlphaOffspringRule rule)
         {
             if (rule == null)

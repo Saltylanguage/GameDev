@@ -74,10 +74,12 @@ namespace SaltyGame
         string plantProbabilityText;
         string herbivoreProbabilityText;
         string carnivoreProbabilityText;
+        string plantStartingPopulationText;
+        string herbivoreStartingPopulationText;
+        string carnivoreStartingPopulationText;
         string foxAttackCooldownTicksText;
         bool randomizeSeedOnStart;
         bool continuousPhasesEnabled;
-        bool bevExperimentalFeaturesEnabled;
         bool canEditSettings;
         bool developerMode;
         int selectedRuleSpeciesIndex;
@@ -211,10 +213,20 @@ namespace SaltyGame
             get => carnivoreProbabilityText;
             set => Set(ref carnivoreProbabilityText, value, nameof(CarnivoreProbabilityText));
         }
-        public bool BevExperimentalFeaturesEnabled
+        public string PlantStartingPopulationText
         {
-            get => bevExperimentalFeaturesEnabled;
-            set => Set(ref bevExperimentalFeaturesEnabled, value, nameof(BevExperimentalFeaturesEnabled));
+            get => plantStartingPopulationText;
+            set => Set(ref plantStartingPopulationText, value, nameof(PlantStartingPopulationText));
+        }
+        public string HerbivoreStartingPopulationText
+        {
+            get => herbivoreStartingPopulationText;
+            set => Set(ref herbivoreStartingPopulationText, value, nameof(HerbivoreStartingPopulationText));
+        }
+        public string CarnivoreStartingPopulationText
+        {
+            get => carnivoreStartingPopulationText;
+            set => Set(ref carnivoreStartingPopulationText, value, nameof(CarnivoreStartingPopulationText));
         }
         public string FoxAttackCooldownTicksText
         {
@@ -249,7 +261,7 @@ namespace SaltyGame
             }
         }
         public Visibility DeveloperSettingsVisibility => developerMode ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility PlayerSettingsVisibility => developerMode ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility PlayerSettingsVisibility => Visibility.Visible;
         public string[] SpeciesTabs => speciesTabs;
         public int SelectedRuleSpeciesIndex
         {
@@ -931,7 +943,12 @@ namespace SaltyGame
                 return;
             }
 
-            if (!preview.TryApplyGlobalSettingsForTicks(
+            preview.TryApplyExperimentalFeatures(
+                true,
+                "0",
+                out _);
+
+            if (!preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 GridWidthText,
                 GridHeightText,
                 BaseSeedText,
@@ -942,17 +959,15 @@ namespace SaltyGame
                 PlantProbabilityText,
                 HerbivoreProbabilityText,
                 CarnivoreProbabilityText,
-                RandomizeSeedOnStart,
+                false,
+                PlantStartingPopulationText,
+                HerbivoreStartingPopulationText,
+                CarnivoreStartingPopulationText,
                 out _))
             {
                 Refresh(true);
                 return;
             }
-
-            preview.TryApplyExperimentalFeatures(
-                BevExperimentalFeaturesEnabled,
-                FoxAttackCooldownTicksText,
-                out _);
             Refresh(true);
         }
 
@@ -1147,7 +1162,9 @@ namespace SaltyGame
             PlantProbabilityText = preview.PlantProbability.ToString("0.###", CultureInfo.InvariantCulture);
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             CarnivoreProbabilityText = preview.CarnivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
-            BevExperimentalFeaturesEnabled = preview.BevExperimentalFeaturesEnabled;
+            PlantStartingPopulationText = preview.PlantStartingPopulation.ToString(CultureInfo.InvariantCulture);
+            HerbivoreStartingPopulationText = preview.HerbivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
+            CarnivoreStartingPopulationText = preview.CarnivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
             FoxAttackCooldownTicksText = preview.FoxAttackCooldownTicks.ToString(CultureInfo.InvariantCulture);
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
             ContinuousPhasesEnabled = preview.ContinuousPhasesEnabled;
