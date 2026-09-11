@@ -3433,6 +3433,52 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ExplicitPlantPopulationCreatesEdibleGrassResources()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var probabilities = new Dictionary<SpeciesId, float>
+            {
+                [SpeciesIds.Plant] = 0f,
+                [SpeciesIds.Herbivore] = 0f,
+                [SpeciesIds.Carnivore] = 0f,
+            };
+            var startingPopulations = new Dictionary<SpeciesId, int>
+            {
+                [SpeciesIds.Plant] = 40,
+                [SpeciesIds.Herbivore] = 40,
+                [SpeciesIds.Carnivore] = 40,
+            };
+            var data = new CellularSimData(
+                32,
+                32,
+                probabilities,
+                rules,
+                runDurationSeconds: 1f,
+                stepInterval: 0.1f,
+                maxPopulation: 1024,
+                startingPopulations: startingPopulations);
+            var grid = SpeciesInitialGridFactory.Create(data, runSeed: 123);
+
+            var plants = new List<SpeciesCell>();
+            for (var y = 0; y < grid.Height; y++)
+            {
+                for (var x = 0; x < grid.Width; x++)
+                {
+                    var cell = grid.GetCell(x, y);
+                    if (cell.IsPlantResource && cell.SpeciesId == SpeciesIds.Plant)
+                    {
+                        plants.Add(cell);
+                    }
+                }
+            }
+
+            Assert.That(plants, Has.Count.EqualTo(40));
+            Assert.That(plants.TrueForAll(cell => cell.IsTerrainResource), Is.True);
+            Assert.That(plants.TrueForAll(cell => cell.TerrainId == TerrainIds.Grass), Is.True);
+            Assert.That(plants.TrueForAll(cell => cell.TerrainEnergy > 0f), Is.True);
+        }
+
+        [Test]
         public void SimulationTestHarnessReportsExpectedInitialPopulation()
         {
             var rules = SpeciesRuleDefaults.Create();

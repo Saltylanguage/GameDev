@@ -972,7 +972,7 @@ namespace SaltyGame
 
                 if (maxPopulation > 0 && totalStartingPopulation > maxPopulation)
                 {
-                    validationMessage = "Starting populations cannot exceed the maximum population.";
+                    validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {maxPopulation}.";
                     settingsMessage = validationMessage;
                     return false;
                 }

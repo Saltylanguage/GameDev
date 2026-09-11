@@ -937,16 +937,11 @@ namespace SaltyGame
             if (!preview.TryApplyContinuousPhases(
                 !DeveloperMode || ContinuousPhasesEnabled,
                 PhaseLengthTicksText,
-                out _))
+                out var continuousValidationMessage))
             {
-                Refresh(true);
+                Set(ref settingsMessage, continuousValidationMessage, nameof(SettingsMessage));
                 return;
             }
-
-            preview.TryApplyExperimentalFeatures(
-                true,
-                "0",
-                out _);
 
             if (!preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 GridWidthText,
@@ -963,9 +958,9 @@ namespace SaltyGame
                 PlantStartingPopulationText,
                 HerbivoreStartingPopulationText,
                 CarnivoreStartingPopulationText,
-                out _))
+                out var settingsValidationMessage))
             {
-                Refresh(true);
+                Set(ref settingsMessage, settingsValidationMessage, nameof(SettingsMessage));
                 return;
             }
             Refresh(true);

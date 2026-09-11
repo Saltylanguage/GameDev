@@ -27,6 +27,14 @@
                 <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
                 <Setter Property="FontSize" Value="13" />
             </Style>
+            <Style x:Key="SimulationRewardCardText" TargetType="TextBlock">
+                <Setter Property="Width" Value="208" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -285,14 +293,14 @@
                                 Command="{Binding ApplySettingsCommand}"
                                 IsEnabled="{Binding CanEditSettings}"
                                 Style="{StaticResource GalapagOS.Button.Primary}"
-                                Width="180"
+                                Width="220"
                                 Height="42"
                                 Margin="0,0,8,0"/>
                         <Button Content="SAVE DEFAULT"
                                 Command="{Binding SaveSettingsCommand}"
                                 IsEnabled="{Binding CanEditSettings}"
                                 Style="{StaticResource GalapagOS.Button.Secondary}"
-                                Width="150"
+                                Width="180"
                                 Height="42"/>
                     </StackPanel>
                 </StackPanel>
@@ -561,7 +569,7 @@
                             Command="{Binding StartCommand}"
                             IsEnabled="{Binding CanStart}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="100"
+                            Width="120"
                             Height="42"/>
                 </StackPanel>
             </StackPanel>
@@ -571,7 +579,7 @@
         <Border Visibility="{Binding RunningVisibility}"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Width="340"
+                Width="390"
                 Margin="0,0,28,26"
                 Padding="18"
                 Background="{DynamicResource Chrono_LightCream}"
@@ -591,6 +599,7 @@
                 <TextBlock Text="{Binding RunDetailsText}"
                            Foreground="{DynamicResource Chrono_TreeBark}"
                            FontSize="14"
+                           TextWrapping="Wrap"
                            Margin="0,6,0,14"/>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="PAUSE"
@@ -604,14 +613,14 @@
                             Command="{Binding RestartCommand}"
                             IsEnabled="{Binding CanRestart}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="102"
+                            Width="120"
                             Height="42"
                             Margin="0,0,8,0"/>
                     <Button Content="STOP"
                             Command="{Binding StopCommand}"
                             IsEnabled="{Binding CanStop}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
+                            Width="88"
                             Height="42"/>
                 </StackPanel>
                 <Button Content="END"
@@ -628,7 +637,7 @@
         <Border Visibility="{Binding PausedVisibility}"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Width="340"
+                Width="390"
                 Margin="0,0,28,26"
                 Padding="18"
                 Background="{DynamicResource Chrono_VanillaCream}"
@@ -648,27 +657,28 @@
                 <TextBlock Text="{Binding RunDetailsText}"
                            Foreground="{DynamicResource Chrono_TreeBark}"
                            FontSize="14"
+                           TextWrapping="Wrap"
                            Margin="0,6,0,14"/>
                 <StackPanel Orientation="Horizontal">
                     <Button Content="RESUME"
                             Command="{Binding ResumeCommand}"
                             IsEnabled="{Binding CanResume}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="105"
+                            Width="120"
                             Height="42"
                             Margin="0,0,8,0"/>
                     <Button Content="RESTART"
                             Command="{Binding RestartCommand}"
                             IsEnabled="{Binding CanRestart}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="102"
+                            Width="120"
                             Height="42"
                             Margin="0,0,8,0"/>
                     <Button Content="STOP"
                             Command="{Binding StopCommand}"
                             IsEnabled="{Binding CanStop}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
+                            Width="88"
                             Height="42"/>
                 </StackPanel>
             </StackPanel>
@@ -719,66 +729,63 @@
                     <Button Command="{Binding PurchaseRewardOption1Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption1Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption2Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136">
                         <TextBlock Text="{Binding RewardOption3Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="SKIP / CONTINUE"
+                    <Button Content="SKIP"
                             Command="{Binding ContinueWithoutUpgradeCommand}"
                             IsEnabled="{Binding CanContinueWithoutUpgrade}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="166"
+                            Width="100"
                             Height="50"
                             Margin="0,0,8,0"/>
                     <Button Content="RESTART"
                             Command="{Binding RestartCommand}"
                             IsEnabled="{Binding CanRestart}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="102"
+                            Width="120"
                             Height="50"
                             Margin="0,0,8,0"/>
                     <Button Content="STOP"
                             Command="{Binding StopCommand}"
                             IsEnabled="{Binding CanStop}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
+                            Width="88"
                             Height="50"/>
                     <Button Content="END"
                             Command="{Binding EndCommand}"
                             IsEnabled="{Binding CanEnd}"
                             Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
+                            Width="88"
                             Height="50"
                             Margin="8,0,0,0"/>
                 </StackPanel>
@@ -840,38 +847,35 @@
                     <Button Command="{Binding PurchaseRewardOption1Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption1Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136"
                             Margin="0,0,10,0">
                         <TextBlock Text="{Binding RewardOption2Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
+                            HorizontalContentAlignment="Center"
+                            VerticalContentAlignment="Center"
                             Width="240"
                             Height="136">
                         <TextBlock Text="{Binding RewardOption3Text}"
-                                   FontSize="13"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"
-                                   VerticalAlignment="Center"/>
+                                   Style="{StaticResource SimulationRewardCardText}"/>
                     </Button>
                 </StackPanel>
                 <Button Content="CONTINUE WITHOUT UPGRADE"
@@ -945,7 +949,7 @@
                             Command="{Binding PlayNextSimulationCommand}"
                             IsEnabled="{Binding CanPlayNextSimulation}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="250"
+                            Width="320"
                             Height="50"
                             Margin="0,0,8,0"/>
                     <Button Content="RESET"

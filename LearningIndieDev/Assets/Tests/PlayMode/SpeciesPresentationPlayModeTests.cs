@@ -196,6 +196,37 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openingPopulation.GetCount(FindSpeciesId(preview, SpeciesRole.Carnivore)), Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator DeveloperSettingsRejectingPopulationCapPreservesInputAndRunSeed()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(runtime, Is.Not.Null);
+            Assert.That(viewModel, Is.Not.Null);
+
+            var viewModelType = viewModel.GetType();
+            viewModelType.GetProperty("DeveloperMode")?.SetValue(viewModel, true);
+            viewModelType.GetProperty("MaximumPopulationText")?.SetValue(viewModel, "100");
+            viewModelType.GetProperty("PlantStartingPopulationText")?.SetValue(viewModel, "40");
+            viewModelType.GetProperty("HerbivoreStartingPopulationText")?.SetValue(viewModel, "40");
+            viewModelType.GetProperty("CarnivoreStartingPopulationText")?.SetValue(viewModel, "40");
+
+            var runSeedBefore = runtime.SpeciesPreview.Run.Seed;
+            var applySettingsCommand = viewModelType.GetProperty("ApplySettingsCommand")?.GetValue(viewModel);
+            applySettingsCommand?.GetType().GetMethod("Execute")?.Invoke(applySettingsCommand, new object[] { null });
+
+            Assert.That(runtime.SpeciesPreview.Run.Seed, Is.EqualTo(runSeedBefore));
+            Assert.That(viewModelType.GetProperty("PlantStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
+            Assert.That(viewModelType.GetProperty("HerbivoreStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
+            Assert.That(viewModelType.GetProperty("CarnivoreStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
+            var settingsMessage = viewModelType.GetProperty("SettingsMessage")?.GetValue(viewModel) as string;
+            StringAssert.Contains("total 120 cannot exceed maximum population 100", settingsMessage);
+        }
+
         static SpeciesId FindSpeciesId(SpeciesSimulationPreview preview, SpeciesRole role)
         {
             foreach (var entry in preview.ActiveSpeciesRules)

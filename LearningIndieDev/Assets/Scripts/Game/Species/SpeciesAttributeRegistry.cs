@@ -336,7 +336,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.LitterMaximum, "Maximum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMaximum),
                 Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.DigestionEnergyBonus),
                 Definition(SpeciesAttributeIds.CrowdingTolerance, "Crowding Tolerance", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingTolerance),
-                Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Flee Movement Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
+                Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Move Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
                 Definition(SpeciesAttributeIds.TrackingPersistenceSteps, "Tracking Persistence Steps", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.TrackingPersistenceSteps),
             };
 

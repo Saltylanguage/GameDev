@@ -119,6 +119,20 @@ namespace SaltyGame
                         continue;
                     }
 
+                    if (rules.IsPlant || species == SpeciesIds.Plant)
+                    {
+                        grid.SetCell(
+                            x,
+                            y,
+                            SpeciesCell.FromTerrain(
+                                data.TerrainDefinitions[TerrainIds.Grass],
+                                rules.StartingFoodReserve,
+                                species));
+                        placed++;
+                        populationCount++;
+                        continue;
+                    }
+
                     var energy = rules.MaximumEnergy > 0
                         ? Math.Min(rules.MaximumEnergy, rules.StartingEnergy)
                         : rules.StartingEnergy;
