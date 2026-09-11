@@ -17,7 +17,22 @@ not redefine the program.
 
 ## Research paper draft
 
-- [Toward an Auditable AI-Assisted Ecology Laboratory](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md) - working paper grounded in the current implementation and EX-001 evidence.
+- [Toward an Auditable AI-Assisted Ecology Laboratory](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md) - working paper grounded in the current implementation and bounded EX-001 through EX-010 evidence.
+
+## Current status — 2026-09-07
+
+| Program phase | Status | Meaning |
+| --- | --- | --- |
+| P0–P2 | Complete within their recorded bounds | Program framing and instrument trust are accepted; the EX-002 causal package has a complete bounded matrix and documented interpretation for its declared fixture and schema. |
+| P3 | Closed as bounded | EX-007, EX-009, and EX-010 have human decisions; EX-008 is supporting evidence; EX-003 is deferred without a result. No generalized predictive or balance claim was promoted. |
+| P4–P6 | Not started | The next research experiment is not selected. Any translation, collaboration, or promotion work needs a new human-approved contract and capacity decision. |
+
+The current disposition is recorded in the
+[P3 gate decision](P3_GATE_DECISION_2026-09-06.md) and summarized in the
+[P3 cohesive report](Experiments/P3-Predictive-AI-Cohesive-Report.md). The
+[2026-09-03 gate review](P3_GATE_REVIEW_2026-09-03.md) and
+[DeepResearch treatment](../DeepResearch_Treatement/README.md) are historical
+audits, not current status pages.
 
 ## Supporting records
 
@@ -28,9 +43,14 @@ not redefine the program.
 
 Read the [continued-simulation evidence validity register](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
 before reusing historical results for the new game flow. EX-001 through EX-009
-retain their declared fresh-window scope; EX-010 depends on the
-[planned checkpoint/continuation work](../CONTINUOUS_SIMULATION_FLOW_PLAN.md).
-Raw evidence, preregistrations and completed human decisions remain unchanged.
+retain their declared fresh-window scope; EX-010 now records the first approved
+continued-world comparison. Raw evidence, preregistrations and completed human
+decisions remain unchanged. The two EX-002 raw control bundles cited by its
+brief are absent from this checkout; the durable reports and handoffs preserve
+the bounded interpretation, but do not substitute for those raw files. P3 is closed as
+a bounded phase under the
+[P3 gate decision](P3_GATE_DECISION_2026-09-06.md); no generalized predictive
+or balance claim is implied.
 
 - [EX-001 - Reproducibility Baseline](Experiments/EX-001-Reproducibility-Baseline/README.md)
 - [EX-001B - Cross-Scenario Determinism](Experiments/EX-001B-Cross-Scenario-Determinism/README.md)
@@ -40,5 +60,5 @@ Raw evidence, preregistrations and completed human decisions remain unchanged.
 - [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](Experiments/EX-009-Same-Heldout-Order-Comparison/README.md)
 - [EX-010 - Sequential Upgrade Continuation](Experiments/EX-010-Sequential-Upgrade-Continuation/README.md)
 
-Reusable brief, report, and AI-analysis templates are stored in
-[Templates](Templates/).
+Reusable templates: [experiment report](Templates/EXPERIMENT_REPORT_TEMPLATE.md)
+and [AI analysis](Templates/AI_ANALYSIS_TEMPLATE.md).

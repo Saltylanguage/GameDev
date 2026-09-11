@@ -4,11 +4,21 @@
 **Scope:** Current AI-Assisted Ecology Laboratory / P3 predictive change-impact work
 **Mode:** Non-destructive review and improvement treatment, second pass
 
+> **Current applicability (2026-09-07):** This is a historical P3 audit. P3 was
+> later closed as bounded under the
+> [P3 gate decision](../Research/P3_GATE_DECISION_2026-09-06.md). Use the
+> [Research index](../Research/README.md) for current program status. The open
+> recommendations here remain optional prerequisites if a future confirmatory
+> forecast is selected; they do not mean that P3 is still open.
+
+The historical `DeepResearch_Treatement` directory spelling is retained to keep
+existing links stable; do not create a second corrected-name copy.
+
 This directory is an additive treatment package. It does not replace the
 canonical research plan, rewrite experiment evidence, or promote a design
 decision. It records what is working, what currently weakens the evidence, and
-the smallest practical changes that would make the next P3 experiments more
-reliable.
+the smallest practical changes that would make a future confirmatory prediction
+more reliable.
 
 ## Start here
 

@@ -1,5 +1,10 @@
 # Additive implementation backlog
 
+> **Status refresh (2026-09-07):** This backlog belongs to the historical P3
+> audit. DR-006, DR-007, and DR-011 are complete. The remaining items are
+> optional prerequisites for a future confirmatory forecast unless separately
+> promoted into active work; P3 itself is closed as bounded.
+
 These are bounded, reviewable changes extracted from the second-pass audit.
 They are not authorization to alter production simulation behavior.
 
@@ -63,6 +68,10 @@ labelled disclosed/consumed; a new blind panel cannot overlap them.
 
 ### DR-006 — Complete the human P3 decision
 
+**Status (2026-09-06): Complete.** EX-007 has a human decision and the phase is
+closed under [`DEC-P3-0001`](../Research/P3_GATE_DECISION_2026-09-06.md), with
+EX-009 and EX-010 decisions linked and the limits stated explicitly.
+
 **Goal:** Keep the AI from implicitly promoting its own evidence.
 
 **Smallest implementation:** Human owner records Accept, Reject, Revise and
@@ -124,6 +133,12 @@ display all five paired deltas and are labelled transfer smoke tests.
 secondary endpoints are visible, and all later observations stay exploratory.
 
 ### DR-011 — Publish a current P3 status note
+
+**Status (2026-09-07): Complete.** The
+[research index](../Research/README.md),
+[P3 cohesive report](../Research/Experiments/P3-Predictive-AI-Cohesive-Report.md),
+and [`DEC-P3-0001`](../Research/P3_GATE_DECISION_2026-09-06.md) provide the
+current disposition and link the supporting packages and decisions.
 
 **Goal:** Stop the historical gate snapshot from being mistaken for current
 state.

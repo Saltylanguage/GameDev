@@ -17,16 +17,17 @@ the domain systems that validate purchases and results.
 
 ## Authority boundaries
 
-The desktop must make these three progression/evidence layers visibly distinct:
+The desktop must make these four progression/evidence layers visibly distinct:
 
 | Layer | Meaning | Owned by |
 | --- | --- | --- |
-| Permanent research | Unlocks and choices that survive between expeditions | Gene Lab and Biome / Ecology Lab |
-| Expedition build | Temporary upgrades acquired during one continuous expedition | Simulation reward breaks |
+| Species Genome | Permanently unlocked options plus a configurable active set that affects every population of one species | Gene Lab |
+| Expedition Mutations | Nine temporary adaptations acquired during one continuous expedition | Simulation reward breaks |
+| Environmental research | Permanent biome, terrain, resource, or scenario changes | Biome / Ecology Lab |
 | Evidence and history | What happened in completed phases and expeditions | History / Data Record |
 
 The desktop can preview or link to the other layers, but it must not silently
-apply a Simulation upgrade, recreate an expedition, or turn a read-only record
+apply a Mutation, recreate an expedition, or turn a read-only record
 into a progression purchase.
 
 ## Feature inventory
@@ -119,28 +120,34 @@ dedicated fern glyph is available.
 
 ### D-03 — Gene Lab
 
-**Purpose:** Let the player understand and eventually purchase permanent,
-organism-focused research.
+**Purpose:** Let the player understand and eventually purchase permanent Genome
+options, then configure which unlocked options are active for the selected
+species.
 
 **Player can:**
 
-- browse Plant, Herbivore, and Carnivore research families;
-- select a species context, beginning with Hare for the vertical slice;
-- inspect research nodes, prerequisites, costs, effects, and resulting choices;
-- see locked, available, affordable, unaffordable, selected, purchased, and
-  newly available states;
-- preview how a permanent unlock affects future Expedition Planner choices;
-- confirm a valid permanent research purchase;
+- browse species, with Plant, Herbivore, and Carnivore as filters;
+- select a species, beginning with Hare for the vertical slice;
+- inspect Genome nodes, prerequisites, costs, species effects, ecological
+  obligations, active-capacity use, and resulting choices;
+- see locked, available, affordable, unaffordable, selected, unlocked, active,
+  inactive, and newly available states;
+- preview how a Genome change affects that species and its wider ecology in
+  future expeditions;
+- confirm a valid Genome purchase;
+- turn unlocked nodes on or off between simulations without losing them;
 - open the selected species record in Species Collection.
 
-**Owns:** permanent species-type research and its purchase preview. It does
-not own temporary phase rewards or mid-expedition upgrades.
+**Owns:** each species' permanent Genome unlocks, active configuration, and
+purchase preview. It does not own temporary phase rewards or Mutations.
 
 **Key links:** Species Collection, Expedition Planner, History, Research Inbox.
 
-**Progression rule:** Permanent research should primarily expand meaningful
-choices—new branches, starting options, previews, rerolls, or type-specific
-mechanics—rather than create unlimited passive power.
+**Progression rule:** Unlocked nodes persist. The active Genome is frozen at
+simulation launch and applies to every population of its species, including
+when the species is not player-controlled. A Genome may improve stats or unlock
+behaviours, but it must keep ecological costs and wider balance visible under
+[`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 
 ### D-04 — My PC
 
@@ -196,10 +203,12 @@ choices.
 - inspect Biome Reports and scenario outcomes;
 - review achievements and milestones;
 - favorite or pin notable expeditions;
-- open the related species, upgrade, biome, or scenario in its owning app.
+- open the related species, Mutation, Genome, biome, or scenario in its owning
+  app.
 
 **Record fields may include:** scenario ID, player species, seed, base ruleset
-fingerprint, phase boundaries, ordered upgrades, final result, population
+fingerprint, per-species Genome fingerprints, phase boundaries, ordered
+Mutations, final result, population
 history, births, food events, movement, combat, and mortality causes where the
 metric is valid for that record.
 
@@ -242,18 +251,23 @@ expedition.
 
 - choose an unlocked scenario and biome;
 - choose an eligible player species;
-- review starting conditions and eligible permanent options;
-- inspect which research unlocks are available for this launch;
+- choose Species Simulation or Biome Simulation when both are available;
+- review starting conditions and the frozen active Genome of every participating
+  species;
+- in Species Simulation setup, inspect which Mutations may be available to the
+  selected species;
+- in Biome Simulation setup, see that Mutations are not part of the mode;
 - review the launch summary, seed policy, and starting ruleset;
 - launch the expedition or cancel back to the desktop;
 - open related species, Gene Lab, or Biome Lab surfaces before committing.
 
 **Owns:** launch preparation and immutable launch-request composition. It does
-not purchase permanent research, grant mid-run upgrades, or resume a destroyed
+not purchase Genome research, grant Mutations, or resume a destroyed
 Lab scene.
 
-**Boundary:** Run evolution begins in Simulation. Phase reward decisions remain
+**Boundary:** Mutation selection begins in Simulation. Phase reward decisions remain
 inside the same continuous expedition and do not route back through the Lab.
+This reward flow exists only in Species Simulations.
 
 ## Recommended supporting surfaces
 
@@ -385,7 +399,9 @@ states before detailed visual design begins.
    visible but content-light?
 4. Which first Biome Lab actions are real progression and which are read-only
    scenario information?
-5. Which History metrics are player-facing in the vertical slice versus later
+5. Do the first Biome projects provide optional habitat tools or a small
+   restoration baseline required before advanced Biome challenges?
+6. Which History metrics are player-facing in the vertical slice versus later
    evidence expansion?
-6. Are achievements displayed primarily in History, Habitat Gallery, or both?
+7. Are achievements displayed primarily in History, Habitat Gallery, or both?
 7. Which personalization features are worth producing for the first slice?

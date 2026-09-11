@@ -1,9 +1,10 @@
 # Continued simulation — Stat-Line, predictive AI and telemetry impact
 
-**Status:** CF-0 contract locked and legacy fixture preserved; telemetry
-producers, historical reports, predictions and acceptance decisions remain
-unchanged pending runtime migration.
-**Date:** 2026-09-04. **Runtime/research owner:** Josh. **Stat meaning reviewer:** Sim.
+**Status:** CF-0 through CF-5 are implemented and verified; the legacy fixture,
+historical reports, predictions and acceptance decisions remain preserved. The
+first approved continued-world EX-010 comparison is complete and accepted as
+bounded evidence.
+**Date:** 2026-09-06. **Runtime/research owner:** Josh. **Stat meaning reviewer:** Sim.
 **Parent:** [Consecutive simulation flow plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
 ## Meaning of the change
@@ -41,9 +42,10 @@ behavior, later-phase balance, or acquisition-order effects that were not tested
   maximum changes, even if it temporarily exceeds the new maximum; there is no
   boundary clamp or refill. Later gains use the normal authored maximum rule.
 
-These are semantic decisions, not a claim that the current serializer already
-emits the fields. Sim's review is required when the runtime fields and metric
-version are implemented.
+These semantic decisions are now reflected in the current phase/final report
+and Stat-Line outputs. Sim reviewed the phase-aware meanings for EX-010 and
+accepted the resulting bounded evidence; future metric changes require another
+review.
 
 ## Notice to Stat-Line work
 
@@ -51,23 +53,30 @@ Sim owns stat meaning and telemetry review; Josh owns the lifecycle, upgrades an
 integration. This notice does not assign Sim the runtime refactor or change an
 existing sprint estimate.
 
-The current shared API is `SpeciesSimulationMetrics.CreateHerbivoreStatLine`.
-It combines accumulated counters/death events with supplied opening/closing
-population. `SimulationReportSerialization` currently supplies the first and last
-entries of the whole run history; `VM_SimulationShell` uses the same calculation.
-Neither path currently specifies an independent phase window.
+The shared Stat-Line calculation remains
+`SpeciesSimulationMetrics.CreateHerbivoreStatLine`. Phase closure now stores an
+independent `SimulationPhaseResult` with its exclusive/inclusive tick bounds,
+opening and closing populations, effective loadout, rules fingerprint, and a
+windowed metrics snapshot. `SimulationReportSerialization.CreatePhaseResults`
+serializes those phase windows and calculates each phase Stat-Line from its own
+metrics and populations. The final expedition Stat-Line is calculated
+independently from the complete run.
 
-| Existing work | Conflict / invalidated assumption | Required follow-up |
+The table below is the migration checklist that led to CF-4. Its resolutions are
+implemented and verified; it is retained to explain why the current contract is
+shaped this way.
+
+| Existing work | Conflict / invalidated assumption | Implemented resolution |
 | --- | --- | --- |
-| S1-STAT-01 field contract | “Run” and “starting population” are no longer unambiguous. | Implement the locked expedition/phase scope, tick interval, opening/closing sample, units and metric version. |
-| S1-STAT-02 raw ledger | Clearing counters/tracked entities at every break destroys continuity; repeating a boundary sample double counts events. | Preserve cumulative telemetry and record the locked window baselines; verify source events belong to exactly one phase. |
-| S1-STAT-03 derived rates | Whole-run counts cannot be combined with phase-only populations; averages of phase ratios do not reproduce expedition ratios. | Compute rates from raw numerator/denominator in the selected locked window; pool counts before computing an expedition rate. |
-| S1-STAT-04 / current S2.3 reporting | One loadout and effective fingerprint cannot describe all ticks of a continued expedition. | Implement acquisition timeline, phase identity and per-phase fingerprints in JSON, CSV, Markdown and thin UI projections. |
-| S1-STAT-05 validation | Same seed plus final loadout does not determine when the upgrades were applied or the state they changed. | Include lifecycle, initial/checkpoint identity, exact acquisition schedule and options; add segmentation/replay parity against the locked contract. |
-| S1-STAT-06 review | Earlier single-window acceptance does not establish multi-phase readiness. | Preserve old acceptance and add a new bounded continuation review/retest result. |
+| S1-STAT-01 field contract | “Run” and “starting population” are no longer unambiguous. | Phase and expedition scope, tick interval, opening/closing samples, units, and contract versions are explicit. |
+| S1-STAT-02 raw ledger | Clearing counters/tracked entities at every break destroys continuity; repeating a boundary sample double counts events. | Cumulative telemetry is preserved, window baselines are recorded, and adjacent windows partition events once. |
+| S1-STAT-03 derived rates | Whole-run counts cannot be combined with phase-only populations; averages of phase ratios do not reproduce expedition ratios. | Phase rates use their own raw windows; expedition rates are recomputed from pooled raw counts. |
+| S1-STAT-04 / S2.3 reporting | One loadout and effective fingerprint cannot describe all ticks of a continued expedition. | JSON, CSV, Markdown, and UI projections carry phase identity, effective loadout, fingerprints, and acquisition timing. |
+| S1-STAT-05 validation | Same seed plus final loadout does not determine when the upgrades were applied or the state they changed. | Lifecycle, checkpoint lineage, exact schedule, options, and segmentation/replay parity are covered. |
+| S1-STAT-06 review | Earlier single-window acceptance does not establish multi-phase readiness. | Historical acceptance remains bounded; Sim approved the separate EX-010 phase/final interpretation and result. |
 
-Current board target: [S2.3 — Upgrade loadout report/stat-line integration](https://trello.com/c/pZ4qG2DM).
-The card and the current repository S2 plan now both assign this work to Josh.
+Historical board target: [S2.3 — Upgrade loadout report/stat-line integration](https://trello.com/c/pZ4qG2DM).
+The implementation is complete. The card and the repository S2 plan assign it to Josh.
 Sim remains a reviewer of metric meaning, not an owner of the upgrade or
 lifecycle implementation. Do not silently turn that 3h card into the entire
 telemetry migration.
@@ -150,7 +159,9 @@ disabled to ensure instrumentation never changes the ecosystem.
 The immutable upgrade snapshot adapter remains useful. Its current
 `species-upgrade-prediction-input-v1` payload records ordered upgrades but no
 acquisition tick, phase, evolved state or future horizon. It is sufficient for
-its declared launch-time interventions; it is insufficient to specify EX-010.
+its declared launch-time interventions. EX-010 adds the separate acquisition
+timeline, checkpoint lineage and phase/final windows needed for continued-world
+evidence.
 
 Do not overwrite EX-007/008/009 predictions, reports, analyses or human decisions.
 Add a versioned continuation prediction envelope around resolved snapshots and
@@ -175,17 +186,19 @@ exclude future phase outcomes, later checkpoints, scoring and held-out results.
 
 ### EX-010 implementation and experiment boundary
 
-The existing EX-010 proposal already asks the right sequential question. Connect
-it to CF-5 rather than creating another experiment with the same purpose.
+The existing EX-010 proposal asked the right sequential question and is now the
+completed continued-world evidence package. Do not create another experiment
+with the same purpose; a different scenario, schedule, value range, or forecast
+question requires a new contract.
 
-Proposed development controls, to be fixed by Josh before execution:
+The executed controls were:
 
-- All-skip continuation versus one uninterrupted simulation tests segmentation.
-- Baseline and A-at-boundary fork from the identical complete checkpoint tests a
-  state-conditioned upgrade effect.
-- A then B and B then A at matched boundary ticks tests order under that schedule.
-  Include the relevant single-upgrade/timing controls before claiming which
-  effect is due to first exposure, timing, combination or accumulated state.
+- One fixed ten-phase sequence with three Skips and six upgrades acquired at
+  ticks 400, 800, 1000, 1200, 1600 and 1800.
+- A matched reverse-order sequence using the same scenario, options, phase
+  boundaries, seed panels and Skip positions.
+- Development seeds 1–20 and held-out seeds 106–110, with each lineage kept
+  wholly inside its assigned panel.
 - Matched initial seeds alone do not create matched state after earlier
   interventions diverge. Preserve lineage and state hashes; do not re-pair
   different worlds because their final loadouts happen to match.
@@ -197,9 +210,10 @@ Proposed development controls, to be fixed by Josh before execution:
   a later-phase analysis to survivors changes the question and must be explicit.
 
 The existing EX-009 five-pair result remains an accepted bounded launch-time
-finding. It does not establish universal commutativity, sequential order
-independence, predictive calibration or long-run ecological balance. New
-continuation forecasts, sample sizing and P3 promotion remain human decisions.
+finding. EX-010 now adds a bounded continued-world order result, but neither
+experiment establishes universal commutativity, predictive calibration or
+long-run ecological balance. New continuation forecasts, sample sizing and
+promotion remain human decisions.
 
 Current board target: [Predictive AI research program](https://trello.com/c/DViOsvbd).
 Its older program summary should not override the newer repository EX-009 and
@@ -260,7 +274,7 @@ Report mismatch reasons; do not call every mismatch “different seeds.”
 | EX-002 collapse attribution / Forest Edge and Hare-Fox balance reports | Bounded effects for their declared initialization, duration, modes and values. | Estimates of phase-two-plus collapse, repeated upgrade effects or ten-phase success rates. | New baseline on evolved states; keep mortality causes and all phases visible. |
 | BEV/Block/cooldown/opportunity-isolation studies | Mechanic/diagnostic results under the documented experiment. | General continued-world avoidance/defense claims without cooldown, history and ID replay checks. | Preserve diagnostic mode; retest cross-boundary cooldown/perception/identity. |
 | EX-007/008 forecasts and scores | Historical pilot observations under the original information/metric contract, including known PREY and scoring limitations. | Forecast accuracy for upgrades acquired later, or calibration of continuation predictions. | New envelope/preregistration; never retrofit the old forecast. |
-| EX-009, including adapter reruns over seeds 106–110 | Accepted zero-delta launch-time result for the tested additive pair. | Sequential acquisition commutativity or absence of timing/state effects. | EX-010 after CF-5 and a human-approved contract. |
+| EX-009, including adapter reruns over seeds 106–110 | Accepted zero-delta launch-time result for the tested additive pair. | Sequential acquisition commutativity or absence of timing/state effects. | Read with the bounded EX-010 continued-world result; do not merge the scopes. |
 | Schema-21 EX-007 vs schema-23 adapter output | Original raw artifacts; matched core payload comparisons where documented. | Unqualified cross-version derived-stat comparisons. | Keep the 2026-09-04 adapter handoff's metric-version restriction. |
 | Current schema-23/Play Mode schema-7 reports | Fresh-window records exactly as generated. | Complete reproduction of acquisition timing or evolved checkpoints. | New schemas; do not manufacture missing phase fields in old files. |
 | S1/S2 green tests and accepted upgrade slice | Their executed single-window/configuration/snapshot behavior. | Proof of continued-world gameplay or all new report semantics. | Add the architecture plan's continuity/integration gates. |
@@ -278,8 +292,9 @@ Before implementation, Josh and Sim review the window and stat-definition
 contract together. The S2.3 board/repository ownership discrepancy is resolved:
 Josh owns the lifecycle/report integration and Sim reviews metric meaning.
 Before collecting continued-play balance evidence, all relevant writers,
-validators and comparators must support it or reject it explicitly. Before
-EX-010, Josh freezes the new experiment and forecast information boundary.
+validators and comparators must support it or reject it explicitly. EX-010's
+information boundary is frozen and its human decision is recorded; any new
+forecast or balance study needs a new human-approved contract.
 
 The planning task records notices in the canonical documents and on the two
 existing workstream cards. A posted notice is not an acknowledgment by Sim,

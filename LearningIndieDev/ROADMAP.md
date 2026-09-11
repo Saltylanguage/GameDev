@@ -10,28 +10,33 @@ outcomes.
 
 ## Product goal
 
-**Foundational dependency, 2026-09-05:** the
+**Foundational dependency, 2026-09-06:** the
 [consecutive-phase migration](docs/CONTINUOUS_SIMULATION_FLOW_PLAN.md) now has
 the same-world runtime, phase-aware telemetry, checkpoints and generic schedule
-path through CF-5. M1 closeout and the EX-010 contract-specific research gate
-remain open. Separate phase results from expedition completion and player disk
-save/load. Existing single-window balance evidence has the
+path through CF-5. EX-010's contract-specific gate was executed and accepted as
+bounded evidence under [`DEC-P3-0001`](docs/Research/P3_GATE_DECISION_2026-09-06.md);
+P3 is closed for that scope. M1 closeout remains a separate product review, and
+broader balance/promotion or predictive claims require new human-approved work.
+Separate phase results from expedition completion and player disk save/load.
+Existing single-window balance evidence has the
 [applicability limits](docs/CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md) recorded
 in the review.
 
-Deliver a run-based game in which the player develops a species by choosing
-cellular-automata upgrades, watches those rules interact with other species and
-the environment, and earns persistent scenario, species, and upgrade unlocks
-from accomplishments during the run.
+Deliver a run-based game in which the player chooses nine temporary
+**Mutations** for a selected species, watches those changes interact with other
+species and the environment, and spends earned scientific data on permanent
+per-species **Genomes**. The long-term objective is to develop a diverse,
+resilient ecosystem rather than make one species dominate.
 
-The next design task is to resolve the player-facing expedition shape: phase
-count, normal duration, decision rhythm, reward cadence and terminal outcomes.
+The next design task is to finish the player-facing shape of the locked
+ten-phase expedition: normal duration, decision rhythm, reward cadence and
+terminal outcomes.
 The [game feature triage](docs/GAME_FEATURE_ROADMAP_TRIAGE.md) keeps those
 decisions separate from implementation packages and proposed sprint windows.
 
 The active player-shell delivery sequence, including Main Menu, the Lab home
-base, profile persistence, scientific data, permanent research, branching run
-upgrades, and species mastery, is defined in
+base, profile persistence, scientific data, per-species Genomes, branching
+Mutations, and species mastery, is defined in
 [`docs/MAIN_MENU_LAB_DELIVERY_PLAN.md`](docs/MAIN_MENU_LAB_DELIVERY_PLAN.md).
 That plan supplies the implementation epics, dependency order, and workflow;
 this roadmap remains the product-level milestone source of truth.
@@ -44,6 +49,10 @@ iteration tooling off the critical path for feature work.
 ## Production principles
 
 - Make the upgrade decision and its visible consequence the center of play.
+- Keep temporary Mutations and permanent Genomes visibly and technically
+  separate. Genome node unlocks persist, while the active configuration can be
+  changed between simulations and applies even when that species is not
+  player-controlled. Mutations never enter Biome Simulations.
 - Prefer a small roster of distinct species over many lightly differentiated
   species.
 - Keep simulation runs deterministic and record the seed, scenario, ruleset,
@@ -57,25 +66,36 @@ iteration tooling off the critical path for feature work.
   commands first.
 - Promote research ideas such as colony construction only through bounded
   experiments after the core loop is proven.
+- Follow
+  [`SG-005 — Upgrade and Ecology Balance`](docs/Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
+  for species, Mutation, Genome, scenario-balance, and balance-tooling work.
 
 ## Parallel workstreams
 
 ### 1. Core loop and upgrades
 
-Define the run cadence and build an upgrade vocabulary from simulation values
-with known behavior. Begin with a small explicit catalog rather than a general
-rule scripting or modifier framework.
+Define the run cadence and build a Mutation / Genome vocabulary from simulation
+values with known behavior. Group raw values beneath a small set of shared
+capabilities, then judge their species, matchup, and ecosystem effects. Begin
+with a small explicit catalog rather than a general rule scripting or modifier
+framework.
 
 Required outcomes:
 
-- Base species rules plus ordered run upgrades produce one immutable,
-  fingerprinted effective ruleset.
-- Each upgrade has a visible effect, valid range, stacking rule, preview, and
-  measurable activation or contribution.
+- Species Simulations combine natural rules, each species' frozen active Genome,
+  and the selected species' ordered Mutations. Biome Simulations omit Mutations.
+- Every scenario species receives its active Genome whether or not it is
+  controlled by the player.
+- Each Mutation and Genome node has a visible effect, valid range, stacking
+  rule, preview, provisional value budget, and measurable local and ecological
+  contribution.
 - Seeded baseline-versus-upgraded comparisons expose dead values, balance
   cliffs, dominant choices, and interactions.
 - At least three builds create understandable and measurably different play
   styles in the same scenario.
+- Legal active configurations from highly developed Genome libraries are tested
+  together; the available combination space must include resilient ecosystems
+  without requiring every possible configuration to be healthy.
 
 ### 2. Species and scenario content
 
@@ -99,7 +119,7 @@ Required outcomes:
 Split the current all-purpose simulation shell into two experiences:
 
 - **Player UI:** scenario context, readable board, run controls, cell/species
-  inspection, upgrade choices, rewards, and results. It must not expose raw
+  inspection, Mutation choices, rewards, and results. It must not expose raw
   tuning fields.
 - **Dev Lab scene:** scenario and species selection, seed controls, all tuning
   fields, runtime simulation controls, metrics, and comparison diagnostics.
@@ -152,17 +172,20 @@ Once one run and its rewards are proven, add the surrounding game structure:
   is a separate decision.
 - A clear next-run flow that demonstrates why the previous run mattered.
 
-Future progression will use scientific data collected from meaningful simulation
-observations. Players may spend it on current-run evolution or bank it for
-permanent research in the Lab, including ecological data categories and
-species-specific mastery. This direction is defined in
+Future progression will use scientific data collected from meaningful
+simulation observations. Players may spend it on expedition Mutations or bank
+it for permanent per-species Genome research in the Lab, including ecological
+data categories and species-specific mastery. This direction is defined in
 [`docs/SCIENTIFIC_DATA_ECONOMY.md`](docs/SCIENTIFIC_DATA_ECONOMY.md) and remains
 deferred until the vertical-slice upgrade loop establishes earning rates,
 spending pressure, and useful permanent unlocks.
 
-Permanent Lab progression will use Plant, Herbivore, and Carnivore research
-trees, while upgrades selected during a run form temporary branching paths that
-produce distinct playstyles. See
+Every species will have its own Genome tree. Purchased nodes remain unlocked,
+while the player configures a legal active Genome between simulations. Active
+nodes apply to that species in both simulation modes; Mutations form temporary
+Species-Simulation paths and never enter Biome Simulations.
+Plant, Herbivore, and Carnivore remain useful categories, not permanent-buff
+targets. See
 [`docs/UPGRADE_SYSTEM_DIRECTION.md`](docs/UPGRADE_SYSTEM_DIRECTION.md).
 
 ### 7. Production tools and quality
@@ -196,8 +219,10 @@ Exit criteria:
   upgrades, see their effects, and reach a result without raw developer fields.
 - The Dev Lab can reproduce the same run and compare its base and upgraded
   rulesets.
-- A first catalog of roughly 6-10 upgrades includes numeric, spatial,
-  conditional, and tradeoff examples without a generalized plugin framework.
+- A first catalog of roughly 6-10 Mutation candidates includes signed numeric
+  effects and tradeoffs through the approved V1 contract. One-time effects and
+  abilities use later explicit contract packages rather than a generalized
+  plugin framework.
 - The UI-only Main Menu and Lab shell demonstrates the intended home-base and
   expedition flow with representative data.
 
@@ -209,6 +234,9 @@ Exit criteria:
   visually distinct species roster.
 - The complete main-menu-to-run-to-reward-to-next-run flow works with versioned
   meta-progression.
+- One permanent Genome unlock survives restart, can be activated or deactivated
+  between simulations, and is resolved for its species whether that species is
+  selected or acts in the background.
 - Player UI, selected art direction, initial audio language, onboarding, and
   results presentation are coherent enough for external playtesting.
 - Players can explain what their upgrades changed and the main cause of their
@@ -222,6 +250,9 @@ Exit criteria:
   proven upgrade grammar and authoring pipeline.
 - No universally correct upgrade path dominates representative seeded runs or
   structured playtests.
+- Representative natural and highly developed Genome libraries offer legal
+  active configurations that retain intended species/resource relationships and
+  recover from declared Biome pressures.
 - Performance and save compatibility meet the agreed production budgets.
 - The feature set is locked; unproven ideas remain research or post-launch
   candidates.
@@ -256,7 +287,7 @@ vertical slice.
   target build styles, run-end conditions, and reward cadence.
 - Inventory existing upgrades and simulation parameters; identify useful ranges
   and missing telemetry rather than designing a large catalog.
-- Make a screen-flow sketch covering main menu, run, upgrade choice, results,
+- Make a screen-flow sketch covering main menu, run, Mutation choice, results,
   unlock, and next run.
 - Write the Dev Lab use cases and choose the minimum useful controls.
 - Gather a compact art and audio reference board and define evaluation criteria.
@@ -277,18 +308,18 @@ deleted. The original shell remains a regression/review gate for work already
 completed.
 
 Primary outcome: a player can launch into Main Menu, enter Lab Overview, and
-inspect one representative Herbivore research project with clear scientific-
+inspect one representative Hare Genome project with clear scientific-
 data costs.
 
-- Establish the Main Menu, Lab Overview, and Research-preview contract.
+- Establish the Main Menu, Lab Overview, and Gene-Lab-preview contract.
 - Build the smallest Noesis shell for that route.
 - Present representative Research, Plant, Herbivore, and Carnivore Data.
-- Show one available and one locked/unaffordable Herbivore project without
+- Show one available and one locked/unaffordable Hare Genome project without
   implementing purchases or persistence.
 - Validate Back behavior, focus, target resolutions, and a Windows development
   build smoke path.
 
-Exit: the Main Menu → Lab Overview → Research preview works end to end, planned
+Exit: the Main Menu → Lab Overview → Genome preview works end to end, planned
 economy concepts are understandable, and no placeholder is presented as a
 functional purchase.
 
@@ -297,30 +328,33 @@ separation, and the real expedition handoff remain later work buckets.
 
 ### Sprint 2 - First trustworthy upgrades
 
-Primary outcome: the player makes an upgrade choice whose effect is predictable
+Primary outcome: the player makes a Mutation choice whose effect is predictable
 and visible.
 
 - Define explicit application and stacking semantics for the first 6-10
-  upgrades.
+  Mutation candidates.
 - Record the selected upgrade loadout in the effective ruleset and run result.
 - Add effect previews and the minimum activation/contribution telemetry needed
   to evaluate the catalog.
 - Cover upgrade application, invalid combinations, and deterministic replay
   with focused tests.
 
-Exit: at least one numeric, one spatial, one conditional, and one tradeoff
-upgrade can be selected, previewed, observed, and reproduced.
+Exit: the approved numeric/additive Mutation slice can be selected, previewed,
+observed, and reproduced. One-time effects and abilities remain later contract
+packages.
 
 ### Sprint 3 - M1 closeout and project hygiene
 
 Primary outcome: the first trustworthy upgrade loop is complete enough to
 review, and the project is easy to inspect and continue.
 
-- Finish the same-world continuation and boundary decision seam.
-- Add the smallest upgrade/reward path needed to prove one upgrade or Skip
-  resumes the same run at the next tick.
-- Align phase-aware Stat-Line, report, adapter, and validator semantics.
-- Reconcile active work, handoffs, tests, artifacts, and board mappings.
+- Preserve the completed same-world continuation, boundary decision, and
+  phase-aware reporting seams.
+- Preserve the accepted target-resolution graphics evidence; finish a current
+  Windows build smoke and ten-phase duration/memory measurement.
+- Connect the player-facing Mutation choices, terminal results, and next-Lab
+  route without duplicating the domain lifecycle.
+- Reconcile remaining board mappings and name every M1 carry-over explicitly.
 
 Exit: no unresolved M1 P0 risk remains; one complete ten-phase Forest Edge
 path can be continued, upgraded, reported, and reviewed without raw developer
@@ -336,13 +370,19 @@ different final numbers.
 
 - Select and tune the smallest vertical-slice roster from the existing species
   assets.
+- Define the first shared capability map, reference scenario panel, and
+  versioned Adaptation Value estimates under SG-005.
 - Run fixed-seed baselines and comparisons, including held-out seeds.
 - Remove or revise upgrades that rarely activate, always win, or feel identical.
+- Test reachable nine-Mutation paths, likely pairs, acquisition timing, and
+  suspected synergies rather than summing whole-tree values.
 - Define the first reactive-species pressure/counter pairs without building a
   generic rubber-band system.
 
-Exit: three named builds have distinct behavior, strengths, weaknesses, and
-scenario interactions, with both simulation evidence and an in-game review.
+Exit: three named Mutation builds have distinct behavior, strengths,
+weaknesses, and scenario interactions, with direct-effect, matchup, ecosystem,
+and in-game evidence. Internal value estimates remain traceable to the
+reference panel and are not treated as a universal fitness score.
 
 ### Sprint 5 - Presentation and feedback pass
 
@@ -366,12 +406,17 @@ Primary outcome: one completed run changes the choices available in the next.
 
 - Add the main menu and new/continue flow.
 - Evaluate accomplishments in run results.
-- Persist the first scenario, species, or upgrade unlocks in versioned save
+- Persist the first scenario, species, or Genome unlocks in versioned save
   data.
+- Persist the first Hare Genome unlock, configure its active state between
+  simulations, freeze it at launch, and apply it to every Hare population,
+  including when Hare is not the selected species.
 - Present earned rewards and return cleanly to the next-run flow.
 
 Exit: a fresh profile can complete a run, earn a defined unlock, restart the
-game, and use that unlock in a subsequent run.
+game, turn that Genome option on or off for a subsequent run, and observe the
+active choice without changing authored base species data or a simulation
+already in progress.
 
 ### Sprint 7 - Vertical-slice validation
 
@@ -384,6 +429,9 @@ developer intervention.
   measured performance problems.
 - Validate representative deterministic runs and supported input/display
   configurations.
+- Test uneven unlock progress and legal active Genome configurations across the
+  reference ecosystem; investigate universal dominance, systematic extinction,
+  runaway resource use, and failed recovery.
 - Decide which content enters M3 and which ideas remain research.
 
 Exit: M2 criteria are met or the evidence produces a short, prioritized revision

@@ -2,11 +2,12 @@
 
 ## Purpose
 
-The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is a
-foundational dependency for the complete upgrade loop: the next phase preserves
-the ecosystem after purchase or Skip. The present fresh-window behavior is not
-that acceptance gate. Its proposed packages include telemetry/research retests
-and require explicit capacity planning; this note does not reschedule work.
+The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is now
+implemented and canonical: the next phase preserves the ecosystem after purchase
+or Skip, with ten 200-tick phases, phase/final Stat-Lines, checkpoints, and a
+validated research schedule. Remaining work is the player-facing Mutation,
+outcome, reward, persistence, and integrated release-acceptance layer built on
+that runtime.
 
 This plan converts the stable-but-incomplete feature inventory into an ordered
 production sequence. The goal is to finish one coherent vertical slice rather
@@ -16,6 +17,18 @@ The current product target remains Forest Edge: Fern support, Hare player, and
 Fox opposition. Work is complete only when the player can understand a choice,
 observe its consequence, finish a run, receive a reward, and begin a meaningful
 next run.
+
+## Status at 2026-09-09
+
+| Area | Current status | What remains |
+| --- | --- | --- |
+| Board and presentation | Graphics baseline accepted | Continue feature-specific screen/content work and any readability polish found during play. |
+| Simulation truth | Bounded baselines and telemetry are recorded | Balance promotion, especially Forest Edge carrying limits and trustworthy player-facing upgrade effects. |
+| Continuous ten-phase runtime | Implemented and canonical | Three player choices, terminal outcome presentation, results explanation, and integrated performance/build acceptance. |
+| Main Menu and Lab | UI foundation and Lab/Simulation launch route implemented | Unify the production Lab with the GalapagOS home base, complete navigation acceptance, and replace representative progression data. |
+| Profile and Genome | Basic local profile identity exists; progression is not implemented | Versioned progression data, one persistent Genome unlock, and the open Mutation/Genome player contract. |
+| Research/tooling | P3 closed as bounded | No next experiment selected; evidence-hygiene controls and artifact retention remain prerequisites for future confirmatory work. |
+| Retained prototypes | Classified | Island Survivor is deprecated, Discord bridge is on hold, and other retained prototypes change only for a named need. |
 
 ## Immediate priority: make the board beautiful and readable
 
@@ -41,16 +54,21 @@ state what “beautiful, readable, and pleasant to watch” means at gameplay sc
 ### V0.2 — Make smart tiling correct with the authored assets
 
 - Run the editor smart-tiling preview for all 47 normalized blob masks.
-- Confirm the mask convention (`N=1`, `E=2`, `S=4`, `W=8`) against the authored
-  terrain sheet and correct only the resolver lookup when an edge is wrong.
-- Verify grass and temporary desert/bare families, including isolated, straight,
-  corner, T, and surrounded tiles.
+- Record the current eight-neighbor bit order exactly as implemented:
+  `N=1`, `NE=2`, `E=4`, `SE=8`, `S=16`, `SW=32`, `W=64`, `NW=128`.
+  The current resolver promotes a diagonal contact by adding its adjacent
+  cardinals. The dedicated terrain task is reviewing whether flora should
+  instead discard unsupported diagonals, so do not treat the current
+  normalization as the final artist contract until Josh records that decision.
+- Verify the current Grass and Desert placeholder families, including isolated,
+  straight, corner, T, and surrounded tiles. The planned Dirt, biome, and flora
+  presentation roles are being separated in the dedicated terrain task.
 - Verify atlas import settings, texture filtering, transparency, and pixel
   scale at the target board size.
 - Keep neighbor masks and atlas indices presentation-only; do not move them into
   simulation state.
 
-**Exit:** all 16 masks render correctly in the preview and in the live board,
+**Exit:** all 47 valid normalized blob masks render correctly in the preview and in the live board,
 with no visible seam or orientation error.
 
 ### V0.3 — Make species and terrain presentation coherent
@@ -79,15 +97,19 @@ the important current pressure without developer explanation.
   hierarchy during running, paused, reward, and results states.
 - Record defects and fix the smallest presentation seam responsible.
 
-**Status:** The previous licensing/startup blocker is resolved. The shared
-Unity preflight now verifies the local entitlement, cleans only a stale lock,
-and bounds the licensing probe. Current-head graphics PlayMode is 6/6,
-EditMode is 139/139, and the Windows development build launched for a bounded
-15-second smoke in `artifacts/audit-windows-build-current-20260820-101211/`.
+**Status:** Accepted for the current desktop/Simulation composition on 2026-09-07.
+The full 1280×720 graphics PlayMode batch passed 22/22 and the focused
+1920×1080 run captured the same route. The current Windows development-player
+smoke passed on 2026-09-08. Only the outer ten-phase duration and peak-memory
+measurement remains open under CF-6.
 
 ## Phase 1 — Make the simulation truth trustworthy
 
 ### 1.1 Forest Edge balance and rules
+
+**Status:** The fixed-seed evidence and telemetry reconciliation are bounded and
+recorded. The held-out upgrade arms did not earn balance promotion, so Forest
+Edge carrying limits and player-facing balance remain open by design.
 
 - Use the shared Unity preflight and run the focused simulation tests plus the
   known Forest Edge seed.
@@ -104,6 +126,9 @@ baseline is recorded without unapproved balance changes.
 
 ### 1.2 Scenario and authored-data boundary
 
+**Status:** Complete for the current slice. Forest Edge is product-owned;
+OpenRange, Wetland, and BaselineParity remain explicit Dev Lab/research fixtures.
+
 - Keep Forest Edge as the production scenario.
 - Treat OpenRange, Wetland, and BaselineParity as Dev Lab/research fixtures.
 - Validate that scenario assets produce immutable run-start snapshots and stable
@@ -113,9 +138,9 @@ baseline is recorded without unapproved balance changes.
 **Exit:** one scenario is product-owned; the others are explicitly experimental
 and cannot silently expand the slice.
 
-## Phase 2 — Finish the actual run and upgrade loop
+## Phase 2 — Finish the actual run and Mutation loop
 
-### 2.1 Upgrade grammar
+### 2.1 Mutation grammar and balance foundation
 
 Define a small explicit catalog, not a general modifier framework. It must cover:
 
@@ -123,31 +148,45 @@ Define a small explicit catalog, not a general modifier framework. It must cover
 - Warren: protection, crowding, or controlled reproduction tradeoffs.
 - Gardeners: feeding efficiency, food reserve, and seed-dispersal tradeoffs.
 
-For every upgrade, record the affected rule, valid range, stacking/exclusion
-rule, visible preview, expected consequence, counterplay, and telemetry.
+For every Mutation, record the affected rule, shared capability, valid range,
+stacking/exclusion rule, visible preview, expected consequence, ecological
+obligation, counterplay, and direct plus ecosystem telemetry. Follow
+[`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md); an
+internal Adaptation Value estimate is a planning budget, not production
+approval.
 
 ### 2.2 Ten-phase run contract
 
-- Implement ten phases, with 200 ticks as the current per-phase target, with automatic pause at reward breaks.
+**Status:** The continuous-state ten-phase lifecycle, ordered loadout, phase
+boundaries, and phase/final reporting are implemented and canonical. The
+remaining work below is player-facing content and acceptance.
+
+- Preserve the implemented ten phases and 200-tick phase boundary with automatic pause at reward breaks.
 - Offer three meaningful choices after phases one through nine.
-- Record the ordered upgrade loadout in the effective ruleset and result.
+- Record the ordered Mutation loadout in the effective ruleset and result.
 - Implement victory, narrow survival, defeat, phase summaries, and immediate
   extinction according to `PRODUCT_BRIEF.md`.
 - Make the results screen explain population changes, deaths by cause, feeding,
-  movement, combat, and upgrade contributions.
+  movement, combat, and Mutation contributions.
 
-**Exit:** three Hare builds produce visibly different, reproducible behavior in
-the same Forest Edge scenario.
+**Exit:** three Hare Mutation builds produce visibly different, reproducible
+behavior in the same Forest Edge scenario, with their local effects, likely
+combinations, and wider Hare / Fox / Fern consequences reviewed.
 
 ## Phase 3 — Build the player-facing shell
 
 ### 3.1 Main Menu and Lab foundation
 
-- Formally close Sprint 0 readiness decisions and assign Sprint 1 owners.
-- Implement Main Menu → Lab Overview → Herbivore Research preview in
+**Status:** The representative-data UI foundation, stable Lab-to-Simulation
+launch request, results return route, target-resolution graphics acceptance,
+and Windows player smoke are complete. GalapagOS home-base consolidation and
+the real wallet/progression data remain part of the integrated player slice.
+
+- Preserve the closed Sprint 0 readiness decisions and recorded Sprint 1 ownership.
+- Preserve Main Menu → Lab Overview → Hare Genome preview in
   `MainMenu.unity` using representative data only.
-- Add visible focus, deterministic Back behavior, target-resolution checks, and
-  a Windows development-build smoke path.
+- Preserve visible focus, deterministic Back behavior, target-resolution checks,
+  and the verified Windows development-build smoke path.
 - Keep the player Lab separate from the current developer/authoring surface.
 
 **Exit:** the UI-only route is accepted before any real wallet or simulation
@@ -155,11 +194,15 @@ handoff is connected.
 
 ### 3.2 Expedition and results connection
 
-- Add Expedition Setup for Forest Edge + Hare.
-- Pass stable scenario/species IDs and selected options through an immutable
+**Status:** Stable scenario/species IDs flow through an immutable launch
+request, and the results surface can return to Lab. Full production navigation
+acceptance and persistence-backed result settlement remain open.
+
+- Preserve Expedition Setup for Forest Edge + Hare.
+- Preserve stable scenario/species IDs and selected options in the immutable
   launch request.
-- Connect simulation completion to Results and return to Lab without pretending
-  that representative data is persistent.
+- Replace representative result data only when settlement and persistence have
+  an authoritative owner.
 
 **Exit:** a player can navigate from Lab to a clearly identified run and back.
 
@@ -168,27 +211,41 @@ handoff is connected.
 - Define versioned profile and settings data with migration/corrupt-save tests.
 - Implement the scientific-data wallet only after run telemetry is trustworthy.
 - Settle earned, spent, banked, and lost data deterministically.
-- Add one permanent research node and one predetermined first-victory unlock.
+- Add one permanent Hare Genome-node unlock, one configurable active state, and
+  one predetermined first-victory unlock.
+- Resolve every participating species' frozen active Genome at simulation
+  launch, including species that are not player-controlled, without mutating
+  authored base data. Mutations remain exclusive to Species Simulations.
 - Add the smallest useful Hare mastery objective.
-- Keep active-run save/resume, multiple profiles, cloud saves, and broad research
+- Keep active-run save/resume, multiple profiles, cloud saves, and broad Genome
   trees out of the first slice.
 
-**Exit:** a fresh profile can complete a run, receive one defined unlock, restart,
-and see/use that unlock on the next run.
+**Exit:** a fresh profile can complete a run, receive one defined unlock,
+restart, turn the Genome node on or off, and see it affect Hare on the next run
+only when active—even when Hare is not the selected species.
 
 ## Phase 5 — Research and developer tooling
 
 ### 5.1 CellSim and report pipeline
 
-- Current-head focused tests and Windows smoke are complete; retain their
-  preflight/test/build logs as evidence. Accept current schema-7 report output
-  only after reproduction and food-action telemetry reconcile with the
-  simulation. Historical schema-6 EX-002 reports remain valid evidence for
-  their bounded experiment window.
+**Status:** The bounded continuous-flow/report slice is implemented and validated
+through EX-010. Raw-artifact retention and full provenance remain open controls
+for future confirmatory research.
+
+- Retain current automated-test and build-smoke logs as evidence; rerun the
+  build smoke when a release-candidate change invalidates the current result.
+  Keep schema semantics explicit
+  across legacy fresh-window and current continued-world reports. Historical
+  schema-6 EX-002 reports remain valid for their bounded window, while two cited
+  raw control bundles are absent from this checkout.
 - Keep JSON/CSV factual exports separate from presentation and dashboard ideas.
 - Validate the committed JSON/CSV editor converter and assign its owner.
 
 ### 5.2 Predictive ecology research
+
+**Status:** P3 is closed as bounded. EX-003 is deferred without a result and no
+P4–P6 experiment is selected. New research requires a human-approved contract,
+capacity decision, and artifact-retention plan.
 
 - Preserve the completed bounded EX-002 schema-6 matrix and its held-out check;
   do not rerun or broaden it without a new protocol.
@@ -205,14 +262,14 @@ day feasibility spike.
 
 ### Island Survivor
 
-Keep the scene and tests as a siloed reference. Do not extend it during vertical-
-slice work. Reopen only through an explicit product decision.
+Deprecated. Keep its surviving scene/tests isolated only as historical reference;
+do not extend, reconnect, or include it in current acceptance work.
 
 ### Cave generation
 
-Keep the deterministic generator and tests. Decide later whether `CavePreview`
-gets a dedicated experiment scene; otherwise remove only that orphaned
-presentation path with a focused migration.
+Keep the deterministic generator and tests. The orphaned `CavePreview`
+presentation path was removed in the focused 2026-09-06 cleanup; add a new
+preview only if a concrete experiment requires it.
 
 ### Life simulation
 
@@ -245,13 +302,18 @@ the following are true:
 - Remaining prototypes and research tools have explicit retained, deferred, or
   archived status.
 
-## Current blockers
+## Current blockers and decisions
 
-1. The embedded Noesis editor analytics path requires a vendor/project privacy
-   decision before release; it is editor-only and not compiled into the player.
-2. The schema-7 Forest Edge control and held-out baseline are now recorded at
-   `artifacts/cellular-experiment-20260820-123724/report.json` and
-   `artifacts/cellular-experiment-20260820-154509/report.json`. The schema-8
-   `faster-movement` and `stronger-block-2` matched arms are complete, but both
-   held-out checks reverse direction and prevent promotion; further
-   upgrade/control evidence remains required.
+1. The outer ten-phase wall-duration, peak-working-set, and peak-private-memory
+   measurement remains; Windows player smoke and target-resolution graphics
+   acceptance are complete.
+2. Forest Edge upgrade evidence does not support balance promotion. Any new
+   upgrade/control claim needs a fresh bounded contract; P3 research closure does
+   not approve player balance.
+3. The player-facing Mutation/Genome relationship, three-choice catalog,
+   terminal outcomes, reward settlement, and persistent unlock loop remain
+   incomplete.
+
+The Noesis Editor analytics path is an accepted, non-blocking development risk
+at the current project scale. Reopen that decision only if the project or its
+privacy requirements materially expand.

@@ -207,6 +207,76 @@ namespace SaltyGame.PlayModeTests
             PlayerPrefs.Save();
         }
 
+        [UnityTest]
+        public IEnumerator GalapagOSSettingsAppUsesDedicatedSettingsSurface()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var viewModel = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            Assert.That(viewModel, Is.Not.Null);
+            Assert.That(GetProperty(viewModel, "SettingsSurfaceVisibility").ToString(), Is.EqualTo("Collapsed"));
+
+            var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Settings" });
+
+            Assert.That(GetProperty(viewModel, "ActiveDesktopAppTitle"), Is.EqualTo("Settings"));
+            Assert.That(GetProperty(viewModel, "SettingsSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(viewModel, "GenericDesktopAppVisibility").ToString(), Is.EqualTo("Collapsed"));
+
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Field Notes" });
+
+            Assert.That(GetProperty(viewModel, "SettingsSurfaceVisibility").ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(GetProperty(viewModel, "GenericDesktopAppVisibility").ToString(), Is.EqualTo("Visible"));
+        }
+
+        [UnityTest]
+        public IEnumerator GalapagOSDesktopAppsRemainOpenTogether()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var viewModel = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            Assert.That(viewModel, Is.Not.Null);
+
+            var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
+            var openWindows = (IList)GetProperty(viewModel, "OpenDesktopWindows");
+            Assert.That(openWindows.Count, Is.EqualTo(0));
+
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Field Notes" });
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
+
+            Assert.That(openWindows.Count, Is.EqualTo(2));
+            Assert.That(GetProperty(openWindows[0], "Title"), Is.EqualTo("Field Notes"));
+            Assert.That(GetProperty(openWindows[1], "Title"), Is.EqualTo("Gene Lab"));
+            Assert.That(GetProperty(viewModel, "ActiveDesktopAppTitle"), Is.EqualTo("Gene Lab"));
+
+            var geneLabWindow = openWindows[1];
+            Assert.That((float)GetProperty(geneLabWindow, "Width"), Is.InRange(960f, 1450f));
+            Assert.That((float)GetProperty(geneLabWindow, "Height"), Is.InRange(560f, 820f));
+            Assert.That(GetProperty(geneLabWindow, "GuardedBurrowStateText"), Is.EqualTo("UNLOCKED · ACTIVE"));
+            Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("6 / 8"));
+
+            var toggleGenomeCommand = GetProperty(geneLabWindow, "ToggleGuardedBurrowCommand");
+            toggleGenomeCommand.GetType().GetMethod("Execute")?.Invoke(toggleGenomeCommand, new object[] { null });
+
+            Assert.That(GetProperty(geneLabWindow, "GuardedBurrowStateText"), Is.EqualTo("UNLOCKED · INACTIVE"));
+            Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("5 / 8"));
+
+            var preservedWindow = openWindows[0];
+            Assert.That(preservedWindow, Is.Not.Null);
+            var closeCommand = GetProperty(preservedWindow, "CloseCommand");
+            closeCommand.GetType().GetMethod("Execute")?.Invoke(closeCommand, new object[] { null });
+
+            Assert.That(openWindows.Count, Is.EqualTo(1));
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
+            Assert.That(openWindows.Count, Is.EqualTo(1));
+        }
+
         static IEnumerator LoadLab()
         {
             yield return SceneManager.LoadSceneAsync(LabScene);

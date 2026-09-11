@@ -1,5 +1,9 @@
 # EX-007 — How well did the prediction do?
 
+> **Later disposition (2026-09-06):** EX-009 closed the same-seed launch-time
+> order question and EX-010 added one accepted continued-world schedule. This
+> analysis remains bounded to its original EX-007 contract.
+
 **Status:** Scored against training and held-out reports; bounded finding accepted
 **Prediction ID:** `PRED-EXP-007-0001`
 

@@ -29,6 +29,24 @@ versioned asset; the shared BaselineParity assets are not edited.
 | Herbivore energy relief | `Scenarios/EX002/EX002_HerbivoreEnergyRelief.asset` | herbivore `startingEnergy` | `6 → 12` |
 | Predation relief | `Scenarios/EX002/EX002_PredationRelief.asset` | carnivore `attackAmount` | `2 → 0` |
 
+## Authored asset retention
+
+The two scenario assets above and their matching species overrides remain
+versioned at:
+
+- `Assets/Data/CellularSimulation/Scenarios/EX002/EX002_HerbivoreEnergyRelief.asset`
+- `Assets/Data/CellularSimulation/Scenarios/EX002/EX002_PredationRelief.asset`
+- `Assets/Data/CellularSimulation/Species/EX002/EX002_HerbivoreEnergyRelief.asset`
+- `Assets/Data/CellularSimulation/Species/EX002/EX002_PredationRelief.asset`
+
+They derive from the versioned `plant.asset`, `herbivore.asset`, and
+`carnivore.asset` definitions in `Assets/Data/CellularSimulation/Species` and
+retain the 32×20, 20-second, 0.1-second-step scenario contract. The unreachable
+one-shot `PrepareEx002Variants` helper was removed on 2026-09-07; its historical
+implementation remains recoverable from Git commit `eca83d7a` if exact
+mechanical regeneration is ever required. The authored assets and this protocol
+are the supported current reproducibility record.
+
 ## Seed plan and acceptance
 
 - Matched matrix: seeds `10100`–`10119` (20 runs per arm).

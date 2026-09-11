@@ -1,16 +1,16 @@
-# Species Per-Run Upgrade Acceptance Matrix
+# Hare Mutation Acceptance Matrix
 
 **Status:** Contract and authoring gate complete; gameplay and balance evidence
 remain open.
 
 **Owner:** Josh
-**Scope:** The seven Hare upgrades in
+**Scope:** The seven Hare Mutation candidates in
 `Assets/Data/CellularSimulation/Upgrades/Production/`.
 
 This matrix answers two different questions that should not be mixed together:
 
-1. **Did we author the upgrade correctly?** This is the gate we can close now.
-2. **Does the upgrade create a good, intended playstyle?** That needs matched
+1. **Did we author the Mutation correctly?** This is the gate we can close now.
+2. **Does the Mutation create a good, intended playstyle?** That needs matched
    simulation evidence and a later human balance decision.
 
 An asset can pass the first question while remaining provisional for the
@@ -27,6 +27,10 @@ spatial or conditional operations are not missing rows.
 Adding spatial targets or conditional rules would expand the contract and the
 research evidence model. That is a separate design package and must not be
 introduced just to satisfy this first catalog or to prepare EX-010.
+
+Permanent Genome nodes, one-time effects, and abilities are also outside this
+V1 Mutation contract. Their future balance work follows
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 
 ## Catalog contract gate
 
@@ -66,6 +70,26 @@ exclusion list, and use `PerRun` scope. The empty relationship lists are
 intentional for this first catalog slice; branch prerequisites and exclusions
 remain a later design decision.
 
+## Balance planning view
+
+This table prepares the candidates for the SG-005 balance process. It does not
+approve their current values. Tier and Adaptation Value remain `TBD` until the
+Forest Edge reference panel is calibrated.
+
+| Mutation | Shared capability | Useful context | Ecological cost or obligation | Direct proof | Wider ecosystem review |
+| --- | --- | --- | --- | --- | --- |
+| Long Stride | Escape and migration | Predator pressure or separated food patches | Harder mate requirement | Movement attempts, arrivals, and missing-mate blocks | Hare survival, Fox contact, food access, and resource distribution |
+| Far Sight | Detection and foraging | Distant threats, mates, or food | Higher energy use | Newly detected targets and energy trend | Starvation, encounter rate, and population stability |
+| Guarded Burrow | Defense | Repeated predator contact | Slower movement; it does not yet unlock a literal burrow ability | Blocks, prevented damage, and movement | Hare and Fox survival plus encounter frequency |
+| Room to Breed | Reproduction and crowding resilience | Dense local Hare groups | Higher metabolism and local resource demand | Group-limit blocks, crowding penalties, and births | Fern depletion, population volatility, and Fox opportunity |
+| Seed Pouches | Resource dispersal at launch | A new expedition with sparse starting food | Lower starting energy and no mid-expedition effect | Starting reserve/energy and successful seed drops | Early Hare survival and Fern distribution |
+| Careful Sowing | Resource recovery | A moving food frontier | Slower movement and delayed payoff | Seed attempts, successful drops, new Fern cells, and movement | Fern sustainability, Hare food access, and contested Fox locations |
+| Large Litters | Crowding resilience | Dense Hare pockets | **TBD before balance approval**; the current candidate has no explicit cost | Crowding penalties/deaths and local density | Birth pressure, Fern demand, Fox opportunity, and runaway growth |
+
+For every row, the provisional tier, Adaptation Value range, reference-panel
+version, strong/weak contexts, and tested combinations remain open. No row is
+promoted from the table alone.
+
 ## Research and continuation use
 
 - Production research inputs must resolve these stable IDs through
@@ -91,11 +115,14 @@ The following are deliberately not closed by authoring this matrix:
    seeds where appropriate, must support any balance or promotion claim.
 3. **Branch design:** prerequisites, exclusions, and hybrid paths need a human
    design decision before they are added to the assets.
-4. **Spatial/conditional contract:** decide whether and how those unsupported
-   effect types should be added in a future package.
-5. **EX-010 approval:** the experiment still needs its contract-specific
-   schedule, phase/stat-line review, parity gate, and human approval before it
-   is run.
+4. **Additional effect contracts:** decide how one-time effects and abilities
+   are represented, timed, measured, and replayed without weakening the signed
+   additive V1 contract.
+5. **Scalable balance baseline:** define the shared capability map, Forest Edge
+   reference panel, provisional Adaptation Value calibration, marginal-value
+   checks, and reachable-path/synergy suite. EX-010 remains bounded evidence
+   about sequential continuation; it is not this broader production balance
+   approval.
 
-M1 closeout remains a separate final review and is intentionally deferred until
-the current pre-EX-010 work block is complete.
+M1 closeout remains a separate final review. The EX-010 work block is complete;
+broader production balance and promotion remain open by design.

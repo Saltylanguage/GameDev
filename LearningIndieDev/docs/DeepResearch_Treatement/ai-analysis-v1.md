@@ -9,8 +9,8 @@
 after the second pass. Its EX-009 priority is intentionally retained so the
 reasoning change remains reviewable.
 **Audience:** Josh, Sim, and contributors working on the ecology laboratory
-**Scope:** The current predictive-AI research program, especially P3, EX-007,
-EX-008, and the blocked EX-009 continuation
+**Scope:** The predictive-AI research program as inspected on 2026-09-03,
+especially P3, EX-007, EX-008, and the then-blocked EX-009 continuation
 **Assumptions:** The checked-out `UI/ControlLibrary` branch and the repository
 records available on this date are the source of truth. Generated artifacts are
 evidence, not editable design intent.

@@ -11,9 +11,35 @@ namespace SaltyGame
 
     public static class TerrainVisualFamilies
     {
+        public static bool TryGet(TerrainId terrainId, out TerrainVisualFamily family)
+        {
+            if (terrainId == TerrainIds.Grass)
+            {
+                family = TerrainVisualFamily.Grass;
+                return true;
+            }
+
+            if (terrainId == TerrainIds.Desert)
+            {
+                family = TerrainVisualFamily.Desert;
+                return true;
+            }
+
+            family = default;
+            return false;
+        }
+
         public static TerrainVisualFamily Get(TerrainId terrainId)
         {
-            return terrainId == TerrainIds.Grass ? TerrainVisualFamily.Grass : TerrainVisualFamily.Desert;
+            if (TryGet(terrainId, out var family))
+            {
+                return family;
+            }
+
+            throw new ArgumentOutOfRangeException(
+                nameof(terrainId),
+                terrainId,
+                "Terrain does not own a smart-tile visual family.");
         }
 
         public static string GetSpritePrefix(TerrainVisualFamily family)
@@ -50,7 +76,9 @@ namespace SaltyGame
 
         public static int ResolveTerrainMask(Grid<SpeciesCell> cells, int x, int y, TerrainId terrainId)
         {
-            return NormalizeMask(ComputeRawMask(cells, x, y, TerrainVisualFamilies.Get(terrainId)));
+            return TerrainVisualFamilies.TryGet(terrainId, out var family)
+                ? NormalizeMask(ComputeRawMask(cells, x, y, family))
+                : 0;
         }
 
         public static int ComputeRawMask(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)
@@ -108,7 +136,8 @@ namespace SaltyGame
         static bool IsFamily(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)
         {
             return cells.TryGetCell(x, y, out var cell)
-                && TerrainVisualFamilies.Get(cell.TerrainId) == family;
+                && TerrainVisualFamilies.TryGet(cell.TerrainId, out var cellFamily)
+                && cellFamily == family;
         }
     }
 }

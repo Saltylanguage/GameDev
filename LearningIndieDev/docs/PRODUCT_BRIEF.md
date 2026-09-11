@@ -2,16 +2,33 @@
 
 ## Promise
 
-**Cellular automata as a roguelike:** the player guides one species through a short, deterministic ecosystem run by choosing upgrades to its rules, then watches those choices reshape survival, movement, feeding, reproduction, and competition on the board.
+**Cellular automata as a roguelike:** the player guides one species through a
+short, deterministic ecosystem expedition by choosing temporary **Mutations**,
+then watches those choices reshape survival, movement, feeding, reproduction,
+and competition on the board.
 
-The slice succeeds when a new player can finish a run, describe what their upgrades changed, and identify the main cause of victory or defeat.
+The slice succeeds when a new player can finish an expedition, describe what
+their Mutations changed, and identify the main cause of victory or defeat.
+
+The vertical slice proves one local Species Simulation. The larger game lets
+the player permanently unlock species **Genome** options, configure which ones
+are active, and use their interactions in Biome Simulations to establish a
+diverse, resilient ecosystem. Dominating with one species or completing every
+collection entry is not the only measure of progress.
+
+The two simulation modes have different goals. Species Simulations focus on a
+chosen species and include temporary Mutations. Biome Simulations contain no
+Mutations; they test active Genome combinations across participating species
+against authored biodiversity, stability, balance, and recovery goals. Genome
+unlocks remain earned even when a particular active configuration performs
+poorly.
 
 ## Player experience and agency
 
 The player selects the curated slice scenario and begins with a fixed player species and base ruleset. During simulation phases, the player observes the live board, pauses or changes speed, and inspects cells and species. The player does not directly move individual cells or edit raw parameters.
 
-The primary decisions are upgrade choices. At each reward break, the player
-chooses an eligible upgrade from the offered options or explicitly skips it.
+The primary decisions are Mutation choices. At each reward break, the player
+chooses an eligible Mutation from the offered options or explicitly skips it.
 Every option previews the affected rule, valid range, tradeoff, and expected
 board consequence. The chosen upgrade becomes part of the expedition's ordered,
 fingerprinted ruleset for all later phases. Skipping preserves the current build.
@@ -25,12 +42,17 @@ The flow is:
 1. Scenario briefing and starting ruleset.
 2. Simulate the configured phase length, with 200 ticks as the current target,
    with pause, speed, and inspection controls available.
-3. Show a short phase summary and offer three upgrades.
+3. Show a short phase summary and offer three Mutations.
 4. Apply one choice or record a skip, clearly preview any change, and continue
    the same ecosystem from its next tick.
 5. After phase ten—or immediate extinction—show results, accomplishments, and earned unlocks.
 
-There is no real-time decision timer. Simulation pauses automatically during upgrade selection. A player therefore makes nine build decisions per completed run, after phases one through nine.
+There is no real-time decision timer. Simulation pauses automatically during
+Mutation selection. A player therefore has nine Mutation decision points per
+completed run, after phases one through nine. At each point, choosing a
+Mutation or explicitly skipping is valid. Skip preserves the current build and
+has no current bonus or penalty. Any future reward-doubling or other incentive
+for skipping is a separate economy rule and remains deferred.
 
 Each phase preserves the board, creature/resource state, age, energy, cooldowns,
 initial seed, absolute tick and accumulated history. A phase summary does not
@@ -50,18 +72,24 @@ the continuity migration does not silently change the configured step interval.
 - **Narrow survival:** the species remains alive but finishes below the threshold. The run completes and records accomplishments, but does not grant the scenario-completion unlock.
 - **Defeat:** the player species reaches zero population. The run ends immediately after the completed tick that caused extinction.
 
-After every phase except the last, surviving players may choose one run upgrade
+After every phase except the last, surviving players may choose one Mutation
 or skip. Phase summaries show that phase's population change, births, deaths by
 cause, food consumed, movement, combat, and notable upgrade contributions.
-Final results distinguish whole-expedition totals from individual phases.
+The current contract gives Skip no bonus or penalty. Final results distinguish
+whole-expedition totals from individual phases.
 
-The final results screen awards accomplishments for explicit feats such as victory, population recovery, efficient feeding, or surviving a named pressure. The first vertical slice grants **one predetermined meta-progression unlock on the first victory**. Unlock content may be a scenario, species, or eligible upgrade, but cannot provide raw permanent stat bonuses to the starting species.
+The final results screen awards accomplishments for explicit feats such as
+victory, population recovery, efficient feeding, or surviving a named
+pressure. The first vertical slice grants **one predetermined meta-progression
+unlock on the first victory**. The slice does not yet implement a permanent
+Genome stat purchase; that is a scope boundary for this milestone, not a
+permanent prohibition on Genome improvements.
 
 ## Persistence and replay
 
 The slice saves settings, completed accomplishments, and versioned
 meta-progression unlocks. A completed expedition records its seed, scenario ID,
-base ruleset fingerprint, phase boundaries, ordered upgrades with acquisition
+base ruleset fingerprint, phase boundaries, ordered Mutations with acquisition
 ticks and resolved values, and final result for reproduction and comparison.
 
 An active expedition is **not saved to disk or restored after application exit**
@@ -89,5 +117,9 @@ The presentation target is readable at 1920×1080 and remains functional at 1280
 
 ## Evaluation rule
 
-New work belongs in the vertical slice only if it improves the upgrade decision, makes its simulation consequence easier to understand, enables the complete run-to-reward-to-next-run flow, or provides evidence needed to validate those outcomes. Everything else is deferred until the slice passes external comprehension and replay-intent testing.
+New work belongs in the vertical slice only if it improves the Mutation
+decision, makes its simulation consequence easier to understand, enables the
+complete expedition-to-reward-to-next-expedition flow, or provides evidence
+needed to validate those outcomes. Everything else is deferred until the slice
+passes external comprehension and replay-intent testing.
 

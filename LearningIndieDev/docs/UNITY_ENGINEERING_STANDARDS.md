@@ -59,8 +59,8 @@ The Unity project is `LearningIndieDev`. First-party runtime code lives under `A
 | `Assets/Settings` | URP and project settings assets. |
 | `Assets/UI` | Optional/experimental UI code, currently outside `SaltyGame.Runtime`. |
 | `Assets/ThirdParty` | Reserved third-party boundary. Do not edit vendor content without an explicit reason. |
-| `Assets/Project` | Planned authoring structure; do not treat empty folders as implemented architecture. |
-| `Assets/TutorialInfo` | Unity template content; preserve or remove only as a separate cleanup decision. |
+| `Assets/Project` | Removed 2026-09-07 as an unused placeholder tree; create owned feature folders only when real assets require them. |
+| `Assets/TutorialInfo` | Removed 2026-09-06 as stale Unity template content; do not treat it as a project architecture boundary. |
 
 `SaltyGame.Runtime` currently references `Unity.InputSystem` and has no other first-party assembly dependency. `SaltyGame.Tests` references only `SaltyGame.Runtime` and includes the Editor platform. **MUST** preserve this acyclic direction:
 
@@ -212,10 +212,12 @@ Enforcement: performance evidence is required in review for optimization changes
 
 **MUST** preserve every Unity `.meta` file and serialized GUID. The current tracked asset inventory has matching `.meta` files for all non-meta assets. Text/YAML serialization is enabled (`EditorSettings.m_SerializationMode: 2`) and must remain enabled for reviewable scene/prefab changes.
 
-`MainMenu.unity`, `Lab.unity`, `CellularAutomataPrototype.unity`, and the
-deprecated `IslandSurvivorPrototype.unity` are enabled in Build Settings. Main
-Menu is the current entry scene and CellularAutomataPrototype is the active
-simulation scene. `Intro.unity` is retained but disabled. The only scene
+`MainMenu.unity`, `Lab.unity`, `GalapagOSDesktopTest.unity`,
+`CellularAutomataPrototype.unity`, and the deprecated
+`IslandSurvivorPrototype.unity` are enabled in Build Settings. Main Menu is the
+current entry scene and CellularAutomataPrototype is the active simulation
+scene. The unused starter `Intro.unity` scene and unreferenced
+`_Recovery/0.unity` snapshot were removed on 2026-09-07. The only scene
 validator is the deprecated-slice `Salty > Validate Island Survivor Scene`;
 there is no general bootstrap validator for the current UI/simulation flow.
 Additive-scene policy is otherwise **TBD**. Do not assume Addressables: the

@@ -1,5 +1,10 @@
 # Sprint 0 C2 — UX Contract and Low-Fidelity Layouts
 
+> **Current applicability (2026-09-07):** Historical Sprint 0/Sprint 1 UI-only
+> contract. The implemented shell used this behavior baseline; the current
+> GalapagOS plans and graphics-accepted desktop composition supersede its visual
+> details. No separate C2 review remains pending.
+
 > Status: Ready for review | Date: 2026-08-18 | Scope: Sprint 1 UI-only shell
 
 This is the C2 contract for the first player-facing route. It narrows the

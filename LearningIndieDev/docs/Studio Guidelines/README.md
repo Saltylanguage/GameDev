@@ -8,6 +8,7 @@ This directory contains durable, studio-level practices that apply across game d
 - [SG-002 — AI-Assisted Development](AI_ASSISTED_DEVELOPMENT.md)
 - [SG-003 — UI Architecture and MVVM Boundaries](SG-003-UI-MVVM-ARCHITECTURE.md)
 - [SG-004 — Conversation Scope and Continuity](SG-004-CONVERSATION-SCOPE-AND-CONTINUITY.md)
+- [SG-005 — Upgrade and Ecology Balance](SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
 
 ## Guideline conventions
 

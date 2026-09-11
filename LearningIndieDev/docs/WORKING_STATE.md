@@ -5,9 +5,15 @@ become a master changelog.
 
 ## Current focus
 
-**CF-0 — Contract and fixtures** is complete. **CF-1 — continuation parity,
-CF-2 boundary upgrades, and the controlled CF-3 preview path** are implemented
-and freshly verified on `NF/ConsecutiveRuns`.
+**CF-0 through CF-5 are implemented and verified.** This includes continuation
+parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
+checkpoint replay, the headless schedule, and the accepted EX-010 execution.
+CF-6 remains partially open for outer ten-phase duration/memory measurement;
+the Windows player smoke and corrected scenario run are complete, and graphics
+acceptance is complete.
+The active Lab → CellularAutomataPrototype route now explicitly defaults to
+Forest Edge with Hare; the separate GalapagOSDesktopTest scene retains its
+legacy-default setup for isolated acceptance.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
@@ -16,6 +22,23 @@ The game-design feature sequence is now triaged in
 the Expedition Decision Loop. The player-facing expedition contract is ten
 phases; remaining design work concerns duration, decision rhythm, rewards, and
 terminal outcomes.
+The upgrade direction now separates nine temporary Species-Simulation
+**Mutations** from each species' permanently unlocked Genome options and
+configurable **active Genome**. Mutations never enter Biome Simulations. The
+active Genome is frozen at launch and applies to every population of that
+species, including when it is not player-controlled. Species and Biome
+Simulations use different success scorecards. Scalable balance work uses shared
+capabilities and provisional Adaptation Value estimates, but requires
+mode-appropriate direct-effect, matchup, and ecosystem evidence under
+[`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). The seven
+existing Hare assets are provisional Mutation candidates; Genome runtime and
+profile work remain planned. Genome design and implementation are deferred from
+this work block but marked ASAP when upgrade implementation resumes. Named
+Genome loadouts are deferred and non-blocking, and Species Mastery remains
+deferred and non-gating. Skip is a valid current choice with no current bonus or
+penalty; any future reward-doubling for skipping is a separate deferred economy
+rule. Provisional scientific-data settlement remains open pending feature-owner
+approval.
 The preview now supports phase survivor data, live/legacy upgrade choices,
 same-run resume, explicit End, and manual inspection. Continuous terminal
 completion is results-only; upgrades are offered at phase boundaries, and a
@@ -23,14 +46,16 @@ new expedition is an explicit next action. Continuous phases remain the
 default player flow; uninterrupted single-run mode is Developer Mode-only.
 Phase result/telemetry windows and ordered acquisition timing are now captured
 by the runtime and report serializers. Boundary checkpoints can be copied,
-restored, and resumed with deterministic runner output. An opt-in headless
-schedule now applies cumulative per-phase loadouts and emits the same phase
-contract; its generic smoke path passes. EX-010 remains prepared but not
-executed, pending its contract-specific schedule and human approval.
+restored, and resumed with deterministic runner output. The opt-in headless
+schedule applies cumulative per-phase loadouts and emits the same phase
+contract. EX-010 has now executed on the approved ten-phase schedule and was
+accepted by Josh and Sim as bounded evidence. P3 is closed under its revised
+bounded gate; P4–P6 are not started and no next research experiment is selected.
 
-Latest verification: Unity EditMode 210/210 passed and PlayMode 17/18 passed
-with one intentional graphics-only skip (2026-09-05). The PlayMode suite is
-green with no failed tests.
+Latest verification: Unity EditMode passed 212/212 on 2026-09-09. The latest
+general PlayMode batch passed 21/22 with one intentional visual-capture skip
+and no failures. The retained graphics acceptance remains 22/22 at 1280×720,
+followed by a focused 1920×1080 pass on 2026-09-07.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)
@@ -39,9 +64,10 @@ green with no failed tests.
 - Simulation-flow documentation coverage: [`CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md`](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md)
 - Vertical-slice scenario, roster, and builds: [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md)
 - Future scientific-data economy: [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md)
-- Future permanent and per-run upgrade systems: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)
-- Species per-run upgrade authoring workflow: [`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md)
-- Species per-run upgrade acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
+- Mutation, Genome, and balance delivery plan: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)
+- Mutation authoring workflow: [`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md)
+- Hare Mutation acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
+- Official upgrade and ecology balance guideline: [`Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
 - Upgrade-system planning concerns: [`Planning concerns/upgrade-system.md`](Planning%20concerns/upgrade-system.md)
 - Main Menu, Lab, and progression delivery plan: [`MAIN_MENU_LAB_DELIVERY_PLAN.md`](MAIN_MENU_LAB_DELIVERY_PLAN.md)
 - GalapagOS desktop art direction: [`../ART_STYLE_GUIDE.md`](../ART_STYLE_GUIDE.md)

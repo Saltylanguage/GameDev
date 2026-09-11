@@ -264,7 +264,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator PhaseDecisionCanPurchaseLegacyUpgradeAndResumeSameRun()
+        public IEnumerator PhaseDecisionCanPurchaseAuthoredUpgradeAndResumeSameRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -303,7 +303,7 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(SpeciesUpgradeCatalog.FasterMovementId));
+            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("trailblazer-long-stride"));
             Assert.That(preview.CanPurchaseReward(0), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
             var movementBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].MovementSpeed;

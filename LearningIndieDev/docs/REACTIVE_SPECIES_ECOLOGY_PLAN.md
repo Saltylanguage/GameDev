@@ -35,14 +35,16 @@ not replace the treatment or authorize a full adaptive-AI system.
 - Hare/Fox is already defined as a coupled interaction: grass supports Hare
   growth, Hare concentration creates Fox opportunity, and interrupted prey
   access should weaken Foxes.
-- Run upgrades are ordered, deterministic, temporary loadouts. Permanent Lab
-  research is a separate progression layer.
+- Mutations are ordered, deterministic, temporary loadouts for the selected
+  Species-Simulation species and never enter Biome Simulations. Each species'
+  Genome has permanent unlocks and a separate active configuration; active
+  nodes apply even when that species is not player-controlled.
 - The BEV combat labs show that attack, block, damage, and cooldown can have the
   intended local combat effect while producing non-monotonic or seed-sensitive
   population results.
 - Reports already contain the useful evidence surface: population history,
-  births, deaths by cause, feeding, movement, combat, energy, and upgrade
-  fingerprints.
+  births, deaths by cause, feeding, movement, combat, energy, and Mutation
+  fingerprints. Genome provenance is planned work.
 
 ### Design inference
 
@@ -54,8 +56,6 @@ value is discussed.
 
 ### Open or speculative decisions
 
-- Whether the player upgrades one focal species or chooses among broader
-  species-type research offers.
 - Whether a counter is selected directly by the player or surfaced as a
   deterministic offer at the next reward boundary.
 - The exact pressure metric and thresholds. These must come from baseline
@@ -133,6 +133,10 @@ Avoid these first-pass mechanisms:
 - a scalar “fitness” value that hides whether food, contact, terrain, or
   reproduction caused the change.
 
+An internal Adaptation Value estimate may be used for early budget checks under
+[`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). It never
+replaces the separate causal and ecosystem measures above.
+
 All adaptation decisions must happen after a completed tick and use the
 recorded seed, event order, scenario fingerprint, and ordered loadout so a run
 can be replayed exactly.
@@ -208,8 +212,8 @@ held-out seeds.
 
 ## Explicit non-goals
 
-- inherited traits, mutation trees, scent diffusion, pack coordination, or
-  neural/adaptive agents;
+- inherited individual-creature traits, automatic non-player Mutation trees,
+  scent diffusion, pack coordination, or neural/adaptive agents;
 - a universal modifier/plugin/evolution framework;
 - permanent stat inflation that invalidates early scenarios;
 - exact balance values before baseline envelopes exist;

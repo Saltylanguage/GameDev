@@ -14,7 +14,9 @@ expedition. Carry-over creatures are not new starting spawns; rates need that
 window's raw numerators, denominators and populations. Pool raw counts before
 computing expedition rates. Upgrade attribution needs acquisition/effective
 ticks. See the [shared impact review](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
-for proposed contracts and Sim/Josh retests; continuation is not implemented yet.
+for the evidence boundary. Continuation, independent phase/final Stat-Lines,
+and the EX-010 schedule are implemented; Sim approved the bounded meanings used
+by that experiment. Future metrics or broader claims still need their own review.
 
 Baseball analytics is a helpful model because it compares players who create
 value in very different ways and under different conditions. Species statistics

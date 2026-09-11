@@ -1,8 +1,8 @@
 # EX-010 — Sequential upgrade continuation
 
 **Experiment ID:** `EXP-010`
-**Status:** Original and matched alternate sequences executed; findings ready
-for review
+**Status:** Original and matched alternate sequences executed; bounded result
+accepted by Josh and Sim
 **Parent:** `EXP-009` / `EXP-007`
 **Decision owner:** Human design owner
 **Feature owner:** Josh
@@ -49,7 +49,8 @@ windows, acquisition timeline, effective loadout, and independent final
 Stat-Line.
 
 The execution result is summarized in [REPORT.md](REPORT.md). The raw and
-derived artifacts are kept in the two artifact directories linked there.
+derived artifacts are kept in the artifact directories linked there. The human
+decision is recorded in [HUMAN_DECISION.md](HUMAN_DECISION.md).
 
 ## Execution result
 
@@ -65,7 +66,8 @@ derived artifacts are kept in the two artifact directories linked there.
 
 The matched alternate sequence now provides an order comparison for this one
 scenario, schedule, option set, and seed panel. It does not establish a
-universal upgrade-order rule.
+universal upgrade-order rule. Sim reviewed the phase and final Stat-Lines in
+person and approved the bounded finding.
 
 The paired comparison is summarized in [REPORT.md](REPORT.md) and preserved in
 `artifacts/ex010-sequence-comparison-20260906-053441/`.

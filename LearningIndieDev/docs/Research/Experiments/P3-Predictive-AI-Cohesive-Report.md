@@ -1,11 +1,14 @@
 # P3 Predictive AI — Cohesive Results Report
 
 **Scope:** EX-007 baseline experiment, EX-008 reversed-order follow-up, and
-EX-009 same-held-out order comparison
+EX-009 same-held-out order comparison. EX-010 is linked as the subsequent
+continued-world evidence package; its results are not retrofitted into the
+original launch-time prediction scoring.
 **Scenario:** `ForestEdge.asset`
 **Species:** Hare
-**Status:** Bounded EX-007 and EX-009 decisions accepted; balance and P3
-promotion review remain open
+**Status:** Bounded EX-007, EX-009, and EX-010 decisions accepted. P3 is closed
+as a bounded research phase; general AI recommendation validity, balance, and
+production promotion remain open.
 
 ## What we tested
 
@@ -103,11 +106,18 @@ calibration from one experiment.
 
 EX-009 closes the same-held-out launch-time order gap, but the evidence still
 does not establish balance, fun, long-run stability, transfer to another
-scenario, or behavior at other upgrade values. It also does not answer the
-intended game flow where an upgrade is acquired between simulation segments and
-the player continues from the current state. That timing/state question is
-tracked as proposed EX-010 and requires a checkpoint/resume seam plus a new
-human-approved contract.
+scenario, or behavior at other upgrade values. EX-010 now supplies a separate
+continued-world result for one approved schedule and two acquisition orders;
+its bounded human decision is recorded in the EX-010 package. The result does
+not generalize beyond that scenario, schedule, or upgrade set.
+
+## P3 gate decision
+
+P3 is closed under the [2026-09-06 gate decision](../P3_GATE_DECISION_2026-09-06.md).
+EX-003 was archived/deferred as a standalone workflow-validity experiment
+because it has no execution package. This closes the bounded phase without
+claiming that AI recommendation quality, review-time savings, calibration across
+tasks, or production balance have been validated.
 
 ## Evidence locations
 
@@ -118,3 +128,5 @@ human-approved contract.
 - Same-held-out order report: [EX-009 REPORT.md](EX-009-Same-Heldout-Order-Comparison/REPORT.md)
 - Same-held-out paired deltas: [EX-009 paired-deltas.csv](EX-009-Same-Heldout-Order-Comparison/paired-deltas.csv)
 - Human decision record: [HUMAN_DECISION.md](EX-007-Predictive-Statline-Interventions/HUMAN_DECISION.md) (bounded claim accepted)
+- Continued-world result: [EX-010 REPORT.md](EX-010-Sequential-Upgrade-Continuation/REPORT.md)
+- Continued-world human decision: [EX-010 HUMAN_DECISION.md](EX-010-Sequential-Upgrade-Continuation/HUMAN_DECISION.md)

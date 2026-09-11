@@ -1,6 +1,6 @@
 # [Bio OS] (placeholder) - Game Design Document
 
-> Status: Draft; ten-phase direction committed, controlled preview implemented, telemetry/reporting pending | Owner: Josh Campbell | Last updated: 2026-09-05 | Decision horizon: prototype / vertical slice
+> Status: Draft; ten-phase direction committed, controlled preview implemented, telemetry/reporting pending | Owner: Josh Campbell | Last updated: 2026-09-06 | Decision horizon: prototype / vertical slice
 
 ## How to use this document
 
@@ -14,18 +14,21 @@ Bio Os is an ecology simulation game that follows the trends of incremental game
 ### Player promise
 [What the player repeatedly gets to do, feel, and master.]
 The player prepares an expedition, observes its evolving ecosystem, reviews each
-simulation phase, and buys an upgrade or skips it before continuing the same
+simulation phase, and selects a Mutation or skips it before continuing the same
 world. Creatures and resources carry their current state into the next phase.
 When the expedition ends, the player reviews its result and returns to the Lab
 for the applicable progression and preparation for a new expedition. As players
-understand species interactions and unlock upgrades, species and biomes, they
+understand species interactions and unlock Mutations, Genomes, species, and biomes, they
 learn to create successful species and balanced ecologies. Currency and loss
 rules remain governed by the product brief and scientific-data economy plan.
 
 
 ### Design pillars
 
-1. **[Collection]** - Simulations collect data, data is used to collect new upgrades and species.  The entire game is about collecting a data set that is displayed in a cute and beautiful visual representation.
+1. **[Ecosystem stewardship]** - The long-term goal is to develop many species
+   toward a diverse, resilient ecosystem. Scientific data, species discovery,
+   and collection support that work; completing a collection is not the main
+   objective.
 2. **[Legible ecological asymmetry]** - Species should create distinct ecological problems or opportunities, not merely have larger numbers.
 3. **[Planning and progression across runs]** - Upgrades should change what players want to establish for future runs, rather than provide only immediate bonuses.
 4. **[Visible cause and effect]** - Players should be able to explain successful strategies through terrain, resources, behavior, and population pressure.
@@ -107,25 +110,46 @@ For each species, define:
 - Reproduction: [conditions and cost]
 - Distinctive interaction: [what makes it worth adding]
 
-## 5. Progression and upgrades - link to 2 documents here. (one for permanent upgrades, and one for per-run upgrades)
+## 5. Progression — Mutations and Genomes
 
-### In-run progression
+### Mutations during an expedition
 
-Temporary upgrades are acquired at frozen phase boundaries and remain in
-purchase order for the rest of the expedition. Skipping preserves both the
-current world and the existing build. An upgrade changes subsequent rules; it
-does not implicitly refill energy, respawn creatures, or reset terrain.
+Temporary Mutations are acquired at frozen phase boundaries and remain in
+purchase order for the rest of the expedition. A completed ten-phase
+expedition has nine Mutation decision points. At each point, choosing a
+Mutation or explicitly skipping is valid. Skipping preserves both the current
+world and the existing build and has no current bonus or penalty. Any future
+reward-doubling or other incentive for skipping is a separate deferred economy
+rule. A Mutation changes subsequent rules; it does not implicitly refill
+energy, respawn creatures, or reset terrain.
 Initialization-only upgrades are launch-only under the locked CF-0 contract;
 they are not offered as mid-expedition grants. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md)
 and the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
-### Between-run progression
+### Genome progression between simulations
 
-Temporary run evolution ends when the expedition ends, not at each phase
-summary. Lab unlocks and future permanent research follow their separate
+Temporary Mutations end when the expedition ends, not at each phase summary.
+Every species has a Genome tree in the Gene Lab. Purchased nodes remain
+unlocked, while the player may turn unlocked nodes on or off between
+simulations. The frozen active Genome applies to all populations of that
+species, including when another species is player-controlled. Genome purchases
+and scientific data follow their separate
 [progression](UPGRADE_SYSTEM_DIRECTION.md) and [economy](SCIENTIFIC_DATA_ECONOMY.md)
 contracts. Player save/load of an unfinished expedition remains outside the
 initial slice; in-memory phase continuation is required.
+
+The Species-Simulation rules are:
+
+```text
+Natural species rules + active Genome + ordered expedition Mutations
+```
+
+Biome Simulations use natural rules plus the active Genome for every
+participating species and never include Mutations. The two modes may have
+different success measures.
+
+All species, Mutations, Genomes, and balance decisions follow
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 
 ### Upgrade template
 
@@ -135,6 +159,10 @@ initial slice; in-memory phase continuation is required.
 - Expected interaction: [what changes in the ecosystem]
 - Counterplay/tradeoff: [why it is not strictly better]
 - Telemetry needed: [metrics that prove it is working]
+- Progression layer: [Mutation / Genome]
+- Capability and context: [what it enables and where it matters]
+- Ecological cost or obligation: [what pressure it creates]
+- Balance evidence: [reference panel, local measure, ecosystem measure, status]
 - Status: [Committed / Experiment / Open]
 
 ## 6. Species roster and scenarios
@@ -200,4 +228,5 @@ initial slice; in-memory phase continuation is required.
 |---|---|---|---|
 | 2026-09-04 | Make consecutive phases and purchase/skip continuation explicit. | The prototype currently rebuilds the world between windows; the requested design preserves it. Runtime migration is planned, not implemented. | Player promise, core loop, run end, progression |
 | 2026-09-04 | Lock CF-0 lifecycle, boundary-effect and result-window decisions; preserve a fresh legacy report fixture. | Josh approved the same-world Continue contract, launch-only initialization effects, explicit Restart, above-cap energy handling and phase/expedition accounting before runtime work. | Core loop, progression, simulation evidence |
+| 2026-09-06 | Make continuous state the canonical implemented runtime. | CF-1 through CF-5 preserve the same world across ten 200-tick phases; EX-010 verified the approved schedule and phase/final evidence contract. | Core loop, run lifecycle, progression, simulation evidence |
 | [Date] | [Change] | [Reason] | [Sections] |

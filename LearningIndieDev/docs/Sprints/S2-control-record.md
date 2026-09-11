@@ -24,9 +24,11 @@ the identity, capacity, ownership, board disposition, and exit gate.
 - S2 work uses the sprint workflow lists: `🛠️ In Progress` for work being
   actively done and `Current Work` for current-sprint work not yet started.
 - The S2 control card is in `🛠️ In Progress` while the sprint is active.
-- CF-1 continuation foundation, S2.3B report/Stat-Line integration, and the
-  EX-010 preparation card are complete and sit in `✅ Done`. The next-sprint
-  EX-010 schedule/approval card is in `🎯 Upcoming Work`.
+- CF-1 continuation foundation, S2.3B report/Stat-Line integration, the EX-010
+  preparation card, and the approved EX-010 schedule execution are complete in
+  the repository evidence package. The board's schedule/approval card still
+  needs an external status sync and remains recorded below as historical board
+  state until that review occurs.
 - `Species roster and scenario co-design` is not selected for S2 and returns to
   the backlog. The unrelated blocked bug-triage card remains blocked.
 - No Sprint 1 task was carried: cards 51–53, 62, and 72 remain complete.
@@ -54,7 +56,7 @@ the board and must be reconciled at review rather than silently reassigned.
 | S2-CORR-BOARD | BoardSnapshot fixture repair | [Cy2TOMOh](https://trello.com/c/Cy2TOMOh) | ✅ Done |
 | CF-1 | Continuous domain lifecycle parity foundation | [cPlWlTfr](https://trello.com/c/cPlWlTfr) | ✅ Done |
 | EX-010-PREP | Continuation contract and prediction-input preparation | [qftxVtnX](https://trello.com/c/qftxVtnX) | ✅ Done |
-| EX-010-SCHEDULE | Contract-specific schedule parity and human approval | [LyMlLztN](https://trello.com/c/LyMlLztN) | 🎯 Upcoming Work |
+| EX-010-SCHEDULE | Contract-specific schedule parity and human approval | [LyMlLztN](https://trello.com/c/LyMlLztN) | ✅ Done in repository; board sync remains tracked under Loose Ends P1-027 |
 
 ## Scope boundary
 
@@ -87,10 +89,10 @@ reviewed explicitly rather than being treated as silently complete:
 
 | Priority | Risk | S2 end-state needed |
 | --- | --- | --- |
-| P0 | The continuous flow now has a same-world boundary upgrade and reward path, but the full integrated M1 acceptance review is still open. | Carry the final integrated regression and evidence review into the proposed S3 M1 closeout sprint. |
-| P0 | Phase-aware Stat-Line meaning still needs final review. | Keep fresh-window evidence separate from continued-world evidence until Sim confirms field and denominator meaning. |
+| P0 | CF-0 through CF-5 and target-resolution graphics acceptance are complete, but full integrated M1 acceptance is still open. | Carry a current Windows build smoke, ten-phase duration/memory measurement, and remaining player-flow acceptance into the proposed S3 M1 closeout sprint. |
+| P0 | Phase-aware Stat-Line meaning is approved for EX-010. | Keep fresh-window evidence separate from continued-world evidence; any new metric or broader claim needs a separate Sim/Josh review. |
 | P1 | The current board lists more Sim work than the 20-hour S2 planning budget can hold. | Keep, split, or carry each Sim card during the S2 review; do not assume all can finish in this sprint. |
-| P1 | The continuation checkpoint is new and has not yet been promoted as M1 acceptance evidence. | Use committed checkpoint `79423b4e` and its verification artifacts during the S2 review; do not treat smoke runs as EX-010 evidence. |
+| P1 | The continuation checkpoint and EX-010 result are accepted only within the approved evidence envelope. | Keep the EX-010 decision linked during the S2 review; do not treat generic smoke runs or later schedules as the same evidence. |
 
 The proposed extra sprint is recorded in
 [`S3-control-record.md`](S3-control-record.md). The former species/build

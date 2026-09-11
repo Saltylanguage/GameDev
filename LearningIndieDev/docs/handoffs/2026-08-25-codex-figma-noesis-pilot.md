@@ -1,5 +1,10 @@
 # Figma to Noesis pipeline pilot
 
+> **Later disposition (2026-09-07):** The unfinished Figma continuation is
+> closed and the current pastel GalapagOS direction supersedes this visual
+> proposal. The pilot resource dictionary remains a live Lab dependency; this
+> handoff is retained as historical evidence, not an active task.
+
 [Working state](../WORKING_STATE.md) | Status: partial-pilot
 
 - Owner: Codex

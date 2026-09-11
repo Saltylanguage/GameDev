@@ -41,14 +41,30 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void BareAndDesertSharePresentationFamily()
+        public void GrassAndDesertOwnSeparatePresentationFamilies()
         {
             Assert.That(
-                TerrainVisualFamilies.Get(TerrainIds.Bare),
-                Is.EqualTo(TerrainVisualFamilies.Get(TerrainIds.Desert)));
+                TerrainVisualFamilies.Get(TerrainIds.Grass),
+                Is.EqualTo(TerrainVisualFamily.Grass));
             Assert.That(
-                TerrainTileResolver.GetTerrainSpriteName(TerrainIds.Bare, TerrainTileResolver.FullMask),
+                TerrainVisualFamilies.Get(TerrainIds.Desert),
+                Is.EqualTo(TerrainVisualFamily.Desert));
+            Assert.That(
+                TerrainTileResolver.GetTerrainSpriteName(TerrainIds.Desert, TerrainTileResolver.FullMask),
                 Is.EqualTo("Desert_255"));
+        }
+
+        [Test]
+        public void BareUsesUniversalBaseWithoutOwningSmartTiles()
+        {
+            Assert.That(TerrainVisualFamilies.TryGet(TerrainIds.Bare, out _), Is.False);
+            Assert.Throws<System.ArgumentOutOfRangeException>(() =>
+                TerrainTileResolver.GetTerrainSpriteName(TerrainIds.Bare, TerrainTileResolver.FullMask));
+
+            var cells = new Grid<SpeciesCell>(1, 1, (_, _) => SpeciesCell.Empty);
+            Assert.That(
+                TerrainTileResolver.ResolveTerrainMask(cells, 0, 0, TerrainIds.Bare),
+                Is.Zero);
         }
 
         [Test]

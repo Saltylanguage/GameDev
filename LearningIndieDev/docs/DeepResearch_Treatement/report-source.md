@@ -3,19 +3,21 @@
 **Audience:** Josh, Sim, and contributors working on the ecology laboratory
 **Date:** 2026-09-03
 **Analysis ID:** `DRT-P3-AI-ANALYSIS-V2`
-**Status:** Needs Review
+**Status:** Historical review; superseded for current program status by the research index and P3 gate decision
 **Model:** `gpt-5.6-sol`, extra-high reasoning
 **Method:** `deep-research-work:deep-research` v0.1.14 plus project
 `correctness-first-engineering`
 **Supersedes:** [AI analysis v1](ai-analysis-v1.md)
-**Scope:** Current P3 predictive change-impact work, especially EX-007 through
-EX-009
+**Scope:** P3 predictive change-impact work as audited on 2026-09-03, especially
+EX-007 through EX-009
 **Boundary:** Additive review only; canonical plans, code, artifacts, and human
 decisions are not changed
 
 **Evidence confidence:** High for repository observations and arithmetic;
-medium-high for prioritization recommendations. Human acceptance remains
-pending.
+medium-high for the recommendations as they stood on 2026-09-03. Later human
+decisions are recorded in the current
+[research index](../Research/README.md) and
+[P3 gate decision](../Research/P3_GATE_DECISION_2026-09-06.md).
 
 ## Direct answer
 

@@ -1,5 +1,9 @@
 # EX-009 — Same-held-out-seed A/B report
 
+> **Later disposition (2026-09-06):** EX-010 completed and received bounded
+> human acceptance for one continued-world schedule. This historical EX-009
+> report remains a launch-time comparison and is not reinterpreted.
+
 **Experiment:** `EXP-009`  
 **Report:** `RPT-RUN-009-0001`  
 **Feature:** Ordered upgrade application  
@@ -69,6 +73,6 @@ EX-009 does not answer that sequential-continuation question.
 ForestEdge/Hare, the declared additive values, telemetry, and held-out seeds
 106–110. It is not a balance, fun, or production approval and not a universal
 order theorem.
-**Follow-up:** Add a focused launch-time commutativity regression test. Track
-the sequential-continuation question as proposed EX-010 and revisit it if the
-continue-from-current-state gameplay flow is implemented.
+**Follow-up:** Add a focused launch-time commutativity regression test. The
+sequential-continuation question was answered separately by EX-010 under its own
+bounded schedule.

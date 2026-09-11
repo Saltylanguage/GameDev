@@ -1,7 +1,7 @@
 # Game architecture and flows
 
 > Status: Living reference  
-> Last reviewed: 2026-09-04
+> Last reviewed: 2026-09-06
 > Scope: Player loop, runtime boundaries, and production progression
 
 This document compresses the current game structure into three complementary
@@ -14,14 +14,14 @@ remain authoritative in the linked source documents.
 flowchart TB
     START["Launch"]
     MENU["Main Menu<br/>Profile · Continue · Quit"]
-    LAB["GalapagOS Lab<br/>Overview · Research<br/>Species Archive · Expedition Setup"]
-    SETUP["Prepare Expedition<br/>Scenario · Species · Seed · Unlocks"]
+    LAB["GalapagOS Lab<br/>Overview · Gene Lab<br/>Species Archive · Expedition Setup"]
+    SETUP["Prepare Simulation<br/>Mode · Scenario · Species · Seed<br/>Frozen Active Genomes"]
 
     SIM["Simulate 200 ticks<br/>Forest Edge: Fern → Hare → Fox"]
     END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
-    UPGRADE["Choose one upgrade or skip<br/>World remains frozen"]
-    RULESET["Update ordered, fingerprinted<br/>Hare ruleset"]
+    UPGRADE["Choose one Mutation or skip<br/>World remains frozen"]
+    RULESET["Update ordered, fingerprinted<br/>selected-species rules"]
 
     RESULTS["Results<br/>Victory · Narrow Survival · Defeat"]
     REWARD["Accomplishments<br/>and persistent unlocks"]
@@ -35,9 +35,15 @@ flowchart TB
 ```
 
 The vertical-slice contract is ten phases, with 200 ticks as the current
-per-phase target, and nine upgrade decisions,
+per-phase target, and nine Mutation decision points,
 and an immediate end after a completed tick causes extinction. The player
 changes the species rules rather than directly commanding individual cells.
+
+Between simulations, the player can permanently unlock Genome options and
+change which unlocked nodes are active. Each participating species receives
+its frozen active Genome even when it is not the player-controlled species.
+Mutations exist only in Species Simulations; Biome Simulations use active
+Genomes without Mutation choices.
 
 This is the target player loop. The controlled preview now retains creatures,
 resources, time and history through its phase decisions. Only a new expedition
@@ -53,9 +59,11 @@ flowchart TB
     HELPER["Unity Helpers<br/>Simulation · Profiles · Transitions"]
     DOMAIN["Plain C# Domain<br/>Simulation · Progression · Results"]
 
-    ASSETS["Scenario and Species Assets"]
-    DATA["Frozen Expedition Base Data<br/>Immutable Effective Rules per Phase"]
-    SAVE["Versioned Profile<br/>Settings and Unlocks"]
+    ASSETS["Scenario and Natural Species Assets"]
+    GENOME["Permanent Unlocks + Frozen Active Genomes<br/>All Scenario Species"]
+    MUTATIONS["Ordered Expedition Mutations<br/>Selected Species Mode Only"]
+    DATA["Frozen Simulation Data<br/>Mode · Natural · Active Genome<br/>Mutations When Allowed"]
+    SAVE["Versioned Profile<br/>Settings · Genome Unlocks<br/>Active Configurations"]
 
     SHELL["Read-Only UI Snapshots"]
     BOARD["SimulationBoardSnapshot"]
@@ -68,6 +76,8 @@ flowchart TB
     HELPER -->|"Validated requests"| DOMAIN
 
     ASSETS --> DATA --> DOMAIN
+    SAVE --> GENOME --> DATA
+    MUTATIONS --> DATA
     SAVE <--> HELPER
     DEVLAB --> HELPER
 
@@ -101,8 +111,12 @@ flowchart TB
     S2 -.-> M1
 ```
 
-The current production question is deliberately small: can a player choose an
-upgrade, observe it changing the ecosystem, and understand why the run changed?
+The current production question is deliberately small: can a player choose a
+Mutation, observe it changing the ecosystem, and understand why the Species
+Simulation changed? The next progression question is whether a permanent Genome
+unlock can be activated or deactivated between simulations, is applied to its
+species in both player and background roles when active, and produces readable
+focal and Biome consequences.
 
 ## Authoritative sources
 
@@ -112,4 +126,5 @@ upgrade, observe it changing the ecosystem, and understand why the run changed?
 - [Main Menu and Lab delivery plan](../MAIN_MENU_LAB_DELIVERY_PLAN.md)
 - [Unity MVVM architecture plan](../UNITY_MVVM_ARCHITECTURE_PLAN.md)
 - [Upgrade-system direction](../UPGRADE_SYSTEM_DIRECTION.md)
+- [Upgrade and ecology balance guideline](../Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
 - [Current work-bucket plan](../NEXT_WORK_BUCKET_PLAN.md)

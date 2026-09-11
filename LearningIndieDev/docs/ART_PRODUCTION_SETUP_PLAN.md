@@ -319,7 +319,7 @@ In-Game Acceptance:
 - Grass — noise and readability review.
 - Bare Ground — replace or approve the desert substitute.
 - Animal atlas — runtime validation.
-- Terrain atlas — all 16 masks visual validation.
+- Terrain atlas — all 47 valid normalized blob masks visual validation.
 - Board layering — terrain/resource/creature/feedback.
 - Selection and focus — gameplay-scale treatment.
 

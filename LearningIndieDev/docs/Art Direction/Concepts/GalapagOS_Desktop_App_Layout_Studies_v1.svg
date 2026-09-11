@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1100" viewBox="0 0 1600 1100">
+  <title>GalapagOS Desktop App Layout Studies v1</title>
+  <desc>Four light pastel wireframe concepts for GalapagOS desktop applications.</desc>
+  <defs>
+    <style>
+      .ink { fill: #372C15; font-family: monospace; }
+      .title { fill: #372C15; font-family: monospace; font-weight: 700; letter-spacing: 2px; }
+      .small { font-size: 15px; }
+      .body { font-size: 17px; }
+      .label { font-size: 19px; font-weight: 700; }
+      .window { fill: #FAF0D6; stroke: #6F7E3A; stroke-width: 4; }
+      .header { fill: #C5D370; stroke: #6F7E3A; stroke-width: 3; }
+      .sheet { fill: #FFF9E8; stroke: #D4A373; stroke-width: 2; }
+      .cream { fill: #FCEEC0; }
+      .olive { fill: #84A340; }
+      .lime { fill: #C5D370; }
+      .sky { fill: #A2D2FF; }
+      .petal { fill: #FFC8DD; }
+      .pollen { fill: #FDCA47; }
+      .lilac { fill: #CDB4DB; }
+      .tangerine { fill: #FF9770; }
+      .sand { stroke: #D4A373; }
+      .line { fill: none; stroke: #D4A373; stroke-width: 2; stroke-dasharray: 10 7; }
+      .branch { fill: none; stroke: #84A340; stroke-width: 5; stroke-linecap: square; }
+      .button { fill: #84A340; stroke: #6F7E3A; stroke-width: 3; }
+      .button-secondary { fill: #FAF0D6; stroke: #6F7E3A; stroke-width: 3; }
+      .muted { fill: #8E7A55; font-family: monospace; font-size: 14px; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="1100" fill="#FCEEC0"/>
+  <rect x="24" y="24" width="1552" height="1052" rx="10" fill="#FFF9E8" stroke="#6F7E3A" stroke-width="4"/>
+
+  <text x="58" y="78" class="title" font-size="31">GALAPAGOS DESKTOP · APP LAYOUT STUDIES 01</text>
+  <text x="58" y="112" class="ink body">Light pastel eco-desktop direction · geometry, hierarchy, and reusable control placement</text>
+
+  <g transform="translate(1110 54)">
+    <rect width="36" height="22" class="lime"/>
+    <rect x="46" width="36" height="22" class="olive"/>
+    <rect x="92" width="36" height="22" class="cream" stroke="#D4A373" stroke-width="2"/>
+    <rect x="138" width="36" height="22" class="pollen"/>
+    <rect x="184" width="36" height="22" class="sky"/>
+    <text x="0" y="48" class="muted">cream · meadow · restrained pastels</text>
+  </g>
+
+  <!-- Species Collection -->
+  <g transform="translate(58 160)">
+    <text x="0" y="-18" class="title" font-size="23">01 · SPECIES COLLECTION / SPECIMEN CABINET</text>
+    <rect width="716" height="360" rx="9" class="window"/>
+    <rect width="716" height="42" rx="7" class="header"/>
+    <rect x="8" y="11" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="21" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="31" width="700" height="3" fill="#E8EDB2"/>
+    <text x="18" y="29" class="title" font-size="16">SPECIES COLLECTION</text>
+    <text x="668" y="29" class="title" font-size="20">×</text>
+    <rect x="12" y="56" width="692" height="34" class="cream" stroke="#D4A373" stroke-width="1"/>
+    <text x="24" y="79" class="ink small">ALL   PLANTS   HERBIVORES   CARNIVORES</text>
+    <rect x="540" y="63" width="142" height="22" class="sheet"/>
+    <text x="552" y="79" class="ink small">UNLOCKED  v</text>
+    <rect x="12" y="105" width="150" height="226" class="sheet"/>
+    <text x="24" y="130" class="title" font-size="15">SPECIMENS</text>
+    <line x1="24" y1="145" x2="150" y2="145" class="line"/>
+    <circle cx="40" cy="172" r="13" class="sky" stroke="#6F7E3A" stroke-width="2"/>
+    <text x="62" y="178" class="ink small">Hare</text>
+    <circle cx="40" cy="207" r="13" class="tangerine" stroke="#6F7E3A" stroke-width="2"/>
+    <text x="62" y="213" class="ink small">Fox</text>
+    <circle cx="40" cy="242" r="13" class="olive" stroke="#6F7E3A" stroke-width="2"/>
+    <text x="62" y="248" class="ink small">Grass</text>
+    <rect x="24" y="274" width="112" height="28" class="cream" stroke="#D4A373" stroke-width="1"/>
+    <text x="36" y="293" class="muted">locked slot</text>
+    <rect x="178" y="105" width="298" height="226" class="sheet"/>
+    <circle cx="327" cy="172" r="38" class="sky" stroke="#6F7E3A" stroke-width="3"/>
+    <path d="M300 188 L314 157 L327 174 L343 151 L360 189" class="branch"/>
+    <text x="202" y="235" class="title" font-size="20">HARE · HERBIVORE</text>
+    <text x="202" y="261" class="ink small">Cautious grazer with sharp hearing.</text>
+    <rect x="202" y="278" width="126" height="30" class="button" rx="5"/>
+    <text x="218" y="298" fill="#FCEEC0" font-family="monospace" font-size="13">GENE LAB</text>
+    <rect x="494" y="105" width="210" height="226" class="cream" stroke="#D4A373" stroke-width="2"/>
+    <text x="510" y="130" class="title" font-size="15">QUICK FACTS</text>
+    <text x="510" y="164" class="ink small">Role</text><text x="662" y="164" class="ink small">Herbivore</text>
+    <text x="510" y="190" class="ink small">Biome</text><text x="646" y="190" class="ink small">Forest Edge</text>
+    <text x="510" y="216" class="ink small">Mastery</text><text x="662" y="216" class="ink small">68%</text>
+    <rect x="510" y="235" width="174" height="14" fill="#FCEEC0" stroke="#6F7E3A" stroke-width="2" rx="6"/>
+    <rect x="512" y="237" width="116" height="10" class="olive" rx="4"/>
+    <text x="510" y="282" class="muted">known: grazing · flight</text>
+  </g>
+
+  <!-- Gene Lab -->
+  <g transform="translate(826 160)">
+    <text x="0" y="-18" class="title" font-size="23">02 · GENE LAB / BRANCHING NOTEBOOK</text>
+    <rect width="716" height="360" rx="9" class="window"/>
+    <rect width="716" height="42" rx="7" class="header"/>
+    <rect x="8" y="11" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="21" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="31" width="700" height="3" fill="#E8EDB2"/>
+    <text x="18" y="29" class="title" font-size="16">GENE LAB · HARE</text>
+    <text x="668" y="29" class="title" font-size="20">×</text>
+    <rect x="12" y="56" width="692" height="34" class="cream" stroke="#D4A373" stroke-width="1"/>
+    <text x="24" y="79" class="ink small">PLANT   HERBIVORE   CARNIVORE</text>
+    <text x="588" y="79" class="ink small">DATA 420</text>
+    <rect x="12" y="105" width="414" height="226" class="sheet"/>
+    <text x="28" y="130" class="title" font-size="15">RESEARCH TREE</text>
+    <line x1="28" y1="145" x2="406" y2="145" class="line"/>
+    <path d="M90 237 H165 V191 H232 M165 237 V283 H232 M232 191 H300 V166 H362 M232 191 V222 H362" class="branch"/>
+    <circle cx="90" cy="237" r="22" class="olive" stroke="#6F7E3A" stroke-width="3"/>
+    <circle cx="165" cy="191" r="22" class="pollen" stroke="#6F7E3A" stroke-width="3"/>
+    <circle cx="165" cy="283" r="22" class="cream" stroke="#D4A373" stroke-width="3"/>
+    <circle cx="300" cy="166" r="22" class="petal" stroke="#6F7E3A" stroke-width="3"/>
+    <circle cx="300" cy="222" r="22" class="lilac" stroke="#6F7E3A" stroke-width="3"/>
+    <text x="50" y="317" class="muted">owned</text><text x="148" y="173" class="muted">new</text><text x="272" y="151" class="muted">ready</text>
+    <rect x="444" y="105" width="260" height="226" class="cream" stroke="#D4A373" stroke-width="2"/>
+    <text x="462" y="130" class="title" font-size="15">SELECTED NODE</text>
+    <text x="462" y="164" class="title" font-size="18">KEEN HEARING</text>
+    <text x="462" y="192" class="ink small">Status       Available</text>
+    <text x="462" y="218" class="ink small">Cost         120 data</text>
+    <text x="462" y="244" class="ink small">Prerequisite Hare root</text>
+    <line x1="462" y1="258" x2="684" y2="258" class="line"/>
+    <text x="462" y="283" class="muted">expands future choices</text>
+    <rect x="462" y="294" width="176" height="28" class="button" rx="5"/>
+    <text x="475" y="313" fill="#FCEEC0" font-family="monospace" font-size="12">UNLOCK RESEARCH</text>
+  </g>
+
+  <!-- Expedition Planner -->
+  <g transform="translate(58 630)">
+    <text x="0" y="-18" class="title" font-size="23">03 · EXPEDITION PLANNER / FIELD CASE</text>
+    <rect width="716" height="360" rx="9" class="window"/>
+    <rect width="716" height="42" rx="7" class="header"/>
+    <rect x="8" y="11" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="21" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="31" width="700" height="3" fill="#E8EDB2"/>
+    <text x="18" y="29" class="title" font-size="16">EXPEDITION PLANNER</text>
+    <text x="668" y="29" class="title" font-size="20">×</text>
+    <text x="26" y="78" class="ink small">1 BIOME   →   2 SPECIES   →   3 OPTIONS   →   4 LAUNCH</text>
+    <rect x="12" y="100" width="214" height="218" class="sheet"/>
+    <text x="28" y="128" class="title" font-size="15">BIOME</text>
+    <rect x="28" y="146" width="182" height="70" class="sky" stroke="#6F7E3A" stroke-width="2"/>
+    <path d="M30 204 L82 167 L130 196 L179 156 L210 200" fill="#84A340"/>
+    <text x="28" y="244" class="title" font-size="17">FOREST EDGE</text>
+    <text x="28" y="269" class="muted">gentle pressure</text>
+    <rect x="28" y="282" width="106" height="24" class="button-secondary" rx="4"/>
+    <text x="39" y="299" class="ink small">CHANGE</text>
+    <rect x="244" y="100" width="214" height="218" class="sheet"/>
+    <text x="260" y="128" class="title" font-size="15">PLAYER SPECIES</text>
+    <circle cx="350" cy="181" r="34" class="sky" stroke="#6F7E3A" stroke-width="3"/>
+    <text x="282" y="244" class="title" font-size="17">HARE · HERBIVORE</text>
+    <text x="260" y="269" class="muted">starting traits ready</text>
+    <rect x="260" y="282" width="106" height="24" class="button-secondary" rx="4"/>
+    <text x="271" y="299" class="ink small">CHANGE</text>
+    <rect x="476" y="100" width="228" height="218" class="cream" stroke="#6F7E3A" stroke-width="3"/>
+    <text x="494" y="128" class="title" font-size="15">LAUNCH PERMIT</text>
+    <text x="494" y="159" class="ink small">Forest Edge · Hare</text>
+    <text x="494" y="183" class="ink small">Seed: randomized</text>
+    <text x="494" y="207" class="ink small">Research: 2 eligible</text>
+    <line x1="494" y1="222" x2="686" y2="222" class="line"/>
+    <rect x="494" y="250" width="180" height="42" class="button" rx="6"/>
+    <text x="512" y="276" fill="#FCEEC0" font-family="monospace" font-size="15">LAUNCH EXPEDITION</text>
+  </g>
+
+  <!-- Settings / utility -->
+  <g transform="translate(826 630)">
+    <text x="0" y="-18" class="title" font-size="23">04 · SETTINGS / QUIET NOTEBOOK UTILITY</text>
+    <rect width="716" height="360" rx="9" class="window"/>
+    <rect width="716" height="42" rx="7" class="header"/>
+    <rect x="8" y="11" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="21" width="700" height="3" fill="#E8EDB2"/>
+    <rect x="8" y="31" width="700" height="3" fill="#E8EDB2"/>
+    <text x="18" y="29" class="title" font-size="16">SETTINGS</text>
+    <text x="668" y="29" class="title" font-size="20">×</text>
+    <rect x="12" y="56" width="692" height="34" class="cream" stroke="#D4A373" stroke-width="1"/>
+    <text x="24" y="79" class="ink small">DISPLAY   AUDIO   CONTROLS   ACCESSIBILITY   DESKTOP</text>
+    <rect x="12" y="105" width="160" height="226" class="lime" stroke="#6F7E3A" stroke-width="2"/>
+    <text x="28" y="137" class="title" font-size="15">SECTIONS</text>
+    <text x="28" y="174" class="ink body">Display</text>
+    <text x="28" y="208" class="ink body">Audio</text>
+    <text x="28" y="242" class="ink body">Controls</text>
+    <text x="28" y="276" class="ink body">Accessibility</text>
+    <rect x="24" y="292" width="132" height="24" class="olive" rx="4"/>
+    <text x="39" y="309" fill="#FCEEC0" font-family="monospace" font-size="13">CURRENT: DISPLAY</text>
+    <rect x="190" y="105" width="514" height="226" class="sheet"/>
+    <text x="210" y="137" class="title" font-size="18">DISPLAY</text>
+    <text x="210" y="163" class="muted">How GalapagOS fits your screen.</text>
+    <line x1="210" y1="179" x2="684" y2="179" class="line"/>
+    <text x="210" y="210" class="ink small">Window mode</text><rect x="450" y="192" width="210" height="28" class="cream" stroke="#D4A373" stroke-width="2"/><text x="466" y="211" class="ink small">Windowed          v</text>
+    <text x="210" y="250" class="ink small">UI scale</text><rect x="450" y="232" width="210" height="28" class="cream" stroke="#D4A373" stroke-width="2"/><text x="466" y="251" class="ink small">100%              v</text>
+    <rect x="210" y="283" width="154" height="30" class="button-secondary" rx="5"/><text x="228" y="304" class="ink small">RESTORE DEFAULTS</text>
+    <rect x="532" y="283" width="128" height="30" class="button" rx="5"/><text x="551" y="304" fill="#FCEEC0" font-family="monospace" font-size="13">APPLY</text>
+  </g>
+
+  <text x="58" y="1040" class="muted">Concept only · final screens should reuse the same shell, state language, and deep-link behavior documented in GalapagOS_Desktop_App_Layout_Concepts_v1.md</text>
+</svg>

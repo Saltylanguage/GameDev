@@ -1,7 +1,11 @@
 # Consecutive simulation phases — architecture review and migration plan
 
-**Status:** CF-0 through CF-2 are implemented and freshly verified. CF-3 has a passing controlled preview path. CF-4 telemetry windows and direct-report validator parity are implemented; CF-5 checkpoint and opt-in headless schedule wiring are implemented and smoke-verified. EX-010 remains gated until the human-approved contract and final integration gate are complete.
-**Reviewed:** 2026-09-05, branch `NF/ConsecutiveRuns`, source review baseline `38a5addf`.
+**Status:** CF-0 through CF-5 are implemented and verified. The controlled
+preview path, phase telemetry, checkpoint seam, direct Stat-Line output and
+opt-in headless schedule are closed for the current slice. EX-010 has executed
+on its approved contract and is accepted as bounded evidence; CF-6 is document
+and integration follow-up rather than an EX-010 execution gate.
+**Reviewed:** 2026-09-09, documentation and integration status refresh.
 **Product and implementation owner:** Josh. **Stat contract reviewer:** Sim.
 **Analysis:** Codex; source inspection, existing artifact inspection, and the baseline checks recorded in the handoff. The CF-0 contract below is locked by Josh; runtime packages and balance changes remain separate implementation decisions.
 
@@ -11,10 +15,10 @@ One expedition owns one evolving ecosystem. At each simulation-phase boundary,
 the ecosystem freezes while the player buys an upgrade or skips it. Continue
 advances that same ecosystem under the resulting rules. It does not generate a
 new board, reset creatures, change the initial seed, or erase earlier history.
-This same-world direction and the CF-0 contract are locked. The first runtime
-lifecycle, boundary-upgrade and player-flow slices now consume that contract;
-telemetry windows, checkpoint replay and research execution remain separate
-implementation tasks.
+This same-world direction and the CF-0 contract are locked. The runtime
+lifecycle, boundary-upgrade, player-flow, phase/final telemetry, checkpoint,
+and research-schedule slices now implement that contract. Remaining work is
+integrated product acceptance and the player-facing content built on top of it.
 
 Use these terms consistently:
 
@@ -29,9 +33,9 @@ Use these terms consistently:
 
 ## Locked CF-0 contract (2026-09-04)
 
-Josh approved the following decisions for the migration. They define the
-behavior that CF-1 through CF-6 must implement; they do not claim that those
-runtime packages are already complete.
+Josh approved the following decisions for the migration. At approval they
+defined the behavior CF-1 through CF-6 had to implement; the current status and
+remaining acceptance work are recorded below.
 
 | Lifecycle point | Locked transition and effect |
 | --- | --- |
@@ -96,11 +100,11 @@ flowchart TD
     F --> H[Lab or explicit new expedition]
 ```
 
-## Review findings
+## Historical implementation findings (2026-09-04 baseline)
 
-Priorities describe implementation/release risk, not an assertion that the
-requested behavior has already been implemented. Locations refer to the review
-baseline; use the named methods after lines move.
+Priorities describe the risk at the pre-implementation review baseline.
+Locations and consequences are retained as migration evidence; the work-package
+table and verification status below are authoritative for current state.
 
 | ID | Priority | Observed evidence | Consequence and required change |
 | --- | --- | --- | --- |
@@ -119,8 +123,8 @@ baseline; use the named methods after lines move.
 
 These are source-supported findings. The report inspected an existing schema-23
 EX-009 bundle: one record per seed, 200 ticks, no phase/checkpoint/schedule fields.
-It does not claim that new continuation behavior or the proposed fixes were
-executed. See the handoff for the current baseline-test result.
+It did not claim, at the time, that continuation behavior had been executed.
+CF-1 through CF-5 and EX-010 later closed the corresponding current-slice work.
 
 ## State ownership and implementation contract
 
@@ -128,7 +132,7 @@ Keep the current dependency direction: View → ViewModel → Helper → Domain.
 Use explicit methods and existing classes; no global bus, replacement grid
 engine, generic modifier framework, or new package is needed.
 
-| Owner | Target responsibility (runtime implementation pending) |
+| Owner | Implemented responsibility |
 | --- | --- |
 | `SimulationRunState` | Current world, base seed, absolute tick, expedition history/metrics, phase index/start/end ticks, lifecycle and terminal outcome. |
 | `SpeciesSimulationRunner` | One stepping context for the expedition: current immutable effective rules/options and prior source grid. Boundary rule installation is explicit and legal only while frozen. |
@@ -211,10 +215,10 @@ this migration; later gains use the authored maximum rule.
 
 ### Checkpoint and research replay
 
-In-memory continuation should retain the runner; it does not require serializing
-and rebuilding the world after every phase. Research checkpoint export/import is
-a separate adapter over the same state contract, required before EX-010 execution.
-Player disk save/load remains outside the initial slice.
+In-memory continuation retains the runner; it does not serialize and rebuild the
+world after every phase. The research checkpoint export/import adapter is
+implemented over the same state contract and was exercised by EX-010. Player
+disk save/load remains outside the initial slice.
 
 A replayable checkpoint must capture the current and previous grids, absolute
 tick and phase position, resolved rules/base data and fingerprints, options,
@@ -238,22 +242,21 @@ implementation and focused checks. They are not an addition to committed S2
 capacity. Assign the work during planning; Sim reviews stat semantics without
 inheriting Josh's runtime or research responsibilities.
 
-| Package | Proposed owner | Estimate | Dependency and concrete exit gate |
+| Package | Owner | Estimate | Dependency and concrete exit gate |
 | --- | --- | ---: | --- |
 | CF-0 Contract and fixtures | Josh, with Sim for metrics | 4–6h | **Complete 2026-09-04.** Locked phase/end/restart and initialization-only effect policies; froze the state and report contract; preserved the [fresh legacy fixture](fixtures/continuous-simulation/legacy-fresh-schema-21/README.md) with provenance. |
 | CF-1 Continuous domain lifecycle | Josh | 8–12h | **Implemented and verified.** Same runner/world, absolute clock and prior grid survive skip boundaries; fresh Unity EditMode/PlayMode suites pass. |
 | CF-2 Boundary upgrades and rewards | Josh | 6–10h | **Implemented and verified.** Phase survivor data is settled once, live and legacy offers install the same immutable snapshots, launch-only offers are blocked, and duplicate decisions are guarded. |
 | CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented and verified.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain separate. |
-| CF-4 Telemetry and Stat-Line | Josh; Sim reviews metric meaning | 8–12h | **Runtime/report slice implemented and validator parity closed.** Versioned phase windows, pooled acquisition timing, metric deltas and event filtering flow through JSON/Markdown/CSV and the PlayMode report; direct ForestEdge/Hare runs now emit the validated Stat-Line CSV. Final Stat-Line meaning review remains. |
-| CF-5 Research checkpoints and schedules | Josh | 8–12h | **Checkpoint seam and opt-in headless schedule implemented and verified.** Round-trip/fork isolation, deterministic runner resume, and a no-upgrade plus generic boundary-loadout schedule pass; the EX-010 contract-specific schedule and human freeze remain. |
-| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | CF-1–5. All verification gates, documentation audit and evidence validity notices complete; explicit review decision. |
-| Total | Replan capacity explicitly | 44–68h | EX-010 experimental execution/balance work is additional and requires its own approved protocol. |
+| CF-4 Telemetry and Stat-Line | Josh; Sim reviews metric meaning | 8–12h | **Implemented, verified, and semantically approved.** Versioned phase windows, pooled acquisition timing, metric deltas and event filtering flow through JSON/Markdown/CSV and the PlayMode report; direct ForestEdge/Hare runs emit the validated Stat-Line CSV. Sim approved the phase/final meanings used by EX-010. |
+| CF-5 Research checkpoints and schedules | Josh | 8–12h | **Checkpoint seam, opt-in headless schedule, and EX-010 contract-specific schedule implemented and verified.** Round-trip/fork isolation, deterministic runner resume, and the approved ten-phase schedule pass. |
+| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | **Partially complete.** Documentation, automated runtime/evidence coverage, graphics checks at both target resolutions, the Windows player smoke, and the corrected ten-phase Forest Edge/Hare run are complete. Only the outer wall-duration and peak-memory measurement remains product acceptance work. |
+| Total | Replan capacity explicitly | 44–68h | EX-010 execution is complete; future balance or predictive-calibration work requires a new approved protocol. |
 
-CF-3 and CF-4 can proceed alongside each other once their shared contract is
-stable. Do not release a player continuation change before CF-4: otherwise new
-play evidence would still be labelled using old semantics. The generic CF-5
-schedule path is ready, but EX-010 remains blocked until its contract-specific
-schedule and approval pass.
+CF-1 through CF-5 completed in dependency order and now share the locked
+lifecycle/report contract. The CF-5 schedule path and EX-010 contract-specific
+run are complete; future schedules need their own approved contract. Release
+acceptance remains bounded to the unfinished CF-6 measurement named above.
 
 ## CF-0 closure — contract and fixture
 
@@ -274,16 +277,21 @@ reviews the meaning of phase and expedition measurements.
       is byte-for-byte preserved with source, configuration and SHA-256
       provenance.
 
-### CF-0 outputs and stop gate
+### Historical CF-0 outputs and stop gate
 
-The block is ready to hand to CF-1. The decisions above are recorded, the fresh
-fixture has its seed/configuration/schema provenance, and the phase/expedition
-fields have one owner and one meaning. No runtime behavior, serialized asset,
-report schema, or EX-010 experiment was changed by closing CF-0. Runtime
-implementation must consume this contract rather than reopen the same-world
-decision or silently introduce a reset fallback.
+At CF-0 closure the block was ready to hand to CF-1. The decisions above were
+recorded, the fresh fixture had seed/configuration/schema provenance, and the
+phase/expedition fields had one owner and one meaning. Later packages consumed
+that contract without reopening the same-world decision or adding a reset
+fallback.
 
 ## Required verification
+
+Automated domain, report, checkpoint, schedule, EX-010, and graphics-capable
+1280×720/1920×1080 validation are complete for the current slice. The current
+Windows development-player smoke also passed. The outer ten-phase wall-duration
+and peak-memory measurement remains open; the table retains the complete
+acceptance contract.
 
 | Gate | Fixture and assertion |
 | --- | --- |
@@ -310,17 +318,15 @@ prototypes behaviorally isolated; their resets are unrelated.
 
 ## Remaining planning and verification
 
-The CF-0 mechanics and evidence contract are accepted and must not be reopened
-as an implementation shortcut. CF-1 and the controlled CF-2/CF-3 runtime slices
-now consume them. The remaining work is verification and delivery coordination:
+The mechanics and evidence contract are implemented and accepted. The remaining
+work is bounded product acceptance and delivery coordination:
 
-1. Assign CF-1 through CF-6 owners and capacity, keeping Josh responsible for
-   lifecycle/report integration and Sim responsible for metric meaning review.
-2. **Completed for the current integration batch:** freeze concrete
-   serializer/lifecycle version identifiers and run the producer/consumer
-   parity gates, including a generic headless schedule smoke test.
-3. Approve EX-010's authored schedule, outcomes and fresh validation panel
-   separately after its contract-specific parity review.
+1. Preserve the accepted graphics evidence at 1280×720 and 1920×1080.
+2. Preserve the successful Windows development-player smoke and run the remaining
+   outer ten-phase wall-duration and retained-history memory measurement with the
+   explicit Forest Edge/Hare scenario configuration.
+3. Preserve the EX-010 report and human decision as bounded research closure;
+   any new schedule or predictive-calibration question is separate.
 
 These items do not change the locked same-world Continue, launch-only effect,
 above-cap energy, Restart, or phase/expedition window decisions.

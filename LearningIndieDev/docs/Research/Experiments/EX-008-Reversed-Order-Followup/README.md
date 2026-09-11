@@ -40,5 +40,6 @@ test. The same-held-out-seed comparison is tracked as
 [EX-009](../EX-009-Same-Heldout-Order-Comparison/README.md), which is now
 accepted as a bounded launch-time commutativity result for the two additive
 upgrades. The intended question of acquiring an upgrade between simulation
-segments and continuing from the current state is separate and is tracked as
-proposed [EX-010](../EX-010-Sequential-Upgrade-Continuation/README.md).
+segments and continuing from the current state is separate; the later
+[EX-010](../EX-010-Sequential-Upgrade-Continuation/README.md) result is accepted
+within its own bounded schedule.

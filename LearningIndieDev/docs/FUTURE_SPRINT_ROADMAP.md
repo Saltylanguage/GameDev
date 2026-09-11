@@ -1,6 +1,6 @@
 # Future Sprint Roadmap — Draft Planning Horizon
 
-> Status: Draft planning baseline | Updated: 2026-09-05 | Cadence: two weeks
+> Status: Draft planning baseline | Updated: 2026-09-06 | Cadence: two weeks
 
 This document turns the current planning themes into a dependency-aware horizon
 for future sprint selection. It is deliberately a planning map, not a committed
@@ -10,10 +10,12 @@ owner, estimate, acceptance evidence, and capacity impact are written down.
 ## Planning principles
 
 The consecutive-phase migration now has its same-world runtime, phase-aware
-telemetry, checkpoints and generic schedule path through CF-5. M1 closeout and
-the EX-010 contract-specific gate remain open. In-memory phase continuation is
-required gameplay; player disk save/load remains its own later decision. EX-010
-execution follows the checkpoint and contract gates. Use the
+telemetry, checkpoints and generic schedule path through CF-5. EX-010's
+contract-specific gate was executed and accepted as bounded evidence under
+[`DEC-P3-0001`](Research/P3_GATE_DECISION_2026-09-06.md); P3 is closed for that
+scope. M1 closeout, broader balance/promotion, and predictive claims remain
+separate work requiring their own decisions. In-memory phase continuation is
+required gameplay; player disk save/load remains its own later decision. Use the
 [game feature triage](GAME_FEATURE_ROADMAP_TRIAGE.md) to choose one player
 outcome at a time instead of treating this horizon as a pre-filled backlog.
 
@@ -37,8 +39,8 @@ outcome at a time instead of treating this horizon as a pre-filled backlog.
 | Species and scenarios | A small roster and scenario matrix create different strategic pressures without balancing the whole library. | Upgrade vocabulary, slice scenario evidence, species identities | Slice co-design in S4; broader content after vertical-slice validation. |
 | Reactive species / ecology | A deterministic predator–prey upgrade loop creates counterplay, tension, and recoverable pressure without hidden catch-up multipliers. | S2 upgrade contract/catalog, Forest Edge baseline envelope, existing BEV/EX-002 telemetry, Hare/Fox fixture | Design spike and paired counter trials in S4; recovery validation during S7. See [`REACTIVE_SPECIES_ECOLOGY_PLAN.md`](REACTIVE_SPECIES_ECOLOGY_PLAN.md). |
 | Iteration tooling | One measured authoring/comparison workflow becomes faster without becoming a feature dependency. | Repeated manual friction, explicit inputs/outputs, manual fallback | Parallel lane from S2 onward; promote only evidence-backed tools. |
-| Upgrade system | Clear separation between temporary per-run evolution and permanent Lab research, including costs, prerequisites, stacking, exclusions, and persistence boundaries. | Product economy and run cadence decisions | S2 design foundation; integrate permanent research after the wallet/settlement contract. |
-| Actual upgrades | A small explicit catalog proves numeric, spatial, conditional, and tradeoff effects with visible previews and telemetry. | Upgrade grammar, deterministic effective ruleset, first slice species | S2 first catalog; S4 co-design and pruning after the M1 closeout sprint. |
+| Upgrade system | Clear separation between nine temporary Species-Simulation Mutations, permanent Genome unlocks, and each species' active Genome configuration, including costs, capacity, prerequisites, stacking, exclusions, mode-specific evidence, and persistence boundaries. | Product economy, run cadence, Species/Biome mode contract, SG-005 reference panel | S2 Mutation foundation; calibrate Mutation paths in S4; integrate Genome after the wallet/profile contract. |
+| Actual upgrades | A small explicit catalog proves readable stat changes and tradeoffs first, followed by separately contracted one-time effects and abilities. | Mutation grammar, deterministic effective rules, first slice species, shared capability map | S2 first catalog; S4 calibration and pruning after M1 closeout; expand effect types only when their contracts and telemetry are ready. |
 | Art bible | A compact visual language covers board readability, species roles, terrain, selection, danger, upgrades, typography, panels, animation, and feedback. | UI/UX states and a validated slice direction | Direction work can accompany S4–S5; lock the bible before broad asset production in S5. |
 | UI/UX design | Player-facing flows, information hierarchy, language, focus, input, empty/locked/error states, and feedback are explicit and testable. | Current S1 shell contract, player/Dev Lab boundary | S1 establishes the shell; deepen and validate the full slice in S5. |
 
@@ -49,18 +51,21 @@ the next outcome supported by current evidence.
 
 ### S2 — First trustworthy upgrade loop
 
-Define the per-run/permanent boundary and implement the smallest explicit
-catalog (roughly 6–10 candidates). Prove one numeric, one spatial, one
-conditional, and one tradeoff upgrade with previews, deterministic application,
-and contribution telemetry. Record the data needed by future save/load and
-settlement work, but do not build a generalized upgrade framework.
+Define the Mutation / Genome boundary and implement the smallest explicit
+Mutation catalog (roughly 6–10 candidates). Prove the approved signed numeric
+and tradeoff contract with previews, deterministic application, and
+contribution telemetry. Record the data needed by future save/load and
+settlement work, but do not fold one-time effects, abilities, or Genome
+persistence into a generalized upgrade framework.
 
 ### S3 — M1 closeout and project hygiene
 
-S2 is not expected to close the M1 gate. Use this sprint to finish the
-continuous-run upgrade/reward seam, align phase-aware telemetry and reports,
-and reconcile the branch, tests, artifacts, handoffs, and board. Keep the
-catalog small and do not expand content merely to fill capacity.
+S2 is not expected to close the M1 gate. The continuous-run lifecycle,
+upgrade/reward boundary, phase-aware telemetry, checkpoints, and EX-010 schedule
+are already implemented, and target-resolution graphics acceptance is complete.
+Use this sprint for the current build/performance gate, the remaining player-
+facing Mutation/result route, and board/task reconciliation. Keep the catalog
+small and do not expand content merely to fill capacity.
 
 The proposed control record is
 [`S3-control-record.md`](Sprints/S3-control-record.md).
@@ -72,6 +77,13 @@ and create a scenario matrix that pressures different strategies. Run fixed-seed
 baselines and comparisons. In parallel, improve only the highest-friction
 iteration workflow—such as seeded A/B reports or definition validation—while
 keeping a manual path for every feature decision.
+
+This is also the first scalable balance slice under
+[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md):
+define the shared capability map and Forest Edge reference panel, calibrate
+provisional Adaptation Value estimates, and compare reachable nine-Mutation
+paths, acquisition timing, marginal value, and likely synergies. Do not treat a
+single combined fitness score as approval evidence.
 
 The reactive-species design spike belongs in this horizon. Define explicit
 Herbivore/Carnivore counter pairs, establish role-specific pressure envelopes,
@@ -87,20 +99,29 @@ focus, input, upgrade previews, danger, success, failure, and result feedback.
 Use temporary assets where needed; defer final-volume production until
 comprehension evidence supports the direction.
 
-### S6 — Profile, save/load, and run settlement
+### S6 — Profile, save/load, Genome, and run settlement
 
 Implement the smallest versioned local profile and settings format, safe reset,
 corrupt-save fallback, migration tests, and deterministic run settlement. Make
 earned, spent, banked, and lost data explainable. Active-run save/resume remains
 a separate decision and should not silently enter this scope.
 
+Add the first per-species Genome snapshot only after profile ownership is
+clear. Store permanent unlocks separately from the active configuration. Freeze
+every participating species' active Genome into immutable simulation data,
+including species that are not player-controlled, and leave authored base
+species data unchanged. Mutations remain exclusive to Species Simulations.
+
 ### S7 — Vertical-slice integration and validation
 
 Connect the player flow from new profile through scenario launch, upgrade
-choices, results, save/load, permanent research, and the next-run decision.
+choices, results, save/load, Genome research, and the next-run decision.
 Run structured comprehension, build-diversity, replay-intent, compatibility,
-and performance checks. Use the evidence to decide which species, scenarios,
-and tools enter content alpha.
+and performance checks. Test uneven unlock stages and legal active Genome
+configurations with separate Species and Biome scorecards for species
+persistence, resource sustainability, pressure cycles, and recovery.
+Use the evidence to decide which species, scenarios, and tools enter content
+alpha.
 
 ### Post-slice content alpha
 

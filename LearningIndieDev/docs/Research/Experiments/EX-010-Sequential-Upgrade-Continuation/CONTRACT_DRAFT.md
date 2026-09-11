@@ -1,8 +1,11 @@
-# EX-010 execution contract — draft for human approval
+# EX-010 execution contract
 
 **Experiment:** `EXP-010` — Sequential upgrade continuation
 **Contract:** `EX-010-DRAFT-1`
-**Status:** Approved for execution by Josh and Sim on 2026-09-06; authored schedule locked; not yet executed
+**Status:** Approved by Josh and Sim on 2026-09-06; executed and reported in [REPORT.md](REPORT.md); human decision recorded in [HUMAN_DECISION.md](HUMAN_DECISION.md)
+
+The historical filename is retained so existing evidence links remain stable;
+this is the approved execution contract, not an unapproved draft.
 **Owner:** Josh
 **Evidence rule:** No result from this draft is research evidence until the
 contract is approved, the schedule is run through the same game/headless seam,
@@ -75,19 +78,21 @@ keeps the current upgrade list unchanged.
 4. Reject or leave unresolved when the checkpoint, schedule, report, or metric
    contract is incomplete, mixed, or not reproducible.
 
-## Gate before execution
+## Execution gate and disposition
 
 - [x] Josh and Sim approve the scenario, values, seed panels, segment length,
       options, outcomes, and acceptance thresholds (2026-09-06).
 - [x] Josh and Sim confirm the phase-aware Herbivore Stat-Line meanings and
       the independent phase/final reporting model (2026-09-06).
-- [ ] CF-4 phase-window serializer, validator, CSV, and Markdown outputs agree.
-- [ ] CF-5 checkpoint round trip and fork isolation pass.
-- [ ] Gameplay and headless schedule commands produce the same boundary ticks
-      and acquisition timeline.
-- [ ] The source revision and artifact directory are recorded; unrelated
+- [x] CF-4 phase-window serializer, validator, CSV, and Markdown outputs agree.
+- [x] CF-5 checkpoint round trip and fork isolation pass.
+- [x] The executed headless schedule produced the locked boundary ticks and
+      acquisition timeline; the UI path uses the same boundary contract, but no
+      separate UI-versus-headless equivalence arm is claimed here.
+- [x] The source revision and artifact directory are recorded; unrelated
       working-tree edits are disclosed in the manifest.
-- [ ] The experiment is then preregistered as an immutable contract before any
-      held-out results are inspected.
+- [x] The experiment was preregistered as an immutable contract before any
+      held-out results were inspected.
 
-Until every box is checked, this document is planning material only.
+The checklist and contract hash are preserved as the immutable execution
+record. The report and human decision supersede the former draft-only status.

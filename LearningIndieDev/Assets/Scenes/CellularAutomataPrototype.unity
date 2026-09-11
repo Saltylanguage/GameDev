@@ -177,7 +177,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 206fce3dc4215ca4ea82745886382948, type: 2}
   - {fileID: 11400000, guid: 413061eae5fbb7245aef3a3f7e9be293, type: 2}
   - {fileID: 11400000, guid: 1e7a1d0d79a389e419c9ace023b1de9d, type: 2}
-  selectedScenarioIndex: -1
+  selectedScenarioIndex: 0
 --- !u!114 &100003
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -228,6 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.SpeciesSimulationPreview
   simulationHelper: {fileID: 100004}
+  playerSpeciesKey: hare
   authoredUpgradeCatalog:
   - {fileID: 11400000, guid: 124ea44a7bfb43f38937e725db8b8ce6, type: 2}
   - {fileID: 11400000, guid: 6ca04dd13bf0bd54198e6dff91d3609e, type: 2}

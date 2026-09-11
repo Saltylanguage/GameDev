@@ -7,6 +7,9 @@ For Unity work in this project:
 - Follow [`docs/COLLABORATION_WORKFLOW.md`](docs/COLLABORATION_WORKFLOW.md) when handing work between developers or AI sessions. Update shared context when a material decision or integration state changes; do not store raw chat transcripts in the repository.
 - Follow the Studio Guidelines in [`docs/Studio Guidelines/AI_GENERATED_REPORTS.md`](docs/Studio%20Guidelines/AI_GENERATED_REPORTS.md) and [`docs/Studio Guidelines/AI_ASSISTED_DEVELOPMENT.md`](docs/Studio%20Guidelines/AI_ASSISTED_DEVELOPMENT.md). During the enforcement prototype, policy alerts are advisory warnings only; they must not be treated as automatic blocks.
 - Follow [`docs/UNITY_ENGINEERING_STANDARDS.md`](docs/UNITY_ENGINEERING_STANDARDS.md) and use [`docs/UNITY_STANDARDS_ADOPTION_PLAN.md`](docs/UNITY_STANDARDS_ADOPTION_PLAN.md) for migration scope.
+- For species rules, Mutations, Genomes, upgrade values, scenario balance, or
+  balance tooling, follow
+  [`docs/Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`](docs/Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
 - For terrain added on top of existing tiles or textures, follow [`docs/TILE_AUTHORING_GUIDE.md`](docs/TILE_AUTHORING_GUIDE.md) before creating or wiring production art.
 - Inspect nearby code before choosing a convention; preserve the dominant first-party convention where it is stable.
 - Preserve serialized fields, Unity GUIDs, and every `.meta` file. Do not move or rename Unity assets unless the goal explicitly requests a Unity Editor migration.
