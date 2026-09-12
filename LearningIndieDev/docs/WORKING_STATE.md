@@ -114,6 +114,7 @@ followed by a focused 1920×1080 pass on 2026-09-07.
 - Sprint Kickoff and carry-over workflow: [`SPRINT_KICKOFF_WORKFLOW.md`](SPRINT_KICKOFF_WORKFLOW.md)
 - Active production roadmap and sprint plan: [`../ROADMAP.md`](../ROADMAP.md)
 - Roadmap v2 review handoff: [`handoffs/2026-09-11-codex-roadmap-v2.md`](handoffs/2026-09-11-codex-roadmap-v2.md)
+- Current baseline before Genome: [`handoffs/2026-09-12-0523-codex-current-baseline-before-genome.md`](handoffs/2026-09-12-0523-codex-current-baseline-before-genome.md)
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
 - Proposed Sprint 3 M1 closeout and hygiene plan: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
