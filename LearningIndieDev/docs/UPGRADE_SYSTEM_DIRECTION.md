@@ -19,6 +19,17 @@ their ownership and lifetime must remain visibly separate.
 | **Mutation** | An acute adaptation chosen during the current expedition | Resets when the expedition ends | Applies to the selected species and remains active for later phases |
 | **Genome** | A permanently unlocked species option configured in the Gene Lab | The unlock persists; active choices can change between simulations | The active configuration applies to every population of that species, including when it is not player-controlled |
 
+### Experimental coupled responses
+
+`Coupled Hare/Fox responses` is a default-off `bev-experimental` option, not a
+third progression system and not a Mutation that targets multiple species. At a
+continuous Expedition boundary, a player-selected legacy Hare or Fox upgrade
+keeps its normal cost and target; the deterministic counterpart response is
+recorded as a separate free snapshot for the other species. It is frozen before
+the Expedition begins, applied only at that boundary, and appears in the
+ordered run provenance. Skip grants no response. Plants, production Mutation
+assets, Genomes, and Biome Simulation remain outside this experiment.
+
 The effective rules used in a Species Simulation are:
 
 ```text
@@ -184,8 +195,9 @@ The following six nodes are the initial path candidates. Their values are
 starting hypotheses, not accepted balance. Each targets exactly one species, is
 Hare-only in this first slice, is a temporary Mutation,
 non-stackable in the first slice, and is recorded by stable ID in purchase
-order. Cross-species upgrades are deferred. Direct mechanic tests must pass
-before ecological trials.
+order. Production cross-species Mutations are deferred. The separate default-off
+experimental Hare/Fox response toggle above does not change this catalog
+contract. Direct mechanic tests must pass before ecological trials.
 
 | Stable ID | Build | Effect | Tradeoff | Required contribution evidence |
 | --- | --- | --- | --- | --- |

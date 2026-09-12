@@ -82,6 +82,35 @@ namespace SaltyGame
                 return false;
             }
 
+            ApplyLegacyUpgrade(upgrade);
+            TrySpend(upgrade.Cost);
+            return true;
+        }
+
+        public bool CanApplyFreeUpgrade(SpeciesUpgrade upgrade)
+        {
+            if (upgrade == null)
+            {
+                throw new ArgumentNullException(nameof(upgrade));
+            }
+
+            return GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+        }
+
+        public bool TryApplyFreeUpgrade(SpeciesUpgrade upgrade)
+        {
+            if (!CanApplyFreeUpgrade(upgrade))
+            {
+                return false;
+            }
+
+            ApplyLegacyUpgrade(upgrade);
+            return true;
+        }
+
+        void ApplyLegacyUpgrade(SpeciesUpgrade upgrade)
+        {
+
             var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
             var nextRules = CurrentRules;
             var nextAvoidanceChance = PreContactAvoidanceChance;
@@ -102,7 +131,6 @@ namespace SaltyGame
             // Match the experiment runner's legacy provenance: catalog snapshots
             // describe the upgrade; resolved rules/options retain level effects.
             var snapshot = upgrade.CreateSnapshot(Definition.Id);
-            TrySpend(upgrade.Cost);
             CurrentRules = nextRules;
             PreContactAvoidanceChance = nextAvoidanceChance;
             var upgradeId = SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
@@ -111,7 +139,6 @@ namespace SaltyGame
             orderedUpgradeIds.Add(upgradeId);
             appliedRunUpgrades.Add(snapshot);
             PurchasedUpgradeCount++;
-            return true;
         }
 
         public bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade)

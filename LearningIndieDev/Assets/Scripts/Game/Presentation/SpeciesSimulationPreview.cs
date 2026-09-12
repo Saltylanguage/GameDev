@@ -178,6 +178,7 @@ namespace SaltyGame
             public int phaseLengthTicks;
             public int maxPopulation;
             public int minPopulation;
+            public bool coupledSpeciesResponsesEnabled;
             public SpeciesRuleDraft plant;
             public SpeciesRuleDraft herbivore;
             public SpeciesRuleDraft carnivore;
@@ -222,6 +223,7 @@ namespace SaltyGame
         [Header("Bev Experimental Features")]
         [SerializeField] bool bevExperimentalFeaturesEnabled = true;
         [SerializeField, Min(0)] int foxAttackCooldownTicks;
+        [SerializeField] bool coupledSpeciesResponsesEnabled;
 
         static readonly SpeciesUpgrade[] LegacyRewardOptions =
         {
@@ -239,6 +241,8 @@ namespace SaltyGame
         readonly List<SpeciesId> playableSpecies = new List<SpeciesId>();
         IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         SpeciesProgression progression;
+        SpeciesProgression coupledResponseProgression;
+        readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades = new List<SpeciesUpgradeSnapshot>();
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
         SimulationRunResult result;
@@ -300,13 +304,31 @@ namespace SaltyGame
             }
 
             var legacyUpgrade = rewardOptions[rewardIndex];
-            return string.Format(
+            var display = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}\n{1}\nCOST {2} DATA\n{3}",
                 SpeciesUpgradeCatalog.GetDisplayName(legacyUpgrade.Id),
                 string.Join(", ", legacyUpgrade.CreateSnapshot(playerSpecies).Modifiers.Select(FormatModifierForDisplay)),
                 legacyUpgrade.Cost,
                 GetLegacyRewardStatus(legacyUpgrade));
+            if (!coupledSpeciesResponsesEnabled
+                || !SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                    playerSpecies,
+                    legacyUpgrade.Id,
+                    out var responseSpecies,
+                    out var responseUpgradeId))
+            {
+                return display;
+            }
+
+            var response = SpeciesUpgradeCatalog.Create(responseUpgradeId).CreateSnapshot(responseSpecies);
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}\n{1} responds: {2}\n{3}",
+                display,
+                CultureInfo.InvariantCulture.TextInfo.ToTitleCase(responseSpecies.Value),
+                SpeciesUpgradeCatalog.GetDisplayName(responseUpgradeId),
+                string.Join(", ", response.Modifiers.Select(FormatModifierForDisplay)));
         }
 
         public string GetSelectedUpgradeSummary()
@@ -345,6 +367,7 @@ namespace SaltyGame
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
         public bool BevExperimentalFeaturesEnabled => bevExperimentalFeaturesEnabled;
         public int FoxAttackCooldownTicks => foxAttackCooldownTicks;
+        public bool CoupledSpeciesResponsesEnabled => coupledSpeciesResponsesEnabled;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
         public IReadOnlyList<ScenarioDefinitionAsset> ScenarioOptions => scenarioOptions;
         public IReadOnlyList<SpeciesId> RosterSpecies => rosterSpecies;
@@ -492,6 +515,8 @@ namespace SaltyGame
                     settingsMessage = validationMessage;
                     return false;
                 }
+
+                appliedRunUpgrades.Add(upgrade);
             }
 
             var updatedRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
@@ -619,7 +644,7 @@ namespace SaltyGame
 
             playerSpecies = selectedSpecies;
             playerSpeciesKey = selectedSpecies.Value;
-            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, selectedRules));
+            ResetExpeditionProgression(selectedRules);
             PrepareNextRun();
             settingsMessage = $"Player species '{playerSpecies.Value}' selected.";
             validationMessage = settingsMessage;
@@ -739,9 +764,7 @@ namespace SaltyGame
                         rules = CreateRulesFromDrafts();
                     }
 
-                    progression = new SpeciesProgression(new SpeciesDefinition(
-                        playerSpecies,
-                        rules[playerSpecies]));
+                    ResetExpeditionProgression(rules[playerSpecies]);
                     runNumber = 0;
                     PrepareNextRun();
                 }
@@ -1046,6 +1069,19 @@ namespace SaltyGame
             string foxAttackCooldownValue,
             out string validationMessage)
         {
+            return TryApplyExperimentalFeatures(
+                enabled,
+                false,
+                foxAttackCooldownValue,
+                out validationMessage);
+        }
+
+        public bool TryApplyExperimentalFeatures(
+            bool enabled,
+            bool coupledResponsesEnabled,
+            string foxAttackCooldownValue,
+            out string validationMessage)
+        {
             validationMessage = string.Empty;
             if (!SettingsEditable)
             {
@@ -1070,10 +1106,11 @@ namespace SaltyGame
             // The Bev player path is now the default and has no UI opt-out.
             bevExperimentalFeaturesEnabled = true;
             foxAttackCooldownTicks = parsedCooldown;
+            coupledSpeciesResponsesEnabled = enabled && coupledResponsesEnabled;
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
-            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, five-skill upgrade path, fox cooldown {foxAttackCooldownTicks} ticks.";
+            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, five-skill upgrade path, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
             PrepareNextRun();
             validationMessage = settingsMessage;
             return true;
@@ -1221,7 +1258,7 @@ namespace SaltyGame
             draft.SeedDropChanceText = FormatFloat(draft.SeedDropChance);
 
             rules = CreateRulesFromDrafts();
-            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, rules[playerSpecies]));
+            ResetExpeditionProgression(rules[playerSpecies]);
             settingsMessage = $"{species.Value} rules applied to the next run.";
             PrepareNextRun();
             validationMessage = settingsMessage;
@@ -1382,6 +1419,33 @@ namespace SaltyGame
                 return false;
             }
 
+            SpeciesProgression plannedResponseProgression = null;
+            SpeciesUpgrade responseUpgrade = null;
+            SpeciesId responseSpecies = default;
+            if (!usingAuthoredRewardOptions
+                && coupledSpeciesResponsesEnabled
+                && SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                    playerSpecies,
+                    rewardOptions[rewardIndex].Id,
+                    out responseSpecies,
+                    out var responseUpgradeId))
+            {
+                if (!rules.TryGetValue(responseSpecies, out var responseRules))
+                {
+                    return false;
+                }
+
+                plannedResponseProgression = coupledResponseProgression
+                    ?? new SpeciesProgression(new SpeciesDefinition(responseSpecies, responseRules));
+                responseUpgrade = SpeciesUpgradeCatalog.Create(responseUpgradeId);
+                if (!plannedResponseProgression.CanApplyFreeUpgrade(responseUpgrade))
+                {
+                    return false;
+                }
+            }
+
+            SynchronizePlayerUpgradeSnapshots();
+
             if (usingAuthoredRewardOptions)
             {
                 if (!progression.TrySpend(authoredUpgrade.Cost))
@@ -1407,20 +1471,42 @@ namespace SaltyGame
                 }
             }
 
+            if (!usingAuthoredRewardOptions)
+            {
+                appliedRunUpgrades.Add(progression.AppliedRunUpgrades[
+                    progression.AppliedRunUpgrades.Count - 1]);
+            }
+
+            if (responseUpgrade != null)
+            {
+                coupledResponseProgression = plannedResponseProgression;
+                if (!coupledResponseProgression.TryApplyFreeUpgrade(responseUpgrade))
+                {
+                    throw new InvalidOperationException("Validated coupled response could not be applied.");
+                }
+
+                appliedRunUpgrades.Add(coupledResponseProgression.AppliedRunUpgrades[
+                    coupledResponseProgression.AppliedRunUpgrades.Count - 1]);
+            }
+
             var nextRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
                 [playerSpecies] = progression.CurrentRules,
             };
+            if (coupledResponseProgression != null)
+            {
+                nextRules[coupledResponseProgression.Definition.Id] = coupledResponseProgression.CurrentRules;
+            }
             var continued = simulationHelper != null
                 ? simulationHelper.ContinueWithBoundaryState(
                     nextRules,
                     CreateExperimentalOptions(),
-                    progression.AppliedRunUpgrades)
+                    GetAppliedRunUpgrades())
                 : simulationManager != null
                     && simulationManager.ContinueWithBoundaryState(
                         nextRules,
                         CreateExperimentalOptions(),
-                        progression.AppliedRunUpgrades);
+                        GetAppliedRunUpgrades());
             if (!continued)
             {
                 // The status check above makes this an unreachable path in the
@@ -1436,6 +1522,9 @@ namespace SaltyGame
             phaseDecisionCommitted = true;
             previewState = SpeciesPreviewState.Running;
             rewardMessage = string.Empty;
+            phaseRewardMessage = responseUpgrade == null
+                ? string.Empty
+                : $"{SpeciesUpgradeCatalog.GetDisplayName(rewardOptions[rewardIndex].Id)} triggered {SpeciesUpgradeCatalog.GetDisplayName(responseUpgrade.Id)} for {responseSpecies.Value}.";
             return true;
         }
 
@@ -1447,7 +1536,26 @@ namespace SaltyGame
             }
 
             var snapshot = upgrade.CreateSnapshot(playerSpecies);
-            return snapshot.CanApplyAfterRunStart;
+            if (!snapshot.CanApplyAfterRunStart
+                || !coupledSpeciesResponsesEnabled
+                || !SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                    playerSpecies,
+                    upgrade.Id,
+                    out var responseSpecies,
+                    out var responseUpgradeId))
+            {
+                return snapshot.CanApplyAfterRunStart;
+            }
+
+            if (!rules.TryGetValue(responseSpecies, out var responseRules))
+            {
+                return false;
+            }
+
+            var responseProgression = coupledResponseProgression
+                ?? new SpeciesProgression(new SpeciesDefinition(responseSpecies, responseRules));
+            return responseProgression.CanApplyFreeUpgrade(
+                SpeciesUpgradeCatalog.Create(responseUpgradeId));
         }
 
         string GetLegacyRewardStatus(SpeciesUpgrade upgrade)
@@ -1551,9 +1659,7 @@ namespace SaltyGame
                 }
             }
             SyncRosterSpecies();
-            progression = new SpeciesProgression(new SpeciesDefinition(
-                playerSpecies,
-                rules[playerSpecies]));
+            ResetExpeditionProgression(rules[playerSpecies]);
             runNumber = 0;
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
@@ -1587,6 +1693,7 @@ namespace SaltyGame
                 phaseLengthTicks = phaseLengthTicks,
                 maxPopulation = maxPopulation,
                 minPopulation = minPopulation,
+                coupledSpeciesResponsesEnabled = coupledSpeciesResponsesEnabled,
                 plant = GetRuleDraftOrDefault(SpeciesIds.Plant),
                 herbivore = GetRuleDraftOrDefault(SpeciesIds.Herbivore),
                 carnivore = GetRuleDraftOrDefault(SpeciesIds.Carnivore),
@@ -1637,6 +1744,7 @@ namespace SaltyGame
             phaseLengthTicks = Mathf.Max(1, saved.phaseLengthTicks);
             maxPopulation = Mathf.Max(0, saved.maxPopulation);
             minPopulation = Mathf.Max(0, saved.minPopulation);
+            coupledSpeciesResponsesEnabled = saved.coupledSpeciesResponsesEnabled;
             // Saved defaults may come from a different scenario. Do not add
             // canonical species that are not present in the active scenario.
             if (saved.plant != null && ruleDrafts.ContainsKey(SpeciesIds.Plant))
@@ -1663,12 +1771,45 @@ namespace SaltyGame
             return new SpeciesRuleDraft(SpeciesRuleDefaults.Create()[species]);
         }
 
+        void ResetExpeditionProgression(SpeciesRules playerRules)
+        {
+            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules));
+            coupledResponseProgression = null;
+            appliedRunUpgrades.Clear();
+        }
+
+        IReadOnlyList<SpeciesUpgradeSnapshot> GetAppliedRunUpgrades()
+        {
+            SynchronizePlayerUpgradeSnapshots();
+            return appliedRunUpgrades;
+        }
+
+        void SynchronizePlayerUpgradeSnapshots()
+        {
+            if (progression == null)
+            {
+                return;
+            }
+
+            foreach (var snapshot in progression.AppliedRunUpgrades)
+            {
+                if (!appliedRunUpgrades.Contains(snapshot))
+                {
+                    appliedRunUpgrades.Add(snapshot);
+                }
+            }
+        }
+
         void PrepareNextRun()
         {
             var currentRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
                 [playerSpecies] = progression?.CurrentRules ?? rules[playerSpecies],
             };
+            if (coupledResponseProgression != null)
+            {
+                currentRules[coupledResponseProgression.Definition.Id] = coupledResponseProgression.CurrentRules;
+            }
             rules = currentRules;
             var simulationData = CreateSimulationData();
             var continuousRun = continuousPhasesEnabled
@@ -1702,7 +1843,7 @@ namespace SaltyGame
                 simulationData,
                 combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
                 experimentalOptions: CreateExperimentalOptions(),
-                upgradeLoadout: progression?.AppliedRunUpgrades);
+                upgradeLoadout: GetAppliedRunUpgrades());
             if (simulationHelper != null)
             {
                 simulationHelper.SetRunner(nextRunner);
@@ -1780,7 +1921,8 @@ namespace SaltyGame
                 ? new SpeciesExperimentalOptions(
                     SpeciesExperimentalOptions.BevExperimentalFeaturesId,
                     foxAttackCooldownTicks,
-                    progression?.PreContactAvoidanceChance ?? 0f)
+                    progression?.PreContactAvoidanceChance ?? 0f,
+                    coupledSpeciesResponsesEnabled)
                 : SpeciesExperimentalOptions.None;
         }
 

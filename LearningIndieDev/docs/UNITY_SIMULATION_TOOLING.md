@@ -246,6 +246,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -CombatMode opposed-roll `
     -UpgradeId tough-hide
 
+# Default-off coupled Hare/Fox response arm. The bundle is required and the
+# report records the response flag plus both species' immutable snapshots.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -SeedStart 10100 `
+    -SeedCount 20 `
+    -PlayerSpeciesId hare `
+    -ExperimentalFeatures bev-experimental `
+    -CombatMode opposed-roll `
+    -UpgradeId tough-hide `
+    -CoupledSpeciesResponses $true
+
 # Repeated purchases model a higher upgrade level in one fixed-loadout run.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `

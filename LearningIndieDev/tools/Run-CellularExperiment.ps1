@@ -34,6 +34,7 @@ param(
     [int]$FoxAttackCooldownTicks = 0,
     [ValidateRange(0, 1)]
     [double]$PreContactAvoidanceChance = 0,
+    [bool]$CoupledSpeciesResponses = $false,
     [string]$ProjectPath,
     [string]$UnityPath
 )
@@ -250,6 +251,10 @@ if ($FoxAttackCooldownTicks -gt 0) {
 
 if ($PreContactAvoidanceChance -gt 0) {
     $arguments += @('-preContactAvoidanceChance', $PreContactAvoidanceChance.ToString([Globalization.CultureInfo]::InvariantCulture))
+}
+
+if ($CoupledSpeciesResponses) {
+    $arguments += @('-coupledSpeciesResponses', 'true')
 }
 
 Invoke-UnityBatch -UnityPath $unity -Arguments $arguments

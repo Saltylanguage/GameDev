@@ -78,6 +78,7 @@ namespace SaltyGame
         string herbivoreStartingPopulationText;
         string carnivoreStartingPopulationText;
         string foxAttackCooldownTicksText;
+        bool coupledSpeciesResponsesEnabled;
         bool randomizeSeedOnStart;
         bool continuousPhasesEnabled;
         bool canEditSettings;
@@ -233,6 +234,24 @@ namespace SaltyGame
             get => foxAttackCooldownTicksText;
             set => Set(ref foxAttackCooldownTicksText, value, nameof(FoxAttackCooldownTicksText));
         }
+        public bool CoupledSpeciesResponsesEnabled
+        {
+            get => coupledSpeciesResponsesEnabled;
+            set
+            {
+                if (coupledSpeciesResponsesEnabled == value)
+                {
+                    return;
+                }
+
+                coupledSpeciesResponsesEnabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CoupledSpeciesResponsesEnabled)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CoupledSpeciesResponsesToggleText)));
+            }
+        }
+        public string CoupledSpeciesResponsesToggleText => coupledSpeciesResponsesEnabled
+            ? "COUPLED HARE/FOX RESPONSES: ON (EXPERIMENTAL)"
+            : "COUPLED HARE/FOX RESPONSES: OFF (EXPERIMENTAL)";
         public bool RandomizeSeedOnStart
         {
             get => randomizeSeedOnStart;
@@ -943,6 +962,16 @@ namespace SaltyGame
                 return;
             }
 
+            if (!preview.TryApplyExperimentalFeatures(
+                enabled: true,
+                coupledResponsesEnabled: CoupledSpeciesResponsesEnabled,
+                foxAttackCooldownValue: FoxAttackCooldownTicksText,
+                out var experimentalValidationMessage))
+            {
+                Set(ref settingsMessage, experimentalValidationMessage, nameof(SettingsMessage));
+                return;
+            }
+
             if (!preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 GridWidthText,
                 GridHeightText,
@@ -1161,6 +1190,7 @@ namespace SaltyGame
             HerbivoreStartingPopulationText = preview.HerbivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
             CarnivoreStartingPopulationText = preview.CarnivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
             FoxAttackCooldownTicksText = preview.FoxAttackCooldownTicks.ToString(CultureInfo.InvariantCulture);
+            CoupledSpeciesResponsesEnabled = preview.CoupledSpeciesResponsesEnabled;
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
             ContinuousPhasesEnabled = preview.ContinuousPhasesEnabled;
         }

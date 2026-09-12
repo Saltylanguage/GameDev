@@ -473,6 +473,66 @@ namespace SaltyGame
                 ExperimentalHerbivoreUpgradeIds);
         }
 
+        public static bool TryGetCoupledResponse(
+            SpeciesId selectedSpecies,
+            string selectedUpgradeId,
+            out SpeciesId responderSpecies,
+            out string responderUpgradeId)
+        {
+            responderSpecies = default;
+            responderUpgradeId = string.Empty;
+            var isHare = selectedSpecies == SpeciesIds.Herbivore
+                || string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal);
+            var isFox = selectedSpecies == SpeciesIds.Carnivore
+                || string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal);
+            if (isHare)
+            {
+                responderSpecies = string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal)
+                    ? new SpeciesId("fox")
+                    : SpeciesIds.Carnivore;
+                switch (selectedUpgradeId)
+                {
+                    case ToughHideId:
+                        responderUpgradeId = PiercingBiteId;
+                        break;
+                    case ThreatExposureId:
+                    case LegacyThreatResponseId:
+                        responderUpgradeId = RelentlessPursuitId;
+                        break;
+                    case EfficientDigestionId:
+                        responderUpgradeId = HuntUrgencyId;
+                        break;
+                    case ReproductiveDriveId:
+                    case CrowdingToleranceId:
+                        responderUpgradeId = BroodDriveId;
+                        break;
+                }
+            }
+            else if (isFox)
+            {
+                responderSpecies = string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal)
+                    ? new SpeciesId("hare")
+                    : SpeciesIds.Herbivore;
+                switch (selectedUpgradeId)
+                {
+                    case PiercingBiteId:
+                        responderUpgradeId = ToughHideId;
+                        break;
+                    case RelentlessPursuitId:
+                        responderUpgradeId = ThreatExposureId;
+                        break;
+                    case HuntUrgencyId:
+                        responderUpgradeId = EfficientDigestionId;
+                        break;
+                    case BroodDriveId:
+                        responderUpgradeId = ReproductiveDriveId;
+                        break;
+                }
+            }
+
+            return !string.IsNullOrEmpty(responderUpgradeId);
+        }
+
         public static SpeciesUpgrade[] CreateExperimentalPredatorOffer(
             string continuingUpgradeId,
             int rotation,

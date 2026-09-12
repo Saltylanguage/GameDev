@@ -51,6 +51,14 @@ schedule applies cumulative per-phase loadouts and emits the same phase
 contract. EX-010 has now executed on the approved ten-phase schedule and was
 accepted by Josh and Sim as bounded evidence. P3 is closed under its revised
 bounded gate; P4–P6 are not started and no next research experiment is selected.
+The default-off `bev-experimental` Coupled Hare/Fox response path is implemented
+locally: it applies a deterministic free counterpart legacy upgrade at the same
+Expedition boundary and records both species' immutable snapshots, origins, and
+trigger IDs. Unity EditMode passed 239/239 and the focused same-boundary
+PlayMode test passed 1/1 on 2026-09-11. The matched Forest Edge 100-seed
+three-arm check passed its direct Fox-hit-conversion gate; the factual result
+and the broad PlayMode-suite limitation are recorded in the coupled-response
+handoff before any mapping expansion.
 
 Latest verification: Unity EditMode passed 212/212 on 2026-09-09. The latest
 general PlayMode batch passed 21/22 with one intentional visual-capture skip
@@ -65,6 +73,7 @@ followed by a focused 1920×1080 pass on 2026-09-07.
 - Vertical-slice scenario, roster, and builds: [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md)
 - Future scientific-data economy: [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md)
 - Mutation, Genome, and balance delivery plan: [`UPGRADE_SYSTEM_DIRECTION.md`](UPGRADE_SYSTEM_DIRECTION.md)
+- Coupled Hare/Fox implementation goal pack: [`COUPLED_SPECIES_RESPONSE_GOAL_PACK.md`](COUPLED_SPECIES_RESPONSE_GOAL_PACK.md)
 - Mutation authoring workflow: [`UPGRADE_AUTHORING_GUIDE.md`](UPGRADE_AUTHORING_GUIDE.md)
 - Hare Mutation acceptance matrix: [`UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md`](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md)
 - Official upgrade and ecology balance guideline: [`Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)

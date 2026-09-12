@@ -282,6 +282,18 @@
                                FontSize="13"
                                TextWrapping="Wrap"
                                Margin="0,8,0,4"/>
+                    <CheckBox Content="{Binding CoupledSpeciesResponsesToggleText}"
+                              IsChecked="{Binding CoupledSpeciesResponsesEnabled, Mode=TwoWay}"
+                              Foreground="{DynamicResource Chrono_TreeBark}"
+                              IsEnabled="{Binding CanEditSettings}"
+                              HorizontalAlignment="Center"
+                              Margin="0,6,0,0"/>
+                    <TextBlock Text="When on, each eligible Hare or Fox reward grants its opponent's mapped response at the same phase boundary. Apply Settings before starting."
+                               Foreground="{DynamicResource Chrono_Olive}"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               HorizontalAlignment="Center"
+                               Margin="0,2,0,0"/>
                     <TextBlock Text="{Binding SettingsMessage}"
                                Foreground="{DynamicResource Chrono_Tangerine}"
                                FontSize="13"

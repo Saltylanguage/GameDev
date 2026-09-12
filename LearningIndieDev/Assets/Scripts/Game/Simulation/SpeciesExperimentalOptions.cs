@@ -9,7 +9,8 @@ namespace SaltyGame
         public SpeciesExperimentalOptions(
             string featureId = "",
             int foxAttackCooldownTicks = 0,
-            float preContactAvoidanceChance = 0f)
+            float preContactAvoidanceChance = 0f,
+            bool coupledSpeciesResponsesEnabled = false)
         {
             if (foxAttackCooldownTicks < 0)
             {
@@ -43,9 +44,18 @@ namespace SaltyGame
                     nameof(featureId));
             }
 
+            if (coupledSpeciesResponsesEnabled
+                && !string.Equals(featureId, BevExperimentalFeaturesId, StringComparison.Ordinal))
+            {
+                throw new ArgumentException(
+                    $"Coupled species responses require the {BevExperimentalFeaturesId} feature bundle.",
+                    nameof(featureId));
+            }
+
             FeatureId = featureId ?? string.Empty;
             FoxAttackCooldownTicks = foxAttackCooldownTicks;
             PreContactAvoidanceChance = preContactAvoidanceChance;
+            CoupledSpeciesResponsesEnabled = coupledSpeciesResponsesEnabled;
         }
 
         public static SpeciesExperimentalOptions None { get; } = new SpeciesExperimentalOptions();
@@ -55,6 +65,7 @@ namespace SaltyGame
         public bool HasFoxAttackCooldown => FoxAttackCooldownTicks > 0;
         public float PreContactAvoidanceChance { get; }
         public bool HasPreContactAvoidance => PreContactAvoidanceChance > 0f;
+        public bool CoupledSpeciesResponsesEnabled { get; }
         public bool UsesSplitCombatStats =>
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
         public bool UsesHerbivoreStatLine =>

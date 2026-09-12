@@ -452,6 +452,64 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator CoupledResponseAppliesToTheCounterpartAtTheSameBoundary()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null);
+            var viewModelType = viewModel.GetType();
+            viewModelType.GetProperty("CoupledSpeciesResponsesEnabled")?.SetValue(viewModel, true);
+            StringAssert.Contains(
+                "ON (EXPERIMENTAL)",
+                viewModelType.GetProperty("CoupledSpeciesResponsesToggleText")?.GetValue(viewModel) as string);
+            var applySettingsCommand = viewModelType.GetProperty("ApplySettingsCommand")?.GetValue(viewModel);
+            applySettingsCommand?.GetType().GetMethod("Execute")?.Invoke(applySettingsCommand, new object[] { null });
+            Assert.That(preview.CoupledSpeciesResponsesEnabled, Is.True);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, true, "0", out var message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "8", "8", "0", preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "2", "0.01", "0", "1", "0", false, "0", "1", "0", out message), Is.True, message);
+            preview.StartSimulation();
+            preview.Progression.AddCurrency(10);
+            var run = preview.Run;
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+            StringAssert.Contains("Fox responds: PIERCING BITE", preview.GetRewardOptionDisplayName(0));
+            Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                preview.PlayerSpecies,
+                SpeciesUpgradeCatalog.ToughHideId,
+                out var carnivore,
+                out _), Is.True);
+            var attackModifier = preview.ActiveSpeciesRules[carnivore].AttackModifier;
+
+            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(2));
+            Assert.That(run.UpgradeLoadout[0].TargetSpecies, Is.EqualTo(preview.PlayerSpecies));
+            Assert.That(run.UpgradeLoadout[1].TargetSpecies, Is.EqualTo(carnivore));
+            Assert.That(run.UpgradeLoadout[1].Id, Is.EqualTo(SpeciesUpgradeCatalog.PiercingBiteId));
+            Assert.That(run.UpgradeAcquisitionTimeline[0].Source,
+                Is.EqualTo(SimulationUpgradeAcquisition.PlayerChoiceSource));
+            Assert.That(run.UpgradeAcquisitionTimeline[1].Source,
+                Is.EqualTo(SimulationUpgradeAcquisition.CoupledResponseSource));
+            Assert.That(run.UpgradeAcquisitionTimeline[1].TriggeringUpgradeId,
+                Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+            Assert.That(preview.ActiveSpeciesRules[carnivore].AttackModifier, Is.EqualTo(attackModifier + 1));
+            StringAssert.Contains("PIERCING BITE", preview.PhaseRewardMessage);
+        }
+
+        [UnityTest]
         public IEnumerator FiveHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossPhaseBoundaries()
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",

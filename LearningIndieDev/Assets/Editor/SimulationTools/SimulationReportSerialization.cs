@@ -448,6 +448,8 @@ namespace SaltyGame.EditorTools
                     effectiveTick = acquisition.EffectiveTick,
                     phaseIndex = acquisition.PhaseIndex,
                     order = acquisition.Order,
+                    source = acquisition.Source,
+                    triggeringUpgradeId = acquisition.TriggeringUpgradeId,
                     upgrade = CreateUpgradeLoadout(new[] { acquisition.Snapshot })[0],
                 };
             }
@@ -611,6 +613,8 @@ namespace SaltyGame.EditorTools
         public int effectiveTick;
         public int phaseIndex;
         public int order;
+        public string source;
+        public string triggeringUpgradeId;
         public SimulationUpgradeRecord upgrade;
     }
 
