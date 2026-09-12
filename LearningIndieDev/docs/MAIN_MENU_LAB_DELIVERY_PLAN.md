@@ -1,29 +1,34 @@
-# Main Menu and Lab Delivery Plan
+# Main Menu and Home-Base Delivery Plan
 
-> Status: Approved planning baseline | Updated: 2026-09-06 | Target: vertical slice
+> Status: Approved planning baseline | Updated: 2026-09-11 | Target: vertical slice
 
 ## Outcome
 
 **Flow clarification, 2026-09-04:** an expedition contains consecutive phases
 in the same ecosystem. Phase summaries and purchase/skip decisions stay in the
 Simulation scene; Continue does not relaunch through Lab. Terminal results or
-an explicit end return to Lab. In-memory continuation is covered by the
+an explicit end return to the GalapagOS Desktop. In-memory continuation is covered by the
 [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md), separately from this
 plan's player save/load and permanent-economy milestones.
+
+**Current shell route, 2026-09-09:** the first-party player flow now uses the
+GalapagOS Desktop as the between-run home. The standalone Lab scene remains
+available as a legacy/developer route for the original T6 handoff and tests.
 
 Build the player-facing shell around the cellular-automata runs:
 
 ```text
-Launch -> Main Menu -> GalapagOS Lab -> Expedition Setup -> Simulation
-                    ^                                      |
-                    |---------- Results / Banking ---------|
+Launch -> Main Menu -> GalapagOS Desktop -> Simulation
+                                      ^          |
+                                      |-- Results / Return --|
 ```
 
 The first delivery may be entirely UI, but it must establish the screen flow
 and presentation boundaries that later receive profile saves, scientific data,
 per-species Genome progression, species mastery, and branching expedition
-Mutations. The Main Menu and GalapagOS Lab are separate player-facing scenes;
-the simulation remains a separate scene and domain boundary.
+Mutations. The Main Menu and GalapagOS Desktop are separate player-facing
+scenes; the simulation is hosted by the desktop test composition while the
+standalone simulation scene remains a separate domain-boundary route.
 
 The implementation naming and layer contract are recorded in [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md). New ViewModels use `VM_*`, XAML views use `V_Panel_*`, and Unity helpers use `Helper_*`; legacy names migrate only when their feature is safely touched.
 
@@ -36,16 +41,17 @@ The Main Menu is the application entry point. Its vertical-slice scope is:
 - **Profile Selection:** create or select the profile used by Continue. This is
   the first-launch path because Continue is unavailable until a profile has
   been loaded.
-- **Continue:** load the GalapagOS Lab with the last loaded profile.
+- **Continue:** load the GalapagOS Desktop with the last loaded profile.
 - **Quit:** close the application on desktop.
 
 There is no separate New Game or Load Game action. Do not add multiple save
 slots, cloud-save conflict UI, account systems, news panels, stores, or online
 features for the slice.
 
-### The Lab
+### GalapagOS Desktop and Lab apps
 
-The Lab is the home base and primary between-run screen. Its information architecture is:
+The GalapagOS Desktop is the home base and primary between-run screen. Its Lab
+apps use this information architecture:
 
 - **Overview:** current research totals, recent discoveries, active unlocks, and the next useful objective.
 - **Gene Lab:** the selected species' permanently unlocked Genome options and
@@ -97,26 +103,29 @@ color or decorative metaphor alone.
 | --- | --- | --- | --- |
 | Launch | Start application | Main Menu | Focus lands on the primary action. |
 | Main Menu | Select Profile | Profile Selection state | Create/select a profile; Continue becomes available after a successful load. |
-| Main Menu | Continue | Lab Overview | The last loaded profile summary is visible. Disabled when no profile has been loaded. |
+| Main Menu | Continue | GalapagOS Desktop | The launch screen and desktop app surface are visible. Disabled when no profile has been loaded. |
 | Main Menu | Quit | Application exit | Desktop application closes. |
-| Lab | Select Gene Lab | Species Genome | Currency totals, selected species, locked/unlocked nodes, active nodes, and remaining configuration capacity remain visible. |
+| GalapagOS Desktop | Select Gene Lab | Species Genome | Currency totals, selected species, locked/unlocked nodes, active nodes, and remaining configuration capacity remain visible. |
 | Species Genome | Select project | Purchase Preview | Cost, prerequisites, permanent species effect, ecological consequence, and remaining balances are shown. |
 | Purchase Preview | Confirm Genome research | Species Genome | Data is deducted once; the purchased node and newly available paths are revealed. |
 | Species Genome | Toggle an unlocked node | Species Genome | The active configuration and remaining capacity update without removing the permanent unlock. |
-| Lab | Select Species Archive | Species Archive | Genome state and species mastery are clearly distinguished. |
-| Lab | Prepare Expedition | Expedition Setup | Scenario, species, and starting choices are summarized before launch. |
+| GalapagOS Desktop | Select Species Collection | Species Collection | Genome state and species mastery are clearly distinguished. |
+| GalapagOS Desktop | Prepare Expedition | Expedition Setup | Scenario, species, and starting choices are summarized before launch. |
 | Expedition Setup | Launch | Player Simulation | Selected IDs and profile-derived options form an explicit launch request. |
 | Simulation | Finish/Extinction | Results | Earned, spent, banked, and lost data are explained. |
-| Results | Return to Lab | Lab Overview | Banked rewards and new unlocks are visible. |
+| Results | Return to Desktop | GalapagOS Desktop | Banked rewards and new unlocks are visible. |
 
-Back behavior is deterministic: overlays close first, Lab sub-pages return to Lab Overview, and Lab returns to Main Menu only through an explicit command. The first simulation-window slice disables leaving an active run; a future confirmation overlay must use explicit End semantics.
+Back behavior is deterministic: overlays close first, app sub-pages return to
+their app root, and the Desktop returns to Main Menu only through an explicit
+command. The first simulation-window slice disables leaving an active run; a
+future confirmation overlay must use explicit End semantics.
 
 ## Presentation and technical boundaries
 
 - Reuse the existing `MainMenu.unity` scene as the application entry point and migrate it to the `VM_MainMenu` / `V_Panel_MainMenu.xaml` naming contract when the shell is safely touched.
-- Main Menu and GalapagOS Lab use separate scenes and explicit scene-transition helpers. Each scene has one root shell pair, with meaningful Lab features using their own ViewModel/View pairs.
-- Main Menu contains Profile Selection, Continue, and Quit. Profile Selection is the first-launch path; Continue loads the Lab with the last loaded profile and is disabled when none exists.
-- Main Menu, Lab, and Simulation use explicit `Single` scene loads. A small application/session owner or launch snapshot carries the selected profile across the transition; the previous scene is not kept alive for state ownership.
+- Main Menu and GalapagOS Desktop use separate scenes and explicit scene-transition helpers. The legacy Lab scene remains available for isolated developer/test coverage.
+- Main Menu contains Profile Selection, Continue, and Quit. Profile Selection is the first-launch path; Continue loads the GalapagOS Desktop with the last loaded profile and is disabled when none exists.
+- Main Menu and Desktop use explicit `Single` scene loads. The desktop-hosted simulation uses a local camera/view composition and returns to the desktop surface after its results action; the standalone Simulation scene remains available for the legacy Lab route.
 - Use explicit screen state and Noesis visual states for local overlays and polish; do not introduce a general navigation framework for this flow.
 - The cellular simulation remains a separate scene and domain boundary.
 - UI ViewModels expose presentation-ready values and explicit commands. XAML does not read simulation assets, `PlayerPrefs`, or mutable domain state directly.
@@ -128,14 +137,17 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 - Scientific data, Genome nodes, mastery, Mutations, and completed-run
   settlement are domain concepts independent of Noesis. The UI does not
   calculate Adaptation Value or approve balance.
-- The existing Dev Lab remains a developer/authoring surface and is not the player-facing Lab home base.
+- The existing Dev Lab remains a developer/authoring surface and is not the
+  player-facing GalapagOS Desktop.
 
 ## UI-only acceptance criteria
 
-- The application can enter Main Menu and navigate to every planned Lab section without entering Play Mode errors.
+- The application can enter Main Menu and navigate to every planned Desktop app
+  required by the slice without entering Play Mode errors.
 - Keyboard and mouse can complete the full navigation loop; focus state is always visible.
 - Layout is readable at 1920×1080 and functional at 1280×720.
-- Main Menu, Lab navigation, overlays, and Back behavior follow the screen-flow contract.
+- Main Menu, Desktop navigation, overlays, and Back behavior follow the
+  screen-flow contract.
 - Gene Lab navigation can filter Plants, Herbivores, and Carnivores while every
   displayed Genome belongs to one species.
 - The global data bar and contextual species-mastery balance are represented in
@@ -149,7 +161,7 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 - Expedition Setup demonstrates Forest Edge + Hare and summarizes the selected run.
 - Placeholder balances, nodes, and mastery values are visibly marked as representative UI data.
 - The UI has empty, locked, affordable, unaffordable, selected, confirmation, and error visual states even where real services are not wired yet.
-- A Play Mode smoke test covers Main Menu → Lab → Expedition Setup navigation at the ViewModel/host boundary.
+- A Play Mode smoke test covers Main Menu → GalapagOS Desktop navigation at the ViewModel/host boundary.
 
 ## Delivery epics
 
@@ -160,13 +172,13 @@ Back behavior is deterministic: overlays close first, Lab sub-pages return to La
 Deliverables:
 
 - screen-flow contract and low-fidelity layouts;
-- Main Menu and Lab terminology;
+- Main Menu, Desktop, and Lab-app terminology;
 - representative data set for every required UI state;
-- explicit split between player Lab and Dev Lab.
+- explicit split between player-facing Desktop apps and the Dev Lab.
 
 Exit gate: every primary action has a destination, required data, failure state, and Back behavior.
 
-### E1 — Main Menu and Lab UI shell
+### E1 — Main Menu and GalapagOS Desktop UI shell
 
 **Depends on:** E0.
 
@@ -174,8 +186,8 @@ Deliverables:
 
 - `MainMenu.unity` as the enabled application entry scene with Profile Selection,
   Continue, and Quit;
-- a separate GalapagOS Lab scene with one Noesis root shell for Lab Overview,
-  Gene Lab, Species Archive, and Expedition Setup panels;
+- a separate GalapagOS Desktop scene with one Noesis root shell for Overview,
+  Gene Lab, Species Collection, and Expedition Setup apps;
 - persistent scientific-data presentation plus representative Genome costs,
   purchase previews, experiment returns, and species-mastery guidance;
 - keyboard/mouse focus, Back behavior, confirmations, responsive layout, and representative data;
@@ -318,7 +330,8 @@ Each epic follows the same lightweight workflow:
 
 Before E1 implementation begins:
 
-1. Produce low-fidelity layouts for Main Menu, Lab Overview, Gene Lab, Species Archive, and Expedition Setup.
+1. Produce low-fidelity layouts for Main Menu, Desktop Overview, Gene Lab,
+   Species Collection, and Expedition Setup.
 2. Define the representative UI data fixture and required visual states.
    Include all currency balances, one experiment-return summary, affordable and
    unaffordable Genome projects, a prerequisite chain, one ecological-effect

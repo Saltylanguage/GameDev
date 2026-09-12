@@ -1,9 +1,15 @@
 # Game feature roadmap triage
 
-**Status:** Design triage baseline; proposed windows are not sprint commitments
-**Date:** 2026-09-06
+**Status:** Feature rationale baseline; roadmap v2 owns current allocation
+**Date:** 2026-09-11
 **Owner:** Josh
 **Use:** Decide which player-facing feature to plan next, one feature at a time
+
+[`ROADMAP.md`](../ROADMAP.md) v2 assigns F01–F20 IDs, first-slice effort bands,
+owners/reviewers, landing windows, and scheduling states to this docket. This
+document remains the detailed source for player value, dependencies, blockers,
+and proof of success; its proposed windows do not override the canonical
+roadmap.
 
 ## What this document is for
 

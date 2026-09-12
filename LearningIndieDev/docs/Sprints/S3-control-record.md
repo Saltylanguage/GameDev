@@ -1,6 +1,7 @@
 # Sprint 3 Control Record — M1 Closeout and Project Hygiene
 
 > **Status:** Proposed | **Dates:** 2026-09-17–2026-09-30 | **Cadence:** two weeks
+> **Roadmap baseline:** v2, 2026-09-11
 
 Sprint 2 is not expected to close the M1 gate. Sprint 3 is therefore reserved
 for finishing the first trustworthy upgrade loop, cleaning up the evidence and
@@ -17,7 +18,7 @@ S2 review confirms the remaining work and capacity.
 | Sprint ID | S3 |
 | Goal | Close the remaining M1 implementation gates and leave the project easy to inspect and continue. |
 | Capacity | Josh 20h; Sim 20h; 40h planning capacity. |
-| Entry state | CF-1 through CF-5 are implemented and verified; EX-010's approved ten-phase original and reverse-order sequences are executed, validated, and accepted as bounded evidence. |
+| Entry state | CF-0 through CF-5 are implemented and verified; EX-010's approved ten-phase original and reverse-order sequences are accepted as bounded evidence; target-resolution graphics acceptance and the Windows player smoke are complete. |
 | Primary outcome | The implemented ten-phase Forest Edge flow passes integrated product acceptance and can be completed through the player-facing route without developer-only fields. |
 | M2 relationship | This sprint prepares M2; species/build co-design moves to S4. |
 
@@ -25,10 +26,10 @@ S2 review confirms the remaining work and capacity.
 
 ### Josh — runtime, integration, and evidence handoff
 
-1. Preserve the completed CF-1 through CF-5 lifecycle, boundary, reporting,
+1. Preserve the completed CF-0 through CF-5 lifecycle, boundary, reporting,
    checkpoint, and schedule contracts.
-2. Preserve the completed target-resolution graphics evidence, then complete a
-   current Windows development-build smoke and ten-phase duration/memory
+2. Preserve the completed target-resolution graphics and Windows development-
+   build evidence, then complete the remaining ten-phase duration/memory
    measurement.
 3. Connect the smallest player-facing Mutation/result route to the existing
    domain boundary without duplicating lifecycle or reward ownership.
@@ -61,12 +62,29 @@ S2 review confirms the remaining work and capacity.
 - Review tests, report validators, links, and generated artifacts for stale or
   misleading references.
 
+## Provisional capacity allocation
+
+This allocation is proposed for the Sprint 2 review. Adjust individual rows if
+the review changes the remaining work, but preserve the 40-hour total, the M1
+outcome, and the integration reserve.
+
+| Work | Features | Josh | Sim |
+| --- | --- | ---: | ---: |
+| Expedition contract and product acceptance | F01 | 4h | 2h |
+| Boundary decision, phase summary, results, and return route | F02, F05, F13 | 8h | 2h |
+| Mutation readability and Forest Edge evidence follow-up | F03 | 2h | 6h |
+| CF-6 duration and peak-memory measurement | M1 technical gate | 3h | 2h |
+| Fox telemetry carry-over | Supporting evidence | 0h | 2h |
+| Board, document, and acceptance reconciliation | Shared | 1h | 2h |
+| Integration, defect, and review reserve | Shared | 2h | 4h |
+| **Total** |  | **20h** | **20h** |
+
 ## M1 risk register for the S2 review
 
 | Priority | Risk | Why it matters | Owner | Exit evidence |
 | --- | --- | --- | --- | --- |
-| P0 | Build/performance acceptance is incomplete. | Automated domain and graphics evidence alone do not prove the ten-phase player experience is shippable. | Josh | Current Windows build smoke and ten-phase duration/memory evidence are recorded. |
-| P0 | EX-010-specific checkpoint/schedule parity is complete. | The evidence remains bounded to its approved schedule; new schedules could be mistaken for the same result. | Josh + Sim | Keep new schedules under a separate approved contract. |
+| P0 | Outer ten-phase performance acceptance is incomplete. | The completed Windows smoke and graphics checks do not provide the missing duration and peak-memory figures. | Josh | One valid Forest Edge/Hare run records wall duration, peak working set, and peak private memory. |
+| P1 | A future schedule could overgeneralize the completed EX-010 result. | The accepted evidence remains bounded to its approved scenario, values, seeds, and acquisition order. | Josh + Sim | Keep new schedules under a separate approved contract. |
 | P1 | Sim's current board load is roughly 32h against the 20h planning budget. | The active evidence work cannot all finish inside S2 without re-scoping or carry-over. | Josh + Sim | S2 review explicitly keeps, splits, or carries each Sim card. |
 | P1 | The continuation checkpoint is new and is now supported by the EX-010 evidence package. | A later schedule could silently exceed the accepted evidence envelope. | Josh + Sim | Keep the EX-010 scope and human decision linked to any reuse. |
 | P1 | The new 12h upgrade-expansion card may expand catalog scope before the M1 gate is closed. | More content could consume capacity without improving the core loop. | Josh + Sim | Card is re-scoped, carried forward, or explicitly accepted as non-M1 work. |

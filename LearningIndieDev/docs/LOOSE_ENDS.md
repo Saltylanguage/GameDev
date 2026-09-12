@@ -7,7 +7,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-09
+- Last reviewed: 2026-09-12
 - Report state: the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
   and S2-register checkpoints retained in history). Unity EditMode is green at
@@ -25,7 +25,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   historical ID ambiguity, and the S2 register mapping are resolved or
   explicitly bounded below. EX-010's original and matched alternate sequences
   are now executed and accepted by Josh and Sim; broader promotion review
-  remains intentionally out of scope.
+  remains intentionally out of scope. Roadmap v2 is ready for review, the
+  GalapagOS player-shell polish is still a human-review item, and the latest
+  focused Settings/Collection PlayMode invocation produced no result XML.
 
 ### Decisions recorded this pass
 
@@ -36,13 +38,24 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - Skip is a valid current choice at each Mutation decision point. It has no
   current bonus or penalty; any future reward-doubling or other Skip incentive
   is a separate deferred economy rule.
-- Genome design and implementation are deferred from this work block but are
-  marked ASAP when upgrade implementation resumes. Named Genome loadouts are
-  deferred and non-blocking, and Species Mastery remains deferred and
-  non-gating.
+- Genome design and implementation are deferred from the M1 closeout. Roadmap
+  v2 schedules the first Genome contract in S4 and persistence-backed
+  implementation in S6. Named Genome loadouts are deferred and non-blocking,
+  and Species Mastery remains deferred and non-gating.
 - Provisional scientific-data settlement remains open pending feature-owner
   approval. This pass does not resolve wallet, phase-transfer, or
   extinction-loss semantics.
+- Roadmap v2 is the active production baseline: M0 is complete, M1 remains
+  active, Sprint 3 is proposed, and S4–S7 are forecast windows. Its proposed
+  allocation is not a committed sprint until the S2 review.
+- The Noesis image-resource migration and SG-006 guideline are present in the
+  current worktree. The Main Menu polish/refinement handoff is **Needs Review**;
+  generated art and the new Settings, Species Collection, Expedition Setup,
+  and Field Notes concepts remain review candidates, not approved production
+  assets.
+- The artifact-retention audit and conservative cleanup completed its approved
+  removals (about 1.35 GB). Five semantic duplicate bundles remain candidates
+  for a later recoverable archive/removal decision.
 - Current delivery plans now agree that independent phase windows and the
   bounded EX-010 Stat-Line review are complete. The Windows player smoke also
   passed; CF-6 now retains only the outer ten-phase duration and peak-memory
@@ -176,16 +189,18 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   reproduction and food-action fields, but the card still needs owner review.
 - **Next action:** Reconcile card ownership, list placement, and completion
   status during the S2 review, including closing or carrying the Fox telemetry
-  card; do not infer completion from the control card.
+  card; review the proposed S3 allocation in `ROADMAP.md` and
+  `docs/Sprints/S3-control-record.md`; do not infer completion or commitment
+  from the control card.
 - **Likely owner:** Josh + Sim.
 - **Confidence:** High.
 
 ### P1-029 — Mutation/Genome contract still has player-facing decisions open
 
 - **Status:** Direction is recorded. Genome design and implementation are
-  deferred from this work block and should start ASAP when upgrade work
-  resumes; the detailed node, profile, persistence, and economy contract stays
-  open.
+  deferred from the M1 closeout; Roadmap v2 schedules the first contract in S4
+  and persistence-backed implementation in S6. The detailed node, profile,
+  persistence, and economy contract stays open.
 - **Evidence:** The current model applies natural rules, then a permanent
   per-species Genome, then ordered temporary expedition Mutations. Skip is a
   valid current choice with no bonus or penalty. The active planning baseline
@@ -196,9 +211,10 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   remains historical; the Forest Edge reference panel and first one-time
   effect contract still need their own review. Provisional settlement remains
   open pending feature-owner approval.
-- **Next action:** When upgrade implementation resumes, start with the
-  profile/launch snapshot contract and keep named loadouts and Mastery out of
-  the gate. Before wallet or permanent-purchase work, obtain owner approval for
+- **Next action:** At the S4 contract review, start with the profile/launch
+  snapshot contract and keep named loadouts and Mastery out of the gate. Hold
+  persistence-backed implementation for S6 unless the approved roadmap changes.
+  Before wallet or permanent-purchase work, obtain owner approval for
   provisional settlement and the remaining node/economy rules. Do not infer a
   contract from the existing upgrade shim.
 - **Likely owner:** Josh + design/simulation owners.
@@ -224,19 +240,39 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
+### P1-031 — Player-shell polish and focused UI acceptance need review
+
+- **Status:** The Main Menu polish/refinement pass is implemented in the
+  current worktree and verified interactively, but its handoff is **Needs
+  Review**. The broader Desktop/Simulation/Lab XAML and ViewModel changes are
+  also not yet an accepted production-route checkpoint.
+- **Evidence:**
+  [`2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
+  records the meadow background, CRT treatments, focus behavior, procedural
+  chime, and zero-warning interactive checks. The focused
+  `settings-collection-ui-20260912-010749` Unity invocation exited with code 1
+  and produced no `results.xml`, so it cannot establish PlayMode acceptance.
+- **Next action:** Josh/UI reviewer should approve or revise the Main Menu
+  title/brand and generated-art direction, then rerun the focused Settings and
+  Species Collection acceptance with a captured result file before promoting
+  the current UI worktree.
+- **Likely owner:** Josh + UI/art reviewer.
+- **Confidence:** High.
+
 ### P2-005 — Large raw worker artifacts need a retention policy
 
-- **Status:** Open cleanup/operations concern.
-- **Evidence:** The two latest 100-seed JSON reports are approximately 52.2 MB
-  and 53.1 MB, with the completed queue holding roughly 122 MB of raw output.
-  The current `artifacts/` directory is ignored and has no Git-tracked files;
-  current EX-007/EX-008 reports therefore depend on local raw bundles. EX-002's
-  two cited schema-6 control bundles are already absent from this checkout,
-  leaving only the durable summaries and handoffs for that part of its bounded
-  record.
-- **Next action:** Keep compact committed summaries, manifests, and paired
-  deltas; define when raw JSON/log bundles move to an external archive or are
-  pruned. Do not delete the current local evidence before that policy exists.
+- **Status:** Audit and one conservative cleanup pass are complete; the
+  retention policy and next recoverable archive/removal decision remain open.
+- **Evidence:** The
+  [`2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
+  inventory covered 335 artifact directories and 5.95 GB of data, summarized
+  all 72 CellSim reports, and identified five semantic duplicate candidates.
+  The companion cleanup handoff records 41 exact, hash-verified removals and
+  about 1.35 GB reclaimed while retaining NUnit XML, cited evidence, summaries,
+  parse-warning reports, and current-day logs.
+- **Next action:** Review the five candidates, move any approved bundles to a
+  recoverable archive, rerun the summarizer and DirtyBoy, and only then remove
+  them. Keep raw evidence for cited or unresolved reports.
 - **Likely owner:** Repository maintainer + tooling owner.
 - **Confidence:** High.
 

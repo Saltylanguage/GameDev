@@ -89,7 +89,7 @@ reviewed explicitly rather than being treated as silently complete:
 
 | Priority | Risk | S2 end-state needed |
 | --- | --- | --- |
-| P0 | CF-0 through CF-5 and target-resolution graphics acceptance are complete, but full integrated M1 acceptance is still open. | Carry a current Windows build smoke, ten-phase duration/memory measurement, and remaining player-flow acceptance into the proposed S3 M1 closeout sprint. |
+| P0 | CF-0 through CF-5, target-resolution graphics acceptance, and the Windows player smoke are complete, but full integrated M1 acceptance is still open. | Carry the remaining ten-phase duration/memory measurement and player-flow acceptance into the proposed S3 M1 closeout sprint. |
 | P0 | Phase-aware Stat-Line meaning is approved for EX-010. | Keep fresh-window evidence separate from continued-world evidence; any new metric or broader claim needs a separate Sim/Josh review. |
 | P1 | The current board lists more Sim work than the 20-hour S2 planning budget can hold. | Keep, split, or carry each Sim card during the S2 review; do not assume all can finish in this sprint. |
 | P1 | The continuation checkpoint and EX-010 result are accepted only within the approved evidence envelope. | Keep the EX-010 decision linked during the S2 review; do not treat generic smoke runs or later schedules as the same evidence. |

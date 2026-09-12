@@ -1,7 +1,7 @@
 # Game architecture and flows
 
 > Status: Living reference  
-> Last reviewed: 2026-09-06
+> Last reviewed: 2026-09-09
 > Scope: Player loop, runtime boundaries, and production progression
 
 This document compresses the current game structure into three complementary
@@ -14,10 +14,8 @@ remain authoritative in the linked source documents.
 flowchart TB
     START["Launch"]
     MENU["Main Menu<br/>Profile · Continue · Quit"]
-    LAB["GalapagOS Lab<br/>Overview · Gene Lab<br/>Species Archive · Expedition Setup"]
-    SETUP["Prepare Simulation<br/>Mode · Scenario · Species · Seed<br/>Frozen Active Genomes"]
-
-    SIM["Simulate 200 ticks<br/>Forest Edge: Fern → Hare → Fox"]
+    DESKTOP["GalapagOS Desktop<br/>Launch screen · apps · widgets"]
+    SIM["Simulate 200 ticks · 36×20 board<br/>Forest Edge: Fern → Hare → Fox"]
     END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
     UPGRADE["Choose one Mutation or skip<br/>World remains frozen"]
@@ -26,12 +24,12 @@ flowchart TB
     RESULTS["Results<br/>Victory · Narrow Survival · Defeat"]
     REWARD["Accomplishments<br/>and persistent unlocks"]
 
-    START --> MENU --> LAB --> SETUP --> SIM
+    START --> MENU --> DESKTOP --> SIM
     SIM --> END
 
     END -->|"No: phases 1–9"| SUMMARY --> UPGRADE --> RULESET
     RULESET -->|"Continue same world and next tick"| SIM
-    END -->|"Yes"| RESULTS --> REWARD --> LAB
+    END -->|"Yes"| RESULTS --> REWARD --> DESKTOP
 ```
 
 The vertical-slice contract is ten phases, with 200 ticks as the current

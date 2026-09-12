@@ -1,10 +1,11 @@
 # Upgrade System Direction — Mutations and Genomes
 
 Status: **approved product direction; the first Mutation contract exists, while
-Genome progression and the scalable balance model remain planned work**. Genome
-design and implementation are deferred from the current work block and are the
-next ASAP upgrade slice when upgrade implementation resumes.
-Feature owner: **Josh**. Sim is not assigned to this feature.
+Genome progression and the scalable balance model remain planned work**. Under
+roadmap v2, the first Genome contract is scheduled for S4 planning and its
+persistence-backed implementation is scheduled for S6.
+Feature owner: **Josh**. Sim participates only in explicitly scheduled evidence
+and review work, not Genome runtime implementation.
 Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concerns/upgrade-system.md).
 Balance guideline:
 [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
@@ -35,16 +36,16 @@ Scientific data connects both systems. The exact in-expedition Mutation cost
 and permanent Genome economy remain open in
 [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
-## Current decision boundary (2026-09-09)
+## Current decision boundary (2026-09-11)
 
 - Skip is a valid choice at every current Mutation decision point. It preserves
   the current build and has no bonus or penalty today. Any future
   reward-doubling or other incentive for skipping is a separate deferred
   economy rule.
-- Genome design and implementation are deferred from this work block and
-  should start ASAP when upgrade implementation resumes. Keep the detailed
-  node, profile, persistence, and economy contract open; do not infer it from
-  the Gene Lab mock or the existing runtime shim.
+- Genome design and implementation are deferred from the current M1 closeout.
+  Prepare the first node, profile, persistence, and economy contract during S4;
+  implement it with the S6 persistence slice. Do not infer the contract from the
+  Gene Lab mock or the existing runtime shim.
 - Named Genome loadouts are deferred and non-blocking. A single active
   configuration per species is sufficient for the next implementation slice.
 - Species Mastery is deferred and non-gating. Its later visibility or

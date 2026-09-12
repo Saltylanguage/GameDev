@@ -26,6 +26,11 @@ changes, and do not treat research references as approved implementation work.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
+- [`ROADMAP.md`](../ROADMAP.md) version 2.0 is the active production baseline
+  as of 2026-09-11: M0 is complete, M1 is active, Sprint 3 is proposed, and
+  S4–S7 are forecast windows rather than commitments. The GalapagOS Desktop is
+  the canonical player home; the standalone Lab remains a legacy/developer
+  route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the
   player species, fern as support, fox as opposition, and Trailblazer, Warren,
   and Gardeners as the three intended builds. The rationale and validation gaps
@@ -53,9 +58,10 @@ changes, and do not treat research references as approved implementation work.
   than maximize one species, master every species, or complete every data set.
   Improving one Genome may create a readable imbalance that encourages the
   player to run and develop plants, herbivores, and predators in response.
-- Current progression boundary (2026-09-09): Genome design and implementation
-  are deferred from this work block but should start ASAP when upgrade work
-  resumes. Named Genome loadouts are deferred and non-blocking, and Species
+- Current progression boundary (2026-09-11): Genome design and implementation
+  are deferred from the M1 closeout. Roadmap v2 schedules the first Genome
+  contract in S4 and its persistence-backed implementation in S6. Named Genome
+  loadouts are deferred and non-blocking, and Species
   Mastery is deferred and non-gating. Provisional scientific-data settlement
   remains open pending feature-owner approval.
 - Upgrade and species work follows
@@ -108,9 +114,10 @@ upgrade acquisition timing.
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
 The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
 only the outer ten-phase duration/memory measurement, then complete the
-player-facing Mutation choices, outcome language, reward/persistence loop, and
-resume Genome design/implementation ASAP. Genome details remain intentionally
-open until that work starts.
+player-facing Mutation choices, outcome language, and reward/persistence loop.
+Roadmap v2 schedules Genome contract planning for S4 and persistence-backed
+implementation for S6; Genome details remain intentionally open until that work
+starts.
 Any new predictive-AI or balance claim requires its own approved research
 contract; it is not implied by the accepted EX-010 result.
 
@@ -137,6 +144,17 @@ settle them in foundational grid code.
 
 - Noesis/XAML with ViewModels is the intended presentation stack for menus,
   HUD, settings, rewards, results, and other player-facing controls.
+- Project-owned XAML images and icons are resolved through
+  [`SG-006 — Noesis Image Resource Pipeline`](Studio%20Guidelines/SG-006-NOESIS-IMAGE-RESOURCE-PIPELINE.md):
+  each asset is keyed in `Assets/UI/ImageResources.xaml` and consumed with a
+  `StaticResource`. The custom simulation-board sprite atlas remains a
+  runtime renderer input and is not an XAML image consumer.
+- The 2026-09-09/10 Main Menu polish pass adds an authored meadow background,
+  CRT-style boot and desktop handoff treatments, focus-state work, and a
+  procedural chime while preserving the existing navigation contract. Its
+  handoff is **Needs Review**: title/brand and promotion of generated art are
+  not approved yet. New Settings, Species Collection, Expedition Setup, and
+  Field Notes images are concept references only until separately reviewed.
 - For now, use a corner radius of `12` as the visual default for top-level UI
   windows and major panel containers. This is a tentative baseline rather than
   a rule for every button, badge, or smaller nested control.
@@ -171,8 +189,9 @@ settle them in foundational grid code.
 - The accepted Unity MVVM structure is recorded in
   [`UNITY_MVVM_ARCHITECTURE_PLAN.md`](UNITY_MVVM_ARCHITECTURE_PLAN.md): XAML
   views use `V_Panel_*`, Unity ViewModels use `VM_*`, Unity orchestration helpers
-  use `Helper_*`, and plain C# domain code remains UI-agnostic. The GalapagOS Lab
-  is a separate player-facing scene from Main Menu and Simulation. Noesis visual
+  use `Helper_*`, and plain C# domain code remains UI-agnostic. The GalapagOS
+  Desktop is the canonical player home between Main Menu and Simulation. The
+  standalone Lab is retained as a legacy/developer route. Noesis visual
   states present authoritative flow states supplied by the simulation/helper
   layer; XAML is not the gameplay state machine.
 - The cellular species preview uses the Noesis shell as its single runtime UI
@@ -181,11 +200,16 @@ settle them in foundational grid code.
   The board now receives an immutable `SimulationBoardSnapshot` through
   `VM_SimulationBoard`; the legacy shell ViewModel remains the compatibility
   composition surface until the safe naming pass.
+- T4–T6 below are retained implementation checkpoints for the standalone Lab
+  route. Roadmap v2 supersedes their original navigation topology with Main
+  Menu → GalapagOS Desktop → Simulation while preserving their profile, launch-
+  request, stable-ID, and results-return contracts.
 - T4 establishes the Main Menu contract: `VM_MainMenu` and
   `V_Panel_MainMenu.xaml` expose Profile Selection, Continue, and Quit. Profile
-  state is owned by `Helper_ProfileSession`, and `Helper_SceneTransition` loads
-  the minimal `Lab` scene in `Single` mode. Continue is unavailable until a
-  profile has been created or selected.
+  state is owned by `Helper_ProfileSession`. Continue is unavailable until a
+  profile has been created or selected; the current player route loads the
+  GalapagOS Desktop, while the minimal `Lab` scene remains available for its
+  retained route and tests.
 - T5 establishes the GalapagOS Lab shell: `VM_Lab` and `V_Panel_Lab.xaml` host
   Overview, Research, Species Archive, Expedition Setup, and Settings feature
   pairs beneath one Noesis root. The feature data is representative and UI-only

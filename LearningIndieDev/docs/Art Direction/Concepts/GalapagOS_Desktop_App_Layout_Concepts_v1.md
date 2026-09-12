@@ -478,6 +478,50 @@ illustration belongs in the desktop or gallery, not behind every data panel.
 **Primary action:** Launch Expedition  
 **Secondary actions:** Back, Open Species, Open Biome, Review Rules
 
+**Prior polish candidate:** [Expedition Setup UI — High-Fidelity Concept v2](Expedition_Setup_UI_High_Fidelity_v2.png)
+
+This generated revision established the custom expedition trim, destination
+map, and strong launch-summary hierarchy. Its loose-paper layout is no longer
+the leading direction after review, but it and the earlier v1 panel-grid
+treatment remain preserved for comparison. Seed, phase, Genome, and eligibility
+values remain representative concept content unless confirmed by the launch
+contract.
+
+**Windows-style material adjustment study — superseded exploration:**
+
+- [Light-handed](Expedition_Setup_UI_Windows_Adjustment_Light_v1.png) — squares
+  the map and selection surfaces while retaining the clipped paper permit.
+- [Balanced](Expedition_Setup_UI_Windows_Adjustment_Balanced_v1.png) — uses
+  classic subwindow headers and controls while keeping the permit as a hybrid
+  physical-system object.
+- [Heavy-handed](Expedition_Setup_UI_Windows_Adjustment_Heavy_v1.png) — removes
+  the loose-paper treatment from the interior and expresses the same hierarchy
+  through classic GalapagOS windows and inset panes.
+
+All three preserve the custom expedition-case trim, scenic destination map,
+launch hierarchy, and sparse control count. Review preferred the heavy-handed
+option as the visual-language anchor, but requested genuinely different layout
+concepts rather than further treatment changes.
+
+**Windows-style layout redesign study — awaiting review:**
+
+- [A — Map Explorer](Expedition_Setup_Redesign_A_Map_Workspace_v1.png) uses an
+  Explorer-style navigation tree, dominant destination preview, options strip,
+  and docked launch summary.
+- [B — Guided Setup Wizard](Expedition_Setup_Redesign_B_Setup_Wizard_v1.png)
+  presents a sequential step rail and one unified final review page with a
+  standard wizard command bar.
+- [C — Tabbed Properties Console](Expedition_Setup_Redesign_C_Tabbed_Console_v1.png)
+  treats Biome, Species, Mode, and Review as classic property tabs with the
+  launch action in the dialog command row.
+- [D — Map-First Launch Deck](Expedition_Setup_Redesign_D_Launch_Deck_v1.png)
+  removes side panels and step navigation, giving the destination most of the
+  window and consolidating all configuration and launch controls into one dock.
+
+These are new information architectures built from the preferred heavy Windows
+visual direction, not reskins of the paper-led layout. No option is selected as
+the implementation target until human review.
+
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ EXPEDITION PLANNER                                                        │
@@ -516,6 +560,15 @@ This surface gets the strongest primary button and the least decorative noise.
 **Focal object:** Selected illustrated entry page  
 **Primary action:** Open Related Record  
 **Secondary actions:** Previous / Next, Bookmark, Search Entries
+
+**Polish candidate:** [Field Notes UI — High-Fidelity Concept v1](Field_Notes_UI_High_Fidelity_v1.png)
+
+This generated concept is the current visual candidate for review. It carries
+the approved GalapagOS shell into a calm open-notebook surface: the index stays
+compact on the left, one illustrated discovery remains the focal object, and
+provenance plus related-record actions sit on the right. Counts, expedition
+labels, handwritten notes, and observation copy are representative concept
+content rather than approved runtime data.
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────────┐
