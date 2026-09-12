@@ -262,6 +262,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
   labSceneName: Lab
+  desktopSceneName: GalapagOSDesktopTest
   mainMenuSceneName: MainMenu
   simulationSceneName: CellularAutomataPrototype
 --- !u!1 &100010

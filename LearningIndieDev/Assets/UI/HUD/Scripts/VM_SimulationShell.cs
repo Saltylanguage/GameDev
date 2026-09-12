@@ -9,6 +9,24 @@ using UnityEngine.U2D;
 
 namespace SaltyGame
 {
+    public sealed class SimulationTimelineItem
+    {
+        public SimulationTimelineItem(int phaseIndex, bool complete, bool active, bool last)
+        {
+            Label = phaseIndex.ToString("00", CultureInfo.InvariantCulture);
+            CompletePipVisibility = complete ? Visibility.Visible : Visibility.Collapsed;
+            ActivePipVisibility = active ? Visibility.Visible : Visibility.Collapsed;
+            SolidConnectorVisibility = !last && complete ? Visibility.Visible : Visibility.Collapsed;
+            DottedConnectorVisibility = !last && !complete ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public string Label { get; }
+        public Visibility CompletePipVisibility { get; }
+        public Visibility ActivePipVisibility { get; }
+        public Visibility SolidConnectorVisibility { get; }
+        public Visibility DottedConnectorVisibility { get; }
+    }
+
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
         static readonly string[] AnimalSpriteNames =
@@ -110,6 +128,14 @@ namespace SaltyGame
         string scenarioText;
         string playerSpeciesText;
         string rosterText;
+        string phaseText;
+        int herbivorePopulation;
+        int carnivorePopulation;
+        int herbivorePopulationMaximum;
+        int carnivorePopulationMaximum;
+        string herbivorePopulationText;
+        string carnivorePopulationText;
+        SimulationTimelineItem[] phaseTimelineItems = Array.Empty<SimulationTimelineItem>();
         Helper_SceneTransition sceneTransition;
         Helper_ProfileSession profileSession;
         Action desktopClose;
@@ -155,6 +181,14 @@ namespace SaltyGame
         public string ScenarioText => scenarioText;
         public string PlayerSpeciesText => playerSpeciesText;
         public string RosterText => rosterText;
+        public string PhaseText => phaseText;
+        public int HerbivorePopulation => herbivorePopulation;
+        public int CarnivorePopulation => carnivorePopulation;
+        public int HerbivorePopulationMaximum => herbivorePopulationMaximum;
+        public int CarnivorePopulationMaximum => carnivorePopulationMaximum;
+        public string HerbivorePopulationText => herbivorePopulationText;
+        public string CarnivorePopulationText => carnivorePopulationText;
+        public SimulationTimelineItem[] PhaseTimelineItems => phaseTimelineItems;
         public string SettingsMessage => settingsMessage;
         public string GridWidthText
         {
@@ -320,8 +354,12 @@ namespace SaltyGame
         public string PlayNextSimulationText => playNextSimulationText;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
         public bool CanReturnToLab => resultsVisibility == Visibility.Visible
-            && sceneTransition != null
-            && profileSession?.Current?.HasLoadedProfile == true;
+            && (desktopClose != null
+                || (sceneTransition != null
+                    && profileSession?.Current?.HasLoadedProfile == true));
+        public string ReturnDestinationText => desktopClose != null
+            ? "RETURN TO DESKTOP"
+            : "RETURN TO LAB";
         // The first production slice disables close for an active run. If a
         // confirmation surface is added later, it must use explicit End
         // semantics rather than aliasing Stop or Restart.
@@ -411,6 +449,7 @@ namespace SaltyGame
             sceneTransition = transition;
             profileSession = profile;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ReturnDestinationText)));
             ReturnToLabCommand?.RaiseCanExecuteChanged();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
             CloseWindowCommand?.RaiseCanExecuteChanged();
@@ -420,7 +459,10 @@ namespace SaltyGame
         {
             desktopClose = close;
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ReturnDestinationText)));
             CloseWindowCommand?.RaiseCanExecuteChanged();
+            ReturnToLabCommand?.RaiseCanExecuteChanged();
         }
 
         public void SetSpriteVisuals(
@@ -839,6 +881,7 @@ namespace SaltyGame
                 isContinuousRun ? "START NEW EXPEDITION" : "PLAY NEXT SIMULATION",
                 nameof(PlayNextSimulationText));
             SyncScenarioPresentation(run);
+            SyncSimulationDashboard(run);
             if (force || state == SpeciesPreviewState.Ready)
             {
                 SyncSettingsFields();
@@ -1001,6 +1044,12 @@ namespace SaltyGame
         {
             if (CanReturnToLab)
             {
+                if (desktopClose != null)
+                {
+                    desktopClose();
+                    return;
+                }
+
                 sceneTransition.LoadLab(profileSession.Current);
             }
         }
@@ -1181,6 +1230,87 @@ namespace SaltyGame
                 $"Player species: {FormatSpeciesName(preview.PlayerSpecies)}",
                 nameof(PlayerSpeciesText));
             Set(ref rosterText, BuildRosterText(run), nameof(RosterText));
+        }
+
+        void SyncSimulationDashboard(SimulationRunState run)
+        {
+            var population = run != null && run.PopulationHistory.Count > 0
+                ? run.PopulationHistory[run.PopulationHistory.Count - 1]
+                : default;
+            var herbivoreCount = GetRolePopulationCount(population, SpeciesRole.Herbivore);
+            var carnivoreCount = GetRolePopulationCount(population, SpeciesRole.Carnivore);
+            var configuredMaximum = preview.MaximumPopulation;
+            var herbivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, herbivoreCount, 25);
+            var carnivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, carnivoreCount, 15);
+            Set(ref herbivorePopulation, herbivoreCount, nameof(HerbivorePopulation));
+            Set(ref carnivorePopulation, carnivoreCount, nameof(CarnivorePopulation));
+            Set(ref herbivorePopulationMaximum, herbivoreMaximum, nameof(HerbivorePopulationMaximum));
+            Set(ref carnivorePopulationMaximum, carnivoreMaximum, nameof(CarnivorePopulationMaximum));
+            Set(
+                ref herbivorePopulationText,
+                FormatPopulationText(herbivoreCount, herbivoreMaximum),
+                nameof(HerbivorePopulationText));
+            Set(
+                ref carnivorePopulationText,
+                FormatPopulationText(carnivoreCount, carnivoreMaximum),
+                nameof(CarnivorePopulationText));
+
+            var phaseCount = Mathf.Max(1, preview.ContinuousPhaseCount);
+            var currentPhase = run?.PhaseIndex ?? 1;
+            if (run?.Status == SimulationRunStatus.AwaitingDecision)
+            {
+                currentPhase++;
+            }
+
+            if (run?.Status == SimulationRunStatus.Complete)
+            {
+                currentPhase = phaseCount;
+            }
+
+            currentPhase = Mathf.Clamp(currentPhase, 1, phaseCount);
+            Set(ref phaseText, $"PHASE {currentPhase:00}", nameof(PhaseText));
+            var timeline = new SimulationTimelineItem[phaseCount];
+            for (var index = 0; index < phaseCount; index++)
+            {
+                var phase = index + 1;
+                timeline[index] = new SimulationTimelineItem(
+                    phase,
+                    run?.Status == SimulationRunStatus.Complete || phase < currentPhase,
+                    run?.Status != SimulationRunStatus.Complete && phase == currentPhase,
+                    phase == phaseCount);
+            }
+
+            Set(ref phaseTimelineItems, timeline, nameof(PhaseTimelineItems));
+        }
+
+        static int GetPopulationMeterMaximum(int configuredMaximum, int current, int fallback)
+        {
+            return Math.Max(current, configuredMaximum > 0 ? configuredMaximum : fallback);
+        }
+
+        int GetRolePopulationCount(SpeciesPopulationSnapshot population, SpeciesRole role)
+        {
+            if (preview?.ActiveSpeciesRules == null)
+            {
+                return 0;
+            }
+
+            var total = 0;
+            foreach (var entry in population.Counts)
+            {
+                if (preview.ActiveSpeciesRules.TryGetValue(entry.Key, out var rules)
+                    && rules.Role == role)
+                {
+                    total += entry.Value;
+                }
+            }
+
+            return total;
+        }
+
+        static string FormatPopulationText(int current, int maximum)
+        {
+            return string.Format(CultureInfo.InvariantCulture, "{0} / {1}", current, maximum);
         }
 
         string BuildRosterText(SimulationRunState run)

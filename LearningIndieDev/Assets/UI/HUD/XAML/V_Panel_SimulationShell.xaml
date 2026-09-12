@@ -1,8 +1,6 @@
 <UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
-             xmlns:game="clr-namespace:SaltyGame"
-             xmlns:noesis="clr-namespace:NoesisApp;assembly=Noesis.NoesisGUI">
+             xmlns:game="clr-namespace:SaltyGame">
     <UserControl.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -27,6 +25,256 @@
                 <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
                 <Setter Property="FontSize" Value="13" />
             </Style>
+
+            <!-- Simulation-only visuals stay local to this shell. -->
+            <ControlTemplate x:Key="GalapagOS_SegmentedProgressBarTemplate" TargetType="ProgressBar">
+                <Grid x:Name="SegmentedProgressRoot" MinHeight="22">
+                    <Border x:Name="PART_Track"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="8"
+                            ClipToBounds="True">
+                        <Grid>
+                            <Grid IsHitTestVisible="False">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="1" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="2" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="3" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="4" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="5" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="6" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                                <Border Grid.Column="7" BorderBrush="{DynamicResource Chrono_LightCream}" BorderThickness="1,0,0,0" />
+                            </Grid>
+                            <Border x:Name="PART_Indicator"
+                                    Background="{TemplateBinding Foreground}"
+                                    HorizontalAlignment="Left"
+                                    CornerRadius="7" />
+                        </Grid>
+                    </Border>
+                </Grid>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="PART_Indicator" Property="Opacity" Value="0.45" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <Style x:Key="GalapagOS.ProgressBar.Segmented" TargetType="ProgressBar">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="Height" Value="22" />
+                <Setter Property="Background" Value="{DynamicResource Chrono_VanillaCream}" />
+                <Setter Property="Foreground" Value="{DynamicResource Chrono_Olive}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource GalapagOS.Window.BorderBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="Template" Value="{StaticResource GalapagOS_SegmentedProgressBarTemplate}" />
+            </Style>
+
+            <ControlTemplate x:Key="GalapagOS_ResearchCardTemplate" TargetType="ContentControl">
+                <Border Background="{DynamicResource Chrono_VanillaCream}"
+                        BorderBrush="{DynamicResource Chrono_Sand}"
+                        BorderThickness="2"
+                        CornerRadius="5"
+                        Padding="5">
+                    <StackPanel HorizontalAlignment="Center">
+                        <Image Source="{Binding (game:GalapagOSMetricRow.IconSource), RelativeSource={RelativeSource TemplatedParent}}"
+                               Width="28"
+                               Height="28"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center" />
+                        <TextBlock Text="{Binding (game:GalapagOSMetricRow.Label), RelativeSource={RelativeSource TemplatedParent}}"
+                                   Margin="0,3,0,0"
+                                   HorizontalAlignment="Center"
+                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                   FontSize="9"
+                                   FontWeight="Bold"
+                                   Foreground="{TemplateBinding Foreground}" />
+                        <TextBlock Text="{Binding (game:GalapagOSMetricRow.Value), RelativeSource={RelativeSource TemplatedParent}}"
+                                   Margin="0,2,0,0"
+                                   HorizontalAlignment="Center"
+                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                   FontSize="12"
+                                   FontWeight="Bold"
+                                   Foreground="{TemplateBinding Foreground}" />
+                    </StackPanel>
+                </Border>
+            </ControlTemplate>
+
+            <Style x:Key="GalapagOS.ResearchCard" TargetType="ContentControl">
+                <Setter Property="Width" Value="72" />
+                <Setter Property="Height" Value="82" />
+                <Setter Property="Foreground" Value="{DynamicResource Chrono_TreeBark}" />
+                <Setter Property="Template" Value="{StaticResource GalapagOS_ResearchCardTemplate}" />
+            </Style>
+
+            <ControlTemplate x:Key="GalapagOS_SpeedRadioButtonTemplate" TargetType="RadioButton">
+                <Border x:Name="SpeedRadioSurface"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="5">
+                    <ContentPresenter Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      ContentStringFormat="{TemplateBinding ContentStringFormat}"
+                                      Margin="{TemplateBinding Padding}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                      TextElement.FontSize="{TemplateBinding FontSize}"
+                                      TextElement.FontWeight="{TemplateBinding FontWeight}"
+                                      TextElement.Foreground="{TemplateBinding Foreground}" />
+                </Border>
+                <ControlTemplate.Triggers>
+                    <Trigger Property="IsChecked" Value="True">
+                        <Setter Property="Background" Value="{DynamicResource GalapagOS.Button.Primary.Background}" />
+                        <Setter Property="Foreground" Value="{DynamicResource GalapagOS.Button.Primary.Foreground}" />
+                        <Setter TargetName="SpeedRadioSurface" Property="BorderBrush" Value="{DynamicResource GalapagOS.Window.BorderBrush}" />
+                    </Trigger>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter TargetName="SpeedRadioSurface" Property="Opacity" Value="0.9" />
+                    </Trigger>
+                    <Trigger Property="IsEnabled" Value="False">
+                        <Setter TargetName="SpeedRadioSurface" Property="Opacity" Value="0.45" />
+                    </Trigger>
+                </ControlTemplate.Triggers>
+            </ControlTemplate>
+
+            <Style x:Key="GalapagOS.RadioButton.Speed" TargetType="RadioButton">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                <Setter Property="Background" Value="{DynamicResource GalapagOS.Button.Secondary.Background}" />
+                <Setter Property="Foreground" Value="{DynamicResource GalapagOS.Button.Secondary.Foreground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource GalapagOS.Window.BorderBrush}" />
+                <Setter Property="BorderThickness" Value="2" />
+                <Setter Property="Padding" Value="11,7" />
+                <Setter Property="MinHeight" Value="34" />
+                <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="FontWeight" Value="Bold" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Template" Value="{StaticResource GalapagOS_SpeedRadioButtonTemplate}" />
+            </Style>
+
+            <Style x:Key="GalapagOS.Button.FieldNotes" TargetType="Button" BasedOn="{StaticResource GalapagOS.Button.Secondary}">
+                <Setter Property="Padding" Value="10,6" />
+                <Setter Property="MinHeight" Value="40" />
+                <Setter Property="FontSize" Value="14" />
+            </Style>
+
+            <DataTemplate x:Key="GalapagOS_TimelineItemTemplate">
+                <Grid Width="72" Height="42">
+                    <Rectangle Grid.ColumnSpan="2"
+                               Width="48"
+                               Height="2"
+                               Margin="20,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Fill="{DynamicResource Chrono_Olive}" />
+                    <Rectangle Grid.ColumnSpan="2"
+                               Width="48"
+                               Height="2"
+                               Margin="20,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Fill="Transparent"
+                               Stroke="{DynamicResource Chrono_Sand}"
+                               StrokeDashArray="6,4"
+                               StrokeThickness="2"
+                               Visibility="{Binding DottedConnectorVisibility}" />
+                    <Grid Width="28" Height="28" HorizontalAlignment="Left" VerticalAlignment="Center">
+                        <Ellipse Fill="{DynamicResource Chrono_LightCream}"
+                                 Stroke="{DynamicResource Chrono_Sand}"
+                                 StrokeThickness="2" />
+                        <Ellipse Fill="{DynamicResource Chrono_Lime}"
+                                 Stroke="{DynamicResource Chrono_Olive}"
+                                 StrokeThickness="2"
+                                 Visibility="{Binding ActivePipVisibility}" />
+                        <Ellipse Fill="{DynamicResource Chrono_Olive}"
+                                 Stroke="{DynamicResource GalapagOS.Window.BorderBrush}"
+                                 StrokeThickness="2"
+                                 Visibility="{Binding CompletePipVisibility}" />
+                        <TextBlock Text="{Binding Label}"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                   FontSize="9"
+                                   FontWeight="Bold"
+                                   Foreground="{DynamicResource Chrono_TreeBark}" />
+                    </Grid>
+                    <Rectangle Width="48"
+                               Height="2"
+                               Margin="20,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Fill="{DynamicResource Chrono_Olive}"
+                               Visibility="{Binding SolidConnectorVisibility}" />
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="GalapagOS_TimelineCompactItemTemplate">
+                <Grid Width="22" Height="24">
+                    <Rectangle Width="7"
+                               Height="2"
+                               Margin="15,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Fill="{DynamicResource Chrono_Olive}"
+                               Visibility="{Binding SolidConnectorVisibility}" />
+                    <Rectangle Width="7"
+                               Height="2"
+                               Margin="15,0,0,0"
+                               HorizontalAlignment="Left"
+                               VerticalAlignment="Center"
+                               Fill="Transparent"
+                               Stroke="{DynamicResource Chrono_Sand}"
+                               StrokeDashArray="3,2"
+                               StrokeThickness="1"
+                               Visibility="{Binding DottedConnectorVisibility}" />
+                    <Ellipse Width="18"
+                             Height="18"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
+                             Fill="{DynamicResource Chrono_LightCream}"
+                             Stroke="{DynamicResource Chrono_Sand}"
+                             StrokeThickness="2" />
+                    <Ellipse Width="18"
+                             Height="18"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
+                             Fill="{DynamicResource Chrono_Lime}"
+                             Stroke="{DynamicResource Chrono_Olive}"
+                             StrokeThickness="2"
+                             Visibility="{Binding ActivePipVisibility}" />
+                    <Ellipse Width="18"
+                             Height="18"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Center"
+                             Fill="{DynamicResource Chrono_Olive}"
+                             Stroke="{DynamicResource GalapagOS.Window.BorderBrush}"
+                             StrokeThickness="2"
+                             Visibility="{Binding CompletePipVisibility}" />
+                </Grid>
+            </DataTemplate>
+
+            <Style x:Key="GalapagOS.Timeline" TargetType="ItemsControl">
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemTemplate" Value="{StaticResource GalapagOS_TimelineItemTemplate}" />
+            </Style>
         </ResourceDictionary>
     </UserControl.Resources>
 
@@ -36,7 +284,7 @@
           Margin="24">
         <HeaderedContentControl x:Name="SimulationWindow"
                                 Header="ECOLOGY SIMULATION"
-                                game:GalapagOSWindow.IconSource="../../GalapagOS/Art/Icons/GalapagOS_Icon_Sprout.png"
+                                game:GalapagOSWindow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
                                 game:GalapagOSWindow.CloseCommand="{Binding CloseWindowCommand}"
                                 game:GalapagOSWindow.CloseEnabled="{Binding CanCloseWindow}"
                                 Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
@@ -49,49 +297,79 @@
                         BorderThickness="0,0,0,2">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.2*" />
-                            <ColumnDefinition Width="1.1*" />
+                            <ColumnDefinition Width="1.25*" />
+                            <ColumnDefinition Width="1.15*" />
+                            <ColumnDefinition Width="1*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <StackPanel>
-                            <TextBlock Text="ECOLOGY FIELD VIEW"
+                        <StackPanel Orientation="Horizontal">
+                            <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
+                                   Width="24"
+                                   Height="24"
+                                   Stretch="Uniform"
+                                   Margin="0,0,8,0" />
+                            <StackPanel>
+                                <TextBlock Text="ECOLOGY FIELD VIEW"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="11"
+                                           FontWeight="Bold" />
+                                <TextBlock Text="{Binding ScenarioText}"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}"
+                                   Width="26"
+                                   Height="26"
+                                   Stretch="Uniform"
+                                   Margin="0,0,8,0" />
+                            <StackPanel>
+                                <TextBlock Text="PLAYER SPECIES"
                                        Foreground="{DynamicResource Chrono_TreeBark}"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="11"
                                        FontWeight="Bold" />
-                            <TextBlock Text="{Binding ScenarioText}"
-                                       Foreground="{DynamicResource Chrono_TreeBark}"
-                                       FontSize="15"
-                                       FontWeight="Bold"
-                                       Margin="0,2,0,0" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="1"
-                                    HorizontalAlignment="Center">
-                            <TextBlock Text="{Binding StateTitle}"
-                                       Foreground="{DynamicResource Chrono_TreeBark}"
-                                       FontSize="16"
-                                       FontWeight="Bold"
-                                       HorizontalAlignment="Center" />
-                            <TextBlock Text="{Binding PlayerSpeciesText}"
-                                       Foreground="{DynamicResource Chrono_Olive}"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="11"
-                                       FontWeight="Bold"
-                                       Margin="0,2,0,0"
-                                       HorizontalAlignment="Center" />
+                                <TextBlock Text="{Binding PlayerSpeciesText}"
+                                           Foreground="{DynamicResource Chrono_Olive}"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Margin="0,2,0,0" />
+                            </StackPanel>
                         </StackPanel>
                         <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform"
+                                   Margin="0,0,7,0" />
+                            <TextBlock Text="{Binding PhaseText}"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Column="3"
                                     HorizontalAlignment="Right">
+                            <TextBlock Text="RESEARCH DATA"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       HorizontalAlignment="Right" />
                             <TextBlock Text="{Binding CurrencyText}"
                                        Foreground="{DynamicResource Chrono_TreeBark}"
                                        FontSize="14"
                                        FontWeight="Bold"
-                                       HorizontalAlignment="Right" />
-                            <TextBlock Text="{Binding RosterText}"
-                                       Foreground="{DynamicResource Chrono_TreeBark}"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="10"
-                                       TextWrapping="Wrap"
                                        HorizontalAlignment="Right" />
                         </StackPanel>
                     </Grid>
@@ -100,7 +378,7 @@
                 <Border Visibility="{Binding BoardVisibility}"
                       HorizontalAlignment="Stretch"
                       VerticalAlignment="Stretch"
-                      Margin="18,68,302,56"
+                      Margin="18,68,302,132"
                       Padding="10"
                       Background="{DynamicResource Chrono_VanillaCream}"
                       BorderBrush="{DynamicResource Chrono_Olive}"
@@ -110,15 +388,7 @@
                     <Grid>
                         <game:SpeciesSimulationBoard x:Name="SimulationBoard"
                                                      HorizontalAlignment="Stretch"
-                                                     VerticalAlignment="Stretch">
-                            <b:Interaction.Behaviors>
-                                <noesis:TranslateZoomRotateBehavior SupportedGestures="All"
-                                                                     MinimumScale="0.75"
-                                                                     MaximumScale="4"
-                                                                     WheelSensitivity="0.15"
-                                                                     ConstrainToParentBounds="True"/>
-                            </b:Interaction.Behaviors>
-                        </game:SpeciesSimulationBoard>
+                                                     VerticalAlignment="Stretch" />
                         <Border HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Margin="10"
@@ -128,7 +398,7 @@
                                 BorderThickness="1"
                                 CornerRadius="5"
                                 Opacity="0.92">
-                            <TextBlock Text="FIELD OBSERVATION BOARD  ·  DRAG TO EXPLORE"
+                            <TextBlock Text="FIELD OBSERVATION BOARD"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="9"
                                        FontWeight="Bold"
@@ -163,57 +433,423 @@
 
                 <Border Visibility="{Binding BoardVisibility}"
                         HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
                         Width="264"
-                        Margin="0,68,18,0"
-                        Padding="12"
+                        Margin="0,68,18,62"
+                        Padding="22,12,12,10"
+                        Background="{DynamicResource Chrono_LightCream}"
+                        BorderBrush="{DynamicResource Chrono_Sand}"
+                        BorderThickness="2"
+                        CornerRadius="8"
+                        VerticalAlignment="Stretch">
+                    <Grid>
+                        <StackPanel Margin="8,0,0,0">
+                            <StackPanel Orientation="Horizontal">
+                                <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
+                                       Width="22"
+                                       Height="22"
+                                       Stretch="Uniform"
+                                       Margin="0,0,7,0" />
+                                <TextBlock Text="FIELD LEDGER"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_Olive}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding RunStatusText}"
+                                       Margin="0,7,0,0"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       FontSize="15"
+                                       FontWeight="Bold" />
+                            <TextBlock Text="{Binding RunDetailsText}"
+                                       Margin="0,2,0,0"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="9"
+                                       TextWrapping="Wrap" />
+                            <Rectangle Height="1"
+                                       Margin="0,8,0,7"
+                                       Fill="Transparent"
+                                       Stroke="{DynamicResource Chrono_Sand}"
+                                       StrokeDashArray="7,4"
+                                       StrokeThickness="2" />
+                            <TextBlock Text="{Binding PhaseText}"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <ItemsControl ItemsSource="{Binding PhaseTimelineItems}"
+                                          Style="{StaticResource GalapagOS.Timeline}"
+                                          ItemTemplate="{StaticResource GalapagOS_TimelineCompactItemTemplate}"
+                                          Margin="0,5,0,4" />
+                            <Rectangle Height="1"
+                                       Margin="0,3,0,7"
+                                       Fill="Transparent"
+                                       Stroke="{DynamicResource Chrono_Sand}"
+                                       StrokeDashArray="7,4"
+                                       StrokeThickness="2" />
+                            <TextBlock Text="POPULATION"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <Grid Margin="0,6,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="29" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}"
+                                       Width="24"
+                                       Height="24"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Left" />
+                                <ProgressBar Grid.Column="1"
+                                             Value="{Binding HerbivorePopulation, Mode=OneWay}"
+                                             Maximum="{Binding HerbivorePopulationMaximum, Mode=OneWay}"
+                                             Style="{StaticResource GalapagOS.ProgressBar.Segmented}"
+                                             MinWidth="90"
+                                             Height="22"
+                                             Margin="0,0,5,0"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding HerbivorePopulationText}"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="9"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                            <Grid Margin="0,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="29" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{StaticResource GalapagOS.Image.Species.Fox.32}"
+                                       Width="24"
+                                       Height="24"
+                                       Stretch="Uniform"
+                                       HorizontalAlignment="Left" />
+                                <ProgressBar Grid.Column="1"
+                                             Value="{Binding CarnivorePopulation, Mode=OneWay}"
+                                             Maximum="{Binding CarnivorePopulationMaximum, Mode=OneWay}"
+                                             Foreground="{DynamicResource Chrono_LightCoral}"
+                                             Style="{StaticResource GalapagOS.ProgressBar.Segmented}"
+                                             MinWidth="90"
+                                             Height="22"
+                                             Margin="0,0,5,0"
+                                             HorizontalAlignment="Stretch"
+                                             VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2"
+                                           Text="{Binding CarnivorePopulationText}"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="9"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           VerticalAlignment="Center" />
+                            </Grid>
+                            <Rectangle Height="1"
+                                       Margin="0,8,0,7"
+                                       Fill="Transparent"
+                                       Stroke="{DynamicResource Chrono_Sand}"
+                                       StrokeDashArray="7,4"
+                                       StrokeThickness="2" />
+                            <TextBlock Text="RESEARCH DATA"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <ContentControl Width="70"
+                                                Style="{StaticResource GalapagOS.ResearchCard}"
+                                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
+                                                game:GalapagOSMetricRow.Label="PLANTS"
+                                                game:GalapagOSMetricRow.Value="6 / 8"
+                                                Margin="0,0,2,0" />
+                                <ContentControl Width="70"
+                                                Style="{StaticResource GalapagOS.ResearchCard}"
+                                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
+                                                game:GalapagOSMetricRow.Label="FLOWERS"
+                                                game:GalapagOSMetricRow.Value="4 / 8"
+                                                Margin="0,0,2,0" />
+                                <ContentControl Width="70"
+                                                Style="{StaticResource GalapagOS.ResearchCard}"
+                                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.Flask}"
+                                                game:GalapagOSMetricRow.Label="DATA"
+                                                game:GalapagOSMetricRow.Value="2 / 4" />
+                            </StackPanel>
+                            <Rectangle Height="1"
+                                       Margin="0,8,0,7"
+                                       Fill="Transparent"
+                                       Stroke="{DynamicResource Chrono_Sand}"
+                                       StrokeDashArray="7,4"
+                                       StrokeThickness="2" />
+                            <TextBlock Text="ECOLOGY LEGEND"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <Grid Margin="0,5,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource Chrono_Olive}" Margin="0,0,5,0" />
+                                    <TextBlock Text="GRASS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="8" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource Chrono_AzureSky}" Margin="0,0,5,0" />
+                                    <TextBlock Text="WATER" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="8" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                </StackPanel>
+                            </Grid>
+                            <Grid Margin="0,4,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource Chrono_GoldenPollen}" Margin="0,0,5,0" />
+                                    <TextBlock Text="FLOWERS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="8" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                    <Ellipse Width="10" Height="10" Fill="{DynamicResource Chrono_Sand}" Margin="0,0,5,0" />
+                                    <TextBlock Text="ROCK" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="8" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                </StackPanel>
+                            </Grid>
+                            <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                <Button Content="RESTART"
+                                        Command="{Binding RestartCommand}"
+                                        IsEnabled="{Binding CanRestart}"
+                                        Style="{StaticResource GalapagOS.Button.Secondary}"
+                                        Width="92"
+                                        Height="30"
+                                        FontSize="11"
+                                        Padding="5,2"
+                                        Margin="0,0,6,0" />
+                                <Button Content="STOP"
+                                        Command="{Binding StopCommand}"
+                                        IsEnabled="{Binding CanStop}"
+                                        Style="{StaticResource GalapagOS.Button.Secondary}"
+                                        Width="70"
+                                        Height="30"
+                                        FontSize="11"
+                                        Padding="5,2" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Border Visibility="{Binding BoardVisibility}"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Bottom"
+                        Height="64"
+                        Margin="18,0,302,56"
+                        Padding="10,6"
                         Background="{DynamicResource Chrono_LightCream}"
                         BorderBrush="{DynamicResource Chrono_Sand}"
                         BorderThickness="2"
                         CornerRadius="8">
-                    <StackPanel>
-                        <TextBlock Text="FIELD LEDGER"
-                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                   FontSize="11"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource Chrono_Olive}" />
-                        <TextBlock Text="{Binding RunStatusText}"
-                                   Margin="0,8,0,0"
-                                   Foreground="{DynamicResource Chrono_TreeBark}"
-                                   FontSize="17"
-                                   FontWeight="Bold" />
-                        <TextBlock Text="{Binding RunDetailsText}"
-                                   Margin="0,3,0,0"
-                                   Foreground="{DynamicResource Chrono_TreeBark}"
-                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                   FontSize="10"
-                                   TextWrapping="Wrap" />
-                        <Rectangle Height="1"
-                                   Margin="0,10,0,8"
-                                   Fill="Transparent"
-                                   Stroke="{DynamicResource Chrono_Sand}"
-                                   StrokeDashArray="7,4"
-                                   StrokeThickness="1" />
-                        <TextBlock Text="ROSTER"
-                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                   FontSize="9"
-                                   FontWeight="Bold"
-                                   Foreground="{DynamicResource Chrono_Olive}" />
-                        <TextBlock Text="{Binding RosterText}"
-                                   Margin="0,3,0,0"
-                                   Foreground="{DynamicResource Chrono_TreeBark}"
-                                   FontSize="11"
-                                   TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding CurrencyText}"
-                                   Margin="0,8,0,0"
-                                   Foreground="{DynamicResource Chrono_Olive}"
-                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                   FontSize="10"
-                                   FontWeight="Bold" />
-                    </StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="170" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="280" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="210" />
+                            <ColumnDefinition Width="1" />
+                            <ColumnDefinition Width="170" />
+                        </Grid.ColumnDefinitions>
+                        <Button Visibility="{Binding RunningVisibility}"
+                                Command="{Binding PauseCommand}"
+                                IsEnabled="{Binding CanPause}"
+                                Style="{StaticResource GalapagOS.Button.Primary}"
+                                Width="160"
+                                Height="44"
+                                Padding="8,5">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource GalapagOS.Icon.Pause}"
+                                      Width="15"
+                                      Height="19"
+                                      Stretch="Uniform"
+                                      Stroke="{DynamicResource Chrono_VanillaCream}"
+                                      StrokeThickness="2"
+                                      Fill="Transparent"
+                                      Margin="0,0,8,0" />
+                                <TextBlock Text="PAUSE"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                           FontSize="15"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_VanillaCream}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Visibility="{Binding PausedVisibility}"
+                                Command="{Binding ResumeCommand}"
+                                IsEnabled="{Binding CanResume}"
+                                Style="{StaticResource GalapagOS.Button.Primary}"
+                                Width="160"
+                                Height="44"
+                                Padding="8,5">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Path Data="{StaticResource GalapagOS.Icon.Play}"
+                                      Width="15"
+                                      Height="19"
+                                      Stretch="Uniform"
+                                      Stroke="{DynamicResource Chrono_VanillaCream}"
+                                      StrokeThickness="2"
+                                      Fill="Transparent"
+                                      Margin="0,0,8,0" />
+                                <TextBlock Text="RESUME"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                           FontSize="15"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_VanillaCream}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Border Grid.Column="1"
+                                Width="1"
+                                Background="{DynamicResource Chrono_Sand}"
+                                Margin="8,2" />
+                        <StackPanel Grid.Column="2"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="SPEED"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,10,0" />
+                            <RadioButton Content="−"
+                                         GroupName="SimulationSpeed"
+                                         Style="{StaticResource GalapagOS.RadioButton.Speed}"
+                                         Width="38"
+                                         Height="34"
+                                         Margin="0,0,5,0" />
+                            <RadioButton Content="1x"
+                                         GroupName="SimulationSpeed"
+                                         IsChecked="True"
+                                         Style="{StaticResource GalapagOS.RadioButton.Speed}"
+                                         Width="42"
+                                         Height="34"
+                                         Margin="0,0,5,0" />
+                            <RadioButton Content="2x"
+                                         GroupName="SimulationSpeed"
+                                         Style="{StaticResource GalapagOS.RadioButton.Speed}"
+                                         Width="42"
+                                         Height="34"
+                                         Margin="0,0,5,0" />
+                            <RadioButton Content="4x"
+                                         GroupName="SimulationSpeed"
+                                         Style="{StaticResource GalapagOS.RadioButton.Speed}"
+                                         Width="42"
+                                         Height="34" />
+                        </StackPanel>
+                        <Border Grid.Column="3"
+                                Width="1"
+                                Background="{DynamicResource Chrono_Sand}"
+                                Margin="8,2" />
+                        <StackPanel Grid.Column="4"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
+                            <TextBlock Text="ZOOM"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <Button Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Width="34"
+                                    Height="34"
+                                    Padding="5"
+                                    Margin="0,0,5,0">
+                                <Path Data="{StaticResource GalapagOS.Icon.ZoomOut}"
+                                      Style="{StaticResource GalapagOS.Icon.Path}" />
+                            </Button>
+                            <TextBlock Text="100%"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,5,0" />
+                            <Button Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Width="34"
+                                    Height="34"
+                                    Padding="5">
+                                <Path Data="{StaticResource GalapagOS.Icon.ZoomIn}"
+                                      Style="{StaticResource GalapagOS.Icon.Path}" />
+                            </Button>
+                        </StackPanel>
+                        <Border Grid.Column="5"
+                                Width="1"
+                                Background="{DynamicResource Chrono_Sand}"
+                                Margin="8,2" />
+                        <Button Grid.Column="6"
+                                Style="{StaticResource GalapagOS.Button.FieldNotes}"
+                                Width="160"
+                                Height="44"
+                                Padding="7,4">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}"
+                                       Width="23"
+                                       Height="23"
+                                       Stretch="Uniform"
+                                       Margin="0,0,7,0" />
+                                <TextBlock Text="FIELD NOTES"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                    </Grid>
                 </Border>
 
-        <Border Visibility="{Binding SettingsVisibility}"
+                <Border Visibility="{Binding BoardVisibility}"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Bottom"
+                        Height="46"
+                        Margin="18,0,18,0"
+                        Padding="10,4"
+                        Background="{DynamicResource Chrono_LightCream}"
+                        BorderBrush="{DynamicResource Chrono_Sand}"
+                        BorderThickness="2"
+                        CornerRadius="7">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="185" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}"
+                                   Width="22"
+                                   Height="22"
+                                   Stretch="Uniform"
+                                   Margin="0,0,7,0" />
+                            <TextBlock Text="PHASE TIMELINE"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       VerticalAlignment="Center" />
+                        </StackPanel>
+                        <ItemsControl Grid.Column="1"
+                                      ItemsSource="{Binding PhaseTimelineItems}"
+                                      Style="{StaticResource GalapagOS.Timeline}"
+                                      HorizontalAlignment="Left"
+                                      VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
+
+        <!-- Legacy expedition setup is intentionally hidden. The Lab owns setup now. -->
+        <Border Visibility="Collapsed"
                 HorizontalAlignment="Left"
                 VerticalAlignment="Top"
                 Margin="28,88,0,0"
@@ -561,112 +1197,6 @@
             </ScrollViewer>
         </Border>
 
-        <Border Visibility="{Binding RunningVisibility}"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Width="340"
-                Margin="0,0,28,26"
-                Padding="18"
-                Background="{DynamicResource Chrono_LightCream}"
-                BorderBrush="{DynamicResource Chrono_Olive}"
-                BorderThickness="3"
-                CornerRadius="8">
-            <StackPanel>
-                <TextBlock Text="LIVE FIELD CONTROLS"
-                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                           FontSize="10"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Chrono_Olive}" />
-                <TextBlock Text="{Binding RunStatusText}"
-                           Foreground="{DynamicResource Chrono_Olive}"
-                           FontSize="18"
-                           FontWeight="Bold"/>
-                <TextBlock Text="{Binding RunDetailsText}"
-                           Foreground="{DynamicResource Chrono_TreeBark}"
-                           FontSize="14"
-                           Margin="0,6,0,14"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="PAUSE"
-                            Command="{Binding PauseCommand}"
-                            IsEnabled="{Binding CanPause}"
-                            Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="92"
-                            Height="42"
-                            Margin="0,0,8,0"/>
-                    <Button Content="RESTART"
-                            Command="{Binding RestartCommand}"
-                            IsEnabled="{Binding CanRestart}"
-                            Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="102"
-                            Height="42"
-                            Margin="0,0,8,0"/>
-                    <Button Content="STOP"
-                            Command="{Binding StopCommand}"
-                            IsEnabled="{Binding CanStop}"
-                            Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
-                            Height="42"/>
-                </StackPanel>
-                <Button Content="END"
-                        Command="{Binding EndCommand}"
-                        IsEnabled="{Binding CanEnd}"
-                        Style="{StaticResource GalapagOS.Button.Secondary}"
-                        Width="74"
-                        Height="42"
-                        HorizontalAlignment="Left"
-                        Margin="0,8,0,0"/>
-            </StackPanel>
-        </Border>
-
-        <Border Visibility="{Binding PausedVisibility}"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Width="340"
-                Margin="0,0,28,26"
-                Padding="18"
-                Background="{DynamicResource Chrono_VanillaCream}"
-                BorderBrush="{DynamicResource Chrono_Tangerine}"
-                BorderThickness="3"
-                CornerRadius="8">
-            <StackPanel>
-                <TextBlock Text="FIELD NOTE · PAUSED"
-                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                           FontSize="10"
-                           FontWeight="Bold"
-                           Foreground="{DynamicResource Chrono_Tangerine}" />
-                <TextBlock Text="SIMULATION PAUSED"
-                           Foreground="{DynamicResource Chrono_Tangerine}"
-                           FontSize="18"
-                           FontWeight="Bold"/>
-                <TextBlock Text="{Binding RunDetailsText}"
-                           Foreground="{DynamicResource Chrono_TreeBark}"
-                           FontSize="14"
-                           Margin="0,6,0,14"/>
-                <StackPanel Orientation="Horizontal">
-                    <Button Content="RESUME"
-                            Command="{Binding ResumeCommand}"
-                            IsEnabled="{Binding CanResume}"
-                            Style="{StaticResource GalapagOS.Button.Primary}"
-                            Width="105"
-                            Height="42"
-                            Margin="0,0,8,0"/>
-                    <Button Content="RESTART"
-                            Command="{Binding RestartCommand}"
-                            IsEnabled="{Binding CanRestart}"
-                            Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="102"
-                            Height="42"
-                            Margin="0,0,8,0"/>
-                    <Button Content="STOP"
-                            Command="{Binding StopCommand}"
-                            IsEnabled="{Binding CanStop}"
-                            Style="{StaticResource GalapagOS.Button.Secondary}"
-                            Width="74"
-                            Height="42"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
-
         <Border Visibility="{Binding PhaseDecisionVisibility}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
@@ -935,7 +1465,7 @@
                             Width="100"
                             Height="50"/>
                 </StackPanel>
-                <Button Content="RETURN TO LAB"
+                <Button Content="{Binding ReturnDestinationText}"
                         Command="{Binding ReturnToLabCommand}"
                         IsEnabled="{Binding CanReturnToLab}"
                         Style="{StaticResource GalapagOS.Button.Secondary}"

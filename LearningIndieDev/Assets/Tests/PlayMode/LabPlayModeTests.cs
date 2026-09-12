@@ -255,6 +255,11 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(openWindows[1], "Title"), Is.EqualTo("Gene Lab"));
             Assert.That(GetProperty(viewModel, "ActiveDesktopAppTitle"), Is.EqualTo("Gene Lab"));
 
+            var fieldNotesWindow = openWindows[0];
+            Assert.That(GetProperty(fieldNotesWindow, "FieldGuideSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That((float)GetProperty(fieldNotesWindow, "Width"), Is.InRange(1040f, 1510f));
+            Assert.That((float)GetProperty(fieldNotesWindow, "Height"), Is.InRange(560f, 820f));
+
             var geneLabWindow = openWindows[1];
             Assert.That((float)GetProperty(geneLabWindow, "Width"), Is.InRange(960f, 1450f));
             Assert.That((float)GetProperty(geneLabWindow, "Height"), Is.InRange(560f, 820f));

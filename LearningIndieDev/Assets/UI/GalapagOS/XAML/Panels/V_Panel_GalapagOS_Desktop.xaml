@@ -35,7 +35,7 @@
               Canvas.Top="32"
               Content="Field Notes"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="Field Notes">
         <b:Interaction.Behaviors>
@@ -48,7 +48,7 @@
               Canvas.Top="160"
               Content="Gene Lab"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Flask}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="Gene Lab">
         <b:Interaction.Behaviors>
@@ -61,7 +61,7 @@
               Canvas.Top="288"
               Content="Simulation"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="Simulation">
         <b:Interaction.Behaviors>
@@ -74,7 +74,7 @@
               Canvas.Top="416"
               Content="Biome Data"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="Biome Data">
         <b:Interaction.Behaviors>
@@ -87,7 +87,7 @@
               Canvas.Top="544"
               Content="My Collection"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="My Collection">
         <b:Interaction.Behaviors>
@@ -100,7 +100,7 @@
               Canvas.Top="672"
               Content="Settings"
               Style="{StaticResource GalapagOS.DesktopIcon}"
-              game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+              game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
               game:GalapagOSDesktopIcon.Command="{Binding OpenDesktopIconCommand}"
               game:GalapagOSDesktopIcon.CommandParameter="Settings">
         <b:Interaction.Behaviors>
@@ -134,7 +134,7 @@
           <StackPanel Orientation="Horizontal"
                       HorizontalAlignment="Center"
                       VerticalAlignment="Center">
-            <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
                    Width="30"
                    Height="30"
                    Margin="0,0,7,0"
@@ -278,7 +278,7 @@
                             Width="1120"
                             Height="720"
                             Header="GALAPAGOS LAB"
-                            game:GalapagOSWindow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                            game:GalapagOSWindow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
                             game:GalapagOSWindow.CloseCommand="{Binding CloseLabWindowCommand}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -298,7 +298,7 @@
                        FontSize="28"
                        FontWeight="Bold"
                        Foreground="{DynamicResource Chrono_TreeBark}" />
-            <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
                    Width="38"
                    Height="38"
                    Margin="10,0,0,0"
@@ -340,7 +340,7 @@
             <StackPanel Grid.Row="0"
                         Orientation="Horizontal"
                         Margin="0,0,0,10">
-              <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+              <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
                      Width="28"
                      Height="28"
                      Margin="0,0,7,0"
@@ -383,7 +383,7 @@
             <StackPanel Grid.Row="2"
                         Orientation="Horizontal"
                         Margin="0,18,0,6">
-              <Image Source="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+              <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                      Width="28"
                      Height="28"
                      Margin="0,0,7,0"
@@ -413,7 +413,7 @@
                     Content="Go to Gene Lab"
                     Width="214"
                     FontSize="14"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Flask}"
                     HorizontalAlignment="Left"
                     Style="{StaticResource GalapagOS.Button.Primary}" />
           </Grid>
@@ -435,7 +435,7 @@
             <StackPanel Grid.Row="0"
                         Orientation="Horizontal"
                         Margin="0,0,0,10">
-              <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+              <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
                      Width="28"
                      Height="28"
                      Margin="0,0,7,0"
@@ -471,7 +471,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
-                  <Image Source="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                  <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
                          Width="36"
                          Height="36"
                          Stretch="Uniform"
@@ -517,17 +517,17 @@
                                 Style="{StaticResource GalapagOS.MetricStatRow}"
                                 game:GalapagOSMetricRow.Label="Explored"
                                 game:GalapagOSMetricRow.Value="68%"
-                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png" />
+                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}" />
                 <ContentControl Grid.Row="4"
                                 Style="{StaticResource GalapagOS.MetricStatRow}"
                                 game:GalapagOSMetricRow.Label="Collected"
                                 game:GalapagOSMetricRow.Value="28/40"
-                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png" />
+                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" />
                 <ContentControl Grid.Row="5"
                                 Style="{StaticResource GalapagOS.MetricStatRow}"
                                 game:GalapagOSMetricRow.Label="Rare Genes"
                                 game:GalapagOSMetricRow.Value="3/8"
-                                game:GalapagOSMetricRow.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png" />
+                                game:GalapagOSMetricRow.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" />
               </Grid>
             </Border>
 
@@ -571,7 +571,7 @@
           <HeaderedContentControl Width="{Binding Width}"
                                   Height="{Binding Height}"
                                   Header="{Binding Title}"
-                                  game:GalapagOSWindow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                                  game:GalapagOSWindow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
                                   game:GalapagOSWindow.CloseCommand="{Binding CloseCommand}"
                                   Style="{StaticResource GalapagOS_HeaderedWindowStyle}">
             <Grid>
@@ -597,19 +597,19 @@
                       <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <Image Source="../../Art/Icons/GalapagOS_Icon_Flask.png" Width="28" Height="28" Margin="0,0,9,0" />
+                      <Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="28" Height="28" Margin="0,0,9,0" />
                       <TextBlock Text="RESEARCH" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="#3E87A8" VerticalAlignment="Center" />
                       <TextBlock Text="2,450" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                     </StackPanel>
                     <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="26" Height="26" Margin="0,0,9,0" />
+                      <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="26" Height="26" Margin="0,0,9,0" />
                       <TextBlock Text="HERBIVORE" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
                       <TextBlock Text="820" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                     </StackPanel>
                     <Border Grid.Column="3" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
                     <StackPanel Grid.Column="4" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                      <Image Source="../../../../Art/Species/Animals/Standardized/32/Animals_01_Rabbit.png" Width="28" Height="28" Margin="0,0,9,0" Stretch="Uniform" />
+                      <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}" Width="28" Height="28" Margin="0,0,9,0" Stretch="Uniform" />
                       <TextBlock Text="HARE MASTERY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="#A85A1E" VerticalAlignment="Center" />
                       <TextBlock Text="6" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                     </StackPanel>
@@ -634,13 +634,13 @@
                       </Grid.RowDefinitions>
                       <Border Margin="14" Background="#FFF8E5" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6">
                         <Grid>
-                          <Image Source="../../../../Art/Species/Animals/Standardized/128/Animals_01_Rabbit.png" Width="146" Height="146" Stretch="Uniform" VerticalAlignment="Center" />
+                          <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="146" Height="146" Stretch="Uniform" VerticalAlignment="Center" />
                           <TextBlock Text="HARE" Margin="0,0,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
                         </Grid>
                       </Border>
                       <Border Grid.Row="1" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="14,0">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                          <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="25" Height="25" Margin="0,0,9,0" />
+                          <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Margin="0,0,9,0" />
                           <TextBlock Text="SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
                         </StackPanel>
                       </Border>
@@ -648,7 +648,7 @@
                         <Border Height="66" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="10">
                           <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="42" Height="42" />
+                            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="42" Height="42" />
                             <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
                             <TextBlock Grid.Column="2" Text="FERN" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                           </Grid>
@@ -656,7 +656,7 @@
                         <Border Height="76" Margin="0,7,0,0" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="3" CornerRadius="7" Padding="9">
                           <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /></Grid.ColumnDefinitions>
-                            <Image Source="../../../../Art/Species/Animals/Standardized/64/Animals_01_Rabbit.png" Width="50" Height="50" />
+                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="50" Height="50" />
                             <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
                             <TextBlock Grid.Column="2" Text="HARE" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                             <Ellipse Grid.Column="3" Width="11" Height="11" Fill="{DynamicResource Chrono_Olive}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" />
@@ -665,7 +665,7 @@
                         <Border Height="66" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="10">
                           <Grid>
                             <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /></Grid.ColumnDefinitions>
-                            <Image Source="../../../../Art/Species/Animals/Standardized/64/Animals_01_Fox.png" Width="48" Height="48" />
+                            <Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}" Width="48" Height="48" />
                             <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
                             <TextBlock Grid.Column="2" Text="FOX" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                             <Ellipse Grid.Column="3" Width="10" Height="10" Fill="#9B9271" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" />
@@ -683,9 +683,9 @@
                         <RowDefinition Height="92" />
                       </Grid.RowDefinitions>
                       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="23" Height="23" Margin="0,0,10,0" />
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="23" Height="23" Margin="0,0,10,0" />
                         <TextBlock Text="HARE GENOME" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
-                        <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="23" Height="23" Margin="10,0,0,0" />
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="23" Height="23" Margin="10,0,0,0" />
                       </StackPanel>
 
                       <Viewbox Grid.Row="1" Stretch="Uniform">
@@ -699,7 +699,7 @@
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="29" /></Grid.RowDefinitions>
                               <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="50" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                <Image Source="../../../../Art/Species/Animals/Standardized/64/Animals_01_Rabbit.png" Width="48" Height="48" />
+                                <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="48" Height="48" />
                                 <TextBlock Grid.Column="1" Text="KEEN EARS" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" />
                               </Grid>
                               <Border Grid.Row="1" Background="{DynamicResource Chrono_Olive}" CornerRadius="4" Padding="8,2">
@@ -713,7 +713,7 @@
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="29" /></Grid.RowDefinitions>
                               <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="46" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="42" Height="42" />
+                                <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="42" Height="42" />
                                 <TextBlock Grid.Column="1" Text="BURROW INSTINCT" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" />
                               </Grid>
                               <Border Grid.Row="1" Background="{DynamicResource Chrono_Olive}" CornerRadius="4" Padding="8,2">
@@ -727,7 +727,7 @@
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="28" /></Grid.RowDefinitions>
                               <Grid>
                                 <Grid.ColumnDefinitions><ColumnDefinition Width="48" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                                <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="43" Height="43" />
+                                <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="43" Height="43" />
                                 <TextBlock Grid.Column="1" Text="GUARDED BURROW" Margin="9,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" />
                               </Grid>
                               <Border Grid.Row="1" Visibility="{Binding GuardedBurrowActiveVisibility}" Background="{DynamicResource Chrono_Olive}" CornerRadius="4" Padding="8,2">
@@ -742,21 +742,21 @@
                           <Border Canvas.Left="19" Canvas.Top="338" Width="200" Height="86" Background="#FFF8E5" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="3" CornerRadius="7" Padding="9">
                             <Grid>
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="26" /></Grid.RowDefinitions>
-                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="39" Height="39" /><TextBlock Grid.Column="1" Text="EFFICIENT GRAZING" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
+                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="39" Height="39" /><TextBlock Grid.Column="1" Text="EFFICIENT GRAZING" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
                               <Border Grid.Row="1" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4"><TextBlock Text="UNLOCKED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
                             </Grid>
                           </Border>
                           <Border Canvas.Left="265" Canvas.Top="338" Width="200" Height="86" Background="#FFF8E5" BorderBrush="#D89A32" BorderThickness="3" CornerRadius="7" Padding="9">
                             <Grid>
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="26" /></Grid.RowDefinitions>
-                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="../../../../Art/Species/Animals/Standardized/64/Animals_01_Rabbit.png" Width="42" Height="42" /><TextBlock Grid.Column="1" Text="LARGE LITTERS" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
+                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="42" Height="42" /><TextBlock Grid.Column="1" Text="LARGE LITTERS" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
                               <Border Grid.Row="1" Background="#FFF3C8" BorderBrush="#D89A32" BorderThickness="1" CornerRadius="4"><TextBlock Text="☆  AVAILABLE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="#A85A1E" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
                             </Grid>
                           </Border>
                           <Border Canvas.Left="511" Canvas.Top="338" Width="200" Height="86" Background="#E9E6DA" BorderBrush="#9B9271" BorderThickness="3" CornerRadius="7" Padding="9" Opacity="0.8">
                             <Grid>
                               <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="26" /></Grid.RowDefinitions>
-                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png" Width="38" Height="38" /><TextBlock Grid.Column="1" Text="NIGHT FORAGER" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
+                              <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="44" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" Width="38" Height="38" /><TextBlock Grid.Column="1" Text="NIGHT FORAGER" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" VerticalAlignment="Center" /></Grid>
                               <Border Grid.Row="1" Background="#D9D5C8" BorderBrush="#9B9271" BorderThickness="1" CornerRadius="4"><TextBlock Text="LOCKED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="#625B49" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
                             </Grid>
                           </Border>
@@ -805,14 +805,14 @@
 
                       <Border Grid.Row="2" Margin="0,14,0,0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="14">
                         <StackPanel>
-                          <StackPanel Orientation="Horizontal"><Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="25" Height="25" Margin="0,0,9,0" /><TextBlock Text="SPECIES EFFECT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></StackPanel>
+                          <StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Margin="0,0,9,0" /><TextBlock Text="SPECIES EFFECT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></StackPanel>
                           <TextBlock Text="+  Shelter under fox pressure" Margin="4,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="{DynamicResource Chrono_TreeBark}" />
                         </StackPanel>
                       </Border>
 
                       <Border Grid.Row="3" Margin="0,12,0,0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="14">
                         <StackPanel>
-                          <StackPanel Orientation="Horizontal"><Image Source="../../Art/Icons/GalapagOS_Icon_Flask.png" Width="25" Height="25" Margin="0,0,9,0" /><TextBlock Text="BIOME IMPACT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="#7B5732" VerticalAlignment="Center" /></StackPanel>
+                          <StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="25" Height="25" Margin="0,0,9,0" /><TextBlock Text="BIOME IMPACT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="#7B5732" VerticalAlignment="Center" /></StackPanel>
                           <TextBlock Text="+  Local density" Margin="4,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="{DynamicResource Chrono_Olive}" />
                           <TextBlock Text="−  Grazing range" Margin="4,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="#C85B3E" />
                         </StackPanel>
@@ -829,136 +829,247 @@
 
                 <Border Grid.Row="2" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6">
                   <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="22" Height="22" Margin="0,0,12,0" />
+                    <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="22" Height="22" Margin="0,0,12,0" />
                     <TextBlock Text="MUTATIONS APPLY IN SPECIES SIMULATIONS ONLY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
-                    <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png" Width="22" Height="22" Margin="12,0,0,0" />
+                    <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="22" Height="22" Margin="12,0,0,0" />
                   </StackPanel>
                 </Border>
               </Grid>
               </Viewbox>
-              <Grid Visibility="{Binding SettingsSurfaceVisibility}">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="*" />
-                  <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Border Background="{DynamicResource Chrono_Lime}"
-                        BorderBrush="{DynamicResource Chrono_Olive}"
-                        BorderThickness="2"
-                        CornerRadius="6"
-                        Padding="8">
-                  <TextBlock Text="SETTINGS  ·  DISPLAY  ·  AUDIO  ·  CONTROLS  ·  ACCESSIBILITY"
-                             FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                             FontSize="10"
-                             FontWeight="Bold"
-                             Foreground="{DynamicResource Chrono_TreeBark}" />
-                </Border>
-                <Grid Grid.Row="1" Margin="0,8,0,8">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="142" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="*" />
-                  </Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_Lime}"
-                          BorderBrush="{DynamicResource Chrono_Olive}"
-                          BorderThickness="2"
-                          CornerRadius="6"
-                          Padding="8">
-                    <StackPanel>
-                      <TextBlock Text="SECTIONS"
-                                 FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                 FontSize="10"
-                                 FontWeight="Bold"
-                                 Foreground="{DynamicResource Chrono_Olive}" />
-                      <TextBlock Text="DISPLAY"
-                                 Margin="0,10,0,0"
-                                 FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                                 FontSize="13"
-                                 FontWeight="Bold"
-                                 Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="AUDIO" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="CONTROLS" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="DESKTOP" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
-                    </StackPanel>
-                  </Border>
-                  <Border Grid.Column="2"
-                          Background="{DynamicResource Chrono_LightCream}"
-                          BorderBrush="{DynamicResource Chrono_Sand}"
-                          BorderThickness="2"
-                          CornerRadius="6"
-                          Padding="10">
-                    <StackPanel>
-                      <TextBlock Text="DISPLAY"
-                                 FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                                 FontSize="16"
-                                 FontWeight="Bold"
-                                 Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="How GalapagOS fits your screen."
-                                 Margin="0,2,0,0"
-                                 FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                                 FontSize="11"
-                                 Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <Rectangle Height="1" Margin="0,8,0,6" Fill="Transparent" Stroke="{DynamicResource Chrono_Sand}" StrokeDashArray="6,4" StrokeThickness="1" />
-                      <TextBlock Text="WINDOW MODE      WINDOWED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="RESOLUTION       1280 × 720" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="UI SCALE          100%" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" />
-                    </StackPanel>
-                  </Border>
-                </Grid>
-                <Grid Grid.Row="2">
-                  <Button Content="RESTORE DEFAULTS" Width="132" Height="28" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                  <Button Content="APPLY CHANGES" Width="126" Height="28" HorizontalAlignment="Right" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Primary}" />
-                </Grid>
-              </Grid>
+              <Viewbox Visibility="{Binding SettingsSurfaceVisibility}" Stretch="Uniform">
+                <Grid Width="1100" Height="610" Background="#FFF4E8CA">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="58" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="54" />
+                  </Grid.RowDefinitions>
 
-              <Grid Visibility="{Binding SpeciesCollectionSurfaceVisibility}">
-                <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="Auto" />
-                  <RowDefinition Height="*" />
-                  <RowDefinition Height="Auto" />
-                </Grid.RowDefinitions>
-                <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8">
-                  <TextBlock Text="SPECIES COLLECTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                </Border>
-                <Border Grid.Row="1" Margin="0,6,0,0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="5">
-                  <TextBlock Text="ALL   PLANTS   HERBIVORES   CARNIVORES                         UNLOCKED  ☆" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
-                </Border>
-                <Grid Grid.Row="2" Margin="0,6,0,6">
-                  <Grid.ColumnDefinitions><ColumnDefinition Width="126" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /><ColumnDefinition Width="8" /><ColumnDefinition Width="142" /></Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="7">
-                    <StackPanel>
-                      <TextBlock Text="SPECIMENS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
-                      <TextBlock Text="HARE" Margin="0,9,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="FOX" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="GRASS" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="LOCKED SLOT" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
+                  <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="170" />
+                      <ColumnDefinition Width="156" />
+                      <ColumnDefinition Width="156" />
+                      <ColumnDefinition Width="174" />
+                      <ColumnDefinition Width="210" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="12,0">
+                      <TextBlock Text="SETTINGS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="1" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0">
+                      <TextBlock Text="DISPLAY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="2" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0">
+                      <TextBlock Text="AUDIO" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="3" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0">
+                      <TextBlock Text="CONTROLS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="4" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0">
+                      <TextBlock Text="ACCESSIBILITY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    </Border>
+                    <Border Grid.Column="5" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" CornerRadius="0,6,6,0" Padding="14,0">
+                      <TextBlock Text="DESKTOP" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                    </Border>
+                  </Grid>
+
+                  <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="218" />
+                      <ColumnDefinition Width="14" />
+                      <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Background="#FFE5EDB1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="8" Padding="14">
+                      <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="34" /><RowDefinition Height="1" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <TextBlock Text="SECTIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                        <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Olive}" Opacity="0.45" />
+                        <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                          <Border Background="{DynamicResource Chrono_Olive}" BorderBrush="{DynamicResource Chrono_TreeBark}" BorderThickness="1" CornerRadius="5" Padding="10,9">
+                            <TextBlock Text="DISPLAY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_VanillaCream}" />
+                          </Border>
+                          <TextBlock Text="AUDIO" Margin="10,18,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="CONTROLS" Margin="10,16,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="ACCESSIBILITY" Margin="10,16,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="DESKTOP" Margin="10,16,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Margin="0,12,0,0">
+                          <TextBlock Text="FIELD STATION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                          <TextBlock Text="PREFERENCES" Margin="0,3,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="8" Padding="22">
+                      <Grid>
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="52" />
+                          <RowDefinition Height="1" />
+                          <RowDefinition Height="124" />
+                          <RowDefinition Height="1" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0">
+                          <TextBlock Text="DISPLAY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="How GalapagOS fits your screen." Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        </StackPanel>
+                        <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
+                        <Grid Grid.Row="2" Margin="0,16,0,14">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="1.1*" /><ColumnDefinition Width="1*" /><ColumnDefinition Width="1.1*" /></Grid.ColumnDefinitions>
+                          <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="WINDOW MODE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
+                              <Grid><TextBlock Text="WINDOWED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                            </Border>
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Margin="0,0,18,0">
+                            <TextBlock Text="RESOLUTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
+                              <Grid><TextBlock Text="1280 × 720" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                            </Border>
+                          </StackPanel>
+                          <StackPanel Grid.Column="2">
+                            <TextBlock Text="UI SCALE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
+                              <Grid><TextBlock Text="100%" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                            </Border>
+                          </StackPanel>
+                        </Grid>
+                        <Rectangle Grid.Row="3" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
+                        <Grid Grid.Row="4" Margin="0,16,0,0">
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="1.15*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                          <StackPanel>
+                            <TextBlock Text="PIXEL PREVIEW" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <Border Height="116" Margin="0,8,18,0" Background="{DynamicResource Chrono_AzureSky}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8">
+                              <Canvas>
+                                <Path Data="M 0,83 L 65,37 L 116,72 L 184,28 L 252,76 L 326,43 L 394,80 L 394,116 L 0,116 Z" Fill="{DynamicResource Chrono_Olive}" />
+                                <Path Data="M 0,99 L 76,64 L 144,96 L 216,56 L 290,91 L 394,62 L 394,116 L 0,116 Z" Fill="{DynamicResource Chrono_Lime}" />
+                                <Ellipse Width="24" Height="24" Canvas.Left="24" Canvas.Top="16" Fill="{DynamicResource Chrono_VanillaCream}" />
+                                <Ellipse Width="16" Height="16" Canvas.Left="48" Canvas.Top="29" Fill="{DynamicResource Chrono_VanillaCream}" />
+                                <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="62" Height="62" Canvas.Left="166" Canvas.Top="48" Stretch="Uniform" />
+                              </Canvas>
+                            </Border>
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Margin="0,0,0,0">
+                            <TextBlock Text="RENDERING" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <Border Height="42" Margin="0,8,0,0" Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="10,0">
+                              <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Border Width="22" Height="22" Background="{DynamicResource Chrono_Olive}" CornerRadius="3"><TextBlock Text="✓" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_VanillaCream}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="PRESERVE CRISP PIXELS" Margin="9,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel>
+                            </Border>
+                            <TextBlock Text="Preview updates after the next apply." Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                            <TextBlock Text="CHANGES ARE LOCAL TO THIS FIELD STATION" Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
+                          </StackPanel>
+                        </Grid>
+                      </Grid>
+                    </Border>
+                  </Grid>
+
+                  <Grid Grid.Row="2" Margin="0,10,0,0">
+                    <Button Content="RESTORE DEFAULTS" Width="178" Height="42" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                      <Button Content="CANCEL" Width="126" Height="42" Margin="0,0,12,0" Command="{Binding CloseCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                      <Button Content="APPLY CHANGES" Width="178" Height="42" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Primary}" />
                     </StackPanel>
-                  </Border>
-                  <Border Grid.Column="2" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8">
-                    <Grid>
-                      <Grid.ColumnDefinitions><ColumnDefinition Width="74" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                      <Image Source="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png" Width="58" Height="58" Stretch="Uniform" VerticalAlignment="Top" />
-                      <StackPanel Grid.Column="1">
-                        <TextBlock Text="HARE · HERBIVORE" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                        <TextBlock Text="A cautious grazer with sharp hearing and a growing record." Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
-                        <Button Content="OPEN IN GENE LAB" Height="26" Margin="0,8,0,0" IsEnabled="False" HorizontalAlignment="Left" Style="{StaticResource GalapagOS.Button.Primary}" />
-                      </StackPanel>
-                    </Grid>
-                  </Border>
-                  <Border Grid.Column="4" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="7">
-                    <StackPanel>
-                      <TextBlock Text="QUICK FACTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
-                      <TextBlock Text="ROLE       HERBIVORE" Margin="0,9,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="BIOME      FOREST EDGE" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
-                      <TextBlock Text="MASTERY    68%" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                    </StackPanel>
+                  </Grid>
+                </Grid>
+              </Viewbox>
+
+              <Viewbox Visibility="{Binding SpeciesCollectionSurfaceVisibility}" Stretch="Uniform">
+                <Grid Width="1280" Height="700" Background="#FFF4E8CA">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="58" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="54" />
+                  </Grid.RowDefinitions>
+
+                  <Grid Grid.Row="0" Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="142" /><ColumnDefinition Width="132" /><ColumnDefinition Width="166" /><ColumnDefinition Width="180" /><ColumnDefinition Width="*" /><ColumnDefinition Width="186" /><ColumnDefinition Width="62" /></Grid.ColumnDefinitions>
+                    <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="12,0"><TextBlock Text="ALL" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Border>
+                    <Border Grid.Column="1" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0"><TextBlock Text="PLANTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Border>
+                    <Border Grid.Column="2" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0"><TextBlock Text="HERBIVORES" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Border>
+                    <Border Grid.Column="3" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0"><TextBlock Text="CARNIVORES" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Border>
+                    <Border Grid.Column="4" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" />
+                    <Border Grid.Column="5" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="12,0"><TextBlock Text="UNLOCKED  ⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></Border>
+                    <Border Grid.Column="6" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" CornerRadius="0,6,6,0"><TextBlock Text="☆" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="27" Foreground="{DynamicResource Chrono_GoldenPollen}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                  </Grid>
+
+                  <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="254" /><ColumnDefinition Width="14" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /><ColumnDefinition Width="286" /></Grid.ColumnDefinitions>
+                    <Border Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="8" Padding="12">
+                      <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="38" /><RowDefinition Height="1" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <TextBlock Text="SPECIMENS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                        <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
+                        <StackPanel Grid.Row="2" Margin="0,12,0,0">
+                          <Border Height="92" Background="#FFE5EDB1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="3" CornerRadius="6" Padding="8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="60" Height="60" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="HARE" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="27" Foreground="{DynamicResource Chrono_GoldenPollen}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                          </Border>
+                          <Border Height="82" Margin="0,8,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="6" Padding="8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}" Width="56" Height="56" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="FOX" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="25" Foreground="#FF9B9271" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                          </Border>
+                          <Border Height="82" Margin="0,8,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="6" Padding="8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="26" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="49" Height="49" Stretch="Uniform" /><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="FERN" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="3" Text="☆" FontSize="25" Foreground="#FF9B9271" HorizontalAlignment="Center" VerticalAlignment="Center" /></Grid>
+                          </Border>
+                          <Border Height="82" Margin="0,8,0,0" Background="#FFF1E9D7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="6" Padding="8">
+                            <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="66" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions><Grid Width="48" Height="48" HorizontalAlignment="Center" VerticalAlignment="Center"><Ellipse Width="43" Height="43" Fill="#FFB7B09B" Opacity="0.7" /><Path Data="M 8,18 L 8,14 A 12,12 0 0 1 32,14 L 32,18" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="4" Fill="Transparent" HorizontalAlignment="Center" VerticalAlignment="Center" /><Rectangle Width="24" Height="22" Canvas.Left="12" Canvas.Top="18" Fill="{DynamicResource Chrono_TreeBark}" RadiusX="4" RadiusY="4" HorizontalAlignment="Center" VerticalAlignment="Bottom" /></Grid><Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,8" /><TextBlock Grid.Column="2" Text="LOCKED SLOT" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="#FF776B55" VerticalAlignment="Center" /></Grid>
+                          </Border>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Margin="0,12,0,0"><TextBlock Text="MORE SPECIES AWAIT" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" /><TextBlock Text="YOUR DISCOVERIES" Margin="0,3,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" /></StackPanel>
+                      </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="8" Padding="14">
+                      <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="258" /><RowDefinition Height="Auto" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <Border Background="#FFA8D8F1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="7" Padding="8">
+                          <Canvas>
+                            <Path Data="M 0,172 L 102,98 L 178,149 L 276,72 L 388,151 L 510,82 L 638,150 L 638,258 L 0,258 Z" Fill="#FF6C934B" />
+                            <Path Data="M 0,204 L 110,152 L 222,198 L 330,133 L 446,194 L 544,150 L 638,184 L 638,258 L 0,258 Z" Fill="#FFB8CA70" />
+                            <Rectangle Canvas.Top="213" Width="638" Height="45" Fill="#FFF6EBC5" Opacity="0.82" />
+                            <Ellipse Width="45" Height="45" Canvas.Left="45" Canvas.Top="30" Fill="#FFFDF9E7" />
+                            <Ellipse Width="31" Height="31" Canvas.Left="82" Canvas.Top="52" Fill="#FFFDF9E7" />
+                            <Ellipse Width="48" Height="48" Canvas.Left="540" Canvas.Top="22" Fill="#FFFDF9E7" />
+                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="206" Height="206" Canvas.Left="218" Canvas.Top="76" Stretch="Uniform" />
+                            <Ellipse Width="9" Height="9" Canvas.Left="112" Canvas.Top="222" Fill="{DynamicResource Chrono_GoldenPollen}" />
+                            <Ellipse Width="9" Height="9" Canvas.Left="138" Canvas.Top="235" Fill="{DynamicResource Chrono_FloralRose}" />
+                            <Ellipse Width="9" Height="9" Canvas.Left="504" Canvas.Top="224" Fill="{DynamicResource Chrono_GoldenPollen}" />
+                          </Canvas>
+                        </Border>
+                        <TextBlock Grid.Row="1" Text="HARE  ·  HERBIVORE" Margin="0,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" />
+                        <Border Grid.Row="2" Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="12,5" HorizontalAlignment="Center" Margin="0,10,0,0"><StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="24" Height="24" Margin="0,0,7,0" /><TextBlock Text="DISCOVERED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></StackPanel></Border>
+                        <TextBlock Grid.Row="3" Text="A cautious grazer with sharp hearing and a growing record." Margin="18,14,18,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" VerticalAlignment="Top" />
+                        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,14,0,0"><Button Content="OPEN IN GENE LAB" Width="218" Height="44" Command="{Binding OpenGeneLabCommand}" Style="{StaticResource GalapagOS.Button.Primary}" /><Button Content="OPEN HISTORY" Width="178" Height="44" Margin="12,0,0,0" Command="{Binding OpenHistoryCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" /></StackPanel>
+                      </Grid>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="8" Padding="14">
+                      <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="42" /><RowDefinition Height="1" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <TextBlock Text="QUICK FACTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                        <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
+                        <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                          <Grid Height="38"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" /><TextBlock Grid.Column="1" Text="ROLE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="2" Text="HERBIVORE" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="#FFD89A16" VerticalAlignment="Center" /></Grid>
+                          <Rectangle Height="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.7" />
+                          <Grid Height="38"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><Path Data="M 3,18 L 13,3 L 23,18 Z" Fill="{DynamicResource Chrono_Sand}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1.2" Width="24" Height="24" /><TextBlock Grid.Column="1" Text="BIOME" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="2" Text="FOREST EDGE" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /></Grid>
+                          <Rectangle Height="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.7" />
+                          <Grid Height="58"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="▥" FontSize="25" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Center" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="MASTERY" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="2" Text="68%" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Grid>
+                          <ProgressBar Height="18" Value="0.68" Maximum="1" Margin="30,0,0,12" Style="{StaticResource GalapagOS.ProgressBar}" />
+                          <Rectangle Height="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.7" />
+                          <Grid Height="46"><Grid.ColumnDefinitions><ColumnDefinition Width="30" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions><TextBlock Text="▣" FontSize="22" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Center" /><TextBlock Grid.Column="1" Text="FIRST SEEN" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Grid.Column="2" Text="DAY 03" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></Grid>
+                          <TextBlock Text="KNOWN INTERACTIONS" Margin="0,14,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                          <Border Background="#FFF1F4D9" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8,6"><TextBlock Text="●  FORAGE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /></Border>
+                          <Border Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8,6" Margin="0,6,0,0"><TextBlock Text="●  FLIGHT" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="#FF6E7F98" /></Border>
+                          <Border Background="#FFFBE4DD" BorderBrush="{DynamicResource Chrono_LightCoral}" BorderThickness="1" CornerRadius="4" Padding="8,6" Margin="0,6,0,0"><TextBlock Text="●  FOX PRESSURE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="#FFC95A4D" /></Border>
+                        </StackPanel>
+                        <TextBlock Grid.Row="3" Text="HEALTHY SPECIES  ·  HEALTHY ISLANDS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" HorizontalAlignment="Center" TextAlignment="Center" />
+                      </Grid>
+                    </Border>
+                  </Grid>
+
+                  <Border Grid.Row="2" Background="#FFE5EDB1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="12,0">
+                    <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="150" /><ColumnDefinition Width="230" /><ColumnDefinition Width="*" /><ColumnDefinition Width="360" /></Grid.ColumnDefinitions><StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Width="27" Height="27" Margin="0,0,9,0" /><TextBlock Text="DISCOVERY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel><TextBlock Grid.Column="1" Text="6 / 10 SPECIES CATALOGUED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><ProgressBar Grid.Column="2" Height="20" Value="0.6" Maximum="1" Margin="18,0,22,0" Style="{StaticResource GalapagOS.ProgressBar}" /><TextBlock Grid.Column="3" Text="LIFE FINDS A WAY HERE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
                   </Border>
                 </Grid>
-                <Border Grid.Row="3" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource GalapagOS.Window.BorderBrush}" BorderThickness="1" CornerRadius="5" Padding="6">
-                  <TextBlock Text="DISCOVERY   ████████████░░░░   6 / 10 SPECIES CATALOGUED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                </Border>
-              </Grid>
+              </Viewbox>
 
               <Grid Visibility="{Binding MyPcSurfaceVisibility}">
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
@@ -1011,14 +1122,212 @@
                 </Grid>
               </Grid>
 
-              <Grid Visibility="{Binding FieldGuideSurfaceVisibility}">
-                <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8"><TextBlock Text="FIELD GUIDE / RESEARCH JOURNAL  ·  SPECIES   BIOMES   ECOLOGY TERMS   TUTORIALS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
-                <Grid Grid.Row="1" Margin="0,8,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="142" /><ColumnDefinition Width="8" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                  <Border Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="8"><StackPanel><TextBlock Text="CONTENTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /><TextBlock Text="GETTING STARTED" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="SPECIES" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="HABITATS" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="INTERACTIONS" Margin="0,6,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel></Border>
-                  <Border Grid.Column="2" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="10"><StackPanel><TextBlock Text="HARE · GRAZER" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="Hares prefer open grass and avoid sustained pressure." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" /><Rectangle Height="1" Margin="0,10,0,8" Fill="Transparent" Stroke="{DynamicResource Chrono_Sand}" StrokeDashArray="6,4" StrokeThickness="1" /><TextBlock Text="KNOWN TERMS  forage · movement · reproduction" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_Olive}" /><Button Content="OPEN SPECIES RECORD" Height="27" Margin="0,12,0,0" IsEnabled="False" HorizontalAlignment="Left" Style="{StaticResource GalapagOS.Button.Primary}" /></StackPanel></Border>
+              <Viewbox Visibility="{Binding FieldGuideSurfaceVisibility}" Stretch="Uniform">
+                <Grid Width="1410" Height="724" Background="#FFF4E8CA">
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="54" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="42" />
+                  </Grid.RowDefinitions>
+
+                  <Grid Grid.Row="0" Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="184" />
+                      <ColumnDefinition Width="184" />
+                      <ColumnDefinition Width="214" />
+                      <ColumnDefinition Width="226" />
+                      <ColumnDefinition Width="184" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="248" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#FFF8EED7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,5">
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Margin="0,0,8,0" />
+                        <TextBlock Text="SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="1" Background="#FFF8EED7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" Padding="10,5">
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Path Data="M 3,17 L 12,2 L 21,17 Z" Fill="{DynamicResource Chrono_Sand}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1.5" Width="22" Height="22" Margin="0,0,8,0" />
+                        <TextBlock Text="BIOMES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Background="#FFF8EED7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" Padding="10,5">
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" Width="25" Height="25" Margin="0,0,8,0" />
+                        <TextBlock Text="INTERACTIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="3" Background="#FFF8EED7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" Padding="10,5">
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Width="25" Height="25" Margin="0,0,8,0" />
+                        <TextBlock Text="ECOLOGY TERMS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="4" Background="#FFF8EED7" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,2,2" Padding="10,5">
+                      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="25" Height="25" Margin="0,0,8,0" />
+                        <TextBlock Text="TUTORIALS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                    <Border Grid.Column="6" Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="12,5">
+                      <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                        <TextBlock Text="⌕" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="25" Foreground="{DynamicResource Chrono_TreeBark}" Margin="0,0,10,0" />
+                        <TextBlock Text="SEARCH ENTRIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                      </StackPanel>
+                    </Border>
+                  </Grid>
+
+                  <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="222" />
+                      <ColumnDefinition Width="12" />
+                      <ColumnDefinition Width="*" />
+                      <ColumnDefinition Width="12" />
+                      <ColumnDefinition Width="276" />
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="12">
+                      <Grid>
+                        <Grid.RowDefinitions>
+                          <RowDefinition Height="34" />
+                          <RowDefinition Height="1" />
+                          <RowDefinition Height="38" />
+                          <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <TextBlock Text="CONTENTS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.8" />
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Center">
+                          <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Width="23" Height="23" Margin="0,0,10,0" />
+                          <TextBlock Text="GETTING STARTED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Margin="0,2,0,0">
+                          <Border Height="44" Background="#FFE5EDB1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="8,0">
+                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Margin="0,0,10,0" /><TextBlock Text="SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontSize="18" Margin="20,0,0,0" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel>
+                          </Border>
+                          <Border Height="58" Margin="0,8,0,0" Background="#FFE7EDC0" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="8,0">
+                            <Grid>
+                              <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /></Grid.ColumnDefinitions>
+                              <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="37" Height="37" Stretch="Uniform" VerticalAlignment="Center" />
+                              <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,6" />
+                              <TextBlock Grid.Column="2" Text="HARE" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                              <Ellipse Grid.Column="3" Width="11" Height="11" Fill="{DynamicResource Chrono_Olive}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" VerticalAlignment="Center" />
+                            </Grid>
+                          </Border>
+                          <Border Height="58" Margin="0,7,0,0" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="8,0">
+                            <Grid>
+                              <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /></Grid.ColumnDefinitions>
+                              <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="34" Height="34" Stretch="Uniform" VerticalAlignment="Center" />
+                              <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,6" />
+                              <TextBlock Grid.Column="2" Text="FERN" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                              <Ellipse Grid.Column="3" Width="10" Height="10" Fill="#9B9271" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" VerticalAlignment="Center" />
+                            </Grid>
+                          </Border>
+                          <Border Height="58" Margin="0,7,0,0" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="8,0">
+                            <Grid>
+                              <Grid.ColumnDefinitions><ColumnDefinition Width="42" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="14" /></Grid.ColumnDefinitions>
+                              <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" Width="34" Height="34" Stretch="Uniform" VerticalAlignment="Center" />
+                              <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,6" />
+                              <TextBlock Grid.Column="2" Text="FOX" Margin="10,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
+                              <Ellipse Grid.Column="3" Width="10" Height="10" Fill="#9B9271" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" VerticalAlignment="Center" />
+                            </Grid>
+                          </Border>
+                          <Rectangle Height="1" Margin="0,14,0,12" Fill="{DynamicResource Chrono_Sand}" Opacity="0.8" />
+                          <StackPanel Orientation="Horizontal" Margin="0,0,0,8"><Path Data="M 3,17 L 12,2 L 21,17 Z" Fill="{DynamicResource Chrono_Sand}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1.5" Width="21" Height="21" Margin="0,0,10,0" /><TextBlock Text="HABITATS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="›" FontSize="21" Margin="58,0,0,0" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel>
+                          <StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" Width="22" Height="22" Margin="0,0,10,0" /><TextBlock Text="INTERACTIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="›" FontSize="21" Margin="22,0,0,0" Foreground="{DynamicResource Chrono_TreeBark}" /></StackPanel>
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+
+                    <Border Grid.Column="2" Background="#FF9A7040" BorderBrush="#FF5E421F" BorderThickness="4" CornerRadius="12" Padding="10">
+                      <Grid>
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                        <Border Grid.Column="0" Background="#FFFFF5D9" BorderBrush="#FFD4B77C" BorderThickness="2,2,1,2" CornerRadius="7,0,0,7" Padding="24,18">
+                          <Grid>
+                            <TextBlock Text="Small&#10;steps,&#10;big&#10;ecosystems." FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="19" FontStyle="Italic" Foreground="#FF59412D" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                            <Canvas Width="300" Height="252" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,20,0,0">
+                              <Rectangle Width="300" Height="252" Fill="#FFA8D8F1" RadiusX="5" RadiusY="5" />
+                              <Path Data="M 0,150 L 54,105 L 102,138 L 154,81 L 220,137 L 263,97 L 300,125 L 300,252 L 0,252 Z" Fill="#FF6C934B" />
+                              <Path Data="M 0,181 L 62,143 L 123,178 L 180,127 L 243,174 L 300,151 L 300,252 L 0,252 Z" Fill="#FFB8CA70" />
+                              <Rectangle Canvas.Top="201" Width="300" Height="51" Fill="#FFF6EBC5" Opacity="0.78" />
+                              <Ellipse Width="34" Height="34" Canvas.Left="28" Canvas.Top="28" Fill="#FFFDF9E7" />
+                              <Ellipse Width="23" Height="23" Canvas.Left="54" Canvas.Top="43" Fill="#FFFDF9E7" />
+                              <Ellipse Width="38" Height="38" Canvas.Left="243" Canvas.Top="23" Fill="#FFFDF9E7" />
+                              <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="176" Height="176" Canvas.Left="62" Canvas.Top="68" Stretch="Uniform" />
+                              <Ellipse Width="7" Height="7" Canvas.Left="24" Canvas.Top="215" Fill="#FFFCEEC0" />
+                              <Ellipse Width="7" Height="7" Canvas.Left="45" Canvas.Top="230" Fill="#FFFFC8DD" />
+                              <Ellipse Width="7" Height="7" Canvas.Left="270" Canvas.Top="218" Fill="#FFFCEEC0" />
+                            </Canvas>
+                            <TextBlock Text="Open fields&#10;brighter tomorrow." FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontStyle="Italic" Foreground="#FF59412D" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+                          </Grid>
+                        </Border>
+                        <Border Grid.Column="1" Background="#FFFFF8E2" BorderBrush="#FFD4B77C" BorderThickness="1,2,2,2" CornerRadius="0,7,7,0" Padding="26,24">
+                          <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="1" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                            <StackPanel>
+                              <TextBlock Text="HARE · GRAZER" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                              <Border Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="9,4" HorizontalAlignment="Left" Margin="0,10,0,0"><TextBlock Text="DISCOVERED" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /></Border>
+                              <TextBlock Text="Hares prefer open grass and avoid sustained pressure." Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                            </StackPanel>
+                            <Rectangle Grid.Row="1" Margin="0,18,0,14" Fill="{DynamicResource Chrono_Sand}" Opacity="0.75" />
+                            <TextBlock Grid.Row="2" Text="FIELD OBSERVATIONS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <StackPanel Grid.Row="3" Margin="0,8,0,0">
+                              <Border Height="50" Background="#FFFFF5D9" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8"><StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="31" Height="31" Margin="0,0,10,0" /><TextBlock Text="Open-ground forager" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel></Border>
+                              <Border Height="50" Margin="0,7,0,0" Background="#FFFFF5D9" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8"><StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="34" Height="34" Margin="0,0,10,0" /><TextBlock Text="Quick directional movement" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel></Border>
+                              <Border Height="50" Margin="0,7,0,0" Background="#FFFFF5D9" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8"><StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="31" Height="31" Margin="0,0,10,0" /><TextBlock Text="Shelters under pressure" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel></Border>
+                            </StackPanel>
+                            <StackPanel Grid.Row="4" Margin="0,12,0,0">
+                              <TextBlock Text="KNOWN TERMS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                              <StackPanel Orientation="Horizontal" Margin="0,7,0,0">
+                                <Border Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8,5" Margin="0,0,6,0"><TextBlock Text="● FORAGE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
+                                <Border Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8,5" Margin="0,0,6,0"><TextBlock Text="● MOVEMENT" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
+                                <Border Background="#FFF9F1DE" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="4" Padding="8,5"><TextBlock Text="● REPRODUCTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
+                              </StackPanel>
+                            </StackPanel>
+                          </Grid>
+                        </Border>
+                      </Grid>
+                    </Border>
+
+                    <Border Grid.Column="4" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="12">
+                      <Grid>
+                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="1" /><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                        <TextBlock Text="DISCOVERY RECORD" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                        <Rectangle Grid.Row="1" Margin="0,10,0,10" Fill="{DynamicResource Chrono_Sand}" Opacity="0.75" />
+                        <StackPanel Grid.Row="2">
+                          <TextBlock Text="▲  FOREST EDGE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="◉  EXPEDITION 004" Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        </StackPanel>
+                        <Border Grid.Row="3" Margin="0,12,0,0" Background="#FFA8D8F1" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Height="146">
+                          <Canvas Width="248" Height="142">
+                            <Path Data="M 0,88 L 42,47 L 84,79 L 131,35 L 190,78 L 230,48 L 248,67 L 248,142 L 0,142 Z" Fill="#FF6C934B" />
+                            <Path Data="M 0,104 L 54,78 L 107,101 L 162,67 L 215,97 L 248,83 L 248,142 L 0,142 Z" Fill="#FFB8CA70" />
+                            <Rectangle Canvas.Top="113" Width="248" Height="29" Fill="#FFF6EBC5" Opacity="0.78" />
+                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="82" Height="82" Canvas.Left="101" Canvas.Top="58" Stretch="Uniform" />
+                            <Ellipse Width="26" Height="26" Canvas.Left="17" Canvas.Top="18" Fill="#FFFDF9E7" />
+                            <Ellipse Width="18" Height="18" Canvas.Left="35" Canvas.Top="30" Fill="#FFFDF9E7" />
+                          </Canvas>
+                        </Border>
+                        <StackPanel Grid.Row="4" Margin="0,10,0,0">
+                          <TextBlock Text="A calm morning&#10;at the forest edge." FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontStyle="Italic" Foreground="#FF59412D" TextWrapping="Wrap" />
+                          <TextBlock Text="04.18.93" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Right" />
+                          <Rectangle Height="1" Margin="0,12,0,10" Fill="{DynamicResource Chrono_Sand}" Opacity="0.75" />
+                          <TextBlock Text="RELATED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                          <TextBlock Text="▣  SPECIES COLLECTION" Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="▲  FOREST EDGE" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        </StackPanel>
+                      </Grid>
+                    </Border>
+                  </Grid>
+
+                  <Grid Grid.Row="2" Margin="0,8,0,0">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="206" /><ColumnDefinition Width="*" /><ColumnDefinition Width="206" /></Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="12,4"><TextBlock Text="◀   PREVIOUS" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"><TextBlock Text="12 / 48" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /><TextBlock Text="   ·   " FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="15" Foreground="{DynamicResource Chrono_Sand}" /><TextBlock Text="FIELD NOTES EXPLAIN WHAT YOU HAVE LEARNED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" /></StackPanel>
+                    <Border Grid.Column="2" Background="#FFFFF8E6" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="12,4"><TextBlock Text="NEXT   ▶" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border>
+                  </Grid>
                 </Grid>
-              </Grid>
+              </Viewbox>
 
               <Grid Visibility="{Binding ResearchInboxSurfaceVisibility}">
                 <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
@@ -1123,7 +1432,7 @@
                             Width="860"
                             Height="520"
                             Header="GALAPAGOS APP"
-                            game:GalapagOSWindow.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                            game:GalapagOSWindow.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
                             game:GalapagOSWindow.CloseCommand="{Binding CloseDesktopAppCommand}"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Center"
@@ -1147,7 +1456,7 @@
           </Grid.RowDefinitions>
 
           <StackPanel Grid.Row="0" Orientation="Horizontal">
-            <Image Source="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+            <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                    Width="42"
                    Height="42"
                    Margin="0,0,10,0"
@@ -1364,11 +1673,6 @@
                   CornerRadius="8"
                   Padding="12">
             <Grid>
-              <Border Grid.RowSpan="2"
-                      Height="36"
-                      VerticalAlignment="Top"
-                      Background="{DynamicResource GalapagOS.Brush.TopStripes}"
-                      IsHitTestVisible="False" />
               <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -1378,7 +1682,12 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
-              <Image Source="../../Art/Icons/GalapagOS_Icon_Flask.png"
+              <Border Grid.RowSpan="2"
+                      Height="36"
+                      VerticalAlignment="Top"
+                      Background="{DynamicResource GalapagOS.Brush.TopStripes}"
+                      IsHitTestVisible="False" />
+              <Image Source="{StaticResource GalapagOS.Image.Icon.Flask}"
                      Width="40"
                      Height="40"
                      Margin="0,0,10,0"
@@ -1896,7 +2205,7 @@
           <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal">
-          <Image Source="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+          <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}"
                  Width="48"
                  Height="48"
                  Margin="0,0,12,0"
@@ -1934,37 +2243,37 @@
             <Button Content="Field Notes"
                     Margin="0,0,6,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Field Notes" />
             <Button Content="My Collection"
                     Margin="0,0,6,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="My Collection" />
             <Button Content="Gene Lab"
                     Margin="0,0,6,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Flask}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Gene Lab" />
             <Button Content="My PC"
                     Margin="0,0,6,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="My PC" />
             <Button Content="History / Data Record"
                     Margin="0,0,6,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="History / Data Record" />
             <Button Content="Biome Data"
                     Margin="0,0,6,0"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Sprout.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Sprout}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Biome Data" />
           </StackPanel>
@@ -1972,49 +2281,49 @@
             <Button Content="Simulation"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Simulation" />
             <Button Content="Music Player"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Music Player" />
             <Button Content="Expedition Planner"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Expedition Planner / Launchpad" />
             <Button Content="Field Guide"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Field Guide / Journal" />
             <Button Content="Research Inbox"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Flask.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Flask}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Research Inbox / Bulletin" />
             <Button Content="Habitat Gallery"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_FlowerPurple.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Habitat Gallery / Museum" />
             <Button Content="Settings"
                     Margin="0,0,0,4"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_Clipboard.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.Clipboard}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Settings" />
             <Button Content="Quick Search / Jump"
                     Margin="0,0,0,0"
                     Style="{StaticResource GalapagOS.StartMenuApp}"
-                    game:GalapagOSButton.IconSource="../../Art/Icons/GalapagOS_Icon_CrystalBlue.png"
+                    game:GalapagOSButton.IconSource="{StaticResource GalapagOS.Image.Icon.CrystalBlue}"
                     Command="{Binding OpenDesktopIconCommand}"
                     CommandParameter="Quick Search / Jump" />
           </StackPanel>

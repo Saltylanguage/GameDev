@@ -114,7 +114,9 @@ namespace SaltyGame
                 activeDesktopAppDescription,
                 250f + (slot % 4) * 42f,
                 96f + (slot % 4) * 34f,
-                () => CloseDesktopWindow(openedWindow));
+                () => CloseDesktopWindow(openedWindow),
+                () => OpenRelatedDesktopApp(openedWindow, "Gene Lab"),
+                () => OpenRelatedDesktopApp(openedWindow, "History / Data Record"));
             openDesktopWindows.Add(openedWindow);
             OnPropertyChanged(nameof(ActiveDesktopAppTitle));
             OnPropertyChanged(nameof(ActiveDesktopAppDescription));
@@ -150,6 +152,12 @@ namespace SaltyGame
             {
                 openDesktopWindows.Remove(window);
             }
+        }
+
+        void OpenRelatedDesktopApp(GalapagOSDesktopWindow sourceWindow, string appName)
+        {
+            CloseDesktopWindow(sourceWindow);
+            OpenDesktopIcon(appName);
         }
 
         void CloseLabWindow()
@@ -333,16 +341,48 @@ namespace SaltyGame
 
     public sealed class GalapagOSDesktopWindow : INotifyPropertyChanged
     {
-        public GalapagOSDesktopWindow(string title, string description, float left, float top, Action close)
+        public GalapagOSDesktopWindow(
+            string title,
+            string description,
+            float left,
+            float top,
+            Action close,
+            Action openGeneLab = null,
+            Action openHistory = null)
         {
             var isGeneLab = title == "Gene Lab";
+            var isFieldGuide = title == "Field Notes" || title == "Field Guide / Journal";
+            var isSettings = title == "Settings";
+            var isSpeciesCollection = title == "My Collection";
             Title = title;
             Description = description;
-            Width = isGeneLab ? Mathf.Clamp(Screen.width - 64f, 960f, 1450f) : 620f;
-            Height = isGeneLab ? Mathf.Clamp(Screen.height - 116f, 560f, 820f) : 300f;
-            Left = isGeneLab ? Mathf.Max(24f, (Screen.width - Width) * 0.5f) : left;
-            Top = isGeneLab ? Mathf.Max(24f, (Screen.height - 76f - Height) * 0.5f) : top;
+            Width = isGeneLab
+                ? Mathf.Clamp(Screen.width - 64f, 960f, 1450f)
+                : isFieldGuide
+                    ? Mathf.Clamp(Screen.width - 96f, 1040f, 1510f)
+                    : isSpeciesCollection
+                        ? Mathf.Clamp(Screen.width - 120f, 1120f, 1480f)
+                        : isSettings
+                            ? Mathf.Clamp(Screen.width - 220f, 1000f, 1280f)
+                : 620f;
+            Height = isGeneLab
+                ? Mathf.Clamp(Screen.height - 116f, 560f, 820f)
+                : isFieldGuide
+                    ? Mathf.Clamp(Screen.height - 128f, 560f, 820f)
+                    : isSpeciesCollection
+                        ? Mathf.Clamp(Screen.height - 148f, 620f, 840f)
+                        : isSettings
+                            ? Mathf.Clamp(Screen.height - 180f, 560f, 760f)
+                : 300f;
+            Left = isGeneLab || isFieldGuide || isSettings || isSpeciesCollection
+                ? Mathf.Max(24f, (Screen.width - Width) * 0.5f)
+                : left;
+            Top = isGeneLab || isFieldGuide || isSettings || isSpeciesCollection
+                ? Mathf.Max(24f, (Screen.height - 76f - Height) * 0.5f)
+                : top;
             CloseCommand = new DelegateCommand(close);
+            OpenGeneLabCommand = new DelegateCommand(openGeneLab ?? (() => { }));
+            OpenHistoryCommand = new DelegateCommand(openHistory ?? (() => { }));
             ToggleGuardedBurrowCommand = new DelegateCommand(ToggleGuardedBurrow);
         }
 
@@ -353,6 +393,8 @@ namespace SaltyGame
         public float Width { get; }
         public float Height { get; }
         public DelegateCommand CloseCommand { get; }
+        public DelegateCommand OpenGeneLabCommand { get; private set; }
+        public DelegateCommand OpenHistoryCommand { get; private set; }
         public DelegateCommand ToggleGuardedBurrowCommand { get; }
         public string GuardedBurrowStateText => guardedBurrowActive ? "UNLOCKED · ACTIVE" : "UNLOCKED · INACTIVE";
         public string GuardedBurrowNodeStateText => guardedBurrowActive ? "✓  ACTIVE" : "UNLOCKED";

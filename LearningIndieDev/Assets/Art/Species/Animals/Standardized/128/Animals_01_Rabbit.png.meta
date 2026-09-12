@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: ccd6d5fc02e74e64b8efbb4c373fa1f4
+labels:
+- Noesis
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}

@@ -315,8 +315,8 @@ namespace SaltyGame.EditorTools
             ScenarioDefinitionAsset.SpeciesEntry[] definitions)
         {
             var asset = GetOrCreate<ScenarioDefinitionAsset>($"{id}.asset", ScenarioRoot);
-            Set(asset, "width", 32);
-            Set(asset, "height", id == "ForestEdge" ? 32 : 20);
+            Set(asset, "width", id == "ForestEdge" ? 36 : 32);
+            Set(asset, "height", 20);
             Set(asset, "runDurationSeconds", 20f);
             Set(asset, "stepInterval", 0.1f);
             Set(asset, "maxPopulation", 0);

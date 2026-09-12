@@ -316,6 +316,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
   labSceneName: Lab
+  desktopSceneName: GalapagOSDesktopTest
   mainMenuSceneName: MainMenu
 --- !u!114 &100008
 MonoBehaviour:

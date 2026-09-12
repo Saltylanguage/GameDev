@@ -179,7 +179,7 @@ namespace SaltyGame
 
         [Header("Grid")]
         [SerializeField, Min(1)] int width = 32;
-        [SerializeField, Min(1)] int height = 32;
+        [SerializeField, Min(1)] int height = 20;
         [SerializeField] int seed = 12345;
         [SerializeField] bool randomizeSeedOnStart = true;
         [SerializeField] string playerSpeciesKey = "herbivore";

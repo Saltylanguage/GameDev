@@ -6,12 +6,14 @@ namespace SaltyGame
     public sealed class Helper_SceneTransition : MonoBehaviour
     {
         [SerializeField] string labSceneName = "Lab";
+        [SerializeField] string desktopSceneName = "GalapagOSDesktopTest";
         [SerializeField] string mainMenuSceneName = "MainMenu";
         [SerializeField] string simulationSceneName = "CellularAutomataPrototype";
 
         static SimulationLaunchRequest pendingSimulationLaunch;
 
         public string LabSceneName => labSceneName;
+        public string DesktopSceneName => desktopSceneName;
         public string MainMenuSceneName => mainMenuSceneName;
         public string SimulationSceneName => simulationSceneName;
 
@@ -23,6 +25,17 @@ namespace SaltyGame
             }
 
             SceneManager.LoadScene(labSceneName, LoadSceneMode.Single);
+            return true;
+        }
+
+        public bool LoadDesktop(ProfileSessionSnapshot profile)
+        {
+            if (profile == null || !profile.HasLoadedProfile || string.IsNullOrEmpty(desktopSceneName))
+            {
+                return false;
+            }
+
+            SceneManager.LoadScene(desktopSceneName, LoadSceneMode.Single);
             return true;
         }
 

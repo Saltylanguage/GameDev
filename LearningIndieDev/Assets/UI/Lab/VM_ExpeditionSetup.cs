@@ -16,6 +16,7 @@ namespace SaltyGame
         public string ScenarioId => DefaultScenarioId;
         public string PlayerSpeciesId => DefaultPlayerSpeciesId;
         public int Seed => DefaultSeed;
+        public string ScenarioTitle => "FOREST EDGE";
 
         public SimulationLaunchRequest CreateLaunchRequest(ProfileSessionSnapshot profile)
         {

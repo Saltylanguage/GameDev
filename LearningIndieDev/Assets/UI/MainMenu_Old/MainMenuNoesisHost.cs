@@ -22,6 +22,25 @@ namespace SaltyGame
             }
 
             view.Content.DataContext = viewModel;
+
+            string primaryActionName = viewModel.ContinueEnabled
+                ? "ContinueButton"
+                : "ProfileSelectionButton";
+
+            Button primaryAction = view.Content.FindName(primaryActionName) as Button;
+            if (primaryAction == null)
+            {
+                Debug.LogWarning($"Main menu could not focus '{primaryActionName}'.", this);
+                return;
+            }
+
+            view.Content.Dispatcher.BeginInvoke(() =>
+            {
+                if (!primaryAction.Focus())
+                {
+                    Debug.LogWarning($"Main menu could not focus '{primaryActionName}'.", this);
+                }
+            });
         }
     }
 }
