@@ -40,10 +40,18 @@ namespace SaltyGame.PlayModeTests
             var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
             yield return CaptureCamera(outputDirectory, "01-galapagos-desktop-home", desktopRoot.GetComponent<Camera>());
 
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Field Notes" });
+            var fieldNotesWindows = (System.Collections.IList)GetProperty(viewModel, "OpenDesktopWindows");
+            Assert.That(fieldNotesWindows.Count, Is.EqualTo(1));
+            Assert.That(GetProperty(fieldNotesWindows[0], "FieldGuideSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That((float)GetProperty(fieldNotesWindows[0], "Width"), Is.InRange(1040f, 1510f));
+            Assert.That((float)GetProperty(fieldNotesWindows[0], "Height"), Is.InRange(560f, 820f));
+            yield return CaptureCamera(outputDirectory, "02-galapagos-field-notes", desktopRoot.GetComponent<Camera>());
+
             openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Settings" });
             var openWindows = (System.Collections.IList)GetProperty(viewModel, "OpenDesktopWindows");
-            Assert.That(openWindows.Count, Is.EqualTo(1));
-            Assert.That(GetProperty(openWindows[0], "SettingsSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(openWindows.Count, Is.EqualTo(2));
+            Assert.That(GetProperty(openWindows[1], "SettingsSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
             yield return null;
             yield return null;
             yield return null;
@@ -54,7 +62,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             yield return CaptureCamera(
                 outputDirectory,
-                "02-galapagos-simulation",
+                "03-galapagos-simulation",
                 GameObject.Find(SimulationCameraName)?.GetComponent<Camera>());
 
             var simulationCamera = GameObject.Find(SimulationCameraName)?.GetComponent<Camera>();
@@ -62,9 +70,27 @@ namespace SaltyGame.PlayModeTests
             Assert.That(simulationCamera.enabled, Is.True);
             Assert.That(desktopRoot.GetComponent<Camera>().enabled, Is.False);
 
+            var preview = desktopRoot.GetComponent("SaltyGame.SpeciesSimulationPreview");
+            Assert.That(preview, Is.Not.Null);
+            var simulationViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(simulationViewModel, Is.Not.Null);
+            Assert.That(GetProperty(preview, "State").ToString(), Is.EqualTo("Running"));
+            Assert.That(GetProperty(simulationViewModel, "SettingsVisibility").ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(GetProperty(simulationViewModel, "RunningVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
+            Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
+            Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(42));
+            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+
             var boardViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
-            Assert.That(GetProperty(boardViewModel, "Snapshot"), Is.Not.Null);
+            var snapshot = GetProperty(boardViewModel, "Snapshot");
+            Assert.That(snapshot, Is.Not.Null);
+            Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(42));
+            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(20));
+
+            Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
+            Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));
         }
 
         static object GetProperty(object target, string propertyName)

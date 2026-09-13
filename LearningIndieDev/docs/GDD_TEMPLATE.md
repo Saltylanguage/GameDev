@@ -1,232 +1,301 @@
-# [Bio OS] (placeholder) - Game Design Document
+# GalapagOS — Game Design Document
 
-> Status: Draft; ten-phase direction committed, controlled preview implemented, telemetry/reporting pending | Owner: Josh Campbell | Last updated: 2026-09-06 | Decision horizon: prototype / vertical slice
+> Status: Working product baseline; roadmap v2 and proposed Sprint 3 still require product-owner review | Owner: Josh Campbell | Last updated: 2026-09-12 | Horizon: prototype to vertical slice
+>
+> **Naming note:** GalapagOS is the working player-facing title. Final title approval remains open.
 
-## How to use this document
+## How to read this document
 
-This is the product/design source of truth. Keep it focused on player experience, rules, content, and decisions. Every section should distinguish **Committed**, **Experimental**, and **Open Question** content Link implementation details to the TDD instead of duplicating them.
+This is the product and game-design source of truth. It describes the intended player experience, identifies what is playable now, and keeps unresolved decisions visible.
+
+- **Committed** — approved direction or a contract already relied on by the project.
+- **Implemented** — available in the current runtime, within the stated limits.
+- **Planned** — named in roadmap v2 or a linked active plan, but not yet available.
+- **Open** — requires a product decision or evidence before implementation.
+
+Engineering ownership, execution order, scene wiring, and verification live in the [Technical Design Document](TDD_TEMPLATE.md). Scheduling lives in [`ROADMAP.md`](../ROADMAP.md). Roadmap v2 is the current working baseline, but its Sprint 3 allocation remains proposed until the Sprint 2 review.
 
 ## 1. Product definition
 
 ### Elevator pitch
-Bio Os is an ecology simulation game that follows the trends of incremental games, with roguelike features and a cute, pixelated aesthetic.  Players focus on collecting and understanding different species and their interactions with each other in an ecosystem to discover emergent behavior based on cellular a automata engine 
+
+GalapagOS is a cute pixel-art ecology game built on deterministic cellular automata. The player prepares an expedition, watches species interact in a living habitat, and makes roguelike Mutation choices between simulation phases. Across expeditions, observation and permanent Genome research let the player shape more capable species and increasingly resilient ecosystems.
 
 ### Player promise
-[What the player repeatedly gets to do, feel, and master.]
-The player prepares an expedition, observes its evolving ecosystem, reviews each
-simulation phase, and selects a Mutation or skips it before continuing the same
-world. Creatures and resources carry their current state into the next phase.
-When the expedition ends, the player reviews its result and returns to the Lab
-for the applicable progression and preparation for a new expedition. As players
-understand species interactions and unlock Mutations, Genomes, species, and biomes, they
-learn to create successful species and balanced ecologies. Currency and loss
-rules remain governed by the product brief and scientific-data economy plan.
 
+The player can understand why an ecosystem changed, choose how to respond, and see that choice alter the same continuing world. Short-term Mutation builds create tension inside one expedition; long-term Genome choices create reasons to return, experiment, and master ecological relationships across runs.
 
 ### Design pillars
 
-1. **[Ecosystem stewardship]** - The long-term goal is to develop many species
-   toward a diverse, resilient ecosystem. Scientific data, species discovery,
-   and collection support that work; completing a collection is not the main
-   objective.
-2. **[Legible ecological asymmetry]** - Species should create distinct ecological problems or opportunities, not merely have larger numbers.
-3. **[Planning and progression across runs]** - Upgrades should change what players want to establish for future runs, rather than provide only immediate bonuses.
-4. **[Visible cause and effect]** - Players should be able to explain successful strategies through terrain, resources, behavior, and population pressure.
+1. **Ecosystem stewardship.** The long-term goal is to develop diverse, resilient ecosystems, not merely complete a collection.
+2. **Legible ecological asymmetry.** Species create different problems and opportunities through their roles, needs, and interactions—not just larger numbers.
+3. **Planning across runs.** Temporary Mutations and permanent Genomes should change future plans and invite new experiments.
+4. **Visible cause and effect.** The board, summaries, and evidence should help a player explain success, pressure, and collapse.
+5. **Evidence before expansion.** New content is added only after the small vertical slice proves its rules, readability, and performance.
 
-### Non-goals
+### Vertical-slice scope
 
-- [Explicitly out of scope.]
-- [Explicitly out of scope.]
+The current slice centers on:
 
-## 2. Core game loop
+- the **Forest Edge** scenario;
+- **Hare** as the player species, **Fern** as its food/support species, and **Fox** as opposition;
+- three intended Hare Mutation paths: **Trailblazer**, **Warren**, and **Gardeners**;
+- one ten-phase expedition on the same evolving board;
+- a decision to take one offered Mutation or Skip at each of the first nine boundaries;
+- a final outcome, results review, and return to the GalapagOS Desktop;
+- later permanent Hare Genome progression, once its contract and persistence are ready.
 
-**Committed direction; runtime migration pending:**
+### Non-goals for the slice
 
-1. Select the scenario, species and starting options; launch one expedition.
-2. Create its ecosystem once and advance a simulation phase.
-3. Freeze after the phase's final completed tick and show a phase summary.
-4. If the expedition continues, buy one eligible upgrade or explicitly skip it.
-5. Continue from the frozen ecosystem under the resulting rules. Preserve the
-   board, creatures, resources, ages, energy, cooldowns and accumulated history.
-6. Repeat until the expedition ends; show final results and return to the Lab.
-7. Only an explicit new expedition or restart creates a new starting world.
+- Direct control of individual cells, action combat, or editing raw simulation state mid-tick.
+- Broad species, biome, Mutation, or scenario production before the first slice is validated.
+- Multiplayer, live services, cloud saves, or active-expedition disk save/resume.
+- Controller, Steam Deck, macOS, Linux, console, or mobile support in the initial Windows slice.
+- Large procedural worlds, caves, colony management, or unrelated simulation systems.
+- Final-volume art, audio, localization, or accessibility production before the flow and readability are proven.
+- A generalized modifier, evolution, plugin, or content framework built ahead of a concrete need.
 
-The prototype exposes the phase length for tuning; 200 ticks at a 0.1-second
-step remains the current per-phase target.
-The [product brief](PRODUCT_BRIEF.md) specifies ten phases, with 200 ticks as
-the current per-phase target, and nine decision breaks for the vertical slice.
-Its longer viewing-time target remains a separate pacing decision. A reward break is not a new expedition, and ordinary
-Continue is not a restart or a player disk-save operation.
+## 2. Player journey and expedition loop
 
-Implementation, unresolved mechanic details, cross-project retests and document
-coverage are in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+### Target main flow
 
-### Moment-to-moment cadence
+```text
+Launch
+  -> Main Menu
+  -> create or select a local profile
+  -> GalapagOS Desktop
+  -> Expedition Planner
+  -> Simulation
+  -> phase summary
+  -> choose Mutation or Skip
+  -> continue the same world (repeat through phase 10)
+  -> final results and accomplishments
+  -> return to Desktop
+  -> Gene Lab / next expedition
+```
 
-- Run start: [player selects which type of run and hit start]
-  
-- Active phase:
-- [cellular automata ecological simulation runs during this phase.  Currency is accrued during this phae as well]
-  
-- Decision points:- [selecting a species to simulate, selecting a biome, selecting upgrades, choosing when to end the run]
-  
-- Run end: player-species extinction after a completed tick, an explicit player
-  decision to end the expedition, or its final phase. A normal phase time limit
-  opens a decision break rather than recreating the ecosystem.
+This is the **committed product direction**, not a claim that every transition exists today.
+
+### What is playable now
+
+The current player route is:
+
+```text
+Main Menu -> profile ID/name -> Desktop -> embedded local simulation
+          -> generic results/close -> Desktop
+```
+
+The Desktop simulation host creates and starts its own local preview. It does not yet receive the selected profile or an expedition-planning launch request. The standalone Lab-to-simulation route can pass an immutable launch request, but it is a legacy/developer path rather than the canonical player flow. These routes must be reconciled before the target journey is complete.
+
+### Expedition cadence
+
+- **Committed target:** ten consecutive phases of 200 completed ticks, with nine Mutation-or-Skip decisions.
+- **Implemented foundation:** one run can retain its board, creatures, resources, ages, energy, cooldowns, ordered upgrades, and accumulated evidence across phase boundaries.
+- **Current mismatch:** the player preview defaults to 100 ticks per phase. The runtime must be changed to the committed 200-tick schedule or the product target must be revised explicitly.
+- **Continue:** resumes the frozen world under the current ordered rules. It is not a restart and does not rebuild the starting ecosystem.
+- **Restart/new expedition:** creates a new starting world.
+- **End expedition:** intentionally terminates the current run and proceeds to results.
+- **Disk resume:** outside the initial slice; same-world continuation is currently in memory only.
+
+### Expedition outcomes
+
+The intended terminal presentation distinguishes:
+
+- **Victory:** the player species meets the expedition’s authored success condition at the final boundary.
+- **Narrow survival:** the player species persists but does not meet the stronger success condition.
+- **Defeat:** the expedition ends without meeting the survival/success condition.
+- **Immediate extinction:** the player species reaches zero after a completed tick and the run ends without waiting for the next phase boundary.
+- **Player-ended expedition:** the player deliberately stops and receives an honest partial result.
+
+The exact Forest Edge survival threshold, victory measure, wording, accomplishments, and unlock effects are **open**. The runtime currently shows a generic “Expedition complete” result, so these outcome categories are not yet player-available.
 
 ## 3. Player agency and controls
 
-### Player verbs
+| Player action | Intended availability | Current state | Remaining design or connection |
+| --- | --- | --- | --- |
+| Create/select profile | Main Menu | **Implemented, limited:** ID and display name only | Carry the selected profile into Desktop and later persist progression/settings. |
+| Prepare expedition | Desktop Planner | **Not available** | Define the smallest planner interaction and immutable launch payload. |
+| Start simulation | After valid preparation | **Partly implemented:** Desktop starts a local default preview | Connect selected profile, scenario, player species, seed, schedule, and frozen progression. |
+| Pause/resume | During a running phase | **Implemented** | Preserve state and clear feedback in the final shell. |
+| Change speed | During a running phase | **Visible but disconnected** | Bind controls and define allowed speeds, labels, and accessibility behavior. |
+| Zoom the board | While viewing the simulation | **Visible but disconnected** | Bind controls and define scale limits and focus behavior. |
+| Inspect a cell/species | While viewing the simulation | **Domain/ViewModel support exists but is unreachable** | Add pointer-to-cell selection and decide what Field Notes reveals. |
+| Open Field Notes | From the simulation shell | **Visible but disconnected** | Define content, ownership, and whether it pauses the run. |
+| Choose a Mutation | At each non-terminal phase boundary | **Partly implemented:** three visible offer slots | Make all intended build paths reachable and readable. |
+| Skip | At a non-terminal phase boundary | **Implemented** | No current bonus or penalty; any incentive needs a separate economy decision. |
+| Continue same world | After Mutation or Skip | **Implemented foundation** | Complete it through the canonical player route at the 200-tick target. |
+| End/restart expedition | During the run/results | **Implemented in preview form** | Confirm final warnings, outcome semantics, and return route. |
+| Review results/accomplishments | At terminal state | **Representative shell only** | Add authored outcome, causal evidence, accomplishments, and settlement. |
+| Configure Genome | Between simulations in Gene Lab | **Planned, unimplemented** | Define S4 contract; implement after profile ownership and persistence are stable. |
 
-| Verb | When available | Cost/risk | Visible result | Failure case |
-|---|---|---|---|---|
-| [Verb] | [Condition] | [Cost] | [Feedback] | [Failure] |
+### Input and accessibility target
 
-### Control contract
-
-- Primary input: [keyboard/mouse]
-- Pause/speed controls: [Pausing, stopping ,restarting, speeding up & slowing down interval]
-- Undo/retry rules: [none? maybe one per run? purchaseable? ]
-- Accessibility requirements: [color blind mode, dyslexic font, support peripherals, epilepsy warning]
+- **Required input:** keyboard and mouse for Windows 64-bit Steam.
+- **Target resolution:** 1920×1080; 1280×720 must remain functional.
+- **Current accessibility direction:** pauseable observation, readable state changes, redundant text/icon/color cues, and controls that do not depend on rapid input.
+- **Open accessibility scope:** color-vision modes, dyslexia-oriented font options, photosensitivity treatment, remapping, and peripheral support require an explicit accessibility pass before commitment.
 
 ## 4. Simulation model
 
-### Cell and layer model
+### Board and layers
 
-[Describe terrain, resource/item, and creature occupancy. State what can coexist and what blocks what.]
+Each cell has terrain plus separate ecological occupancy data. Terrain, resource/plant state, and creature state can coexist only where the authored and runtime rules allow. Simulation decisions are resolved from the previous committed grid, then the next grid is committed as one completed tick.
 
-### Tick/turn order
+Forest Edge currently has a source-of-truth conflict:
 
-[Numbered order of aging, perception, movement, feeding, combat, reproduction, regrowth, metrics, and presentation snapshot.]
+- the checked-in scenario asset is **42×20**;
+- the architecture map and scenario-generation tool specify **36×20**.
 
-### Species contract - link to another document. there are too many species to keep here conveniently.
+The authoritative board size is **open**. Until it is resolved, balance evidence must record the actual scenario dimensions it used.
 
-For each species, define:
+### Slice species
 
-- Role: [plant/resource, herbivore, carnivore, decomposer, etc.]
-- Occupancy/layer: [resource or creature]
-- Needs: [food, terrain, energy, shelter]
-- Decision priorities: [what it seeks/avoids]
-- Reproduction: [conditions and cost]
-- Distinctive interaction: [what makes it worth adding]
+| Species | Ecological role | Player-facing identity | Key pressure/relationship | Status |
+| --- | --- | --- | --- | --- |
+| Fern | Producer and Hare food source | Renewable food frontier | Growth and seed dispersal must sustain consumption | **Committed identity; runtime data conflict open** |
+| Hare | Player herbivore | Mobile breeder and ecosystem shaper | Must find food, reproduce, and survive Fox pressure | **Implemented foundation** |
+| Fox | Predator/opposition | Creates spatial and survival pressure | Hunts Hare; should create counterplay rather than arbitrary collapse | **Implemented foundation; evidence refinement active** |
 
-## 5. Progression — Mutations and Genomes
+The Forest Edge generator currently creates a legacy Plant resource, and the Hare asset consumes the `plant` identifier. Product documents call that species Fern. Decide whether Fern is the player-facing name for the existing Plant runtime identity or a distinct species/data migration; do not let both concepts drift silently.
 
-### Mutations during an expedition
+### Player-readable causal evidence
 
-Temporary Mutations are acquired at frozen phase boundaries and remain in
-purchase order for the rest of the expedition. A completed ten-phase
-expedition has nine Mutation decision points. At each point, choosing a
-Mutation or explicitly skipping is valid. Skipping preserves both the current
-world and the existing build and has no current bonus or penalty. Any future
-reward-doubling or other incentive for skipping is a separate deferred economy
-rule. A Mutation changes subsequent rules; it does not implicitly refill
-energy, respawn creatures, or reset terrain.
-Initialization-only upgrades are launch-only under the locked CF-0 contract;
-they are not offered as mid-expedition grants. See [upgrade direction](UPGRADE_SYSTEM_DIRECTION.md)
-and the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+At minimum, the slice should let the player relate changes to:
 
-### Genome progression between simulations
+- current and recent Hare, Fox, and Fern populations;
+- births, feeding, starvation, predation, and other meaningful deaths;
+- resource recovery and depletion;
+- the active ordered Mutation build and when each Mutation first became effective;
+- the phase boundary and expedition-wide history;
+- outcome validity when a measure is unavailable or incomplete.
 
-Temporary Mutations end when the expedition ends, not at each phase summary.
-Every species has a Genome tree in the Gene Lab. Purchased nodes remain
-unlocked, while the player may turn unlocked nodes on or off between
-simulations. The frozen active Genome applies to all populations of that
-species, including when another species is player-controlled. Genome purchases
-and scientific data follow their separate
-[progression](UPGRADE_SYSTEM_DIRECTION.md) and [economy](SCIENTIFIC_DATA_ECONOMY.md)
-contracts. Player save/load of an unfinished expedition remains outside the
-initial slice; in-memory phase continuation is required.
+Developer telemetry may be more detailed, but the player interface must not expose raw internal fields as the only explanation.
 
-The Species-Simulation rules are:
+## 5. Progression
+
+### Mutations: temporary expedition choices
+
+Mutations are acquired only at frozen phase boundaries and last until that expedition ends. A complete ten-phase expedition has nine decisions. At each decision the player chooses one valid offered Mutation or explicitly Skips.
+
+- Mutations apply in purchase order to subsequent completed ticks.
+- A Mutation does not implicitly refill energy, respawn creatures, or reset terrain.
+- Initialization-only effects are launch-only and must not be offered mid-expedition as no-op purchases.
+- Skip preserves the world and current build, with no current reward or penalty.
+- Mutations are exclusive to Species Simulations; Biome Simulations do not use them.
+
+Seven Hare upgrade assets currently exist, but the player UI exposes only three offer slots and the preview loads the catalog in asset order. In practice, only the first three entries are reachable through that route: **Long Stride**, **Large Litters**, and **Far Sight**. The Warren and Gardeners options later in the catalog are therefore authored but disconnected. Offer generation and build-path reachability must be designed and implemented before claiming three playable builds.
+
+Intended build identities:
+
+| Build | Intended strength | Intended cost or obligation |
+| --- | --- | --- |
+| Trailblazer | Migration, perception, and access to fresh food | Weaker grouping/protection or higher operating cost |
+| Warren | Local defense and controlled reproduction | Less mobility and more local resource pressure |
+| Gardeners | Feeding efficiency and seed dispersal | Delayed payoff and weak immediate predator defense |
+
+See [Upgrade System Direction](UPGRADE_SYSTEM_DIRECTION.md), the [Upgrade Catalog Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md), and [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+
+### Genomes: permanent between-run progression
+
+Every species is intended to have permanently unlocked Genome nodes and one active configuration that can be changed between simulations. A run receives a frozen snapshot of every participating species’ active Genome. Improving Hare must not silently disable Fox or Fern Genome choices.
+
+The effective Species Simulation rules are:
 
 ```text
-Natural species rules + active Genome + ordered expedition Mutations
+Natural species rules + frozen active Genome + ordered expedition Mutations
 ```
 
-Biome Simulations use natural rules plus the active Genome for every
-participating species and never include Mutations. The two modes may have
-different success measures.
+Biome Simulations use:
 
-All species, Mutations, Genomes, and balance decisions follow
-[`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+```text
+Natural species rules + frozen active Genome
+```
 
-### Upgrade template
+Genome runtime, Gene Lab configuration, unlock persistence, migration, and recovery are **not implemented**. Roadmap v2 places the first Genome contract in S4 and persistence-backed implementation in S6. Named loadouts and node-reveal behavior remain deferred questions.
 
-- Name: [name]
-- Player decision: [what choice it creates]
-- Affected rule(s): [plain-language rule]
-- Expected interaction: [what changes in the ecosystem]
-- Counterplay/tradeoff: [why it is not strictly better]
-- Telemetry needed: [metrics that prove it is working]
-- Progression layer: [Mutation / Genome]
-- Capability and context: [what it enables and where it matters]
-- Ecological cost or obligation: [what pressure it creates]
-- Balance evidence: [reference panel, local measure, ecosystem measure, status]
-- Status: [Committed / Experiment / Open]
+### Scientific data and settlement
 
-## 6. Species roster and scenarios
+Scientific data is the intended permanent research currency. The player should be able to understand what was earned, spent, banked, or lost and why. The current profile does not store a wallet, accomplishments, unlocks, or Genome state. Phase transfer rules, extinction loss, permanent purchase costs, and settlement presentation remain provisional in the [Scientific Data Economy](SCIENTIFIC_DATA_ECONOMY.md).
 
-### Roster table
+## 6. Presentation direction
 
-| Species | Role | Player-facing identity | Key dependency | Scenario use | Status |
-|---|---|---|---|---|---|
-| [Species] | [Role] | [Readable identity] | [Dependency] | [Use] | [Status] |
+### UI world
 
-### Scenario template
+The GalapagOS Desktop is the canonical player home. Its apps should make the game feel like an ecology field station operating system rather than a conventional debug menu.
 
-- Name: [name]
-- Fantasy/problem: [what makes this scenario distinct]
-- Starting state: [terrain, species, resources]
-- Pressure: [scarcity, predator, weather, terrain shift]
-- Player choices tested: [choices]
-- Success/failure: [criteria]
-- Expected strategies: [at least two]
-- Balance evidence: [what to measure]
+- **Expedition Planner:** prepare and launch a valid simulation.
+- **Simulation:** observe, pause, inspect, make phase choices, and review results.
+- **Field Notes / Species Collection:** understand discovered species and interactions.
+- **Gene Lab:** unlock and configure permanent Genome choices.
+- **Expedition history:** revisit meaningful prior results once persistence exists.
 
-## 7. Feedback, UI, art, and audio
+The current Desktop visually includes several of these destinations, but the Gene Lab, expedition details/history, filters, Field Notes, speed, zoom, and cell inspection are partly or wholly disconnected.
 
-- Causal feedback: [how the player learns why a change happened]
-- Board readability: [terrain, layers, species, danger, resources]
-- Player-facing UI: [screens and information hierarchy]
-- Developer UI: [separate tools and diagnostics]
-- Art direction: [shape, palette, readability, references]
-- Audio direction: [idle, interaction, danger, reward, run-end cues]
+### Art direction
 
-## 8. Balance and validation
+- Cute pixel-art ecology presented through a warm field-research operating system.
+- Cream, green, blue, yellow, coral, and brown establish the current UI palette.
+- Species, terrain, danger, selection, and depleted resources must remain legible at board scale.
+- Generated Main Menu meadow art and UI concepts are direction candidates, not final approved production assets.
 
-### Success signals
+### Audio direction
 
-- [Player behavior or metric]
-- [Player behavior or metric]
+The Main Menu has an initial procedural chime. A systematic audio language for idle ambience, selection, danger, phase completion, Mutation choice, extinction, and expedition outcome is planned for the later art/UI pass; it is not part of the current executable loop.
 
-### Balance questions
+## 7. Balance and validation
 
-- [Question that needs an experiment]
-- [Question that needs an experiment]
+### Slice success signals
 
-### Playtest record
+- Players can complete the ten-phase route without developer-only fields.
+- Players understand that Continue preserves the same ecosystem.
+- Players can identify at least two distinct viable build strategies and explain their tradeoffs.
+- The UI communicates why the Hare population grew, struggled, or collapsed.
+- Mutation timing and effects are visible in phase and expedition evidence.
+- A complete Forest Edge run meets the approved duration and memory budget once that budget is recorded.
 
-- Build/version: [version]
-- Scenario/ruleset: [name/fingerprint]
-- Seeds/runs: [range/count]
-- Observed result: [result]
-- Interpretation: [what it means]
-- Decision: [keep/change/defer]
+### Current evidence boundary
 
-## 9. Open decisions and change log
+- Same-world continuation, phase checkpoints, ordered upgrades, and phase/expedition evidence are implemented and covered through CF-1–CF-5.
+- EX-010 supports the approved Forest Edge continuation schedule only within its recorded seeds, values, and acquisition orders; it is not general balance proof.
+- Target-resolution graphics checks and a Windows development-build smoke are recorded as complete.
+- Outer ten-phase wall duration and peak-memory measurement remain open under CF-6.
+- Broader Mutation balance, player comprehension, build diversity, and outcome tuning remain future evidence work.
 
-### Open decisions
+## 8. Open decisions and newly explicit loose ends
 
-| Decision | Options | Evidence needed | Owner | Due |
-|---|---|---|---|---|
-| [Decision] | [Options] | [Evidence] | [Owner] | [Date] |
+| Decision or gap | Why it matters | Required next evidence/owner | Status |
+| --- | --- | --- | --- |
+| Accept or revise roadmap v2 and proposed S3 allocation | The baseline is current, but S3 is still a proposal rather than a commitment | Product owner at Sprint 2 review | **Open** |
+| Final player-facing title | Menu branding and document naming currently differ in capitalization/history | Product owner review | **Open** |
+| 200-tick phase target versus 100-tick preview default | The executable cadence does not match the committed design | Product decision, then runtime/config test | **Open; tracked here** |
+| Forest Edge 42×20 asset versus 36×20 generator/map | Different board sizes invalidate direct balance comparisons | Choose authority and regenerate/migrate intentionally | **Open; tracked here** |
+| Fern versus legacy Plant runtime identity | Species language, data IDs, art, telemetry, and saves need one contract | Product + engineering decision before migration | **Open; tracked here** |
+| Expedition Planner interaction and launch payload | The canonical Desktop route starts a local default instead of the selected expedition | Small UX contract plus immutable request ownership | **Planned; underspecified** |
+| Profile ownership across Desktop and simulation | Profile selection currently stops at scene validation | Engineering contract; planned with flow/persistence work | **Disconnected** |
+| Mutation offer generation and economy | Only the first three catalog entries are reachable; costs and rerolls are not settled | S3 route work and later balance evidence | **Partly planned** |
+| Forest Edge victory/survival threshold and result language | Generic completion cannot support a meaningful win/loss loop | Product rule plus fixed-seed validation | **Open; tracked here** |
+| Field Notes, cell inspection, speed, and zoom semantics | Visible controls imply agency that the current UI does not provide | UX contract, command binding, interaction tests | **Disconnected; tracked here** |
+| Gene Lab, collection filters, expedition details/history | Enabled-looking Desktop affordances currently lead nowhere | S4–S7 contracts; disable or label until connected | **Planned or untracked at control level** |
+| Scientific-data settlement and extinction loss | Permanent progression cannot be implemented safely without it | Economy and persistence contract | **Open** |
+| Accessibility acceptance | Basic direction exists, but concrete supported modes and tests do not | Dedicated accessibility pass | **Deferred** |
 
-### Change log
+## 9. Authoritative references
 
-| Date | Change | Reason | Impacted sections |
-|---|---|---|---|
-| 2026-09-04 | Make consecutive phases and purchase/skip continuation explicit. | The prototype currently rebuilds the world between windows; the requested design preserves it. Runtime migration is planned, not implemented. | Player promise, core loop, run end, progression |
-| 2026-09-04 | Lock CF-0 lifecycle, boundary-effect and result-window decisions; preserve a fresh legacy report fixture. | Josh approved the same-world Continue contract, launch-only initialization effects, explicit Restart, above-cap energy handling and phase/expedition accounting before runtime work. | Core loop, progression, simulation evidence |
-| 2026-09-06 | Make continuous state the canonical implemented runtime. | CF-1 through CF-5 preserve the same world across ten 200-tick phases; EX-010 verified the approved schedule and phase/final evidence contract. | Core loop, run lifecycle, progression, simulation evidence |
-| [Date] | [Change] | [Reason] | [Sections] |
+- [`ROADMAP.md`](../ROADMAP.md) — current milestone and feature schedule baseline.
+- [Product Brief](PRODUCT_BRIEF.md) — product boundary and progression intent.
+- [Vertical Slice Selection](VERTICAL_SLICE_SELECTION.md) — first slice roster and experience.
+- [Consecutive Simulation Flow Plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md) — same-world phase lifecycle.
+- [Upgrade System Direction](UPGRADE_SYSTEM_DIRECTION.md) — Mutation/Genome contract.
+- [Scientific Data Economy](SCIENTIFIC_DATA_ECONOMY.md) — provisional currency and settlement rules.
+- [GalapagOS Desktop Feature Set](GALAPAGOS_DESKTOP_FEATURE_SET_PLAN.md) — Desktop application direction.
+- [Technical Design Document](TDD_TEMPLATE.md) — implementation state, architecture, and verification.
+
+## 10. Change log
+
+| Date | Change | Reason |
+| --- | --- | --- |
+| 2026-09-12 | Replaced the placeholder template with a current product baseline and explicit implemented/planned/open labels. | The old document mixed aspirations with implementation claims and did not expose disconnected player routes. |
+| 2026-09-12 | Recorded cadence, board-size, Fern/Plant, profile handoff, Mutation reachability, result, and simulation-control gaps. | These gaps affect the main flow or evidence validity and need visible ownership. |
+| 2026-09-12 | Aligned the slice with roadmap v2 while preserving its review status. | Prevent a proposed Sprint 3 plan from being mistaken for an approved commitment. |
+| 2026-09-06 | Established continuous same-world phase continuation as the canonical runtime foundation. | CF-1–CF-5 and EX-010 verified the bounded lifecycle/evidence contract. |
+| 2026-09-04 | Locked the phase-boundary, Continue, Skip, restart, and launch-only initialization semantics. | Keep a reward break distinct from a new expedition or disk save. |

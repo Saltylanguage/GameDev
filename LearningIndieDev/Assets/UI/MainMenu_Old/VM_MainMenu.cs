@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
@@ -36,6 +37,8 @@ namespace SaltyGame
         readonly ObservableCollection<ProfileOption> profiles = new ObservableCollection<ProfileOption>();
         MenuPage page = MenuPage.MainMenu;
         bool quitConfirmationVisible;
+        bool desktopTransitionVisible;
+        bool desktopTransitionStarted;
         string profileNameInput = "Researcher 01";
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -51,6 +54,7 @@ namespace SaltyGame
         public Visibility MainMenuVisibility => page == MenuPage.MainMenu ? Visibility.Visible : Visibility.Collapsed;
         public Visibility ProfileSelectionVisibility => page == MenuPage.ProfileSelection ? Visibility.Visible : Visibility.Collapsed;
         public Visibility QuitConfirmationVisibility => quitConfirmationVisible ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility DesktopTransitionVisibility => desktopTransitionVisible ? Visibility.Visible : Visibility.Collapsed;
         public ObservableCollection<ProfileOption> Profiles => profiles;
         public string ProfileNameInput
         {
@@ -146,10 +150,112 @@ namespace SaltyGame
 
         void Continue()
         {
-            if (ContinueEnabled)
+            if (ContinueEnabled && !desktopTransitionStarted)
             {
-                sceneTransition.LoadLab(profileSession.Current);
+                desktopTransitionStarted = true;
+                desktopTransitionVisible = true;
+                OnPropertyChanged(nameof(DesktopTransitionVisibility));
+
+                if (Application.isBatchMode)
+                {
+                    sceneTransition.LoadDesktop(profileSession.Current);
+                    return;
+                }
+
+                PlayDesktopChime();
+                StartCoroutine(LoadDesktopAfterTransition());
             }
+        }
+
+        IEnumerator LoadDesktopAfterTransition()
+        {
+            yield return new WaitForSeconds(0.95f);
+            sceneTransition.LoadDesktop(profileSession.Current);
+        }
+
+        void PlayDesktopChime()
+        {
+            var audioObject = new GameObject("GalapagOS Desktop Chime");
+            DontDestroyOnLoad(audioObject);
+
+            var source = audioObject.AddComponent<AudioSource>();
+            source.clip = CreateDesktopChime();
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0f;
+            source.volume = 0.65f;
+            audioObject.AddComponent<AudioListener>();
+
+            foreach (var listener in FindObjectsByType<AudioListener>())
+            {
+                if (listener.gameObject != audioObject)
+                {
+                    listener.enabled = false;
+                }
+            }
+
+            source.Play();
+            Destroy(audioObject, source.clip.length + 0.15f);
+        }
+
+        static AudioClip CreateDesktopChime()
+        {
+            const float echoDelay = 0.24f;
+            const int echoCount = 4;
+            const float duration = 2.4f;
+            var sampleRate = AudioSettings.outputSampleRate;
+            var samples = new float[Mathf.CeilToInt(duration * sampleRate)];
+            var starts = new[] { 0f, 0.14f, 0.30f, 0.48f, 0.70f };
+            var lengths = new[] { 0.40f, 0.40f, 0.42f, 0.44f, 0.50f };
+            var frequencies = new[] { 659.25f, 783.99f, 1046.50f, 1318.51f, 1046.50f };
+            var echoGains = new[] { 1f, 0.34f, 0.18f, 0.095f, 0.045f };
+
+            for (var sample = 0; sample < samples.Length; sample++)
+            {
+                var time = sample / (float)sampleRate;
+                var value = 0f;
+
+                for (var echo = 0; echo <= echoCount; echo++)
+                {
+                    var echoedTime = time - echo * echoDelay;
+                    if (echoedTime < 0f)
+                    {
+                        continue;
+                    }
+
+                    for (var note = 0; note < frequencies.Length; note++)
+                    {
+                        var localTime = echoedTime - starts[note];
+                        var noteLength = lengths[note];
+                        if (localTime < 0f || localTime > noteLength)
+                        {
+                            continue;
+                        }
+
+                        var progress = localTime / noteLength;
+                        var attack = 1f - Mathf.Exp(-localTime * 72f);
+                        var release = Mathf.Exp(-localTime * 5.4f);
+                        var envelope = attack * Mathf.Sin(Mathf.PI * progress) * release;
+                        var pitchBend = 1f + 0.055f * Mathf.Exp(-localTime * 13f);
+                        var frequency = frequencies[note] * pitchBend * (1f - echo * 0.0025f);
+                        var phase = Mathf.PI * 2f * frequency * localTime;
+                        var brightness = Mathf.Lerp(0.22f, 0.07f, echo / (float)echoCount);
+                        var tone = Mathf.Sin(phase) * 0.78f
+                            + Mathf.Sin(phase * 2f) * 0.16f
+                            + Mathf.Sin(phase * 3f) * brightness;
+                        var chirp = Mathf.Sin(phase * 2.01f) * Mathf.Exp(-localTime * 18f) * 0.08f;
+                        value += (tone + chirp) * envelope * 0.14f * echoGains[echo];
+                    }
+                }
+
+                // A short low body gives the first note some presence without turning it into a thump.
+                value += Mathf.Sin(Mathf.PI * 2f * 164f * time) * Mathf.Exp(-time * 22f) * 0.055f;
+                samples[sample] = Mathf.Clamp(value, -1f, 1f);
+            }
+
+            var clip = AudioClip.Create("GalapagOS_Desktop_Chime", samples.Length, 1, sampleRate, false);
+            clip.SetData(samples, 0);
+            return clip;
         }
 
         void RequestQuit()
@@ -200,6 +306,7 @@ namespace SaltyGame
             OnPropertyChanged(nameof(MainMenuVisibility));
             OnPropertyChanged(nameof(ProfileSelectionVisibility));
             OnPropertyChanged(nameof(QuitConfirmationVisibility));
+            OnPropertyChanged(nameof(DesktopTransitionVisibility));
         }
 
         void OnPropertyChanged([CallerMemberName] string propertyName = "")

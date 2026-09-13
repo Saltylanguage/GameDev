@@ -25,7 +25,7 @@ next run.
 | Board and presentation | Graphics baseline accepted | Continue feature-specific screen/content work and any readability polish found during play. |
 | Simulation truth | Bounded baselines and telemetry are recorded | Balance promotion, especially Forest Edge carrying limits and trustworthy player-facing upgrade effects. |
 | Continuous ten-phase runtime | Implemented and canonical | Three player choices, terminal outcome presentation, results explanation, and integrated performance/build acceptance. |
-| Main Menu and Lab | UI foundation and Lab/Simulation launch route implemented | Unify the production Lab with the GalapagOS home base, complete navigation acceptance, and replace representative progression data. |
+| Main Menu and home base | Main Menu, GalapagOS Desktop, and the retained Lab/Simulation route are implemented | Complete one canonical Desktop/Simulation navigation path and replace representative progression data. |
 | Profile and Genome | Basic local profile identity exists; progression is not implemented | Versioned progression data, one persistent Genome unlock, and the open Mutation/Genome player contract. |
 | Research/tooling | P3 closed as bounded | No next experiment selected; evidence-hygiene controls and artifact retention remain prerequisites for future confirmatory work. |
 | Retained prototypes | Classified | Island Survivor is deprecated, Discord bridge is on hold, and other retained prototypes change only for a named need. |
@@ -297,7 +297,8 @@ the following are true:
 - Trailblazer, Warren, and Gardeners are understandable and measurably distinct.
 - A player can complete the ten-phase run without developer fields.
 - Results explain the outcome and award one persistent unlock.
-- Main Menu → Lab → Run → Results → next Lab is navigable and tested.
+- Main Menu → GalapagOS Desktop → Run → Results → GalapagOS Desktop is
+  navigable and tested.
 - One fresh profile can restart and use the unlock.
 - Remaining prototypes and research tools have explicit retained, deferred, or
   archived status.

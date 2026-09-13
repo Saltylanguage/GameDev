@@ -1,0 +1,4 @@
+interface:
+  display_name: "Artifact Summarization"
+  short_description: "Compress Unity reports into decision-ready summaries"
+  default_prompt: "Use $artifact-summarization to compress these Unity reports into dense balance and prediction evidence."

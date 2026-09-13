@@ -9,6 +9,7 @@ This directory contains durable, studio-level practices that apply across game d
 - [SG-003 — UI Architecture and MVVM Boundaries](SG-003-UI-MVVM-ARCHITECTURE.md)
 - [SG-004 — Conversation Scope and Continuity](SG-004-CONVERSATION-SCOPE-AND-CONTINUITY.md)
 - [SG-005 — Upgrade and Ecology Balance](SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
+- [SG-006 — Noesis Image Resource Pipeline](SG-006-NOESIS-IMAGE-RESOURCE-PIPELINE.md)
 
 ## Guideline conventions
 

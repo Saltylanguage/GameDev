@@ -10,7 +10,7 @@ namespace SaltyGame.PlayModeTests
     public sealed class MainMenuPlayModeTests
     {
         const string MainMenuScene = "MainMenu";
-        const string LabScene = "Lab";
+        const string DesktopScene = "GalapagOSDesktopTest";
         const string ViewModelType = "SaltyGame.VM_MainMenu";
 
         [UnityTest]
@@ -31,7 +31,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator ProfileCreationEnablesContinueAndLoadsLab()
+        public IEnumerator ProfileCreationEnablesContinueAndLoadsDesktop()
         {
             ClearProfiles();
             yield return LoadMainMenu();
@@ -46,7 +46,7 @@ namespace SaltyGame.PlayModeTests
 
             ExecuteCommand(viewModel, "ContinueCommand");
             yield return null;
-            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(LabScene));
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(DesktopScene));
             ClearProfiles();
         }
 

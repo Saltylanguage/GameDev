@@ -1,0 +1,4 @@
+interface:
+  display_name: "DirtyBoy"
+  short_description: "Snapshot context and gently flag process misses"
+  default_prompt: "Use $dirtyboy to capture the project context and gently flag missed cleanup or unverified shortcuts."

@@ -3,6 +3,10 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
   xmlns:game="clr-namespace:SaltyGame">
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="ImageResources.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+
   <SolidColorBrush x:Key="Salty_DustyRose" Color="#FFBB848E"/>
   <SolidColorBrush x:Key="Salty_SoftGreen" Color="#FF6A9B74"/>
   <SolidColorBrush x:Key="Salty_PaleTangerine" Color="#FFD6B35B"/>

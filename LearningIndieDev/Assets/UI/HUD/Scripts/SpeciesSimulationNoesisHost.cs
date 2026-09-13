@@ -83,6 +83,13 @@ namespace SaltyGame
                 viewModel.DesertTerrainTiles);
             boardViewModel.PropertyChanged += HandleBoardPropertyChanged;
             ApplyBoardSnapshot();
+
+            // The Lab is the setup entry point; the simulation scene should open live.
+            if (preview.State == SpeciesPreviewState.Ready && viewModel.CanStart)
+            {
+                viewModel.StartCommand.Execute(null);
+                ApplyBoardSnapshot();
+            }
         }
 
         void OnDestroy()

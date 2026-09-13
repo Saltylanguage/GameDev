@@ -1,6 +1,12 @@
-# Future Sprint Roadmap — Draft Planning Horizon
+# Future Sprint Roadmap — Historical Planning Horizon
 
-> Status: Draft planning baseline | Updated: 2026-09-06 | Cadence: two weeks
+> Status: Superseded as the scheduling source by [`ROADMAP.md`](../ROADMAP.md)
+> v2 | Updated: 2026-09-11 | Cadence: two weeks
+
+This document preserves the reasoning that produced the S2–S7 horizon. Use the
+canonical roadmap for current dates, effort bands, feature IDs, scheduling
+state, and the Sprint 3 capacity allocation. Feature-specific detail below
+remains useful where it does not conflict with roadmap v2.
 
 This document turns the current planning themes into a dependency-aware horizon
 for future sprint selection. It is deliberately a planning map, not a committed

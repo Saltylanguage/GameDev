@@ -121,6 +121,17 @@ namespace SaltyGame
             simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
             simulationBoardViewModel.PropertyChanged += HandleBoardPropertyChanged;
             ApplyBoardSnapshot();
+
+            // The GalapagOS desktop icon is the prepared expedition entry point.
+            // The standalone simulation route keeps its Ready/setup surface, but
+            // opening this desktop-hosted view should take the player directly to
+            // the live board instead of presenting expedition setup again.
+            if (simulationPreview.State == SpeciesPreviewState.Ready
+                && simulationViewModel.CanStart)
+            {
+                simulationViewModel.StartCommand.Execute(null);
+                ApplyBoardSnapshot();
+            }
         }
 
         void CloseSimulation()
