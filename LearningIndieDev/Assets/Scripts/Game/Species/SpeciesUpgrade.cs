@@ -13,6 +13,10 @@ namespace SaltyGame
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
+        VisionRange,
+        ForageBelowEnergy,
+        ReproductionChance,
+        TrackingPersistenceSteps,
     }
 
     public sealed class SpeciesUpgrade
@@ -29,9 +33,9 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(cost), cost, "Upgrade cost cannot be negative.");
             }
 
-            if (value <= 0f)
+            if (value <= 0f || float.IsNaN(value) || float.IsInfinity(value))
             {
-                throw new ArgumentOutOfRangeException(nameof(value), value, "Upgrade value must be greater than zero.");
+                throw new ArgumentOutOfRangeException(nameof(value), value, "Upgrade value must be finite and greater than zero.");
             }
 
             Id = id;
@@ -67,6 +71,9 @@ namespace SaltyGame
                 case SpeciesUpgradeType.BlockAmount:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, Value));
                     break;
+                case SpeciesUpgradeType.ReproductionChance:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ReproductionChance, Value));
+                    break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DigestionEnergyBonus, Value));
                     break;
@@ -75,6 +82,15 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.FleeMovementSpeedBonus:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.FleeMovementSpeedBonus, Value));
+                    break;
+                case SpeciesUpgradeType.VisionRange:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.VisionRange, Value));
+                    break;
+                case SpeciesUpgradeType.ForageBelowEnergy:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ForageBelowEnergy, Value));
+                    break;
+                case SpeciesUpgradeType.TrackingPersistenceSteps:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.TrackingPersistenceSteps, Value));
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
@@ -101,9 +117,14 @@ namespace SaltyGame
             var attackModifier = rules.AttackModifier;
             var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
+            var reproductionChance = rules.ReproductionChance;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var crowdingTolerance = rules.CrowdingTolerance;
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
+            var visionRange = rules.Awareness.VisionRange;
+            var intelligence = rules.Awareness.Intelligence;
+            var forageBelowEnergy = rules.ForageBelowEnergy;
+            var trackingPersistenceSteps = rules.TrackingPersistenceSteps;
             switch (Type)
             {
                 case SpeciesUpgradeType.MovementSpeed:
@@ -123,14 +144,26 @@ namespace SaltyGame
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
                     break;
+                case SpeciesUpgradeType.ReproductionChance:
+                    reproductionChance += Value;
+                    break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
-                    digestionEnergyBonus += (int)Value;
+                    digestionEnergyBonus += Value;
                     break;
                 case SpeciesUpgradeType.CrowdingTolerance:
                     crowdingTolerance += (int)Value;
                     break;
                 case SpeciesUpgradeType.FleeMovementSpeedBonus:
                     fleeMovementSpeedBonus += Value;
+                    break;
+                case SpeciesUpgradeType.VisionRange:
+                    visionRange += (int)Value;
+                    break;
+                case SpeciesUpgradeType.ForageBelowEnergy:
+                    forageBelowEnergy += (int)Value;
+                    break;
+                case SpeciesUpgradeType.TrackingPersistenceSteps:
+                    trackingPersistenceSteps += (int)Value;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
@@ -147,7 +180,7 @@ namespace SaltyGame
                 rules.DietTargetId,
                 rules.ReproductionPattern,
                 rules.ReproductionNeighborCount,
-                rules.ReproductionChance,
+                reproductionChance,
                 rules.ReproductionFoodRequired,
                 rules.MaxReproductionGroupSize,
                 rules.StartingEnergy,
@@ -157,9 +190,9 @@ namespace SaltyGame
                 rules.SeedDropChance,
                 rules.EnergyValue,
                 rules.Metabolism,
-                awareness: rules.Awareness,
+                awareness: new SpeciesAwarenessRules(visionRange, intelligence),
                 role: rules.Role,
-                forageBelowEnergy: rules.ForageBelowEnergy,
+                forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: rules.MaximumEnergy,
                 litterMinimum: rules.LitterMinimum,
                 litterMaximum: rules.LitterMaximum,
@@ -167,7 +200,8 @@ namespace SaltyGame
                 damageAmount: damageAmount,
                 digestionEnergyBonus: digestionEnergyBonus,
                 crowdingTolerance: crowdingTolerance,
-                fleeMovementSpeedBonus: fleeMovementSpeedBonus);
+                fleeMovementSpeedBonus: fleeMovementSpeedBonus,
+                trackingPersistenceSteps: trackingPersistenceSteps);
         }
     }
 
@@ -180,8 +214,45 @@ namespace SaltyGame
         public const string StrongerBlockId = "stronger-block";
         public const string StrongerBlockTwoId = "stronger-block-2";
         public const string ToughHideId = "tough-hide";
+        public const int ToughHideMaxLevel = 10;
         public const string EfficientDigestionId = "efficient-digestion";
+        public const int EfficientDigestionMaxLevel = 10;
+        public const float EfficientDigestionBonusPerLevel = 0.1f;
         public const string CrowdingToleranceId = "crowding-tolerance";
+        public const int CrowdingToleranceMaxLevel = 10;
+        public const int CrowdingToleranceBonusPerLevel = 1;
+        public const string ReproductiveDriveId = "reproductive-drive";
+        public const int ReproductiveDriveMaxLevel = 10;
+        public const float ReproductiveDriveChancePerLevel = 0.005f;
+        public const string KeenSensesId = "keen-senses";
+        public const int KeenSensesMaxLevel = 10;
+        public const float KeenSensesTrackingStepsPerLevel = 1f;
+        public const string RelentlessPursuitId = "relentless-pursuit";
+        public const int RelentlessPursuitMaxLevel = 10;
+        public const float RelentlessPursuitMovementSpeedPerLevel = 0.15f;
+        public const string PiercingBiteId = "piercing-bite";
+        public const int PiercingBiteMaxLevel = 10;
+        public const float PiercingBiteAttackModifierPerLevel = 1f;
+        public const string HuntUrgencyId = "hunt-urgency";
+        public const int HuntUrgencyMaxLevel = 10;
+        public const float HuntUrgencyForageBelowEnergyPerLevel = 1f;
+        public const string BroodDriveId = "brood-drive";
+        public const int BroodDriveMaxLevel = 10;
+        public const float BroodDriveChancePerLevel = 0.01f;
+
+        public static int GetMaxLevel(string upgradeId)
+        {
+            return upgradeId == ToughHideId ? ToughHideMaxLevel
+                : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
+                : upgradeId == CrowdingToleranceId ? CrowdingToleranceMaxLevel
+                : upgradeId == ReproductiveDriveId ? ReproductiveDriveMaxLevel
+                : upgradeId == KeenSensesId ? KeenSensesMaxLevel
+                : upgradeId == RelentlessPursuitId ? RelentlessPursuitMaxLevel
+                : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
+                : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
+                : upgradeId == BroodDriveId ? BroodDriveMaxLevel
+                : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
+        }
         public const string ThreatExposureId = "threat-exposure";
         public const string LegacyThreatResponseId = "threat-response";
         [Obsolete("Use ThreatExposureId.")]
@@ -201,7 +272,16 @@ namespace SaltyGame
             ToughHideId,
             EfficientDigestionId,
             CrowdingToleranceId,
+            ReproductiveDriveId,
             ThreatExposureId,
+        };
+
+        static readonly string[] ExperimentalPredatorUpgradeIds =
+        {
+            RelentlessPursuitId,
+            PiercingBiteId,
+            HuntUrgencyId,
+            BroodDriveId,
         };
 
         public static SpeciesUpgrade Create(string id)
@@ -228,9 +308,53 @@ namespace SaltyGame
                 case ToughHideId:
                     return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 case EfficientDigestionId:
-                    return new SpeciesUpgrade(EfficientDigestionId, 5, SpeciesUpgradeType.DigestionEnergyBonus, 1f);
+                    return new SpeciesUpgrade(
+                        EfficientDigestionId,
+                        5,
+                        SpeciesUpgradeType.DigestionEnergyBonus,
+                        EfficientDigestionBonusPerLevel);
                 case CrowdingToleranceId:
-                    return new SpeciesUpgrade(CrowdingToleranceId, 5, SpeciesUpgradeType.CrowdingTolerance, 1f);
+                    return new SpeciesUpgrade(
+                        CrowdingToleranceId,
+                        5,
+                        SpeciesUpgradeType.CrowdingTolerance,
+                        CrowdingToleranceBonusPerLevel);
+                case ReproductiveDriveId:
+                    return new SpeciesUpgrade(
+                        ReproductiveDriveId,
+                        5,
+                        SpeciesUpgradeType.ReproductionChance,
+                        ReproductiveDriveChancePerLevel);
+                case KeenSensesId:
+                    return new SpeciesUpgrade(
+                        KeenSensesId,
+                        5,
+                        SpeciesUpgradeType.TrackingPersistenceSteps,
+                        KeenSensesTrackingStepsPerLevel);
+                case RelentlessPursuitId:
+                    return new SpeciesUpgrade(
+                        RelentlessPursuitId,
+                        5,
+                        SpeciesUpgradeType.MovementSpeed,
+                        RelentlessPursuitMovementSpeedPerLevel);
+                case PiercingBiteId:
+                    return new SpeciesUpgrade(
+                        PiercingBiteId,
+                        5,
+                        SpeciesUpgradeType.AttackModifier,
+                        PiercingBiteAttackModifierPerLevel);
+                case HuntUrgencyId:
+                    return new SpeciesUpgrade(
+                        HuntUrgencyId,
+                        5,
+                        SpeciesUpgradeType.ForageBelowEnergy,
+                        HuntUrgencyForageBelowEnergyPerLevel);
+                case BroodDriveId:
+                    return new SpeciesUpgrade(
+                        BroodDriveId,
+                        5,
+                        SpeciesUpgradeType.ReproductionChance,
+                        BroodDriveChancePerLevel);
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
@@ -312,6 +436,18 @@ namespace SaltyGame
                     return "EFFICIENT DIGESTION";
                 case CrowdingToleranceId:
                     return "CROWDING TOLERANCE";
+                case ReproductiveDriveId:
+                    return "REPRODUCTIVE DRIVE";
+                case KeenSensesId:
+                    return "KEEN SENSES";
+                case RelentlessPursuitId:
+                    return "RELENTLESS PURSUIT";
+                case PiercingBiteId:
+                    return "PIERCING BITE";
+                case HuntUrgencyId:
+                    return "HUNT URGENCY";
+                case BroodDriveId:
+                    return "BROOD DRIVE";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return "THREAT EXPOSURE";
@@ -325,34 +461,117 @@ namespace SaltyGame
             int rotation,
             int seed)
         {
-            if (rotation < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
-            }
-
             if (IsThreatExposureId(continuingUpgradeId))
             {
                 continuingUpgradeId = ThreatExposureId;
             }
 
-            var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);
+            return CreateExperimentalOffer(
+                continuingUpgradeId,
+                rotation,
+                seed,
+                ExperimentalHerbivoreUpgradeIds);
+        }
+
+        public static bool TryGetCoupledResponse(
+            SpeciesId selectedSpecies,
+            string selectedUpgradeId,
+            out SpeciesId responderSpecies,
+            out string responderUpgradeId)
+        {
+            responderSpecies = default;
+            responderUpgradeId = string.Empty;
+            var isHare = selectedSpecies == SpeciesIds.Herbivore
+                || string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal);
+            var isFox = selectedSpecies == SpeciesIds.Carnivore
+                || string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal);
+            if (isHare)
+            {
+                responderSpecies = string.Equals(selectedSpecies.Value, "hare", StringComparison.Ordinal)
+                    ? new SpeciesId("fox")
+                    : SpeciesIds.Carnivore;
+                switch (selectedUpgradeId)
+                {
+                    case ToughHideId:
+                        responderUpgradeId = PiercingBiteId;
+                        break;
+                    case ThreatExposureId:
+                    case LegacyThreatResponseId:
+                        responderUpgradeId = RelentlessPursuitId;
+                        break;
+                    case EfficientDigestionId:
+                        responderUpgradeId = HuntUrgencyId;
+                        break;
+                    case ReproductiveDriveId:
+                    case CrowdingToleranceId:
+                        responderUpgradeId = BroodDriveId;
+                        break;
+                }
+            }
+            else if (isFox)
+            {
+                responderSpecies = string.Equals(selectedSpecies.Value, "fox", StringComparison.Ordinal)
+                    ? new SpeciesId("hare")
+                    : SpeciesIds.Herbivore;
+                switch (selectedUpgradeId)
+                {
+                    case PiercingBiteId:
+                        responderUpgradeId = ToughHideId;
+                        break;
+                    case RelentlessPursuitId:
+                        responderUpgradeId = ThreatExposureId;
+                        break;
+                    case HuntUrgencyId:
+                        responderUpgradeId = EfficientDigestionId;
+                        break;
+                    case BroodDriveId:
+                        responderUpgradeId = ReproductiveDriveId;
+                        break;
+                }
+            }
+
+            return !string.IsNullOrEmpty(responderUpgradeId);
+        }
+
+        public static SpeciesUpgrade[] CreateExperimentalPredatorOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed)
+        {
+            return CreateExperimentalOffer(
+                continuingUpgradeId,
+                rotation,
+                seed,
+                ExperimentalPredatorUpgradeIds);
+        }
+
+        static SpeciesUpgrade[] CreateExperimentalOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed,
+            string[] upgradeIds)
+        {
+            if (rotation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
+            }
+
+            var primaryIndex = Array.IndexOf(upgradeIds, continuingUpgradeId);
             var seededValue = seed & int.MaxValue;
             var hasContinuingUpgrade = primaryIndex >= 0;
             if (!hasContinuingUpgrade)
             {
-                primaryIndex = seededValue % ExperimentalHerbivoreUpgradeIds.Length;
+                primaryIndex = seededValue % upgradeIds.Length;
             }
 
             var alternativeRotation = hasContinuingUpgrade
-                ? rotation % (ExperimentalHerbivoreUpgradeIds.Length - 1)
-                : (seededValue / ExperimentalHerbivoreUpgradeIds.Length)
-                    % (ExperimentalHerbivoreUpgradeIds.Length - 1);
-            var alternativeIndex = (primaryIndex + 1 + alternativeRotation)
-                % ExperimentalHerbivoreUpgradeIds.Length;
+                ? rotation % (upgradeIds.Length - 1)
+                : (seededValue / upgradeIds.Length) % (upgradeIds.Length - 1);
+            var alternativeIndex = (primaryIndex + 1 + alternativeRotation) % upgradeIds.Length;
             return new[]
             {
-                Create(ExperimentalHerbivoreUpgradeIds[primaryIndex]),
-                Create(ExperimentalHerbivoreUpgradeIds[alternativeIndex]),
+                Create(upgradeIds[primaryIndex]),
+                Create(upgradeIds[alternativeIndex]),
             };
         }
     }

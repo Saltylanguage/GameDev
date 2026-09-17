@@ -27,6 +27,11 @@ namespace SaltyGame
 
         public int GetUpgradeLevel(string upgradeId)
         {
+            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
+            {
+                upgradeId = SpeciesUpgradeCatalog.ThreatExposureId;
+            }
+
             return !string.IsNullOrWhiteSpace(upgradeId)
                 && purchasedUpgradeLevels.TryGetValue(upgradeId, out var level)
                 ? level
@@ -59,43 +64,81 @@ namespace SaltyGame
             return true;
         }
 
-        public bool TryPurchase(SpeciesUpgrade upgrade)
+        public bool CanPurchase(SpeciesUpgrade upgrade)
         {
             if (upgrade == null)
             {
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
-                && GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.ThreatExposureMaxLevel)
+            return Currency >= upgrade.Cost
+                && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+        }
+
+        public bool TryPurchase(SpeciesUpgrade upgrade)
+        {
+            if (!CanPurchase(upgrade))
             {
                 return false;
             }
 
-            if (!TrySpend(upgrade.Cost))
+            ApplyLegacyUpgrade(upgrade);
+            TrySpend(upgrade.Cost);
+            return true;
+        }
+
+        public bool CanApplyFreeUpgrade(SpeciesUpgrade upgrade)
+        {
+            if (upgrade == null)
+            {
+                throw new ArgumentNullException(nameof(upgrade));
+            }
+
+            return GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+        }
+
+        public bool TryApplyFreeUpgrade(SpeciesUpgrade upgrade)
+        {
+            if (!CanApplyFreeUpgrade(upgrade))
             {
                 return false;
             }
+
+            ApplyLegacyUpgrade(upgrade);
+            return true;
+        }
+
+        void ApplyLegacyUpgrade(SpeciesUpgrade upgrade)
+        {
 
             var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
+            var nextRules = CurrentRules;
+            var nextAvoidanceChance = PreContactAvoidanceChance;
             if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
             {
                 if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(nextLevel))
                 {
-                    CurrentRules = upgrade.Apply(CurrentRules);
+                    nextRules = upgrade.Apply(CurrentRules);
                 }
 
-                PreContactAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
+                nextAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
             }
             else
             {
-                CurrentRules = upgrade.Apply(CurrentRules);
+                nextRules = upgrade.Apply(CurrentRules);
             }
 
-            purchasedUpgradeLevels[upgrade.Id] = nextLevel;
-            orderedUpgradeIds.Add(upgrade.Id);
+            // Match the experiment runner's legacy provenance: catalog snapshots
+            // describe the upgrade; resolved rules/options retain level effects.
+            var snapshot = upgrade.CreateSnapshot(Definition.Id);
+            CurrentRules = nextRules;
+            PreContactAvoidanceChance = nextAvoidanceChance;
+            var upgradeId = SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
+                ? SpeciesUpgradeCatalog.ThreatExposureId : upgrade.Id;
+            purchasedUpgradeLevels[upgradeId] = nextLevel;
+            orderedUpgradeIds.Add(upgradeId);
+            appliedRunUpgrades.Add(snapshot);
             PurchasedUpgradeCount++;
-            return true;
         }
 
         public bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade)

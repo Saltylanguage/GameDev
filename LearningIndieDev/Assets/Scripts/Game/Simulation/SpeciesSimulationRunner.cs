@@ -19,7 +19,7 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             float stepSeconds,
             int maxPopulation = 0,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
@@ -41,7 +41,7 @@ namespace SaltyGame
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
-            Run.SetUpgradeLoadout(upgradeLoadout);
+            Run.SetUpgradeLoadout(upgradeLoadout, this.experimentalOptions.CoupledSpeciesResponsesEnabled);
         }
 
         [Obsolete("Use the SpeciesId overload instead.")]
@@ -57,7 +57,7 @@ namespace SaltyGame
         public SpeciesSimulationRunner(
             SimulationRunState run,
             CellularSimData simulationData,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
@@ -74,7 +74,7 @@ namespace SaltyGame
             {
                 Run.SetTargetTicks(simulationData.RunTicks);
             }
-            Run.SetUpgradeLoadout(upgradeLoadout);
+            Run.SetUpgradeLoadout(upgradeLoadout, this.experimentalOptions.CoupledSpeciesResponsesEnabled);
             Run.SetRulesetFingerprint(simulationData.Fingerprint);
         }
 
@@ -176,7 +176,7 @@ namespace SaltyGame
             }
 
             experimentalOptions = nextExperimentalOptions ?? SpeciesExperimentalOptions.None;
-            Run.SetUpgradeLoadout(nextUpgradeLoadout);
+            Run.SetUpgradeLoadout(nextUpgradeLoadout, experimentalOptions.CoupledSpeciesResponsesEnabled);
             return true;
         }
 

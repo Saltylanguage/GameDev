@@ -12,7 +12,7 @@ namespace SaltyGame
 
         [Header("Runtime Scenarios")]
         [SerializeField] List<ScenarioDefinitionAsset> scenarioOptions = new List<ScenarioDefinitionAsset>();
-        [SerializeField, Min(-1)] int selectedScenarioIndex = -1;
+        [SerializeField, Min(-1)] int selectedScenarioIndex = 0;
 
         public SpeciesSimulationPreview SpeciesPreview => speciesPreview;
         public Helper_Simulation SimulationHelper => simulationHelper;

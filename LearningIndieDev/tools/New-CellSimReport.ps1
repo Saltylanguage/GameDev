@@ -471,7 +471,8 @@ function Add-Comparison {
         -and $Baseline.stepIntervalSeconds -eq $Report.stepIntervalSeconds `
         -and $Baseline.combatResolutionMode -eq $Report.combatResolutionMode `
         -and $Baseline.attackOpportunityMode -eq $Report.attackOpportunityMode `
-        -and $Baseline.experimentalFeatures -eq $Report.experimentalFeatures
+        -and $Baseline.experimentalFeatures -eq $Report.experimentalFeatures `
+        -and $Baseline.coupledSpeciesResponses -eq $Report.coupledSpeciesResponses
     if ($sameInputs) {
         $Lines.Add('Comparison validity: controlled inputs and seed range; loadout is the intended arm difference.')
     }

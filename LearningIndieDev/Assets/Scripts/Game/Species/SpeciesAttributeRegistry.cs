@@ -69,6 +69,7 @@ namespace SaltyGame
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
+        TrackingPersistenceSteps,
     }
 
     public static class SpeciesAttributeIds
@@ -98,6 +99,7 @@ namespace SaltyGame
         public const string DigestionEnergyBonus = "digestion.energy-bonus";
         public const string CrowdingTolerance = "crowding.tolerance";
         public const string FleeMovementSpeedBonus = "flee.movement-speed-bonus";
+        public const string TrackingPersistenceSteps = "awareness.tracking-persistence-steps";
     }
 
     public static class SpeciesAttributeRegistry
@@ -108,7 +110,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v1";
+        public const string Version = "species-attribute-registry-v3";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -182,6 +184,7 @@ namespace SaltyGame
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var crowdingTolerance = rules.CrowdingTolerance;
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
+            var trackingPersistenceSteps = rules.TrackingPersistenceSteps;
 
             checked
             {
@@ -254,13 +257,16 @@ namespace SaltyGame
                     litterMaximum += (int)value;
                     break;
                 case SpeciesAttributeTarget.DigestionEnergyBonus:
-                    digestionEnergyBonus += (int)value;
+                    digestionEnergyBonus += value;
                     break;
                 case SpeciesAttributeTarget.CrowdingTolerance:
                     crowdingTolerance += (int)value;
                     break;
                 case SpeciesAttributeTarget.FleeMovementSpeedBonus:
                     fleeMovementSpeedBonus += value;
+                    break;
+                case SpeciesAttributeTarget.TrackingPersistenceSteps:
+                    trackingPersistenceSteps += (int)value;
                     break;
                     default:
                         throw new ArgumentOutOfRangeException(nameof(definition.Target), definition.Target, "Unknown species attribute target.");
@@ -298,7 +304,8 @@ namespace SaltyGame
                 damageAmount,
                 digestionEnergyBonus,
                 crowdingTolerance,
-                fleeMovementSpeedBonus);
+                fleeMovementSpeedBonus,
+                trackingPersistenceSteps);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()
@@ -327,9 +334,10 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.MaximumEnergy, "Maximum Energy", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.MaximumEnergy),
                 Definition(SpeciesAttributeIds.LitterMinimum, "Minimum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMinimum),
                 Definition(SpeciesAttributeIds.LitterMaximum, "Maximum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMaximum),
-                Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.DigestionEnergyBonus),
+                Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.DigestionEnergyBonus),
                 Definition(SpeciesAttributeIds.CrowdingTolerance, "Crowding Tolerance", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingTolerance),
-                Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Flee Movement Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
+                Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Move Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
+                Definition(SpeciesAttributeIds.TrackingPersistenceSteps, "Tracking Persistence Steps", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.TrackingPersistenceSteps),
             };
 
             var result = new Dictionary<string, SpeciesAttributeDefinition>(StringComparer.Ordinal);

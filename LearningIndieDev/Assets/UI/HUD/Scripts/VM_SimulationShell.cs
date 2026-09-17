@@ -92,10 +92,13 @@ namespace SaltyGame
         string plantProbabilityText;
         string herbivoreProbabilityText;
         string carnivoreProbabilityText;
+        string plantStartingPopulationText;
+        string herbivoreStartingPopulationText;
+        string carnivoreStartingPopulationText;
         string foxAttackCooldownTicksText;
+        bool coupledSpeciesResponsesEnabled;
         bool randomizeSeedOnStart;
         bool continuousPhasesEnabled;
-        bool bevExperimentalFeaturesEnabled;
         bool canEditSettings;
         bool developerMode;
         int selectedRuleSpeciesIndex;
@@ -245,16 +248,44 @@ namespace SaltyGame
             get => carnivoreProbabilityText;
             set => Set(ref carnivoreProbabilityText, value, nameof(CarnivoreProbabilityText));
         }
-        public bool BevExperimentalFeaturesEnabled
+        public string PlantStartingPopulationText
         {
-            get => bevExperimentalFeaturesEnabled;
-            set => Set(ref bevExperimentalFeaturesEnabled, value, nameof(BevExperimentalFeaturesEnabled));
+            get => plantStartingPopulationText;
+            set => Set(ref plantStartingPopulationText, value, nameof(PlantStartingPopulationText));
+        }
+        public string HerbivoreStartingPopulationText
+        {
+            get => herbivoreStartingPopulationText;
+            set => Set(ref herbivoreStartingPopulationText, value, nameof(HerbivoreStartingPopulationText));
+        }
+        public string CarnivoreStartingPopulationText
+        {
+            get => carnivoreStartingPopulationText;
+            set => Set(ref carnivoreStartingPopulationText, value, nameof(CarnivoreStartingPopulationText));
         }
         public string FoxAttackCooldownTicksText
         {
             get => foxAttackCooldownTicksText;
             set => Set(ref foxAttackCooldownTicksText, value, nameof(FoxAttackCooldownTicksText));
         }
+        public bool CoupledSpeciesResponsesEnabled
+        {
+            get => coupledSpeciesResponsesEnabled;
+            set
+            {
+                if (coupledSpeciesResponsesEnabled == value)
+                {
+                    return;
+                }
+
+                coupledSpeciesResponsesEnabled = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CoupledSpeciesResponsesEnabled)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CoupledSpeciesResponsesToggleText)));
+            }
+        }
+        public string CoupledSpeciesResponsesToggleText => coupledSpeciesResponsesEnabled
+            ? "COUPLED HARE/FOX RESPONSES: ON (EXPERIMENTAL)"
+            : "COUPLED HARE/FOX RESPONSES: OFF (EXPERIMENTAL)";
         public bool RandomizeSeedOnStart
         {
             get => randomizeSeedOnStart;
@@ -283,7 +314,7 @@ namespace SaltyGame
             }
         }
         public Visibility DeveloperSettingsVisibility => developerMode ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility PlayerSettingsVisibility => developerMode ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility PlayerSettingsVisibility => Visibility.Visible;
         public string[] SpeciesTabs => speciesTabs;
         public int SelectedRuleSpeciesIndex
         {
@@ -816,13 +847,15 @@ namespace SaltyGame
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
             var tick = run == null ? -1 : run.Tick;
+            SpeciesRules playerRules = null;
             var isHerbivorePlayer = preview.ActiveSpeciesRules != null
-                && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out var playerRules)
+                && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out playerRules)
                 && playerRules.Role == SpeciesRole.Herbivore;
+            var isCarnivorePlayer = playerRules != null && playerRules.Role == SpeciesRole.Carnivore;
             var showExperimentalHerbivoreStatLine =
                 (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
-                && isHerbivorePlayer;
+                && (isHerbivorePlayer || isCarnivorePlayer);
             var showExperimentalUpgradeCount =
                 (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
@@ -844,7 +877,9 @@ namespace SaltyGame
             Set(
                 ref experimentalHerbivoreStatLineSummary,
                 showExperimentalHerbivoreStatLine
-                    ? GetExperimentalHerbivoreStatLineSummary(run, preview.PlayerSpecies)
+                    ? isHerbivorePlayer
+                        ? GetExperimentalHerbivoreStatLineSummary(run, preview.PlayerSpecies)
+                        : GetExperimentalPredatorStatLineSummary(run, preview.PlayerSpecies)
                     : string.Empty,
                 nameof(ExperimentalHerbivoreStatLineSummary));
             Set(
@@ -964,13 +999,23 @@ namespace SaltyGame
             if (!preview.TryApplyContinuousPhases(
                 !DeveloperMode || ContinuousPhasesEnabled,
                 PhaseLengthTicksText,
-                out _))
+                out var continuousValidationMessage))
             {
-                Refresh(true);
+                Set(ref settingsMessage, continuousValidationMessage, nameof(SettingsMessage));
                 return;
             }
 
-            if (!preview.TryApplyGlobalSettingsForTicks(
+            if (!preview.TryApplyExperimentalFeatures(
+                enabled: true,
+                coupledResponsesEnabled: CoupledSpeciesResponsesEnabled,
+                foxAttackCooldownValue: FoxAttackCooldownTicksText,
+                out var experimentalValidationMessage))
+            {
+                Set(ref settingsMessage, experimentalValidationMessage, nameof(SettingsMessage));
+                return;
+            }
+
+            if (!preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 GridWidthText,
                 GridHeightText,
                 BaseSeedText,
@@ -981,17 +1026,15 @@ namespace SaltyGame
                 PlantProbabilityText,
                 HerbivoreProbabilityText,
                 CarnivoreProbabilityText,
-                RandomizeSeedOnStart,
-                out _))
+                false,
+                PlantStartingPopulationText,
+                HerbivoreStartingPopulationText,
+                CarnivoreStartingPopulationText,
+                out var settingsValidationMessage))
             {
-                Refresh(true);
+                Set(ref settingsMessage, settingsValidationMessage, nameof(SettingsMessage));
                 return;
             }
-
-            preview.TryApplyExperimentalFeatures(
-                BevExperimentalFeaturesEnabled,
-                FoxAttackCooldownTicksText,
-                out _);
             Refresh(true);
         }
 
@@ -1192,8 +1235,11 @@ namespace SaltyGame
             PlantProbabilityText = preview.PlantProbability.ToString("0.###", CultureInfo.InvariantCulture);
             HerbivoreProbabilityText = preview.HerbivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
             CarnivoreProbabilityText = preview.CarnivoreProbability.ToString("0.###", CultureInfo.InvariantCulture);
-            BevExperimentalFeaturesEnabled = preview.BevExperimentalFeaturesEnabled;
+            PlantStartingPopulationText = preview.PlantStartingPopulation.ToString(CultureInfo.InvariantCulture);
+            HerbivoreStartingPopulationText = preview.HerbivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
+            CarnivoreStartingPopulationText = preview.CarnivoreStartingPopulation.ToString(CultureInfo.InvariantCulture);
             FoxAttackCooldownTicksText = preview.FoxAttackCooldownTicks.ToString(CultureInfo.InvariantCulture);
+            CoupledSpeciesResponsesEnabled = preview.CoupledSpeciesResponsesEnabled;
             RandomizeSeedOnStart = preview.RandomizeSeedOnStart;
             ContinuousPhasesEnabled = preview.ContinuousPhasesEnabled;
         }
@@ -1473,6 +1519,49 @@ namespace SaltyGame
             summary.Append('\n');
             AppendMetric(summary, "RFS", statLine.ReplicationFitnessScore, statLine.ReplicationFitnessScoreStatus);
             AppendMetric(summary, "APS", statLine.ActualPreyScore, statLine.ActualPreyScoreStatus);
+            summary.Append('\n')
+                .Append("Expected FPO: ")
+                .Append(statLine.ExpectedFinalPopulation)
+                .Append("  |  Reconciled: ")
+                .Append(statLine.PopulationReconciled);
+            return summary.ToString();
+        }
+
+        static string GetExperimentalPredatorStatLineSummary(SimulationRunState run, SpeciesId species)
+        {
+            if (run == null || run.PopulationHistory.Count == 0)
+            {
+                return string.Empty;
+            }
+
+            var statLine = run.Metrics.CreatePredatorStatLine(
+                species,
+                run.PopulationHistory[0].GetCount(species),
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
+            var summary = new StringBuilder();
+            AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "PPS", statLine.PreyActivePredatorSteps);
+            AppendMetric(summary, "EPS", statLine.EncounteredPredatorSteps);
+            AppendMetric(summary, "ECN", statLine.Encounters);
+            summary.Append('\n');
+            AppendMetric(summary, "HAT", statLine.HuntAttempts);
+            AppendMetric(summary, "KIL", statLine.PreyKilled);
+            AppendMetric(summary, "STRV", statLine.Starved);
+            AppendMetric(summary, "MAT", statLine.Mating);
+            AppendMetric(summary, "BIR", statLine.Births);
+            summary.Append('\n');
+            AppendMetric(summary, "CRWD", statLine.Crowding);
+            AppendMetric(summary, "FPO", statLine.FinalPopulation);
+            AppendMetric(summary, "hAVG", statLine.HuntSuccessAverage, statLine.HuntSuccessAverageStatus);
+            AppendMetric(summary, "aAVG", statLine.PreyAccessAverage, statLine.PreyAccessAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "huntAVG", statLine.HuntingAverage, statLine.HuntingAverageStatus);
+            AppendMetric(summary, "sAVI", statLine.InverseStarvedAverage, statLine.InverseStarvedAverageStatus);
+            AppendMetric(summary, "cAVI", statLine.InverseCrowdingAverage, statLine.InverseCrowdingAverageStatus);
+            AppendMetric(summary, "bAVG", statLine.BirthAverage, statLine.BirthAverageStatus);
+            summary.Append('\n');
+            AppendMetric(summary, "RFS", statLine.ReplicationFitnessScore, statLine.ReplicationFitnessScoreStatus);
+            AppendMetric(summary, "AHS", statLine.ActualHuntScore, statLine.ActualHuntScoreStatus);
             summary.Append('\n')
                 .Append("Expected FPO: ")
                 .Append(statLine.ExpectedFinalPopulation)

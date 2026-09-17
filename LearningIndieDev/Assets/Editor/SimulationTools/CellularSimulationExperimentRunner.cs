@@ -42,12 +42,13 @@ namespace SaltyGame.EditorTools
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
         const string CombatModeArgument = "-combatMode";
-        const string DefaultCombatMode = "legacy-fixed-damage";
+        const string DefaultCombatMode = "opposed-roll";
         const string AttackOpportunityModeArgument = "-attackOpportunityMode";
         const string DefaultAttackOpportunityMode = "natural";
         const string ExperimentalFeaturesArgument = "-experimentalFeatures";
         const string FoxAttackCooldownTicksArgument = "-foxAttackCooldownTicks";
         const string PreContactAvoidanceChanceArgument = "-preContactAvoidanceChance";
+        const string CoupledSpeciesResponsesArgument = "-coupledSpeciesResponses";
 
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
@@ -128,7 +129,9 @@ namespace SaltyGame.EditorTools
                         SerializeReport(
                             report,
                             experimentalOptions.UsesHerbivoreStatLine
-                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore),
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore,
+                            experimentalOptions.UsesPredatorStatLine
+                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Carnivore),
                         new UTF8Encoding(false));
                     WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
                     Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
@@ -182,10 +185,21 @@ namespace SaltyGame.EditorTools
                 : authoredPhaseUpgradeSnapshots == null
                     ? null
                     : authoredPhaseUpgradeSnapshots[0];
+            scheduledInitialSnapshots = CreateCoupledResponseSnapshots(
+                scheduledInitialSnapshots,
+                experimentalOptions);
+            var legacyLoadoutSnapshots = authoredUpgradeSnapshots == null && !hasPhaseSchedule
+                ? CreateCoupledResponseSnapshots(
+                    CreateLegacyUpgradeSnapshots(
+                        options.UpgradeLoadout,
+                        options.PlayerSpeciesId,
+                        options.UpgradeValueOverride),
+                    experimentalOptions)
+                : null;
             var loadedData = hasPhaseSchedule
                 ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, scheduledInitialSnapshots)
                 : authoredUpgradeSnapshots == null
-                    ? ApplyLoadout(data, options)
+                    ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, legacyLoadoutSnapshots)
                     : ApplySnapshotLoadout(data, options.PlayerSpeciesId, authoredUpgradeSnapshots);
             var species = GetSortedSpecies(loadedData.SpeciesRules);
             var orderedLoadout = phaseSchedule != null
@@ -220,7 +234,7 @@ namespace SaltyGame.EditorTools
                     options.CombatResolutionMode,
                     options.AttackOpportunityMode,
                     experimentalOptions,
-                    authoredUpgradeSnapshots,
+                    authoredUpgradeSnapshots ?? legacyLoadoutSnapshots,
                     phaseSchedule,
                     authoredPhaseUpgradeSnapshots,
                     options.PhaseLengthTicks);
@@ -274,6 +288,7 @@ namespace SaltyGame.EditorTools
                 experimentalFeatures = experimentalOptions.FeatureId,
                 foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 preContactAvoidanceChance = experimentalOptions.PreContactAvoidanceChance,
+                coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = loadedData.Width,
@@ -358,7 +373,9 @@ namespace SaltyGame.EditorTools
                 },
                 playerSpecies,
                 experimentalOptions.UsesHerbivoreStatLine
-                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                experimentalOptions.UsesPredatorStatLine
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
         }
 
         static ExperimentRun RunScheduledSimulation(
@@ -386,6 +403,7 @@ namespace SaltyGame.EditorTools
             var activeSnapshots = phaseSchedule != null
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value)
                 : authoredPhaseUpgradeSnapshots[0];
+            activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
             scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
             var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
             var run = new SimulationRunState(
@@ -422,6 +440,7 @@ namespace SaltyGame.EditorTools
                         phaseSchedule[nextPhaseIndex],
                         playerSpecies.Value)
                     : authoredPhaseUpgradeSnapshots[nextPhaseIndex];
+                activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
                 var nextData = ApplySnapshotLoadout(
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
@@ -446,7 +465,9 @@ namespace SaltyGame.EditorTools
                 },
                 playerSpecies,
                 experimentalOptions.UsesHerbivoreStatLine
-                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore);
+                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                experimentalOptions.UsesPredatorStatLine
+                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -532,6 +553,7 @@ namespace SaltyGame.EditorTools
                 experimentalFeatures = experimentalOptions.FeatureId,
                 foxAttackCooldownTicks = experimentalOptions.FoxAttackCooldownTicks,
                 preContactAvoidanceChance = experimentalOptions.PreContactAvoidanceChance,
+                coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
                 gridWidth = selectedData.Width,
@@ -575,14 +597,18 @@ namespace SaltyGame.EditorTools
                     CreatePairedOpportunityControl(runner.OpportunityControl),
                     playerSpecies,
                     experimentalOptions.UsesHerbivoreStatLine
-                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                    experimentalOptions.UsesPredatorStatLine
+                        && baselineData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore),
                 BlockPlusTwo = CreateExperimentRun(
                     blockPlusTwoRun,
                     species,
                     CreatePairedOpportunityControl(runner.OpportunityControl),
                     playerSpecies,
                     experimentalOptions.UsesHerbivoreStatLine
-                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore),
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
+                    experimentalOptions.UsesPredatorStatLine
+                        && blockPlusTwoData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore),
             };
         }
 
@@ -614,7 +640,8 @@ namespace SaltyGame.EditorTools
             IReadOnlyList<SpeciesId> species,
             ExperimentOpportunityControl opportunityControl,
             SpeciesId statSpecies,
-            bool includeHerbivoreStatLine)
+            bool includeHerbivoreStatLine,
+            bool includePredatorStatLine)
         {
             var result = SimulationRunResults.Create(run);
             return new ExperimentRun
@@ -636,11 +663,16 @@ namespace SaltyGame.EditorTools
                 phaseResults = SimulationReportSerialization.CreatePhaseResults(
                     result.PhaseResults,
                     species,
-                    statSpecies),
+                    statSpecies,
+                    includeHerbivoreStatLine,
+                    includePredatorStatLine),
                 upgradeAcquisitionTimeline = SimulationReportSerialization.CreateUpgradeAcquisitions(
                     result.UpgradeAcquisitionTimeline),
                 herbivoreStatLine = includeHerbivoreStatLine
                     ? SimulationReportSerialization.CreateHerbivoreStatLine(run, statSpecies)
+                    : null,
+                predatorStatLine = includePredatorStatLine
+                    ? SimulationReportSerialization.CreatePredatorStatLine(run, statSpecies)
                     : null,
                 opportunityControl = opportunityControl,
             };
@@ -751,7 +783,8 @@ namespace SaltyGame.EditorTools
             var experimentalOptions = new SpeciesExperimentalOptions(
                 options.ExperimentalFeatures,
                 options.FoxAttackCooldownTicks,
-                preContactAvoidanceChance);
+                preContactAvoidanceChance,
+                options.CoupledSpeciesResponses);
             if (experimentalOptions.HasFoxAttackCooldown
                 && options.CombatResolutionMode != SpeciesCombatResolutionMode.OpposedRoll)
             {
@@ -775,6 +808,14 @@ namespace SaltyGame.EditorTools
                 throw new ArgumentException(
                     $"'{PreContactAvoidanceChanceArgument}' requires the Threat Exposure upgrade.",
                     PreContactAvoidanceChanceArgument);
+            }
+
+            if (experimentalOptions.CoupledSpeciesResponsesEnabled
+                && options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic)
+            {
+                throw new ArgumentException(
+                    $"'{CoupledSpeciesResponsesArgument}' is not supported by paired lockstep diagnostic mode.",
+                    CoupledSpeciesResponsesArgument);
             }
 
             return experimentalOptions;
@@ -819,11 +860,18 @@ namespace SaltyGame.EditorTools
             }
 
             var threatExposureLevel = 0;
+            var levels = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var upgradeId in upgradeIds)
             {
                 var upgrade = GetEffectiveUpgrade(upgradeId, upgradeValueOverride);
                 if (upgrade != null)
                 {
+                    levels.TryGetValue(upgrade.Id, out var level);
+                    if (level >= SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id))
+                    {
+                        throw new ArgumentException($"Upgrade '{upgrade.Id}' exceeds its maximum level.", nameof(upgradeIds));
+                    }
+                    levels[upgrade.Id] = level + 1;
                     if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
                     {
                         threatExposureLevel++;
@@ -853,13 +901,14 @@ namespace SaltyGame.EditorTools
             }
 
             var playerSpecies = new SpeciesId(playerSpeciesId);
-            if (!data.SpeciesRules.TryGetValue(playerSpecies, out var rules))
+            if (!data.SpeciesRules.ContainsKey(playerSpecies))
             {
                 throw new ArgumentException(
                     $"Scenario does not define the requested player species '{playerSpeciesId}'.",
                     PlayerSpeciesArgument);
             }
 
+            var updated = data;
             foreach (var upgrade in upgrades)
             {
                 if (upgrade == null)
@@ -867,17 +916,17 @@ namespace SaltyGame.EditorTools
                     throw new ArgumentException("Authored upgrade loadouts cannot contain null snapshots.", nameof(upgrades));
                 }
 
-                if (upgrade.TargetSpecies != playerSpecies)
+                if (!updated.SpeciesRules.TryGetValue(upgrade.TargetSpecies, out var rules))
                 {
                     throw new ArgumentException(
-                        $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{playerSpeciesId}'.",
+                        $"Scenario does not define upgrade target species '{upgrade.TargetSpecies}'.",
                         UpgradeAssetSequenceArgument);
                 }
 
-                rules = upgrade.Apply(rules);
+                updated = updated.WithSpeciesRules(upgrade.TargetSpecies, upgrade.Apply(rules));
             }
 
-            return data.WithSpeciesRules(playerSpecies, rules);
+            return updated;
         }
 
         static string[] GetSnapshotIds(IReadOnlyList<SpeciesUpgradeSnapshot> upgrades)
@@ -962,7 +1011,8 @@ namespace SaltyGame.EditorTools
 
         static IReadOnlyList<SpeciesUpgradeSnapshot> CreateLegacyUpgradeSnapshots(
             IReadOnlyList<string> upgradeIds,
-            string playerSpeciesId)
+            string playerSpeciesId,
+            float upgradeValueOverride = 0f)
         {
             var playerSpecies = new SpeciesId(playerSpeciesId);
             var snapshots = new List<SpeciesUpgradeSnapshot>();
@@ -973,7 +1023,9 @@ namespace SaltyGame.EditorTools
 
             for (var index = 0; index < upgradeIds.Count; index++)
             {
-                var upgrade = GetOptionalUpgrade(upgradeIds[index]);
+                var upgrade = upgradeValueOverride > 0f
+                    ? GetEffectiveUpgrade(upgradeIds[index], upgradeValueOverride)
+                    : GetOptionalUpgrade(upgradeIds[index]);
                 if (upgrade != null)
                 {
                     snapshots.Add(upgrade.CreateSnapshot(playerSpecies));
@@ -981,6 +1033,48 @@ namespace SaltyGame.EditorTools
             }
 
             return snapshots;
+        }
+
+        static IReadOnlyList<SpeciesUpgradeSnapshot> CreateCoupledResponseSnapshots(
+            IReadOnlyList<SpeciesUpgradeSnapshot> upgrades,
+            SpeciesExperimentalOptions experimentalOptions)
+        {
+            if (upgrades == null || upgrades.Count == 0 || !experimentalOptions.CoupledSpeciesResponsesEnabled)
+            {
+                return upgrades ?? Array.Empty<SpeciesUpgradeSnapshot>();
+            }
+
+            var effective = new List<SpeciesUpgradeSnapshot>(upgrades.Count * 2);
+            var levels = new Dictionary<string, int>(StringComparer.Ordinal);
+            foreach (var upgrade in upgrades)
+            {
+                effective.Add(upgrade);
+                var key = upgrade.TargetSpecies.Value + ":" + upgrade.Id;
+                levels.TryGetValue(key, out var level);
+                levels[key] = level + 1;
+                if (!SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                    upgrade.TargetSpecies,
+                    upgrade.Id,
+                    out var responderSpecies,
+                    out var responderUpgradeId))
+                {
+                    continue;
+                }
+
+                var responderKey = responderSpecies.Value + ":" + responderUpgradeId;
+                levels.TryGetValue(responderKey, out level);
+                if (level >= SpeciesUpgradeCatalog.GetMaxLevel(responderUpgradeId))
+                {
+                    throw new ArgumentException(
+                        $"Coupled response '{responderUpgradeId}' exceeds its maximum level.",
+                        CoupledSpeciesResponsesArgument);
+                }
+
+                levels[responderKey] = level + 1;
+                effective.Add(SpeciesUpgradeCatalog.Create(responderUpgradeId).CreateSnapshot(responderSpecies));
+            }
+
+            return effective;
         }
 
         static string[] GetPhaseScheduleProvenance(IReadOnlyList<string[]> phaseSchedule)
@@ -1325,6 +1419,7 @@ namespace SaltyGame.EditorTools
             public string ExperimentalFeatures { get; private set; }
             public int FoxAttackCooldownTicks { get; private set; }
             public float PreContactAvoidanceChance { get; private set; }
+            public bool CoupledSpeciesResponses { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public int RunTicks { get; private set; }
@@ -1437,6 +1532,7 @@ namespace SaltyGame.EditorTools
                         0,
                         allowZero: true),
                     PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
+                    CoupledSpeciesResponses = GetBooleanValue(arguments, CoupledSpeciesResponsesArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     RunTicks = runTicks,
@@ -1778,6 +1874,22 @@ namespace SaltyGame.EditorTools
 
                 return parsed;
             }
+
+            static bool GetBooleanValue(IReadOnlyList<string> arguments, string name)
+            {
+                var value = GetOptionalValue(arguments, name);
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    return false;
+                }
+
+                if (!bool.TryParse(value, out var parsed))
+                {
+                    throw new ArgumentException($"'{name}' must be true or false.", name);
+                }
+
+                return parsed;
+            }
         }
 
         [Serializable]
@@ -1807,6 +1919,7 @@ namespace SaltyGame.EditorTools
             public string experimentalFeatures;
             public int foxAttackCooldownTicks;
             public float preContactAvoidanceChance;
+            public bool coupledSpeciesResponses;
             public int seedStart;
             public int seedCount;
             public int gridWidth;
@@ -1841,20 +1954,32 @@ namespace SaltyGame.EditorTools
             public SimulationPhaseResultRecord[] phaseResults;
             public SimulationUpgradeAcquisitionRecord[] upgradeAcquisitionTimeline;
             public SimulationHerbivoreStatLineRecord herbivoreStatLine;
+            public SimulationPredatorStatLineRecord predatorStatLine;
             public ExperimentOpportunityControl opportunityControl;
         }
 
-        static string SerializeReport(ExperimentReport report, bool includeHerbivoreStatLine)
+        static string SerializeReport(
+            ExperimentReport report,
+            bool includeHerbivoreStatLine,
+            bool includePredatorStatLine)
         {
             var json = JsonUtility.ToJson(report, true);
-            if (includeHerbivoreStatLine)
+            if (includeHerbivoreStatLine && includePredatorStatLine)
             {
                 return json;
             }
 
             var withoutStatLine = Regex.Replace(
                 json,
-                @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?",
+                includeHerbivoreStatLine
+                    ? @"(?!x)x"
+                    : @"\s*""herbivoreStatLine"":\s*\{[^{}]*\},?",
+                string.Empty);
+            withoutStatLine = Regex.Replace(
+                withoutStatLine,
+                includePredatorStatLine
+                    ? @"(?!x)x"
+                    : @"\s*""predatorStatLine"":\s*\{[^{}]*\},?",
                 string.Empty);
             return Regex.Replace(withoutStatLine, @",(\s*[}\]])", "$1");
         }

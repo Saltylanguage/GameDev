@@ -70,6 +70,77 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CoupledResponsesMapOnlyTheExperimentalHareFoxCatalog()
+        {
+            AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ToughHideId,
+                SpeciesIds.Carnivore, SpeciesUpgradeCatalog.PiercingBiteId);
+            AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ThreatExposureId,
+                SpeciesIds.Carnivore, SpeciesUpgradeCatalog.RelentlessPursuitId);
+            AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.EfficientDigestionId,
+                SpeciesIds.Carnivore, SpeciesUpgradeCatalog.HuntUrgencyId);
+            AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ReproductiveDriveId,
+                SpeciesIds.Carnivore, SpeciesUpgradeCatalog.BroodDriveId);
+            AssertCoupledResponse(SpeciesIds.Herbivore, SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesIds.Carnivore, SpeciesUpgradeCatalog.BroodDriveId);
+            AssertCoupledResponse(SpeciesIds.Carnivore, SpeciesUpgradeCatalog.PiercingBiteId,
+                SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ToughHideId);
+            AssertCoupledResponse(SpeciesIds.Carnivore, SpeciesUpgradeCatalog.RelentlessPursuitId,
+                SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ThreatExposureId);
+            AssertCoupledResponse(SpeciesIds.Carnivore, SpeciesUpgradeCatalog.HuntUrgencyId,
+                SpeciesIds.Herbivore, SpeciesUpgradeCatalog.EfficientDigestionId);
+            AssertCoupledResponse(SpeciesIds.Carnivore, SpeciesUpgradeCatalog.BroodDriveId,
+                SpeciesIds.Herbivore, SpeciesUpgradeCatalog.ReproductiveDriveId);
+            AssertCoupledResponse(new SpeciesId("hare"), SpeciesUpgradeCatalog.ToughHideId,
+                new SpeciesId("fox"), SpeciesUpgradeCatalog.PiercingBiteId);
+            AssertCoupledResponse(new SpeciesId("fox"), SpeciesUpgradeCatalog.RelentlessPursuitId,
+                new SpeciesId("hare"), SpeciesUpgradeCatalog.ThreatExposureId);
+            Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                SpeciesIds.Herbivore,
+                SpeciesUpgradeCatalog.KeenSensesId,
+                out _,
+                out _), Is.False);
+        }
+
+        [Test]
+        public void FreeCoupledUpgradeDoesNotSpendCurrency()
+        {
+            var progression = new SpeciesProgression(new SpeciesDefinition(
+                SpeciesIds.Carnivore,
+                CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null)));
+            progression.AddCurrency(5);
+            var response = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.PiercingBiteId);
+
+            Assert.That(progression.TryApplyFreeUpgrade(response), Is.True);
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.CurrentRules.AttackModifier, Is.EqualTo(1));
+            Assert.That(progression.AppliedRunUpgrades[0].TargetSpecies, Is.EqualTo(SpeciesIds.Carnivore));
+        }
+
+        [Test]
+        public void ExperimentalOptionsRequireBundleAndAffectRunProvenance()
+        {
+            Assert.Throws<System.ArgumentException>(() => new SpeciesExperimentalOptions(
+                coupledSpeciesResponsesEnabled: true));
+
+            var disabled = new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId);
+            var enabled = new SpeciesExperimentalOptions(
+                SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                coupledSpeciesResponsesEnabled: true);
+            Assert.That(enabled.CoupledSpeciesResponsesEnabled, Is.True);
+            Assert.That(CellularSimDataFingerprint.CreateRun(
+                "scenario",
+                SpeciesCombatResolutionMode.OpposedRoll,
+                SpeciesAttackOpportunityMode.Natural,
+                disabled,
+                new[] { "tough-hide" }), Is.Not.EqualTo(CellularSimDataFingerprint.CreateRun(
+                    "scenario",
+                    SpeciesCombatResolutionMode.OpposedRoll,
+                    SpeciesAttackOpportunityMode.Natural,
+                    enabled,
+                    new[] { "tough-hide" })));
+        }
+
+        [Test]
         public void StartingOnlySnapshotCannotApplyAfterRunStart()
         {
             var snapshot = new SpeciesUpgradeSnapshot(
@@ -369,6 +440,35 @@ namespace SaltyGame.Tests
             Assert.That(result.UpgradeLoadout[0], Is.SameAs(snapshot));
         }
 
+        [Test]
+        public void RunnerRecordsCounterpartSnapshotsInTheOrderedRunLoadout()
+        {
+            var player = CreateSnapshot(
+                "player",
+                SpeciesIds.Herbivore,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, 2f));
+            var response = CreateSnapshot(
+                "response",
+                SpeciesIds.Carnivore,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.AttackModifier, 1f));
+            var data = new CellularSimData(
+                1,
+                1,
+                new Dictionary<SpeciesId, float>(),
+                SpeciesRuleDefaults.Create(),
+                runDurationSeconds: 1f,
+                stepInterval: 1f);
+            var run = new SimulationRunState(
+                new Grid<SpeciesCell>(1, 1, (_, __) => SpeciesCell.Empty),
+                SpeciesIds.Herbivore,
+                seed: 7,
+                durationSeconds: 1f);
+
+            _ = new SpeciesSimulationRunner(run, data, upgradeLoadout: new[] { player, response });
+
+            Assert.That(run.UpgradeLoadout, Is.EqualTo(new[] { player, response }));
+        }
+
         static SpeciesUpgradeSnapshot CreateSnapshot(
             string id,
             SpeciesId targetSpecies,
@@ -385,6 +485,21 @@ namespace SaltyGame.Tests
                 new[] { modifier },
                 prerequisiteUpgradeIds,
                 excludedUpgradeIds);
+        }
+
+        static void AssertCoupledResponse(
+            SpeciesId selectedSpecies,
+            string selectedUpgradeId,
+            SpeciesId expectedResponderSpecies,
+            string expectedResponderUpgradeId)
+        {
+            Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                selectedSpecies,
+                selectedUpgradeId,
+                out var responderSpecies,
+                out var responderUpgradeId), Is.True);
+            Assert.That(responderSpecies, Is.EqualTo(expectedResponderSpecies));
+            Assert.That(responderUpgradeId, Is.EqualTo(expectedResponderUpgradeId));
         }
 
         static SpeciesRules CreateRules(

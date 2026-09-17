@@ -215,7 +215,9 @@ namespace SaltyGame
         public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public SpeciesSimulationMetrics Metrics { get; }
 
-        internal void SetUpgradeLoadout(IEnumerable<SpeciesUpgradeSnapshot> upgrades)
+        internal void SetUpgradeLoadout(
+            IEnumerable<SpeciesUpgradeSnapshot> upgrades,
+            bool coupledResponsesEnabled = false)
         {
             var incoming = new List<SpeciesUpgradeSnapshot>();
             if (upgrades != null)
@@ -227,24 +229,19 @@ namespace SaltyGame
                         throw new ArgumentException("Upgrade loadout cannot contain null entries.", nameof(upgrades));
                     }
 
-                    if (upgrade.TargetSpecies != PlayerSpeciesId)
-                    {
-                        throw new ArgumentException(
-                            $"Upgrade '{upgrade.Id}' targets '{upgrade.TargetSpecies}', not '{PlayerSpeciesId}'.",
-                            nameof(upgrades));
-                    }
-
                     incoming.Add(upgrade);
                 }
             }
 
             upgradeLoadout.Clear();
-            foreach (var upgrade in incoming)
+            for (var loadoutIndex = 0; loadoutIndex < incoming.Count; loadoutIndex++)
             {
+                var upgrade = incoming[loadoutIndex];
                 var alreadyRecorded = false;
                 for (var index = 0; index < upgradeAcquisitionTimeline.Count; index++)
                 {
-                    if (upgradeAcquisitionTimeline[index].Snapshot.Fingerprint == upgrade.Fingerprint)
+                    if (upgradeAcquisitionTimeline[index].Order == loadoutIndex
+                        && upgradeAcquisitionTimeline[index].Snapshot.Fingerprint == upgrade.Fingerprint)
                     {
                         alreadyRecorded = true;
                         break;
@@ -254,11 +251,29 @@ namespace SaltyGame
                 upgradeLoadout.Add(upgrade);
                 if (!alreadyRecorded)
                 {
+                    var source = SimulationUpgradeAcquisition.PlayerChoiceSource;
+                    var triggeringUpgradeId = upgrade.Id;
+                    if (coupledResponsesEnabled
+                        && loadoutIndex > 0
+                        && SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                            incoming[loadoutIndex - 1].TargetSpecies,
+                            incoming[loadoutIndex - 1].Id,
+                            out var responseSpecies,
+                            out var responseUpgradeId)
+                        && responseSpecies == upgrade.TargetSpecies
+                        && responseUpgradeId == upgrade.Id)
+                    {
+                        source = SimulationUpgradeAcquisition.CoupledResponseSource;
+                        triggeringUpgradeId = incoming[loadoutIndex - 1].Id;
+                    }
+
                     upgradeAcquisitionTimeline.Add(new SimulationUpgradeAcquisition(
                         upgrade,
                         Tick,
                         PhaseIndex,
-                        upgradeLoadout.Count - 1));
+                        upgradeLoadout.Count - 1,
+                        source,
+                        triggeringUpgradeId));
                 }
             }
         }
@@ -567,22 +582,33 @@ namespace SaltyGame
 
     public readonly struct SimulationUpgradeAcquisition
     {
+        public const string PlayerChoiceSource = "player-choice";
+        public const string CoupledResponseSource = "coupled-response";
+
         internal SimulationUpgradeAcquisition(
             SpeciesUpgradeSnapshot snapshot,
             int effectiveTick,
             int phaseIndex,
-            int order)
+            int order,
+            string source = PlayerChoiceSource,
+            string triggeringUpgradeId = null)
         {
             Snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
             EffectiveTick = effectiveTick;
             PhaseIndex = phaseIndex;
             Order = order;
+            Source = string.IsNullOrWhiteSpace(source) ? PlayerChoiceSource : source;
+            TriggeringUpgradeId = string.IsNullOrWhiteSpace(triggeringUpgradeId)
+                ? snapshot.Id
+                : triggeringUpgradeId;
         }
 
         public SpeciesUpgradeSnapshot Snapshot { get; }
         public int EffectiveTick { get; }
         public int PhaseIndex { get; }
         public int Order { get; }
+        public string Source { get; }
+        public string TriggeringUpgradeId { get; }
     }
 
     public sealed class SimulationPhaseResult
