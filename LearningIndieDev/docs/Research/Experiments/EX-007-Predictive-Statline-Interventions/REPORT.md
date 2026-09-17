@@ -3,6 +3,15 @@
 **Status:** Runs complete; bounded finding accepted; balance review remains
 **Prediction ID:** `PRED-EXP-007-0001`
 
+## What this experiment established at a glance
+
+| Question | Plain-language answer |
+|---|---|
+| What was being tested? | Whether an AI could use a bounded baseline report to predict the direction of changes caused by faster movement and by faster movement plus crowding tolerance, before seeing the intervention results. The predictions were then checked on the original seeds and five new seeds. |
+| What happened? | The AI correctly predicted higher final Hare populations and lower crowding deaths in the relevant arms. It predicted the size of some effects poorly and was wrong that faster movement would reduce starvation. |
+| What did the result verify? | A preregistered, auditable AI prediction can produce some useful directional forecasts for this ForestEdge/Hare setup while making its misses visible. It also verified that these exact upgrades changed measured Hare outcomes. |
+| What did it not prove? | It did not show that the AI is generally calibrated, that the combined upgrades have a stable interaction, that the effects transfer elsewhere, or that either upgrade improves balance or fun. |
+
 ## The short version
 
 We ran the same 20-second ForestEdge simulation with the same starting seeds,

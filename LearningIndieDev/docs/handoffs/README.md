@@ -14,6 +14,22 @@ Files use `YYYY-MM-DD-HHmm-owner-topic.md`, so ordinary filename sorting puts th
 in chronological order. Every note records its originating branch and commit and
 links back to [`WORKING_STATE.md`](../WORKING_STATE.md).
 
+New notes use handoff schema 1. Their handoff ID matches the filename without
+`.md`, and their metadata includes status, owner, branch, baseline commit, date,
+and `Supersedes`. Leave `Supersedes: none` when the note does not replace an
+earlier handoff. Otherwise, list the earlier handoff filename relative to this
+directory.
+
+Validate new metadata, local links, and artifact references with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-Handoffs.ps1
+```
+
+Historical notes remain valid without schema 1 metadata. The validator reports
+their broken links or missing local artifacts as warnings rather than requiring
+a bulk rewrite. Add `-ShowWarnings` when the individual warning list is needed.
+
 Keep notes short and evidence-based. Include:
 
 - What changed and why.

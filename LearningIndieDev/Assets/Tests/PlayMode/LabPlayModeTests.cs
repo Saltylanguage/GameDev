@@ -84,6 +84,11 @@ namespace SaltyGame.PlayModeTests
             var root = FindRoot();
             var profile = root.GetComponent<Helper_ProfileSession>();
             profile.CreateInitialProfile("T6 Test Profile");
+            Assert.That(profile.TrySetGenomeConfiguration(
+                SpeciesIds.Herbivore,
+                new[] { "hare.guard" },
+                new[] { "hare.guard" },
+                out var genomeValidationMessage), Is.True, genomeValidationMessage);
 
             var viewModel = FindViewModel();
             var features = (IEnumerable)GetProperty(viewModel, "Features");
@@ -119,6 +124,10 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
             Assert.That((int)GetProperty(preview, "BaseSeed"), Is.EqualTo(10100));
             Assert.That((bool)GetProperty(preview, "RandomizeSeedOnStart"), Is.False);
+            var activeGenomeSnapshot = GetProperty(preview, "ActiveGenomeSnapshot");
+            Assert.That(GetProperty(activeGenomeSnapshot, "Fingerprint"), Is.Not.EqualTo(string.Empty));
+            var speciesGenomes = (IDictionary)GetProperty(activeGenomeSnapshot, "SpeciesGenomes");
+            Assert.That(speciesGenomes.Count, Is.GreaterThanOrEqualTo(1));
 
             PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
             PlayerPrefs.Save();
@@ -263,14 +272,41 @@ namespace SaltyGame.PlayModeTests
             var geneLabWindow = openWindows[1];
             Assert.That((float)GetProperty(geneLabWindow, "Width"), Is.InRange(960f, 1450f));
             Assert.That((float)GetProperty(geneLabWindow, "Height"), Is.InRange(560f, 820f));
-            Assert.That(GetProperty(geneLabWindow, "GuardedBurrowStateText"), Is.EqualTo("UNLOCKED · ACTIVE"));
-            Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("6 / 8"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("HARE"));
+            Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("0 / 8"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeCatalogStateText").ToString(), Does.StartWith("AUTHORING SNAPSHOT"));
 
-            var toggleGenomeCommand = GetProperty(geneLabWindow, "ToggleGuardedBurrowCommand");
-            toggleGenomeCommand.GetType().GetMethod("Execute")?.Invoke(toggleGenomeCommand, new object[] { null });
+            var genomeNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
+            Assert.That(genomeNodes.Count, Is.EqualTo(5));
+            Assert.That(GetProperty(genomeNodes[0], "NodeId"), Is.EqualTo("hare.guarded-burrow"));
+            Assert.That(GetProperty(genomeNodes[0], "DisplayName"), Is.EqualTo("Guarded Burrow"));
+            Assert.That(GetProperty(genomeNodes[0], "StateText"), Is.EqualTo("CATALOG ENTRY"));
+            Assert.That(GetProperty(genomeNodes[3], "NodeId"), Is.EqualTo("hare.safe-foraging"));
+            Assert.That(GetProperty(genomeNodes[3], "PrerequisiteText"),
+                Is.EqualTo("REQUIRES · hare.swift-digging, hare.keen-hearing"));
+            var genomeTreeSegments = (IList)GetProperty(geneLabWindow, "GenomeTreeSegments");
+            Assert.That(genomeTreeSegments.Count, Is.GreaterThan(0));
+            Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeWidth"), Is.GreaterThan(0f));
+            Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeHeight"), Is.GreaterThan(0f));
 
-            Assert.That(GetProperty(geneLabWindow, "GuardedBurrowStateText"), Is.EqualTo("UNLOCKED · INACTIVE"));
-            Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("5 / 8"));
+            var replacementNode = new SaltyGame.GenomeUpgradeNodeSnapshot(
+                "hare.updated",
+                "Updated Node",
+                "Updated metadata.",
+                new SaltyGame.SpeciesId("hare"));
+            var replacementMap = new SaltyGame.SpeciesGenomeMapSnapshot(
+                new SaltyGame.SpeciesId("hare"),
+                new[] { replacementNode });
+            var replacementCatalog = new SaltyGame.GenomeCatalogSnapshot(new[] { replacementMap });
+            var refresh = geneLabWindow.GetType().GetMethod("RefreshGenomeCatalog");
+            Assert.That(refresh, Is.Not.Null);
+            refresh.Invoke(geneLabWindow, new object[] { replacementCatalog });
+
+            genomeNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
+            Assert.That(genomeNodes.Count, Is.EqualTo(1));
+            Assert.That(GetProperty(genomeNodes[0], "NodeId"), Is.EqualTo("hare.updated"));
+            Assert.That(GetProperty(genomeNodes[0], "DisplayName"), Is.EqualTo("Updated Node"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeCatalogStateText").ToString(), Does.StartWith("AUTHORING SNAPSHOT"));
 
             var preservedWindow = openWindows[0];
             Assert.That(preservedWindow, Is.Not.Null);
@@ -280,6 +316,45 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openWindows.Count, Is.EqualTo(1));
             openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
             Assert.That(openWindows.Count, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator GalapagOSGeneLabDebugToggleSwapsAuthoredGenomeMaps()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var viewModel = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            Assert.That(viewModel, Is.Not.Null);
+
+            var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
+
+            var openWindows = (IList)GetProperty(viewModel, "OpenDesktopWindows");
+            Assert.That(openWindows.Count, Is.EqualTo(1));
+            var geneLabWindow = openWindows[0];
+            var selectCommand = GetProperty(geneLabWindow, "SelectGenomeSpeciesCommand");
+            var hareHeight = (float)GetProperty(geneLabWindow, "GenomeTreeHeight");
+
+            Execute(selectCommand, "fox");
+
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("FOX"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesIdText"), Is.EqualTo("fox"));
+            var foxNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
+            Assert.That(foxNodes.Count, Is.EqualTo(7));
+            Assert.That(GetProperty(foxNodes[0], "NodeId"), Is.EqualTo("fox.silent-paw"));
+            Assert.That(((IList)GetProperty(geneLabWindow, "GenomeTreeSegments")).Count, Is.GreaterThan(0));
+            Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeHeight"), Is.GreaterThan(hareHeight));
+
+            Execute(selectCommand, "hare");
+
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("HARE"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesIdText"), Is.EqualTo("hare"));
+            var hareNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
+            Assert.That(hareNodes.Count, Is.EqualTo(5));
+            Assert.That(GetProperty(hareNodes[0], "NodeId"), Is.EqualTo("hare.guarded-burrow"));
         }
 
         static IEnumerator LoadLab()
@@ -324,6 +399,14 @@ namespace SaltyGame.PlayModeTests
         {
             Assert.That(CanExecute(command), Is.True);
             command.GetType().GetMethod("Execute")?.Invoke(command, new object[] { null });
+        }
+
+        static void Execute(object command, object parameter)
+        {
+            var canExecute = (bool)command.GetType().GetMethod("CanExecute")
+                ?.Invoke(command, new[] { parameter });
+            Assert.That(canExecute, Is.True);
+            command.GetType().GetMethod("Execute")?.Invoke(command, new[] { parameter });
         }
     }
 }

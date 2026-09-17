@@ -229,6 +229,7 @@ namespace SaltyGame
         readonly List<SpeciesId> playableSpecies = new List<SpeciesId>();
         IReadOnlyDictionary<SpeciesId, SpeciesRules> rules;
         SpeciesProgression progression;
+        GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
         SimulationRunResult result;
@@ -339,6 +340,7 @@ namespace SaltyGame
         public ScenarioDefinitionAsset SelectedScenario => GetSelectedScenario();
         public string SettingsMessage => settingsMessage ?? string.Empty;
         public string PhaseRewardMessage => phaseRewardMessage ?? string.Empty;
+        public GenomeSimulationSnapshot ActiveGenomeSnapshot => activeGenomeSnapshot;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
 
         public bool TryApplyLaunchRequest(SimulationLaunchRequest launch, out string validationMessage)
@@ -377,7 +379,10 @@ namespace SaltyGame
                 return false;
             }
 
-            if (!TrySetPlayerSpecies(launch.PlayerSpeciesId, out validationMessage))
+            if (!TrySetPlayerSpecies(
+                launch.PlayerSpeciesId,
+                launch.ActiveGenomeSnapshot,
+                out validationMessage))
             {
                 return false;
             }
@@ -572,6 +577,14 @@ namespace SaltyGame
 
         public bool TrySetPlayerSpecies(string speciesKey, out string validationMessage)
         {
+            return TrySetPlayerSpecies(speciesKey, activeGenomeSnapshot, out validationMessage);
+        }
+
+        bool TrySetPlayerSpecies(
+            string speciesKey,
+            GenomeSimulationSnapshot requestedGenomeSnapshot,
+            out string validationMessage)
+        {
             validationMessage = string.Empty;
             if (!SettingsEditable)
             {
@@ -597,6 +610,8 @@ namespace SaltyGame
 
             playerSpecies = selectedSpecies;
             playerSpeciesKey = selectedSpecies.Value;
+            activeGenomeSnapshot = (requestedGenomeSnapshot ?? GenomeSimulationSnapshot.Empty)
+                .IncludeSpecies(rules.Keys);
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, selectedRules));
             PrepareNextRun();
             settingsMessage = $"Player species '{playerSpecies.Value}' selected.";
@@ -1434,6 +1449,7 @@ namespace SaltyGame
             authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
             usingAuthoredRewardOptions = false;
             sessionStarted = false;
+            activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
             settingsMessage = string.Empty;
             PrepareNextRun();
         }
@@ -1557,7 +1573,8 @@ namespace SaltyGame
                 playerSpecies,
                 seed + runNumber,
                 durationSeconds,
-                targetTicks);
+                targetTicks,
+                activeGenomeSnapshot);
             if (continuousRun)
             {
                 run.ConfigureContinuousPhases(phaseLengthTicks);

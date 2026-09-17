@@ -23,7 +23,8 @@ if ([string]::IsNullOrWhiteSpace($ownerSlug) -or [string]::IsNullOrWhiteSpace($t
 
 $branch = (git -C $projectRoot rev-parse --abbrev-ref HEAD).Trim()
 $commit = (git -C $projectRoot rev-parse --short HEAD).Trim()
-$fileName = "$timestamp-$ownerSlug-$topicSlug.md"
+$handoffId = "$timestamp-$ownerSlug-$topicSlug"
+$fileName = "$handoffId.md"
 $filePath = Join-Path $handoffDirectory $fileName
 
 if (Test-Path -LiteralPath $filePath)
@@ -38,10 +39,13 @@ $content = @"
 
 [Working state](../WORKING_STATE.md) | Status: $Status
 
+- Handoff schema: 1
+- Handoff ID: $handoffId
 - Owner: $Owner
 - Branch: $branch
 - Baseline commit: $commit
 - Date: $date
+- Supersedes: none
 
 ## Summary
 

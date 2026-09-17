@@ -12,6 +12,15 @@ the correct reference for an herbivore-specific attribution claim. BaselineParit
 is the first scenario adapter because it defines `herbivore` and produced one
 extinction in its pre-telemetry-extension 20-seed EX-001B pair.
 
+## What this experiment established at a glance
+
+| Question | Plain-language answer |
+|---|---|
+| What was being tested? | Whether starvation or predation was the nearer explanation for herbivore collapse in BaselineParity, using targeted energy-relief and predation-relief changes plus a held-out check. |
+| What happened? | Energy relief increased the final herbivore population. Predation relief had no measured effect because the tested runs recorded no combat kills and carnivores died out within the observation window. |
+| What did the result verify? | Starvation is a useful immediate warning signal in this exact scenario, and changing the energy pathway can change the final herbivore outcome. The newer event telemetry was also usable for this kind of attribution test. |
+| What did it not prove? | It did not establish starvation as the only root cause, create a universal collapse detector, show transfer to other scenarios, or make a balance judgment. The two cited raw control bundles are also missing from this checkout, which limits a fresh raw-data audit. |
+
 ## Package contents
 
 - [Experiment brief](EXP-002-brief.md)

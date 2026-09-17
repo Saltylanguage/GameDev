@@ -99,6 +99,21 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void Ex011ResearchFixturesPreserveTransferValuesAndTargetDeer()
+        {
+            var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(
+                new[] { "faster-movement", "crowding-tolerance" },
+                "Assets/Data/CellularSimulation/Upgrades/Research/EX-011");
+
+            Assert.That(snapshots[0].TargetSpecies, Is.EqualTo(new SpeciesId("deer")));
+            Assert.That(snapshots[0].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.MovementSpeed));
+            Assert.That(snapshots[0].Modifiers[0].SignedValue, Is.EqualTo(0.5f));
+            Assert.That(snapshots[1].TargetSpecies, Is.EqualTo(new SpeciesId("deer")));
+            Assert.That(snapshots[1].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.CrowdingTolerance));
+            Assert.That(snapshots[1].Modifiers[0].SignedValue, Is.EqualTo(1f));
+        }
+
+        [Test]
         public void ResolveCanLoadExplicitResearchFixtureCatalog()
         {
             var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(

@@ -58,12 +58,16 @@ changes, and do not treat research references as approved implementation work.
   than maximize one species, master every species, or complete every data set.
   Improving one Genome may create a readable imbalance that encourages the
   player to run and develop plants, herbivores, and predators in response.
-- Current progression boundary (2026-09-11): Genome design and implementation
-  are deferred from the M1 closeout. Roadmap v2 schedules the first Genome
-  contract in S4 and its persistence-backed implementation in S6. Named Genome
-  loadouts are deferred and non-blocking, and Species
-  Mastery is deferred and non-gating. Provisional scientific-data settlement
-  remains open pending feature-owner approval.
+- Current progression boundary (2026-09-12): the first Genome
+  identity/profile/launch/run snapshot contract and data-driven authoring
+  skeleton are implemented, including per-species profile persistence,
+  immutable run provenance, ScriptableObject node/map assets, an asset-free
+  catalog snapshot, and generic Gene Lab bindings. Genome effect catalog
+  design, authored cost validation, economy, profile actions, and applying
+  effects to simulation rules remain deferred. Named Genome
+  loadouts are deferred and non-blocking, and Species Mastery is deferred and
+  non-gating. Provisional scientific-data settlement remains open pending
+  feature-owner approval.
 - Upgrade and species work follows
   [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md):
   use shared stats and capabilities for early value estimates, then require
@@ -115,9 +119,11 @@ graphics-capable desktop/Simulation gate is accepted at both target resolutions.
 The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
 only the outer ten-phase duration/memory measurement, then complete the
 player-facing Mutation choices, outcome language, and reward/persistence loop.
-Roadmap v2 schedules Genome contract planning for S4 and persistence-backed
-implementation for S6; Genome details remain intentionally open until that work
-starts.
+The first Genome identity/profile/snapshot slice and data-driven authoring
+skeleton are now implemented. Production effect catalog, authored
+capacity-cost semantics, economy, interactive profile actions, and simulation
+behavior application remain intentionally open until their design and evidence
+are approved.
 Any new predictive-AI or balance claim requires its own approved research
 contract; it is not implied by the accepted EX-010 result.
 

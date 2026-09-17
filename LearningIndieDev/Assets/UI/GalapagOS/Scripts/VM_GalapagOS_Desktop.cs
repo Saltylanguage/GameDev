@@ -10,6 +10,9 @@ namespace SaltyGame
 {
     public sealed class VM_GalapagOS_Desktop : MonoBehaviour, INotifyPropertyChanged
     {
+        [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
+        [SerializeField] string genomeSpeciesId = "hare";
+
         public DelegateCommand OpenDesktopIconCommand { get; private set; }
         public DelegateCommand CloseDesktopAppCommand { get; private set; }
         public DelegateCommand CloseLabWindowCommand { get; private set; }
@@ -76,6 +79,22 @@ namespace SaltyGame
             SetGameSpeedCommand = new DelegateCommand(SetGameSpeed);
         }
 
+        void OnEnable()
+        {
+            if (genomeCatalogProvider != null)
+            {
+                genomeCatalogProvider.SnapshotChanged += HandleGenomeCatalogChanged;
+            }
+        }
+
+        void OnDisable()
+        {
+            if (genomeCatalogProvider != null)
+            {
+                genomeCatalogProvider.SnapshotChanged -= HandleGenomeCatalogChanged;
+            }
+        }
+
         void OpenDesktopIcon(object parameter)
         {
             var appName = parameter?.ToString();
@@ -116,7 +135,8 @@ namespace SaltyGame
                 96f + (slot % 4) * 34f,
                 () => CloseDesktopWindow(openedWindow),
                 () => OpenRelatedDesktopApp(openedWindow, "Gene Lab"),
-                () => OpenRelatedDesktopApp(openedWindow, "History / Data Record"));
+                () => OpenRelatedDesktopApp(openedWindow, "History / Data Record"),
+                appName == "Gene Lab" ? CreateGenomeLabViewModel() : null);
             openDesktopWindows.Add(openedWindow);
             OnPropertyChanged(nameof(ActiveDesktopAppTitle));
             OnPropertyChanged(nameof(ActiveDesktopAppDescription));
@@ -158,6 +178,34 @@ namespace SaltyGame
         {
             CloseDesktopWindow(sourceWindow);
             OpenDesktopIcon(appName);
+        }
+
+        GenomeLabViewModel CreateGenomeLabViewModel()
+        {
+            var selectedSpecies = GetSelectedGenomeSpecies();
+            return new GenomeLabViewModel(
+                genomeCatalogProvider == null
+                    ? GenomeCatalogSnapshot.Empty
+                    : genomeCatalogProvider.Snapshot,
+                selectedSpecies: selectedSpecies);
+        }
+
+        SpeciesId? GetSelectedGenomeSpecies()
+        {
+            return string.IsNullOrWhiteSpace(genomeSpeciesId)
+                ? (SpeciesId?)null
+                : new SpeciesId(genomeSpeciesId);
+        }
+
+        void HandleGenomeCatalogChanged(GenomeCatalogSnapshot snapshot)
+        {
+            foreach (var window in openDesktopWindows)
+            {
+                if (window.Title == "Gene Lab")
+                {
+                    window.RefreshGenomeCatalog(snapshot);
+                }
+            }
         }
 
         void CloseLabWindow()
@@ -348,7 +396,8 @@ namespace SaltyGame
             float top,
             Action close,
             Action openGeneLab = null,
-            Action openHistory = null)
+            Action openHistory = null,
+            GenomeLabViewModel genomeLab = null)
         {
             var isGeneLab = title == "Gene Lab";
             var isFieldGuide = title == "Field Notes" || title == "Field Guide / Journal";
@@ -383,7 +432,10 @@ namespace SaltyGame
             CloseCommand = new DelegateCommand(close);
             OpenGeneLabCommand = new DelegateCommand(openGeneLab ?? (() => { }));
             OpenHistoryCommand = new DelegateCommand(openHistory ?? (() => { }));
-            ToggleGuardedBurrowCommand = new DelegateCommand(ToggleGuardedBurrow);
+            GenomeLab = genomeLab ?? new GenomeLabViewModel(GenomeCatalogSnapshot.Empty);
+            SelectGenomeSpeciesCommand = new DelegateCommand(
+                parameter => GenomeLab.SelectSpecies(parameter?.ToString()));
+            GenomeLab.PropertyChanged += HandleGenomeLabPropertyChanged;
         }
 
         public string Title { get; }
@@ -395,13 +447,18 @@ namespace SaltyGame
         public DelegateCommand CloseCommand { get; }
         public DelegateCommand OpenGeneLabCommand { get; private set; }
         public DelegateCommand OpenHistoryCommand { get; private set; }
-        public DelegateCommand ToggleGuardedBurrowCommand { get; }
-        public string GuardedBurrowStateText => guardedBurrowActive ? "UNLOCKED · ACTIVE" : "UNLOCKED · INACTIVE";
-        public string GuardedBurrowNodeStateText => guardedBurrowActive ? "✓  ACTIVE" : "UNLOCKED";
-        public string GuardedBurrowActionText => guardedBurrowActive ? "DEACTIVATE" : "ACTIVATE";
-        public string ActiveGenomeCapacityText => guardedBurrowActive ? "6 / 8" : "5 / 8";
-        public Visibility GuardedBurrowActiveVisibility => guardedBurrowActive ? Visibility.Visible : Visibility.Collapsed;
-        public Visibility GuardedBurrowInactiveVisibility => guardedBurrowActive ? Visibility.Collapsed : Visibility.Visible;
+        public DelegateCommand SelectGenomeSpeciesCommand { get; }
+        public GenomeLabViewModel GenomeLab { get; }
+        public ObservableCollection<GenomeLabNodeViewModel> GenomeNodes => GenomeLab.Nodes;
+        public ObservableCollection<GenomeLabTreeSegmentViewModel> GenomeTreeSegments => GenomeLab.GenomeTreeSegments;
+        public float GenomeTreeWidth => GenomeLab.GenomeTreeWidth;
+        public float GenomeTreeHeight => GenomeLab.GenomeTreeHeight;
+        public string GenomeSpeciesNameText => GenomeLab.SpeciesNameText;
+        public string GenomeSpeciesIdText => GenomeLab.SpeciesIdText;
+        public string GenomeNodeCountText => GenomeLab.NodeCountText;
+        public string GenomeCatalogStateText => GenomeLab.CatalogStateText;
+        public string ActiveGenomeCapacityText => GenomeLab.ActiveGenomeCapacityText;
+        public GenomeLabNodeViewModel SelectedGenomeNode => GenomeLab.SelectedNode;
         public Visibility GenericSurfaceVisibility => IsConceptSurface
             ? Visibility.Collapsed
             : Visibility.Visible;
@@ -444,15 +501,46 @@ namespace SaltyGame
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        void ToggleGuardedBurrow()
+        public void RefreshGenomeCatalog(GenomeCatalogSnapshot catalog)
         {
-            guardedBurrowActive = !guardedBurrowActive;
-            OnPropertyChanged(nameof(GuardedBurrowStateText));
-            OnPropertyChanged(nameof(GuardedBurrowNodeStateText));
-            OnPropertyChanged(nameof(GuardedBurrowActionText));
-            OnPropertyChanged(nameof(ActiveGenomeCapacityText));
-            OnPropertyChanged(nameof(GuardedBurrowActiveVisibility));
-            OnPropertyChanged(nameof(GuardedBurrowInactiveVisibility));
+            GenomeLab.BindCatalog(catalog);
+        }
+
+        void HandleGenomeLabPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)
+        {
+            switch (eventArgs.PropertyName)
+            {
+                case nameof(GenomeLabViewModel.Nodes):
+                    OnPropertyChanged(nameof(GenomeNodes));
+                    break;
+                case nameof(GenomeLabViewModel.GenomeTreeSegments):
+                    OnPropertyChanged(nameof(GenomeTreeSegments));
+                    break;
+                case nameof(GenomeLabViewModel.GenomeTreeWidth):
+                    OnPropertyChanged(nameof(GenomeTreeWidth));
+                    break;
+                case nameof(GenomeLabViewModel.GenomeTreeHeight):
+                    OnPropertyChanged(nameof(GenomeTreeHeight));
+                    break;
+                case nameof(GenomeLabViewModel.SelectedNode):
+                    OnPropertyChanged(nameof(SelectedGenomeNode));
+                    break;
+                case nameof(GenomeLabViewModel.SpeciesNameText):
+                    OnPropertyChanged(nameof(GenomeSpeciesNameText));
+                    break;
+                case nameof(GenomeLabViewModel.SpeciesIdText):
+                    OnPropertyChanged(nameof(GenomeSpeciesIdText));
+                    break;
+                case nameof(GenomeLabViewModel.NodeCountText):
+                    OnPropertyChanged(nameof(GenomeNodeCountText));
+                    break;
+                case nameof(GenomeLabViewModel.CatalogStateText):
+                    OnPropertyChanged(nameof(GenomeCatalogStateText));
+                    break;
+                case nameof(GenomeLabViewModel.ActiveGenomeCapacityText):
+                    OnPropertyChanged(nameof(ActiveGenomeCapacityText));
+                    break;
+            }
         }
 
         void OnPropertyChanged([CallerMemberName] string propertyName = "")
@@ -474,6 +562,5 @@ namespace SaltyGame
             || Title == "Habitat Gallery / Museum"
             || Title == "Quick Search / Jump";
 
-        bool guardedBurrowActive = true;
     }
 }

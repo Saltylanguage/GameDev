@@ -1,0 +1,78 @@
+{
+  "experimentId": "EX-011",
+  "status": "executed-awaiting-human-decision",
+  "contractSha256": "dfc38d242f2457d87372a7e8f68b72d0af8e6ed62461cba6fe63546d6d304b1a",
+  "predictionId": "ex011-held-out-direction-v1",
+  "metricDictionary": {
+    "id": "cellsim-experiment-metrics",
+    "version": 1,
+    "sha256": "cf8c63dd3e8688709383e943d015e48fa9c1435f5afbc5f11b84e38367ae1daf"
+  },
+  "primaryMetricId": "herbivore-statline.fpo",
+  "development": {
+    "seeds": "201-220",
+    "baselineMean": 256.2,
+    "interventionMean": 327.0,
+    "meanPairedDelta": 70.8,
+    "medianPairedDelta": 63.0,
+    "minimumPairedDelta": 15,
+    "maximumPairedDelta": 165,
+    "positivePairs": 20,
+    "zeroPairs": 0,
+    "negativePairs": 0
+  },
+  "heldOut": {
+    "seeds": "301-305",
+    "baselineMean": 264.4,
+    "interventionMean": 316.8,
+    "meanPairedDelta": 52.4,
+    "medianPairedDelta": 47.0,
+    "minimumPairedDelta": 17,
+    "maximumPairedDelta": 94,
+    "positivePairs": 5,
+    "zeroPairs": 0,
+    "negativePairs": 0
+  },
+  "predictionScore": {
+    "developmentMeanPositive": true,
+    "developmentPositivePairsAtLeast12Of20": true,
+    "heldOutMeanPositive": true,
+    "heldOutPositivePairsAtLeast3Of5": true,
+    "allBundlesValid": true,
+    "mechanicalVerdict": "supported"
+  },
+  "secondaryMeanPairedDeltas": {
+    "development": {
+      "herbivore-statline.aps": -3.82,
+      "herbivore-statline.rfs": -3.96,
+      "herbivore-statline.bir": -783.95,
+      "herbivore-statline.strv": -315.1,
+      "herbivore-statline.crwd": -538.5
+    },
+    "heldOut": {
+      "herbivore-statline.aps": -5.49,
+      "herbivore-statline.rfs": -5.51,
+      "herbivore-statline.bir": -822.8,
+      "herbivore-statline.strv": -305.2,
+      "herbivore-statline.crwd": -589.8
+    }
+  },
+  "artifacts": {
+    "developmentControl": {
+      "directory": "artifacts/cellular-experiment-20260912-215056",
+      "reportSha256": "afef711cc304bc156fe9f89c2abd3bb517863038f6da4f8926c0b38924536149"
+    },
+    "developmentIntervention": {
+      "directory": "artifacts/cellular-experiment-20260912-215333",
+      "reportSha256": "1c0d24c78c65194314b3c4aa57c9aa9bbb3623e96f045af745535828383da12c"
+    },
+    "heldOutControl": {
+      "directory": "artifacts/cellular-experiment-20260912-215729",
+      "reportSha256": "3628b39653253734c57fe96ab9da7cad29746fba053b71433473a3ab985dd492"
+    },
+    "heldOutIntervention": {
+      "directory": "artifacts/cellular-experiment-20260912-215836",
+      "reportSha256": "fc15b610f5888defa3e721311634dc145b558457ab86cddf47a2dad64cf6811b"
+    }
+  }
+}

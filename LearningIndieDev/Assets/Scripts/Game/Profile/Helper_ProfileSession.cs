@@ -9,10 +9,19 @@ namespace SaltyGame
         public const string StoreKey = "SaltyGame.ProfileSession";
 
         [Serializable]
+        sealed class GenomeProfileRecord
+        {
+            public string speciesId;
+            public List<string> unlockedNodeIds = new List<string>();
+            public List<string> activeNodeIds = new List<string>();
+        }
+
+        [Serializable]
         sealed class ProfileRecord
         {
             public string id;
             public string name;
+            public List<GenomeProfileRecord> genomeProfiles = new List<GenomeProfileRecord>();
         }
 
         [Serializable]
@@ -72,7 +81,11 @@ namespace SaltyGame
                     continue;
                 }
 
-                Current = new ProfileSessionSnapshot(true, profile.ProfileId, profile.ProfileName);
+                Current = new ProfileSessionSnapshot(
+                    true,
+                    profile.ProfileId,
+                    profile.ProfileName,
+                    profile.GenomeProfiles);
                 Save();
                 NotifyChanged();
                 return true;
@@ -123,10 +136,43 @@ namespace SaltyGame
                     continue;
                 }
 
+                var genomeProfiles = new List<SpeciesGenomeProfile>();
+                var seenGenomeSpecies = new HashSet<SpeciesId>();
+                if (record.genomeProfiles != null)
+                {
+                    for (var genomeIndex = 0; genomeIndex < record.genomeProfiles.Count; genomeIndex++)
+                    {
+                        var genomeRecord = record.genomeProfiles[genomeIndex];
+                        if (genomeRecord == null || string.IsNullOrWhiteSpace(genomeRecord.speciesId))
+                        {
+                            continue;
+                        }
+
+                        try
+                        {
+                            var genomeSpeciesId = new SpeciesId(genomeRecord.speciesId);
+                            if (!seenGenomeSpecies.Add(genomeSpeciesId))
+                            {
+                                continue;
+                            }
+
+                            genomeProfiles.Add(new SpeciesGenomeProfile(
+                                genomeSpeciesId,
+                                genomeRecord.unlockedNodeIds,
+                                genomeRecord.activeNodeIds));
+                        }
+                        catch (ArgumentException)
+                        {
+                            // Ignore malformed optional Genome state while preserving the profile.
+                        }
+                    }
+                }
+
                 profiles.Add(new ProfileSessionSnapshot(
                     false,
                     record.id,
-                    string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name));
+                    string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name,
+                    genomeProfiles));
             }
 
             if (!string.IsNullOrEmpty(store.lastLoadedProfileId))
@@ -147,8 +193,52 @@ namespace SaltyGame
                     continue;
                 }
 
-                Current = new ProfileSessionSnapshot(true, profile.ProfileId, profile.ProfileName);
+                Current = new ProfileSessionSnapshot(
+                    true,
+                    profile.ProfileId,
+                    profile.ProfileName,
+                    profile.GenomeProfiles);
                 return;
+            }
+        }
+
+        public bool TrySetGenomeConfiguration(
+            SpeciesId speciesId,
+            IEnumerable<string> unlockedNodeIds,
+            IEnumerable<string> activeNodeIds,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (!Current.HasLoadedProfile)
+            {
+                validationMessage = "A loaded profile is required before changing Genome configuration.";
+                return false;
+            }
+
+            try
+            {
+                var nextProfile = Current.WithGenomeProfile(new SpeciesGenomeProfile(
+                    speciesId,
+                    unlockedNodeIds,
+                    activeNodeIds));
+                Current = nextProfile;
+                for (var index = 0; index < profiles.Count; index++)
+                {
+                    if (profiles[index].ProfileId == Current.ProfileId)
+                    {
+                        profiles[index] = Current;
+                        break;
+                    }
+                }
+
+                Save();
+                NotifyChanged();
+                return true;
+            }
+            catch (ArgumentException exception)
+            {
+                validationMessage = exception.Message;
+                return false;
             }
         }
 
@@ -167,6 +257,17 @@ namespace SaltyGame
                     id = profile.ProfileId,
                     name = profile.ProfileName,
                 });
+                var record = store.profiles[store.profiles.Count - 1];
+                for (var genomeIndex = 0; genomeIndex < profile.GenomeProfiles.Count; genomeIndex++)
+                {
+                    var genomeProfile = profile.GenomeProfiles[genomeIndex];
+                    record.genomeProfiles.Add(new GenomeProfileRecord
+                    {
+                        speciesId = genomeProfile.SpeciesId.Value,
+                        unlockedNodeIds = new List<string>(genomeProfile.UnlockedNodeIds),
+                        activeNodeIds = new List<string>(genomeProfile.ActiveNodeIds),
+                    });
+                }
             }
 
             PlayerPrefs.SetString(StoreKey, JsonUtility.ToJson(store));

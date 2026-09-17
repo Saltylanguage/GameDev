@@ -3,9 +3,10 @@
 **Scope:** Mutation and Genome authoring, stable identities, unlocked and active
 Genome state, simulation-mode boundaries, runtime application, deterministic
 evidence, and the first production-quality species upgrade slice. The current
-implementation remains Mutation-only; Genome persistence and Biome Simulations
-are planning scope until scheduled. This record excludes a generalized
-modifier/plugin framework.
+implementation includes Genome identity/profile/run contracts and a
+metadata-only ScriptableObject authoring skeleton; Genome gameplay effects and
+Biome Simulations remain planning scope until scheduled. This record excludes a
+generalized modifier/plugin framework.
 **Canonical plan:** [`../UPGRADE_SYSTEM_DIRECTION.md`](../UPGRADE_SYSTEM_DIRECTION.md)
 and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
 **Human owner:** Josh (sole feature owner and decision authority)
@@ -97,6 +98,10 @@ the accepted triggers, severities, statuses or waivers below.
 - **Why it matters:** Existing reward previews, domain tests, deterministic baseline behavior, and historical experiment comparisons could break while the new authoring workflow is being introduced.
 - **Evidence:** The current runtime and presentation path consume plain-C# upgrades and ordered IDs; existing tests cover those APIs; research artifacts depend on stable intervention IDs and fingerprints.
 - **Smallest mitigation:** Introduce Scriptable Objects as an authoring adapter into the immutable runtime upgrade contract; preserve existing IDs and legacy behavior until parity tests pass; migrate consumers one seam at a time with baseline, snapshot, and report-regression tests.
+- **Progress:** Genome authoring uses separate `GenomeUpgradeAsset` and
+  `SpeciesGenomeMapAsset` types and resolves into a separate metadata snapshot;
+  it does not replace or reinterpret `SpeciesUpgradeAsset` or the Mutation
+  runtime contract.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
 
@@ -108,7 +113,12 @@ the accepted triggers, severities, statuses or waivers below.
 - **Why it matters:** Background populations could lose or gain the wrong Genome effects depending on UI selection, making the simulation rules and its balance evidence non-reproducible.
 - **Evidence:** User direction on 2026-09-06: Genome nodes are permanently unlocked but toggleable; active Genome effects apply in both simulation modes and to a species even when it is not player-controlled.
 - **Smallest mitigation:** Store permanent unlocks separately from each species' active Genome; freeze every participating `SpeciesId`'s active Genome at launch, apply it to all populations of that species, and record the configuration and fingerprint with the run. Keep Mutations as a separate Species-Simulation-only layer.
-- **Progress:** Josh set an 8-point active capacity per species on 2026-09-09. Reallocation is free between runs and prohibited between phases. Node cost semantics remain open and must not be copied from Mutation currency costs.
+- **Progress:** Josh set an 8-point active capacity per species on 2026-09-09. The first contract slice now stores permanent unlocks separately from active IDs, persists them per species, freezes participating species' active IDs at launch, and carries the snapshot/fingerprint through run state, checkpoints, and results. Reallocation is free between runs and prohibited between phases. Node cost semantics and actual rule application remain open and must not be copied from Mutation currency costs.
+- **Additional progress:** The authoring catalog is keyed by explicit
+  `SpeciesId` values and the Gene Lab ViewModel consumes the corresponding map
+  snapshot. Map and node authoring changes recapture the immutable catalog and
+  refresh the open Gene Lab by fingerprint. This slice carries no effects, so
+  it does not yet apply Genome behavior to populations.
 - **Owner:** Josh
 - **Recorded:** 2026-09-06, user-confirmed planning decision
 

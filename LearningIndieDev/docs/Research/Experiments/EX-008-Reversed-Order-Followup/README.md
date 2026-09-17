@@ -12,6 +12,15 @@ arm and runs the joint upgrade in the requested order:
 It was not a new pre-registered AI prediction, so its results are reported as
 follow-up evidence rather than scored as a fresh prediction.
 
+## What this experiment established at a glance
+
+| Question | Plain-language answer |
+|---|---|
+| What was being tested? | What crowding tolerance does by itself, and what happens when crowding tolerance is listed before faster movement in the launch-time upgrade loadout. |
+| What happened? | Crowding tolerance alone produced a small final-population gain on the five new held-out seeds, while both upgrade arms reduced recorded crowding deaths to zero on average. The reversed joint arm matched the earlier joint arm on the shared training seeds. |
+| What did the result verify? | Crowding tolerance can account for part of the observed Hare change on its own, and the reversed launch-time combination can be executed and measured reproducibly. |
+| What did it not prove? | It did not prove that upgrade order has no effect because the forward and reversed held-out runs used different seed panels. EX-009 performed the required same-seed order test. This exploratory follow-up was not a fresh test of AI prediction quality. |
+
 ## Contract
 
 | Field | Value |

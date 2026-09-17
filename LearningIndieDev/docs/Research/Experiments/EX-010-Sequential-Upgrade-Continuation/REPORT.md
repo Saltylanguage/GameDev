@@ -1,5 +1,14 @@
 # EX-010 — execution report
 
+## What this experiment established at a glance
+
+| Question | Plain-language answer |
+|---|---|
+| What was being tested? | Whether reversing a six-upgrade acquisition order changes a ten-phase ForestEdge/Hare expedition when upgrades are added while the existing simulated world continues. The acquisition times and Skip choices stayed the same. |
+| What happened? | Reversing the sequence changed later phase and final measurements. Several birth, maturity, starvation, and resource measures changed consistently, while final population changed by different amounts and directions across the development and held-out panels. |
+| What did the result verify? | Unlike the launch-time test in EX-009, upgrade order can matter when the world keeps its accumulated state between upgrade choices. This is verified only for the two tested sequences and schedule. |
+| What did it not prove? | It did not show that one order is generally better, establish a universal order rule, or decide balance, fun, or production readiness. |
+
 ## Status
 
 - Complete for the original sequence and its matched reverse-order comparison.

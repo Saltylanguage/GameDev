@@ -16,7 +16,9 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 25;
+        const int ReportSchemaVersion = 26;
+        const string MetricDictionaryId = "cellsim-experiment-metrics";
+        const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;
         const int DefaultSeedCount = 20;
         const string DefaultPlayerSpeciesId = "herbivore";
@@ -227,6 +229,8 @@ namespace SaltyGame.EditorTools
             return new ExperimentReport
             {
                 schemaVersion = ReportSchemaVersion,
+                metricDictionaryId = MetricDictionaryId,
+                metricDictionaryVersion = MetricDictionaryVersion,
                 createdUtc = DateTime.UtcNow.ToString("O"),
                 scenarioAssetPath = options.ScenarioPath ?? string.Empty,
                 outputPath = outputPath,
@@ -505,6 +509,8 @@ namespace SaltyGame.EditorTools
             return new ExperimentReport
             {
                 schemaVersion = ReportSchemaVersion,
+                metricDictionaryId = MetricDictionaryId,
+                metricDictionaryVersion = MetricDictionaryVersion,
                 createdUtc = DateTime.UtcNow.ToString("O"),
                 scenarioAssetPath = options.ScenarioPath ?? string.Empty,
                 outputPath = outputPath,
@@ -1778,6 +1784,8 @@ namespace SaltyGame.EditorTools
         sealed class ExperimentReport
         {
             public int schemaVersion;
+            public string metricDictionaryId;
+            public int metricDictionaryVersion;
             public string createdUtc;
             public string scenarioAssetPath;
             public string outputPath;

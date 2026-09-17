@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7b4c1d5a8f2490bb62e3d7f9a0c4152, type: 3}
+  m_Name: FoxGenome
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.SpeciesGenomeMapAsset
+  speciesId: fox
+  upgrades:
+  - {fileID: 11400000, guid: 7c3f0a4e6b2d7159c7e9f1a3d5b8270f, type: 2}
+  - {fileID: 11400000, guid: 7d4a1b5f7c3e8260d8f0a2b4e6c9381a, type: 2}
+  - {fileID: 11400000, guid: 7e5b2c6a8d4f9371e9a1b3c5f7d0492b, type: 2}
+  - {fileID: 11400000, guid: 7f6c3d7b9e5a0482f0b2c4d6a8e1593c, type: 2}
+  - {fileID: 11400000, guid: 80ad4e8ca06b1593f1c3e5a7b9d2f406, type: 2}
+  - {fileID: 11400000, guid: 81be5f9db17c2604a2d4f6b8c0e3a517, type: 2}
+  - {fileID: 11400000, guid: 82cf60aec28d3715b3e5a7c9d1f4b628, type: 2}

@@ -147,7 +147,8 @@ namespace SaltyGame
             SpeciesId playerSpecies,
             int seed,
             float durationSeconds,
-            int targetTicks = 0)
+            int targetTicks = 0,
+            GenomeSimulationSnapshot activeGenomeSnapshot = null)
         {
             if (cells == null)
             {
@@ -170,6 +171,7 @@ namespace SaltyGame
             Seed = seed;
             DurationSeconds = durationSeconds;
             TargetTicks = targetTicks;
+            ActiveGenomeSnapshot = activeGenomeSnapshot ?? GenomeSimulationSnapshot.Empty;
             Status = SimulationRunStatus.Ready;
             PhaseIndex = 1;
             populationHistory = new List<SpeciesPopulationSnapshot>
@@ -195,6 +197,7 @@ namespace SaltyGame
         [Obsolete("Use PlayerSpeciesId instead.")]
         public SpeciesArchetype PlayerSpecies => SpeciesId.ToLegacyArchetype(PlayerSpeciesId);
         public int Seed { get; }
+        public GenomeSimulationSnapshot ActiveGenomeSnapshot { get; }
         public string RulesetFingerprint { get; private set; }
         public float DurationSeconds { get; }
         public int TargetTicks { get; private set; }
@@ -488,6 +491,7 @@ namespace SaltyGame
                 PhaseEndTick,
                 ElapsedSeconds,
                 Tick,
+                ActiveGenomeSnapshot,
                 UpgradeLoadout,
                 PopulationHistory,
                 UpgradeAcquisitionTimeline,
@@ -527,7 +531,8 @@ namespace SaltyGame
                 checkpoint.PlayerSpeciesId,
                 checkpoint.Seed,
                 checkpoint.DurationSeconds,
-                checkpoint.TargetTicks);
+                checkpoint.TargetTicks,
+                checkpoint.ActiveGenomeSnapshot);
             if (!string.IsNullOrWhiteSpace(checkpoint.RulesetFingerprint))
             {
                 run.SetRulesetFingerprint(checkpoint.RulesetFingerprint);
@@ -654,6 +659,7 @@ namespace SaltyGame
             int phaseEndTick,
             float elapsedSeconds,
             int tick,
+            GenomeSimulationSnapshot activeGenomeSnapshot,
             IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout,
             IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
             IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline,
@@ -663,6 +669,7 @@ namespace SaltyGame
             this.cells = cells.Copy();
             PlayerSpeciesId = playerSpeciesId;
             Seed = seed;
+            ActiveGenomeSnapshot = activeGenomeSnapshot ?? GenomeSimulationSnapshot.Empty;
             DurationSeconds = durationSeconds;
             TargetTicks = targetTicks;
             RulesetFingerprint = rulesetFingerprint;
@@ -681,6 +688,7 @@ namespace SaltyGame
 
         public SpeciesId PlayerSpeciesId { get; }
         public int Seed { get; }
+        public GenomeSimulationSnapshot ActiveGenomeSnapshot { get; }
         public float DurationSeconds { get; }
         public int TargetTicks { get; }
         public string RulesetFingerprint { get; }
@@ -721,13 +729,15 @@ namespace SaltyGame
             string rulesetFingerprint = null,
             IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout = null,
             IReadOnlyList<SimulationPhaseResult> phaseResults = null,
-            IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline = null)
+            IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline = null,
+            GenomeSimulationSnapshot activeGenomeSnapshot = null)
         {
             Ticks = ticks;
             DurationSeconds = durationSeconds;
             PlayerPopulation = playerPopulation;
             CurrencyEarned = currencyEarned;
             RulesetFingerprint = rulesetFingerprint;
+            ActiveGenomeSnapshot = activeGenomeSnapshot ?? GenomeSimulationSnapshot.Empty;
             var copiedUpgradeLoadout = new List<SpeciesUpgradeSnapshot>();
             if (upgradeLoadout != null)
             {
@@ -760,6 +770,7 @@ namespace SaltyGame
         public int PlayerPopulation { get; }
         public int CurrencyEarned { get; }
         public string RulesetFingerprint { get; }
+        public GenomeSimulationSnapshot ActiveGenomeSnapshot { get; }
         public IReadOnlyList<SpeciesUpgradeSnapshot> UpgradeLoadout { get; }
         public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline { get; }
@@ -790,7 +801,8 @@ namespace SaltyGame
                 run.RulesetFingerprint,
                 run.UpgradeLoadout,
                 run.PhaseResults,
-                run.UpgradeAcquisitionTimeline);
+                run.UpgradeAcquisitionTimeline,
+                run.ActiveGenomeSnapshot);
         }
     }
 }

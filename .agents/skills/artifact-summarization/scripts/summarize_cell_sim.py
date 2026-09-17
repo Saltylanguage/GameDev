@@ -20,6 +20,8 @@ from typing import Any, Iterable
 
 CORE_REPORT_FIELDS = {
     "schemaVersion",
+    "metricDictionaryId",
+    "metricDictionaryVersion",
     "createdUtc",
     "scenarioAssetPath",
     "outputPath",
@@ -352,12 +354,16 @@ def core_summary(report: dict[str, Any], source: Path, parse_warnings: list[str]
             "sourceTreeDirtyBeforeRun": manifest.get("sourceTreeDirtyBeforeRun"),
             "sourceTreeDirtyAfterRun": manifest.get("sourceTreeDirtyAfterRun"),
             "scenarioAssetGuid": manifest.get("scenarioAssetGuid", ""),
+            "metricDictionaryFile": manifest.get("metricDictionaryFile", ""),
+            "metricDictionarySha256": manifest.get("metricDictionarySha256", ""),
             "parseWarnings": list(parse_warnings or []),
         },
         "experiment": {
             key: report.get(key)
             for key in (
                 "schemaVersion",
+                "metricDictionaryId",
+                "metricDictionaryVersion",
                 "createdUtc",
                 "scenarioAssetPath",
                 "rulesetFingerprint",
@@ -557,6 +563,7 @@ def markdown(summary: dict[str, Any]) -> str:
         "",
         f"- Source commit: `{summary['source'].get('sourceCommit', '')}`; source tree dirty before/after: `{summary['source'].get('sourceTreeDirtyBeforeRun')}` / `{summary['source'].get('sourceTreeDirtyAfterRun')}`.",
         f"- Catalog: `{contract.get('upgradeCatalogPath', '')}`; contract: `{contract.get('upgradeContractVersion', '')}`.",
+        f"- Metric dictionary: `{experiment.get('metricDictionaryId', '')}` version `{experiment.get('metricDictionaryVersion')}`; bundled file `{summary['source'].get('metricDictionaryFile', '')}` SHA-256 `{summary['source'].get('metricDictionarySha256', '')}`.",
         f"- Parse warnings: `{'; '.join(summary['source'].get('parseWarnings', [])) or 'none'}`.",
         "",
         "## Run outcomes",

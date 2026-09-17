@@ -122,6 +122,8 @@ $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $proje
 $reportPath = Join-Path $artifactDirectory 'report.json'
 $logPath = Join-Path $artifactDirectory 'unity.log'
 $manifestPath = Join-Path $artifactDirectory 'manifest.json'
+$metricDictionarySourcePath = Join-Path $project 'docs\Research\METRIC_DICTIONARY_V1.json'
+$metricDictionaryPath = Join-Path $artifactDirectory 'metric-dictionary.json'
 
 $arguments = @(
     '-batchmode',
@@ -257,6 +259,22 @@ if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
     throw "Unity completed without writing expected report to '$reportPath'."
 }
 
+$report = Read-JsonWithRetry -Path $reportPath
+if (-not (Test-Path -LiteralPath $metricDictionarySourcePath -PathType Leaf)) {
+    throw "Metric dictionary is missing at '$metricDictionarySourcePath'."
+}
+
+$metricDictionary = Read-JsonWithRetry -Path $metricDictionarySourcePath
+if ([string]::IsNullOrWhiteSpace([string]$report.metricDictionaryId) -or
+    [int]$report.metricDictionaryVersion -le 0) {
+    throw 'Experiment report does not identify its metric dictionary.'
+}
+if ([string]$report.metricDictionaryId -ne [string]$metricDictionary.dictionaryId -or
+    [int]$report.metricDictionaryVersion -ne [int]$metricDictionary.version) {
+    throw 'Experiment report metric dictionary identity does not match the project dictionary.'
+}
+Copy-Item -LiteralPath $metricDictionarySourcePath -Destination $metricDictionaryPath
+
 $scenarioGuid = ''
 if ($null -ne $assetPath) {
     $scenarioMetaPath = Join-Path $project ($assetPath.Replace('/', [System.IO.Path]::DirectorySeparatorChar) + '.meta')
@@ -270,10 +288,14 @@ if ($null -ne $assetPath) {
 
 $sourceStateAfterRun = Get-SourceState -ProjectPath $project
 $manifest = [ordered]@{
-    schemaVersion = 1
+    schemaVersion = 2
     createdUtc = [DateTime]::UtcNow.ToString('O')
     reportFile = [System.IO.Path]::GetFileName($reportPath)
     reportSha256 = Get-FileSha256 -Path $reportPath
+    metricDictionaryFile = [System.IO.Path]::GetFileName($metricDictionaryPath)
+    metricDictionaryId = [string]$report.metricDictionaryId
+    metricDictionaryVersion = [int]$report.metricDictionaryVersion
+    metricDictionarySha256 = Get-FileSha256 -Path $metricDictionaryPath
     sourceCommit = $sourceStateBeforeRun.Commit
     sourceTreeDirty = $sourceStateBeforeRun.Dirty
     sourceTreeDirtyBeforeRun = $sourceStateBeforeRun.Dirty
@@ -286,9 +308,8 @@ $manifest = [ordered]@{
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
 $statLinePath = $null
-$report = Read-JsonWithRetry -Path $reportPath
-if ([string]$report.playerSpeciesId -eq 'hare' -and
-    [string]$report.experimentalFeatures -eq 'bev-experimental') {
+$hasHerbivoreStatLine = @($report.runs | Where-Object { $null -ne $_.herbivoreStatLine }).Count -gt 0
+if ($hasHerbivoreStatLine) {
     & (Join-Path $PSScriptRoot 'Validate-HerbivoreStatLine.ps1') `
         -ReportPath $reportPath `
         -OutputDirectory $artifactDirectory | Out-Host
@@ -301,6 +322,7 @@ if ([string]$report.playerSpeciesId -eq 'hare' -and
 [pscustomobject]@{
     ArtifactDirectory = $artifactDirectory
     Manifest = $manifestPath
+    MetricDictionary = $metricDictionaryPath
     Preflight = $preflight
     Report = $reportPath
     StatLine = $statLinePath

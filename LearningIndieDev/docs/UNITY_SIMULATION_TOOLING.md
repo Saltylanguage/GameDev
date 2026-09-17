@@ -282,15 +282,16 @@ Each invocation makes a timestamped directory below `artifacts/`:
 | `Test-UnityPreflight.ps1` | Lock/process cleanup, entitlement check, bounded licensing probe, and a preserved probe log |
 | `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, target-sized PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
-| `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, plus the Unity batch log |
-| `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report hash, and provenance fields before analysis |
+| `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, the versioned `metric-dictionary.json`, plus the Unity batch log |
+| `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report and metric-dictionary hashes, metric identity, and provenance fields before analysis |
 | `New-CellSimReport.ps1` | Readable `analysis.md` beside the selected JSON report |
 
-Experiment report schema 25 keeps `rulesetFingerprint` as the scenario-data
+Experiment report schema 26 keeps `rulesetFingerprint` as the scenario-data
 identity and adds `runProvenanceFingerprint` for the effective execution
 configuration: scenario fingerprint, combat mode, attack-opportunity mode,
 experimental feature/cooldown/avoidance chance, and ordered loadout. The sibling
-manifest records the report SHA-256, source commit and dirty state, scenario
+report also identifies metric dictionary version 1. The sibling manifest
+records the report and bundled metric-dictionary SHA-256 hashes, source commit and dirty state, scenario
 asset path/GUID, and the Unity argument vector. `sourceTreeDirty` is the
 pre-run state; explicit `sourceTreeDirtyBeforeRun` and
 `sourceTreeDirtyAfterRun` fields make the execution window auditable. Report
@@ -310,7 +311,7 @@ snapshot's modifiers and fingerprints, plus `upgradeLoadoutFingerprint`. The
 older `-UpgradeId` and `-UpgradeSequence` arguments remain available for
 historical experiments and diagnostic arms.
 
-The current experiment JSON schema is `25`. Historical schema-6 EX-002 and
+The current experiment JSON schema is `26`. Historical schema-6 EX-002 and
 schema-7 baseline reports remain valid for their bounded matrices; new outputs
 record the schema version,
 timestamp, scenario asset path,
@@ -320,7 +321,7 @@ run-level results, full population timelines, final-population summary,
 per-species activity totals, resolver food-action attempts/successes/failures,
 and reproduction-funnel outcomes, tracked FSM entity snapshots, and tracked state
 transitions, plus per-death events with proximate cause, entity/resource
-identity, tick, age, and position. Schema 25 also records the selected combat
+identity, tick, age, and position. Schema 26 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
 its modifiers, totals, and outcome. Authored upgrade runs also record the
 catalog path used to resolve the immutable snapshots. Threat Exposure

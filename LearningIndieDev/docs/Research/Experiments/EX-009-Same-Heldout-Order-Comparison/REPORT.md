@@ -14,6 +14,15 @@
 **Status:** Complete; bounded launch-time result accepted
 **Generated:** 2026-09-04
 
+## What this experiment established at a glance
+
+| Question | Plain-language answer |
+|---|---|
+| What was being tested? | Whether applying faster movement and crowding tolerance in opposite orders before a run starts changes the outcome when both versions use the same five held-out seeds. |
+| What happened? | Every measured outcome was identical for every matched seed. Only the recorded order of the loadout differed. |
+| What did the result verify? | These two current additive upgrades are order-independent when the full loadout is applied at launch under this exact ForestEdge/Hare contract. |
+| What did it not prove? | It did not cover upgrades acquired after the world has started, future stateful or non-additive upgrades, other scenarios, or whether the upgrades are balanced or fun. |
+
 ## Locked A/B inputs
 
 | Arm | Ordered loadout | Seed range | Status |

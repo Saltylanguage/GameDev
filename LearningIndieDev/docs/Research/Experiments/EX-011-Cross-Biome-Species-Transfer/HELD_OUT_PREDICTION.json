@@ -1,0 +1,24 @@
+{
+  "predictionId": "ex011-held-out-direction-v1",
+  "sealedAt": "2026-09-12T21:56:32-04:00",
+  "analyst": {
+    "model": "gpt-5",
+    "reasoningEffort": "not exposed"
+  },
+  "contractSha256": "dfc38d242f2457d87372a7e8f68b72d0af8e6ed62461cba6fe63546d6d304b1a",
+  "developmentAnalysisSha256": "e8ac8641dd8e89d22ae61a10550665e802ab63004502f7c35b804706b7d5c702",
+  "heldOutSeeds": [301, 302, 303, 304, 305],
+  "primaryMetricId": "herbivore-statline.fpo",
+  "prediction": {
+    "meanPairedDifference": "positive",
+    "minimumPositivePairs": 3,
+    "effectSizeBand": null,
+    "effectSizeReason": "The contract forbids transferring the Hare effect size, and no band was added after development results were seen."
+  },
+  "decisionRule": {
+    "supported": "Held-out mean is greater than zero and at least 3 of 5 paired differences are positive, with all evidence valid.",
+    "notTransferred": "Held-out mean is zero or negative, evidence is invalid, or fewer than 3 pairs are positive unless the result qualifies as unresolved.",
+    "unresolved": "Held-out mean is positive but fewer than 3 pairs are positive, or another preregistered validity condition is incomplete."
+  },
+  "heldOutResultsSeenBeforeSeal": false
+}

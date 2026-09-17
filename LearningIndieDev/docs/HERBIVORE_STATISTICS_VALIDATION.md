@@ -1,5 +1,10 @@
 # Herbivore Slash-Line Measurement Contract
 
+The versioned, machine-readable definitions used by new experiment bundles are
+in [`Research/METRIC_DICTIONARY_V1.json`](Research/METRIC_DICTIONARY_V1.json).
+This document remains the detailed validation rationale and historical formula
+reference.
+
 Status: schema-17 encounter-avoidance contract implemented. The 2026-08-23
 baseline and controlled-trial evidence predates HPS/EHS and must not be treated
 as validation of eAVI, predAVG, or the revised APS.

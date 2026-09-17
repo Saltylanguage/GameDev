@@ -1,0 +1,216 @@
+{
+  "dictionaryId": "cellsim-experiment-metrics",
+  "version": 1,
+  "scope": "CellSim herbivore Stat-Line metrics emitted in run and phase experiment reports.",
+  "statusSemantics": {
+    "Valid": "The value was calculated from a valid denominator and may be used in analysis.",
+    "N/A": "The event needed for the denominator did not occur in this window. The stored numeric value is a placeholder and must not be treated as a measured zero.",
+    "INVALID": "The recorded counts do not satisfy the metric contract. Do not use the value in analysis."
+  },
+  "windowSemantics": {
+    "run": "The complete simulation run, from its first population snapshot through its final population snapshot.",
+    "phase": "One continued-run phase. Opening population is measured at the phase boundary; closing population and events cover only that phase."
+  },
+  "metrics": [
+    {
+      "id": "herbivore-statline.spo",
+      "reportField": "SPO",
+      "name": "Starting population",
+      "definition": "Number of the scored herbivore species alive at the start of the measurement window.",
+      "unit": "creatures",
+      "direction": "Higher means the window began with more herbivores; there is no universal better direction.",
+      "source": "SpeciesHerbivoreStatLine.StartingPopulation",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.hps",
+      "reportField": "HPS",
+      "name": "Predator-active herbivore steps",
+      "definition": "Sum of living herbivores on simulation steps where at least one carnivore was alive.",
+      "unit": "creature-steps",
+      "direction": "Higher means more total herbivore exposure time while predators existed; it is an exposure denominator, not a quality score.",
+      "source": "SpeciesSimulationMetrics.RecordPredatorActiveHerbivoreStep",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.ehs",
+      "reportField": "EHS",
+      "name": "Encountered herbivore steps",
+      "definition": "Sum of living herbivores for steps in which that herbivore species had at least one recorded carnivore encounter.",
+      "unit": "creature-steps",
+      "direction": "Higher means predator encounters affected a larger share of exposure time; lower normally indicates better avoidance when HPS is comparable.",
+      "source": "SpeciesSimulationMetrics.RecordHerbivoreEncounter",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.ecn",
+      "reportField": "ECN",
+      "name": "Predator encounters",
+      "definition": "Number of recorded carnivore-to-herbivore attack opportunities after pre-contact avoidance.",
+      "unit": "encounters",
+      "direction": "Higher means more predator contact; lower normally indicates better avoidance when opportunity conditions are comparable.",
+      "source": "SpeciesSimulationMetrics.RecordHerbivoreEncounter",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.prey",
+      "reportField": "PREY",
+      "name": "Predation deaths",
+      "definition": "Herbivores killed by carnivores. This does not count food resources consumed or every combat death.",
+      "unit": "creatures",
+      "direction": "Higher means more herbivores were killed by predators; lower is normally better for herbivore survival.",
+      "source": "SpeciesSimulationMetrics.RecordHerbivorePreyed",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.strv",
+      "reportField": "STRV",
+      "name": "Starvation deaths",
+      "definition": "Herbivore death events whose proximate cause is starvation.",
+      "unit": "creatures",
+      "direction": "Higher means more starvation loss; lower is normally better.",
+      "source": "SpeciesSimulationMetrics.CreateHerbivoreStatLine",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.mat",
+      "reportField": "MAT",
+      "name": "Mating candidates",
+      "definition": "Reproduction candidate evaluations for the herbivore species, including candidates later blocked or failed.",
+      "unit": "candidate evaluations",
+      "direction": "Higher means more reproduction opportunities were evaluated; it is a denominator, not automatically a better outcome.",
+      "source": "SpeciesReproductionActivity.Candidates",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.bir",
+      "reportField": "BIR",
+      "name": "Births",
+      "definition": "Herbivore offspring successfully placed during the measurement window.",
+      "unit": "creatures",
+      "direction": "Higher means more successful births; whether that is better depends on survival and crowding costs.",
+      "source": "SpeciesSimulationActivity.Births",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.crwd",
+      "reportField": "CRWD",
+      "name": "Crowding deaths",
+      "definition": "Herbivore death events whose proximate cause is crowding.",
+      "unit": "creatures",
+      "direction": "Higher means more crowding loss; lower is normally better.",
+      "source": "SpeciesSimulationMetrics.CreateHerbivoreStatLine",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.fpo",
+      "reportField": "FPO",
+      "name": "Final population",
+      "definition": "Number of the scored herbivore species alive at the end of the measurement window.",
+      "unit": "creatures",
+      "direction": "Higher means the window ended with more herbivores; there is no universal better direction without a target population band.",
+      "source": "SpeciesHerbivoreStatLine.FinalPopulation",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.expected-fpo",
+      "reportField": "expectedFPO",
+      "name": "Expected final population",
+      "definition": "Population implied by the Stat-Line accounting identity: SPO + BIR - PREY - STRV - CRWD.",
+      "unit": "creatures",
+      "direction": "This is an accounting check. Direction is not scored; it should equal FPO.",
+      "source": "SpeciesHerbivoreStatLine.ExpectedFinalPopulation",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.fpo-reconciled",
+      "reportField": "fpoReconciled",
+      "name": "Population reconciled",
+      "definition": "True when FPO equals SPO + BIR - PREY - STRV - CRWD for the same window.",
+      "unit": "boolean",
+      "direction": "True is required for trusted composite scores; false means the Stat-Line is inconsistent.",
+      "source": "SpeciesHerbivoreStatLine.PopulationReconciled",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.pavi",
+      "reportField": "pAVI",
+      "name": "Inverse prey average",
+      "definition": "Share of predator encounters that did not end in a predation death: 1 - PREY / ECN.",
+      "unit": "ratio",
+      "direction": "Higher means better survival after contact. Read pAVIStatus before using the numeric value.",
+      "source": "SpeciesHerbivoreStatLine.InversePreyedAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.eavi",
+      "reportField": "eAVI",
+      "name": "Inverse encounter average",
+      "definition": "Share of predator-active herbivore exposure that did not occur on an encounter step: 1 - EHS / HPS.",
+      "unit": "ratio",
+      "direction": "Higher means better avoidance before contact. Read eAVIStatus before using the numeric value.",
+      "source": "SpeciesHerbivoreStatLine.InverseEncounterAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.predavg",
+      "reportField": "predAVG",
+      "name": "Predation average",
+      "definition": "Mean of the applicable pAVI and eAVI values; if only one is applicable, that value is used.",
+      "unit": "ratio",
+      "direction": "Higher means better combined avoidance and post-contact survival. Read predAVGStatus before using the numeric value.",
+      "source": "SpeciesHerbivoreStatLine.PredationAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.savi",
+      "reportField": "sAVI",
+      "name": "Inverse starvation average",
+      "definition": "Share of the population available before starvation that did not starve: 1 - STRV / (SPO + BIR - PREY).",
+      "unit": "ratio",
+      "direction": "Higher means better survival against starvation. Read sAVIStatus before using the numeric value.",
+      "source": "SpeciesHerbivoreStatLine.InverseStarvedAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.cavi",
+      "reportField": "cAVI",
+      "name": "Inverse crowding average",
+      "definition": "Share of the population available before crowding that did not die from crowding: 1 - CRWD / (SPO + BIR - PREY - STRV).",
+      "unit": "ratio",
+      "direction": "Higher means better survival against crowding. Read cAVIStatus before using the numeric value.",
+      "source": "SpeciesHerbivoreStatLine.InverseCrowdingAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.bavg",
+      "reportField": "bAVG",
+      "name": "Birth average",
+      "definition": "Successful births per reproduction candidate evaluation: BIR / MAT.",
+      "unit": "ratio",
+      "direction": "Higher means more candidate evaluations produced births; its gameplay value still depends on later survival and crowding. Read bAVGStatus before use.",
+      "source": "SpeciesHerbivoreStatLine.BirthAverage",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.rfs",
+      "reportField": "RFS",
+      "name": "Replication fitness score",
+      "definition": "Net population change weighted by birth conversion: (FPO - SPO) * bAVG.",
+      "unit": "score",
+      "direction": "Higher means stronger population growth combined with effective reproduction; negative values mean decline. Read RFSStatus before use.",
+      "source": "SpeciesHerbivoreStatLine.ReplicationFitnessScore",
+      "validWindows": ["run", "phase"]
+    },
+    {
+      "id": "herbivore-statline.aps",
+      "reportField": "APS",
+      "name": "Actual prey score",
+      "definition": "Composite herbivore outcome: applicable RFS + predAVG - (1 - sAVI) - (1 - cAVI).",
+      "unit": "score",
+      "direction": "Higher means a better combined replication, predation, starvation, and crowding outcome under this formula. Read APSStatus and reconciliation before use.",
+      "source": "SpeciesHerbivoreStatLine.ActualPreyScore",
+      "validWindows": ["run", "phase"]
+    }
+  ]
+}

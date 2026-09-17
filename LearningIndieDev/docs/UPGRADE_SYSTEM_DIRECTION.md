@@ -1,11 +1,15 @@
 # Upgrade System Direction — Mutations and Genomes
 
-Status: **approved product direction; the first Mutation contract exists, while
-Genome progression and the scalable balance model remain planned work**. Under
-roadmap v2, the first Genome contract is scheduled for S4 planning and its
-persistence-backed implementation is scheduled for S6.
+Status: **approved product direction; the first Mutation contract, Genome
+identity/profile/snapshot contract, and data-driven Genome authoring skeleton
+exist, while Genome effects and the scalable balance model remain planned
+work**. The current Genome slice includes profile persistence, an immutable
+launch/run boundary, ScriptableObject catalog snapshots, and a responsive
+species-bound Gene Lab binding; production effect catalog and behavior
+application remain deferred.
 Feature owner: **Josh**. Sim participates only in explicitly scheduled evidence
-and review work, not Genome runtime implementation.
+and review work; this contract slice does not yet make Genome effects part of
+simulation rules.
 Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concerns/upgrade-system.md).
 Balance guideline:
 [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
@@ -36,22 +40,52 @@ Scientific data connects both systems. The exact in-expedition Mutation cost
 and permanent Genome economy remain open in
 [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
-## Current decision boundary (2026-09-11)
+## Current decision boundary (2026-09-12)
 
 - Skip is a valid choice at every current Mutation decision point. It preserves
   the current build and has no bonus or penalty today. Any future
   reward-doubling or other incentive for skipping is a separate deferred
   economy rule.
-- Genome design and implementation are deferred from the current M1 closeout.
-  Prepare the first node, profile, persistence, and economy contract during S4;
-  implement it with the S6 persistence slice. Do not infer the contract from the
-  Gene Lab mock or the existing runtime shim.
+- The first Genome identity/profile/snapshot slice is implemented. It uses the
+  version `species-genome-v1`, keeps permanent unlock IDs separate from active
+  IDs, persists per-species profile state, and carries an immutable snapshot and
+  fingerprint from profile to launch request to run/checkpoint/result. Do not
+  infer node effects, costs, or economy from the Gene Lab mock or the existing
+  runtime shim.
 - Named Genome loadouts are deferred and non-blocking. A single active
   configuration per species is sufficient for the next implementation slice.
 - Species Mastery is deferred and non-gating. Its later visibility or
   node-reveal relationship to Genome remains open.
 - Provisional scientific-data settlement remains open pending feature-owner
   approval.
+
+### Implemented Genome contract boundary
+
+The current runtime contract is intentionally small. `SpeciesGenomeProfile`
+owns one species' permanent unlocked node IDs and reassignable active node IDs.
+`SpeciesGenomeSnapshot` freezes the active IDs for one species, and
+`GenomeSimulationSnapshot` freezes the participating species map and its
+fingerprint. Launch requests, run state, checkpoints, and run results carry that
+snapshot as provenance. Missing profiles are represented as empty active
+configurations for participating species, so selection does not substitute for
+species identity.
+
+The agreed 8-point active capacity is recorded as contract policy, but active
+node count is not validated until authored node costs are approved. Node
+effects, economy, profile actions, and applying Genome behavior to the
+simulation rules remain deferred. The authoring skeleton resolves explicit
+`GenomeUpgradeAsset` nodes through `SpeciesGenomeMapAsset` maps into an
+asset-free `GenomeCatalogSnapshot`; `GenomeCatalogProvider` is the Unity
+composition boundary, and `GenomeLabViewModel` consumes that snapshot for the
+Gene Lab tree surface. Each node asset declares its target `SpeciesId`, and the
+map rejects target mismatches, missing prerequisites, duplicate IDs, and
+cycles. The provider listens to map and node authoring validation changes,
+recaptures only when the catalog fingerprint changes, and refreshes an open
+Gene Lab via view-model rebinding. This carries metadata and prerequisite
+topology only; the current UI projects that topology as square node tiles with
+data-bound branch segments. The desktop test fixture includes separate Hare and
+Fox maps and a debug-only selector that swaps species through the same catalog
+binding. It does not mutate a simulation snapshot or apply effects.
 
 ## Permanent unlocks and the active Genome
 

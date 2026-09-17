@@ -17,6 +17,12 @@ Generated JSON, CSV, logs, and visual captures remain under the ignored
 provenance so a reviewer can locate the evidence without copying large files
 into the documentation tree.
 
+Each completed experiment report begins with an at-a-glance section that says,
+in plain language, what was tested, what happened, what the evidence supports,
+and what remains unproven. If a package has no separate factual report, that
+section appears in the package README. Failed execution attempts use the same
+structure and must clearly state when no research conclusion is possible.
+
 ## Packages
 
 **Applicability overlay:** [continued simulation impact](../../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md)
@@ -36,6 +42,7 @@ its result remains bounded to that scenario, schedule and upgrade set. See the
 | [EX-008 - Reversed Upgrade-Order Follow-up](EX-008-Reversed-Order-Followup/README.md) | Complete exploratory support; incorporated into the P3 synthesis. |
 | [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](EX-009-Same-Heldout-Order-Comparison/README.md) | Accepted bounded launch-time commutativity result. |
 | [EX-010 - Sequential Upgrade Continuation](EX-010-Sequential-Upgrade-Continuation/README.md) | Accepted bounded continued-world timing/order result. |
+| [EX-011 - Cross-Biome, Cross-Species Transfer](EX-011-Cross-Biome-Species-Transfer/README.md) | Executed; preregistered direction supported; human decision pending. |
 
 EX-003 is deferred without an execution package. EX-004 through EX-006 remain
 portfolio proposals and do not have experiment packages yet.

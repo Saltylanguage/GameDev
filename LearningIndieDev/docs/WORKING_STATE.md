@@ -6,7 +6,8 @@ become a master changelog.
 ## Current focus
 
 **Context refresh: 2026-09-12.** The repository has moved from the 2026-09-09
-simulation/Genome checkpoint into roadmap review and player-shell polish. The
+simulation/Genome checkpoint into roadmap review, player-shell polish, and the
+first Genome contract implementation. The
 working tree contains both completed-in-handoff work and changes still awaiting
 review; treat the status notes below as bounded claims, not an implicit commit.
 
@@ -49,9 +50,18 @@ Simulations use different success scorecards. Scalable balance work uses shared
 capabilities and provisional Adaptation Value estimates, but requires
 mode-appropriate direct-effect, matchup, and ecosystem evidence under
 [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). The seven
-existing Hare assets are provisional Mutation candidates; Genome runtime and
-profile work remain planned. Roadmap v2 schedules the first Genome contract in
-S4 and its persistence-backed implementation in S6. Named
+existing Hare assets are provisional Mutation candidates. The first Genome
+identity/profile/launch/run snapshot slice is implemented, including per-species
+profile persistence and run provenance. The data-driven authoring skeleton now
+resolves Genome upgrade/map ScriptableObjects into an immutable catalog
+snapshot and species-bound Gene Lab bindings. Map and node authoring changes
+recapture the catalog and refresh an open Gene Lab when the fingerprint changes;
+the desktop test scene now supplies five-node Hare and seven-node Fox fixtures
+for visualization smoke testing, and the Gene Lab projects the selected map as
+square tiles with data-bound branch connections. A debug selector swaps between
+the two species maps through the same catalog snapshot binding.
+effect catalog, authored cost validation, economy, interactive UI behavior, and
+rule application remain planned. Named
 Genome loadouts are deferred and non-blocking, and Species Mastery remains
 deferred and non-gating. Skip is a valid current choice with no current bonus or
 penalty; any future reward-doubling for skipping is a separate deferred economy
@@ -114,7 +124,11 @@ followed by a focused 1920×1080 pass on 2026-09-07.
 - Sprint Kickoff and carry-over workflow: [`SPRINT_KICKOFF_WORKFLOW.md`](SPRINT_KICKOFF_WORKFLOW.md)
 - Active production roadmap and sprint plan: [`../ROADMAP.md`](../ROADMAP.md)
 - Roadmap v2 review handoff: [`handoffs/2026-09-11-codex-roadmap-v2.md`](handoffs/2026-09-11-codex-roadmap-v2.md)
-- Current baseline before Genome: [`handoffs/2026-09-12-0523-codex-current-baseline-before-genome.md`](handoffs/2026-09-12-0523-codex-current-baseline-before-genome.md)
+- Genome contract slice: [`handoffs/2026-09-12-codex-genome-contract-slice.md`](handoffs/2026-09-12-codex-genome-contract-slice.md)
+- Genome catalog responsiveness: [`handoffs/2026-09-12-1756-codex-genome-catalog-responsiveness.md`](handoffs/2026-09-12-1756-codex-genome-catalog-responsiveness.md)
+- Dummy Genome visualization fixture: [`handoffs/2026-09-12-1847-codex-dummy-genome-visualization-fixture.md`](handoffs/2026-09-12-1847-codex-dummy-genome-visualization-fixture.md)
+- Genome tree tile visual pass: [`handoffs/2026-09-12-1938-codex-genome-tree-tile-visual-pass.md`](handoffs/2026-09-12-1938-codex-genome-tree-tile-visual-pass.md)
+- Genome map swap debug fixture: [`handoffs/2026-09-12-1959-codex-genome-map-swap-debug.md`](handoffs/2026-09-12-1959-codex-genome-map-swap-debug.md)
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
 - Proposed Sprint 3 M1 closeout and hygiene plan: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)

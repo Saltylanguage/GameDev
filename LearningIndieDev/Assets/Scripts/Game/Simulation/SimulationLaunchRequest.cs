@@ -20,7 +20,8 @@ namespace SaltyGame
             int seed,
             IEnumerable<string> orderedUpgradeIds = null,
             string rulesetFingerprint = "",
-            IEnumerable<SpeciesUpgradeSnapshot> orderedUpgradeSnapshots = null)
+            IEnumerable<SpeciesUpgradeSnapshot> orderedUpgradeSnapshots = null,
+            GenomeSimulationSnapshot activeGenomeSnapshot = null)
         {
             if (string.IsNullOrWhiteSpace(profileId))
             {
@@ -42,6 +43,7 @@ namespace SaltyGame
             PlayerSpeciesId = playerSpeciesId.Trim();
             Seed = seed;
             RulesetFingerprint = rulesetFingerprint ?? string.Empty;
+            ActiveGenomeSnapshot = activeGenomeSnapshot ?? GenomeSimulationSnapshot.Empty;
 
             var copiedUpgradeIds = new List<string>();
             if (orderedUpgradeIds != null)
@@ -109,5 +111,6 @@ namespace SaltyGame
         public IReadOnlyList<string> OrderedUpgradeIds => orderedUpgradeIds;
         public IReadOnlyList<SpeciesUpgradeSnapshot> OrderedUpgradeSnapshots => orderedUpgradeSnapshots;
         public string RulesetFingerprint { get; }
+        public GenomeSimulationSnapshot ActiveGenomeSnapshot { get; }
     }
 }

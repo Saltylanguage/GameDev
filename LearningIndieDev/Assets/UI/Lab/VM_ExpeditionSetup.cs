@@ -29,7 +29,8 @@ namespace SaltyGame
                 profile.ProfileId,
                 ScenarioId,
                 PlayerSpeciesId,
-                Seed);
+                Seed,
+                activeGenomeSnapshot: profile.CreateGenomeSnapshot());
         }
     }
 }

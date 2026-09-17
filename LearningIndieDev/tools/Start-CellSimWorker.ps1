@@ -253,10 +253,10 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         else {
             $statLineCount = @(Import-Csv -LiteralPath $statLineCsvPath).Count
         }
-        if ($parameters.ContainsKey('ExperimentalFeatures') -and
-            [string]$parameters.ExperimentalFeatures -eq 'bev-experimental' -and
-            $statLineCount -ne $parameters.SeedCount) {
-            throw "Expected one Hare stat-line row per seed, found $statLineCount of $($parameters.SeedCount)."
+        $reportJson = Get-Content -LiteralPath $result.Report -Raw | ConvertFrom-Json
+        $expectedStatLineCount = @($reportJson.runs | Where-Object { $null -ne $_.herbivoreStatLine }).Count
+        if ($statLineCount -ne $expectedStatLineCount) {
+            throw "Expected $expectedStatLineCount stat-line rows from the report, found $statLineCount."
         }
         if (-not (Test-Path -LiteralPath $result.UnityLog -PathType Leaf)) {
             throw "Unity completed without writing expected log to '$($result.UnityLog)'."
@@ -272,6 +272,7 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         Copy-Item -LiteralPath $result.Report -Destination (Join-Path $resultDirectory 'report.json')
         Copy-Item -LiteralPath $reportCsvPath -Destination (Join-Path $resultDirectory 'report.csv')
         Copy-Item -LiteralPath $result.Manifest -Destination (Join-Path $resultDirectory 'manifest.json')
+        Copy-Item -LiteralPath $result.MetricDictionary -Destination (Join-Path $resultDirectory 'metric-dictionary.json')
         Copy-Item -LiteralPath $statLineCsvPath -Destination (Join-Path $resultDirectory 'statline.csv')
         Copy-Item -LiteralPath $result.UnityLog -Destination (Join-Path $resultDirectory 'unity.log')
         $job = Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json
@@ -280,7 +281,7 @@ function Invoke-Job([string]$Path, [string]$PendingPath) {
         $job | Add-Member -NotePropertyName sourceTreeCleanBeforeRun -NotePropertyValue ($sourceStatusBefore.Count -eq 0) -Force
         $job | Add-Member -NotePropertyName sourceTreeCleanAfterCleanup -NotePropertyValue $cleanAfterCleanup -Force
         $job | Add-Member -NotePropertyName reportHashVerified -NotePropertyValue $true -Force
-        $job | Add-Member -NotePropertyName packagedFiles -NotePropertyValue @('report.json', 'report.csv', 'statline.csv', 'manifest.json', 'unity.log') -Force
+        $job | Add-Member -NotePropertyName packagedFiles -NotePropertyValue @('report.json', 'report.csv', 'statline.csv', 'manifest.json', 'metric-dictionary.json', 'unity.log') -Force
         $job | Add-Member -NotePropertyName completedUtc -NotePropertyValue ([DateTime]::UtcNow.ToString('O')) -Force
         $job | Add-Member -NotePropertyName result -NotePropertyValue $result -Force
         $destination = Join-Path $completed (Split-Path $Path -Leaf)

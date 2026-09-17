@@ -1,0 +1,57 @@
+{
+  "manifestId": "ex011-ai-context",
+  "version": 1,
+  "sealedAt": "2026-09-12T21:47:19-04:00",
+  "sourceCommit": "993a8440cbd86a4fb14caf7c5a58ed83c0f581eb",
+  "sourceTreeDirty": true,
+  "analyst": {
+    "model": "gpt-5",
+    "reasoningEffort": "not exposed"
+  },
+  "resultBoundary": {
+    "openRangeResultsSeenBeforeSeal": false,
+    "note": "Implementation files were inspected to verify execution support. No Open Range experiment output was run or inspected before this manifest was sealed."
+  },
+  "files": [
+    {
+      "path": "docs/Research/Experiments/EX-011-Cross-Biome-Species-Transfer/PROPOSAL_DRAFT.md",
+      "sha256": "dfc38d242f2457d87372a7e8f68b72d0af8e6ed62461cba6fe63546d6d304b1a"
+    },
+    {
+      "path": "docs/Research/Experiments/EX-011-Cross-Biome-Species-Transfer/SEED_REGISTRY.json",
+      "sha256": "2fbcc2052863a7631fcd28d7c9348680822aa0dca3a0a685610fbc464cd5738a"
+    },
+    {
+      "path": "docs/Research/METRIC_DICTIONARY_V1.json",
+      "sha256": "cf8c63dd3e8688709383e943d015e48fa9c1435f5afbc5f11b84e38367ae1daf"
+    },
+    {
+      "path": "docs/Research/Experiments/EX-007-Predictive-Statline-Interventions/README.md",
+      "sha256": "864fe8d68e439e39bc443b9ce6400041cec65d70789771e0170d2b1c5bbf8f4e"
+    },
+    {
+      "path": "docs/Research/Experiments/EX-007-Predictive-Statline-Interventions/REPORT.md",
+      "sha256": "62472fd70c11608acb8089c0e2a57a63840a4c16c9d6ea00544a0b2485dc9cfb"
+    },
+    {
+      "path": "docs/Research/Experiments/EX-007-Predictive-Statline-Interventions/AI_ANALYSIS.md",
+      "sha256": "e919dafe8dbfb9d6c0a719996f25be1b43d2d8810a0d0aee8f2b5e903f4d42d2"
+    },
+    {
+      "path": "docs/Research/Experiments/EX-007-Predictive-Statline-Interventions/HUMAN_DECISION.md",
+      "sha256": "560bb329ece7399dc065716f11936965c4bac72461489505be77c45dd2e6c912"
+    },
+    {
+      "path": "Assets/Data/CellularSimulation/Scenarios/OpenRange.asset",
+      "sha256": "65fb0bff59885a89c80bcff27ff5edc99bbaf3cfb0bc51758f694ad855e9f38a"
+    },
+    {
+      "path": "Assets/Data/CellularSimulation/Upgrades/Research/EX-011/FasterMovement.asset",
+      "sha256": "c32ca94003ee0375f38f7ac296f4304c770d8ef2edbf18586957691cf0d7ed5b"
+    },
+    {
+      "path": "Assets/Data/CellularSimulation/Upgrades/Research/EX-011/CrowdingTolerance.asset",
+      "sha256": "a414d2291eb03fe853d2925adbe3b239f815dc8654a27e919d251c11a0b3730a"
+    }
+  ]
+}
