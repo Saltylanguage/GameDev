@@ -812,7 +812,11 @@ namespace SaltyGame
             RestartCommand = new DelegateCommand(() => preview?.RestartSimulation());
             StopCommand = new DelegateCommand(() => preview?.StopSimulation());
             EndCommand = new DelegateCommand(() => preview?.EndSimulation());
-            ResetCommand = new DelegateCommand(() => preview?.ResetToStart());
+            ResetCommand = new DelegateCommand(() =>
+            {
+                preview?.ResetToStart();
+                preview?.StartSimulation();
+            });
             PurchaseRewardOption1Command = new DelegateCommand(() => preview?.PurchaseReward(0));
             PurchaseRewardOption2Command = new DelegateCommand(() => preview?.PurchaseReward(1));
             PurchaseRewardOption3Command = new DelegateCommand(() => preview?.PurchaseReward(2));

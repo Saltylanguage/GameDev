@@ -358,6 +358,57 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator ResultsActionsStartTheNextExpedition()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera")
+                ?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(viewModel, Is.Not.Null);
+
+            // The scene host auto-starts on load; reset to the editable Ready
+            // state before configuring this focused action test.
+            preview.ResetToStart();
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out var phaseMessage), Is.True, phaseMessage);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "8",
+                "8",
+                preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "10",
+                "0.01",
+                preview.PlantProbability.ToString(CultureInfo.InvariantCulture),
+                preview.HerbivoreProbability.ToString(CultureInfo.InvariantCulture),
+                preview.CarnivoreProbability.ToString(CultureInfo.InvariantCulture),
+                randomizeSeed: false,
+                "4",
+                "2",
+                "1",
+                out var settingsMessage), Is.True, settingsMessage);
+
+            preview.StartSimulation();
+            preview.EndSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+
+            var playNextCommand = viewModel.GetType().GetProperty("PlayNextSimulationCommand")?.GetValue(viewModel);
+            playNextCommand?.GetType().GetMethod("Execute")?.Invoke(playNextCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+
+            preview.EndSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+
+            var resetCommand = viewModel.GetType().GetProperty("ResetCommand")?.GetValue(viewModel);
+            resetCommand?.GetType().GetMethod("Execute")?.Invoke(resetCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+        }
+
+        [UnityTest]
         public IEnumerator PhaseDecisionCanPurchaseAuthoredUpgradeAndResumeSameRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");

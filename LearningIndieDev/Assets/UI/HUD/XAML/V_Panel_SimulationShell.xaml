@@ -25,6 +25,14 @@
                 <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
                 <Setter Property="FontSize" Value="13" />
             </Style>
+            <Style x:Key="SimulationRewardCardText" TargetType="TextBlock">
+                <Setter Property="Width" Value="208" />
+                <Setter Property="FontSize" Value="13" />
+                <Setter Property="TextWrapping" Value="Wrap" />
+                <Setter Property="TextAlignment" Value="Center" />
+                <Setter Property="HorizontalAlignment" Value="Center" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
 
             <!-- Simulation-only visuals stay local to this shell. -->
             <ControlTemplate x:Key="GalapagOS_SegmentedProgressBarTemplate" TargetType="ProgressBar">
@@ -1133,15 +1141,6 @@
                 <StackPanel Visibility="{Binding DeveloperSettingsVisibility}"
                             IsEnabled="{Binding CanEditSettings}"
                             Margin="0,10,0,0">
-                    <TextBlock Text="BEV EXPERIMENTAL FEATURES"
-                               Foreground="{DynamicResource Chrono_Olive}"
-                               FontSize="16"
-                               FontWeight="Bold"
-                               Margin="0,0,0,2"/>
-                    <CheckBox Content="Enable Bev experimental combat and herbivore stat line"
-                              IsChecked="{Binding BevExperimentalFeaturesEnabled, Mode=TwoWay}"
-                              Foreground="{DynamicResource Chrono_TreeBark}"
-                              Margin="0,3,0,0"/>
                     <StackPanel Orientation="Horizontal" Margin="0,3">
                         <TextBlock Text="Fox attack cooldown (ticks; 0 = off)"
                                    Foreground="{DynamicResource Chrono_TreeBark}"
@@ -1150,11 +1149,6 @@
                         <TextBox Text="{Binding FoxAttackCooldownTicksText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                  Width="120"/>
                     </StackPanel>
-                    <TextBlock Text="Leave this unchecked to keep the legacy combat rules. Apply Settings before starting."
-                               Foreground="{DynamicResource Chrono_Olive}"
-                               FontSize="12"
-                               TextWrapping="Wrap"
-                               Margin="0,2,0,0"/>
                 </StackPanel>
                 <Button Content="APPLY SPECIES RULES"
                         Visibility="{Binding DeveloperSettingsVisibility}"

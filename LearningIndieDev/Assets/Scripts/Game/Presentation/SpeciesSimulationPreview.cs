@@ -1653,6 +1653,7 @@ namespace SaltyGame
             if (previewState == SpeciesPreviewState.Results)
             {
                 PrepareNextRun();
+                StartSimulation();
             }
         }
 
