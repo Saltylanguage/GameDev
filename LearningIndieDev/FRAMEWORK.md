@@ -1,8 +1,11 @@
 # Salty GameDev framework (historical Island Survivor slice)
 
-> This document describes the deprecated Island Survivor prototype. The active
-> product flow is Main Menu → Lab → CellularAutomataPrototype; the Bootstrap
-> scene and validator named below are not current project infrastructure.
+> Archived 2026-09-18: this document describes the removed Island Survivor
+> prototype. Its code, assets, scene, and validator are no longer in the Unity
+> project; procedures and paths below are historical and must not be used as
+> implementation instructions. The current player flow is Main Menu →
+> GalapagOS Desktop → desktop-hosted Simulation. The standalone Lab route is
+> reserved for development/testing.
 
 The Bootstrap scene is the composition root. `GameRuntime` creates the runtime systems in one explicit startup path:
 

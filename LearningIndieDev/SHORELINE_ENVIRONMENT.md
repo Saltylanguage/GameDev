@@ -1,5 +1,9 @@
 # Shoreline Environment First Pass
 
+> Historical Island Survivor prototype note. The associated scene, runtime,
+> and Island Chores art were removed on 2026-09-18; this is preserved as design
+> history and is not a current asset or implementation guide.
+
 ## What was added
 
 - A layered shoreline composition in `WorldRuntime`: ocean and foam at the bottom, a clear sandy playable band in the middle, and a horizontal jungle border across the top.
