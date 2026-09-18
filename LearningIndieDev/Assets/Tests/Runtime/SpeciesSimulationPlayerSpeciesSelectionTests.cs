@@ -4,6 +4,7 @@ using UnityEngine;
 
 namespace SaltyGame.Tests
 {
+    [Category("Simulation")]
     public sealed class SpeciesSimulationPlayerSpeciesSelectionTests
     {
         GameObject root;

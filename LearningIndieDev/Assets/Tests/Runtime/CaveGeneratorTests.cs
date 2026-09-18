@@ -4,6 +4,7 @@ using UnityEngine;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Core")]
     public sealed class CaveGeneratorTests
     {
         [Test]

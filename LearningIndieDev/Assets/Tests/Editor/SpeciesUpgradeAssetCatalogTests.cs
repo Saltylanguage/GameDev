@@ -8,6 +8,7 @@ using UnityEditor;
 namespace SaltyGame.EditorTests
 {
     [TestFixture]
+    [Category("Authoring")]
     public sealed class SpeciesUpgradeAssetCatalogTests
     {
         const string ProductionCatalogPath = "Assets/Data/CellularSimulation/Upgrades/Production";

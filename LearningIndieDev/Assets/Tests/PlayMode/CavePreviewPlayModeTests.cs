@@ -9,6 +9,7 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
+    [Category("Graphics")]
     public sealed class CavePreviewPlayModeTests
     {
         [UnityTest]
@@ -127,11 +128,11 @@ namespace SaltyGame.PlayModeTests
 
         static ReplayConfiguration TryGetReplayConfiguration()
         {
-            var scenarioPath = Environment.GetEnvironmentVariable("CELLSIM_REPLAY_SCENARIO");
-            var playerSpeciesId = Environment.GetEnvironmentVariable("CELLSIM_REPLAY_PLAYER_SPECIES_ID");
-            var seedValue = Environment.GetEnvironmentVariable("CELLSIM_REPLAY_SEED");
-            var widthValue = Environment.GetEnvironmentVariable("CELLSIM_REPLAY_GRID_WIDTH");
-            var heightValue = Environment.GetEnvironmentVariable("CELLSIM_REPLAY_GRID_HEIGHT");
+            var scenarioPath = VisualTestConfiguration.GetValue("CELLSIM_REPLAY_SCENARIO");
+            var playerSpeciesId = VisualTestConfiguration.GetValue("CELLSIM_REPLAY_PLAYER_SPECIES_ID");
+            var seedValue = VisualTestConfiguration.GetValue("CELLSIM_REPLAY_SEED");
+            var widthValue = VisualTestConfiguration.GetValue("CELLSIM_REPLAY_GRID_WIDTH");
+            var heightValue = VisualTestConfiguration.GetValue("CELLSIM_REPLAY_GRID_HEIGHT");
             if (string.IsNullOrWhiteSpace(scenarioPath)
                 || string.IsNullOrWhiteSpace(playerSpeciesId)
                 || !int.TryParse(seedValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var seed)
@@ -164,7 +165,7 @@ namespace SaltyGame.PlayModeTests
 
         static bool TryGetVisualOutputDirectory(out string directory)
         {
-            var configuredPath = Environment.GetEnvironmentVariable("CELLSIM_VISUAL_OUTPUT");
+            var configuredPath = VisualTestConfiguration.GetValue("CELLSIM_VISUAL_OUTPUT");
             if (string.IsNullOrWhiteSpace(configuredPath))
             {
                 directory = null;

@@ -7,6 +7,7 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
+    [Category("UI")]
     public sealed class MainMenuPlayModeTests
     {
         const string MainMenuScene = "MainMenu";

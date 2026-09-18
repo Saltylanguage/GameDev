@@ -6,6 +6,7 @@ using UnityEngine;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Simulation")]
     public sealed class SpeciesUpgradeContractTests
     {
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);

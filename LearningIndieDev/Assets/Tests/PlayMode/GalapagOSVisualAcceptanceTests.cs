@@ -9,6 +9,7 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
+    [Category("Graphics")]
     public sealed class GalapagOSVisualAcceptanceTests
     {
         const string SceneName = "GalapagOSDesktopTest";
@@ -183,7 +184,7 @@ namespace SaltyGame.PlayModeTests
 
         static string TryGetVisualOutputDirectory()
         {
-            var configuredPath = Environment.GetEnvironmentVariable("CELLSIM_VISUAL_OUTPUT");
+            var configuredPath = VisualTestConfiguration.GetValue("CELLSIM_VISUAL_OUTPUT");
             if (string.IsNullOrWhiteSpace(configuredPath))
             {
                 return null;
@@ -235,7 +236,7 @@ namespace SaltyGame.PlayModeTests
 
         static int GetVisualDimension(string environmentVariable, int fallback)
         {
-            return int.TryParse(Environment.GetEnvironmentVariable(environmentVariable), out var value)
+            return int.TryParse(VisualTestConfiguration.GetValue(environmentVariable), out var value)
                 ? Mathf.Max(1, value)
                 : fallback;
         }

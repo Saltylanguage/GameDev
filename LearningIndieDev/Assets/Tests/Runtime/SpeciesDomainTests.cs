@@ -8,6 +8,7 @@ using Object = UnityEngine.Object;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Simulation")]
     public sealed class SpeciesDomainTests
     {
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);
@@ -3306,6 +3307,7 @@ namespace SaltyGame.Tests
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Simulation")]
     public sealed class SpeciesBehaviorTests
     {
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);

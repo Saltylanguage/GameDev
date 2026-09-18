@@ -10,6 +10,7 @@ using UnityEngine.U2D;
 namespace SaltyGame.EditorTests
 {
     [TestFixture]
+    [Category("Authoring")]
     public sealed class TerrainTileAssetContractTests
     {
         const string TileRoot = "Assets/Art/Terrain/Blob/64";

@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using SaltyGame;
+using Unity.Pipeline.Commands;
 using UnityEditor;
 using UnityEngine;
 
@@ -95,54 +96,7 @@ namespace SaltyGame.EditorTools
         {
             try
             {
-                var options = CommandLineOptions.Parse(Environment.GetCommandLineArgs());
-                var authoredUpgradeSnapshots = options.AuthoredUpgradeLoadout == null
-                    ? null
-                    : SpeciesUpgradePredictionInputAdapter.Resolve(
-                        options.AuthoredUpgradeLoadout,
-                        options.AuthoredUpgradeCatalogPath);
-                var authoredPhaseUpgradeSnapshots = options.PhaseAuthoredUpgradeSchedule == null
-                    ? null
-                    : ResolveAuthoredPhaseSchedule(
-                        options.PhaseAuthoredUpgradeSchedule,
-                        options.AuthoredUpgradeCatalogPath,
-                        options.PlayerSpeciesId);
-                var outputPath = GetRequiredOutputPath(options.OutputPath);
-                var data = ApplyOverrides(
-                    LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
-                    options);
-                var experimentalOptions = GetExperimentalOptions(options);
-
-                try
-                {
-                    var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
-                        ? CreatePairedReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots)
-                        : CreateReport(
-                            data,
-                            options,
-                            outputPath,
-                            experimentalOptions,
-                            authoredUpgradeSnapshots,
-                            authoredPhaseUpgradeSnapshots);
-                    File.WriteAllText(
-                        outputPath,
-                        SerializeReport(
-                            report,
-                            experimentalOptions.UsesHerbivoreStatLine
-                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore,
-                            experimentalOptions.UsesPredatorStatLine
-                                && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Carnivore),
-                        new UTF8Encoding(false));
-                    WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
-                    Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
-                }
-                finally
-                {
-                    if (temporaryAsset != null)
-                    {
-                        UnityEngine.Object.DestroyImmediate(temporaryAsset);
-                    }
-                }
+                Run(Environment.GetCommandLineArgs());
             }
             catch (Exception exception)
             {
@@ -159,6 +113,84 @@ namespace SaltyGame.EditorTools
             if (Application.isBatchMode)
             {
                 EditorApplication.Exit(0);
+            }
+        }
+
+        [CliCommand(
+            "cellsim_run",
+            "Run a deterministic CellSim experiment from an artifact request file.",
+            MainThreadRequired = true,
+            Tags = new[] { "tests" })]
+        public static ExperimentCommandResult RunFromPipeline(
+            [CliArg("request_path", "Absolute path to a CellSim command request under the project's artifacts folder.", Required = true)]
+            string requestPath)
+        {
+            var normalizedRequestPath = GetRequiredRequestPath(requestPath);
+            var request = JsonUtility.FromJson<ExperimentCommandRequest>(File.ReadAllText(normalizedRequestPath));
+            if (request == null || request.arguments == null || request.arguments.Length == 0)
+            {
+                throw new ArgumentException("The CellSim command request contains no arguments.", nameof(requestPath));
+            }
+
+            Run(request.arguments);
+            var options = CommandLineOptions.Parse(request.arguments);
+            return new ExperimentCommandResult
+            {
+                outputPath = GetRequiredOutputPath(options.OutputPath),
+                seedStart = options.SeedStart,
+                seedCount = options.SeedCount,
+            };
+        }
+
+        static void Run(string[] arguments)
+        {
+            var options = CommandLineOptions.Parse(arguments);
+            var authoredUpgradeSnapshots = options.AuthoredUpgradeLoadout == null
+                ? null
+                : SpeciesUpgradePredictionInputAdapter.Resolve(
+                    options.AuthoredUpgradeLoadout,
+                    options.AuthoredUpgradeCatalogPath);
+            var authoredPhaseUpgradeSnapshots = options.PhaseAuthoredUpgradeSchedule == null
+                ? null
+                : ResolveAuthoredPhaseSchedule(
+                    options.PhaseAuthoredUpgradeSchedule,
+                    options.AuthoredUpgradeCatalogPath,
+                    options.PlayerSpeciesId);
+            var outputPath = GetRequiredOutputPath(options.OutputPath);
+            var data = ApplyOverrides(
+                LoadSimulationData(options.ScenarioPath, out var temporaryAsset),
+                options);
+            var experimentalOptions = GetExperimentalOptions(options);
+
+            try
+            {
+                var report = options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic
+                    ? CreatePairedReport(data, options, outputPath, experimentalOptions, authoredUpgradeSnapshots)
+                    : CreateReport(
+                        data,
+                        options,
+                        outputPath,
+                        experimentalOptions,
+                        authoredUpgradeSnapshots,
+                        authoredPhaseUpgradeSnapshots);
+                File.WriteAllText(
+                    outputPath,
+                    SerializeReport(
+                        report,
+                        experimentalOptions.UsesHerbivoreStatLine
+                            && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Herbivore,
+                        experimentalOptions.UsesPredatorStatLine
+                            && data.SpeciesRules[new SpeciesId(options.PlayerSpeciesId)].Role == SpeciesRole.Carnivore),
+                    new UTF8Encoding(false));
+                WriteCsv(report, GetSortedSpecies(data.SpeciesRules), report.csvOutputPath);
+                Debug.Log($"[Salty] Wrote {options.SeedCount} seeded cellular simulation runs to {outputPath} and {report.csvOutputPath}");
+            }
+            finally
+            {
+                if (temporaryAsset != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(temporaryAsset);
+                }
             }
         }
 
@@ -1396,11 +1428,52 @@ namespace SaltyGame.EditorTools
             return normalizedOutputPath;
         }
 
+        static string GetRequiredRequestPath(string requestPath)
+        {
+            if (string.IsNullOrWhiteSpace(requestPath))
+            {
+                throw new ArgumentException("A request path is required.", nameof(requestPath));
+            }
+
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            var artifactsRoot = Path.GetFullPath(Path.Combine(projectRoot, "artifacts"));
+            var normalizedRequestPath = Path.GetFullPath(requestPath);
+            var artifactsPrefix = artifactsRoot.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                + Path.DirectorySeparatorChar;
+            if (!normalizedRequestPath.StartsWith(artifactsPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException(
+                    $"Request path must stay under '{artifactsRoot}'.",
+                    nameof(requestPath));
+            }
+            if (!File.Exists(normalizedRequestPath))
+            {
+                throw new FileNotFoundException("CellSim command request was not found.", normalizedRequestPath);
+            }
+
+            return normalizedRequestPath;
+        }
+
         static List<SpeciesId> GetSortedSpecies(IReadOnlyDictionary<SpeciesId, SpeciesRules> definitions)
         {
             var species = new List<SpeciesId>(definitions.Keys);
             species.Sort((left, right) => string.CompareOrdinal(left.Value, right.Value));
             return species;
+        }
+
+        [Serializable]
+        sealed class ExperimentCommandRequest
+        {
+            public int schemaVersion;
+            public string[] arguments;
+        }
+
+        [Serializable]
+        public sealed class ExperimentCommandResult
+        {
+            public string outputPath;
+            public int seedStart;
+            public int seedCount;
         }
 
         sealed class CommandLineOptions

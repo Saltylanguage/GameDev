@@ -32,6 +32,18 @@ requirements, or domain workflows.
 > and maintainable change, verify it in proportion to risk, and calibrate every
 > claim to the evidence.
 
+## Unity specialist coordination
+
+For work in this Unity repository, load the most specific available Unity
+plugin skill when the task enters its domain (for example, `unity-cli` for
+editor/build/test workflows, or the matching UI, asset, rendering, audio, or
+package skill). Use it for Unity-specific APIs and workflow details; use
+`LearningIndieDev/AGENTS.md`, `docs/PROJECT_CONTEXT.md`, and the engineering
+standards for project intent and constraints. Plugin guidance does not approve
+new product scope, dependencies, or services. Reconcile its recommendations
+with current code and project decisions, preserve serialized asset identity,
+and report exactly which Unity checks ran versus which were unavailable.
+
 ## 1. Start from current evidence
 
 Before making an important technical claim or change, establish the relevant

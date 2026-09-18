@@ -10,6 +10,7 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
+    [Category("Graphics")]
     public sealed class SpeciesPresentationPlayModeTests
     {
         [UnityTest]

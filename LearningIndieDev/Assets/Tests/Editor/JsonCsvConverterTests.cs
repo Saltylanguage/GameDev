@@ -5,6 +5,7 @@ using SaltyGame.EditorTools.JsonCsv;
 
 namespace SaltyGame.EditorTests
 {
+    [Category("Tooling")]
     public sealed class JsonCsvConverterTests
     {
         [Test]

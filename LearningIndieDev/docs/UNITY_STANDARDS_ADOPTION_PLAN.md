@@ -1,18 +1,18 @@
 # Unity Engineering Standards Adoption Plan
 
-Status: proposed phased adoption  
+Status: proposed phased adoption; reviewed 2026-09-18
 Date: 2026-08-02  
 Authority: [`UNITY_ENGINEERING_STANDARDS.md`](UNITY_ENGINEERING_STANDARDS.md)
 
 ## Current compliance summary
 
-The project has two retained slices. The active product path is Main Menu → Lab
-→ CellularAutomataPrototype with plain C# simulation rules, a runtime assembly
-boundary, NUnit tests, text serialization, and a Noesis presentation path. The
-Island Survivor slice retains the historical `GameRuntime` composition root and
-validator but is deprecated. The active path has no general bootstrap validator,
-save-data definitions, profiling budgets/captures, or stable UI/branch/large-file
-policies.
+The player-facing route is Main Menu → GalapagOS Desktop → Desktop-hosted
+Simulation, with plain C# simulation rules, a runtime assembly boundary, NUnit
+tests, text serialization, and Noesis presentation. `Lab` and
+`CellularAutomataPrototype` remain separate development/test entry points. The
+Island Survivor scene, runtime, dedicated tests, validator, and art were removed
+on 2026-09-18. The current flow has no general bootstrap validator, save-data
+definitions, profiling budgets/captures, or stable UI/branch/large-file policies.
 
 The audit found no missing `.meta` files for current Assets, no runtime-to-Editor assembly reference, no Addressables installation, no first-party DOTS code, and no existing `.editorconfig` or analyzer configuration. The copied UI starter scaffold and Unity `TutorialInfo` template content were removed in the focused 2026-09-06 cleanup. A 2026-09-07 follow-up removed the unreferenced recovery and starter scenes, unreachable EX-002 generator, retired UI shells, and ownerless empty placeholders; deliberate ownership boundaries remain. Current populated `Assets/UI` conventions are still intentionally isolated from broad cleanup.
 
@@ -32,9 +32,8 @@ The audit found no missing `.meta` files for current Assets, no runtime-to-Edito
 ## Low-risk immediate improvements
 
 - Use the authoritative stylesheet in code reviews and AI-assisted changes.
-- Run the relevant current scene/test validation after active-slice edits;
-  `Salty > Validate Bootstrap Scene` applies only to deprecated Island Survivor.
-- Add a focused Edit Mode test with each new activity or domain rule.
+- Run the relevant current scene/test validation after active-flow edits.
+- Add a focused Edit Mode test with each new simulation or domain rule.
 - Use the new `.editorconfig` for touched first-party code; do not reformat the whole repository.
 - Keep `.meta` files paired and inspect serialized diffs for any Unity asset change.
 - Record a short manual validation scenario for prototype-only changes until a test is practical.
@@ -43,11 +42,11 @@ The audit found no missing `.meta` files for current Assets, no runtime-to-Edito
 
 ### Phase 0 - policy and checks
 
-Apply the stylesheet, keep the current assembly boundaries, and run existing
-tests plus the deprecated-slice validator only when touching Island Survivor.
-Add repository checks for `.meta` parity, forbidden generated files, asmdef
-cycles, and `git diff --check`/equivalent Plastic diff hygiene where the team
-can execute them.
+Apply the stylesheet, keep the current assembly boundaries, and run the
+relevant existing tests. There is no Island Survivor validator after the
+2026-09-18 retirement. Add repository checks for `.meta` parity, forbidden
+generated files, asmdef cycles, and `git diff --check`/equivalent Plastic diff
+hygiene where the team can execute them.
 
 ### Phase 1 - touched-code consistency
 
@@ -92,14 +91,19 @@ No gameplay refactor, asset move/rename, scene/prefab modification, package/Unit
 - The unused `Intro` and `_Recovery/0` scenes, one-shot EX-002 generator, and
   ownerless empty placeholder trees were removed on 2026-09-07. EX-002's
   authored assets and protocol remain the reproducibility record.
-- `WorldRuntime` creates placeholder sprites and uses hard-coded prototype values; authored data/prefab conversion needs a design decision, not an opportunistic cleanup.
-- The former runtime debug panel and its static visibility state were removed
-  with the deprecated Island Survivor IMGUI HUD; do not reintroduce that path.
-- The former misspelled `Boostrap` scene was intentionally migrated to
-  `IslandSurvivorPrototype` with its scene GUID preserved when the cellular-
-  automata and island prototypes were separated.
+- The former `WorldRuntime`, runtime debug panel, Island Survivor bootstrap,
+  tests, validator, and `IslandChores` art were removed on 2026-09-18. This is
+  historical migration context only; do not treat those assets or APIs as
+  current architecture.
+- The former misspelled `Boostrap` scene was migrated to
+  `IslandSurvivorPrototype` during the historical prototype split. The latter
+  scene was subsequently removed with the retired Island Survivor slice.
 
-## Recommended first implementation slice
+## Recommended first implementation slice (superseded)
 
-Add one new small activity using the existing `IActivity`/`IActivityTarget` boundary, with a plain C# Edit Mode test for its rule and one controller/inventory integration assertion. Run the existing bootstrap validator and current test assembly, then review the diff for `.meta`/serialization safety. This is behavior-preserving to existing activities, proves the stylesheet's dependency/test rules, and avoids asset migration, new abstractions, and unmeasured optimization.
+The original 2026-08-02 proposal to add an activity through `IActivity` and
+`IActivityTarget` depended on the Island Survivor subsystem and its validator.
+That subsystem was removed on 2026-09-18, so this implementation slice is
+retired and must not be used as current work direction. Select new slices from
+the active simulation roadmap and current player-flow contracts instead.
 

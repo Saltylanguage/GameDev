@@ -5,6 +5,7 @@ using UnityEngine;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Simulation")]
     public sealed class GenomeContractTests
     {
         [Test]

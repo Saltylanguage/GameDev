@@ -4,6 +4,7 @@ using UnityEngine;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Simulation")]
     public sealed class GridSimulationTests
     {
         static readonly GridPattern MooreNeighborhood = new GridPattern(new[]

@@ -3,6 +3,7 @@ using NUnit.Framework;
 
 namespace SaltyGame.Tests
 {
+    [Category("Simulation")]
     public sealed class SimulationManagerTests
     {
         [Test]

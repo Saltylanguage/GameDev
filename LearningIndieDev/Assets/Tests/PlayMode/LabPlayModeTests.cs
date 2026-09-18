@@ -8,6 +8,7 @@ using UnityEngine.TestTools;
 
 namespace SaltyGame.PlayModeTests
 {
+    [Category("UI")]
     public sealed class LabPlayModeTests
     {
         const string LabScene = "Lab";

@@ -3,9 +3,9 @@
 Status: authoritative project standard  
 Scope: `LearningIndieDev` first-party code and assets  
 Baseline audited: Unity `6000.4.6f1`, URP `17.4.0`, project revision `0b051c2e5d54`  
-Last audited: 2026-08-02
+Last reviewed: 2026-09-18 (Island Survivor retirement)
 
-This is a practical standard for the active cellular-automata slice and the deprecated Island Survivor prototype. It is intentionally small enough to use during feature work. Existing code is not automatically compliant; the adoption plan defines when it should change.
+This is a practical standard for current first-party code and assets. The player-facing route is `MainMenu -> GalapagOSDesktopTest -> desktop-hosted Simulation`; `Lab` and `CellularAutomataPrototype` remain separate development/test entry points. The Island Survivor slice was removed on 2026-09-18, so its old examples and validator references are no longer applicable. Existing code is not automatically compliant; the adoption plan defines when it should change.
 
 ## How to read this document
 
@@ -19,9 +19,9 @@ Every rule below includes its intent, a project-specific example, enforcement st
 
 ## 1. Project principles
 
-1. **MUST keep the playable loop simple and explicit.** The active product flow is `MainMenu -> Lab -> CellularAutomataPrototype`, with explicit simulation and Noesis presentation composition. The deprecated Island Survivor slice retains its simulation composition (`GameRuntime -> WorldRuntime -> InteractionController -> ActivityController -> InventoryState`) without a supported runtime HUD. New work should fit a demonstrated boundary before introducing a new framework.
+1. **MUST keep the playable loop simple and explicit.** The active product flow is `MainMenu -> GalapagOS Desktop -> desktop-hosted Simulation`, with explicit simulation and Noesis presentation composition. The standalone `Lab -> CellularAutomataPrototype` route is retained for development and testing, not as the main player flow. New work should fit a demonstrated boundary before introducing a new framework.
    - Why: the project is an early prototype and the existing vertical slice is easy to reason about.
-   - Correct: add a new activity through `IActivity` and `IActivityTarget` before changing bootstrap or UI.
+   - Correct: extend the simulation through its existing domain and presentation boundaries before changing startup or UI composition.
    - Discouraged: add a global `GameServices` registry so one feature can find inventory.
    - Automatic enforcement: documentation/review only.
    - Exceptions: a measured bottleneck or a new platform requirement may justify a boundary change.
@@ -33,8 +33,8 @@ Every rule below includes its intent, a project-specific example, enforcement st
    - Automatic enforcement: documentation/review only.
 
 3. **SHOULD prefer composition over inheritance and explicit dependencies over global access.** Readability wins over theoretical extensibility; optimization follows measurements.
-   - Correct: `PlayerController` receives `Transform`, `PlayerInputAdapter`, and `ActivityController` in its constructor.
-   - Discouraged: `PlayerController.Instance` or `FindAnyObjectByType<InventoryState>()`.
+   - Correct: a component receives its required collaborators through explicit composition or injection.
+   - Discouraged: hidden global access or scene-wide object searches for required dependencies.
    - Automatic enforcement: assembly references can be enforced; code choices require review.
 
 ## 2. Folder, namespace, and assembly structure
@@ -45,17 +45,15 @@ The Unity project is `LearningIndieDev`. First-party runtime code lives under `A
 
 | Path | Ownership and rule |
 |---|---|
-| `Assets/Scripts/Game/Core` | Bootstrap, state, and clock. Owns startup sequencing. |
-| `Assets/Scripts/Game/World` | World objects, interactables, and player-facing world construction. |
-| `Assets/Scripts/Game/Input` | The only current layer that reads the Input System keyboard. |
-| `Assets/Scripts/Game/Interaction` | Target selection and interaction intent. |
-| `Assets/Scripts/Game/Activities` | Plain C# activity rules and results. |
-| `Assets/Scripts/Game/Inventory` | Plain C# resource state. |
-| `Assets/Scripts/Game/Presentation` | Runtime HUD and feedback. |
-| `Assets/Scripts/Game/Debug` | Development diagnostics; no game rules. |
-| `Assets/Editor/EditorTools` | Editor-only validation and menus; namespace `SaltyGame.EditorTools`. |
-| `Assets/Tests/Runtime` | Current NUnit/Edit Mode tests; assembly `SaltyGame.Tests`. |
-| `Assets/Scenes` | Scene assets. Cellular automata and island-survivor prototypes have separate composition scenes. |
+| `Assets/Scripts/Game/Simulation` | Simulation rules, orchestration, snapshots, and run results. |
+| `Assets/Scripts/Game/Species` | Species identity, rules, progression, and authored upgrades. |
+| `Assets/Scripts/Game/Presentation` | Simulation and terrain presentation adapters/resolvers. |
+| `Assets/Scripts/Game/Scene` | Scene-transition helpers. |
+| `Assets/Scripts/Game/Profile` | Profile-session state and snapshots. |
+| `Assets/Scripts/Game/Grid`, `CellularAutomata`, `CaveGeneration`, `Terrain` | Grid, cellular, cave-preview, and terrain domain code. |
+| `Assets/Editor` | Editor-only simulation tools, asset authoring, and validation windows. |
+| `Assets/Tests/Runtime`, `Editor`, `PlayMode` | NUnit/Edit Mode, asset/editor, and Play Mode coverage in separate assemblies. |
+| `Assets/Scenes` | Main Menu, Desktop, Simulation, and separate development/test scenes. |
 | `Assets/Settings` | URP and project settings assets. |
 | `Assets/UI` | Optional/experimental UI code, currently outside `SaltyGame.Runtime`. |
 | `Assets/ThirdParty` | Reserved third-party boundary. Do not edit vendor content without an explicit reason. |
@@ -84,40 +82,40 @@ The dominant first-party runtime convention is namespace `SaltyGame`, PascalCase
 
 | Item | Standard | Example |
 |---|---|---|
-| Types/enums | PascalCase | `ActivityController`, `TimeOfDay` |
-| Interfaces | `I` + PascalCase | `IActivityTarget` |
-| Methods/properties | PascalCase | `AdvanceActivity`, `IsActive` |
+| Types/enums | PascalCase | `SimulationManager`, `SpeciesId` |
+| Interfaces | `I` + PascalCase | `IReadOnlyList<T>` |
+| Methods/properties | PascalCase | `RunSimulation`, `IsComplete` |
 | Parameters/locals | camelCase | `deltaTime`, `rewardAmount` |
-| Private fields | camelCase, no prefix | `readonly InventoryState inventory` |
+| Private fields | camelCase, no prefix | `readonly SimulationManager simulation` |
 | Serialized fields | private camelCase with `[SerializeField]` | ` [SerializeField] private Transform playerRoot;` |
 | Static fields | camelCase; `readonly` where possible | `static bool visible` |
 | Constants | PascalCase | `InteractionRange` |
-| Events | PascalCase; event past tense when appropriate | `ActivityCompleted` |
-| Event handlers | `On` + event name | `OnActivityCompleted` |
+| Events | PascalCase; event past tense when appropriate | `SimulationCompleted` |
+| Event handlers | `On` + event name | `OnSimulationCompleted` |
 | Booleans | `is`, `has`, `can`, or `should` wording | `CanInteract`, `IsComplete` |
 | Generic parameters | `T` or descriptive `TItem` | `TResult` |
 | Test methods | descriptive behavior statement | `ThreeStrongHitsCompleteAndAwardThreeWood` |
 
 **MUST** use explicit access control, private serialized fields instead of public mutable Inspector fields, braces for control flow, and one primary type per file. **SHOULD** use properties for simple access and methods for operations, side effects, or meaningful computation. **MUST NOT** introduce unexplained abbreviations, magic numbers, or magic strings; use named constants or a clearly named definition. Comments explain intent, constraints, or lifecycle assumptions, not syntax. XML documentation is **MAY** for public or non-obvious APIs that are reused outside the immediate feature.
 
-Correct repository example: `public PlayerController(Transform transform, PlayerInputAdapter input, ActivityController activities)` makes dependencies visible. Discouraged example: `public InventoryState inventory;` on a scene component, which permits arbitrary mutation from the Inspector/runtime.
+Correct: pass required collaborators explicitly through composition or constructors. Discouraged: expose mutable runtime state as a public scene-component field or discover required collaborators through a global search.
 
 Enforcement: formatting whitespace and braces are enforced by `.editorconfig` for new/modified code; naming is warning/review guidance because legacy UI conflicts. Exceptions: vendor/template files and guarded Noesis experiment code may retain their existing style.
 
 ## 4. Unity component standards
 
-- **MonoBehaviours MUST** coordinate Unity lifecycle, scene references, input-facing behavior, and presentation. `GameRuntime`, `WorldRuntime`, `PlayerInputAdapter`, and interactables are current examples.
-- **Plain C# classes SHOULD** own domain/simulation rules that do not require Unity lifecycle. `GameClock`, `InventoryState`, `ActivityController`, and activities are the current examples and are directly testable.
+- **MonoBehaviours MUST** coordinate Unity lifecycle, scene references, and Unity-facing presentation. `CellularAutomataPrototypeRuntime` is an existing scene-runtime example.
+- **Plain C# classes SHOULD** own domain/simulation rules that do not require Unity lifecycle. Simulation, species, grid, and terrain rules should remain directly testable where practical.
 - **ScriptableObjects MAY** hold authored definitions or configuration once the project has real shared data; they are not required for every feature.
 - **Components MUST** have one clear responsibility and explicit ownership of references.
 - **Prefabs and scene objects MUST** own composition and serialized references, not hidden game rules. Current prefab usage is TBD; no prefab is currently required by the bootstrap slice.
 - **Editor tooling MUST** remain under `Assets/Editor` or an Editor-only assembly and must not leak into player assemblies.
 
-The approved prototype composition paths are `CellularAutomataPrototype.unity` -> one active `CellularAutomataPrototypeRuntime`, and `IslandSurvivorPrototype.unity` -> one active `GameRuntime` -> `GameRuntime.Initialize()`. `Salty > Validate Island Survivor Scene` validates the retained island slice. **MUST NOT** couple the two prototype roots, add a `DontDestroyOnLoad` singleton, or introduce an implicit scene-order dependency without an architecture decision.
+The player-facing composition is `MainMenu.unity` -> `GalapagOSDesktopTest.unity` -> a simulation hosted by the Desktop. `Lab.unity` and `CellularAutomataPrototype.unity` remain separate development/test entry points. **MUST NOT** couple independent scene roots, add a `DontDestroyOnLoad` singleton, or introduce an implicit scene-order dependency without an architecture decision.
 
-`Awake`, `OnEnable`, `Start`, and scene load timing are not interchangeable. Initialization and shutdown ownership must be documented at the component that owns it. Current runtime construction is explicit, but teardown behavior for generated world objects is incomplete and is an adoption risk, not a reason to refactor now.
+`Awake`, `OnEnable`, `Start`, and scene load timing are not interchangeable. Initialization and shutdown ownership must be documented at the component that owns it. Keep generated-object teardown explicit whenever a runtime feature creates Unity objects.
 
-Enforcement: bootstrap scene validator is available now; duplicate bootstrap policy and lifecycle ownership are review checks. Exception: Unity template/editor content is outside runtime standards.
+Enforcement: scene composition, duplicate-runtime policy, and lifecycle ownership are covered by relevant tests and review; there is no general bootstrap scene validator. Exception: Unity template/editor content is outside runtime standards.
 
 ## 5. ScriptableObject standards
 
@@ -137,7 +135,7 @@ Use the smallest pattern that solves a demonstrated problem.
 
 | Pattern | Appropriate here | Warning/signals to avoid | Current status |
 |---|---|---|---|
-| Factory | `IActivityTarget.CreateActivity` when target creation varies | Generic factory hierarchy for three activities | In use, intentionally small |
+| Factory | A small creation boundary when product variation requires it | Generic factory hierarchy for hypothetical future types | Use only when demonstrated |
 | Object Pool | Repeated transient objects after a measured allocation problem | Pooling one-off bootstrap sprites | MEASURE FIRST; not used |
 | Singleton | Only one true process service with explicit lifecycle and tests | Convenience global access or hidden initialization | Avoid; not used |
 | Service locator | No approved use in current architecture | Hidden dependencies and order coupling | Avoid; not used |
@@ -145,7 +143,7 @@ Use the smallest pattern that solves a demonstrated problem.
 | State | Many explicit transitions make branching unreadable | Enum wrapper with no behavior benefit | `GameState` is a simple enum; no state framework |
 | Observer | Decoupled notifications across a real boundary | Events replacing a direct call | Use sparingly; no gameplay event bus |
 | MVP/MVVM | Complex UI with independent view state/testing | Reintroducing a runtime UI path outside Noesis | Active Noesis screens use ViewModels; editor-only diagnostic UI remains separate |
-| Strategy | Multiple interchangeable rules with real variation | Interface for every class | `IActivity` is a valid boundary |
+| Strategy | Multiple interchangeable rules with real variation | Interface for every class | Add only for demonstrated variation |
 | Flyweight | Many shared immutable definitions | Premature data indirection | TBD |
 | Dirty Flag | Expensive derived UI/world rebuilds | Flagging cheap direct reads | TBD |
 
@@ -159,22 +157,22 @@ This project follows the applicability-first view in Fireship's [10 Design Patte
 
 | Pattern from the video | Project rule and current status |
 |---|---|
-| Singleton | **Avoid.** `GameRuntime` is the explicit Bootstrap composition root, not a global access point. A static debug visibility flag is development-only UI state, never a gameplay service pattern. |
-| Prototype | **Defer.** Use Unity prefab/`Instantiate` copying only when multiple runtime instances genuinely derive from one authored base. Do not create a clone abstraction for the current hand-built world. |
-| Builder | **Defer.** `WorldRuntime.Build` is explicit bootstrap composition, not a reusable Builder API. Add a builder only when a real object has many optional construction steps that make direct construction unreadable. |
-| Factory | **Approved where already used.** `IActivityTarget.CreateActivity()` is the small factory boundary: different world targets create different activity rules while `ActivityController` stays unaware of their concrete types. Do not add factory hierarchies or registries until creation varies beyond this boundary. |
-| Facade | **Use sparingly.** `GameRuntime` coordinates the runtime through explicit properties and direct calls. Add a narrow facade only when callers repeatedly need the same multi-system operation; it must not become a hidden service locator. |
+| Singleton | **Avoid.** A scene composition root is not a global access point. Do not use static debug or gameplay state as a substitute for explicit ownership. |
+| Prototype | **Defer.** Use Unity prefab/`Instantiate` copying only when multiple runtime instances genuinely derive from one authored base. Avoid clone abstractions without a demonstrated need. |
+| Builder | **Defer.** Explicit composition is not automatically a reusable Builder API. Add a builder only when many optional construction steps make direct construction unreadable. |
+| Factory | **Use when creation varies behind a real boundary.** Keep the factory small and avoid hierarchies or registries until variation requires them. |
+| Facade | **Use sparingly.** Add a narrow facade only when callers repeatedly need the same multi-system operation; it must not become a hidden service locator. |
 | Proxy | **Defer.** Add only for a demonstrated access-control, lazy-load, or instrumentation boundary. Do not wrap ordinary game state just to intercept getters/setters. |
-| Iterator | **Use language support.** `IReadOnlyList` plus `foreach` already expresses target/resource traversal. Do not write custom iterators until traversal has non-trivial rules that collection APIs cannot express. |
+| Iterator | **Use language support.** `IReadOnlyList` plus `foreach` expresses ordinary traversal. Do not write custom iterators until traversal has non-trivial rules that collection APIs cannot express. |
 | Observer | **Defer.** A direct call is preferred while ownership is clear. Introduce a typed event only for a real one-to-many notification where the publisher must not know consumers; document subscribe/unsubscribe ownership. No global gameplay event bus. |
-| Mediator | **Defer.** `GameRuntime` and `InteractionController` are explicit coordinators with visible dependencies. Add a mediator only when several peers need to communicate and direct calls create circular or repetitive coupling. |
-| State | **Start simple.** `GameState` and `TimeOfDay` enums are appropriate while transitions are few. Promote to state objects only when each state owns distinct behavior and conditionals are demonstrably obscuring the transition rules. |
+| Mediator | **Defer.** Keep coordinators' dependencies visible. Add a mediator only when several peers need to communicate and direct calls create circular or repetitive coupling. |
+| State | **Start simple.** Enums are appropriate while transitions are few. Promote to state objects only when each state owns distinct behavior and conditionals obscure the transition rules. |
 
 Pattern names MUST clarify the code's responsibility. A pattern that adds indirection without removing a demonstrated source of coupling, branching, or duplicate construction is rejected.
 
 ## 7. Dependency and event rules
 
-Dependencies **MUST** be visible through constructor/method injection for plain C# types, serialized references for authored scene composition, explicit bootstrap composition, narrow interfaces, or documented event channels. The current dependency direction is from `GameRuntime` into world/input/domain/presentation, while activities and inventory remain Unity-independent.
+Dependencies **MUST** be visible through constructor/method injection for plain C# types, serialized references for authored scene composition, explicit scene composition, narrow interfaces, or documented event channels. Keep domain and simulation rules independent of presentation where a clear boundary exists.
 
 **AVOID** `FindObjectOfType`/`FindAnyObjectByType` dependency discovery, convenience statics, hidden utility dependencies, and circular assembly references. Events are **MAY** be used only when the publisher must not know the consumer. A direct call is preferred when ownership is clear.
 
@@ -187,11 +185,11 @@ Enforcement: asmdef dependency cycles are machine-checkable; hidden discovery an
 - `Awake`: component-local references and bootstrap entry only when required before other `Start` calls.
 - `OnEnable`/`OnDisable`: paired subscription ownership; no gameplay state reset without an explicit reason.
 - `Start`: deferred initialization only when it genuinely depends on the loaded scene.
-- `Update`: input sampling, presentation coordination, or measured per-frame work. Current `GameRuntime.Update` is the single game tick.
-- `FixedUpdate`: physics integration only; the current activity loop is not physics-driven.
+- `Update`: input sampling, presentation coordination, or measured per-frame work; do not assume every simulation needs a MonoBehaviour-owned per-frame tick.
+- `FixedUpdate`: physics integration only; simulation timing should follow its explicit run contract.
 - `LateUpdate`: camera/follow/presentation correction only when ordering requires it.
 - Coroutines/async: **MAY** represent asynchronous waits or I/O; ownership and cancellation are required. Do not use them to hide gameplay state transitions.
-- Explicit tick interfaces: **SHOULD** be used for plain domain systems, as current `IActivity.Tick` demonstrates.
+- Explicit tick/run boundaries: **SHOULD** be used for plain domain systems when they clarify simulation timing and ownership.
 - Central schedulers/custom update managers: **MEASURE FIRST**; do not add one for style.
 
 Empty lifecycle methods **MUST** be removed. Avoid per-frame polling when an input edge, event, or explicit command is clearer. Separate physics, simulation, and presentation timing when a feature introduces those distinctions.
@@ -212,14 +210,14 @@ Enforcement: performance evidence is required in review for optimization changes
 
 **MUST** preserve every Unity `.meta` file and serialized GUID. The current tracked asset inventory has matching `.meta` files for all non-meta assets. Text/YAML serialization is enabled (`EditorSettings.m_SerializationMode: 2`) and must remain enabled for reviewable scene/prefab changes.
 
-`MainMenu.unity`, `Lab.unity`, `GalapagOSDesktopTest.unity`,
-`CellularAutomataPrototype.unity`, and the deprecated
-`IslandSurvivorPrototype.unity` are enabled in Build Settings. Main Menu is the
-current entry scene and CellularAutomataPrototype is the active simulation
-scene. The unused starter `Intro.unity` scene and unreferenced
-`_Recovery/0.unity` snapshot were removed on 2026-09-07. The only scene
-validator is the deprecated-slice `Salty > Validate Island Survivor Scene`;
-there is no general bootstrap validator for the current UI/simulation flow.
+`MainMenu.unity`, `Lab.unity`, `GalapagOSDesktopTest.unity`, and
+`CellularAutomataPrototype.unity` are enabled in Build Settings. Main Menu is
+the player entry; the Desktop hosts the player-facing Simulation. Lab and the
+standalone Cellular Automata scene remain development/test entry points. The
+Island Survivor scene and its validator were removed on 2026-09-18. The unused
+starter `Intro.unity` scene and unreferenced `_Recovery/0.unity` snapshot were
+removed on 2026-09-07. There is no general bootstrap validator for the current
+UI/simulation flow.
 Additive-scene policy is otherwise **TBD**. Do not assume Addressables: the
 manifest does not include Addressables, so no Addressables standard applies.
 
@@ -229,7 +227,7 @@ Assets belong in the owning feature folder; settings remain in `Assets/Settings`
 
 When an interaction gates a route or changes the world, its visual representation **MUST** be authored as a terrain state that shares the neighboring tile grid, scale, palette, and edge treatment. A closed state hides the route; a cleared state reveals the route through the interactable's explicit visual ownership. Do not layer a self-contained prop over unrelated terrain and call it a terrain transition.
 
-Current example: `JungleEdgeInteractable` owns a closed 3x2 tile set and swaps it for the matching open 3x2 `Jungle Exit Route` tile set when chopped. New terrain art uses 64x64-pixel cells at 64 pixels per unit, so the transition remains terrain rather than a full-scene texture while preserving one world unit per cell. This is a small local state change, not a generic world-state framework. New terrain gates should follow that direct two-visual pattern until more than one shared rule proves a reusable abstraction is needed.
+For any future interactive terrain gate, keep blocked and cleared visuals on the neighboring terrain grid and let the owning feature control the transition. Current terrain source cells use 64x64 pixels at 64 pixels per unit. Prefer a small local state change over a generic world-state framework until multiple features demonstrate a shared rule.
 
 Save-data architecture and version migration are **TBD** because no save system exists. When introduced, persistent DTOs must be separate from runtime objects and have an explicit version/migration test.
 
@@ -239,8 +237,6 @@ Enforcement: `.meta` parity, YAML mode, enabled bootstrap, and forbidden generat
 
 The active player-facing flow uses Noesis/XAML under `Assets/UI` with direct
 Noesis imports and the current generated/editor package resolution. The
-deprecated Island Survivor bootstrap retains its simulation composition only;
-its former runtime HUD and debug IMGUI surfaces are removed. The retained
 terrain diagnostic scene is a temporary exception pending an explicit removal
 or Noesis migration decision. Unity Editor utility windows may use editor-only
 IMGUI, but no player-facing runtime screen may use it. uGUI and UI Toolkit modules are installed, but no first-party UI
@@ -267,13 +263,12 @@ and performance baselines/tests. These are staged requirements, not immediate
 refactor work. Historical test totals must cite their source commit and artifact;
 do not present a rolling count as current evidence.
 
-Enforcement: Unity Test Framework execution and the deprecated Island menu validator can be run when the Unity host is available; current UI/simulation work uses focused Edit Mode and Play Mode suites, while broader coverage and performance gates remain planned. Exception: prototype-only features may start with a focused Edit Mode test or a documented manual validation path.
+Enforcement: Unity Test Framework execution is available when the Unity host is available; current UI/simulation work uses focused Edit Mode and Play Mode suites, while broader coverage and performance gates remain planned. Exception: prototype-only features may start with a focused Edit Mode test or a documented manual validation path.
 
 ## 13. Productivity and Editor tooling
 
-Use `Salty > Validate Island Survivor Scene` only when maintaining the
-deprecated Island slice. For current Main Menu/Lab/cellular changes, use the
-focused Play Mode and Edit Mode checks documented in the relevant plan. Add
+For current Main Menu/Desktop/simulation changes, use the focused Play Mode
+and Edit Mode checks documented in the relevant plan. Add
 custom inspectors, property drawers, validation menus, templates, or build
 scripts only for repeated, measurable friction. Development-only diagnostics
 such as F3 panel behavior must not become gameplay dependencies. Console logs
@@ -282,7 +277,7 @@ gated, or downgraded when noisy.
 
 Editor code **MUST** stay out of runtime assemblies. Build scripts and CI checks **SHOULD** be deterministic and report actionable file paths. Project-local templates are **TBD**; do not add them until the naming/field patterns stabilize.
 
-Enforcement: asmdef platform boundaries and the existing validator; tooling scope is review/documentation.
+Enforcement: asmdef platform boundaries and existing asset validators; general scene-composition tooling remains a review/documentation concern.
 
 ## 14. Version-control workflow
 
@@ -311,7 +306,7 @@ Enforcement: package/code search can flag first-party DOTS introduction for revi
 | Runtime/editor assembly direction | Enforced by asmdefs and Unity compile | Add cycle validator if boundaries grow |
 | Formatting/braces/whitespace | Enforced now for editor-aware new/modified code via `.editorconfig` | Normalize legacy files gradually |
 | Naming/access/serialization conventions | Warning for new or modified code | Migrate touched files only |
-| Island scene composition | Enforced now by `IslandSurvivorSceneValidator` | Add equivalent cellular-automata validation if its composition grows |
+| Scene composition | Covered by focused tests/review; no general bootstrap validator | Add a validator only if repeated setup errors justify it |
 | Tests | Enforced where existing tests apply | Add Play Mode/save/performance gates by phase |
 | Performance claims | Documentation/review now | Add scenario captures and budgets |
 | Asset moves/renames | Documentation/review only | Unity migration tooling when needed |

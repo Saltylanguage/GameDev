@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace SaltyGame.Tests
 {
+    [Category("Core")]
     public sealed class TerrainPaintPreviewTests
     {
         [Test]

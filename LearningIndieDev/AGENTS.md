@@ -7,6 +7,7 @@ For Unity work in this project:
 - Follow [`docs/COLLABORATION_WORKFLOW.md`](docs/COLLABORATION_WORKFLOW.md) when handing work between developers or AI sessions. Update shared context when a material decision or integration state changes; do not store raw chat transcripts in the repository.
 - Follow the Studio Guidelines in [`docs/Studio Guidelines/AI_GENERATED_REPORTS.md`](docs/Studio%20Guidelines/AI_GENERATED_REPORTS.md) and [`docs/Studio Guidelines/AI_ASSISTED_DEVELOPMENT.md`](docs/Studio%20Guidelines/AI_ASSISTED_DEVELOPMENT.md). During the enforcement prototype, policy alerts are advisory warnings only; they must not be treated as automatic blocks.
 - Follow [`docs/UNITY_ENGINEERING_STANDARDS.md`](docs/UNITY_ENGINEERING_STANDARDS.md) and use [`docs/UNITY_STANDARDS_ADOPTION_PLAN.md`](docs/UNITY_STANDARDS_ADOPTION_PLAN.md) for migration scope.
+- Route Unity-plugin-assisted tasks through [`docs/UNITY_PLUGIN_WORKFLOWS.md`](docs/UNITY_PLUGIN_WORKFLOWS.md) for skill selection, project-specific constraints, and verification commands.
 - For species rules, Mutations, Genomes, upgrade values, scenario balance, or
   balance tooling, follow
   [`docs/Studio Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md`](docs/Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
@@ -14,7 +15,7 @@ For Unity work in this project:
 - Inspect nearby code before choosing a convention; preserve the dominant first-party convention where it is stable.
 - Preserve serialized fields, Unity GUIDs, and every `.meta` file. Do not move or rename Unity assets unless the goal explicitly requests a Unity Editor migration.
 - Keep dependencies visible; avoid global state, service locators, hidden discovery, premature patterns, and unmeasured optimizations.
-- Treat named design patterns as solutions to demonstrated problems: the current `IActivityTarget.CreateActivity()` factory is approved; simple enums remain the default for state; do not add Singleton, Builder, Proxy, Observer/event bus, Mediator, or Prototype without the trigger defined in `docs/UNITY_ENGINEERING_STANDARDS.md`.
+- Treat named design patterns as solutions to demonstrated problems; simple enums remain the default for state. Do not add Singleton, Builder, Proxy, Observer/event bus, Mediator, or Prototype without the trigger defined in `docs/UNITY_ENGINEERING_STANDARDS.md`.
 - Add focused tests for changed domain logic. Profile before claiming a performance improvement.
 - Keep Editor code out of runtime assemblies and avoid broad refactors during feature work.
 - Report any intentional deviation from the stylesheet in the change summary.

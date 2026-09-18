@@ -1,5 +1,7 @@
 [CmdletBinding()]
 param(
+    [ValidateSet('Auto', 'Live', 'Clean')]
+    [string]$Execution = 'Auto',
     [string]$ScenarioPath,
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)]
@@ -115,30 +117,26 @@ function Get-SourceState {
 }
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
-$unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
+$selection = Resolve-UnityExecutionLane -ProjectPath $project -Execution $Execution
+$unity = if ($selection.Lane -eq 'Clean') { Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath } else { $null }
 $sourceStateBeforeRun = Get-SourceState -ProjectPath $project
-$preflight = Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts')
 $assetPath = ConvertTo-UnityAssetPath -Path $ScenarioPath -ProjectRoot $project
 $artifactDirectory = New-UnityArtifactDirectory -ArtifactsRoot (Join-Path $project 'artifacts') -Prefix 'cellular-experiment'
 $reportPath = Join-Path $artifactDirectory 'report.json'
 $logPath = Join-Path $artifactDirectory 'unity.log'
+$requestPath = Join-Path $artifactDirectory 'command-request.json'
 $manifestPath = Join-Path $artifactDirectory 'manifest.json'
 $metricDictionarySourcePath = Join-Path $project 'docs\Research\METRIC_DICTIONARY_V1.json'
 $metricDictionaryPath = Join-Path $artifactDirectory 'metric-dictionary.json'
 
 $arguments = @(
-    '-batchmode',
-    '-nographics',
-    '-projectPath', $project,
-    '-executeMethod', 'SaltyGame.EditorTools.CellularSimulationExperimentRunner.RunFromCommandLine',
     '-seedStart', $SeedStart,
     '-seedCount', $SeedCount,
     '-playerSpeciesId', $PlayerSpeciesId,
     '-upgradeId', $UpgradeId,
     '-combatMode', $CombatMode,
     '-attackOpportunityMode', $AttackOpportunityMode,
-    '-outputPath', $reportPath,
-    '-logFile', $logPath
+    '-outputPath', $reportPath
 )
 
 if ($UpgradeValueOverride -gt 0) {
@@ -259,7 +257,36 @@ if ($CoupledSpeciesResponses) {
     $arguments += @('-coupledSpeciesResponses', 'true')
 }
 
-Invoke-UnityBatch -UnityPath $unity -Arguments $arguments
+[ordered]@{
+    schemaVersion = 1
+    arguments = @($arguments | ForEach-Object { [string]$_ })
+} | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $requestPath -Encoding utf8
+
+if ($selection.Lane -eq 'Live') {
+    Invoke-UnityLiveCommand `
+        -ProjectPath $project `
+        -Command 'cellsim_run' `
+        -CommandArguments @('--request_path', $requestPath) `
+        -TimeoutSeconds 3600 `
+        -LogPath $logPath | Out-Null
+}
+else {
+    $cliLogPath = Join-Path $artifactDirectory 'unity-cli.log'
+    $cliArguments = @(
+        'run', $project,
+        '--editor-path', $unity,
+        '--timeout', '300',
+        '--no-banner', '--non-interactive', '--format', 'json',
+        '--',
+        '-batchmode', '-nographics',
+        '-executeMethod', 'SaltyGame.EditorTools.CellularSimulationExperimentRunner.RunFromCommandLine',
+        '-logFile', $logPath
+    ) + $arguments
+    $invocation = Invoke-UnityCli -Arguments $cliArguments -LogPath $cliLogPath
+    if ($invocation.ExitCode -ne 0) {
+        throw "Unity could not execute the CellSim experiment (exit $($invocation.ExitCode)). See '$cliLogPath' and '$logPath'."
+    }
+}
 if (-not (Test-Path -LiteralPath $reportPath -PathType Leaf)) {
     throw "Unity completed without writing expected report to '$reportPath'."
 }
@@ -307,13 +334,18 @@ $manifest = [ordered]@{
     sourceTreeDirtyAfterRun = $sourceStateAfterRun.Dirty
     scenarioAssetPath = if ($null -eq $assetPath) { '' } else { $assetPath }
     scenarioAssetGuid = $scenarioGuid
-    unityExecutable = $unity
+    execution = $selection.Lane
+    initialProjectState = $selection.State.State
+    unityCliExecutable = Resolve-UnityCliPath
+    unityEditorExecutable = if ($null -eq $unity) { '' } else { $unity }
     unityArguments = $arguments
 }
 $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $manifestPath -Encoding utf8
 
 $statLinePath = $null
-$hasHerbivoreStatLine = @($report.runs | Where-Object { $null -ne $_.herbivoreStatLine }).Count -gt 0
+$hasHerbivoreStatLine = @($report.runs | Where-Object {
+    $_.PSObject.Properties.Name -contains 'herbivoreStatLine' -and $null -ne $_.herbivoreStatLine
+}).Count -gt 0
 if ($hasHerbivoreStatLine) {
     & (Join-Path $PSScriptRoot 'Validate-HerbivoreStatLine.ps1') `
         -ReportPath $reportPath `
@@ -328,7 +360,8 @@ if ($hasHerbivoreStatLine) {
     ArtifactDirectory = $artifactDirectory
     Manifest = $manifestPath
     MetricDictionary = $metricDictionaryPath
-    Preflight = $preflight
+    Execution = $selection.Lane
+    InitialProjectState = $selection.State
     Report = $reportPath
     StatLine = $statLinePath
     UnityLog = $logPath

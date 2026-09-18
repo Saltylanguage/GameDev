@@ -3,6 +3,7 @@ using NUnit.Framework;
 namespace SaltyGame.Tests
 {
     [TestFixture]
+    [Category("Core")]
     public sealed class TerrainTileResolverTests
     {
         [Test]
