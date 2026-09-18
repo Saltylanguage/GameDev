@@ -52,22 +52,64 @@ does not authorize a product feature, dependency, account, or external service.
 
 ## Verification workflow
 
-Run project checks from `LearningIndieDev` with Unity closed. The project
-wrappers check preconditions, retain logs and result XML under ignored
-`artifacts/`, and should be preferred to an ad hoc CLI invocation:
+Run project checks from `LearningIndieDev` through `CellSim.ps1`. The wrappers
+retain logs, result XML, reports, manifests, and screenshots under ignored
+`artifacts/` directories.
+
+`-Execution Auto` is the normal developer default:
+
+- `Live` uses this project's Pipeline connection when its Editor reports
+  `ready`. This avoids a second Editor launch and is the fastest feedback loop.
+- `Clean` starts a CLI-managed batch Editor when this project is closed. Use it
+  for full-suite acceptance and reproducible retained evidence.
+- `Auto` selects between those lanes. It stops with the observed project state
+  when the Editor is busy, in Safe Mode, or locked but unreachable; it does not
+  delete locks or terminate unrelated Unity processes.
+
+Run a quick environment diagnosis without starting a full Editor:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Doctor
+```
+
+Run both suites in the selected lane:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Test -Mode All
 ```
 
-For focused diagnosis, use `-Mode EditMode` or `-Mode PlayMode`. Inspect the
-result XML and matching log. If `All` stops on a failing EditMode suite, run
-PlayMode separately only to gather that independent evidence; the full suite is
-still failing until both pass together. After a failure, inspect the controlling
-test/code and report the failure; do not blindly repeat the same run.
+Use `-Execution Clean` for a release or handoff gate. For fast local diagnosis,
+use `-Mode EditMode` or `-Mode PlayMode` and filter by test name, assembly, or
+category:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Test `
+    -Mode EditMode -FilterType Category -TestFilter Core
+```
+
+Current categories are `Core`, `Simulation`, `Graphics`, `UI`, `Authoring`, and
+`Tooling`. `All` attempts EditMode and PlayMode and aggregates their results, so
+one assertion failure does not hide the other suite. Live PlayMode runs are
+asynchronous because entering Play Mode may reload the domain; the wrapper
+reconnects and polls the same test run. After a failure, inspect its XML/log and
+the controlling code before deciding whether another run would add evidence.
+
+Seeded experiments use the same routing:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Run `
+    -Execution Auto -SeedStart 10100 -SeedCount 20 -RunTicks 600 `
+    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -PlayerSpeciesId hare
+```
+
+The live lane calls the project-owned `cellsim_run` Pipeline command. The clean
+lane uses the established Editor batch method through `unity run`. Both execute
+the same experiment implementation and produce the same report bundle.
 
 For graphics acceptance, use the project visual runner with a focused test. Its
-default output is 1280x720:
+default output is 1280x720. `Auto` can reuse a ready graphics-capable Editor or
+start a clean graphics-capable run when the project is closed:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Visuals -TestFilter 'SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopAndSimulationCaptureGameViewEvidence'
@@ -98,24 +140,41 @@ the integration, the dedicated installer is:
 unity --no-banner --non-interactive pipeline install --project-path "<project-path>"
 ```
 
-The package enables Unity CLI live-Editor commands when the target Editor is
-running. Confirm the connection with `unity status`; when multiple Editors may
-be open, pass `--project-path` to target the intended project. Include
-`--caller plugin --skill <skill-name>` on every `unity command` invocation.
-The 2026-09-18 smoke check opened this project with `unity open`, confirmed
-`state: ready` with `unity status`, and listed 151 live Editor commands. The
-check verified the Pipeline connection without changing a scene or asset. The
-Editor was then asked to exit through Pipeline `eval`; the CLI reported
-`COMMAND_FAILED` as Unity shut down before it could return a valid response.
-The process exited, and a fresh status check reported no connected Editors.
-Keep project tests on the guarded wrapper with the Editor closed.
+The package enables Unity CLI commands against this project's running Editor.
+Confirm the connection with `unity status --project-path <path>`. When invoking
+`unity command` directly, put `--caller plugin --skill <skill-name>` before the
+command name and always supply the project path. The installed beta advertises
+`--no-pager` but rejects it, so project wrappers do not use that flag.
+
+Codex MCP is configured through the Unity CLI and pinned to this project:
+
+```powershell
+unity mcp configure codex --project-path "D:\GameDev\GameDev\LearningIndieDev"
+```
+
+This replaces the older `unity_mcp` user-relay configuration with a single
+`unity` server that launches `unity mcp --project-path ...`. Restart Codex or
+start a new task after changing MCP configuration so the new server is loaded.
+See [`UNITY_MCP_RELAY_OPERATIONS.md`](UNITY_MCP_RELAY_OPERATIONS.md).
 
 ## Current verification record
 
-The 2026-09-18 workflow check exercised the project wrappers before and after
-installing the Pipeline package, then verified a live Editor connection. The
-package version, test results, artifact paths, and non-blocking EditMode
-failure are recorded in the package handoff; live connection evidence is in
-the follow-up smoke-test handoff linked from
-[`WORKING_STATE.md`](WORKING_STATE.md). Do not promote a partial pass to a
-green full-suite claim.
+On 2026-09-18, the new lanes were exercised end to end:
+
+- `Doctor` completed with healthy CLI and license diagnostics.
+- Clean EditMode passed 233/233.
+- Live EditMode category `Core` passed 26/26.
+- Live experiments and a clean 600 tick experiment both produced complete
+  report bundles.
+- A live graphics acceptance test passed 1/1 and its 1280x720 screenshot was
+  visually reviewed.
+- Live PlayMode category `UI` ran through domain reload and polling; 10/11
+  passed. Its `ProfileCreationEnablesContinueAndLoadsDesktop` failure did not
+  reproduce in the clean full PlayMode suite and is recorded as a warm Editor
+  state/test-isolation issue.
+- The final full clean command passed EditMode 234/234 and PlayMode with 28
+  passes, two expected graphics skips, and zero failures.
+
+The current full-suite result and artifact links belong in
+[`WORKING_STATE.md`](WORKING_STATE.md) and the latest handoff. A focused or
+partial pass is never a green full-suite claim.

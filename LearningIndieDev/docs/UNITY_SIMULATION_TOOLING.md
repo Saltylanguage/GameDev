@@ -23,11 +23,11 @@ and [evidence validity register](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
 Do not use old reports as evidence of continued-world behavior, and do not
 generalize EX-010 beyond its approved scenario, schedule, and seed panels.
 
-> **Current status:** ready for a closed-editor batch run. The tools deliberately
-> refuse to start when this Unity project has an active `Temp/UnityLockfile`.
-> They never close a pre-existing editor or touch unsaved editor work; each
-> batch invocation cleans only the Unity process tree and helper processes it
-> started.
+> **Current status:** the project supports `Auto`, `Live`, and `Clean` execution
+> lanes. A ready Editor can run focused work through Pipeline; a closed project
+> can run reproducible CLI-managed batches. Busy, Safe Mode, and unreachable
+> locked states stop with diagnostics instead of triggering broad process or
+> lock cleanup.
 
 ```mermaid
 flowchart LR
@@ -42,8 +42,8 @@ flowchart LR
 
 ### Reliable development feedback
 
-- Run the project’s Edit Mode and Play Mode tests from a reproducible PowerShell
-  entry point rather than relying on a manually configured Unity window.
+- Run the project’s Edit Mode and Play Mode tests from one PowerShell entry
+  point, either through a ready Editor or a clean CLI-managed batch.
 - Give a developer or coding agent concrete NUnit XML and Unity logs to inspect
   after a failure.
 - Detect the project’s Unity version from `ProjectSettings/ProjectVersion.txt`;
@@ -84,8 +84,9 @@ flowchart LR
 
 - Turn a balance question into a small, auditable experiment: name the scenario,
   hold the seed range fixed, make one change, then compare the JSON reports.
-- Let an agent inspect source, invoke the same commands when Unity is closed,
-  and explain results from recorded evidence instead of a visual guess.
+- Let an agent inspect source, invoke the same commands through the available
+  execution lane, and explain results from recorded evidence instead of a visual
+  guess.
 - Keep the shipping domain code free of editor automation. Batch-only concerns
   live under `Assets/Editor/SimulationTools/`; shell orchestration lives under
   `tools/`.
@@ -160,9 +161,10 @@ commands below when their full options are needed:
 
 | Command | Use it for |
 | --- | --- |
-| `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite. |
-| `CellSim Visuals` | Run the PlayMode suite and capture settings, late-running, rewards, and results PNGs from the cellular preview; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range; `-RunTicks` sets the exact tick count (200 by default), while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. The wrapper waits briefly for the report file to become readable before parsing it. |
+| `CellSim Doctor` | Run fast Unity CLI and licensing diagnostics without launching a full Editor. |
+| `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite, and use `-Execution Auto`, `Live`, or `Clean`. Test name, assembly, and category filters are supported. |
+| `CellSim Visuals` | Run graphics-capable PlayMode evidence in the selected execution lane and capture settings, late-running, rewards, and results PNGs; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
+| `CellSim Run` | Generate a JSON report for a seed range in the selected execution lane; `-RunTicks` sets an explicit tick count, while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. The wrapper waits briefly for the report file to become readable before parsing it. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |
@@ -180,7 +182,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps1 -Mode EditMode
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityTests.ps1 -Mode PlayMode
 
-# Graphics-enabled prototype checkpoints; Unity must be closed.
+# Graphics-enabled prototype checkpoints; Auto reuses a ready Editor or starts a clean run.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
     -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe'
 
@@ -194,7 +196,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEv
     -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe' `
     -TestFilter 'SaltyGame.PlayModeTests.CavePreviewPlayModeTests.CellularAutomataPrototypeCreatesAndAnimatesTheSpeciesPreview'
 
-# Replay one selected seed from a headless report; Unity must be closed.
+# Replay one selected seed from a headless report.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Invoke-UnityVisualEvidence.ps1 `
     -UnityPath 'F:\Editor\6000.4.6f1-x86_64\Editor\Unity.exe' `
     -ReplayReportPath artifacts\cellular-experiment-...\report.json `
@@ -292,8 +294,8 @@ Each invocation makes a timestamped directory below `artifacts/`:
 
 | Command | Output |
 | --- | --- |
-| `Test-UnityPreflight.ps1` | Lock/process cleanup, entitlement check, bounded licensing probe, and a preserved probe log |
-| `Invoke-UnityTests.ps1` | NUnit XML and a Unity log for each requested test platform |
+| `CellSim Doctor` | Fast Unity CLI and license diagnostics with preserved logs; it does not launch a full Editor |
+| `Invoke-UnityTests.ps1` | NUnit XML and a Unity or Pipeline log for each requested test platform |
 | `Invoke-UnityVisualEvidence.ps1` | PlayMode NUnit XML, Unity log, target-sized PNG checkpoints, and `replay-manifest.json` when replaying a report seed |
 | `Run-CellularExperiment.ps1` | `report.json`, one-row-per-seed `report.csv`, `manifest.json`, the versioned `metric-dictionary.json`, plus the Unity batch log |
 | `Test-CellSimArtifactBundle.ps1` | Validates required files, report/run/CSV row counts, report and metric-dictionary hashes, metric identity, and provenance fields before analysis |
@@ -350,14 +352,18 @@ count/window columns, and `New-CellSimReport.ps1` rejects malformed windows
 before producing analysis. Authored upgrade runs additionally record the
 prediction-input metadata used to resolve and apply their snapshots.
 
-Every Unity batch entry point runs the same preflight before doing project work:
-it refuses an active Editor/Unity process, removes only a stale project-local
-`Temp/UnityLockfile` when no Unity process exists, verifies a local entitlement
-file, and runs a bounded headless licensing probe. A probe timeout or unstable
-`LicenseClient-*` handshake fails fast with its log path. The shared batch
-helper records pre-existing UPM/licensing PIDs, then terminates only newly
-created helper processes in a `finally` cleanup (and the Unity process tree if
-it is still alive). Run the standalone check before manual builds:
+`CellSim Doctor` runs fast CLI and license diagnostics without launching a full
+Editor. Normal commands inspect the exact project state and select a lane:
+
+- `Live` requires Pipeline state `ready` and reuses that Editor.
+- `Clean` requires the project to be closed and lets Unity CLI own the batch
+  process lifecycle.
+- `Auto` selects Live or Clean. Busy, Safe Mode, and unreachable locked states
+  fail with their observed state and suggested next action.
+
+The wrappers do not delete project locks, close pre-existing Editors, or kill
+machine-wide licensing/package processes. A confirmed stale process or lock is
+handled as a separate, explicit recovery action after its ownership is known.
 
 By project convention, all EcoSim tests and research experiments use approved
 elevated host permissions unless a request explicitly says otherwise. This is
@@ -367,7 +373,7 @@ destructive, shared, or unrelated system actions still require their own
 approval.
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-UnityPreflight.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Doctor
 ```
 
 The project uses Unity `6000.4.6f1`; the tooling also resolves the installed
@@ -426,8 +432,9 @@ For reusable species libraries and multi-species experiments, use
 
 1. Create or select a **Salty Game / Cellular Simulation Data** asset.
 2. Configure its global settings and species definitions.
-3. Run the scene normally for visual iteration, or close Unity and run a seed
-   batch with `Run-CellularExperiment.ps1`.
+3. Run the scene normally for visual iteration, or run a seed batch with
+   `Run-CellularExperiment.ps1`; `Auto` reuses a ready Editor and otherwise uses
+   a clean batch when the project is closed.
 4. Compare reports using the same seed range. Promote a promising revision only
    after its observed change is explainable.
 
@@ -438,7 +445,8 @@ Editing the asset affects a future run, never one that is already underway.
 
 | Guardrail | Reason |
 | --- | --- |
-| Batch commands fail when Unity is open | Prevent contention, asset import races, and lost unsaved work. |
+| Commands target the exact project and route by state | Reuse a ready Editor safely while preventing a second Editor from contending for the same project. |
+| Clean acceptance requires the project to be closed | Keep full-suite evidence reproducible and independent of warm Editor state. |
 | `artifacts/` is ignored | Keep generated logs and reports local and disposable. |
 | Reports require an output path below `artifacts/` | Prevent a batch command from writing arbitrary project files. |
 | Scenario data becomes an immutable runtime snapshot | Make runs comparable and prevent data edits from changing an active result. |

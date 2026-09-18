@@ -26,14 +26,16 @@ The focused test
 `GalapagOSDesktopHomeCapturesVisualEvidenceWithoutOpeningWindows` checks that
 the desktop camera is enabled and that no app window is open before it captures
 the image. It does not issue desktop commands or open, close, hide, or resize an
-app window. Each run starts in a fresh Unity test session and loads the scene
-before capture; it does not reuse an active expedition.
+app window. Each run loads the scene and applies a fresh visual request before
+capture; it does not reuse an active expedition.
 
 ## How to capture
 
-Run these from `LearningIndieDev` with the Unity Editor closed. The project
-requires Unity tests and research tools to run with the approved elevated host
-permissions described in `AGENTS.md`.
+Run these from `LearningIndieDev`. `Auto` reuses this project's Editor when its
+Pipeline state is ready and starts a clean graphics-capable run when the project
+is closed. Use `-Execution Clean` when the review requires a fresh acceptance
+session. The project requires Unity tests and research tools to run with the
+approved elevated host permissions described in `AGENTS.md`.
 
 ```powershell
 .\tools\Invoke-UnityVisualEvidence.ps1 -TestFilter "SaltyGame.PlayModeTests.GalapagOSVisualAcceptanceTests.GalapagOSDesktopHomeCapturesVisualEvidenceWithoutOpeningWindows" -ScreenWidth 1280 -ScreenHeight 720
@@ -41,9 +43,10 @@ permissions described in `AGENTS.md`.
 ```
 
 Each command creates a new `artifacts/visual-evidence-*` directory containing
-`01-galapagos-desktop-home.png`, `PlayMode-results.xml`, and `PlayMode.log`.
-The two captures are separate runs so the requested resolution is fixed before
-the scene loads.
+`01-galapagos-desktop-home.png` and structured PlayMode results. Clean runs use
+NUnit XML and a Unity log; live runs use Pipeline command/status JSON. The two
+captures are separate runs so the requested resolution is fixed before the
+scene loads.
 
 For the review record, add the Unity version, branch and source commit, whether
 the working tree was dirty, both artifact paths, the PlayMode result, and each

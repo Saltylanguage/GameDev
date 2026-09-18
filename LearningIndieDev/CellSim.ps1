@@ -61,7 +61,7 @@ CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWi
              [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide] [-UpgradeValueOverride 0.75]
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
-             [-PhaseLengthTicks 200] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
+             [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
 CellSim Report [-ReportPath artifacts/.../report.json]
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]

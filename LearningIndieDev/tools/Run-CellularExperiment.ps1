@@ -278,7 +278,7 @@ else {
         '--timeout', '300',
         '--no-banner', '--non-interactive', '--format', 'json',
         '--',
-        '-batchmode', '-nographics',
+        '-nographics',
         '-executeMethod', 'SaltyGame.EditorTools.CellularSimulationExperimentRunner.RunFromCommandLine',
         '-logFile', $logPath
     ) + $arguments
