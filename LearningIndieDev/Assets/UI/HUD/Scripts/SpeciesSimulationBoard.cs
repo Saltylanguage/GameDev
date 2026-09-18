@@ -130,8 +130,8 @@ namespace SaltyGame
 
         void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
-            // Grass and Desert are peer transparent overlays. Bare terrain is
-            // the neutral layer beneath both families, not an alias for either.
+            // Terrain masks sit over the neutral base; inactive Grass vertices,
+            // including mask 000, are opaque dirt in the authored tile art.
             context.DrawRectangle(cell.IsPassable ? Brushes.SaddleBrown : Brushes.Black, null, cellRect);
 
             if (TerrainVisualFamilies.TryGet(cell.TerrainId, out var family))

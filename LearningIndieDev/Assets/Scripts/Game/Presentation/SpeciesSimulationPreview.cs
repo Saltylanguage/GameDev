@@ -2298,7 +2298,7 @@ namespace SaltyGame
             int population)
         {
             var species = ResolveSpeciesId(rules, canonicalSpecies, role);
-            if (species.HasValue)
+            if (species.HasValue && population > 0)
             {
                 populations[species.Value] = population;
             }

@@ -7,7 +7,7 @@ namespace SaltyGame.EditorTools
     /// <summary>Shows every named eight-neighbor blob terrain variant.</summary>
     public sealed class TerrainTilePreviewWindow : EditorWindow
     {
-        const string TerrainFolder = "Assets/Art/Terrain/Blob/128";
+        const string TerrainFolder = "Assets/Art/Terrain/Blob/64";
         const float LabelHeight = 18f;
         const int PreviewColumns = 7;
 
@@ -34,7 +34,7 @@ namespace SaltyGame.EditorTools
             EditorGUILayout.LabelField("Terrain smart-tiling preview", EditorStyles.boldLabel);
             EditorGUILayout.HelpBox(
                 "Each named sprite represents one normalized eight-neighbor blob mask around a visual tile. "
-                + "Mask 0 is intentionally empty.",
+                + "Mask 0 is the full-dirt tile; each bit marks a same-family neighbor.",
                 MessageType.Info);
 
             EditorGUILayout.BeginHorizontal();

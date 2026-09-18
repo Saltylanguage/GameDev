@@ -6,10 +6,12 @@ The prototype now uses crisp top-down pixel art inspired by the supplied referen
 
 ## Grid contract
 
-- Character and prop cells are 128x128 pixels.
-- Tile cells are 128x128 pixels.
-- Both atlases are 4x4 sheets and use nearest-neighbor filtering.
-- Sprite atlases use 128 pixels per world unit.
+- Character and prop cells in the retained Island Chores slice are 128x128 pixels.
+- New terrain tile cells are 64x64 pixels at 64 pixels per world unit; existing
+  Island Chores atlases remain legacy art and are not resized by this standard.
+- Atlases use nearest-neighbor filtering.
+- The retained Island Chores atlases use 128 pixels per world unit; new terrain
+  sprites use 64 pixels per world unit so both occupy one world unit per cell.
 - Backgrounds should use repeated tiles where a surface needs to scale; individual sprites remain appropriate for interactive props.
 - Interactive terrain MUST be a tile state, not a floating prop over an unrelated ground tile. Its blocked and cleared states must share the same grid, scale, and edge treatment as their neighboring terrain.
 - A blocked terrain state can conceal the underlying route; the cleared state reveals the route. Do not show a traversable-looking route before its gameplay gate is cleared.

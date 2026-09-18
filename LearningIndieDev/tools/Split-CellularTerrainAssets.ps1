@@ -5,7 +5,8 @@ Add-Type -AssemblyName System.Drawing
 $projectRoot = Join-Path $PSScriptRoot '..'
 $sourcePath = Join-Path $projectRoot 'Assets\Art\Terrain\Terrain_01_SpriteSheet.png'
 $outputRoot = Join-Path $projectRoot 'Assets\Art\Terrain\Standardized'
-$sizes = @(32, 64, 128)
+# The retained sheet is legacy 128px-cell input; current terrain exports are 64px.
+$sizes = @(64)
 $tileSize = 128
 $columns = 4
 $rows = 8
@@ -141,10 +142,6 @@ try {
                 [System.Drawing.Rectangle]::new($column * $tileSize, $row * $tileSize, $tileSize, $tileSize),
                 [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
             try {
-                $rootPath = Join-Path $outputRoot "$name.png"
-                $crop.Save($rootPath, [System.Drawing.Imaging.ImageFormat]::Png)
-                Write-SpriteMeta $rootPath "Assets/Art/Terrain/Standardized/$name.png" $tileSize
-
                 foreach ($size in $sizes) {
                     $sizePath = Join-Path (Join-Path $outputRoot "$size") "$name.png"
                     Save-NearestNeighbor $crop $sizePath $size
@@ -161,4 +158,4 @@ finally {
     $source.Dispose()
 }
 
-Write-Output "Wrote $($columns * $rows) terrain tiles at source, 32, 64, and 128 pixels to $outputRoot"
+Write-Output "Wrote $($columns * $rows) terrain tiles at 64 pixels to $outputRoot"

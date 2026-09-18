@@ -12,14 +12,13 @@ namespace SaltyGame.EditorTests
     [TestFixture]
     public sealed class TerrainTileAssetContractTests
     {
-        const string TileRoot = "Assets/Art/Terrain/Blob/128";
+        const string TileRoot = "Assets/Art/Terrain/Blob/64";
         const string AtlasPath = "Assets/Art/Terrain/Terrain_01.spriteatlasv2";
 
         [Test]
-        public void GrassAndDesertTilesMatchTheRuntimeMaskContract()
+        public void GrassTilesMatchTheRuntimeMaskContract()
         {
             AssertFamily(TerrainVisualFamily.Grass);
-            AssertFamily(TerrainVisualFamily.Desert);
         }
 
         [Test]
@@ -36,6 +35,26 @@ namespace SaltyGame.EditorTests
                 packablePaths,
                 Does.Contain(TileRoot),
                 $"The terrain atlas must pack '{TileRoot}' so newly imported mask sprites are included automatically.");
+        }
+
+        [Test]
+        public void TerrainAtlasExposesEveryGrassMaskByName()
+        {
+            var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(AtlasPath);
+            Assert.That(atlas, Is.Not.Null, $"Expected the terrain atlas at '{AtlasPath}'.");
+
+            var sprites = new Sprite[atlas.spriteCount];
+            atlas.GetSprites(sprites);
+            var names = sprites.Where(sprite => sprite != null).Select(sprite => sprite.name).ToArray();
+
+            foreach (var mask in TerrainTileResolver.AllValidMasks)
+            {
+                var expectedName = TerrainTileResolver.GetTerrainSpriteName(TerrainVisualFamily.Grass, mask);
+                Assert.That(
+                    names.Any(name => name.StartsWith(expectedName, StringComparison.Ordinal)),
+                    Is.True,
+                    $"The terrain atlas is missing '{expectedName}'.");
+            }
         }
 
         static void AssertFamily(TerrainVisualFamily family)
@@ -66,16 +85,17 @@ namespace SaltyGame.EditorTests
         {
             var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
             Assert.That(texture, Is.Not.Null, $"Could not load terrain texture '{path}'.");
-            Assert.That(texture.width, Is.EqualTo(128), $"'{path}' must be 128 pixels wide.");
-            Assert.That(texture.height, Is.EqualTo(128), $"'{path}' must be 128 pixels high.");
+            Assert.That(texture.width, Is.EqualTo(64), $"'{path}' must be 64 pixels wide.");
+            Assert.That(texture.height, Is.EqualTo(64), $"'{path}' must be 64 pixels high.");
 
             var importer = AssetImporter.GetAtPath(path) as TextureImporter;
             Assert.That(importer, Is.Not.Null, $"'{path}' does not have a texture importer.");
             Assert.That(importer.textureType, Is.EqualTo(TextureImporterType.Sprite), $"'{path}' must import as a sprite.");
             Assert.That(importer.spriteImportMode, Is.EqualTo(SpriteImportMode.Single), $"'{path}' must be one sprite.");
-            Assert.That(importer.spritePixelsPerUnit, Is.EqualTo(128f), $"'{path}' must use 128 pixels per unit.");
+            Assert.That(importer.spritePixelsPerUnit, Is.EqualTo(64f), $"'{path}' must use 64 pixels per unit.");
             Assert.That(importer.mipmapEnabled, Is.False, $"'{path}' must not generate mipmaps.");
             Assert.That(importer.filterMode, Is.EqualTo(FilterMode.Point), $"'{path}' must use point filtering.");
+            Assert.That(importer.textureCompression, Is.EqualTo(TextureImporterCompression.Uncompressed), $"'{path}' must preserve authored pixel colors.");
 
             var expectedName = System.IO.Path.GetFileNameWithoutExtension(path);
             var sprites = AssetDatabase.LoadAllAssetsAtPath(path).OfType<Sprite>().ToArray();
