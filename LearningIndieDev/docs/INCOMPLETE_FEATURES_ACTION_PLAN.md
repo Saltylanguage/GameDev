@@ -1,11 +1,19 @@
 # Incomplete Features Action Plan
 
+> **Historical implementation plan — current player values superseded.** Its
+> ten-phase/200-tick runtime and pre-S3 acceptance references describe completed
+> engineering and EX-010 evidence only. The current player contract is in
+> [PRODUCT_BRIEF.md](PRODUCT_BRIEF.md), [GDD_TEMPLATE.md](GDD_TEMPLATE.md), and
+> [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md): six
+> 10-second simulation-time rounds, five Mutation/Skip choices after rounds
+> 1–5, no player Restart, and round-6 survival victory.
+
 ## Purpose
 
 The [consecutive-phase migration](CONTINUOUS_SIMULATION_FLOW_PLAN.md) is now
-implemented and canonical: the next phase preserves the ecosystem after purchase
-or Skip, with ten 200-tick phases, phase/final Stat-Lines, checkpoints, and a
-validated research schedule. Remaining work is the player-facing Mutation,
+implemented and canonical: each next round preserves the ecosystem after a
+Mutation or Skip, with phase/final Stat-Lines, checkpoints, and a validated
+historical research schedule. Remaining work is the player-facing Mutation,
 outcome, reward, persistence, and integrated release-acceptance layer built on
 that runtime.
 
@@ -13,8 +21,8 @@ This plan converts the stable-but-incomplete feature inventory into an ordered
 production sequence. The goal is to finish one coherent vertical slice rather
 than continue expanding the number of partially usable systems.
 
-The current product target remains Forest Edge: Fern support, Hare player, and
-Fox opposition. Work is complete only when the player can understand a choice,
+The current product target is Forest Edge: Hare player and Fox opposition;
+playable plants, including Fern, are on hold. Work is complete only when the player can understand a choice,
 observe its consequence, finish a run, receive a reward, and begin a meaningful
 next run.
 
@@ -24,7 +32,7 @@ next run.
 | --- | --- | --- |
 | Board and presentation | Graphics baseline accepted | Continue feature-specific screen/content work and any readability polish found during play. |
 | Simulation truth | Bounded baselines and telemetry are recorded | Balance promotion, especially Forest Edge carrying limits and trustworthy player-facing upgrade effects. |
-| Continuous ten-phase runtime | Implemented and canonical | Three player choices, terminal outcome presentation, results explanation, and integrated performance/build acceptance. |
+| Historical ten-phase runtime | Implemented and canonical for its research fixtures | Current player-facing choices, terminal outcome, results explanation, and integration are governed by the six-round S3 contract. |
 | Main Menu and home base | Main Menu, GalapagOS Desktop, and the retained Lab/Simulation route are implemented | Complete one canonical Desktop/Simulation navigation path and replace representative progression data. |
 | Profile and Genome | Basic local profile identity exists; progression is not implemented | Versioned progression data, one persistent Genome unlock, and the open Mutation/Genome player contract. |
 | Research/tooling | P3 closed as bounded | No next experiment selected; evidence-hygiene controls and artifact retention remain prerequisites for future confirmatory work. |
@@ -100,8 +108,9 @@ the important current pressure without developer explanation.
 **Status:** Accepted for the current desktop/Simulation composition on 2026-09-07.
 The full 1280×720 graphics PlayMode batch passed 22/22 and the focused
 1920×1080 run captured the same route. The current Windows development-player
-smoke passed on 2026-09-08. Only the outer ten-phase duration and peak-memory
-measurement remains open under CF-6.
+smoke passed on 2026-09-08. At the time of this plan, outer ten-phase duration
+and peak-memory measurement was listed under CF-6; it is now optional stretch
+work for the current six-round player session, not a closeout gate.
 
 ## Phase 1 — Make the simulation truth trustworthy
 
@@ -155,13 +164,13 @@ obligation, counterplay, and direct plus ecosystem telemetry. Follow
 internal Adaptation Value estimate is a planning budget, not production
 approval.
 
-### 2.2 Ten-phase run contract
+### 2.2 Historical ten-phase research/runtime contract
 
-**Status:** The continuous-state ten-phase lifecycle, ordered loadout, phase
+**Status:** The continuous-state ten-phase research lifecycle, ordered loadout, phase
 boundaries, and phase/final reporting are implemented and canonical. The
 remaining work below is player-facing content and acceptance.
 
-- Preserve the implemented ten phases and 200-tick phase boundary with automatic pause at reward breaks.
+- Preserve the historical EX-010 ten-phase/200-tick test contract and its automatic pause at reward breaks; do not present it as player cadence.
 - Offer three meaningful choices after phases one through nine.
 - Record the ordered Mutation loadout in the effective ruleset and result.
 - Implement victory, narrow survival, defeat, phase summaries, and immediate
@@ -295,7 +304,7 @@ the following are true:
 - Smart tiling has passed the 47-mask and live-board checks.
 - Forest Edge has a trustworthy fixed-seed baseline and reconciled telemetry.
 - Trailblazer, Warren, and Gardeners are understandable and measurably distinct.
-- A player can complete the ten-phase run without developer fields.
+- A player can complete the currently approved six-round run without developer fields.
 - Results explain the outcome and award one persistent unlock.
 - Main Menu → GalapagOS Desktop → Run → Results → GalapagOS Desktop is
   navigable and tested.
@@ -305,9 +314,9 @@ the following are true:
 
 ## Current blockers and decisions
 
-1. The outer ten-phase wall-duration, peak-working-set, and peak-private-memory
-   measurement remains; Windows player smoke and target-resolution graphics
-   acceptance are complete.
+1. Optional stretch: measure duration and memory for the current six-round
+   session; Windows player smoke and target-resolution graphics acceptance are
+   complete.
 2. Forest Edge upgrade evidence does not support balance promotion. Any new
    upgrade/control claim needs a fresh bounded contract; P3 research closure does
    not approve player balance.

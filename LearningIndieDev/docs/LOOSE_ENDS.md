@@ -7,8 +7,27 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-12
-- Report state: the continuation implementation and evidence-preparation
+- Last reviewed: 2026-09-17
+- Current report state: no P0 issue is verified. Genome implementation and
+  documentation now agree on a foundation-only boundary; visualization-only
+  Hare/Fox Genome assets are removed from the player scene while the Bev/Sim
+  Mutation catalog and simulation behavior remain intact. Direct-start Forest
+  Edge/Hare is the accepted Desktop test contract, but the integrated PlayMode
+  suite has fresh results: PlayMode 28/29 passed with one graphics-only skip;
+  EditMode 247/249 passed with two terrain failures. EX-011's narrow ordered-combination finding is
+  accepted, without individual-upgrade or production-balance approval. Sprint
+  2 is closed; Sprint 3 kickoff `S3-KICKOFF-20260917-01` is verified and the
+  six committed cards are in Current Work; S3-01 is Blocked on the active
+  terrain migration after its other checks passed. The two-hour Sim remainder is
+  uncommitted; S3-05 duration/memory work is stretch-only in Backlog.
+- Project hygiene check: `ProjectMain` is at `cab5838d`; DirtyBoy first reported
+  472 changed paths and then 594 while Unity Editor remained open. The count
+  discrepancy is unresolved. Working State and the terrain/Genome handoffs
+  identify concurrent workstreams, but the full diff still needs a scoped
+  owner and disposition before it is treated as a clean S3 baseline. The
+  generated `ROADMAP.html` matches `ROADMAP.md`, but both it and its generator
+  are currently untracked and need an explicit keep/ignore decision.
+- Prior report state (2026-09-12; superseded): the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
   and S2-register checkpoints retained in history). Unity EditMode is green at
   212/212. The latest general PlayMode batch passed 21/22 with one intentional
@@ -29,12 +48,38 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   GalapagOS player-shell polish is still a human-review item, and the latest
   focused Settings/Collection PlayMode invocation produced no result XML.
 
-### Decisions recorded this pass
+### Decisions recorded 2026-09-17
+
+- The first Genome identity/profile/snapshot/catalog/display foundation is
+  implemented. Production effects, costs, buying, activation actions, approved
+  content, versioned migration, and recovery are not.
+- Visualization-only Hare and Fox Genome maps, the debug selector, and the
+  canonical scene provider were removed. Generic authoring and immutable
+  snapshot contracts remain.
+- The seven authored Mutation assets and the current Bev/Sim experimental
+  simulation behavior were not changed by the Genome fixture cleanup.
+- The current GalapagOS Desktop acceptance route directly starts Forest
+  Edge/Hare. The recorded PlayMode failure causes are unverified; the missing
+  profile and `SimulationLaunchRequest` handoff is still open.
+- EX-011's one bounded question was accepted by Josh on 2026-09-17. No
+  individual-upgrade, balance, fun, or generalized-transfer claim is promoted
+  by its measured pass; no follow-up experiment is required or selected.
+- Roadmap v2.2 records Sprint 2 closed and Sprint 3 active after the verified
+  kickoff; S4–S7 remain forecast windows apart from the scheduled S4 local
+  profile save/restore work.
+- A separate terrain-art work block was present and preserved. Its changes are
+  outside this reconciliation.
+
+### Decisions retained from 2026-09-12 (historical)
+
+> These entries record what was believed or decided on that date. Where they
+> conflict with the current S3-02 contract or 2026-09-17 Working State, the
+> newer contract is authoritative.
 
 - Workspace cleanliness is intentionally not tracked as a Loose End; ongoing
   uncommitted work is expected in this project.
-- The player-facing expedition contract is ten phases. Project-wide wording
-  was reconciled to that contract, with no stale phase-count wording found.
+- The then-current player-facing expedition contract was ten phases; this was
+  superseded on 2026-09-17 by the six-round S3-02 contract.
 - Skip is a valid current choice at each Mutation decision point. It has no
   current bonus or penalty; any future reward-doubling or other Skip incentive
   is a separate deferred economy rule.
@@ -56,10 +101,9 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - The artifact-retention audit and conservative cleanup completed its approved
   removals (about 1.35 GB). Five semantic duplicate bundles remain candidates
   for a later recoverable archive/removal decision.
-- Current delivery plans now agree that independent phase windows and the
-  bounded EX-010 Stat-Line review are complete. The Windows player smoke also
-  passed; CF-6 now retains only the outer ten-phase duration and peak-memory
-  measurement.
+- At that time, CF-6 was described as retaining an outer ten-phase
+  duration/peak-memory measurement. This is now optional stretch work, not an
+  M1 or S3 gate; historical EX-010 evidence remains unchanged.
 - Terrain planning now records the runtime's exact eight-neighbor bit order and
   clearly labels `000`, diagonal, and layer semantics as an active art-contract
   decision. The current resolver behavior is not presented as Chrono's final
@@ -84,8 +128,8 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - Continuous state is implemented and canonical under CF-0 through CF-5. Sim
   approved the EX-010 Stat-Line interpretation and target-resolution graphics
   acceptance is complete. The Windows player smoke and corrected scenario run
-  are complete; remaining CF work is limited to outer ten-phase
-  duration/memory measurement, not lifecycle design.
+  are complete; remaining product flow is governed by the current six-round
+  S3 contract, not lifecycle design or outer ten-phase performance measurement.
 - The research index, canonical plan, paper, architecture map, experiment index,
   historical DeepResearch treatment, and active feature plan now agree: P0–P3
   are complete within their bounds, P4–P6 are not started, and no next research
@@ -106,7 +150,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-09)
+## Current open items (2026-09-17)
 
 ### P1-016 — First trustworthy upgrade catalog needs design and balance review
 
@@ -119,36 +163,11 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   questions are design balance, player readability, and any follow-up needed
   before promotion. EX-007/EX-008 effect direction and size vary by panel;
   EX-009's zero-delta result is bounded implementation evidence, not balance.
-- **Next action:** Approve the Forest Edge reference panel and name the first
-  balance/playtest follow-up. Keep all claims bounded to their scenario, values,
-  telemetry, and seed panels; keep permanent Genome work separate.
+- **Next action:** Use S3-04 for the committed readability and bounded
+  Forest Edge review. Record any wider balance/promotion work as a separate
+  follow-up; keep claims bounded to their scenario, values, telemetry, and seed
+  panels, and keep permanent Genome work separate.
 - **Likely owner:** Josh.
-- **Confidence:** High.
-
-### P1-017 — Historical worker bundles remain incomplete
-
-- **Status:** Packaging contract fix is implemented; historical bundles remain
-  incomplete, while the current EX-007/EX-008 local run bundles are complete and
-  pass the strict validator with Unity logs.
-- **Evidence:** Matched 100-seed Forest Edge artifacts are present under
-  `automation/CellSimQueue/Completed/`: baseline
-  `20260831-234216-ec3350ed` (Fox 2.94 average, Hare 21.23 average, Plant
-  879.73 average; `report.csv` and `statline.csv` present) and Escape Artist
-  `20260831-234200-d484a2b2` (Fox 2.91, Hare 23.06, Plant 866.13; expected
-  CSV/statline files absent). Both manifests say `sourceTreeDirty: true`, while
-  their queue records say the worker was clean before and after execution. The
-  new worker contract now captures explicit before/after source-tree state,
-  canonicalizes report hashing across Git line endings, copies `unity.log`,
-  verifies `reportSha256`, and refuses to publish an incomplete bundle. The
-  read-only `tools/Test-CellSimArtifactBundle.ps1` validator reports the old
-  baseline as valid-with-warnings and the old Escape Artist arm as invalid for
-  missing CSV/statline files.
-- **Next action:** Preserve compact summaries and provenance for the current
-  valid bundles, keep the historical invalid/incomplete bundles clearly
-  excluded, and keep the bounded P3 decision linked to the accepted evidence.
-  The detached worker must receive the latest lifecycle tooling before another
-  remote run. Do not use the old diagnostic pair for a new claim.
-- **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
 ### P1-026 — Remote worker branch lacks the latest Unity lifecycle tooling
@@ -157,75 +176,42 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   `origin/codex/cellsim-worker` branch still has a different
   `UnityTooling.ps1`. There is no local worker branch currently checked out.
 - **Evidence:** `docs/handoffs/2026-09-03-1130-codex-process-lifecycle-cleanup.md`
-  explicitly requires propagation before the next remote worker run. On
-  2026-09-07, the current script hashed to
-  `4e9a0ae4b3f0c986b586829b90ada58ebe76b36a`, while the copy on
-  `origin/codex/cellsim-worker` hashed to
-  `f14e6499be6de9ad07b2582c3737b26dd719b92e`.
+  explicitly requires propagation before the next remote worker run. A
+  2026-09-17 content comparison confirms that current ProjectMain and
+  `origin/codex/cellsim-worker` still contain different `UnityTooling.ps1`
+  implementations.
 - **Next action:** Commit the lifecycle cleanup and propagate it to the worker
   branch, then verify worker-side process cleanup before another run.
 - **Likely owner:** Simulation/tooling owner.
 - **Confidence:** High.
 
-### P1-027 — Sprint 2 task register is not uniquely mapped to board work
-
-- **Status:** Mostly resolved; every row now has a stable ID and board link,
-  and S2.2A's repository and Trello status are synchronized. Remaining
-  owner/status reconciliation, including the Fox telemetry card formerly
-  tracked as P1-028, is still for the sprint review.
-- **Evidence:** `docs/NEXT_WORK_BUCKET_PLAN.md` and
-  `docs/Sprints/S2-control-record.md` now assign stable IDs and verified Trello
-  links to every listed work row. The duplicate board prefixes are disambiguated
-  as `S2.2A/B` and `S2.3A/B`, and the Fox/BoardSnapshot reserve cards have
-  explicit `S2-CORR-*` IDs. The S2.2A card is now in `✅ Done` with the
-  repository's V1 acceptance scope and evidence. The board currently assigns
-  the parallel S2.3A and
-  S2-QA cards to Sim while the repository plan assigns the implementation lane
-  to Josh; that discrepancy is recorded rather than hidden. The latest board
-  pass places completed CF-1, S2.3B, and EX-010 execution in `✅ Done`; the
-  board's EX-010 schedule/approval label still predates the completed run and
-  needs synchronization. Sim's
-  active telemetry lanes remain in `Current Work`. Current code exposes the Fox
-  reproduction and food-action fields, but the card still needs owner review.
-- **Next action:** Reconcile card ownership, list placement, and completion
-  status during the S2 review, including closing or carrying the Fox telemetry
-  card; review the proposed S3 allocation in `ROADMAP.md` and
-  `docs/Sprints/S3-control-record.md`; do not infer completion or commitment
-  from the control card.
-- **Likely owner:** Josh + Sim.
-- **Confidence:** High.
-
 ### P1-029 — Mutation/Genome contract still has player-facing decisions open
 
-- **Status:** Direction is recorded. Genome design and implementation are
-  deferred from the M1 closeout; Roadmap v2 schedules the first contract in S4
-  and persistence-backed implementation in S6. The detailed node, profile,
-  persistence, and economy contract stays open.
-- **Evidence:** The current model applies natural rules, then a permanent
-  per-species Genome, then ordered temporary expedition Mutations. Skip is a
-  valid current choice with no bonus or penalty. The active planning baseline
-  is 8 points per species, reallocated freely between simulations and frozen at
-  launch; node costs and capacity growth remain open. Named Genome loadouts are
-  deferred/non-blocking, and Species Mastery is deferred/non-gating. The
-  [balance guideline handoff](handoffs/2026-09-06-1523-codex-mutation-genome-balance-guideline.md)
-  remains historical; the Forest Edge reference panel and first one-time
-  effect contract still need their own review. Provisional settlement remains
-  open pending feature-owner approval.
-- **Next action:** At the S4 contract review, start with the profile/launch
-  snapshot contract and keep named loadouts and Mastery out of the gate. Hold
-  persistence-backed implementation for S6 unless the approved roadmap changes.
-  Before wallet or permanent-purchase work, obtain owner approval for
-  provisional settlement and the remaining node/economy rules. Do not infer a
-  contract from the existing upgrade shim.
+- **Status:** The first foundation is implemented: per-species unlocked and
+  active IDs, local profile storage, immutable launch/run/checkpoint/result
+  snapshots, metadata authoring types, an asset-free catalog, and generic Gene
+  Lab bindings. The visualization-only Hare/Fox maps and debug selector are
+  removed from the player route. No production Genome node is authored or
+  executable.
+- **Evidence:** `SpeciesGenomeContract.cs`, `ProfileSessionSnapshot.cs`,
+  `SimulationLaunchRequest.cs`, and `SimulationRunResult.cs` carry the frozen
+  contract. The 2026-09-17 Genome reconciliation handoff records removal of the
+  dummy assets/provider and confirms the simulation's Mutation catalog stayed
+  unchanged.
+- **Next action:** Approve one small Hare node with player wording, an explicit
+  effect, cost, prerequisite, activation rule, simulation-mode evidence plan,
+  and production persistence owner. Then implement buying/activation and rule
+  application without reintroducing placeholder catalogs.
 - **Likely owner:** Josh + design/simulation owners.
 - **Confidence:** High.
 
-### P1-030 — CF-6 production build and performance evidence is not fully closed
+### P1-030 — Historical CF-6 build/performance evidence; optional follow-up only
 
-- **Status:** The Windows player smoke passed, and the corrected ten-phase
-  Forest Edge/Hare run completed. The outer duration and peak-memory sampling
-  still needs one valid rerun; two earlier performance bundles are invalid
-  because their wrapper omitted `-scenarioPath`.
+- **Status:** The Windows player smoke and corrected EX-010 ten-phase
+  Forest Edge/Hare run completed. A valid whole-session duration/memory sample
+  could be useful, but is optional stretch work, not a product or M1 gate. Two
+  earlier performance bundles are invalid because their wrapper omitted
+  `-scenarioPath`.
 - **Evidence:** The successful player smoke is recorded under
   `artifacts/windows-build-20260908-065954/`. The corrected scenario report is
   `artifacts/cellular-experiment-20260908-123559/report.json`, which records
@@ -233,30 +219,64 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   records remain under `artifacts/ten-phase-performance-20260908-070937/` and
   `artifacts/ten-phase-performance-20260908-071652/` and must not be used as
   Forest Edge evidence.
-- **Next action:** Rerun the performance wrapper with the explicit scenario
-  path and capture wall duration, peak working set, and peak private memory.
-  Keep the invalid runs preserved as operational history but exclude them from
-  conclusions.
-- **Likely owner:** Simulation/tooling owner.
+- **Next action:** Keep CF-6 deferred as uncommitted stretch work. Start only
+  after explicit capacity is freed or added; preserve the invalid runs as
+  operational history and exclude them from conclusions.
+- **Likely owner:** Josh + simulation/tooling owner.
 - **Confidence:** High.
 
 ### P1-031 — Player-shell polish and focused UI acceptance need review
 
-- **Status:** The Main Menu polish/refinement pass is implemented in the
-  current worktree and verified interactively, but its handoff is **Needs
-  Review**. The broader Desktop/Simulation/Lab XAML and ViewModel changes are
-  also not yet an accepted production-route checkpoint.
+- **Status:** S3-01 is in `⛔ Blocked` pending the active terrain migration.
+  Fresh results are retained: 28/29 PlayMode passes with one graphics-only
+  skip; EditMode has 247/249 passes and two terrain failures.
+  Main Menu human review remains separate follow-up.
 - **Evidence:**
   [`2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
   records the meadow background, CRT treatments, focus behavior, procedural
   chime, and zero-warning interactive checks. The focused
   `settings-collection-ui-20260912-010749` Unity invocation exited with code 1
-  and produced no `results.xml`, so it cannot establish PlayMode acceptance.
-- **Next action:** Josh/UI reviewer should approve or revise the Main Menu
-  title/brand and generated-art direction, then rerun the focused Settings and
-  Species Collection acceptance with a captured result file before promoting
-  the current UI worktree.
+  and produced no `results.xml`. Current retained artifacts are
+  `artifacts/unity-tests-20260917-174307/EditMode-results.xml` (247/249) and
+  `artifacts/unity-tests-20260917-174422/PlayMode-results.xml` (28/29 passed,
+  one justified nographics skip). Lab, Genome, and profile persistence tests
+  now pass. Only two terrain checks fail because the tiles and atlas are not
+  present in this checkout. Neither retained log contains a Noesis binding
+  error.
+- **Next action:** Once the terrain assets are available, rerun EditMode and
+  both complete suites; include the graphics-only test in a graphics-capable
+  player. S3-06 owns bounded expedition UI polish. Keep Main Menu branding and
+  generated-art approval as a separate human-review decision.
 - **Likely owner:** Josh + UI/art reviewer.
+- **Confidence:** High.
+
+### P1-032 — Canonical Desktop route still discards profile and launch context
+
+- **Status:** The route is executable but disconnected. Main Menu validates a
+  `ProfileSessionSnapshot`, then scene loading discards it. The Desktop creates
+  and directly starts a local Forest Edge/Hare preview instead of consuming the
+  profile, planner choices, seed, schedule, or frozen launch request.
+- **Evidence:** `Helper_SceneTransition.LoadDesktop` validates and loads only a
+  scene. `GalapagOSDesktopNoesisHost.OpenSimulation` initializes and starts its
+  local preview. The GDD and TDD route matrices now record the same boundary.
+- **Next action:** S3-03 proves the safe game-state route and recovery to the
+  Lab. Profile/launch persistence and settlement continuity remain separately
+  scoped for S4 or later; do not expand S3 into profile saving.
+- **Likely owner:** Josh + UI/runtime owner.
+- **Confidence:** High.
+
+### P1-033 — Forest Edge acceptance inputs still have conflicting authorities
+
+- **Status:** The conflicts are documented but unresolved: the player preview
+  defaults to 100 ticks per phase while the committed design says 200; the
+  checked-in Forest Edge asset is 42x20 while the generator specifies 36x20;
+  product language says Fern while the generator/diet contract uses `plant`.
+- **Evidence:** `docs/GDD_TEMPLATE.md` and `docs/TDD_TEMPLATE.md` record each
+  mismatch with its current source. These differences can invalidate direct
+  comparisons and future save IDs if treated as interchangeable.
+- **Next action:** Resolve the authorities under S3-02 before implementing
+  dependent behavior or accepting new balance evidence.
+- **Likely owner:** Josh + simulation/design owner.
 - **Confidence:** High.
 
 ### P2-005 — Large raw worker artifacts need a retention policy
@@ -337,10 +357,10 @@ Ticket summaries for these items are recorded in
 
 - **Status:** Deferred staged-refactor candidate; current behavior is covered
   and should remain stable while evidence gates are open.
-- **Evidence:** Current file sizes are approximately 2,851 lines for
-  `SpeciesSimulation.cs`, 1,183 for `SpeciesSimulationMetrics.cs`, 1,335 for
-  `SpeciesSimulationPreview.cs`, 1,278 for `VM_SimulationShell.cs`, 1,185 for
-  `CellularSimulationExperimentRunner.cs`, and 3,576 for
+- **Evidence:** Current file sizes are approximately 3,009 lines for
+  `SpeciesSimulation.cs`, 2,061 for `SpeciesSimulationMetrics.cs`, 2,439 for
+  `SpeciesSimulationPreview.cs`, 1,624 for `VM_SimulationShell.cs`, 2,052 for
+  `CellularSimulationExperimentRunner.cs`, and 4,139 for
   `SpeciesDomainTests.cs`. These combine distinct concerns such as simulation
   phases, telemetry/statline calculation, presentation/settings persistence,
   XAML shell orchestration, CLI/report serialization, and broad behavior
@@ -461,8 +481,10 @@ from an older entry without checking its cited artifacts.
 
 - **Status:** Refactored; visual validation remains open.
 - **Evidence:** `TerrainTilePreviewWindow` now loads the named `Grass_` and
-  `Desert_` sprites from `Assets/Art/Terrain/Standardized/128/` and previews
-  all 16 four-corner masks. No runtime screenshot records acceptance yet.
+  `Desert_` sprites from `Assets/Art/Terrain/Blob/64/` and previews all 16
+  four-corner masks. The 47-mask families now use 64x64 sources at 64 PPU;
+  the focused Unity asset-contract check passes, but no runtime screenshot
+  records visual acceptance yet.
 - **Next action:** Run the named dual-grid preview and cellular prototype,
   record visual evidence, and include the refactor in a focused reviewed commit.
 ### P1-006b — Editor smart-tiling preview path fix
@@ -908,6 +930,98 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
 - **Result:** Current planning no longer reopens completed simulation or visual
   gates. The unresolved terrain-delivery questions remain assigned to their
   dedicated task instead of being guessed into the documentation.
+
+### R-027 — Genome foundation and dummy-fixture status reconciled
+
+- **Former scope:** The implemented half of P1-029 plus the untracked
+  visualization-fixture concern.
+- **Evidence:** GDD, TDD, Roadmap v2.2, Working State, and
+  `docs/handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md`
+  agree on the implemented identity/profile/snapshot/catalog/display boundary.
+  The five-node Hare and seven-node Fox dummy assets, scene provider, and debug
+  selector are removed; executable asset/test searches find no remaining dummy
+  IDs or GUID references.
+- **Result:** The player route no longer presents visualization smoke data as a
+  production Genome catalog. The generic foundation remains available for the
+  first approved node. Effects, costs, player actions, persistence, migration,
+  and evidence remain open under P1-029.
+
+### R-028 — Historical incomplete worker bundles are bounded history
+
+- **Former item:** P1-017.
+- **Evidence:** Current schema-2 bundles validate under the corrected packaging
+  contract. Historical bundles with missing CSV/statline data remain identified
+  as invalid and excluded from claims; no repair would make them original run
+  evidence again.
+- **Result:** There is no active repair action for historical incomplete
+  bundles. Preserve their provenance and exclusions. Remote worker tooling
+  parity remains separately open under P1-026.
+
+### R-029 — EX-011 bounded transfer decision recorded
+
+- **Former item:** P1-034.
+- **Evidence:** `docs/Research/Experiments/EX-011-Cross-Biome-Species-Transfer/HUMAN_DECISION.md`
+  records Josh's 2026-09-17 acceptance. The combined Faster Movement then
+  Crowding Tolerance arm increased final Deer population in all 20 development
+  and all 5 held-out pairs in the tested Open Range/Deer setup.
+- **Result:** The bounded ordered-combination finding is accepted for reuse
+  only in its recorded setup. Individual-upgrade effects, player fun,
+  production balance, and generalized transfer remain unproven. No follow-up
+  experiment is required or selected to close EX-011.
+
+### R-030 — Sprint 2 closeout and project status synchronized
+
+- **Former item:** P1-027.
+- **Evidence:** `S2-CLOSEOUT-20260917-01` is recorded in the S2 control record;
+  the S2 plan is marked Closed, and Roadmap, Working State, Project Context,
+  GDD, TDD, and this ledger were synchronized to S2 closed and S3 proposed at
+  the closeout point.
+- **Result:** S2 closeout is reconciled. At the closeout point, S3 remained
+  proposed; that historical state was superseded by the separately confirmed
+  kickoff documented in R-031. The kickoff workflow and skill require
+  post-closeout documentation sync.
+
+### R-031 — Sprint 3 plan committed and kickoff verified
+
+- **Former item:** P1-035.
+- **Operation:** `S3-KICKOFF-20260917-01`; Josh confirmed the plan and kickoff
+  on 2026-09-17.
+- **Evidence:** The active S3 control record, Roadmap, Working State, and
+  [kickoff handoff](handoffs/2026-09-17-1613-codex-sprint-3-kickoff.md) match
+  the board. S3-01, S3-02, S3-03, S3-04, S3-06, S3-07, and S3-08 are in
+  `Current Work`; S3-05 is in Backlog as uncommitted stretch work; Upcoming,
+  In Progress, and Blocked are empty.
+- **Capacity:** Josh 20h; Sim 18h committed, with 2h Sim capacity uncommitted.
+  The 6-hour integration reserve is included in those totals.
+- **Board note:** The board showed zero cards in Done and 35 in Archived, unlike
+  the S2 closeout snapshot. No unfinished S2 card was in an active workflow
+  list. Archived history was left unchanged.
+- **Result:** S3 is active for 2026-09-17–2026-09-30. Profile saving is
+  scheduled for S4. CF-6 duration/memory measurement is stretch-only and is not
+  an M1 closeout gate. No Unity tests were run as part of the kickoff.
+
+### P1-036 — Large shared worktree needs a scoped baseline before feature work
+
+- **Status:** Open hygiene follow-up; no changes were cleaned, staged, or
+  discarded during this review. The worktree includes the documented terrain
+  art migration and Genome fixture/document reconciliation, alongside other
+  local changes.
+- **Evidence:** DirtyBoy on `ProjectMain` at `cab5838d` reported 472 changed
+  paths in the hygiene review, then 594 on the S3-01 attempt while Unity Editor
+  remained open. The discrepancy is unresolved. `docs/WORKING_STATE.md` and
+  the 2026-09-17 terrain and Genome handoffs describe concurrent workstreams,
+  but not a complete path-by-path final disposition. `ROADMAP.html` and
+  `tools/Generate-RoadmapHtml.ps1` are untracked; the generator's `-Check`
+  passes, confirming the HTML matches the current Markdown source. The
+  branch-integration baseline remains the commit, not these uncommitted changes.
+- **Next action:** Before making S3 implementation changes in this shared
+  checkout, identify which local changes are in-scope and reviewable, preserve
+  unrelated work, and capture S3-01 baseline results against an explicitly
+  stated working-tree state. Decide whether the generated roadmap pair should
+  be tracked or ignored. Do not clean or reset the tree as a shortcut.
+- **Likely owner:** Josh, with the terrain/Genome work-block owners.
+- **Confidence:** High that the tree is large; medium on exact ownership of all
+  changed paths.
 
 ### R-018 — Low-priority orphan and template cleanup resolved
 

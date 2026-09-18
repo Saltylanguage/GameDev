@@ -19,7 +19,7 @@ This guideline defines the balance language, evidence, and review gates for:
 
 - a species' natural starting rules;
 - its permanently unlocked and selectively active **Genome**;
-- the nine temporary **Mutations** chosen during an expedition;
+- the temporary per-run **Mutations** chosen during an expedition (five choice moments under the current six-round contract);
 - stat changes, one-time effects, and ability unlocks;
 - species matchups, environmental conditions, and whole ecosystems.
 
@@ -47,7 +47,8 @@ Its effective rules in a Biome Simulation are:
 Natural species rules + active Genome
 ```
 
-A completed ten-phase expedition contains nine Mutation decisions. Mutation
+A completed player expedition has six rounds and five Mutation decisions,
+offered after rounds 1–5. Mutation
 order and acquisition phase remain part of the run record. Starting or ending
 an expedition does not remove a Genome unlock. Mutations never transfer into a
 Biome Simulation.
@@ -230,7 +231,7 @@ may not be able to acquire every Mutation, and early choices act for longer
 than late choices. Instead, compare:
 
 - choices offered at the same expedition phase;
-- complete reachable Mutation paths across all nine decisions;
+- complete reachable Mutation paths across all five decision moments;
 - active Genome strength at comparable unlock and allocation stages;
 - the combined active Genome and Mutation states a player can actually produce
   in Species Simulations;

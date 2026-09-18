@@ -26,11 +26,14 @@ changes, and do not treat research references as approved implementation work.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
-- [`ROADMAP.md`](../ROADMAP.md) version 2.0 is the active production baseline
-  as of 2026-09-11: M0 is complete, M1 is active, Sprint 3 is proposed, and
-  S4–S7 are forecast windows rather than commitments. The GalapagOS Desktop is
-  the canonical player home; the standalone Lab remains a legacy/developer
-  route until deliberately migrated.
+- [`ROADMAP.md`](../ROADMAP.md) version 2.1 is the active production baseline
+  as of 2026-09-17: M0 is complete, M1 is active, Sprint 2 is closed, and
+  Sprint 3 is active for 2026-09-17–2026-09-30. S3 prioritizes a safe,
+  recoverable Forest Edge game-state loop, understandable Mutation effects,
+  and bounded visual polish/UI integration. Local profile saving is scheduled
+  for S4; S4–S7 remain forecast windows except for that assigned S4 work. The
+  GalapagOS Desktop is the canonical player home; the standalone Lab remains a
+  legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the
   player species, fern as support, fox as opposition, and Trailblazer, Warren,
   and Gardeners as the three intended builds. The rationale and validation gaps
@@ -95,8 +98,8 @@ changes, and do not treat research references as approved implementation work.
 
 ## Cellular-automata roguelike concept
 
-**Continuous-state implementation (2026-09-06):** one expedition now retains one
-evolving ecosystem across all ten simulation phases. At a reward break, buying
+**Continuous-state implementation (2026-09-06):** one expedition retains one
+evolving ecosystem across all six simulation rounds. At a reward break, buying
 an upgrade or skipping it is followed by Continue from the same board and next
 absolute tick. Creature/resource state, prior perception state, seed,
 progression, telemetry, and the retained runner survive. Only an explicit new
@@ -107,18 +110,20 @@ EX-010 ten-phase comparison, are implemented and verified. See the
 [evidence impact](CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md), and
 [documentation audit](CONTINUOUS_SIMULATION_DOCUMENTATION_AUDIT.md).
 
-The current prototype window is a configurable phase, not a whole expedition;
-200 ticks at a 0.1-second step remains the per-phase target. The product brief's
-ten-phase limit and longer presentation pacing must be distinguished from that
-prototype. In-memory continuation does not introduce player disk save/load.
-Stat-Line and predictive-AI evidence must name the phase/expedition window and
-upgrade acquisition timing.
+The current player contract is six rounds of 10 seconds of simulation time,
+with five Mutation/Skip decisions after rounds 1–5. At a 0.1-second simulation
+step this is 100 ticks per round; simulation speed and pauses determine actual
+wall time. The ten-round/200-tick EX-010 schedule is historical research
+evidence, not the player contract. In-memory continuation does not introduce
+player disk save/load. Stat-Line and predictive-AI evidence must name its
+research or player window and upgrade acquisition timing.
 
 **Plan forward:** treat continuous state as the canonical runtime design. The
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
 The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
-only the outer ten-phase duration/memory measurement, then complete the
-player-facing Mutation choices, outcome language, and reward/persistence loop.
+the remaining player-facing Mutation choices, outcome language, and
+reward/persistence loop. Full-session duration/memory measurement is optional
+stretch work, not a product acceptance gate.
 The first Genome identity/profile/snapshot slice and data-driven authoring
 skeleton are now implemented. Production effect catalog, authored
 capacity-cost semantics, economy, interactive profile actions, and simulation
@@ -207,7 +212,7 @@ settle them in foundational grid code.
   `VM_SimulationBoard`; the legacy shell ViewModel remains the compatibility
   composition surface until the safe naming pass.
 - T4–T6 below are retained implementation checkpoints for the standalone Lab
-  route. Roadmap v2 supersedes their original navigation topology with Main
+  route. Roadmap v2.2 supersedes their original navigation topology with Main
   Menu → GalapagOS Desktop → Simulation while preserving their profile, launch-
   request, stable-ID, and results-return contracts.
 - T4 establishes the Main Menu contract: `VM_MainMenu` and
@@ -361,6 +366,9 @@ settle them in foundational grid code.
   derives the authored normalized neighbor mask during board snapshot creation
   and selects the matching variant for the grass or desert family. Neighbor
   masks and atlas indices do not belong in `SpeciesCell` or `CellularSimData`.
+- New terrain tile sources use 64x64 pixels at 64 pixels per unit. Retained
+  Island Chores atlases and other explicitly legacy art keep their original
+  resolution unless separately migrated.
 - The reference set contains animal symbols but no dedicated plant symbol.
   Plant-resource terrain currently uses the grass tile family; add a dedicated
   plant atlas before displaying a separate plant glyph rather than borrowing an
@@ -453,10 +461,11 @@ the presented entrance, traversal, collisions, and regeneration lifecycle.
 ## Noesis migration status
 
 - Global settings, species-rule authoring, run controls, rewards, and results are
-  now presented by `V_Panel_SimulationShell.xaml` with
-  `VM_SimulationShell`. The former IMGUI species editor is no longer
-  part of the runtime path; older handoffs that describe it as a fallback are
-  historical.
+  now presented by `V_Window_CellSimulation.xaml` with
+  `VM_SimulationShell`; local styles and templates live in
+  `RD_SimulationShellResources.xaml`. The former IMGUI species editor is no
+  longer part of the runtime path; older handoffs that describe it as a
+  fallback are historical.
 - `SpeciesSimulationBoard` is the first XAML game-board attempt. It is a single
   `FrameworkElement` custom renderer that receives an immutable
   `SimulationBoardSnapshot` and batches all cell rectangles through

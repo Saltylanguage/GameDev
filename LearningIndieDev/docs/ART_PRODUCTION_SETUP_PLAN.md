@@ -5,6 +5,11 @@
 > Contributors: Producer, gameplay developers  
 > Scope: Forest Edge vertical slice and the art department workflow that supports it
 
+> **Scope note:** This is a proposed art-workflow reference. Its Fern-as-support
+> roster is superseded for current player-flow planning: playable plants are on
+> hold under the S3-02 expedition contract. Do not treat plant art tasks here as
+> committed S3 work.
+
 ## Purpose
 
 Create one Trello board that serves as the art department's working home: art
@@ -34,6 +39,8 @@ promote any proposed visual direction to a final aesthetic decision.
 - Animal exports currently exist in standardized 32, 64, and 128 variants.
 - Terrain uses a presentation-only normalized 47-mask eight-neighbor blob
   smart-tiling system.
+- New terrain source cells are 64x64 pixels at 64 pixels per unit; existing
+  legacy art remains unchanged unless it is deliberately migrated.
 - Grass is authored; bare terrain currently uses a temporary desert-family
   mapping.
 - A dedicated authored fern presentation is still required.

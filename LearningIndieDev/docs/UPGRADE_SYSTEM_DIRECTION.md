@@ -186,11 +186,13 @@ During an expedition, Mutation choices form a visible decision tree rather
 than an unrelated sequence of bonuses. Early choices establish a direction;
 later choices deepen, modify, or occasionally hybridize that playstyle.
 
-The ten-phase expedition creates nine Mutation decision points. The approved
-direction keeps nine Mutation decision points in a completed expedition. The
-current flow allows a Mutation or a valid Skip at each point; a Skip leaves the
-current build unchanged and has no current bonus or penalty. Any future
-reward-doubling or other Skip incentive is a separate deferred economy rule.
+The current expedition has six rounds and five Mutation decision points,
+offered after rounds 1–5. Round 1 starts without an offer; round 6 ends in
+results without one. Mutations are temporary per-run choices, distinct from
+permanent Genome Upgrades purchased with currency in Gene Lab. The
+current flow allows a Mutation or Skip at each point. A possible Skip currency
+bonus is undecided and non-blocking; if adopted, it uses the currency for
+Genome Upgrades. Its amount and limits are not specified.
 
 A simple run structure is:
 

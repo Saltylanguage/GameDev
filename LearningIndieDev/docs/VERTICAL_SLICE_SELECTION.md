@@ -2,6 +2,11 @@
 
 Status: **initial selection for validation**. This is the working content target for Sprint 0; fixed-seed experiments and playtests may tune values or reject a build without expanding the roster.
 
+> **Historical roster proposal:** Fern as a playable/supporting species is on
+> hold under the current S3-02 contract. Current player-flow acceptance is
+> Forest Edge with Hare and Fox; retain Fern references here as design history,
+> not as a current playable-slice commitment.
+
 ## Curated scenario: Forest Edge
 
 Use the existing `ForestEdge` scenario as the vertical-slice foundation. It is the smallest authored ecosystem that contains a complete and immediately readable pressure chain:

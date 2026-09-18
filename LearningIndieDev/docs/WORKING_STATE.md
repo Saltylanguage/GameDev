@@ -5,27 +5,54 @@ become a master changelog.
 
 ## Current focus
 
-**Context refresh: 2026-09-12.** The repository has moved from the 2026-09-09
-simulation/Genome checkpoint into roadmap review, player-shell polish, and the
-first Genome contract implementation. The
-working tree contains both completed-in-handoff work and changes still awaiting
-review; treat the status notes below as bounded claims, not an implicit commit.
+**Context refresh: 2026-09-17.** ProjectMain contains the first Genome contract,
+EX-011 evidence, and the merged Bev/Sim simulation work. Current local changes
+remove visualization-only Genome fixtures, reconcile the design and engineering
+documents, and integrate the 64px Forest terrain assets. Treat all status
+notes below as bounded claims until their stated verification runs complete.
 
-**Roadmap v2 is active as of 2026-09-11.** It marks M0 complete, keeps M1
-active, assigns F01–F20 feature IDs and effort bands, allocates the proposed
-Sprint 3 forty-hour envelope, and treats S4–S7 dates as a forecast rather than a
-commitment. The GalapagOS Desktop is the canonical player home; the standalone
-Lab remains a legacy/developer route until deliberately migrated.
+**Terrain art standard update: 2026-09-17.** New terrain source tiles are
+64x64 pixels at 64 PPU and live under `Assets/Art/Terrain/Blob/64/`; this keeps
+each tile one world unit. The terrain atlas retains its scene-referenced GUID.
+All 47 Grass masks generated from the 14 authored Forest
+representatives are now packed by `Terrain_01.spriteatlasv2` and loaded by the
+simulation runtime. `Grass_000` is full dirt and `Grass_255` is full grass.
+Desert art is not present yet; its slots remain optional and no Grass art is
+used as a substitute. The older Island Chores atlases remain legacy and
+unchanged. Full EditMode (251/251) and graphics-capable PlayMode (30/30) suites
+pass; the retained no-graphics PlayMode bundle has 28 passes and two expected
+graphics-only skips. See
+[`handoffs/2026-09-17-codex-terrain-art-standard-64px.md`](handoffs/2026-09-17-codex-terrain-art-standard-64px.md).
+
+**Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
+Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
+kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
+2026-09-17–2026-09-30, with six cards in Trello `Current Work`, S3-01's original
+terrain failures addressed and its full-suite acceptance rerun green, S3-05
+duration/memory measurement in Backlog as uncommitted stretch work, and 2h of
+Sim capacity unallocated. The
+S3 priority is a safe game-state loop with tested
+recovery and return to the Lab, meaningful and understandable Mutations, and a
+bounded visual polish/UI integration pass. Local profile saving is scheduled
+for S4. The GalapagOS Desktop is the canonical player home; the standalone Lab
+remains a legacy/developer route.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
 checkpoint replay, the headless schedule, and the accepted EX-010 execution.
-CF-6 remains partially open for outer ten-phase duration/memory measurement;
-the Windows player smoke and corrected scenario run are complete, and graphics
-acceptance is complete.
-The active Lab → CellularAutomataPrototype route now explicitly defaults to
-Forest Edge with Hare; the separate GalapagOSDesktopTest scene retains its
-legacy-default setup for isolated acceptance.
+CF-6 duration/memory measurement is stretch work rather than an S3 closeout
+gate; the Windows player smoke and corrected scenario run are complete, and
+graphics acceptance is complete.
+The current Desktop acceptance contract directly starts Forest Edge with Hare
+when the player opens Simulation. This preserves the merged Bev/Sim simulation
+experience. The initial S3-01 baseline on 2026-09-17 had EditMode 247/249 with
+two terrain failures and PlayMode 28/29 with one justified graphics-only skip.
+The latest retained rerun is `artifacts/unity-tests-20260917-220612/`: EditMode
+251/251 passed; no-graphics PlayMode 28 passed with two expected graphics-only
+skips; graphics-capable PlayMode passed 30/30. The original terrain failures
+are resolved locally; the Trello card state has not been changed. Desert art
+remains absent. Verifying the end-to-end state/recovery route is S3 work; profile
+saving is scheduled for S4.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
@@ -38,11 +65,28 @@ dictionary directly. The custom simulation-board sprite atlas remains a
 runtime renderer input rather than an XAML image consumer.
 The game-design feature sequence is now triaged in
 [GAME_FEATURE_ROADMAP_TRIAGE.md](GAME_FEATURE_ROADMAP_TRIAGE.md), starting with
-the Expedition Decision Loop. The player-facing expedition contract is ten
-phases; remaining design work concerns duration, decision rhythm, rewards, and
-terminal outcomes.
-The upgrade direction now separates nine temporary Species-Simulation
-**Mutations** from each species' permanently unlocked Genome options and
+the Expedition Decision Loop. S3-02 is rebuilding the expedition contract:
+Josh has agreed to six phases, ten seconds of simulation time per phase, one
+minute total, and five upgrade decision moments with three temporary Mutations
+or Skip at each, one after each of phases 1–5. Permanent currency purchases in
+the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
+player skip for extra currency is undecided and non-blocking; if adopted, it
+uses the same currency as Genome Upgrades. Mutation choices should be readable
+at a glance (icon + keyword, e.g. “hunting +1”), with expected impact apparent
+in the following phase; no stat breakdowns. Restart is removed; End abandons
+the run after confirmation, forfeits rewards if used before round 6, and Pause
+remains available. Round 1 has no upgrade;
+rounds 1–5 each lead to a three-Mutation choice or Skip; round 6 ends in results
+with no upgrade. Victory is survival to the end of round 6; rewards use a
+performance measure currently in development (not simply final population).
+Extra bonus-event rewards are possible but undecided. Extinction ends
+immediately as a failed run with no rewards. Board size is deferred, and
+playable plants (including Fern) are on hold. Older engineering and research
+records still contain ten-phase/200-tick values; those are historical
+configurations, not the current player contract. The upgrade direction now
+separates temporary per-run Species-Simulation **Mutations** from permanent
+**Genome Upgrades**, bought with currency in the Gene Lab application and
+organized in a species' Genome skill tree, and
 configurable **active Genome**. Mutations never enter Biome Simulations. The
 active Genome is frozen at launch and applies to every population of that
 species, including when it is not player-controlled. Species and Biome
@@ -50,25 +94,23 @@ Simulations use different success scorecards. Scalable balance work uses shared
 capabilities and provisional Adaptation Value estimates, but requires
 mode-appropriate direct-effect, matchup, and ecosystem evidence under
 [`SG-005`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). The seven
-existing Hare assets are provisional Mutation candidates. The first Genome
-identity/profile/launch/run snapshot slice is implemented, including per-species
-profile persistence and run provenance. The data-driven authoring skeleton now
-resolves Genome upgrade/map ScriptableObjects into an immutable catalog
-snapshot and species-bound Gene Lab bindings. Map and node authoring changes
-recapture the catalog and refresh an open Gene Lab when the fingerprint changes;
-the desktop test scene now supplies five-node Hare and seven-node Fox fixtures
-for visualization smoke testing, and the Gene Lab projects the selected map as
-square tiles with data-bound branch connections. A debug selector swaps between
-the two species maps through the same catalog snapshot binding.
-effect catalog, authored cost validation, economy, interactive UI behavior, and
-rule application remain planned. Named
-Genome loadouts are deferred and non-blocking, and Species Mastery remains
-deferred and non-gating. Skip is a valid current choice with no current bonus or
-penalty; any future reward-doubling for skipping is a separate deferred economy
-rule. Provisional scientific-data settlement remains open pending feature-owner
+existing Hare assets are provisional Mutation candidates. The implemented
+Genome foundation carries stable per-species unlocked and active node IDs
+through the local profile, launch request, run, checkpoint, and result. Generic
+ScriptableObject authoring types resolve metadata into an immutable catalog for
+the Gene Lab. The visualization-only five-node Hare and seven-node Fox maps,
+their debug selector, and the player-scene provider were removed on 2026-09-17;
+the simulation's seven-item Mutation catalog and Bev experimental behavior were
+not changed. No production Genome map is currently assigned. Genome effects,
+cost validation, economy, buying/activation actions, rule application,
+versioned migration, and recovery remain planned. Named Genome loadouts are
+deferred and non-blocking, and Species Mastery remains
+deferred and non-gating. Skip's possible currency bonus is undecided and
+non-blocking; if adopted it uses Genome Upgrade currency, with amount and limits
+not yet defined. Provisional scientific-data settlement remains open pending feature-owner
 approval.
 
-The current worktree also contains a Main Menu polish/refinement pass, broader
+The integrated branch also contains a Main Menu polish/refinement pass, broader
 GalapagOS Desktop/Simulation/Lab XAML and ViewModel updates, and new concept
 art for Settings, Species Collection, Expedition Setup, and Field Notes. The
 Main Menu handoff is **Needs Review**: the meadow background, CRT-style boot and
@@ -93,9 +135,13 @@ restored, and resumed with deterministic runner output. The opt-in headless
 schedule applies cumulative per-phase loadouts and emits the same phase
 contract. EX-010 has now executed on the approved ten-phase schedule and was
 accepted by Josh and Sim as bounded evidence. P3 is closed under its revised
-bounded gate; P4–P6 are not started and no next research experiment is selected.
-The default-off `bev-experimental` Coupled Hare/Fox response path is implemented
-locally: it applies a deterministic free counterpart legacy upgrade at the same
+bounded gate. EX-011 has executed successfully under its preregistered
+Open Range/Deer contract; Josh accepted its narrow ordered-combination finding
+on 2026-09-17. Reuse remains limited to that tested setup and does not approve
+individual-upgrade effects, production balance, or generalized transfer. No
+further experiment is selected.
+The `bev-experimental` Coupled Hare/Fox response path is enabled in the current
+preview: it applies a deterministic free counterpart legacy upgrade at the same
 Expedition boundary and records both species' immutable snapshots, origins, and
 trigger IDs. Unity EditMode passed 239/239 and the focused same-boundary
 PlayMode test passed 1/1 on 2026-09-11. The matched Forest Edge 100-seed
@@ -103,10 +149,23 @@ three-arm check passed its direct Fox-hit-conversion gate; the factual result
 and the broad PlayMode-suite limitation are recorded in the coupled-response
 handoff before any mapping expansion.
 
-Latest verification: Unity EditMode passed 212/212 on 2026-09-09. The latest
-general PlayMode batch passed 21/22 with one intentional visual-capture skip
-and no failures. The retained graphics acceptance remains 22/22 at 1280×720,
-followed by a focused 1920×1080 pass on 2026-09-07.
+Latest retained S3-01 test artifacts are
+`artifacts/unity-tests-20260917-174307/EditMode-results.xml` (247 passed, 2
+failed, 0 skipped; 249 total) and
+`artifacts/unity-tests-20260917-174422/PlayMode-results.xml` (28 passed, 0
+failed, 1 skipped; 29 total). Profile persistence and Genome asset-change
+tests now pass. In that retained run, both remaining EditMode failures were
+terrain checks against the absent `Assets/Art/Terrain/Blob/64` set and atlas.
+The Grass family and atlas are now integrated, and focused terrain checks pass
+(EditMode 3/3; PlayMode 1/1). The latest retained full S3-01 rerun is green:
+EditMode 251/251, no-graphics PlayMode 28 passed with two expected
+graphics-only skips, and graphics-capable PlayMode 30/30. The artifact is
+`artifacts/unity-tests-20260917-220612/`. PlayMode covers the direct-start
+Forest Edge/Hare route, Lab launch/return, and settings-rejection/run-
+preservation path. The earlier terrain blocker is resolved locally. The
+Trello S3-01 card status still awaits Josh's review; see the
+[S3 control record](Sprints/S3-control-record.md). Existing graphics
+acceptance evidence is also retained at 1280×720 and 1920×1080.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)
@@ -138,9 +197,12 @@ followed by a focused 1920×1080 pass on 2026-09-07.
 - Dummy Genome visualization fixture: [`handoffs/2026-09-12-1847-codex-dummy-genome-visualization-fixture.md`](handoffs/2026-09-12-1847-codex-dummy-genome-visualization-fixture.md)
 - Genome tree tile visual pass: [`handoffs/2026-09-12-1938-codex-genome-tree-tile-visual-pass.md`](handoffs/2026-09-12-1938-codex-genome-tree-tile-visual-pass.md)
 - Genome map swap debug fixture: [`handoffs/2026-09-12-1959-codex-genome-map-swap-debug.md`](handoffs/2026-09-12-1959-codex-genome-map-swap-debug.md)
+- Genome fixture and document reconciliation: [`handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md`](handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md)
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
-- Proposed Sprint 3 M1 closeout and hygiene plan: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
+- Active Sprint 3 safe game loop and M1 closeout: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
+- S3-02 expedition contract in progress: [`Sprints/S3-02-expedition-contract.md`](Sprints/S3-02-expedition-contract.md)
+- Sprint 3 kickoff handoff: [`handoffs/2026-09-17-1613-codex-sprint-3-kickoff.md`](handoffs/2026-09-17-1613-codex-sprint-3-kickoff.md)
 - Stable-but-incomplete feature action plan: [`INCOMPLETE_FEATURES_ACTION_PLAN.md`](INCOMPLETE_FEATURES_ACTION_PLAN.md)
 - Proposed next work bucket: [`NEXT_WORK_BUCKET_PLAN.md`](NEXT_WORK_BUCKET_PLAN.md)
 - Sprint 1 species stat-line tickets: [`SPRINT_1_SPECIES_STAT_LINE_TICKETS.md`](SPRINT_1_SPECIES_STAT_LINE_TICKETS.md)

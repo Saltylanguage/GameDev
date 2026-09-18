@@ -15,7 +15,7 @@ flowchart TB
     START["Launch"]
     MENU["Main Menu<br/>Profile · Continue · Quit"]
     DESKTOP["GalapagOS Desktop<br/>Launch screen · apps · widgets"]
-    SIM["Simulate 200 ticks · 36×20 board<br/>Forest Edge: Fern → Hare → Fox"]
+    SIM["Simulate 10 seconds · 6 rounds<br/>Forest Edge: Hare vs Fox · plants deferred"]
     END{"Extinct or<br/>phase ten complete?"}
     SUMMARY["Phase Summary<br/>Population · Births · Deaths<br/>Food · Movement · Combat"]
     UPGRADE["Choose one Mutation or skip<br/>World remains frozen"]
@@ -32,8 +32,8 @@ flowchart TB
     END -->|"Yes"| RESULTS --> REWARD --> DESKTOP
 ```
 
-The vertical-slice contract is ten phases, with 200 ticks as the current
-per-phase target, and nine Mutation decision points,
+The vertical-slice contract is six rounds of 10 seconds of simulation time,
+with five Mutation decision points after rounds 1–5,
 and an immediate end after a completed tick causes extinction. The player
 changes the species rules rather than directly commanding individual cells.
 
@@ -45,7 +45,7 @@ Genomes without Mutation choices.
 
 This is the target player loop. The controlled preview now retains creatures,
 resources, time and history through its phase decisions. Only a new expedition
-or explicit restart creates a new board. The configurable prototype phase and
+or a new expedition after results creates a new board. The configurable test window and
 the product's longer viewing-time target are separate pacing settings.
 
 ## 2. Runtime architecture

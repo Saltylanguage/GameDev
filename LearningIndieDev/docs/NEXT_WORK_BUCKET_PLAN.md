@@ -1,6 +1,11 @@
 # Sprint 2 Plan — First Trustworthy Upgrade Loop
 
-> **Status:** Active
+> **Historical S2 execution plan.** Its 200-tick fixtures describe the S2
+> research controls and are not current player cadence. The current player
+> contract is six 10-second simulation-time rounds with five Mutation/Skip
+> choices after rounds 1–5; see [S3-02](Sprints/S3-02-expedition-contract.md).
+
+> **Status:** Closed | **Closed:** 2026-09-17 (see [S2 control record](Sprints/S2-control-record.md))
 > **Dates:** September 3–16, 2026
 > **Plan owner:** Josh
 > **Capacity:** Josh 20h; Sim 20h

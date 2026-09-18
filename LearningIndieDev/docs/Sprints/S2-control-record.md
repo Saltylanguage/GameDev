@@ -1,8 +1,14 @@
 # Sprint 2 Control Record — First Trustworthy Upgrade Loop
 
-> Status: Active | Start: 2026-09-03 | End: 2026-09-16
+> Status: Closed | Start: 2026-09-03 | End: 2026-09-16 | Closed: 2026-09-17
 
-This control record activates Sprint 2. The authoritative execution detail is
+> **Closed sprint archive.** Any proposed S3 acceptance or 10-phase/200-tick
+> carry-forward text below reflects the plan at S2 close, not current scope.
+> The active six-round player contract and S3 work are defined by
+> [S3 control record](S3-control-record.md) and
+> [S3-02 expedition contract](S3-02-expedition-contract.md).
+
+This control record closes Sprint 2. The authoritative execution detail is
 [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md); this record fixes
 the identity, capacity, ownership, board disposition, and exit gate.
 
@@ -11,7 +17,7 @@ the identity, capacity, ownership, board disposition, and exit gate.
 | Field | Value |
 | --- | --- |
 | Sprint ID | S2 |
-| Status | Active |
+| Status | Closed |
 | Start | 2026-09-03 |
 | End | 2026-09-16 |
 | Goal | A player can inspect, choose, and verify a temporary upgrade in a deterministic Forest Edge run. |
@@ -21,25 +27,23 @@ the identity, capacity, ownership, board disposition, and exit gate.
 
 ## Board disposition
 
-- S2 work uses the sprint workflow lists: `🛠️ In Progress` for work being
-  actively done and `Current Work` for current-sprint work not yet started.
-- The S2 control card is in `🛠️ In Progress` while the sprint is active.
-- CF-1 continuation foundation, S2.3B report/Stat-Line integration, the EX-010
-  preparation card, and the approved EX-010 schedule execution are complete in
-  the repository evidence package. The board's schedule/approval card still
-  needs an external status sync and remains recorded below as historical board
-  state until that review occurs.
-- `Species roster and scenario co-design` is not selected for S2 and returns to
-  the backlog. The unrelated blocked bug-triage card remains blocked.
+- The 2026-09-17 closeout verification found no cards in `Current Work`,
+  `🛠️ In Progress`, or `⛔ Blocked`.
+- Completed S2 work remains in `✅ Done`; the EX-010 schedule/approval card is
+  synchronized as complete.
+- Fox mating/eating telemetry is the sole carry-over. It is in `🎯 Upcoming
+  Work` with `Sprint: S3 (carried from S2)`, owner Sim, reviewer Josh, and a 2h
+  estimate.
+- `Species roster and scenario co-design` remains outside S2 in the backlog.
 - No Sprint 1 task was carried: cards 51–53, 62, and 72 remain complete.
 
 ### Register-to-board mapping
 
 The repository register uses suffixes where Trello has separate cards with the
 same S2 work-package prefix. Links below are the current board records.
-The repository owner column remains authoritative for the local plan; the
-parallel evidence cards for S2.3A and S2-QA are currently assigned to Sim on
-the board and must be reconciled at review rather than silently reassigned.
+The repository owner column remains authoritative for the local plan.
+Historical board ownership differences on completed evidence cards are
+preserved rather than silently reassigned during closeout.
 
 | Repository ID | Work package | Board card | List at review |
 | --- | --- | --- | --- |
@@ -52,11 +56,41 @@ the board and must be reconciled at review rather than silently reassigned.
 | EX-002 | Intervention surface and causal-gate preparation | [PVqz2g5n](https://trello.com/c/PVqz2g5n) | ✅ Done |
 | S2-QA | Catalog fixtures and invalid-combination tests | [OLZYtNS9](https://trello.com/c/OLZYtNS9) | ✅ Done |
 | S2-UI | Player-facing upgrade preview and result summary | [iKcmYkuy](https://trello.com/c/iKcmYkuy) | ✅ Done |
-| S2-CORR-FOX | Fox mating/eating telemetry discrepancy | [BkJwxhkw](https://trello.com/c/BkJwxhkw) | Current Work |
+| S2-CORR-FOX | Fox mating/eating telemetry discrepancy | [BkJwxhkw](https://trello.com/c/BkJwxhkw) | 🎯 Upcoming Work — sole S3 carry-over |
 | S2-CORR-BOARD | BoardSnapshot fixture repair | [Cy2TOMOh](https://trello.com/c/Cy2TOMOh) | ✅ Done |
 | CF-1 | Continuous domain lifecycle parity foundation | [cPlWlTfr](https://trello.com/c/cPlWlTfr) | ✅ Done |
 | EX-010-PREP | Continuation contract and prediction-input preparation | [qftxVtnX](https://trello.com/c/qftxVtnX) | ✅ Done |
-| EX-010-SCHEDULE | Contract-specific schedule parity and human approval | [LyMlLztN](https://trello.com/c/LyMlLztN) | ✅ Done in repository; board sync remains tracked under Loose Ends P1-027 |
+| EX-010-SCHEDULE | Contract-specific schedule parity and human approval | [LyMlLztN](https://trello.com/c/LyMlLztN) | ✅ Done |
+
+## Closeout verification
+
+- **Operation:** `S2-CLOSEOUT-20260917-01`
+- **Caller:** Josh
+- **Confirmed:** 2026-09-17
+- **Recorded:** 2026-09-17T14:34:53-04:00
+- **Board snapshot:** 34 cards in `✅ Done`; zero in `Current Work`, `🛠️ In
+  Progress`, and `⛔ Blocked`; one card in `🎯 Upcoming Work`.
+- **Carry-over:** `S2-CORR-FOX` only, assigned to Sim for 2h in S3.
+- **Decision at S2 closeout:** S2 is closed. S3 remained proposed pending its
+  separate confirmation; the later kickoff is recorded below.
+- **Exit assessment:** The S2 goal and bounded exit criteria are accepted.
+  Remaining M1 integration, player-flow, performance, and Fox follow-up work is
+  explicitly scheduled for S3 rather than treated as S2 completion debt.
+- **Post-closeout documentation sync:** On 2026-09-17, the S2 plan, Roadmap,
+  Project Context, GDD, TDD, Working State, and Loose Ends ledger were
+  reconciled to this closure. The kickoff workflow and project skill now
+  require the same sync at future sprint closeouts. This is the closeout-time
+  snapshot; the subsequent, separately confirmed S3 kickoff is recorded below.
+
+### Subsequent S3 kickoff board read
+
+S3 kickoff `S3-KICKOFF-20260917-01` was later verified on 2026-09-17. At that
+read, seven S3 cards were in `Current Work`; Upcoming Work, In Progress, and
+Blocked were empty; Done contained zero cards; and 35 historical cards were in
+Archived. No unfinished S2 work was present in the active workflow lists. The
+Archived/Done difference from the S2 closeout snapshot above was recorded and
+left unchanged; the archived history was not reopened or moved as part of the
+S3 kickoff.
 
 ## Scope boundary
 

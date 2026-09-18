@@ -26,9 +26,11 @@ behavior, later-phase balance, or acquisition-order effects that were not tested
 
 ## Locked CF-0 evidence contract
 
-- A gameplay expedition has ten phases, with 200 ticks as the current per-phase
-  target. The prototype exposes a configurable phase length during migration; fresh research may
-  declare a different single-window duration explicitly.
+- Current player contract: six rounds of 10 seconds of simulation time, five
+  Mutation/Skip decisions after rounds 1–5. With the current 0.1-second tick,
+  that is 100 ticks per round; wall-clock duration varies. The 10×200 EX-010
+  schedule is historical research evidence. Fresh research may declare its
+  own single-window duration explicitly.
 - Phase windows use `windowStartTickExclusive` and
   `windowEndTickInclusive`; the opening sample is at the start tick and the
   closing sample is at the end tick. Raw counters are differenced from
@@ -121,7 +123,8 @@ These deltas are a view of progression, not a new score. The project keeps the
 complete human-readable Stat-Line as the source of truth and does not add new
 efficiency, fitness, ranking, or composite scoring functions.
 
-The six-upgrade, ten-phase research schedule will be fixed before execution.
+The six-upgrade, ten-phase research schedule was fixed before execution under
+the EX-010 research contract; it is not the current player schedule.
 The same schedule is used for every seed; any alternate sequence used for a
 research comparison must also be fixed before its runs.
 

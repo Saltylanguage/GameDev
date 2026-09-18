@@ -2,6 +2,12 @@
 
 Status: **local pilot executed; reference panel is not approved balance or promotion evidence**
 
+> **Historical experiment setup:** this panel's ten-phase/200-tick schedule and
+> six-upgrade acquisition paths belong to its recorded research baseline. They
+> are not the current player contract. The current contract is six 10-second
+> simulation-time rounds with five Mutation/Skip choices after rounds 1–5; see
+> [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md).
+
 Owner: **Josh**
 
 Implementation support: **Codex**

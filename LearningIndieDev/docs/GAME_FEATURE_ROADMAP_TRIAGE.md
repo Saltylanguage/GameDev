@@ -44,7 +44,9 @@ Priority meanings:
 ## Current design starting point
 
 The same-world continuation seam now exists in the runtime through the generic
-phase/checkpoint work. The player-facing expedition contract is ten phases.
+phase/checkpoint work. The current player-facing expedition contract is six
+10-second simulation-time rounds and five Mutation/Skip decisions after rounds
+1–5; this is distinct from the ten-phase EX-010 research schedule.
 The remaining cadence questions are normal phase duration, decision rhythm,
 reward pacing, and terminal outcomes; the prototype currently shows 20-second
 phases while the brief describes a longer viewing target.
@@ -77,8 +79,8 @@ simulation or Developer Lab.
 
 | Order | Feature | Player outcome | Priority | Proposed landing window | Dependencies | Potential blockers | Proof of success |
 | ---: | --- | --- | --- | --- | --- | --- | --- |
-| 1 | **Expedition decision loop** | The player understands what one expedition is, watches an ecosystem evolve, makes decisions at clear moments, and knows why it ended. | **Now** | M1 closeout / proposed S3 | Confirm ten-phase cadence, phase length, boundary reward timing, End/Restart, and terminal outcomes. | Unclear cadence, unclear reward rhythm, capacity for final design and playtest review. | A complete run can be explained from launch through result without calling a phase a new run. |
-| 2 | **Phase decision moment** | At a frozen boundary the player can read what happened, take a Mutation, Skip, End, or Continue with confidence. | **Now** | M1 closeout / proposed S3 | Expedition loop; phase summary; Mutation eligibility; reward and currency meaning. | Too many choices, weak information hierarchy, launch-only effects appearing as dead options. | Players choose intentionally and can predict what will change on the next phase. |
+| 1 | **Expedition decision loop** | The player understands what one expedition is, watches an ecosystem evolve, makes decisions at clear moments, and knows why it ended. | **Now** | M1 closeout / active S3 | Implement the locked six-round cadence, boundary choices, End/no-Restart, and terminal outcomes. | Unclear cadence, unclear reward rhythm, capacity for final design and playtest review. | A complete run can be explained from launch through result without calling a round a new run. |
+| 2 | **Phase decision moment** | At a frozen boundary the player can read what happened, take one of three Mutations, Skip, End, or Continue with confidence. | **Now** | M1 closeout / active S3 | Six-round loop; five choices after rounds 1–5; glanceable Mutation meaning and reward currency. | Too many choices, weak information hierarchy, launch-only effects appearing as dead options. | Players choose intentionally and can predict what will change on the next round. |
 | 3 | **Mutation grammar and build identity** | Choices create recognizable strategies with meaningful tradeoffs instead of a list of small bonuses. | **Now → Next** | Start in M1 closeout; deepen in S4 | Stable Mutation grammar, readable previews, same-world timing, shared capability map, seeded evidence. | Balance is provisional; some effects are initialization-only; art and copy may not communicate tradeoffs. | Trailblazer, Warren and Gardeners feel different and remain understandable over several phases. |
 | 4 | **Mutation and Genome tree presentation** | The player can distinguish the temporary path being built during a Species Simulation from permanent Genome unlocks and the currently active Genome of each species. | **Next** | S4 design; S5 presentation pass | Economy and currency rules, stable IDs, species identities, active-capacity rules, UI and art direction. | Similar tree layouts can blur what resets; unlocked and active states can be confused; a tree can overwhelm the player or expose content before its balance and copy are ready. | Players can explain what they are Mutating now, which Genome options remain unlocked, which are active, and why they chose the configuration. |
 | 5 | **Cause-and-effect phase summary** | The player can tell what helped, what hurt, and what the next decision is responding to. | **Now → Next** | M1 closeout, then S5 readability pass | Phase/expedition result meanings, event summaries, UI states, visual language. | Stat-Line semantics may be too dense; missing art for danger, recovery or rule activation. | A player can name the main cause of survival or collapse after seeing the summary. |
@@ -193,7 +195,7 @@ design constraints:
 
 | Dependency | Features affected | Current state | What must be decided or supplied |
 | --- | --- | --- | --- |
-| Expedition shape | 1–6, 8, 11, 13, 16–20 | Same-world runtime exists and the ten-phase contract is established. | Choose the normal duration and decision rhythm. |
+| Expedition shape | 1–6, 8, 11, 13, 16–20 | Same-world runtime exists; six 10-second simulation rounds and five choices are locked. | Implement the approved duration and decision rhythm. |
 | Mutation / Genome grammar | 2–4, 6–11, 13, 16, 18 | Seven Hare Mutation assets are authored; active Genome configuration and scalable balance are planned. | Define shared capabilities, provisional value budgets, mode boundaries, effect contracts, stacking, timing, and the direct and ecological evidence needed for approval. |
 | Reward/data economy | 1–6, 8, 12–13, 16–17 | Phase survivor data exists; permanent economy remains deferred. | Separate phase rewards, final settlement, temporary choice currency, banked data and permanent unlocks. |
 | Profile identity and cloud contract | 12, 13, 16–17 | Profile persistence is not the active-expedition contract. | Decide stable IDs, account/offline behavior, conflict resolution, migration, reset and recovery before promising cross-device continuity. |
@@ -209,8 +211,9 @@ design constraints:
 
 This is a sequence of design outcomes, not a pre-filled sprint schedule:
 
-1. **Define the Expedition Decision Loop.** Confirm the locked ten-phase
-   cadence, boundary choices, rewards, End, Restart and terminal outcomes.
+1. **Implement the Expedition Decision Loop.** Apply the locked six-round
+   cadence, five Mutation/Skip choices, rewards, confirmed End/no-Restart, and
+   terminal outcomes.
 2. **Make the boundary decision satisfying.** Shape the phase summary, offer
    structure, Skip, upgrade previews and the player's next action.
 3. **Define the economy and currency promise.** Decide what is earned during a
@@ -242,10 +245,11 @@ Start with **The Expedition Decision Loop**. Its feature brief should answer
 the player's questions in order:
 
 - What am I trying to keep alive?
-- How long is one phase, and how do the ten phases make an expedition?
+- How does the six-round expedition flow, and how long is each round in
+  simulation time?
 - What can change at a boundary, and what survives unchanged?
 - What did I earn, and what can I spend it on?
-- What does Skip, End or Restart mean?
+- What do Skip and confirmed End mean? (Restart is not a player action.)
 - How do I know whether I won, narrowly survived or lost?
 - Why should I start another expedition?
 

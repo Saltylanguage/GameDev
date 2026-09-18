@@ -22,7 +22,7 @@ The desktop must make these four progression/evidence layers visibly distinct:
 | Layer | Meaning | Owned by |
 | --- | --- | --- |
 | Species Genome | Permanently unlocked options plus a configurable active set that affects every population of one species | Gene Lab |
-| Expedition Mutations | Nine temporary adaptations acquired during one continuous expedition | Simulation reward breaks |
+| Expedition Mutations | Temporary per-run adaptations; current contract has five choice moments in a six-round run | After rounds 1–5 |
 | Environmental research | Permanent biome, terrain, resource, or scenario changes | Biome / Ecology Lab |
 | Evidence and history | What happened in completed phases and expeditions | History / Data Record |
 
@@ -219,7 +219,7 @@ invalid evidence as a score.
 **Key links:** Species Collection, Gene Lab, Biome Lab, Field Guide.
 
 **Important distinction:** The app must label phase versus expedition windows.
-A ten-phase continuous expedition is not ten fresh runs, and a fresh research
+A six-round continuous expedition is not six fresh runs, and a fresh research
 window must not be presented as an equivalent gameplay expedition.
 
 ### D-07 — Biome / Ecology Lab

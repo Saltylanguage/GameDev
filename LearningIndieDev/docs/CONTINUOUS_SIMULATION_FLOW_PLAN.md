@@ -1,5 +1,12 @@
 # Consecutive simulation phases — architecture review and migration plan
 
+> **Implementation/research record, not the current player spec.** The player
+> contract is six 10-second simulation-time rounds with five Mutation/Skip
+> choices after rounds 1–5; see [S3-02](Sprints/S3-02-expedition-contract.md).
+> Any ten-phase/200-tick values below belong to explicitly historical EX-010
+> evidence or implementation fixtures. Whole-session performance measurement
+> is optional stretch work.
+
 **Status:** CF-0 through CF-5 are implemented and verified. The controlled
 preview path, phase telemetry, checkpoint seam, direct Stat-Line output and
 opt-in headless schedule are closed for the current slice. EX-010 has executed
@@ -25,10 +32,10 @@ Use these terms consistently:
 | Term | Meaning |
 | --- | --- |
 | Expedition / gameplay run | One launch through terminal results, containing consecutive phases. |
-| Phase / segment | A bounded observation window within that expedition; 200 ticks is the current product target, while the prototype exposes the phase length for tuning. |
+| Phase / round | A bounded observation window within the expedition. Current player contract: six 10-second simulation-time rounds; at a 0.1-second step, 100 ticks per round. |
 | Decision boundary | A frozen, completed-tick state; one upgrade or an explicit skip can be committed. |
 | Research run | One execution under an experiment contract; it can deliberately be a fresh single window or a multi-phase expedition. |
-| Restart / new expedition | An explicit destructive-in-game action that discards the current expedition; never an alias for Continue. |
+| New expedition | A new player run after results. Restart is not a player action. |
 | Checkpoint | Sufficient state for deterministic research reproduction; distinct from a player-facing disk save. |
 
 ## Locked CF-0 contract (2026-09-04)
@@ -47,11 +54,12 @@ remaining acceptance work are recorded below.
 | Restart | A deliberate developer action abandons the current attempt and starts a new expedition from the original launch configuration with a new attempt identity. It is not a phase retry; retry semantics require a separately recorded checkpoint and reward rollback contract. |
 | Terminal completion | Extinction, the final product phase, or explicit End moves the expedition to Complete exactly once. A terminal result does not offer another upgrade. |
 
-The product cadence is ten phases, with 200 ticks as the current per-phase
-gameplay target, while the current prototype presentation remains a configurable
-phase length. Fresh
-single-window research remains a declared independent mode of the same step
-engine.
+The current player cadence is six rounds of 10 seconds of simulation time,
+with five Mutation/Skip decisions after rounds 1–5. At a 0.1-second step that
+corresponds to 100 ticks per round. Wall-clock duration is not fixed. EX-010's
+ten phases of 200 ticks each remain a historical research contract, not the
+player schedule. Fresh single-window research remains an independent mode of
+the same step engine.
 
 Initialization-only upgrades (including starting population, starting energy
 and starting reserve) are launch-only. They are not offered as if they mutate
@@ -84,9 +92,10 @@ shown in both adjacent phase summaries, but each event and exposure belongs to
 one declared window. These meanings are the contract Stat-Line, predictive AI,
 telemetry producers and validators consume.
 
-The product brief's ten-phase termination and the prototype's configurable
-viewing cadence are recorded above as locked migration inputs. Do not silently
-turn a 20-second phase into a whole expedition.
+The player contract ends after round 6; extinction ends immediately as failure.
+Confirmed End abandons the run, with no rewards before round 6. Do not confuse
+these rules with the historical EX-010 research schedule or configured test
+durations.
 
 ```mermaid
 flowchart TD
@@ -177,10 +186,10 @@ frame accumulator time when entering the reward break, so it cannot consume the
 next phase immediately. Ordinary Pause/Resume preserves its substep remainder.
 Document and test this deliberate scheduling distinction.
 
-After each tick, check extinction before the normal phase reward. At the final
-phase, finalize victory/narrow survival/defeat without offering another upgrade.
-The product's ten-phase limit belongs to the expedition; diagnostic fresh runs
-retain their specified duration/termination policy. No engine loop should wait
+After each tick, check extinction before the normal boundary. At round 6,
+survival is victory; finalize results without offering another Mutation.
+The player's six-round limit belongs to the expedition; diagnostic fresh runs
+retain their declared duration/termination policy. No engine loop should wait
 forever when a headless run reaches a decision boundary.
 
 ### Upgrade transaction
@@ -250,13 +259,14 @@ inheriting Josh's runtime or research responsibilities.
 | CF-3 Player flow and composition | Josh or explicitly assigned UI owner | 4–6h | **Controlled preview path implemented and verified.** Purchase, skip, Continue, explicit End, pause and restart are wired without rebuilding the retained run. Lab routes and full UI/scene validation remain separate. |
 | CF-4 Telemetry and Stat-Line | Josh; Sim reviews metric meaning | 8–12h | **Implemented, verified, and semantically approved.** Versioned phase windows, pooled acquisition timing, metric deltas and event filtering flow through JSON/Markdown/CSV and the PlayMode report; direct ForestEdge/Hare runs emit the validated Stat-Line CSV. Sim approved the phase/final meanings used by EX-010. |
 | CF-5 Research checkpoints and schedules | Josh | 8–12h | **Checkpoint seam, opt-in headless schedule, and EX-010 contract-specific schedule implemented and verified.** Round-trip/fork isolation, deterministic runner resume, and the approved ten-phase schedule pass. |
-| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | **Partially complete.** Documentation, automated runtime/evidence coverage, graphics checks at both target resolutions, the Windows player smoke, and the corrected ten-phase Forest Edge/Hare run are complete. Only the outer wall-duration and peak-memory measurement remains product acceptance work. |
+| CF-6 Integrated regression and document closure | Josh, Sim review | 6–10h | **Historical closeout plan.** Runtime/evidence coverage, graphics checks, Windows player smoke, and the historical EX-010 Forest Edge/Hare run are recorded. Full-session duration and memory measurement is optional stretch work, not a product acceptance gate. |
 | Total | Replan capacity explicitly | 44–68h | EX-010 execution is complete; future balance or predictive-calibration work requires a new approved protocol. |
 
 CF-1 through CF-5 completed in dependency order and now share the locked
 lifecycle/report contract. The CF-5 schedule path and EX-010 contract-specific
-run are complete; future schedules need their own approved contract. Release
-acceptance remains bounded to the unfinished CF-6 measurement named above.
+run are complete; future schedules need their own approved contract. Product
+acceptance now follows the six-round S3 contract. The prior outer-duration and
+memory measurement is optional stretch work.
 
 ## CF-0 closure — contract and fixture
 
@@ -289,9 +299,9 @@ fallback.
 
 Automated domain, report, checkpoint, schedule, EX-010, and graphics-capable
 1280×720/1920×1080 validation are complete for the current slice. The current
-Windows development-player smoke also passed. The outer ten-phase wall-duration
-and peak-memory measurement remains open; the table retains the complete
-acceptance contract.
+Windows development-player smoke also passed. A whole-session duration and
+peak-memory measurement may be useful, but is not required for M1 closeout or
+S3 acceptance.
 
 | Gate | Fixture and assertion |
 | --- | --- |
@@ -307,7 +317,7 @@ acceptance contract.
 | Producer/consumer parity | Schema fixtures for legacy fresh, continued, truncated and incompatible runs; JSON, CSV, Markdown, Stat-Line and UI agree. Comparison rejects missing/incompatible contracts. Report output does not alter simulation. |
 | Research equivalence | Same resolved schedule produces matching gameplay/headless checkpoints. EX-009 stays a launch-time mode; paired diagnostics retain their own regression coverage. |
 | Unity integration | Existing Edit Mode and Play Mode suites, graphics-capable board/scene checks at 1280×720 and 1920×1080, Windows development build and smoke test. Preserve every `.meta`, GUID and serialized reference. |
-| Duration and memory | Verify exact ticks at authored duration conversion edges; measure a ten-phase session and the longest supported diagnostic window. Inspect retained history/events before proposing optimization; never truncate evidence silently. |
+| Duration and memory | Verify the six-round duration conversion at the active simulation step. Optional stretch: measure the current session and longest supported diagnostic window; never truncate evidence silently. |
 
 Use existing manager/domain/upgrade/player-selection/adapter/catalog tests plus
 the presentation, Lab and cave-preview Play Mode suites as the regression base.
@@ -322,9 +332,8 @@ The mechanics and evidence contract are implemented and accepted. The remaining
 work is bounded product acceptance and delivery coordination:
 
 1. Preserve the accepted graphics evidence at 1280×720 and 1920×1080.
-2. Preserve the successful Windows development-player smoke and run the remaining
-   outer ten-phase wall-duration and retained-history memory measurement with the
-   explicit Forest Edge/Hare scenario configuration.
+2. Preserve the successful Windows development-player smoke. Whole-session
+   duration and retained-history memory measurement is optional stretch work.
 3. Preserve the EX-010 report and human decision as bounded research closure;
    any new schedule or predictive-calibration question is separate.
 

@@ -1,5 +1,10 @@
 # Parallel CellSim: agent build pack
 
+> **Research/tooling plan:** tick counts below describe standalone performance
+> and parity fixtures, not the player expedition cadence. The current player
+> contract is six 10-second simulation-time rounds; see
+> [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md).
+
 Date: 2026-09-09  
 Status: Draft for Bevin to give to an implementation agent; nothing provisioned  
 Human decision owner: Bevin  

@@ -75,6 +75,30 @@ After confirmation:
 Kickoff is not complete until the board has been re-read and the resulting
 lists, sprint metadata, and control record agree.
 
+### Required post-closeout documentation sync
+
+After the board state has been re-read and verified, reconcile the project's
+current documentation before declaring closeout complete:
+
+1. Mark the previous sprint plan and control record `Closed`, with the actual
+   close date and a link/reference to the closeout evidence.
+2. Update `ROADMAP.md` and `docs/WORKING_STATE.md`. Update the GDD, TDD, and
+   `docs/PROJECT_CONTEXT.md` wherever current scope, decisions, or status
+   changed; do not make unrelated content edits.
+3. Move resolved sprint items out of the Loose Ends current-open section into
+   resolved items. Track any next-sprint kickoff separately as `Proposed` until
+   a distinct kickoff is confirmed and verified.
+4. Record or refresh a concise handoff with the board/control evidence, current
+   status, validation performed, and next action.
+5. Search the affected current documents for stale sprint status, dates, and
+   links. Preserve dated historical notes as history; do not rewrite them as
+   current status.
+
+Closeout is complete only when the verified board, sprint control record,
+execution plan, Roadmap, Working State, and Loose Ends agree. Closing one sprint
+does not commit the next sprint; the next sprint remains `Proposed` until its
+separate kickoff is explicitly confirmed and verified.
+
 ## KickTheCan contract
 
 ```text

@@ -25,77 +25,81 @@ poorly.
 
 ## Player experience and agency
 
-The player selects the curated slice scenario and begins with a fixed player species and base ruleset. During simulation phases, the player observes the live board, pauses or changes speed, and inspects cells and species. The player does not directly move individual cells or edit raw parameters.
+The player selects the curated slice scenario and begins with a fixed player species and base ruleset. During simulation rounds, the player observes the live board, pauses or changes speed, and inspects cells and species. The player does not directly move individual cells or edit raw parameters.
 
-The primary decisions are Mutation choices. At each reward break, the player
-chooses an eligible Mutation from the offered options or explicitly skips it.
-Every option previews the affected rule, valid range, tradeoff, and expected
-board consequence. The chosen upgrade becomes part of the expedition's ordered,
-fingerprinted ruleset for all later phases. Skipping preserves the current build.
+The primary decisions are Mutation choices. After rounds one through five, the
+player sees three Mutations and chooses one or Skip. Round one starts without a
+Mutation choice; finishing round six leads to results without another choice.
+Each Mutation is presented with a small icon and keyword (for example,
+“hunting +1”), not a full statistic breakdown. Its effect should be predictable
+at a glance and apparent during the following round. A Mutation is temporary
+and lasts only for its current run.
 
 ## Run and decision cadence
 
-A run contains **ten simulation phases**. Each phase uses the configured phase length; 200 ticks is the current product target. Normal speed targets roughly one phase every two to three minutes, producing a **20–30 minute run** including inspection and choices.
+A run contains **six simulation rounds**, each lasting **10 seconds of
+simulation time**—one minute of simulation time in total. No real-time duration
+target is set; actual elapsed time varies with simulation speed and pauses.
 
 The flow is:
 
 1. Scenario briefing and starting ruleset.
-2. Simulate the configured phase length, with 200 ticks as the current target,
-   with pause, speed, and inspection controls available.
-3. Show a short phase summary and offer three Mutations.
-4. Apply one choice or record a skip, clearly preview any change, and continue
-   the same ecosystem from its next tick.
-5. After phase ten—or immediate extinction—show results, accomplishments, and earned unlocks.
+2. Simulate round one for 10 seconds of simulation time, with pause, speed, and
+   inspection controls available.
+3. After rounds one through five, pause and offer three Mutations or Skip.
+   Continue the same ecosystem into the next round.
+4. After round six, show results and currency earned from the performance
+   measure under development. Additional bonus-event rewards are possible but
+   not decided.
 
 There is no real-time decision timer. Simulation pauses automatically during
-Mutation selection. A player therefore has nine Mutation decision points per
-completed run, after phases one through nine. At each point, choosing a
-Mutation or explicitly skipping is valid. Skip preserves the current build and
-has no current bonus or penalty. Any future reward-doubling or other incentive
-for skipping is a separate economy rule and remains deferred.
+Mutation selection. A player has five Mutation decision points per run, after
+rounds one through five. A possible Skip bonus is undecided and non-blocking;
+if adopted, it uses the same currency as Genome Upgrades. Its amount and limits
+remain open.
 
-Each phase preserves the board, creature/resource state, age, energy, cooldowns,
-initial seed, absolute tick and accumulated history. A phase summary does not
-restart the expedition. Explicitly ending or restarting the expedition is a
-separate action. The controlled prototype now keeps the same world through its
-phase decisions; telemetry and full product validation remain in the
+Each round preserves the board, creature/resource state, age, energy, cooldowns,
+initial seed, absolute tick and accumulated history. A round summary does not
+restart the expedition. Restart is not a player action. End abandons the run
+after the player confirms Yes; ending before completing round six forfeits all
+rewards. Pause is
+available. The controlled prototype keeps the same world through its round
+decisions; telemetry and full product validation remain in the
 [migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
 
-The prototype can tune phase length for testing; a configured 200-tick phase
-takes about 20 seconds at normal speed.
-The two-to-three-minute viewing target above remains a separate pacing decision;
-the continuity migration does not silently change the configured step interval.
+The round duration is simulation time, not wall-clock time. Do not infer a
+player-facing real-time pacing target from the 10-second simulation duration.
 
 ## Success, failure, and rewards
 
-- **Victory:** the player species remains alive at the end of phase ten and finishes at or above the scenario's authored survival population threshold.
-- **Narrow survival:** the species remains alive but finishes below the threshold. The run completes and records accomplishments, but does not grant the scenario-completion unlock.
-- **Defeat:** the player species reaches zero population. The run ends immediately after the completed tick that caused extinction.
+- **Victory:** the player species is not extinct at the end of round six. This
+  survival rule applies in any biome.
+- **Failed run:** the player species goes extinct. The run ends immediately and
+  awards no rewards.
+- **Player-ended run:** confirming End abandons the run; if used before round
+  six, it awards no rewards.
 
-After every phase except the last, surviving players may choose one Mutation
-or skip. Phase summaries show that phase's population change, births, deaths by
-cause, food consumed, movement, combat, and notable upgrade contributions.
-The current contract gives Skip no bonus or penalty. Final results distinguish
-whole-expedition totals from individual phases.
+The successful-run currency award is based on the performance measure currently
+in development, not simply final population. Possible bonus events may award
+additional currency, but that is not decided. Final results distinguish
+whole-expedition totals from individual rounds.
 
-The final results screen awards accomplishments for explicit feats such as
-victory, population recovery, efficient feeding, or surviving a named
-pressure. The first vertical slice grants **one predetermined meta-progression
-unlock on the first victory**. The slice does not yet implement a permanent
-Genome stat purchase; that is a scope boundary for this milestone, not a
-permanent prohibition on Genome improvements.
+The Gene Lab application, opened from the GalapagOS Desktop, uses currency to
+buy permanent **Genome Upgrades** that fill a species' **Genome** skill tree.
+The exact performance-to-currency calculation is linked to the measure now in
+development. Additional bonus-event rewards remain optional.
 
 ## Persistence and replay
 
 The slice saves settings, completed accomplishments, and versioned
-meta-progression unlocks. A completed expedition records its seed, scenario ID,
-base ruleset fingerprint, phase boundaries, ordered Mutations with acquisition
+meta-progression. A completed expedition records its seed, scenario ID, base
+ruleset fingerprint, round boundaries, ordered Mutations with acquisition
 ticks and resolved values, and final result for reproduction and comparison.
 
 An active expedition is **not saved to disk or restored after application exit**
 in the initial slice. In-memory continuation across decision breaks is required.
-Research checkpoints are a separate reproduction contract. Starting over is
-explicit. Final results return the player to a next-expedition screen where the
+Research checkpoints are a separate reproduction contract. Starting a new run
+is a separate action after results. Final results return the player to a next-expedition screen where the
 earned unlock is visible and usable when applicable.
 
 ## Launch target

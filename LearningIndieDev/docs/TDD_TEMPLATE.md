@@ -1,21 +1,21 @@
 # GalapagOS — Technical Design Document
 
-> Status: Working engineering baseline; implementation truth is separated from roadmap intent | Owner: Josh Campbell | Last updated: 2026-09-12 | Engine: Unity 6000.4.6f1
+> Status: Working engineering baseline; implementation truth is separated from roadmap intent | Owner: Josh Campbell | Last updated: 2026-09-17 | Engine: Unity 6000.4.6f1
 
 ## How to read this document
 
-This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2 is the working baseline, but proposed Sprint 3 work is not yet an approved sprint commitment.
+This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2.2 is the working baseline. Sprint 2 closed and Sprint 3 was kicked off on 2026-09-17; S3 execution scope and capacity are recorded in the active control record.
 
 - **Implemented** means executable in the current project within the stated route and limits.
 - **Connected** means reachable through the canonical player flow, not merely present in code or a legacy scene.
-- **Planned** means named in roadmap v2 or an active implementation plan.
+- **Planned** means named in roadmap v2.2 or an active implementation plan.
 - **Open** means no authoritative contract or accepted decision exists yet.
 
 ## 1. Technical goals and constraints
 
 ### Goals
 
-- Preserve deterministic, same-world simulation across ten phase windows.
+- Preserve deterministic, same-world simulation across six player-facing rounds.
 - Keep authored Unity assets separate from plain runtime data and mutable run state.
 - Keep the dependency direction `View -> ViewModel -> Helper/composition -> Domain` for player UI.
 - Present the simulation through Noesis/XAML without making the domain depend on Unity UI.
@@ -40,10 +40,11 @@ This is the engineering source of truth for runtime ownership, data contracts, d
 | Target platform | Windows 64-bit Steam, keyboard/mouse | **Committed slice target** |
 | Resolution | 1920×1080 target; 1280×720 functional | **Graphics acceptance recorded** |
 | Determinism | Seeded run; deterministic for a fixed scenario/ruleset/version/schedule | **Implemented within recorded evidence bounds** |
-| Phase schedule | 10 phases × 200 completed ticks, 9 decision boundaries | **Committed target** |
-| Preview default | `SpeciesSimulationPreview.phaseLengthTicks = 100` | **Implementation mismatch** |
-| Forest Edge size | Checked-in asset 42×20; generator and architecture map 36×20 | **Source conflict** |
-| Performance | Outer ten-phase wall duration and peak-memory budget/measurement | **Not closed; CF-6 remainder** |
+| Player schedule | 6 rounds × 10 seconds of simulation time; 5 Mutation choices after rounds 1–5 | **Committed product contract** |
+| Tick conversion | At a 0.1-second step interval, one 10-second round is 100 completed ticks; simulation time is authoritative | **Runtime/configuration acceptance pending** |
+| Player controls/outcomes | Pause; confirmed End abandons with no rewards before round 6; no Restart; survival through round 6 wins; extinction immediately fails with no rewards | **Committed product contract** |
+| Forest Edge size and plants | Board size deferred; playable plant species on hold | **Not part of current contract** |
+| Performance | No wall-clock target; full-session duration/memory measurement is optional stretch work | **Not an M1 closeout gate** |
 
 ## 2. Architecture and ownership
 
@@ -104,6 +105,8 @@ MainMenu
 
 `GalapagOSDesktopNoesisHost.OpenSimulation` then swaps the Desktop to its local simulation view and starts a locally composed preview. It does not consume a `SimulationLaunchRequest`, selected scenario, seed, schedule, or frozen profile progression. This makes the screen executable but disconnects it from profile selection and expedition preparation.
 
+The accepted test contract for this current local route is direct-start Forest Edge/Hare. This is an acceptance-fixture decision, not approval of the local-default composition as the final architecture; the route must still consume the selected profile and launch request. The recorded PlayMode failures have not been individually verified, so do not attribute them to a specific expectation until their result details are available.
+
 The legacy `Lab -> CellularAutomataPrototype` route does use the immutable `SimulationLaunchRequest` contract. It proves the launch object can work, but it is not the intended player home. The fix should establish one request/session owner and reuse the contract in the Desktop route rather than creating a third launch path.
 
 ### Main-flow availability matrix
@@ -114,7 +117,7 @@ The legacy `Lab -> CellularAutomataPrototype` route does use the immutable `Simu
 | Profile -> Desktop | Yes | Yes | **No; snapshot is not retained** |
 | Desktop -> Expedition Planner | Visual concepts/shell elements | No complete planner | No |
 | Planner -> immutable launch request | Legacy contract exists | No | No |
-| Desktop -> embedded simulation | Yes | Yes | **Local defaults; bypasses request/profile** |
+| Desktop -> embedded simulation | Yes | Yes; directly starts Forest Edge/Hare | **Local defaults; bypasses request/profile** |
 | Running -> pause/resume | Yes | Yes | Yes |
 | Running -> speed/zoom | Controls visible | Yes | **No commands bound** |
 | Board -> selected cell details | ViewModel method exists | No | **No pointer-to-cell call** |
@@ -122,7 +125,7 @@ The legacy `Lab -> CellularAutomataPrototype` route does use the immutable `Simu
 | Boundary -> choose/Skip/Continue | Yes | Yes in preview | Partial catalog reachability |
 | Terminal -> authored outcome/results | Generic shell exists | Yes | **No authored outcome/settlement** |
 | Results -> same-profile Desktop | Close route exists | Yes | **No retained session/progression** |
-| Desktop -> Gene Lab/history/details | UI affordances exist | Some appear enabled | **Handlers/routes absent** |
+| Desktop -> Gene Lab/history/details | UI affordances exist | Gene Lab shell opens; other routes vary | **No approved Genome catalog/actions; several handlers/routes absent** |
 
 ## 4. Runtime data model
 
@@ -181,11 +184,11 @@ scenario-authored natural rules
 
 Biome Simulations reject Mutation loadouts. Permanent Genome unlocks must be stored separately from active Genome allocations. Neither Genomes nor Mutations may rewrite authored base assets.
 
-Genome application and persistence are **planned, not implemented**. The current executable rule composition includes natural rules and ordered runtime Mutation snapshots only.
+The Genome identity and transport contract is implemented. Per-species unlocked and active node IDs are stored in the local profile, frozen into an immutable launch snapshot, and retained through the run, checkpoints, and results. Genome nodes are not yet mapped to executable rule changes, so the current simulation behavior still comes from natural rules and ordered runtime Mutation snapshots only.
 
 ### Persistence boundary
 
-The current local profile serialization stores an ID and display name through PlayerPrefs/JSON. It has no explicit save-schema version, wallet, settings contract, unlock collection, active Genome, accomplishments, expedition history, or migration/recovery behavior.
+The current local profile serialization stores an ID, display name, and per-species Genome profiles through PlayerPrefs/JSON. Each Genome profile separates permanently unlocked node IDs from the active node IDs frozen at launch. The format still has no explicit save-schema version, wallet, settings contract, accomplishments, expedition history, approved purchasing flow, or migration/recovery behavior.
 
 The first production persistence format must:
 
@@ -236,7 +239,8 @@ Invariants:
 - A non-terminal phase boundary is resumable; terminal completion is not.
 - Continue retains the same runner, absolute tick, grid, progression, and accumulated evidence.
 - A Mutation is validated and applied atomically while frozen, before the next tick.
-- Restart/new expedition owns initialization and creates a new run.
+- A new expedition after results owns initialization and creates a new run;
+  Restart is not a player action.
 - The phase clock is derived from completed ticks, not presentation frames or wall time.
 - A terminal event after a completed tick takes precedence over opening another boundary.
 
@@ -250,7 +254,7 @@ Invariants:
 - actual board dimensions;
 - phase schedule;
 - ordered Mutation snapshots and acquisition ticks;
-- frozen Genome snapshots once that system exists;
+- frozen Genome snapshots and their fingerprints;
 - simulation mode and terminal reason;
 - any validity flags or compatibility decisions applied during report loading.
 
@@ -268,7 +272,7 @@ CF-1 through CF-5 implement and verify:
 - generic schedule/report support;
 - phase and expedition evidence required by EX-010.
 
-CF-6 is partially complete. Documentation, automated lifecycle/evidence coverage, graphics checks, Windows smoke, and the corrected ten-phase Forest Edge/Hare run are recorded. The outer wall-duration and peak-memory measurement remains the open product-acceptance item.
+CF-6 is partially complete. Documentation, automated lifecycle/evidence coverage, graphics checks, Windows smoke, and the historical ten-phase EX-010 Forest Edge/Hare run are recorded. Measuring the current six-round player session is optional stretch work, not an open product-acceptance gate.
 
 ## 6. Mutation, Genome, and offer execution
 
@@ -291,13 +295,22 @@ Before the slice claims Trailblazer/Warren/Gardeners support, the offer system m
 
 ### Genome execution boundary
 
-No production Genome state, active allocation, launch freezing, Gene Lab editor, persistence, or migration exists yet. The intended sequence is:
+The first Genome foundation now exists:
 
-1. Define the smallest Genome contract in S4 planning.
-2. Stabilize profile ownership, wallet/settlement, schema versioning, and stable node IDs.
-3. Implement one Hare Genome unlock that survives restart and can be activated/deactivated between runs.
-4. Freeze active Genome snapshots for every participating species at launch.
-5. Prove that authored natural species assets remain unchanged and that replay/report identity includes the frozen configuration.
+- `SpeciesGenomeProfile` separates permanently unlocked node IDs from active node IDs for one stable `SpeciesId`;
+- `GenomeSimulationSnapshot` freezes every participating species' active configuration and supplies a deterministic fingerprint;
+- profile, launch request, run, checkpoint, and result contracts carry that immutable snapshot;
+- metadata-only `GenomeUpgradeAsset` and `SpeciesGenomeMapAsset` definitions resolve through `GenomeCatalogProvider` into an asset-free catalog; and
+- the Gene Lab can display species-bound catalog metadata through generic ViewModel bindings.
+
+This is a data and provenance boundary, not a finished progression feature. No production node currently changes simulation rules. The remaining sequence is:
+
+1. **Complete 2026-09-17:** remove the visualization-only Hare/Fox assets, debug selector, and player-scene catalog provider while retaining generic authoring and display contracts.
+2. Approve one small Hare node/effect/cost contract and its player-facing wording.
+3. Establish the production profile owner, scientific-data wallet and settlement flow, save-schema versioning, migration, reset, and corrupt-save recovery.
+4. Add player actions for buying, activating, and deactivating legal nodes between simulations.
+5. Map the approved node to immutable executable rules without changing authored natural species assets.
+6. Verify that launch, replay, reports, and both simulation-mode scorecards identify the frozen configuration and its actual effects.
 
 ## 7. Presentation and interaction boundaries
 
@@ -364,19 +377,15 @@ CellSim batch/report tools, prediction-input adapters, and research artifacts su
 
 | Area | Latest recorded result | Scope caveat |
 | --- | --- | --- |
-| Unity compilation | Current editor command compiled without errors on 2026-09-12 | Two obsolete-API warnings remain in `LabPlayModeTests` |
-| EditMode | 212/212 passed on 2026-09-09 | Not rerun for this documentation update |
-| General PlayMode | 21 passed, 1 intentional visual-capture skip, 0 failures on 2026-09-09 | Recorded suite only |
-| Graphics | 22/22 passed at 1280×720 plus focused 1920×1080 acceptance | Does not prove interaction or accessibility |
+| Unity compilation | Integrated branch compiled during the 2026-09-13 test run | Fresh compilation for the fixture removal is pending because Unity is open |
+| EditMode | 251/251 passed on 2026-09-17 | Retained run: `artifacts/unity-tests-20260917-220612/` |
+| No-graphics PlayMode | 28 passed; two expected graphics-only skips | Same retained full-suite run |
+| Graphics-capable PlayMode | 30/30 passed | Same retained full-suite run; does not prove accessibility |
 | Consecutive simulation | CF-1–CF-5 and bounded EX-010 accepted | Does not generalize beyond recorded contract |
 | Windows build | Development-player smoke recorded complete | Not a release/certification pass |
-| Performance | Outer duration/peak memory not recorded | Remaining CF-6 gate |
+| Performance | No wall-clock target; duration/peak-memory measurement is optional stretch work | Not an M1 closeout gate |
 
-Current warnings:
-
-- `Assets/Tests/PlayMode/LabPlayModeTests.cs` uses obsolete `FindObjectsByType<Component>(FindObjectsSortMode.None)` API calls in two locations.
-
-This document-only update does not justify claiming fresh Unity test results. The next runtime change touching the launch flow, schedule, phase decisions, or UI commands must run the proportionate EditMode/PlayMode and player-flow checks.
+The 2026-09-17 full-suite rerun passed. See the retained artifact above; the earlier run that stopped because Unity was already open is not the latest result.
 
 ### Required integrated acceptance
 
@@ -384,12 +393,15 @@ The M1 player-flow gate needs evidence that:
 
 1. A selected profile remains owned through Desktop, launch, results, and return.
 2. A Forest Edge/Hare expedition launches from the canonical Desktop route without developer-only fields.
-3. The actual runtime runs ten 200-tick phases or the design target is explicitly revised.
+3. The player route runs six 10-second simulation rounds; at a 0.1-second step interval, each round spans 100 completed ticks.
 4. At every non-terminal boundary, Mutation or Skip followed by Continue preserves the same world.
 5. Every intended Mutation build has a reachable, valid offer path and a visible effective tick.
-6. Extinction and final-phase completion route to an honest outcome and results state.
+6. Extinction immediately ends in failure with no rewards; surviving through
+   round 6 is victory; confirmed End abandons the run with no rewards before
+   round 6. Each path reaches an honest result state.
 7. Results return to Desktop without losing the selected profile or applied settlement.
-8. Duration, peak working set, and peak private memory are captured for the accepted run.
+8. A full-session duration/memory capture is optional stretch work and is not a
+   player-flow acceptance gate.
 
 ## 10. Technical risks and open decisions
 
@@ -397,16 +409,17 @@ The M1 player-flow gate needs evidence that:
 | --- | --- | --- |
 | Desktop bypasses `SimulationLaunchRequest` | Player choices, profile, seed, schedule, and future Genome may not reach the run | Establish one Desktop-owned session/launch boundary and remove local-default authority |
 | Profile snapshot is discarded on scene load | Results, wallet, Genome, history, and settings have no durable owner | Define session lifetime before adding progression |
-| 100-tick preview versus 200-tick target | Product cadence and acceptance evidence disagree | Choose the authority and add a configuration assertion |
-| 42×20 asset versus 36×20 generator/map | Regeneration can silently change gameplay and invalidate comparisons | Select one dimension source and test generated asset parity |
-| Fern versus `plant` runtime identity | IDs, telemetry, art, authored diets, and future saves may diverge | Decide alias versus migration before persistence |
+| Round-duration conversion | Product time is authoritative; tick count depends on the configured step interval | Assert the round duration converts to the intended tick count for the active scenario |
+| Forest Edge board size | Asset, generator, and architecture map disagree; size is deferred from the current contract | Record actual dimensions in evidence; resolve before board-size-dependent balance comparisons |
+| Playable plant species | Plant playability and Fern naming are on hold | Do not include a plant species in current player-flow acceptance |
 | Only first three of seven Mutation assets are reachable | Warren/Gardeners builds cannot be evaluated through the player loop | Implement deterministic offer selection/eligibility and coverage |
 | Inert enabled-looking controls | UI advertises features that cannot execute | Bind and test them or present them as unavailable |
-| Generic terminal result | No reliable win/loss, accomplishment, or settlement contract | Author outcome evaluator and result DTO before persistence |
+| Generic terminal result | The six-round victory/failure/End rules are agreed, but the evaluator and player result DTO are not complete | Implement the agreed outcomes and result DTO before persistence |
 | Unversioned minimal profile JSON | Future data cannot migrate or recover safely | Introduce schema/version/migration/corrupt fallback with S6 persistence |
 | Seed Pouches initialization inconsistency | Placement path changes whether the authored effect applies | Resolve before offering or promoting the upgrade |
-| No performance number for full expedition | M1 cannot close its outer runtime gate | Measure duration and memory on the accepted Windows path |
+| Full-session performance measurement | Optional stretch work, not an M1 acceptance gate | If useful, record measured duration/memory for the six-round session on the accepted Windows path |
 | Obsolete PlayMode API use | Warnings can hide future diagnostic signal | Replace during a scoped test-maintenance change |
+| PlayMode failure causes are unverified | The recorded run is red, but individual failing assertions have not been confirmed | Inspect retained result details or rerun the full suite, then fix only confirmed failures |
 
 ## 11. Architecture decisions
 
@@ -415,6 +428,8 @@ The M1 player-flow gate needs evidence that:
 | 2026-09-12 | Treat GalapagOS Desktop as the canonical player home; standalone Lab remains legacy/developer. | New flow work must connect Desktop to the existing launch/domain contracts. |
 | 2026-09-12 | Record executable code separately from player-reachable and correctly connected behavior. | Inert controls and bypassed handoffs cannot be reported as completed features. |
 | 2026-09-12 | Keep roadmap v2 as a working baseline without treating proposed S3 as approved. | Documentation may describe planned ownership while preserving the review gate. |
+| 2026-09-17 | Keep direct-start Forest Edge/Hare as the current Desktop acceptance contract. | Verify individual PlayMode failures before changing runtime behavior or fixtures. |
+| 2026-09-17 | Remove visualization-only Genome maps from the canonical player scene. | Generic Genome contracts remain, but no dummy catalog may appear as approved production progression. |
 | 2026-09-06 | Retain one runner/run across phase boundaries and apply validated immutable upgrades only while frozen. | Continue preserves all ecological state and accumulated evidence. |
 | 2026-09-04 | Keep initialization-only effects at launch and active-run disk resume out of the slice. | Boundary rewards cannot silently rebuild/refill the world; persistence remains separate. |
 
@@ -438,3 +453,5 @@ The M1 player-flow gate needs evidence that:
 | 2026-09-12 | Replaced the placeholder template with the current architecture, exact tick pipeline, data boundaries, route matrix, and verification state. | Engineering status must distinguish present code from connected player behavior. |
 | 2026-09-12 | Recorded profile/launch bypass, phase-length, board-size, Fern/Plant, offer reachability, inert controls, generic results, and persistence gaps. | These are current execution or source-of-truth failures that were missing from the TDD. |
 | 2026-09-12 | Aligned planning language with roadmap v2 while preserving the S3 review gate. | Avoid turning provisional planning into an implementation claim. |
+| 2026-09-17 | Reconciled Genome implementation, dummy-fixture removal, Desktop launch contract, and integrated test evidence. | Keep architecture, tests, and player-facing claims attached to the same current behavior. |
+| 2026-09-17 | Synchronized engineering context with the verified S3 kickoff and active scope. | Keep current sprint status aligned with the control record and Roadmap. |
