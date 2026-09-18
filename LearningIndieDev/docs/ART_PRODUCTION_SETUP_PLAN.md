@@ -49,8 +49,9 @@ promote any proposed visual direction to a final aesthetic decision.
 - The presentation target is 1920×1080 and remains functional at 1280×720.
 - Existing menu and Lab contracts define information structure but leave final
   palette, typography, motifs, animation, and audio open.
-- The retained island, shoreline, and jungle prototype art is not an automatic
-  visual baseline for the cellular-automata slice.
+- The Island Survivor shoreline, jungle, and character art was removed on
+  2026-09-18 with that slice; old references to it are historical, not current
+  production assets or visual baselines.
 
 ## Board columns
 
@@ -94,7 +95,7 @@ not prescribe the visual solution unless that is itself an approved constraint.
 
 Valid ideas outside current slice scope live here. This includes additional
 species, biomes, seasons, marketing art, broad animation, controller-specific
-work, and revisions to retained prototype art. Future cards are preserved
+work, and other ideas outside current slice scope. Future cards are preserved
 without being treated as commitments.
 
 ### 2. Ready for Art
@@ -355,8 +356,8 @@ In-Game Acceptance:
 - Keyboard focus and selected states.
 
 Existing non-slice animals remain inventory/backburner items rather than automatic
-production work. Additional biomes, seasons, final marketing art, broad
-environmental animation, and retained-prototype revisions remain deferred.
+production work. Additional biomes, seasons, final marketing art, and broad
+environmental animation remain deferred.
 
 ## Operating rules
 

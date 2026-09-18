@@ -156,18 +156,17 @@ changes the dependency or an experiment provides a stronger trigger.
   defaults. Add serialized custom terrain and a scene-level scenario selector
   only when reusable terrain presets become an actual workflow.
 
-### TODO-CS-07 - Legacy prototype cleanup (Lowest priority)
+### TODO-CS-07 - Legacy prototype cleanup (Completed 2026-09-18)
 
-- [x] Audit and, where proven unused, remove or further isolate earlier Island
-  Survivor, cave, and Life prototype paths.
-- Trigger: a dependency/scene/build-settings audit confirms a candidate has no
-  active references.
-- Result: no safe deletion candidate was found. The Island Survivor and cellular
-  prototype scenes are enabled and covered by Play Mode tests; cave and Life
-  domain code is covered by runtime tests. The audit is recorded in
-  [`LEGACY_PROTOTYPE_AUDIT.md`](LEGACY_PROTOTYPE_AUDIT.md).
-- Required follow-up: delete in isolated commits and validate both retained
-  prototype scenes.
+- [x] Retire the Island Survivor slice and re-check the remaining prototype
+  paths.
+- Result: the Island Survivor scene/build entry, runtime code, dedicated tests,
+  validator, and Island Chores art were removed together on 2026-09-18. The Lab
+  and Cellular Automata prototype remain enabled and covered by tests; cave and
+  Life domain code remains covered by runtime tests. The decision is recorded
+  in [`LEGACY_PROTOTYPE_AUDIT.md`](LEGACY_PROTOTYPE_AUDIT.md).
+- Follow-up: none for Island Survivor. Continue to retain the cellular, cave,
+  and Life test/reference paths until their own product decisions change.
 
 ## Rules for revisiting this list
 

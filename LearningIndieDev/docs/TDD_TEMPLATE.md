@@ -84,7 +84,7 @@ The project’s detailed dependency and scene diagrams remain in [Game Architect
 | `Lab` | Legacy/developer simulation launcher | **Executable legacy route** |
 | `GalapagOSDesktopTest` | Canonical player home and embedded app host | **Executable shell; incomplete context handoff** |
 | `CellularAutomataPrototype` | Standalone simulation/prototype | **Executable through legacy Lab route** |
-| `IslandSurvivorPrototype` | Historical prototype/reference | **Deprecated; not part of the main flow** |
+| `IslandSurvivorPrototype` | Retired historical prototype | **Removed 2026-09-18; no longer in the project** |
 
 ### Target player route
 
@@ -162,7 +162,7 @@ Required invariants:
 - A run never mutates a source asset.
 - Stable IDs, not asset instance identity or display names, define species and terrain equality.
 - Scenario, natural-rule, Genome, Mutation loadout, schedule, and report versions/fingerprints are recorded wherever they affect replay, comparison, or migration.
-- Invalid or initialization-only Mutation effects are rejected before purchase/continue, not silently ignored.
+- Invalid or initialization-only Mutation effects are rejected before selection/continue, not silently ignored.
 - Explicitly placed initial creatures and factory-created cells must agree on initialization effects; the current Seed Pouches behavior has a known explicit-placement inconsistency and must not be described as a newborn or mid-run benefit.
 
 ### Effective rules and progression boundaries

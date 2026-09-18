@@ -5,9 +5,10 @@ Status: **approved product direction; deferred until the vertical-slice upgrade 
 ## Concept
 
 Scientific data is the game's currency and connects simulation observation,
-temporary Mutations, species mastery, and permanent Genome progression. The
-player chooses between spending collected data during the current Species
-Simulation or returning it to the Lab to unlock lasting Genome options.
+species mastery, and permanent Genome progression. A later economy may also
+connect it to temporary Mutations, but the bounded S3-04 bridge offers
+Mutations for free and gives Skip no reward. The future power-now-versus-
+progress-later model remains a design direction, not the current S3 contract.
 
 ## Data categories
 
@@ -44,17 +45,19 @@ Repeated common events need caps or diminishing returns so large populations can
 > phase-transfer, final-settlement, and extinction-loss rules are not resolved.
 > The current survivor-count reward is prototype plumbing only. Do not infer a
 > wallet contract from this document. Any future reward-doubling for Skip is a
-> separate deferred economy rule.
+> separate deferred economy rule. S3-04 Mutation choices are free and do not
+> spend this data.
 
 ## Spending tension
 
-During an expedition, data may purchase temporary Mutations that affect the
-selected species for the rest of that expedition. Unspent data can instead be
-returned to the **Lab** and used for permanent Genome research. Extinction may
-cause some unbanked data to be lost, with the exact loss rule left for
-playtesting.
+A later economy may allow data to purchase temporary Mutations that affect the
+selected species for the rest of that expedition. That is not the S3-04
+contract: its Mutation choices are free. Unspent data can instead be returned
+to the **Lab** and used for permanent Genome research. Extinction may cause
+some unbanked data to be lost, with the exact loss rule left for playtesting.
 
-This creates the central economic decision: **power now versus progress later**.
+If later approved, this would create the economic decision: **power now versus
+progress later**.
 
 ## The Lab
 

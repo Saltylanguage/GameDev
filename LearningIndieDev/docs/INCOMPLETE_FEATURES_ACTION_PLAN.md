@@ -36,7 +36,7 @@ next run.
 | Main Menu and home base | Main Menu, GalapagOS Desktop, and the retained Lab/Simulation route are implemented | Complete one canonical Desktop/Simulation navigation path and replace representative progression data. |
 | Profile and Genome | Basic local profile identity exists; progression is not implemented | Versioned progression data, one persistent Genome unlock, and the open Mutation/Genome player contract. |
 | Research/tooling | P3 closed as bounded | No next experiment selected; evidence-hygiene controls and artifact retention remain prerequisites for future confirmatory work. |
-| Retained prototypes | Classified | Island Survivor is deprecated, Discord bridge is on hold, and other retained prototypes change only for a named need. |
+| Retained prototypes | Island Survivor retired 2026-09-18; Discord bridge remains on hold | Other retained prototypes change only for a named need. |
 
 ## Immediate priority: make the board beautiful and readable
 
@@ -271,8 +271,10 @@ day feasibility spike.
 
 ### Island Survivor
 
-Deprecated. Keep its surviving scene/tests isolated only as historical reference;
-do not extend, reconnect, or include it in current acceptance work.
+Retired and removed on 2026-09-18: the scene/build entry, runtime code,
+dedicated tests, validator, and Island Chores art are no longer in the Unity
+project. Preserve prior handoffs and the [legacy prototype audit](LEGACY_PROTOTYPE_AUDIT.md)
+as history; do not recreate this route as part of current acceptance work.
 
 ### Cave generation
 

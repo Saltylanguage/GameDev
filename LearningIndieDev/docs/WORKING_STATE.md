@@ -5,16 +5,59 @@ become a master changelog.
 
 ## Current focus
 
+**Unity automation lanes and acceptance: 2026-09-18.** `CellSim` now routes
+tests, visual checks, and experiments through `Auto`, `Live`, and `Clean`.
+`Live` reuses this project's ready Pipeline Editor for focused feedback;
+`Clean` is the reproducible acceptance lane; `Auto` selects between them and
+reports busy, Safe Mode, or unreachable locked states without broad process or
+lock cleanup. `Doctor` provides fast CLI and license diagnostics. Test filters
+support test name, assembly, and the `Core`, `Simulation`, `Graphics`, `UI`,
+`Authoring`, and `Tooling` categories. The obsolete 200 tick
+`ContinuousSkipPreservesWorldHistoryAndMetricsUntilTheSameAbsoluteTick` test was
+removed because it encoded a superseded final-phase decision flow. The exact
+full clean command then passed EditMode 234/234 and PlayMode 28/30 with zero
+failures and two expected graphics-only skips. Evidence:
+[full clean test artifacts](../artifacts/unity-tests-20260918-144956/).
+
+**Unity plugin workflow, Pipeline, and MCP: 2026-09-18.** The project routes
+Unity work through [`UNITY_PLUGIN_WORKFLOWS.md`](UNITY_PLUGIN_WORKFLOWS.md).
+`com.unity.pipeline` 0.7.0-exp.1 is installed and resolved. Live category tests,
+a live seeded experiment, and live visual evidence were exercised; the visual
+test passed 1/1 and its 1280x720 screenshot was reviewed. A clean 600 tick
+experiment also produced a complete report bundle. The Codex MCP configuration
+now uses the installed Unity CLI pinned to this project; the previous
+`unity_mcp` user-relay entry was retired. A Codex restart or new task is needed
+to load the new MCP server. One warm `UI` category run passed 10/11 while the
+same tests passed in the clean full PlayMode suite, so the warm-only failure is
+recorded as an Editor-state/test-isolation issue rather than a product failure.
+See [`UNITY_MCP_RELAY_OPERATIONS.md`](UNITY_MCP_RELAY_OPERATIONS.md) and the
+latest workflow handoff for operational details and artifact paths.
+
+**Island Survivor retirement: 2026-09-18.** The scene/build entry, runtime
+slice, dedicated tests and validator, and six Island Chores textures plus Unity
+metadata were removed. Historical handoffs remain preserved. Bare-cell resolver
+and board-snapshot regressions pass in the current EditMode suite. The repeated
+`Terrain_01` sprite-atlas warning also appears in the pre-retirement no-graphics
+baseline and is not caused by this cleanup.
+
+**Handoff artifact validation: 2026-09-18.** The previous 102 unavailable
+artifact warnings came from legacy handoffs that predate schema 1. Their
+original run paths remain as historical provenance; the validator now checks
+local Markdown links in those notes without requiring their machine-local
+artifacts to remain present. Current schema-1 handoffs still check artifact
+availability and pass with zero warnings. See the
+[validation handoff](handoffs/2026-09-18-1257-codex-historical-artifact-reference-validation.md).
+
 **Context refresh: 2026-09-18.** The pushed `ProjectMain` baseline includes the
 terrain art migration, Bare-cell neighbor-mask correction and regression tests,
-and simulation-shell/UI integration. Josh closed S3-01 after integration;
-post-fix Unity validation remains separate and unrun. S3-02's player contract
-is complete. S3-03 flow and recovery are implemented and Unity-validated: the
-focused End/cancel test passed 1/1, and full no-graphics PlayMode passed 31/33
-with 0 failures and two expected graphics-only skips. The run also caught and
-fixed the prototype scene's stale Noesis resource-dictionary reference. Tests
-ran in an isolated copy because editor processes were open; reports are
-retained under `artifacts/s3-03-test-results-20260918/`. See
+and simulation-shell/UI integration. Josh closed S3-01 after integration.
+S3-02's player contract is complete. The original S3-03 closeout run passed its
+focused End/cancel test 1/1 and no-graphics PlayMode 31/33 with 0 failures and
+two expected graphics-only skips. That run also caught and fixed the prototype
+scene's stale Noesis resource-dictionary reference. Tests ran in an isolated
+copy because editor processes were open; reports are retained under
+`artifacts/s3-03-test-results-20260918/`. The later post-retirement results
+above supersede the old full-suite totals. See
 [`handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md`](handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md).
 Treat test claims as bounded by the retained evidence below. The S3-03 card is
 already complete; see the closeout handoff for the validation record. The
@@ -28,19 +71,18 @@ All 47 Grass masks generated from the 14 authored Forest
 representatives are now packed by `Terrain_01.spriteatlasv2` and loaded by the
 simulation runtime. `Grass_000` is full dirt and `Grass_255` is full grass.
 Desert art is not present yet; its slots remain optional and no Grass art is
-used as a substitute. The older Island Chores atlases remain legacy and
-unchanged. Full EditMode passed 251/251; the retained no-graphics PlayMode run
-passed 28 with two expected graphics-only skips. A graphics-capable ForestEdge
+used as a substitute. The Island Chores atlases were removed with the retired
+Island Survivor slice on 2026-09-18. At that earlier terrain-art checkpoint,
+EditMode passed 251/251 and the no-graphics PlayMode run passed 28 with two
+expected graphics-only skips. A graphics-capable ForestEdge
 board capture also passed 1/1 and shows the Grass/Dirt tiles in context. See
 [`handoffs/2026-09-17-codex-terrain-art-standard-64px.md`](handoffs/2026-09-17-codex-terrain-art-standard-64px.md).
 
 Follow-up review found that empty Bare cells were not receiving Grass masks.
 Snapshots and both board/paint-preview renderers now resolve a Grass neighbor
 mask for Bare cells too, so dirt cells inside a Grass field can display their
-Grass vertices. Resolver and snapshot regression tests were added, but this
-follow-up has not yet been validated in Unity: the approved test preflight
-refused to run while the editor was already open. The test counts above predate
-this fix.
+Grass vertices. Resolver and snapshot regression tests were added and pass in
+the current clean EditMode suite recorded at the top of this file.
 
 **Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
 Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
@@ -58,8 +100,15 @@ loop with tested recovery and return to the Lab, meaningful and understandable
 Mutations, and a bounded visual polish/UI integration pass. Local profile
 saving is scheduled for S4. The GalapagOS Desktop is the canonical player home;
 the standalone Lab remains a legacy/developer route.
-The S3-04 working plan is now recorded; its candidate source, repeat/stacking,
-and Mutation-cost questions remain for Josh to confirm after the S3-03 checkpoint.
+The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
+translate repeatable, predictable Stat-Line impacts into concise qualitative
+player guidance, with simpler directional language when the evidence cannot
+support a precise claim; raw statistics remain off the player surface. The
+approved S3 bridge uses the five existing experimental Hare Mutations, shows
+three distinct choices per boundary, allows a selected Mutation to return at a
+later boundary, and increments its level while stacking/reapplying its effect
+when selected again. Mutation selection is free and Skip has no S3-04 reward.
+The next step is implementation plus the bounded candidate/evidence review.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
@@ -97,9 +146,10 @@ decision moments with three temporary Mutations or Skip at each, one after
 each of phases 1–5. Permanent currency purchases in
 the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
 player skip for extra currency is undecided and non-blocking; if adopted, it
-uses the same currency as Genome Upgrades. Mutation choices should be readable
-at a glance (icon + keyword, e.g. “hunting +1”), with expected impact apparent
-in the following phase; no stat breakdowns. Restart is removed; End abandons
+uses the same currency as Genome Upgrades. S3-04 Mutation choices are free and
+should be readable at a glance through an icon, identity, and evidence-backed
+qualitative direction (for example, “Hunter Lv2 — better tracking and sharper
+teeth”); no Stat-Line breakdown is shown. Restart is removed; End abandons
 the run after confirmation, forfeits rewards if used before round 6, and Pause
 remains available. Round 1 has no upgrade;
 rounds 1–5 each lead to a three-Mutation choice or Skip; round 6 ends in results

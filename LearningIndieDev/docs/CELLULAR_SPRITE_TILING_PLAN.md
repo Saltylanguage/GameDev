@@ -4,8 +4,8 @@
 
 - `tools/Build-CellularSpriteSheets.ps1` is the legacy animal-sheet pipeline and
   still emits 128-pixel sprites. New authored pixel textures use the 64x64 art
-  standard; retained Island Chores and other legacy art are not implicitly
-  resized.
+  standard. Island Chores art was removed with the retired prototype on
+  2026-09-18; other legacy art is not implicitly resized.
 - Animal presentation is now scene-wired through a `SpriteAtlas` packed from
   `Assets/Art/Species/Animals/Standardized/32/`; standardized exports also
   exist under `Standardized/64/` and `Standardized/128/`. The board receives

@@ -50,8 +50,9 @@ The interface should feel:
 - [`ART_STYLE_GUIDE.md`](../ART_STYLE_GUIDE.md) establishes crisp top-down pixel
   art, hard pixel clusters, limited warm tropical color, dark outlines,
   readable silhouettes, and no anti-aliased vector shapes.
-- The retained island atlas provides the strongest material vocabulary: wood,
-  campfire, tent, palm, jungle foliage, baskets, shells, stones, and shoreline.
+- At the time of this superseded pass, the retained island atlas was proposed
+  as a material reference. That atlas was removed with Island Survivor on
+  2026-09-18 and is not an available or approved current art reference.
 - The current cellular species references provide compact silhouettes and stable
   role colors: green plants, blue herbivores, and red carnivores.
 - The grass terrain tile provides a useful authored sample for biome cards and

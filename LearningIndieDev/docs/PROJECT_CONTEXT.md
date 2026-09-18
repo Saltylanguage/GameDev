@@ -25,14 +25,33 @@ The Unity plugin provides on-demand specialists across these areas:
   `implement-in-app-purchases`, `levelplay-unity-integration`, and
   `new-unity-project` for greenfield work.
 
-Use the most specific available skill when a request enters its area. For this
-project, `unity-cli` is relevant to editor/build/test workflows, editor search
-to read-only asset lookup, and sprite/Tilemap/atlas skills to authored terrain
-work. Audio skills apply when changing the existing audio feedback or mixer.
+This project also has Unity CLI's `com.unity.pipeline` package installed at
+`0.7.0-exp.1`. When this project's Editor is open, `unity-cli` can connect to
+it, discover its available commands, inspect or change live Editor state, and
+run supported Editor operations, including capability-gated C# evaluation.
+The project automation has two lanes: `Live` reuses a ready Editor for fast,
+focused feedback, while `Clean` starts a CLI-managed batch Editor for full-suite
+acceptance and reproducible evidence. `Auto` selects the available lane and
+stops on busy, Safe Mode, or unreachable locked states. It does not require the
+developer to close a healthy Editor before every check. The project also
+registers a project-pinned `unity mcp` server for Codex; a Codex restart or new
+task loads configuration changes. Use the project path to target this Editor
+when others may be open, and include caller/skill attribution on direct
+`unity command` calls.
+
+Use the most specific available skill when a request enters its area. The
+project routing, current constraints, CLI/package boundary, and canonical
+verification commands are recorded in
+[`UNITY_PLUGIN_WORKFLOWS.md`](UNITY_PLUGIN_WORKFLOWS.md). `unity-cli` covers
+editor/build/test workflows and editor search is for read-only asset lookup.
+Sprite and atlas skills apply to actual authored asset work; Tilemap/RuleTile
+skills apply only to features that use Unity Tilemap.
 
 Project decisions remain the authority for fit: Noesis/XAML and its MVVM
-boundaries are the player UI architecture; authored terrain and its import
-settings follow the project guides; Unity 6/URP versions and validation follow
+boundaries are the player UI architecture; the cellular board is a batched
+Noesis renderer using the custom terrain resolver and authored SpriteAtlas;
+authored terrain and its import settings follow the project guides; Unity 6/URP
+versions and validation follow
 [`AGENTS.md`](../AGENTS.md) and
 [`UNITY_ENGINEERING_STANDARDS.md`](UNITY_ENGINEERING_STANDARDS.md). Unity UI
 skills apply when a request specifically targets their Unity UI technology,
@@ -86,6 +105,19 @@ uncertainty or regression risk.
   rule. Mutations never enter Biome Simulations. A
   species' **Genome** is a permanent library of options unlocked with banked
   scientific data in the Gene Lab.
+- Mutation hints, prompts, and descriptions are concise qualitative
+  interpretations of repeatable, predictable impacts established through
+  Stat-Line evidence. They communicate the direction a Mutation takes the
+  species without exposing a full statistic breakdown or reducing the choice
+  to numeric values. When the evidence cannot support a precise claim, use a
+  simpler directional abstraction rather than presenting a noisy result as a
+  guarantee.
+- For the bounded S3-04 bridge, the five existing experimental Hare Mutations
+  form the offer pool. Each boundary shows three distinct Mutations and Skip.
+  A selected Mutation may be offered again later; selecting it again increases
+  its level and stacks/reapplies its defined effect. These Mutation choices are
+  free, and Skip has no S3-04 reward. A broader Mutation economy or future Skip
+  bonus remains deferred.
 - The player can turn unlocked Genome nodes on or off between simulations. The
   active Genome is frozen at launch and applies to every population of its
   species, including when that species is not controlled by the player.
@@ -121,19 +153,16 @@ uncertainty or regression risk.
   they are not a finalized combat model or rules API.
 - *Digseum* is a high-level reference for the intended iterative progression
   loop. It is inspiration for product direction, not a specification to copy.
-- The Island Survivor prototype is deprecated. Its surviving scene, tests, and
-  assets are retained only as isolated historical reference until an explicit
-  archival or deletion task is approved. Generic grid, grid patterns, and the
-  cave-generation domain remain reference foundations for the active cellular-
-  automata work.
-- The current island, shoreline, and jungle entrance use an authored pixel-art
-  tile workflow. Preserve those retained assets unless a feature explicitly
-  replaces or repurposes them.
-- Each retained prototype has its own scene and composition root.
-  `CellularAutomataPrototypeRuntime` owns the cellular-automata preview scene,
-  while `GameRuntime` and `WorldRuntime` remain isolated in the
-  `IslandSurvivorPrototype` scene. Do not reconnect the cave preview to the island
-  runtime merely for convenience.
+- The Island Survivor slice was retired on 2026-09-18. Its scene, runtime code,
+  dedicated tests, validator, and Island Chores runtime art were removed from
+  the Unity project. Older handoffs and art notes remain historical records;
+  do not treat them as current assets or architecture. Generic grid, grid
+  patterns, and the cave-generation domain remain reference foundations for the
+  active cellular-automata work.
+- The Main Menu → GalapagOS Desktop → Simulation route is the canonical player
+  flow. The standalone Lab and `CellularAutomataPrototype` remain a separate
+  legacy/developer test route; their composition and tests must not depend on
+  the retired Island Survivor runtime.
 
 ## Cellular-automata roguelike concept
 
@@ -405,27 +434,29 @@ settle them in foundational grid code.
   derives the authored normalized neighbor mask during board snapshot creation
   and selects the matching variant for the grass or desert family. Neighbor
   masks and atlas indices do not belong in `SpeciesCell` or `CellularSimData`.
-- New terrain tile sources use 64x64 pixels at 64 pixels per unit. Retained
-  Island Chores atlases and other explicitly legacy art keep their original
-  resolution unless separately migrated.
+- New terrain tile sources use 64x64 pixels at 64 pixels per unit. Other
+  explicitly legacy art keeps its original resolution unless separately
+  migrated. Island Chores runtime atlases were removed with the retired slice.
 - The reference set contains animal symbols but no dedicated plant symbol.
   Plant-resource terrain currently uses the grass tile family; add a dedicated
   plant atlas before displaying a separate plant glyph rather than borrowing an
   animal icon. See [`CELLULAR_SPRITE_TILING_PLAN.md`](CELLULAR_SPRITE_TILING_PLAN.md).
-- Unity batch tooling now provides a closed-editor test entry point and a seeded
-  `CellularSimData` experiment runner. It emits ignored `artifacts/` reports
+- Unity automation now routes tests, visual checks, and seeded experiments
+  through `Auto`, `Live`, and `Clean` execution lanes. A ready Editor can serve
+  focused work through Pipeline; clean batch runs remain the acceptance lane.
+  The seeded `CellularSimData` runner emits ignored `artifacts/` reports
   containing scenario path, seed range, ruleset fingerprint, population history,
   final-population summaries, and per-species activity totals (births, food
-  consumed, movement, combat, and directly resolved mortality causes). It is
-  intentionally an evidence/automation seam rather than a custom editor-to-agent bridge; see
+  consumed, movement, combat, and directly resolved mortality causes). Live and
+  clean runs execute the same experiment implementation; see
   [`UNITY_SIMULATION_TOOLING.md`](UNITY_SIMULATION_TOOLING.md).
 - The serious research program for turning this evidence seam into an
   auditable AI-assisted ecology laboratory is defined in
   [`Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md`](Research/AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PLAN.md).
   It is proposed research, not an approved replacement for the production
   roadmap; promotion requires reproducible evidence and a human decision.
-- `CellSim` is the project-root command surface for this workflow: `Test`,
-  `Run`, `Report`, `Compare`, and `Baseline`. The first population-only baseline
+- `CellSim` is the project-root command surface for this workflow: `Doctor`,
+  `Test`, `Visuals`, `Run`, `Report`, `Compare`, and `Baseline`. The first population-only baseline
   was superseded after correcting terrain-resource identity and layered population
   counts. The current schema-4 BaselineParity reference over seeds 10100-10119
   averaged 10.25 final herbivores with one extinction; its recorded herbivore

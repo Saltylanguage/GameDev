@@ -1,28 +1,26 @@
 # Tile authoring workflow
 
-Use this guide when adding or changing terrain that must visually join existing sprites, textures, or tiles. It applies especially to progression gates such as the jungle entrance.
+Use this guide when adding or changing terrain for the cellular simulation board. It applies to the authored blob-tile families and the simulation's atlas-backed renderer.
 
 ## Non-negotiable rule
 
-The surrounding tiles define the art contract. A new tile is acceptable only when it reads as part of that terrain in context at gameplay scale. Matching an image's outer pixels is necessary, but it is not sufficient if the interior has a different density, palette, or silhouette.
+The neighboring terrain and active simulation atlas define the art contract. A new tile is acceptable only when its edge, interior density, and palette read consistently in the board at gameplay scale.
 
 ## Before making art
 
-1. Inspect the live scene composition: target position, visual root, sort order, and what changes when the interaction completes.
-2. Inspect the exact neighboring atlas cells and identify the terrain on every edge of the new work.
-3. Write down the states before drawing: for example, `closed = overgrown`, `open = route visible`, and `reset = closed again`.
-4. Choose the smallest tile footprint that can carry the change. A route crossing a terrain boundary normally needs side, center, and lower transition cells - not one special square.
+1. Inspect the current simulation presentation and how it selects terrain sprites.
+2. Inspect the exact neighboring source tiles and identify the terrain represented on each edge.
+3. Record the visual family, valid neighbor-mask coverage, atlas name, and any fallback behavior before drawing.
+4. Choose the smallest source cell or family change that preserves the shared atlas contract.
 
 ## Authoring contract
 
-- New terrain cells are 64x64 pixels at 64 pixels per unit. This keeps one cell at one world unit; retained legacy atlases may remain at their original resolution.
-- Terrain cells rendered beside one another MUST use the shared one-pixel sprite mesh extrusion in `WorldRuntime`; otherwise camera sampling can expose seams even when the source pixels are correct. If a seam is baked into a tile's outer pixel columns, create a versioned seam-safe atlas that repairs only those edge pixels; preserve the original atlas unchanged.
-- Build a multi-cell terrain feature as a tile sheet, not as a full-scene screenshot or a floating prop.
+- New terrain cells are 64x64 pixels at 64 pixels per unit. This keeps one cell at one world unit.
+- The current `Terrain_01.spriteatlasv2` uses named terrain sprites in `Assets/Art/Terrain/Blob/64/`. Preserve its naming and GUID contract; add source art to the correct family and verify atlas packing rather than introducing runtime resource-name loads.
+- Build terrain as individual source cells and valid blob-mask variants, not as a full-board screenshot or a floating prop.
 - Use the existing terrain palette and material language first. Generated images may be used only as private concept references; never paste their unrelated texture into a production tile.
-- Preserve the exact outer edge pixels from the neighboring source cells where the feature touches repeated terrain.
-- Make side cells carry the transition. The center cell alone must not be responsible for making a path, doorway, or shoreline feel natural.
-- Do not use a hard geometric mask, a rectangular tint, or a single dirt triangle as a shortcut. If the center state still reads as a stamp, expand the tile footprint or redraw the transition.
-- Keep blocked and open states on the same grid and with the same outer edges. The state change may affect the center and local fringe, never the entire surrounding world.
+- Preserve the established mask and edge language across every required variant; no one sprite should create an unintended seam at a board boundary.
+- Do not use a hard geometric mask, rectangular tint, or one-off patch as a shortcut. Judge each variant beside its real neighboring tiles.
 
 ## Required preview loop
 
@@ -30,16 +28,13 @@ The surrounding tiles define the art contract. A new tile is acceptable only whe
 2. Compose it into a preview with the real neighboring tiles on every side.
 3. Inspect the preview at native scale and at the actual game-camera scale.
 4. Reject it if any boundary reads as a rectangle, pasted texture, cone, or isolated prop.
-5. Only then copy the accepted tile sheet into `Assets/Resources/Art/`, add its `.meta`, and wire the individual cells into `WorldRuntime`.
-6. Run a clean Play Mode check for every state transition and reset before calling the art accepted.
+5. Only then add accepted source files under `Assets/Art/Terrain/Blob/64/<family>/`, preserve `.meta` files, and confirm the sprite atlas packs the required names.
+6. Run the focused terrain asset contract and inspect the current simulation board/terrain preview before calling the art accepted.
 
 ## Unity implementation pattern
 
-- The interactable owns two local visual roots: blocked and cleared.
-- Build each terrain state from individual cell sprites. `WorldRuntime.MakeTextureTileField` is the current project helper for a fixed-size tile sheet.
-- Keep the blocked visual depth-sorted with the world interaction root. Keep the cleared route in the background layer unless gameplay needs it to occlude characters.
-- Use the same cell origin, dimensions, and sorting contract for both states.
-- Preserve the interaction mechanic while iterating art, but do not leave an invisible gate or an unverified placeholder as a final state.
+- Keep terrain presentation in the existing atlas/resolver path; `TerrainTileResolver` owns the normalized 47-mask contract.
+- Verify source sprite names, atlas packing, and the board renderer together. Do not add a second importer or a separate runtime loading convention for a new family.
 
 ## Verification checklist
 
@@ -47,10 +42,14 @@ The surrounding tiles define the art contract. A new tile is acceptable only whe
 - [ ] Sheet dimensions are exact multiples of 64 pixels.
 - [ ] The sheet's row order is correct for Unity's lower-left sprite-rect origin.
 - [ ] The preview includes the real surrounding tiles, not a neutral background.
-- [ ] Closed, open, and reset states are all visible and readable in Play Mode.
+- [ ] The required neighbor-mask variants are visible and readable in the actual simulation presentation.
 - [ ] `git diff --check` and `.meta` parity pass.
 - [ ] Rejected concepts stay under `artifacts/` and are not referenced by runtime code.
 
 ## Current example
 
-`JungleEdgeInteractable` swaps a closed terrain tile set for an open `Jungle Exit Route` set. The mechanic and terrain art stay local to that feature. Do not generalize this into a world-state framework until another terrain gate demonstrates a shared need.
+The Grass terrain family is authored as named 64x64 sprites and packed by
+`Terrain_01.spriteatlasv2`. `TerrainTileResolver` selects among the 47 normalized
+eight-neighbor masks. The Island Survivor jungle-gate example and its
+`WorldRuntime` loader were removed with that slice on 2026-09-18; they are not
+part of this workflow.

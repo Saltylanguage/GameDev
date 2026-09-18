@@ -185,9 +185,9 @@ one through five. Round one begins without a choice; round six ends in results
 without another choice. Each boundary offers three Mutations or Skip. Mutations
 last only for the current run.
 
-- Mutations apply in purchase order to subsequent completed ticks.
+- Mutations apply in acquisition order to subsequent completed ticks.
 - A Mutation does not implicitly refill energy, respawn creatures, or reset terrain.
-- Initialization-only effects are launch-only and must not be offered mid-expedition as no-op purchases.
+- Initialization-only effects are launch-only and must not be offered mid-expedition as no-op choices.
 - Skip preserves the world and current build. A bonus using Genome Upgrade
   currency is possible but undecided and non-blocking.
 - Mutations are exclusive to Species Simulations; Biome Simulations do not use them.

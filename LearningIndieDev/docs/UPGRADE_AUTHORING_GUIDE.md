@@ -89,7 +89,7 @@ partner to reproduce.
 - Additive modifiers only. Multiplication, set values, ranges, clamping, and
   conditional expressions are not supported in V1.
 - An attribute may appear only once in an upgrade.
-- Mutation order is meaningful. Preserve the authored purchase order when
+- Mutation order is meaningful. Preserve the authored acquisition order when
   constructing a loadout; do not sort it.
 
 ## What happens at runtime

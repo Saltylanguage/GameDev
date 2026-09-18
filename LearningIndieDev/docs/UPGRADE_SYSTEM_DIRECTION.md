@@ -47,12 +47,18 @@ The effective rules used in a Biome Simulation are:
 Natural species rules + active Genome
 ```
 
-Scientific data connects both systems. The exact in-expedition Mutation cost
-and permanent Genome economy remain open in
+Scientific data connects expedition performance to permanent Genome progress.
+For the bounded S3-04 bridge, Mutation choices are free and Skip has no reward.
+Whether a later version introduces an in-expedition Mutation cost or Skip
+bonus, and the permanent Genome economy, remain separate open decisions in
 [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
-## Current decision boundary (2026-09-12)
+## Current decision boundary (updated 2026-09-18)
 
+- S3-04 uses the five existing experimental Hare Mutations as a bounded bridge
+  pool. Each boundary shows three distinct free choices and Skip. A selected
+  Mutation may reappear later; selecting it again increments its level and
+  stacks/reapplies its defined effect.
 - Skip is a valid choice at every current Mutation decision point. It preserves
   the current build and has no bonus or penalty today. Any future
   reward-doubling or other incentive for skipping is a separate deferred

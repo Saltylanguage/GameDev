@@ -68,7 +68,7 @@ measurement is optional stretch work and is not included in the committed total.
 | S3-01 | Consolidated baseline and launch-contract acceptance | F13 | Josh / Sim | 2h | 2h | Direct-start Forest Edge/Hare is documented as canonical; recorded PlayMode failures are individually triaged and confirmed defects corrected; focused UI coverage and the full EditMode/PlayMode suites produce retained results with no unexpected failure or Noesis binding error. |
 | S3-02 | Expedition rules and acceptance inputs | F01, F06 | Josh / Sim | 4h | 2h | Six 10-second simulation rounds; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency. Board size and playable plants are explicitly deferred. |
 | S3-03 | Complete game-state flow and recovery | F02, F05, F13 | Josh / Sim | 8h | 0h | From the Lab, the player can start and finish an expedition, use its choices, reach a clear result, recover from reset or other bad states, and return to the Lab. No known route leaves the player stalled, in error, or unable to continue. Profile saving remains S4 work. |
-| S3-04 | Mutation readability and bounded Forest Edge review | F03 | Josh product / Sim evidence | 2h | 6h | The current Mutation offer and phase summary show the affected rule, timing, tradeoff, and observed consequence; one bounded review records an accept/revise decision. No catalog expansion is required. |
+| S3-04 | Mutation readability and bounded Forest Edge review | F03 | Josh product / Sim evidence | 2h | 6h | Five existing experimental Hare Mutations support three distinct free choices or Skip at each boundary; later repeat selections increase level and stack the defined effect. Evidence-backed qualitative copy and the phase summary remain player-readable, and one bounded review records an accept/revise decision. No catalog expansion is required. |
 | S3-05 | Expedition duration and memory measurement — stretch | M1 technical gate | Josh / Sim | 3h | 2h | Not included in committed capacity. If the plan is rebalanced or capacity added, measure the six-round, one-minute-simulation Forest Edge/Hare session. |
 | S3-06 | Visual polish and UI integration | F13, F14 | Josh / Sim | 2h | 2h | Apply a bounded polish pass to the expedition screens and integrate them with the player flow; capture a reviewable result at target resolutions. |
 | S3-07 | Integration, defect, and review reserve | Shared | Josh + Sim | 2h | 4h | Reserved for failures discovered while proving the S3 outcome; unused time does not become new feature scope. |
@@ -82,7 +82,9 @@ scope trade or added capacity before it can start.
 S3-04's working execution plan is in
 [S3-04-mutation-readability-plan.md](S3-04-mutation-readability-plan.md). It
 preserves the allocated Josh 2h / Sim 6h split and limits the review to existing
-candidates and one bounded Forest Edge/Hare evidence slice.
+candidates and one bounded Forest Edge/Hare evidence slice. Josh approved the
+five-effect bridge, later repeat offers with level/stack progression, free
+Mutation selection, and no S3-04 Skip reward.
 
 ## Delivery order
 
@@ -127,17 +129,20 @@ candidates and one bounded Forest Edge/Hare evidence slice.
 ## S3-01 execution status
 
 - **Current sprint snapshot (2026-09-18):** Josh closed S3-01 after
-  integration; its post-fix Unity validation is split into the separate P1-031
-  follow-up below and has not been run. The Trello card is in `✅ Done`, marked
+  integration. Post-fix full Unity suites were run after the Island Survivor
+  retirement: EditMode 233/234 (the known non-blocking final-phase assertion)
+  and no-graphics PlayMode 28/30 (0 failures, 2 expected graphics-only skips).
+  Bare-cell resolver and snapshot regressions passed. See the current evidence
+  in [WORKING_STATE](WORKING_STATE.md) and P1-031. The Trello card is in `✅ Done`, marked
   complete, and retains this caveat in its description. S3-02 is complete as a
   product contract; see [S3-02](S3-02-expedition-contract.md). Josh confirms
   S3-03 is complete; its Trello card is in `✅ Done` and marked complete. The
   pushed baseline now includes the 64px
   Grass art/atlas, Bare-cell neighbor-mask resolution, regression coverage, and
   the simulation shell/UI integration (commits `fe56660d`, `a5a47e0f`,
-  `a1b355e2`, and `52ce0430`). The latest retained full suites predate the
-  Bare-cell correction; closure is the owner's scope decision, not a claim of
-  post-fix Unity verification. S3-02 is complete on the Trello board; any
+  `a1b355e2`, and `52ce0430`). S3-01 closure remains the owner's scope
+  decision; post-fix verification is now recorded above. S3-02 is complete on
+  the Trello board; any
   remaining board-size/Fern acceptance wording is a non-blocking cleanup noted
   in P1-033.
 - S3-03 aligns the runtime to six rounds, adds a confirming End dialog that
@@ -212,7 +217,7 @@ candidates and one bounded Forest Edge/Hare evidence slice.
 
 | Priority | Risk | Owner | Exit evidence |
 | --- | --- | --- | --- |
-| P1 | The latest retained Unity results predate the Bare-cell terrain correction; S3-01 is owner-closed, but post-fix verification remains outstanding separately. | Josh | Run and review post-fix focused/full suites when Unity is available; record evidence in Loose Ends P1-031 and create corrective work if needed. |
+| P1 | The latest full EditMode suite has one known final-phase assertion failure; Main Menu/graphics acceptance remains a separate review. | Josh | Keep the non-blocking assertion visible; resolve the Settings/Collection result gap and complete the remaining human UI review in Loose Ends P1-031. |
 | P0 | A player can become stranded by a broken state transition, error, or reset path. | Josh | Tests cover the main route and recovery paths back to the Lab; no known soft-lock remains. |
 | P1 | The successful-run currency measure and conversion are still being developed; optional Skip and bonus-event rewards are unsettled. | Josh + Sim | Link the approved performance measure when ready; this does not block S3-02. |
 | P1 | Flow and UI work could expand into profile saving, settlement, or production Genome actions. | Josh | S3-03 ends at a safe expedition and return route; profile saving remains in S4. |
