@@ -80,9 +80,21 @@ the Lab's feature ownership.
 
 ## Accepted decision
 
-**Disabled while active:** the simulation close affordance is disabled during
+**Disabled while active:** the simulation close affordance stays disabled during
 Running, Paused, and AwaitingDecision. It is enabled only when the preview is
 Ready or Results and the loaded profile can return to the Lab.
 
-If a confirmation path is added later, it must be a separate explicit End flow;
-active close must never map directly to Stop or Restart.
+**Confirmed End (2026-09-18):** a separate End action is available during
+Running, Paused, and phase decisions. It asks for confirmation before ending an
+unfinished run. The simulation pauses while a running player decides; cancel
+resumes only when the run was previously running. Confirm ends the run and
+forfeits unspent field data and temporary Mutations. Window close remains a
+separate route and never maps to Stop or Restart.
+
+**Completed-results re-entry (2026-09-18):** opening Simulation from Results,
+or choosing Start New Expedition, is an explicit new-run action. It starts one
+fresh board, resets run-scoped Mutations, and carries awarded field data and the
+frozen Genome snapshot forward. Opening or returning to the view while a run is
+Running, Paused, or AwaitingDecision leaves the retained run unchanged. This
+scoped behavior was requested by Josh; it does not authorize active-window
+chrome or presentation changes to mutate simulation state.

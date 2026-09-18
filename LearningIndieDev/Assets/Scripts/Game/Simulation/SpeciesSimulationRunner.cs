@@ -217,6 +217,13 @@ namespace SaltyGame
                     previousSource: previousCells);
             previousCells = Run.Cells;
             Run.Advance(next, stepSeconds);
+            if (Run.SupportsContinuation
+                && Run.Status != SimulationRunStatus.Complete
+                && Run.PopulationHistory[Run.PopulationHistory.Count - 1].GetCount(Run.PlayerSpeciesId) == 0)
+            {
+                Run.End();
+            }
+
             return true;
         }
     }

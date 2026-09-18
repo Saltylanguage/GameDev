@@ -151,6 +151,8 @@ namespace SaltyGame
         Visibility experimentalUpgradeCountVisibility;
         Visibility rewardOption3Visibility;
         Visibility boardVisibility;
+        Visibility endConfirmationVisibility = Visibility.Collapsed;
+        bool resumeAfterEndCancellation;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -158,6 +160,8 @@ namespace SaltyGame
         public DelegateCommand PauseCommand { get; private set; }
         public DelegateCommand ResumeCommand { get; private set; }
         public DelegateCommand EndCommand { get; private set; }
+        public DelegateCommand ConfirmEndCommand { get; private set; }
+        public DelegateCommand CancelEndConfirmationCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
         public DelegateCommand PurchaseRewardOption1Command { get; private set; }
         public DelegateCommand PurchaseRewardOption2Command { get; private set; }
@@ -385,9 +389,8 @@ namespace SaltyGame
         public string ReturnDestinationText => desktopClose != null
             ? "RETURN TO DESKTOP"
             : "RETURN TO LAB";
-        // The first production slice disables close for an active run. If a
-        // confirmation surface is added later, it must use explicit End
-        // semantics rather than aliasing Stop or Restart.
+        // Closing stays disabled during active states; the player must use the
+        // separate confirmed End flow before returning to the Lab.
         public bool CanCloseWindow => (lastState == SpeciesPreviewState.Ready
                 || lastState == SpeciesPreviewState.Results)
             && (desktopClose != null
@@ -451,6 +454,7 @@ namespace SaltyGame
         public Visibility ExperimentalUpgradeCountVisibility => experimentalUpgradeCountVisibility;
         public Visibility RewardOption3Visibility => rewardOption3Visibility;
         public Visibility BoardVisibility => boardVisibility;
+        public Visibility EndConfirmationVisibility => endConfirmationVisibility;
         internal CroppedBitmap[] AnimalSprites => animalSprites;
         internal CroppedBitmap[] GrassTerrainTiles => grassTerrainTiles;
         internal CroppedBitmap[] DesertTerrainTiles => desertTerrainTiles;
@@ -838,7 +842,9 @@ namespace SaltyGame
             StartCommand = new DelegateCommand(StartSimulation);
             PauseCommand = new DelegateCommand(() => preview?.PauseSimulation());
             ResumeCommand = new DelegateCommand(() => preview?.ResumeSimulation());
-            EndCommand = new DelegateCommand(() => preview?.EndSimulation());
+            EndCommand = new DelegateCommand(ShowEndConfirmation, CanEndCurrentRun);
+            ConfirmEndCommand = new DelegateCommand(ConfirmEnd, CanEndCurrentRun);
+            CancelEndConfirmationCommand = new DelegateCommand(CancelEndConfirmation);
             ResetCommand = new DelegateCommand(() =>
             {
                 preview?.ResetToStart();
@@ -877,6 +883,12 @@ namespace SaltyGame
             var state = preview.State;
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
+            if (endConfirmationVisibility == Visibility.Visible
+                && state != SpeciesPreviewState.Paused
+                && state != SpeciesPreviewState.PhaseDecision)
+            {
+                Set(ref endConfirmationVisibility, Visibility.Collapsed, nameof(EndConfirmationVisibility));
+            }
             var tick = run == null ? -1 : run.Tick;
             SpeciesRules playerRules = null;
             var isHerbivorePlayer = preview.ActiveSpeciesRules != null
@@ -934,13 +946,25 @@ namespace SaltyGame
                 && run?.SupportsContinuation == true;
             Set(
                 ref resultsTitleText,
-                isContinuousRun ? "Expedition complete" : "Species update",
+                isContinuousRun
+                    ? preview.LastExpeditionFailed
+                        ? "Expedition failed"
+                        : preview.LastRunEndedEarly
+                            ? "Expedition ended"
+                            : "Expedition complete"
+                    : preview.LastRunEndedEarly ? "Simulation ended" : "Species update",
                 nameof(ResultsTitleText));
             Set(
                 ref resultsMessageText,
-                isContinuousRun
-                    ? "The expedition is complete. Start a new expedition when ready."
-                    : "The player update is applied. Continue into the next run when ready.",
+                isContinuousRun && preview.LastExpeditionFailed
+                    ? "The player species went extinct. This expedition ended without rewards."
+                    : preview.LastRunEndedEarly
+                        ? isContinuousRun
+                            ? "This expedition ended early. Unspent field data and Mutations were forfeited."
+                            : "The simulation ended before completion. No rewards were retained."
+                        : isContinuousRun
+                            ? "The expedition is complete. Start a new expedition when ready."
+                            : "The player update is applied. Continue into the next run when ready.",
                 nameof(ResultsMessageText));
             Set(
                 ref playNextSimulationText,
@@ -958,12 +982,16 @@ namespace SaltyGame
             Set(ref canEditSettings, preview.SettingsEditable, nameof(CanEditSettings));
             Set(ref canPause, runStatus == SimulationRunStatus.Running, nameof(CanPause));
             Set(ref canResume, runStatus == SimulationRunStatus.Paused, nameof(CanResume));
-            Set(
-                ref canEnd,
-                runStatus == SimulationRunStatus.Running
-                    || runStatus == SimulationRunStatus.Paused
-                    || runStatus == SimulationRunStatus.AwaitingDecision,
-                nameof(CanEnd));
+            var canEndNow = runStatus == SimulationRunStatus.Running
+                || runStatus == SimulationRunStatus.Paused
+                || runStatus == SimulationRunStatus.AwaitingDecision;
+            var endAvailabilityChanged = canEnd != canEndNow;
+            Set(ref canEnd, canEndNow, nameof(CanEnd));
+            if (endAvailabilityChanged)
+            {
+                EndCommand?.RaiseCanExecuteChanged();
+                ConfirmEndCommand?.RaiseCanExecuteChanged();
+            }
             Set(ref canContinueWithoutUpgrade, state == SpeciesPreviewState.PhaseDecision, nameof(CanContinueWithoutUpgrade));
             Set(ref rewardOption1Text, preview.GetRewardOptionDisplayName(0), nameof(RewardOption1Text));
             Set(ref rewardOption2Text, preview.GetRewardOptionDisplayName(1), nameof(RewardOption2Text));
@@ -1075,6 +1103,63 @@ namespace SaltyGame
             }
 
             preview.StartSimulation();
+        }
+
+        bool CanEndCurrentRun()
+        {
+            var status = preview?.Run?.Status;
+            return status == SimulationRunStatus.Running
+                || status == SimulationRunStatus.Paused
+                || status == SimulationRunStatus.AwaitingDecision;
+        }
+
+        void ShowEndConfirmation()
+        {
+            if (!CanEndCurrentRun())
+            {
+                return;
+            }
+
+            resumeAfterEndCancellation = preview.Run.Status == SimulationRunStatus.Running;
+            if (resumeAfterEndCancellation)
+            {
+                preview.PauseSimulation();
+            }
+
+            Set(ref endConfirmationVisibility, Visibility.Visible, nameof(EndConfirmationVisibility));
+            Refresh(true);
+        }
+
+        void ConfirmEnd()
+        {
+            if (endConfirmationVisibility != Visibility.Visible)
+            {
+                return;
+            }
+
+            if (!CanEndCurrentRun())
+            {
+                CancelEndConfirmation();
+                return;
+            }
+
+            Set(ref endConfirmationVisibility, Visibility.Collapsed, nameof(EndConfirmationVisibility));
+            resumeAfterEndCancellation = false;
+            preview.EndSimulation();
+            Refresh(true);
+        }
+
+        void CancelEndConfirmation()
+        {
+            var shouldResume = resumeAfterEndCancellation;
+            resumeAfterEndCancellation = false;
+            Set(ref endConfirmationVisibility, Visibility.Collapsed, nameof(EndConfirmationVisibility));
+            if (shouldResume && preview?.Run?.Status == SimulationRunStatus.Paused)
+            {
+                preview.ResumeSimulation();
+            }
+
+            Refresh(true);
         }
 
         void ApplySpeciesRules()

@@ -18,7 +18,7 @@ namespace SaltyGame
 
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
-        public const int ContinuousExpeditionPhaseCount = 10;
+        public const int ContinuousExpeditionPhaseCount = 6;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
@@ -255,6 +255,9 @@ namespace SaltyGame
         int runNumber;
         bool rewardGranted;
         bool sessionStarted;
+        bool endingByPlayer;
+        bool lastExpeditionFailed;
+        bool lastRunEndedEarly;
         string settingsMessage;
         string lastExperimentalUpgradeId;
         int experimentalOfferRotation;
@@ -268,6 +271,8 @@ namespace SaltyGame
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public SpeciesProgression Progression => progression;
+        public bool LastExpeditionFailed => lastExpeditionFailed;
+        public bool LastRunEndedEarly => lastRunEndedEarly;
         public int PurchasedUpgradeCount => progression?.PurchasedUpgradeCount ?? 0;
         public int GetUpgradeLevel(string upgradeId) => progression?.GetUpgradeLevel(upgradeId) ?? 0;
         public int RewardOptionCount => usingAuthoredRewardOptions
@@ -751,14 +756,36 @@ namespace SaltyGame
                 return;
             }
 
-            result = SimulationRunResults.Create(run);
+            var isExpedition = continuousPhasesEnabled && run?.SupportsContinuation == true;
+            var playerPopulation = run != null && run.PopulationHistory.Count > 0
+                ? run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(run.PlayerSpeciesId)
+                : 0;
+            lastExpeditionFailed = isExpedition && playerPopulation == 0;
+            lastRunEndedEarly = run != null
+                && !lastExpeditionFailed
+                && run.Tick < run.TargetTicks;
+            var forfeitsRewards = lastExpeditionFailed
+                || lastRunEndedEarly
+                || endingByPlayer;
+            result = SimulationRunResults.Create(run, rewardsEligible: !forfeitsRewards);
             RunCompleted?.Invoke(this, run);
-            progression.AddCurrency(result.CurrencyEarned);
+            if (forfeitsRewards)
+            {
+                if (progression != null && progression.Currency > 0)
+                {
+                    progression.TrySpend(progression.Currency);
+                }
+            }
+            else
+            {
+                progression?.AddCurrency(result.CurrencyEarned);
+            }
             rewardGranted = true;
 
             // Continuous runs only offer upgrades at phase boundaries. A
             // terminal result must not fall back into the legacy reward flow.
-            if (continuousPhasesEnabled && run?.SupportsContinuation == true)
+            if ((continuousPhasesEnabled && run?.SupportsContinuation == true)
+                || forfeitsRewards)
             {
                 rewardMessage = string.Empty;
                 previewState = SpeciesPreviewState.Results;
@@ -1078,7 +1105,7 @@ namespace SaltyGame
 
             if (parsedPhaseLength > int.MaxValue / ContinuousExpeditionPhaseCount)
             {
-                validationMessage = "Phase length is too large for a ten-phase expedition.";
+                validationMessage = "Phase length is too large for a six-phase expedition.";
                 settingsMessage = validationMessage;
                 return false;
             }
@@ -1646,9 +1673,19 @@ namespace SaltyGame
                 return;
             }
 
-            var ended = simulationHelper != null
-                ? simulationHelper.EndRun()
-                : simulationManager != null && simulationManager.End();
+            endingByPlayer = true;
+            bool ended;
+            try
+            {
+                ended = simulationHelper != null
+                    ? simulationHelper.EndRun()
+                    : simulationManager != null && simulationManager.End();
+            }
+            finally
+            {
+                endingByPlayer = false;
+            }
+
             if (ended
                 && previewState != SpeciesPreviewState.Rewards
                 && previewState != SpeciesPreviewState.Results)
@@ -1663,6 +1700,11 @@ namespace SaltyGame
         {
             if (previewState == SpeciesPreviewState.Results)
             {
+                // Mutations reset for each expedition; earned field data carries forward.
+                var carriedCurrency = progression?.Currency ?? 0;
+                rules = CreateRulesFromDrafts().ToDictionary(entry => entry.Key, entry => entry.Value);
+                ResetExpeditionProgression(rules[playerSpecies]);
+                progression.AddCurrency(carriedCurrency);
                 PrepareNextRun();
                 StartSimulation();
             }
@@ -1847,7 +1889,7 @@ namespace SaltyGame
             if (continuousPhasesEnabled && !continuousRun)
             {
                 continuousPhasesEnabled = false;
-                settingsMessage = "Continuous phases disabled because the phase length is invalid for a ten-phase expedition.";
+                settingsMessage = "Continuous phases disabled because the phase length is invalid for a six-phase expedition.";
             }
 
             var targetTicks = continuousRun
@@ -1884,6 +1926,8 @@ namespace SaltyGame
             }
             result = default;
             rewardGranted = false;
+            lastExpeditionFailed = false;
+            lastRunEndedEarly = false;
             selectedUpgrade = null;
             selectedUpgradeSnapshot = null;
             selectedUpgradeAppliedToCurrentRun = false;

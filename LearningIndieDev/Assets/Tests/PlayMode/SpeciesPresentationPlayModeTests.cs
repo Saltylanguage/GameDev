@@ -353,7 +353,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Tick, Is.EqualTo(2));
-            Assert.That(run.TargetTicks, Is.EqualTo(20));
+            Assert.That(run.TargetTicks, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
 
             Assert.That(
@@ -395,7 +395,7 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
             Assert.That(preview.Run, Is.SameAs(run));
-            Assert.That(run.Tick, Is.EqualTo(20));
+            Assert.That(run.Tick, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
             Assert.That(
                 viewModel.GetType().GetProperty("ResultsTitleText")?.GetValue(viewModel)?.ToString(),
@@ -403,6 +403,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(
                 viewModel.GetType().GetProperty("PlayNextSimulationText")?.GetValue(viewModel)?.ToString(),
                 Is.EqualTo("START NEW EXPEDITION"));
+            Assert.That(preview.LastExpeditionFailed, Is.False);
+            var earnedCurrency = preview.Progression.Currency;
+            Assert.That(earnedCurrency, Is.GreaterThan(0));
+            var completedRun = preview.Run;
+            preview.PlayNextSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.Not.SameAs(completedRun));
+            Assert.That(preview.Progression.Currency, Is.EqualTo(earnedCurrency));
+            Assert.That(preview.Progression.PurchasedUpgradeCount, Is.Zero);
         }
 
         [UnityTest]
@@ -439,13 +448,21 @@ namespace SaltyGame.PlayModeTests
                 out var settingsMessage), Is.True, settingsMessage);
 
             preview.StartSimulation();
+            var abandonedRun = preview.Run;
+            preview.Progression.AddCurrency(20);
+            Assert.That(preview.Progression.TryPurchase(SpeciesUpgradeCatalog.Create("tough-hide")), Is.True);
             preview.EndSimulation();
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(preview.LastRunEndedEarly, Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
 
             var playNextCommand = viewModel.GetType().GetProperty("PlayNextSimulationCommand")?.GetValue(viewModel);
             playNextCommand?.GetType().GetMethod("Execute")?.Invoke(playNextCommand, new object[] { null });
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+            Assert.That(preview.Run, Is.Not.SameAs(abandonedRun));
+            Assert.That(preview.Progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.Zero);
 
             preview.EndSimulation();
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
@@ -454,6 +471,140 @@ namespace SaltyGame.PlayModeTests
             resetCommand?.GetType().GetMethod("Execute")?.Invoke(resetCommand, new object[] { null });
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+        }
+
+        [UnityTest]
+        public IEnumerator EndConfirmationCanCancelRunningAndForfeitAtThePhaseBoundary()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            var preview = runtime.SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera").GetComponent("SaltyGame.VM_SimulationShell");
+            var viewModelType = viewModel.GetType();
+            var endCommand = viewModelType.GetProperty("EndCommand")?.GetValue(viewModel);
+            var confirmEndCommand = viewModelType.GetProperty("ConfirmEndCommand")?.GetValue(viewModel);
+            var cancelEndConfirmationCommand = viewModelType.GetProperty("CancelEndConfirmationCommand")?.GetValue(viewModel);
+            preview.StopSimulation();
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
+            preview.StartSimulation();
+            yield return null;
+            Assert.That(
+                endCommand.GetType().GetMethod("CanExecute")?.Invoke(endCommand, new object[] { null }),
+                Is.EqualTo(true));
+            var run = preview.Run;
+            var tickBeforeConfirmation = run.Tick;
+
+            confirmEndCommand.GetType().GetMethod("Execute")?.Invoke(confirmEndCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.SameAs(run));
+            endCommand.GetType().GetMethod("Execute")?.Invoke(endCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            Assert.That(viewModelType.GetProperty("EndConfirmationVisibility")?.GetValue(viewModel)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(viewModelType.GetProperty("CanCloseWindow")?.GetValue(viewModel), Is.False);
+            cancelEndConfirmationCommand.GetType().GetMethod("Execute")?.Invoke(cancelEndConfirmationCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(run.Tick, Is.EqualTo(tickBeforeConfirmation));
+
+            preview.PauseSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            var pausedTick = run.Tick;
+            endCommand.GetType().GetMethod("Execute")?.Invoke(endCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            Assert.That(viewModelType.GetProperty("EndConfirmationVisibility")?.GetValue(viewModel)?.ToString(), Is.EqualTo("Visible"));
+            cancelEndConfirmationCommand.GetType().GetMethod("Execute")?.Invoke(cancelEndConfirmationCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(run.Tick, Is.EqualTo(pausedTick));
+            preview.ResumeSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.PhaseDecision
+                   && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            var decisionTick = run.Tick;
+            preview.Progression.AddCurrency(7);
+            var dataAtDecision = preview.Progression.Currency;
+            endCommand.GetType().GetMethod("Execute")?.Invoke(endCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(viewModelType.GetProperty("EndConfirmationVisibility")?.GetValue(viewModel)?.ToString(), Is.EqualTo("Visible"));
+            cancelEndConfirmationCommand.GetType().GetMethod("Execute")?.Invoke(cancelEndConfirmationCommand, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(run.Tick, Is.EqualTo(decisionTick));
+            Assert.That(preview.Progression.Currency, Is.EqualTo(dataAtDecision));
+
+            endCommand.GetType().GetMethod("Execute")?.Invoke(endCommand, new object[] { null });
+            confirmEndCommand.GetType().GetMethod("Execute")?.Invoke(confirmEndCommand, new object[] { null });
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(run.Tick, Is.EqualTo(decisionTick));
+            Assert.That(preview.LastRunEndedEarly, Is.True);
+            Assert.That(preview.LastExpeditionFailed, Is.False);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            Assert.That(viewModelType.GetProperty("EndConfirmationVisibility")?.GetValue(viewModel)?.ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(viewModelType.GetProperty("ResultsTitleText")?.GetValue(viewModel), Is.EqualTo("Expedition ended"));
+        }
+
+        [UnityTest]
+        public IEnumerator PlayerSpeciesExtinctionFailsImmediatelyWithoutRewards()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
+
+            var playerRole = preview.ActiveSpeciesRules[preview.PlayerSpecies].Role;
+            var herbivores = playerRole == SpeciesRole.Herbivore ? 0 : 1;
+            var carnivores = playerRole == SpeciesRole.Carnivore ? 0 : 1;
+            Assert.That(
+                playerRole == SpeciesRole.Herbivore || playerRole == SpeciesRole.Carnivore,
+                Is.True);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "8",
+                "8",
+                preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "20",
+                "0.01",
+                "0",
+                "0",
+                "0",
+                randomizeSeed: false,
+                "0",
+                herbivores.ToString(CultureInfo.InvariantCulture),
+                carnivores.ToString(CultureInfo.InvariantCulture),
+                out var settingsMessage), Is.True, settingsMessage);
+
+            preview.StartSimulation();
+            preview.Progression.AddCurrency(9);
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.Results && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(preview.Run.Tick, Is.EqualTo(1));
+            Assert.That(preview.LastExpeditionFailed, Is.True);
+            Assert.That(preview.LastRunEndedEarly, Is.False);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            yield return null;
+            var viewModel = GameObject.Find("Prototype Camera").GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(
+                viewModel.GetType().GetProperty("ResultsTitleText")?.GetValue(viewModel),
+                Is.EqualTo("Expedition failed"));
         }
 
         [UnityTest]
@@ -546,9 +697,16 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
             Assert.That(preview.Run, Is.SameAs(run));
-            Assert.That(run.Tick, Is.EqualTo(20));
+            Assert.That(run.Tick, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
             Assert.That(preview.CanPurchaseReward(0), Is.False);
+
+            var earnedFieldData = preview.Progression.Currency;
+            preview.PlayNextSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.Not.SameAs(run));
+            Assert.That(preview.Progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.EqualTo(earnedFieldData));
         }
 
         [UnityTest]
@@ -611,7 +769,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FiveHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossPhaseBoundaries()
+        public IEnumerator FiveHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossDecisionBoundaries()
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
                 "reproductive-drive", "threat-exposure" };
@@ -634,9 +792,9 @@ namespace SaltyGame.PlayModeTests
                 var originalRules = preview.Progression.CurrentRules;
                 preview.Progression.AddCurrency(100);
                 var upgrade = SpeciesUpgradeCatalog.Create(ids[skillIndex]);
-                // Preload one level so nine reward boundaries reach the Level 10 cap.
+                // Preload one level, then exercise every in-expedition choice.
                 Assert.That(preview.Progression.TryPurchase(upgrade), Is.True);
-                for (var phase = 1; phase <= 9; phase++)
+                for (var phase = 1; phase < SpeciesSimulationPreview.ContinuousExpeditionPhaseCount; phase++)
                 {
                     var timeout = Time.realtimeSinceStartup + 5f;
                     while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
@@ -666,9 +824,15 @@ namespace SaltyGame.PlayModeTests
                     }
                     Assert.That(preview.PurchaseReward(0), Is.False, "A repeated click must not charge again.");
                 }
-                Assert.That(preview.Progression.CanPurchase(upgrade), Is.False);
-                StringAssert.Contains("MAX LEVEL", preview.GetRewardOptionDisplayName(0));
-                preview.EndSimulation();
+                var finalTimeout = Time.realtimeSinceStartup + 5f;
+                while (preview.State != SpeciesPreviewState.Results && Time.realtimeSinceStartup < finalTimeout)
+                {
+                    yield return null;
+                }
+
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+                Assert.That(run.Tick, Is.EqualTo(SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
+                Assert.That(run.PhaseResults, Has.Count.EqualTo(SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             }
         }
 

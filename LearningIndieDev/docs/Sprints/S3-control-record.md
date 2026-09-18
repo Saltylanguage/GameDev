@@ -79,14 +79,21 @@ The 4-hour S3-06 split is 2h Josh and 2h Sim. Josh owns the eight-hour S3-03
 flow and recovery work. S3-05 is outside these committed totals and needs a
 scope trade or added capacity before it can start.
 
+S3-04's working execution plan is in
+[S3-04-mutation-readability-plan.md](S3-04-mutation-readability-plan.md). It
+preserves the allocated Josh 2h / Sim 6h split and limits the review to existing
+candidates and one bounded Forest Edge/Hare evidence slice.
+
 ## Delivery order
 
-1. **Trust the baseline:** finish S3-01 before using the consolidated player
-   route as acceptance evidence.
-2. **Lock the product contract:** complete S3-02 before implementing behavior
-   that depends on phase timing, board identity, rewards, or terminal meaning.
-3. **Make the flow safe:** implement S3-03 against the approved contract, then
-   test each route back to the Lab and each recovery path.
+1. **Keep evidence honest:** Josh closed S3-01 on 2026-09-18 after integration.
+   Post-fix Unity validation remains a separate open follow-up in Loose Ends
+   P1-031; no passing result is claimed.
+2. **Lock the product contract:** S3-02 is complete. Its explicit deferrals do
+   not block implementation; any stale Trello acceptance wording is a
+   non-blocking cleanup.
+3. **Make the flow safe:** S3-03 is implemented and validated against the
+   approved contract; the Lab route and recovery paths pass PlayMode coverage.
 4. **Close the M1 loop:** make Mutation effects understandable in S3-04 and
    apply the bounded interface polish in S3-06. S3-08 can proceed in parallel.
 5. **Use stretch time only if available:** take on S3-05 after committed S3 work
@@ -119,6 +126,35 @@ scope trade or added capacity before it can start.
 
 ## S3-01 execution status
 
+- **Current sprint snapshot (2026-09-18):** Josh closed S3-01 after
+  integration; its post-fix Unity validation is split into the separate P1-031
+  follow-up below and has not been run. The Trello card is in `✅ Done`, marked
+  complete, and retains this caveat in its description. S3-02 is complete as a
+  product contract; see [S3-02](S3-02-expedition-contract.md). Josh confirms
+  S3-03 is complete; its Trello card is in `✅ Done` and marked complete. The
+  pushed baseline now includes the 64px
+  Grass art/atlas, Bare-cell neighbor-mask resolution, regression coverage, and
+  the simulation shell/UI integration (commits `fe56660d`, `a5a47e0f`,
+  `a1b355e2`, and `52ce0430`). The latest retained full suites predate the
+  Bare-cell correction; closure is the owner's scope decision, not a claim of
+  post-fix Unity verification. S3-02 is complete on the Trello board; any
+  remaining board-size/Fern acceptance wording is a non-blocking cleanup noted
+  in P1-033.
+- S3-03 aligns the runtime to six rounds, adds a confirming End dialog that
+  pauses safely and resumes on cancel only when it was previously running,
+  ends extinct player species immediately, and clears unspent data when an
+  expedition is abandoned or lost. A new expedition resets run-scoped
+  Mutations and carries awarded field data forward. Both simulation hosts
+  start one new run on Results re-entry. The prototype scene now points to the
+  simulation `UserControl` instead of its resource dictionary, and End-command
+  availability refreshes as run state changes. The focused End/cancel test
+  passed 1/1; the full no-graphics PlayMode suite passed 31/33 with 0 failures
+  and two expected graphics-only skips. Unity imported and compiled the UI
+  host in an isolated copy while the working project editors were open. Reports
+  are retained under `artifacts/s3-03-test-results-20260918/`. The separate
+  three-offer contract gap remains in S3-04; this closes S3-03 flow/recovery,
+  not the Sprint 3 acceptance gate.
+
 - Started 2026-09-17. After Unity was closed, fresh full-suite runs completed
   and retained XML/logs:
 - `artifacts/unity-tests-20260917-174307/EditMode-results.xml`: 247 passed,
@@ -145,19 +181,38 @@ scope trade or added capacity before it can start.
   A separate attempt to run the full graphics-capable suite exited during
   Unity startup without producing test results, so that attempt is
   inconclusive. The earlier 30/30 graphics run predates the population fix.
-  The Trello card status remains unchanged pending Josh's review.
-- A subsequent terrain correction changed mask selection for Bare cells and
-  added resolver/snapshot regression tests so Grass patches fill empty dirt
-  cells. These changes have not been validated yet: the approved Unity test
-  preflight found the editor open (PID 9624) and refused to run. The results
-  above predate this correction; rerun after the editor is closed.
-- Next: review/accept the retained results and reconcile the Trello card status.
+  Josh closed S3-01 and moved its Trello card to Done on 2026-09-18; the card
+  description records that post-fix validation remains outstanding.
+- The terrain correction now changes mask selection for Bare cells and adds
+  resolver/snapshot regression tests so Grass patches fill empty dirt cells.
+  The migration and correction are pushed, but the correction has not been
+  validated in Unity; all retained test results above predate it. The earlier
+  preflight refusal while Unity was open remains the reason no post-fix result
+  is retained.
+- Next: run the focused terrain regression and appropriate EditMode/PlayMode
+  suites when Unity is available, then record evidence under Loose Ends P1-031.
+  If a defect appears, create corrective work; do not reopen S3-01 without a
+  specific reason.
+
+## S3-02 completion status
+
+- Complete: the six-round, 10-seconds-of-simulation-time-per-round cadence;
+  five Mutation-or-Skip choices after rounds 1–5; Pause and confirmed End with
+  no Restart; survival victory after round 6; extinction failure without
+  rewards; and performance-based currency are recorded in the accepted
+  contract.
+- Skip bonus, Forest Edge board size, playable plant species, and the exact
+  performance-to-currency formula are explicitly undecided, deferred, or
+  implementation details; none blocks S3-02.
+- Josh marked the Trello card complete on 2026-09-18. If its acceptance
+  description still lists deferred decisions as required, update that wording
+  as cleanup; it does not block the accepted contract or S3-03.
 
 ## Risk register
 
 | Priority | Risk | Owner | Exit evidence |
 | --- | --- | --- | --- |
-| P1 | The latest integrated test rerun is green locally, but the S3-01 Trello card status has not yet been reconciled after review. | Josh | Review retained artifacts and update the card/control status consistently. |
+| P1 | The latest retained Unity results predate the Bare-cell terrain correction; S3-01 is owner-closed, but post-fix verification remains outstanding separately. | Josh | Run and review post-fix focused/full suites when Unity is available; record evidence in Loose Ends P1-031 and create corrective work if needed. |
 | P0 | A player can become stranded by a broken state transition, error, or reset path. | Josh | Tests cover the main route and recovery paths back to the Lab; no known soft-lock remains. |
 | P1 | The successful-run currency measure and conversion are still being developed; optional Skip and bonus-event rewards are unsettled. | Josh + Sim | Link the approved performance measure when ready; this does not block S3-02. |
 | P1 | Flow and UI work could expand into profile saving, settlement, or production Genome actions. | Josh | S3-03 ends at a safe expedition and return route; profile saving remains in S4. |

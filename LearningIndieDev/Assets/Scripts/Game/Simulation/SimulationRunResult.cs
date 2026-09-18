@@ -805,7 +805,7 @@ namespace SaltyGame
 
     public static class SimulationRunResults
     {
-        public static SimulationRunResult Create(SimulationRunState run)
+        public static SimulationRunResult Create(SimulationRunState run, bool rewardsEligible = true)
         {
             var playerPopulation = 0;
             for (var y = 0; y < run.Cells.Height; y++)
@@ -824,7 +824,7 @@ namespace SaltyGame
                 run.Tick,
                 run.ElapsedSeconds,
                 playerPopulation,
-                playerPopulation,
+                rewardsEligible ? playerPopulation : 0,
                 run.RulesetFingerprint,
                 run.UpgradeLoadout,
                 run.PhaseResults,

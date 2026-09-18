@@ -1,6 +1,8 @@
 # S3-02 — Expedition contract
 
-**Status:** In progress. Only the decisions marked agreed below are locked.
+**Status:** Complete — all S3-02 player-contract decisions were agreed on
+2026-09-17. Explicitly deferred details below are non-blocking and are not
+acceptance gaps.
 **Owner:** Josh · **Reviewer:** Sim · **Planned effort:** Josh 4h, Sim 2h
 
 ## Purpose

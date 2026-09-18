@@ -4,6 +4,44 @@ This document records durable product and design context that should carry acros
 Codex desktop and IDE conversations. Keep it concise, update it when a decision
 changes, and do not treat research references as approved implementation work.
 
+## Unity plugin skills and project fit
+
+The Unity plugin provides on-demand specialists across these areas:
+
+- Editor, search, and packages: `unity-cli`, `generate-editor-search-query`,
+  `unity-package-management`.
+- UI: `ui`, `ui-uitk`, `ui-ugui`, `ui-imgui`.
+- 2D assets: `2d-pixel-perfect`, `sprite-editor`, `sprite-segment-3x3grid`,
+  `manage-sprite-atlas`, `tilemap-palette-create`,
+  `tilemap-ruletile-createempty`, `tilemap-ruletile-createfromsegment`.
+- Rendering and performance: `migrate-birp-to-urp`, `urp-postprocessing`,
+  `shader-graph-create-custom-node`,
+  `validate-urp-render-graph-renderer-feature`, `optimize-text-mesh-pro`,
+  `optimize-web`.
+- Audio: `audio-setup-mixers`, `optimize-audio`.
+- Other systems and integrations: `initialize-ai-navigation`,
+  `physics-3d-collision`, `localization`, `build-live-game`,
+  `setup-multiplayer-services`, `setup-vivox-voice-chat`,
+  `implement-in-app-purchases`, `levelplay-unity-integration`, and
+  `new-unity-project` for greenfield work.
+
+Use the most specific available skill when a request enters its area. For this
+project, `unity-cli` is relevant to editor/build/test workflows, editor search
+to read-only asset lookup, and sprite/Tilemap/atlas skills to authored terrain
+work. Audio skills apply when changing the existing audio feedback or mixer.
+
+Project decisions remain the authority for fit: Noesis/XAML and its MVVM
+boundaries are the player UI architecture; authored terrain and its import
+settings follow the project guides; Unity 6/URP versions and validation follow
+[`AGENTS.md`](../AGENTS.md) and
+[`UNITY_ENGINEERING_STANDARDS.md`](UNITY_ENGINEERING_STANDARDS.md). Unity UI
+skills apply when a request specifically targets their Unity UI technology,
+not as a reason to migrate Noesis. Plugin availability supplies implementation
+guidance; it does not select product scope, approve a dependency/service, or
+replace project validation. Pair the relevant Unity skill with Ponytail for
+minimal choices and Correctness-First Engineering when the work has material
+uncertainty or regression risk.
+
 ## Current game direction
 
 - The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)
@@ -26,7 +64,7 @@ changes, and do not treat research references as approved implementation work.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
-- [`ROADMAP.md`](../ROADMAP.md) version 2.1 is the active production baseline
+- [`ROADMAP.md`](../ROADMAP.md) version 2.2 is the active production baseline
   as of 2026-09-17: M0 is complete, M1 is active, Sprint 2 is closed, and
   Sprint 3 is active for 2026-09-17–2026-09-30. S3 prioritizes a safe,
   recoverable Forest Edge game-state loop, understandable Mutation effects,
@@ -41,10 +79,11 @@ changes, and do not treat research references as approved implementation work.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - Every species has two distinct upgrade systems. **Mutations** are acute
-  adaptations offered at nine decision points during one completed Species
-  Simulation and reset when it ends. At each point, Skip is a valid choice with
-  no current bonus or penalty; any future reward-doubling for skipping is a
-  separate deferred economy rule. Mutations never enter Biome Simulations. A
+  adaptations offered at five decision points during one six-round Species
+  Simulation and reset when it ends. They are offered after rounds 1–5; at each
+  point, the player chooses one of three Mutations or Skip. Skip currently has
+  no bonus or penalty; any future skip reward is a separate deferred economy
+  rule. Mutations never enter Biome Simulations. A
   species' **Genome** is a permanent library of options unlocked with banked
   scientific data in the Gene Lab.
 - The player can turn unlocked Genome nodes on or off between simulations. The

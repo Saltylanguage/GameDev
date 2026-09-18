@@ -126,7 +126,14 @@ namespace SaltyGame
             // The standalone simulation route keeps its Ready/setup surface, but
             // opening this desktop-hosted view should take the player directly to
             // the live board instead of presenting expedition setup again.
-            if (simulationPreview.State == SpeciesPreviewState.Ready
+            if (simulationPreview.State == SpeciesPreviewState.Results)
+            {
+                // A new expedition gets a fresh run-scoped Mutation state.
+                simulationPreview.PlayNextSimulation();
+                simulationBoardViewModel.Initialize(simulationPreview);
+                ApplyBoardSnapshot();
+            }
+            else if (simulationPreview.State == SpeciesPreviewState.Ready
                 && simulationViewModel.CanStart)
             {
                 simulationViewModel.StartCommand.Execute(null);

@@ -124,11 +124,61 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));
         }
 
+        [UnityTest]
+        public IEnumerator ReopeningSimulationAfterResultsStartsANewRun()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+            yield return null;
+
+            var desktopRoot = GameObject.Find(DesktopCameraName);
+            Assert.That(desktopRoot, Is.Not.Null);
+            var desktopViewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            var openCommand = GetProperty(desktopViewModel, "OpenDesktopIconCommand");
+            var preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
+            var simulationViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(simulationViewModel, Is.Not.Null);
+
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out var phaseMessage), Is.True, phaseMessage);
+            ExecuteCommand(openCommand, "Simulation");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+
+            var completedRun = preview.Run;
+            preview.EndSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            yield return null;
+            ExecuteCommand(GetProperty(simulationViewModel, "ReturnToLabCommand"));
+
+            ExecuteCommand(openCommand, "Simulation");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.Not.SameAs(completedRun));
+            var reopenedRun = preview.Run;
+            ExecuteCommand(openCommand, "Simulation");
+            Assert.That(preview.Run, Is.SameAs(reopenedRun), "Opening an already running simulation must not start another run.");
+            Assert.That(preview.Progression.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            yield return null;
+            Assert.That(GetProperty(simulationViewModel, "ResultsVisibility").ToString(), Is.EqualTo("Collapsed"));
+
+            preview.EndSimulation();
+            yield return null;
+            ExecuteCommand(GetProperty(simulationViewModel, "ReturnToLabCommand"));
+        }
+
         static object GetProperty(object target, string propertyName)
         {
             var property = target.GetType().GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
             Assert.That(property, Is.Not.Null, $"Expected property '{propertyName}'.");
             return property.GetValue(target);
+        }
+
+        static void ExecuteCommand(object command, params object[] arguments)
+        {
+            Assert.That(command, Is.Not.Null);
+            var parameters = arguments.Length == 0 ? new object[] { null } : arguments;
+            Assert.That((bool)command.GetType().GetMethod("CanExecute")?.Invoke(command, parameters), Is.True);
+            command.GetType().GetMethod("Execute")?.Invoke(command, parameters);
         }
 
         static string TryGetVisualOutputDirectory()

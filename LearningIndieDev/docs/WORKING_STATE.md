@@ -5,11 +5,21 @@ become a master changelog.
 
 ## Current focus
 
-**Context refresh: 2026-09-17.** ProjectMain contains the first Genome contract,
-EX-011 evidence, and the merged Bev/Sim simulation work. Current local changes
-remove visualization-only Genome fixtures, reconcile the design and engineering
-documents, and integrate the 64px Forest terrain assets. Treat all status
-notes below as bounded claims until their stated verification runs complete.
+**Context refresh: 2026-09-18.** The pushed `ProjectMain` baseline includes the
+terrain art migration, Bare-cell neighbor-mask correction and regression tests,
+and simulation-shell/UI integration. Josh closed S3-01 after integration;
+post-fix Unity validation remains separate and unrun. S3-02's player contract
+is complete. S3-03 flow and recovery are implemented and Unity-validated: the
+focused End/cancel test passed 1/1, and full no-graphics PlayMode passed 31/33
+with 0 failures and two expected graphics-only skips. The run also caught and
+fixed the prototype scene's stale Noesis resource-dictionary reference. Tests
+ran in an isolated copy because editor processes were open; reports are
+retained under `artifacts/s3-03-test-results-20260918/`. See
+[`handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md`](handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md).
+Treat test claims as bounded by the retained evidence below. The S3-03 card is
+already complete; see the closeout handoff for the validation record. The
+separate three-option Mutation gap is tracked for S3-04, so the Sprint 3 gate
+remains open.
 
 **Terrain art standard update: 2026-09-17.** New terrain source tiles are
 64x64 pixels at 64 PPU and live under `Assets/Art/Terrain/Blob/64/`; this keeps
@@ -35,15 +45,21 @@ this fix.
 **Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
 Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
 kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
-2026-09-17–2026-09-30, with six cards in Trello `Current Work`, S3-01's original
-terrain failures addressed and its full-suite acceptance rerun green, S3-05
-duration/memory measurement in Backlog as uncommitted stretch work, and 2h of
-Sim capacity unallocated. The
-S3 priority is a safe game-state loop with tested
-recovery and return to the Lab, meaningful and understandable Mutations, and a
-bounded visual polish/UI integration pass. Local profile saving is scheduled
-for S4. The GalapagOS Desktop is the canonical player home; the standalone Lab
-remains a legacy/developer route.
+2026-09-17–2026-09-30. Josh closed S3-01; post-Bare-cell-fix Unity validation
+is a separate open follow-up in Loose Ends P1-031 and is not represented as a
+test pass. Trello S3-01 is in Done with this caveat recorded. S3-02's contract
+is complete, and Josh has marked its Trello card complete. S3-03 is complete
+and Unity-validated with results retained in its handoff. The S3-02 card's
+acceptance wording may still need a cleanup pass to
+remove the deferred board-size and playable-plant decisions.
+S3-05 duration/memory measurement remains uncommitted stretch work
+and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
+loop with tested recovery and return to the Lab, meaningful and understandable
+Mutations, and a bounded visual polish/UI integration pass. Local profile
+saving is scheduled for S4. The GalapagOS Desktop is the canonical player home;
+the standalone Lab remains a legacy/developer route.
+The S3-04 working plan is now recorded; its candidate source, repeat/stacking,
+and Mutation-cost questions remain for Josh to confirm after the S3-03 checkpoint.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
@@ -59,7 +75,8 @@ The latest retained rerun is `artifacts/unity-tests-20260917-222442/`: EditMode
 251/251 passed; no-graphics PlayMode 28 passed with two expected graphics-only
 skips. The graphics-capable ForestEdge visual test passed 1/1 and captured the
 board under `artifacts/visual-evidence-20260917-222658/`. The original terrain
-failures are resolved locally; the Trello card state has not been changed.
+failures are resolved locally. Josh subsequently closed S3-01 in Trello;
+post-fix validation remains tracked separately.
 Desert art remains absent. Verifying the end-to-end state/recovery route is S3
 work; profile saving is scheduled for S4.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
@@ -74,10 +91,10 @@ dictionary directly. The custom simulation-board sprite atlas remains a
 runtime renderer input rather than an XAML image consumer.
 The game-design feature sequence is now triaged in
 [GAME_FEATURE_ROADMAP_TRIAGE.md](GAME_FEATURE_ROADMAP_TRIAGE.md), starting with
-the Expedition Decision Loop. S3-02 is rebuilding the expedition contract:
-Josh has agreed to six phases, ten seconds of simulation time per phase, one
-minute total, and five upgrade decision moments with three temporary Mutations
-or Skip at each, one after each of phases 1–5. Permanent currency purchases in
+the Expedition Decision Loop. S3-02 is complete: the expedition has six phases,
+ten seconds of simulation time per phase, one minute total, and five upgrade
+decision moments with three temporary Mutations or Skip at each, one after
+each of phases 1–5. Permanent currency purchases in
 the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
 player skip for extra currency is undecided and non-blocking; if adopted, it
 uses the same currency as Genome Upgrades. Mutation choices should be readable
@@ -220,7 +237,9 @@ inconclusive.
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
 - Active Sprint 3 safe game loop and M1 closeout: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
-- S3-02 expedition contract in progress: [`Sprints/S3-02-expedition-contract.md`](Sprints/S3-02-expedition-contract.md)
+- S3-04 Mutation readability and bounded review plan: [`Sprints/S3-04-mutation-readability-plan.md`](Sprints/S3-04-mutation-readability-plan.md)
+- S3-02 expedition contract complete: [`Sprints/S3-02-expedition-contract.md`](Sprints/S3-02-expedition-contract.md)
+- S3-03 flow and recovery work: [`handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md`](handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md)
 - Sprint 3 kickoff handoff: [`handoffs/2026-09-17-1613-codex-sprint-3-kickoff.md`](handoffs/2026-09-17-1613-codex-sprint-3-kickoff.md)
 - Stable-but-incomplete feature action plan: [`INCOMPLETE_FEATURES_ACTION_PLAN.md`](INCOMPLETE_FEATURES_ACTION_PLAN.md)
 - Proposed next work bucket: [`NEXT_WORK_BUCKET_PLAN.md`](NEXT_WORK_BUCKET_PLAN.md)

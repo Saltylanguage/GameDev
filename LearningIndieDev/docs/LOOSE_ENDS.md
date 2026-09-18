@@ -7,26 +7,30 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ## Status
 
-- Last reviewed: 2026-09-17
-- Current report state: no P0 issue is verified. Genome implementation and
-  documentation now agree on a foundation-only boundary; visualization-only
-  Hare/Fox Genome assets are removed from the player scene while the Bev/Sim
-  Mutation catalog and simulation behavior remain intact. Direct-start Forest
-  Edge/Hare is the accepted Desktop test contract, but the integrated PlayMode
-  suite has fresh results: PlayMode 28/29 passed with one graphics-only skip;
-  EditMode 247/249 passed with two terrain failures. EX-011's narrow ordered-combination finding is
-  accepted, without individual-upgrade or production-balance approval. Sprint
-  2 is closed; Sprint 3 kickoff `S3-KICKOFF-20260917-01` is verified and the
-  six committed cards are in Current Work; S3-01 is Blocked on the active
-  terrain migration after its other checks passed. The two-hour Sim remainder is
-  uncommitted; S3-05 duration/memory work is stretch-only in Backlog.
-- Project hygiene check: `ProjectMain` is at `cab5838d`; DirtyBoy first reported
-  472 changed paths and then 594 while Unity Editor remained open. The count
-  discrepancy is unresolved. Working State and the terrain/Genome handoffs
-  identify concurrent workstreams, but the full diff still needs a scoped
-  owner and disposition before it is treated as a clean S3 baseline. The
-  generated `ROADMAP.html` matches `ROADMAP.md`, but both it and its generator
-  are currently untracked and need an explicit keep/ignore decision.
+- Last reviewed: 2026-09-18
+- Current report state: no P0 issue is verified. Sprint 2 remains closed and
+  S3 is active. The pushed baseline through `52ce0430` includes the 64px Grass
+  art/atlas, Bare-cell Grass neighbor-mask behavior and regression coverage,
+  plus simulation-shell/UI integration. Josh closed S3-01 after integration;
+  post-fix Unity verification remains a separate open follow-up (P1-031), not
+  a claimed test pass. Its Trello card is in Done with the caveat recorded.
+  S3-02's player contract and Trello card are complete. The card's acceptance
+  wording may still mention now-deferred board-size and playable-plant
+  decisions; this is a cleanup note, not an open contract decision.
+  S3-03 flow and recovery are implemented and Unity-validated. Its focused
+  End/cancel test passed 1/1, and full no-graphics PlayMode passed 31/33 with
+  zero failures and two expected graphics-only skips. The test pass exposed a
+  stale prototype-scene reference to a ResourceDictionary, which now points to
+  the simulation UserControl. See the retained reports and handoff. The two-hour
+  Sim remainder is uncommitted; S3-05 duration/memory work is stretch-only.
+- Project hygiene check: the earlier 472/594-path shared-worktree warning is
+  superseded by the consolidated pushed history. The pushed S3-03 baseline is
+  `52ce0430`; the validated closeout includes simulation runtime/hosts, the
+  prototype-scene XAML reference, PlayMode coverage, the simulation-window
+  XAML, sprint records, and the handoff. Unity test evidence is retained at
+  `artifacts/s3-03-test-results-20260918/`.
+  `ROADMAP.html` is not present in this checkout, so its former untracked-file
+  decision is not current.
 - Prior report state (2026-09-12; superseded): the continuation implementation and evidence-preparation
   checkpoint are recorded in `79423b4e` (with the earlier lifecycle, cleanup,
   and S2-register checkpoints retained in history). Unity EditMode is green at
@@ -48,7 +52,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   GalapagOS player-shell polish is still a human-review item, and the latest
   focused Settings/Collection PlayMode invocation produced no result XML.
 
-### Decisions recorded 2026-09-17
+### Decisions recorded 2026-09-17–18
 
 - The first Genome identity/profile/snapshot/catalog/display foundation is
   implemented. Production effects, costs, buying, activation actions, approved
@@ -69,6 +73,14 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
   profile save/restore work.
 - A separate terrain-art work block was present and preserved. Its changes are
   outside this reconciliation.
+- S3-02's player-facing expedition contract was agreed on 2026-09-17; board
+  size and playable plants are explicit deferrals, and neither blocks S3-03.
+- S3-01's terrain implementation and S3-02's contract are integrated in the
+  pushed tree. On 2026-09-18 Josh closed S3-01; post-fix Unity verification is
+  kept separate in P1-031 and is not represented as passed. S3-03 now passes
+  its focused flow regression and full no-graphics PlayMode suite; its card was
+  already marked complete. The validated code/documentation closeout is the
+  S3-03 completion checkpoint.
 
 ### Decisions retained from 2026-09-12 (historical)
 
@@ -150,7 +162,7 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 - **P1** — likely to cause avoidable rework or leave an active plan ownerless.
 - **P2** — useful cleanup, clarification, or follow-up that is not currently blocking.
 
-## Current open items (2026-09-17)
+## Current open items (2026-09-18)
 
 ### P1-016 — First trustworthy upgrade catalog needs design and balance review
 
@@ -227,56 +239,85 @@ Run the review with `/Loose Ends`, `Loose Ends`, or `Show me my Loose Ends`. The
 
 ### P1-031 — Player-shell polish and focused UI acceptance need review
 
-- **Status:** S3-01 is in `⛔ Blocked` pending the active terrain migration.
-  Fresh results are retained: 28/29 PlayMode passes with one graphics-only
-  skip; EditMode has 247/249 passes and two terrain failures.
-  Main Menu human review remains separate follow-up.
+- **Status:** Josh closed S3-01 on 2026-09-18 and its Trello card is in `✅ Done`
+  and marked complete. The terrain migration, Bare-cell neighbor-mask
+  correction, and resolver/snapshot regressions are pushed. Post-fix Unity
+  verification remains unrun and is tracked separately here; closure does not
+  claim a test pass. Main Menu human review remains a separate follow-up.
 - **Evidence:**
   [`2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
   records the meadow background, CRT treatments, focus behavior, procedural
   chime, and zero-warning interactive checks. The focused
   `settings-collection-ui-20260912-010749` Unity invocation exited with code 1
-  and produced no `results.xml`. Current retained artifacts are
-  `artifacts/unity-tests-20260917-174307/EditMode-results.xml` (247/249) and
-  `artifacts/unity-tests-20260917-174422/PlayMode-results.xml` (28/29 passed,
-  one justified nographics skip). Lab, Genome, and profile persistence tests
-  now pass. Only two terrain checks fail because the tiles and atlas are not
-  present in this checkout. Neither retained log contains a Noesis binding
-  error.
-- **Next action:** Once the terrain assets are available, rerun EditMode and
-  both complete suites; include the graphics-only test in a graphics-capable
-  player. S3-06 owns bounded expedition UI polish. Keep Main Menu branding and
-  generated-art approval as a separate human-review decision.
+  and produced no `results.xml`. The retained full-suite artifacts are
+  `artifacts/unity-tests-20260917-222442/` (EditMode 251/251; no-graphics
+  PlayMode 28 passed with two expected graphics-only skips); focused graphics
+  evidence is `artifacts/visual-evidence-20260917-222658/`. These results
+  predate the Bare-cell follow-up. The work was pushed in `fe56660d`,
+  `a5a47e0f`, `a1b355e2`, and `52ce0430`; no post-fix Unity run is recorded.
+- **Next action:** After Unity is available for test execution, run the
+  Bare-cell regression and appropriate full EditMode/PlayMode suites, including
+  graphics-capable coverage; record results here. If a defect appears, create
+  corrective work rather than reopening S3-01 without cause. S3-06 owns bounded
+  expedition UI polish. Keep Main Menu branding and generated-art approval
+  separate.
 - **Likely owner:** Josh + UI/art reviewer.
 - **Confidence:** High.
 
 ### P1-032 — Canonical Desktop route still discards profile and launch context
 
-- **Status:** The route is executable but disconnected. Main Menu validates a
+- **Status:** The Desktop route is executable but still does not transfer
+  profile/launch context. This is a separate follow-up, not a blocker for the
+  completed S3-03 Lab-to-expedition flow. Main Menu validates a
   `ProfileSessionSnapshot`, then scene loading discards it. The Desktop creates
   and directly starts a local Forest Edge/Hare preview instead of consuming the
   profile, planner choices, seed, schedule, or frozen launch request.
 - **Evidence:** `Helper_SceneTransition.LoadDesktop` validates and loads only a
   scene. `GalapagOSDesktopNoesisHost.OpenSimulation` initializes and starts its
   local preview. The GDD and TDD route matrices now record the same boundary.
-- **Next action:** S3-03 proves the safe game-state route and recovery to the
-  Lab. Profile/launch persistence and settlement continuity remain separately
-  scoped for S4 or later; do not expand S3 into profile saving.
+- **Next action:** Decide separately when profile/launch-context transfer
+  becomes a required Desktop route contract; keep persistence and settlement
+  out of S3 unless explicitly re-scoped.
 - **Likely owner:** Josh + UI/runtime owner.
 - **Confidence:** High.
 
 ### P1-033 — Forest Edge acceptance inputs still have conflicting authorities
 
-- **Status:** The conflicts are documented but unresolved: the player preview
-  defaults to 100 ticks per phase while the committed design says 200; the
-  checked-in Forest Edge asset is 42x20 while the generator specifies 36x20;
-  product language says Fern while the generator/diet contract uses `plant`.
-- **Evidence:** `docs/GDD_TEMPLATE.md` and `docs/TDD_TEMPLATE.md` record each
-  mismatch with its current source. These differences can invalidate direct
-  comparisons and future save IDs if treated as interchangeable.
-- **Next action:** Resolve the authorities under S3-02 before implementing
-  dependent behavior or accepting new balance evidence.
+- **Status:** The S3-02 contract is complete: six 10-second simulation-time
+  rounds and five Mutation/Skip decisions are locked. Forest Edge board size is
+  explicitly deferred, and playable plants/Fern are on hold. The 42x20 asset
+  versus 36x20 generator discrepancy remains real but is not an S3-02 blocker.
+  The current offer path still supplies two Mutation options where the contract
+  says three; S3-04 tracks this as an open implementation/owner decision. It is
+  separate from S3-03 flow/recovery closure.
+  Josh marked the S3-02 Trello card complete on 2026-09-18. Its acceptance
+  wording may still list board size and Fern/Plant identity as required contract
+  decisions; confirm/update that text if it remains stale. This is cleanup, not
+  a blocker to using the accepted contract.
+- **Evidence:** `docs/Sprints/S3-02-expedition-contract.md` records the agreed
+  decisions and deferrals. Trello card `c3i7HO09` still says its acceptance
+  fixes board size and Fern/Plant identity. `docs/GDD_TEMPLATE.md` and
+  `docs/TDD_TEMPLATE.md` retain the deferred dimension discrepancy.
+- **Next action:** If the completed card still contains the old acceptance
+  wording, replace it with the agreed deferrals. Do not choose board size or
+  return playable plants to scope as part of S3-02.
 - **Likely owner:** Josh + simulation/design owner.
+- **Confidence:** High.
+
+### P2-024 — Legacy terrain-tile generator references deleted source art
+
+- **Status:** The updated script is pushed, but its source paths no longer
+  exist after the deprecated 128px exports were removed. It is not the active
+  authored-representative Unity generation path and should not be run as-is.
+- **Evidence:** `tools/Generate-BlobTerrainTiles.ps1` still expects
+  `Assets/Art/Terrain/Standardized/128/Grass_Full.png` and
+  `Desert_Full.png`; both paths are absent. The 128px Standardized tree was
+  removed in commit `3b81a869`, while current Grass tiles are generated from
+  authored Forest representatives as recorded in the terrain handoff.
+- **Next action:** Decide whether to retire this legacy script or update it to
+  consume the current 64px authored-source workflow. Keep it unused until its
+  inputs and output semantics are reviewed.
+- **Likely owner:** Terrain/art work-block owner.
 - **Confidence:** High.
 
 ### P2-005 — Large raw worker artifacts need a retention policy
@@ -1000,28 +1041,43 @@ machine-level UPM/licensing IPC handshake rather than a missing entitlement.
   scheduled for S4. CF-6 duration/memory measurement is stretch-only and is not
   an M1 closeout gate. No Unity tests were run as part of the kickoff.
 
-### P1-036 — Large shared worktree needs a scoped baseline before feature work
+### R-032 — Large shared-worktree baseline scoped and consolidated
 
-- **Status:** Open hygiene follow-up; no changes were cleaned, staged, or
-  discarded during this review. The worktree includes the documented terrain
-  art migration and Genome fixture/document reconciliation, alongside other
-  local changes.
-- **Evidence:** DirtyBoy on `ProjectMain` at `cab5838d` reported 472 changed
-  paths in the hygiene review, then 594 on the S3-01 attempt while Unity Editor
-  remained open. The discrepancy is unresolved. `docs/WORKING_STATE.md` and
-  the 2026-09-17 terrain and Genome handoffs describe concurrent workstreams,
-  but not a complete path-by-path final disposition. `ROADMAP.html` and
-  `tools/Generate-RoadmapHtml.ps1` are untracked; the generator's `-Check`
-  passes, confirming the HTML matches the current Markdown source. The
-  branch-integration baseline remains the commit, not these uncommitted changes.
-- **Next action:** Before making S3 implementation changes in this shared
-  checkout, identify which local changes are in-scope and reviewable, preserve
-  unrelated work, and capture S3-01 baseline results against an explicitly
-  stated working-tree state. Decide whether the generated roadmap pair should
-  be tracked or ignored. Do not clean or reset the tree as a shortcut.
-- **Likely owner:** Josh, with the terrain/Genome work-block owners.
-- **Confidence:** High that the tree is large; medium on exact ownership of all
-  changed paths.
+- **Former item:** P1-036.
+- **Evidence:** The terrain/UI integration is pushed through `52ce0430`, and
+  `ProjectMain` is synchronized with `origin/ProjectMain`. The earlier 472/594
+  changed-path counts described a prior integration window. Josh's functional
+  local S3-03 diff consists of two simulation hosts, one focused PlayMode test,
+  and the simulation-window XAML; the new test exercises reopening after
+  Results and starting a new run. This review separately updates sprint and
+  project-context documentation. No cleanup or reset was used. `ROADMAP.html`
+  is absent from this checkout, so its former untracked status is no longer a
+  pending keep/ignore decision.
+- **Result:** The broad unscoped-worktree risk is resolved; the current local
+  S3-03 change set has a clear feature boundary. Preserve it and record Unity
+  test evidence when run; do not treat the changes as accepted before then.
+
+### R-033 — S3-02 player contract decisions recorded
+
+- **Evidence:** `docs/Sprints/S3-02-expedition-contract.md` now records the
+  agreed six-round contract and marks S3-02 complete. The current player
+  context now specifies five Mutation/Skip decision moments rather than the
+  obsolete nine-decision contract.
+- **Result:** Product decisions required by S3-02 are closed. Forest Edge board
+  size, playable plants, a possible Skip bonus, and the exact currency formula
+  remain explicitly deferred or non-blocking. Josh marked the Trello card
+  complete on 2026-09-18; any stale acceptance wording is a cleanup note under
+  P1-033, not a blocker.
+
+### R-034 — S3-01 scope closed; post-fix validation remains separate
+
+- **Evidence:** Josh directed S3-01 closeout on 2026-09-18. Trello card
+  `MVDAAQqH` is in `✅ Done`, marked complete, and its description records that
+  post-fix Unity validation remains outstanding. The retained
+  `artifacts/unity-tests-20260917-222442/` results predate the Bare-cell fix;
+  no post-fix Unity run is recorded.
+- **Result:** S3-01 is closed by owner decision. The remaining validation is
+  tracked separately under P1-031; this does not claim that Unity tests passed.
 
 ### R-018 — Low-priority orphan and template cleanup resolved
 

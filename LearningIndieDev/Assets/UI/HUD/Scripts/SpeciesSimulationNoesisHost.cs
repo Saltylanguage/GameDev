@@ -85,11 +85,17 @@ namespace SaltyGame
             ApplyBoardSnapshot();
 
             // The Lab is the setup entry point; the simulation scene should open live.
-            if (preview.State == SpeciesPreviewState.Ready && viewModel.CanStart)
+            if (preview.State == SpeciesPreviewState.Results)
+            {
+                preview.PlayNextSimulation();
+                boardViewModel.Initialize(preview);
+            }
+            else if (preview.State == SpeciesPreviewState.Ready && viewModel.CanStart)
             {
                 viewModel.StartCommand.Execute(null);
-                ApplyBoardSnapshot();
             }
+
+            ApplyBoardSnapshot();
         }
 
         void OnDestroy()
