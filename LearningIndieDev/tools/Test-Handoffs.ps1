@@ -14,7 +14,7 @@ $handoffRoot = Resolve-Path $HandoffDirectory
 $errors = [System.Collections.Generic.List[string]]::new()
 $warnings = [System.Collections.Generic.List[string]]::new()
 $ids = @{}
-$allowedStatuses = @('planned', 'in-progress', 'blocked', 'ready-for-review', 'shared')
+$allowedStatuses = @('planned', 'in-progress', 'blocked', 'ready-for-review', 'shared', 'complete')
 
 function Read-Field([string]$Text, [string]$Name) {
     $match = [regex]::Match($Text, "(?m)^- $([regex]::Escape($Name)):\s*(.+?)\s*$")
@@ -97,12 +97,14 @@ foreach ($file in $files) {
         }
     }
 
-    foreach ($match in [regex]::Matches($text, '`(artifacts/[^`\r\n]+)`')) {
-        $target = $match.Groups[1].Value
-        if ($target -match '[<>*$]' -or $target -match '\.\.\.') { continue }
-        $resolved = Join-Path $projectRoot ($target -replace '/', '\')
-        if (-not (Test-Path -LiteralPath $resolved)) {
-            $warnings.Add("$($file.Name): local artifact reference is unavailable: $target")
+    if ($strict) {
+        foreach ($match in [regex]::Matches($text, '`(artifacts/[^`\r\n]+)`')) {
+            $target = $match.Groups[1].Value
+            if ($target -match '[<>*$]' -or $target -match '\.\.\.') { continue }
+            $resolved = Join-Path $projectRoot ($target -replace '/', '\')
+            if (-not (Test-Path -LiteralPath $resolved)) {
+                $warnings.Add("$($file.Name): local artifact reference is unavailable: $target")
+            }
         }
     }
 }

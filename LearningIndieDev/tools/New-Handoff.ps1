@@ -5,7 +5,7 @@ param(
     [Parameter(Mandatory = $true)]
     [string]$Topic,
 
-    [ValidateSet("planned", "in-progress", "blocked", "ready-for-review", "shared")]
+    [ValidateSet("planned", "in-progress", "blocked", "ready-for-review", "shared", "complete")]
     [string]$Status = "in-progress"
 )
 

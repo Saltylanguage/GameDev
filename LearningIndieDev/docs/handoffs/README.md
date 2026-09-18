@@ -26,9 +26,11 @@ Validate new metadata, local links, and artifact references with:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Test-Handoffs.ps1
 ```
 
-Historical notes remain valid without schema 1 metadata. The validator reports
-their broken links or missing local artifacts as warnings rather than requiring
-a bulk rewrite. Add `-ShowWarnings` when the individual warning list is needed.
+Historical notes remain valid without schema 1 metadata. The validator checks
+their local Markdown links but does not require old, machine-local generated
+artifacts to remain in this checkout. Schema-1 notes are the current handoff
+format, so their artifact references are checked for local availability. Add
+`-ShowWarnings` when the individual warning list is needed.
 
 Keep notes short and evidence-based. Include:
 
