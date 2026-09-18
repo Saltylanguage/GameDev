@@ -1018,6 +1018,7 @@
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Width="900"
+              Height="620"
               d:IsHidden="True">
             <Border Margin="8,8,0,0"
                     Background="{DynamicResource Chrono_TreeBark}"
@@ -1041,9 +1042,11 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="*" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <Border Padding="22,12"
+                        <Border Grid.Row="0"
+                                Padding="22,12"
                                 Background="{DynamicResource Chrono_Lime}"
                                 BorderBrush="{DynamicResource Chrono_Olive}"
                                 BorderThickness="0,0,0,2">
@@ -1090,7 +1093,11 @@
                             </Grid>
                         </Border>
 
-                        <StackPanel Grid.Row="1" Margin="28,20,28,24">
+                        <ScrollViewer Grid.Row="1"
+                                      Margin="28,16,28,10"
+                                      VerticalScrollBarVisibility="Auto"
+                                      HorizontalScrollBarVisibility="Disabled">
+                            <StackPanel>
                             <TextBlock Text="The habitat is paused at its phase boundary. Record one live adaptation, or continue with the current field conditions."
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                        FontSize="14"
@@ -1306,42 +1313,45 @@
                                 </Button>
                             </StackPanel>
 
-                            <Border Margin="0,18,0,0"
-                                    Padding="0,14,0,0"
-                                    BorderBrush="{DynamicResource Chrono_Sand}"
-                                    BorderThickness="0,1,0,0">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock Text="ONE PURCHASE PER PHASE · THE HABITAT REMAINS PAUSED"
-                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                               FontSize="8"
-                                               Foreground="{DynamicResource Chrono_Olive}"
-                                               VerticalAlignment="Center" />
-                                    <StackPanel Grid.Column="1"
-                                                Orientation="Horizontal"
-                                                HorizontalAlignment="Right">
-                                        <Button Content="CONTINUE WITHOUT UPGRADE"
-                                                Command="{Binding ContinueWithoutUpgradeCommand}"
-                                                IsEnabled="{Binding CanContinueWithoutUpgrade}"
-                                                Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
-                                                Width="226"
-                                                Height="44"
-                                                FontSize="12"
-                                                Margin="0,0,10,0" />
-                                        <Button Content="END"
-                                                Command="{Binding EndCommand}"
-                                                IsEnabled="{Binding CanEnd}"
-                                                Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
-                                                Width="82"
-                                                Height="44"
-                                                FontSize="12" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+
+                        <Border Grid.Row="2"
+                                Margin="28,0,28,18"
+                                Padding="0,12,0,0"
+                                BorderBrush="{DynamicResource Chrono_Sand}"
+                                BorderThickness="0,1,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="ONE PURCHASE PER PHASE · THE HABITAT REMAINS PAUSED"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="8"
+                                           Foreground="{DynamicResource Chrono_Olive}"
+                                           VerticalAlignment="Center" />
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            HorizontalAlignment="Right">
+                                    <Button Content="CONTINUE WITHOUT UPGRADE"
+                                            Command="{Binding ContinueWithoutUpgradeCommand}"
+                                            IsEnabled="{Binding CanContinueWithoutUpgrade}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                            Width="226"
+                                            Height="44"
+                                            FontSize="12"
+                                            Margin="0,0,10,0" />
+                                    <Button Content="END"
+                                            Command="{Binding EndCommand}"
+                                            IsEnabled="{Binding CanEnd}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                            Width="82"
+                                            Height="44"
+                                            FontSize="12" />
+                                </StackPanel>
+                            </Grid>
+                        </Border>
                     </Grid>
                 </Grid>
             </Border>

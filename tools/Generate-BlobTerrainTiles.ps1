@@ -4,13 +4,16 @@ param(
 
 Add-Type -AssemblyName System.Drawing
 
-$size = 128
+$size = 64
+$edgeCenterMin = [int][Math]::Floor($size * 0.22)
+$edgeCenterMax = [int][Math]::Ceiling($size * 0.78) - 1
+$edgeThickness = [int][Math]::Floor($size * 0.02)
 $canonicalMasks = @(0, 1, 5, 7, 17, 21, 23, 29, 31, 85, 87, 95, 119, 127, 255)
 $families = @(
     @{ Name = 'Grass'; Source = 'Assets\Art\Terrain\Standardized\128\Grass_Full.png' },
     @{ Name = 'Desert'; Source = 'Assets\Art\Terrain\Standardized\128\Desert_Full.png' }
 )
-$outputRoot = Join-Path $ProjectRoot 'Assets\Art\Terrain\Blob\128'
+$outputRoot = Join-Path $ProjectRoot 'Assets\Art\Terrain\Blob\64'
 
 function Get-RotatedMask([int]$mask) {
     return (($mask -shl 2) -bor ($mask -shr 6)) -band 255
@@ -40,10 +43,10 @@ function Get-MaskAlpha([int]$mask, [int]$x, [int]$y) {
     if (($mask -band 128) -ne 0 -and $px -le 0.58 -and $py -le 0.58 -and (1.0 - $px) + $py -ge 0.62) { $inside = $true }
 
     # Guarantee the shared edge center is filled whenever its bit is active.
-    if (($mask -band 1) -ne 0 -and $y -le 2 -and $x -ge 28 -and $x -le 99) { $inside = $true }
-    if (($mask -band 4) -ne 0 -and $x -ge 125 -and $y -ge 28 -and $y -le 99) { $inside = $true }
-    if (($mask -band 16) -ne 0 -and $y -ge 125 -and $x -ge 28 -and $x -le 99) { $inside = $true }
-    if (($mask -band 64) -ne 0 -and $x -le 2 -and $y -ge 28 -and $y -le 99) { $inside = $true }
+    if (($mask -band 1) -ne 0 -and $y -le $edgeThickness -and $x -ge $edgeCenterMin -and $x -le $edgeCenterMax) { $inside = $true }
+    if (($mask -band 4) -ne 0 -and $x -ge ($size - 1 - $edgeThickness) -and $y -ge $edgeCenterMin -and $y -le $edgeCenterMax) { $inside = $true }
+    if (($mask -band 16) -ne 0 -and $y -ge ($size - 1 - $edgeThickness) -and $x -ge $edgeCenterMin -and $x -le $edgeCenterMax) { $inside = $true }
+    if (($mask -band 64) -ne 0 -and $x -le $edgeThickness -and $y -ge $edgeCenterMin -and $y -le $edgeCenterMax) { $inside = $true }
 
     return $(if ($inside) { 255 } else { 0 })
 }
@@ -53,7 +56,11 @@ function New-Tile([System.Drawing.Bitmap]$source, [int]$mask, [string]$path) {
     for ($y = 0; $y -lt $size; $y++) {
         for ($x = 0; $x -lt $size; $x++) {
             $alpha = Get-MaskAlpha $mask $x $y
-            $pixel = $source.GetPixel($x, $y)
+            # Legacy full-field source art is 128px; sample it down to the new
+            # 64px terrain-cell standard with nearest-neighbor selection.
+            $sourceX = [int][Math]::Floor($x * $source.Width / $size)
+            $sourceY = [int][Math]::Floor($y * $source.Height / $size)
+            $pixel = $source.GetPixel($sourceX, $sourceY)
             $tile.SetPixel($x, $y, [System.Drawing.Color]::FromArgb($alpha, $pixel.R, $pixel.G, $pixel.B))
         }
     }
