@@ -441,7 +441,7 @@ The priorities describe order, not importance:
 
 1. **Measure whether AI actually helps.**
 
-   **Progress:** In progress. The versioned ledger is live, with 2 of the 10
+   **Progress:** In progress. The versioned ledger is live, with 3 of the 10
    minimum representative tasks recorded. Human ratings and the final summary
    remain intentionally pending.
 
@@ -492,10 +492,11 @@ The priorities describe order, not importance:
 
 4. **Test whether a finding transfers beyond Forest Edge and Hare.**
 
-   **Progress:** Evidence complete; human decision pending. EX-011 moved the
-   combined movement-and-crowding intervention to Open Range/Deer. The
+   **Progress:** EX-011's bounded result was accepted on 2026-09-17. The
+   combined movement-and-crowding intervention moved to Open Range/Deer and the
    preregistered FPO direction passed on all 20 development and all 5 held-out
-   pairs, but bounded reuse is not accepted until Josh records the decision.
+   pairs. This single transfer case does not establish general transfer or
+   production validity.
 
    **Goal and ability unlocked:** Begin learning when prior findings can be
    reused and when the assistant should abstain or request new evidence. This is
@@ -509,6 +510,13 @@ The priorities describe order, not importance:
    exactly what transferred and what did not.
 
 5. **Make visual review repeatable.**
+
+   **Progress:** The home-screen-only capture test and
+   [review contract](AI%20Workflow/VISUAL_REVIEW_PILOT_001.md) are prepared.
+   The September 7 screenshots show an earlier setup state and are not current
+   acceptance evidence. Fresh captures are pending because Unity is
+   open. This pilot avoids app-window transitions covered by SIMWIN-C03 and
+   captures desktop home only; Josh's visual decision will follow the captures.
 
    **Goal and ability unlocked:** Review presentation qualities that compilation
    and simulation metrics cannot judge, including readability, layout, focus,

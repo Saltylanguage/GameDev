@@ -3,7 +3,13 @@
 **Status:** Collecting evidence
 **Human owner:** Josh
 **Ledger version:** 1
-**Included sample:** 2 of 10 minimum tasks
+**Included sample:** 3 of 10 minimum tasks
+
+The sample now includes handoff validation, metric-dictionary tooling, and the
+EX-011 transfer experiment. EX-011's outcome is human-accepted within its
+recorded bounds, but its timing and effort totals were not fully captured.
+The visual-review pilot is in progress and is not counted until its capture
+and verification are complete.
 
 This summary stays pending until the ledger contains 10–20 representative tasks
 and a human has reviewed the sample. AI may prepare tables or point to patterns,

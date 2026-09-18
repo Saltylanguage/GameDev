@@ -137,7 +137,7 @@ Simulation scene
     SimulationManager (plain C#)
       SpeciesSimulationRunner
     VM_SimulationShell
-      V_Panel_SimulationShell.xaml
+      V_Window_CellSimulation.xaml
         Welcome state
         Play state
         Reward selection state

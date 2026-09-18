@@ -313,5 +313,5 @@ request consumption, and the Results → Lab command. The launch command remains
 unavailable without a loaded profile or while another Lab feature is active.
 
 T7 applies the naming convention to the simulation shell: the ViewModel is
-`VM_SimulationShell` and the shell view is `V_Panel_SimulationShell.xaml`.
-Their serialized Unity references retain the existing asset GUIDs.
+`VM_SimulationShell` and the visual-root view is `V_Window_CellSimulation.xaml`.
+Its local styles and templates are kept in `RD_SimulationShellResources.xaml`.

@@ -40,9 +40,9 @@ Bev simulation and upgrade work.
   checkbox; after the narrow XAML repair, the binding error is absent.
 - The repaired PlayMode run completed 14 passed, 12 failed, 1 skipped. Artifact:
   `artifacts/unity-tests-20260913-013501/PlayMode-results.xml`.
-  The remaining failures assert the older Ready/Wetland setup while the shared
-  scene/runtime starts Forest Edge. They are not compilation or conflict-marker
-  failures and require a separate test-fixture/launch-contract decision.
+  Individual failure details have not been confirmed in this handoff. The run
+  was not green and requires result-level triage before attributing failures or
+  changing test fixtures or runtime behavior.
 
 ## Risks and incomplete work
 

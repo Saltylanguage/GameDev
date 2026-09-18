@@ -13,11 +13,12 @@ terrain rules and a general Tilemap or RuleTile migration.
 ### TILE-C01 — Artist and resolver mask meanings differ
 
 - **Severity:** Mild
-- **Status:** Acknowledged
-- **Trigger:** A terrain family is imported when its `000` tile or diagonal-only states use different meanings from the resolver's empty-overlay and promoted-cardinal convention.
+- **Status:** Mitigated for Grass; recheck Desert when authored
+- **Trigger:** A terrain family is imported before its representative shapes and rotations are checked against the resolver's promoted-cardinal mask convention.
 - **Why it matters:** Isolated terrain can disappear into the base layer, or diagonal contacts can render bridges and edges that the artist did not intend.
-- **Evidence:** `TerrainTileResolver` promotes a diagonal contact by adding its adjacent cardinal directions; the current generated `000` sprite is transparent; Chrono's replacement art has not yet been inspected against those states.
-- **Smallest mitigation:** Before replacing production images, compare the delivered isolated, one-cardinal, diagonal-only, corner, and full-surround examples with the resolver and approve one mapping for both families.
+- **Evidence:** Josh reviewed the Forest representatives individually and in batches against the 47 resolver masks, correcting the rotated-image interpretation before confirming the mappings. He confirmed `000` is full dirt (grass vertices off) and `255` is full grass. The generated Grass set is loaded through the runtime atlas and passed focused asset and scene tests. Desert art has not been authored/validated.
+- **Smallest mitigation:** Repeat the representative-shape and rotation review for Desert before importing it. Keep each family's source mapping explicit and validate the resulting 47 named masks.
+- **Progress:** The Grass family is integrated at 64x64 / 64 PPU. The terrain atlas preserves its scene-referenced GUID and packs the new `Blob/64` folder. Focused EditMode tests passed 3/3; the prototype-scene PlayMode initialization test passed 1/1.
 - **Owner:** Josh, with Chrono and the terrain integration owner
 - **Recorded:** 2026-09-09, accepted by Josh in the planning conversation
 

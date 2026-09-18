@@ -1,6 +1,6 @@
 # EX-011 factual report — Cross-biome, cross-species transfer
 
-**Status:** Execution complete; human decision pending
+**Status:** Execution complete; bounded human decision recorded separately
 **Scenario/species:** Open Range / Deer
 **Intervention:** `faster-movement` → `crowding-tolerance`, active at launch
 **Primary metric:** `herbivore-statline.fpo`
@@ -11,7 +11,7 @@
 |---|---|
 | What was being tested? | Whether the earlier ForestEdge/Hare direction would carry into a different biome and species when Deer received movement speed +0.5 followed by crowding tolerance +1 at launch. |
 | What happened? | The intervention ended with more Deer in all 20 development pairs and all 5 held-out pairs. The average gains were +70.8 Deer and +52.4 Deer, respectively. |
-| What did the result verify? | The combined intervention's positive final-population direction transferred to Open Range/Deer under the preregistered settings and seed panels. Human acceptance of that bounded statement is still pending. |
+| What did the result verify? | The combined intervention's positive final-population direction transferred to Open Range/Deer under the preregistered settings and seed panels. Josh accepted this bounded finding on 2026-09-17. |
 | What did it not prove? | It did not isolate either upgrade's individual effect, establish broad transfer to other species or biomes, predict the size of the effect, or show that the change improves balance, fun, or player value. |
 
 ## Result in one sentence
@@ -51,7 +51,9 @@ positive held-out pairs. The observed result was a +52.4 mean with five of five
 positive pairs. All four artifact bundles passed validation, so the mechanical
 verdict is **supported**.
 
-The human transfer decision remains separate and pending.
+The mechanical prediction verdict and the human transfer decision are separate.
+Josh accepted only the bounded Open Range/Deer finding on 2026-09-17; the
+decision record is in [`HUMAN_DECISION.md`](HUMAN_DECISION.md).
 
 ## Evidence integrity
 

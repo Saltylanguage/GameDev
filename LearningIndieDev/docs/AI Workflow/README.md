@@ -23,6 +23,8 @@ After 10–20 representative tasks, the team should be able to answer:
   machine-readable record. Each line is one task.
 - [`HUMAN_SUMMARY.md`](HUMAN_SUMMARY.md) is the decision-facing summary. It
   remains pending until the minimum sample exists and a human reviews it.
+- [`VISUAL_REVIEW_PILOT_001.md`](VISUAL_REVIEW_PILOT_001.md) records the first
+  repeatable screenshot contract and its pending human review.
 
 ## Recording rules
 

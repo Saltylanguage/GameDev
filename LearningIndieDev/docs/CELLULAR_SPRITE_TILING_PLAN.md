@@ -2,57 +2,58 @@
 
 ## Current implementation
 
-- `tools/Build-CellularSpriteSheets.ps1` converts the supplied reference sheets
-  into transparent, nearest-neighbor atlases at 128 pixels per tile.
+- `tools/Build-CellularSpriteSheets.ps1` is the legacy animal-sheet pipeline and
+  still emits 128-pixel sprites. New authored pixel textures use the 64x64 art
+  standard; retained Island Chores and other legacy art are not implicitly
+  resized.
 - Animal presentation is now scene-wired through a `SpriteAtlas` packed from
   `Assets/Art/Species/Animals/Standardized/32/`; standardized exports also
   exist under `Standardized/64/` and `Standardized/128/`. The board receives
   the atlas and direct sprite inputs through `SpeciesSimulationNoesisHost`;
   it no longer loads animal sheets from `Resources`.
-- `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` is the retained 4x8 legacy
-  source. The live terrain atlas now packs the 47-mask families under
-  `Assets/Art/Terrain/Blob/128/{Grass,Desert}` and resolves them by stable name
-  rather than pack order.
+- `Assets/Art/Terrain/Terrain_01_SpriteSheet.png` is a retained legacy source.
+  The live terrain atlas packs the 47-mask Grass family under
+  `Assets/Art/Terrain/Blob/64/Grass` and resolves sprites by stable name rather
+  than pack order. Desert art is not currently present.
 - `TerrainTileResolver` computes a normalized eight-neighbor blob bit mask from the
   simulation grid. It is presentation-only: it reads the immutable cell state
   and never changes simulation rules or determinism. The same mask table is
   shared by the runtime board, tests, and the editor preview window.
 - The species preview no longer has a legacy IMGUI board or settings fallback;
   the Noesis shell is now the single runtime presentation path.
-- `TerrainTilePreviewWindow` loads the named terrain families from
-  `Assets/Art/Terrain/Blob/128/{Grass,Desert}`, and animal atlas entries are
-  resolved by stable sprite names before optional Fox/Rabbit scene overrides
-  are layered on top.
-- Terrain art is now a named 47-mask blob set under
-  `Assets/Art/Terrain/Blob/128/{Grass,Desert}/`. Each family uses stable
-  `Grass_` or `Desert_` names matching the normalized resolver masks.
-- `Terrain_01.spriteatlasv2` packs the blob terrain folder. The Noesis
-  view model resolves the named sprites directly, so atlas packing order is not
-  simulation or presentation state.
-- Grass and Desert are peer visual families. The cell's explicit `TerrainId`
-  selects the family and both use the computed mask. Bare owns the neutral
-  layer underneath them and does not borrow either family's tiles.
+- `TerrainTilePreviewWindow` reads the 64-pixel Grass family. The view model
+  loads Grass by stable sprite name; absent Desert names remain empty optional
+  slots rather than substituting Grass art.
+- New terrain art uses 64x64 source images at 64 PPU. The imported Grass family
+  has 47 named sprites matching the normalized resolver masks. `Grass_000` is
+  the full-dirt image and `Grass_255` is fully grass, as confirmed by Josh.
+- `Terrain_01.spriteatlasv2` packs `Assets/Art/Terrain/Blob/64`. Its existing
+  GUID is retained for scene references. The Noesis view model resolves names
+  directly, so atlas packing order is not simulation or presentation state.
+- Grass currently uses the shared mask table. The live board draws the
+  matching Grass mask for Grass cells; Bare owns the neutral layer. Desert will
+  use the same table once its own authored family is available. Grass is never
+  used as a substitute for missing Desert tiles.
 
 ## Smart-tiling model
 
-The current sprites represent the 47 normalized states of an eight-neighbor
-blob mask. The eight-bit mask is:
+The Grass sprites represent the 47 normalized states of an eight-neighbor blob
+mask. The eight-bit mask is:
 
 ```text
 N = 1, NE = 2, E = 4, SE = 8, S = 16, SW = 32, W = 64, NW = 128
 ```
 
-The current placeholder mask `0` is transparent. Chrono's delivered `000` tile
-must be checked before replacement because it may instead represent the filled
-isolated member of the family. Other raw masks are normalized for diagonal
-bridges, then resolved through the 47 named variants in `TerrainTileResolver`.
-The board samples the eight neighboring cells around each visual tile and keeps
-the mask presentation-only, so it does not alter simulation determinism.
+Mask `000` is the full-dirt image (no grass vertices); mask `255` is entirely
+grass. Other raw masks are normalized for diagonal bridges, then resolved
+through the 47 named variants in `TerrainTileResolver`. The board samples the
+eight neighboring cells around each visual tile and keeps the mask
+presentation-only, so it does not alter simulation determinism.
 
-Both families use the same naming and mask table. The live board first draws a
-neutral universal base, then draws the matching Grass or Desert mask for that
-cell. The base is currently a plain brown fallback; its production tile is a
-separate art delivery and must not be taken from either 47-mask family.
+Grass currently uses the shared mask table. The live board draws the matching
+Grass mask for Grass cells; Bare owns the neutral layer. The plain brown base
+is still a fallback, and Desert will use the same mask table once its own
+authored family is available.
 
 ## Planning concerns
 
@@ -64,28 +65,32 @@ Check that record before replacing a family or changing the renderer.
 
 - `TerrainTileResolverTests` covers normalization to all 47 variants, diagonal
   promotion, representative rotations, family parity, and neighbor sampling.
-- `TerrainTileAssetContractTests` checks both 47-file families, exact runtime
-  names, 128x128 dimensions, sprite import settings, and the atlas packable.
-- `TerrainTilePreviewWindow` previews all 47 masks from the named files and can
-  switch between `Grass_` and `Desert_` families.
+- `TerrainTileAssetContractTests` checks all 47 Grass files, 64x64 dimensions,
+  64 PPU, point filtering, no mipmaps, uncompressed sprite import settings,
+  atlas packing, and every mask name. Full EditMode passed 251/251; the
+  focused terrain tests passed 3/3.
+- The prototype-scene runtime check confirmed all 47 valid Grass masks load
+  from the atlas, ForestEdge provides Grass cells, and missing Desert art remains
+  optional. The retained no-graphics PlayMode run passed 28 with two expected
+  graphics-only skips. The graphics-capable ForestEdge visual test passed 1/1
+  and captured the board at gameplay scale. Results are under
+  `artifacts/unity-tests-20260917-222442/` and
+  `artifacts/visual-evidence-20260917-222658/`.
+- `TerrainTilePreviewWindow` previews all 47 Grass masks from the named files.
 - The runtime still uses one batched Noesis board; no Tilemap or `RuleTile`
   dependency was added.
 
 ## Remaining validation
 
-1. Confirm whether Chrono's `000` and diagonal states match the resolver's mask
-   meaning before replacing production images.
+1. Review the integrated Grass family in `Salty Game > Simulation > Preview
+   Terrain Smart Tiles` and in the prototype at gameplay scale, especially
+   isolated, diagonal, edge, and mixed boundaries.
 2. Obtain and name the separate universal base tile. Until then, the plain
-   fallback keeps presentation ownership correct but is not final art.
-3. Import the two peer families while preserving their existing `.meta` files, then
-   let Unity rebuild the atlas and run the asset-contract tests.
-4. Open `Salty Game > Simulation > Preview Terrain Smart Tiles` and inspect all
-   masks in both families.
-5. Run the cellular prototype at 1920x1080 and 1280x720 and inspect isolated,
-   diagonal, edge, and mixed boundaries at normal gameplay speed.
-6. Before a production scenario uses Desert, author its simulation definition
-   and rules explicitly; the smart-tiling change does not invent movement or
-   resource behavior for the biome.
+   fallback remains in use for cells without a terrain-family overlay.
+3. Import and validate Desert as its own 64x64 family when authored; do not
+   substitute Grass for missing Desert states.
+4. Before a production scenario uses Desert, author its simulation definition
+   and rules explicitly; smart-tiling does not invent biome behavior.
 
 ## Non-goals
 

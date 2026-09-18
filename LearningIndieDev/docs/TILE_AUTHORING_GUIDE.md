@@ -15,7 +15,7 @@ The surrounding tiles define the art contract. A new tile is acceptable only whe
 
 ## Authoring contract
 
-- Keep the established cell size and pixels-per-unit. Island Chores terrain cells are 128x128 pixels at 128 PPU.
+- New terrain cells are 64x64 pixels at 64 pixels per unit. This keeps one cell at one world unit; retained legacy atlases may remain at their original resolution.
 - Terrain cells rendered beside one another MUST use the shared one-pixel sprite mesh extrusion in `WorldRuntime`; otherwise camera sampling can expose seams even when the source pixels are correct. If a seam is baked into a tile's outer pixel columns, create a versioned seam-safe atlas that repairs only those edge pixels; preserve the original atlas unchanged.
 - Build a multi-cell terrain feature as a tile sheet, not as a full-scene screenshot or a floating prop.
 - Use the existing terrain palette and material language first. Generated images may be used only as private concept references; never paste their unrelated texture into a production tile.
@@ -44,7 +44,7 @@ The surrounding tiles define the art contract. A new tile is acceptable only whe
 ## Verification checklist
 
 - [ ] Every production image has a matching `.meta` file.
-- [ ] Sheet dimensions are exact multiples of 128 pixels.
+- [ ] Sheet dimensions are exact multiples of 64 pixels.
 - [ ] The sheet's row order is correct for Unity's lower-left sprite-rect origin.
 - [ ] The preview includes the real surrounding tiles, not a neutral background.
 - [ ] Closed, open, and reset states are all visible and readable in Play Mode.

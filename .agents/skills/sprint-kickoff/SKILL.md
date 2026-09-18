@@ -57,11 +57,22 @@ the caller explicitly requests `--include-done`.
 - create or update the sprint control record and status;
 - verify owner, estimate, acceptance check, and sprint metadata for each
   current-sprint task;
+- after verified closeout, synchronize the previous sprint plan and control
+  record, `ROADMAP.md`, `docs/WORKING_STATE.md`, `docs/LOOSE_ENDS.md`, and any
+  relevant GDD, TDD, Project Context, or handoff documents;
+- keep the next sprint `Proposed` until a separate kickoff is explicitly
+  confirmed and verified; closing the current sprint does not start it;
+- check affected current documents for stale status, dates, and links while
+  preserving dated historical notes as history;
 - return a kickoff report with carry-over, unassigned, blocked, capacity, and
   verification results.
 
 If unfinished assigned work exists, warn the caller and wait for the caller's
 decision. Do not silently discard or reassign it.
+
+Kickoff/closeout is not complete until the re-read board, control record,
+execution plan, Roadmap, Working State, and Loose Ends agree. Follow the
+required post-closeout documentation sync in the canonical workflow.
 
 ## KickTheCan
 

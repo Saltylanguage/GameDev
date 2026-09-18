@@ -1,7 +1,7 @@
 # AI-Assisted Ecology Laboratory Research Plan
 
-**Status:** Bounded program checkpoint; P0–P3 complete, EX-011 follow-on transfer study executed and awaiting human decision, P4–P6 not started<br>
-**Version:** 1.20<br>
+**Status:** Bounded program checkpoint; P0–P3 complete, EX-011 follow-on transfer study accepted within its narrow scope, P4–P6 not started<br>
+**Version:** 1.21<br>
 **Created:** 2026-08-15  
 **Primary question:** Can a deterministic ecological simulation, connected to AI through an auditable evidence workflow, help a small team discover, test, explain, and promote better game rules—including validated variable interactions and risk thresholds—without surrendering human design authority?
 
@@ -945,10 +945,12 @@ Every research bundle should preserve:
   validity and production promotion remain outside that decision.
 
 P0 through P3 are complete within their recorded bounds. Josh approved EX-011
-on 2026-09-12 as a separate follow-on transfer smoke test. Its development and
-held-out execution is complete and the preregistered direction passed, but no
-finding is accepted until the human decision is recorded. The historical
-packages remain evidence, not a standing instruction to rerun or expand them.
+on 2026-09-12 as a separate follow-on transfer smoke test and accepted its
+narrow finding on 2026-09-17: the ordered Faster Movement then Crowding
+Tolerance combination increased final Deer population in the tested Open
+Range/Deer setup. This does not establish individual-upgrade effects, player
+fun, production balance, or generalized transfer. The historical packages
+remain evidence, not a standing instruction to rerun or expand them.
 
 The next research selection must be a deliberate human-owned choice:
 
@@ -1032,4 +1034,5 @@ rule.
 | 1.17 | 2026-09-05 | Recorded direct Stat-Line bundle parity and the opt-in generic headless continuation schedule; EX-010 remained unexecuted pending its contract-specific schedule and human approval. |
 | 1.18 | 2026-09-06 | Recorded EX-010 execution and bounded human acceptance, deferred EX-003 as a standalone P3 workflow-validity study, and closed P3 under revised bounded exit criteria. |
 | 1.19 | 2026-09-07 | Refreshed the program status and indexes, recorded P0–P3 disposition and EX-002 raw-artifact availability, and made future P4–P6 work contingent on a new human-selected contract. |
-| 1.20 | 2026-09-12 | Recorded the human-approved EX-011 cross-biome/species transfer smoke test, its sealed development/held-out evidence, and the pending human decision without advancing P4–P6. |
+| 1.20 | 2026-09-12 | Recorded the human-approved EX-011 cross-biome/species transfer smoke test, its sealed development/held-out evidence, and that the separate human decision was still pending at that time, without advancing P4–P6. |
+| 1.21 | 2026-09-17 | Recorded Josh's narrow acceptance of EX-011, bounded reuse to its tested Open Range/Deer ordered-combination result, and kept P4–P6 unstarted with no next experiment selected. |

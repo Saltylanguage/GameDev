@@ -42,7 +42,7 @@ its result remains bounded to that scenario, schedule and upgrade set. See the
 | [EX-008 - Reversed Upgrade-Order Follow-up](EX-008-Reversed-Order-Followup/README.md) | Complete exploratory support; incorporated into the P3 synthesis. |
 | [EX-009 - Same-Held-Out-Seed Upgrade-Order Comparison](EX-009-Same-Heldout-Order-Comparison/README.md) | Accepted bounded launch-time commutativity result. |
 | [EX-010 - Sequential Upgrade Continuation](EX-010-Sequential-Upgrade-Continuation/README.md) | Accepted bounded continued-world timing/order result. |
-| [EX-011 - Cross-Biome, Cross-Species Transfer](EX-011-Cross-Biome-Species-Transfer/README.md) | Executed; preregistered direction supported; human decision pending. |
+| [EX-011 - Cross-Biome, Cross-Species Transfer](EX-011-Cross-Biome-Species-Transfer/README.md) | Bounded finding accepted: the tested Faster Movement → Crowding Tolerance combination increased final Deer population in Open Range/Deer; no individual-upgrade or production-balance claim. |
 
 EX-003 is deferred without an execution package. EX-004 through EX-006 remain
 portfolio proposals and do not have experiment packages yet.

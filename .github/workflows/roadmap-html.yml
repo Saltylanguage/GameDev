@@ -1,0 +1,19 @@
+name: Roadmap HTML
+
+on:
+  push:
+  pull_request:
+  merge_group:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify-roadmap-html:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify generated roadmap HTML
+        shell: pwsh
+        run: ./LearningIndieDev/tools/Generate-RoadmapHtml.ps1 -Check

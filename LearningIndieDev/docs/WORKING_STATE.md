@@ -19,9 +19,9 @@ representatives are now packed by `Terrain_01.spriteatlasv2` and loaded by the
 simulation runtime. `Grass_000` is full dirt and `Grass_255` is full grass.
 Desert art is not present yet; its slots remain optional and no Grass art is
 used as a substitute. The older Island Chores atlases remain legacy and
-unchanged. Full EditMode (251/251) and graphics-capable PlayMode (30/30) suites
-pass; the retained no-graphics PlayMode bundle has 28 passes and two expected
-graphics-only skips. See
+unchanged. Full EditMode passed 251/251; the retained no-graphics PlayMode run
+passed 28 with two expected graphics-only skips. A graphics-capable ForestEdge
+board capture also passed 1/1 and shows the Grass/Dirt tiles in context. See
 [`handoffs/2026-09-17-codex-terrain-art-standard-64px.md`](handoffs/2026-09-17-codex-terrain-art-standard-64px.md).
 
 **Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
@@ -47,12 +47,13 @@ The current Desktop acceptance contract directly starts Forest Edge with Hare
 when the player opens Simulation. This preserves the merged Bev/Sim simulation
 experience. The initial S3-01 baseline on 2026-09-17 had EditMode 247/249 with
 two terrain failures and PlayMode 28/29 with one justified graphics-only skip.
-The latest retained rerun is `artifacts/unity-tests-20260917-220612/`: EditMode
+The latest retained rerun is `artifacts/unity-tests-20260917-222442/`: EditMode
 251/251 passed; no-graphics PlayMode 28 passed with two expected graphics-only
-skips; graphics-capable PlayMode passed 30/30. The original terrain failures
-are resolved locally; the Trello card state has not been changed. Desert art
-remains absent. Verifying the end-to-end state/recovery route is S3 work; profile
-saving is scheduled for S4.
+skips. The graphics-capable ForestEdge visual test passed 1/1 and captured the
+board under `artifacts/visual-evidence-20260917-222658/`. The original terrain
+failures are resolved locally; the Trello card state has not been changed.
+Desert art remains absent. Verifying the end-to-end state/recovery route is S3
+work; profile saving is scheduled for S4.
 The same-world lifecycle, phase/expedition evidence meaning, initialization-only
 upgrade policy, above-cap energy behavior and a versioned fresh-run fixture are
 locked in the [consecutive simulation plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
