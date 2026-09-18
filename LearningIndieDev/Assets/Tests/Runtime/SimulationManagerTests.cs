@@ -364,6 +364,17 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void RestoreCheckpointDefaultsToOpposedRollCombat()
+        {
+            var parameters = typeof(SpeciesSimulationRunner)
+                .GetMethod(nameof(SpeciesSimulationRunner.RestoreCheckpoint))
+                .GetParameters();
+
+            Assert.That(parameters[2].DefaultValue,
+                Is.EqualTo(SpeciesCombatResolutionMode.OpposedRoll));
+        }
+
+        [Test]
         public void ContinuousRestartFromDecisionBoundaryRestoresInitialState()
         {
             var initialCells = CreateContinuityFixture();

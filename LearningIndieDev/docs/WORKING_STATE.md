@@ -5,6 +5,17 @@ become a master changelog.
 
 ## Current focus
 
+**Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
+default across `SpeciesSimulation`, runner construction, checkpoint restore,
+the `CellSim` wrappers, and job submission. `RestoreCheckpoint` was the last
+runtime API that still defaulted to legacy fixed damage. Legacy fixed damage
+remains available when explicitly requested for compatibility or historical
+replay. Checkpoints do not record combat mode, so a historical legacy run must
+pass that mode when restoring. The focused EditMode regression passed 1/1 in an
+isolated project copy; the full suite was not rerun for this correction. See
+the [combat default handoff](handoffs/2026-09-18-1458-codex-opposed-roll-checkpoint-default.md)
+and [test artifacts](../artifacts/legacy-combat-default-20260918/).
+
 **Unity automation lanes and acceptance: 2026-09-18.** `CellSim` now routes
 tests, visual checks, and experiments through `Auto`, `Live`, and `Clean`.
 `Live` reuses this project's ready Pipeline Editor for focused feedback;

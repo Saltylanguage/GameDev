@@ -89,7 +89,7 @@ namespace SaltyGame
         public static SpeciesSimulationRunner RestoreCheckpoint(
             SimulationRunCheckpoint checkpoint,
             CellularSimData simulationData,
-            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.LegacyFixedDamage,
+            SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null)
         {
