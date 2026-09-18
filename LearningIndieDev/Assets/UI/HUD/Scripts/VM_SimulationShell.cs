@@ -111,8 +111,6 @@ namespace SaltyGame
         bool canStart;
         bool canPause;
         bool canResume;
-        bool canRestart;
-        bool canStop;
         bool canEnd;
         bool canContinueWithoutUpgrade;
         bool canPurchaseRewardOption1;
@@ -159,8 +157,6 @@ namespace SaltyGame
         public DelegateCommand StartCommand { get; private set; }
         public DelegateCommand PauseCommand { get; private set; }
         public DelegateCommand ResumeCommand { get; private set; }
-        public DelegateCommand RestartCommand { get; private set; }
-        public DelegateCommand StopCommand { get; private set; }
         public DelegateCommand EndCommand { get; private set; }
         public DelegateCommand ResetCommand { get; private set; }
         public DelegateCommand PurchaseRewardOption1Command { get; private set; }
@@ -369,8 +365,6 @@ namespace SaltyGame
         public bool CanStart => canStart;
         public bool CanPause => canPause;
         public bool CanResume => canResume;
-        public bool CanRestart => canRestart;
-        public bool CanStop => canStop;
         public bool CanEnd => canEnd;
         public bool CanContinueWithoutUpgrade => canContinueWithoutUpgrade;
         public bool CanPurchaseRewardOption1 => canPurchaseRewardOption1;
@@ -542,19 +536,30 @@ namespace SaltyGame
             }
 
             animalSprites = CreateSpeciesSprites();
-            var allTerrainTiles = CreateNamedAtlasSprites(terrainSpriteAtlas, TerrainSpriteNames, out terrainTextureSource);
+            var allTerrainTiles = CreateNamedAtlasSprites(
+                terrainSpriteAtlas,
+                TerrainSpriteNames,
+                out terrainTextureSource,
+                allowMissingSprites: true);
             if (allTerrainTiles != null)
             {
                 grassTerrainTiles = SliceTerrainTiles(allTerrainTiles, 0);
                 desertTerrainTiles = SliceTerrainTiles(allTerrainTiles, TerrainTileResolver.AllValidMasks.Count);
             }
 
-            if (animalSprites == null || grassTerrainTiles == null || desertTerrainTiles == null)
+            var hasAllGrassTiles = HasAllGrassTiles(grassTerrainTiles);
+            if (animalSprites == null || !hasAllGrassTiles)
             {
                 animalSprites = null;
                 grassTerrainTiles = null;
                 desertTerrainTiles = null;
                 warnedMissingAtlases = true;
+                if (!hasAllGrassTiles)
+                {
+                    Debug.LogWarning(
+                        $"SpriteAtlas '{terrainSpriteAtlas.name}' must contain all 47 Grass mask sprites.",
+                        this);
+                }
             }
         }
 
@@ -592,10 +597,29 @@ namespace SaltyGame
             return sprites;
         }
 
+        static bool HasAllGrassTiles(CroppedBitmap[] sprites)
+        {
+            if (sprites == null)
+            {
+                return false;
+            }
+
+            foreach (var mask in TerrainTileResolver.AllValidMasks)
+            {
+                if (sprites[mask] == null)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
         static CroppedBitmap[] CreateNamedAtlasSprites(
             SpriteAtlas atlas,
             string[] spriteNames,
-            out TextureSource textureSource)
+            out TextureSource textureSource,
+            bool allowMissingSprites = false)
         {
             textureSource = null;
             var packedSprites = new Sprite[atlas.spriteCount];
@@ -628,6 +652,11 @@ namespace SaltyGame
 
                 if (matchingSprite == null || matchingSprite.texture == null)
                 {
+                    if (allowMissingSprites)
+                    {
+                        continue;
+                    }
+
                     Debug.LogWarning(
                         $"SpriteAtlas '{atlas.name}' is missing sprite '{spriteNames[index]}'.");
                     return null;
@@ -809,8 +838,6 @@ namespace SaltyGame
             StartCommand = new DelegateCommand(StartSimulation);
             PauseCommand = new DelegateCommand(() => preview?.PauseSimulation());
             ResumeCommand = new DelegateCommand(() => preview?.ResumeSimulation());
-            RestartCommand = new DelegateCommand(() => preview?.RestartSimulation());
-            StopCommand = new DelegateCommand(() => preview?.StopSimulation());
             EndCommand = new DelegateCommand(() => preview?.EndSimulation());
             ResetCommand = new DelegateCommand(() =>
             {
@@ -932,20 +959,9 @@ namespace SaltyGame
             Set(ref canPause, runStatus == SimulationRunStatus.Running, nameof(CanPause));
             Set(ref canResume, runStatus == SimulationRunStatus.Paused, nameof(CanResume));
             Set(
-                ref canRestart,
-                runStatus == SimulationRunStatus.Running
-                    || runStatus == SimulationRunStatus.Paused
-                    || runStatus == SimulationRunStatus.AwaitingDecision,
-                nameof(CanRestart));
-            Set(
-                ref canStop,
-                runStatus == SimulationRunStatus.Running
-                    || runStatus == SimulationRunStatus.Paused
-                    || runStatus == SimulationRunStatus.AwaitingDecision,
-                nameof(CanStop));
-            Set(
                 ref canEnd,
                 runStatus == SimulationRunStatus.Running
+                    || runStatus == SimulationRunStatus.Paused
                     || runStatus == SimulationRunStatus.AwaitingDecision,
                 nameof(CanEnd));
             Set(ref canContinueWithoutUpgrade, state == SpeciesPreviewState.PhaseDecision, nameof(CanContinueWithoutUpgrade));

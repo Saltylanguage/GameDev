@@ -971,29 +971,52 @@ namespace SaltyGame
                 return false;
             }
 
-            width = Mathf.Max(1, parsedWidth);
-            height = Mathf.Max(1, parsedHeight);
-            seed = parsedSeed;
-            maxPopulation = Mathf.Max(0, parsedMaximumPopulation);
-            minPopulation = Mathf.Max(0, parsedMinimumPopulation);
-            stepInterval = Mathf.Max(0.01f, parsedStepInterval);
+            var nextWidth = Mathf.Max(1, parsedWidth);
+            var nextHeight = Mathf.Max(1, parsedHeight);
+            var nextMaximumPopulation = Mathf.Max(0, parsedMaximumPopulation);
+            var nextStepInterval = Mathf.Max(0.01f, parsedStepInterval);
+            var nextRunTicks = runWindowIsTicks ? Mathf.Max(1, parsedRunTicks) : 0;
+            var nextRunDuration = runWindowIsTicks
+                ? (float)(nextRunTicks * (double)nextStepInterval)
+                : Mathf.Max(1f, parsedRunDuration);
             if (runWindowIsTicks)
             {
-                runTicks = Mathf.Max(1, parsedRunTicks);
-                runDurationSeconds = (float)(runTicks * (double)stepInterval);
-                if (float.IsNaN(runDurationSeconds) || float.IsInfinity(runDurationSeconds))
+                if (float.IsNaN(nextRunDuration) || float.IsInfinity(nextRunDuration))
                 {
                     validationMessage = "Run ticks and step interval produce an invalid run duration.";
                     settingsMessage = validationMessage;
                     return false;
                 }
             }
-            else
+
+            if (hasStartingPopulationValues)
             {
-                runTicks = 0;
-                runDurationSeconds = Mathf.Max(1f, parsedRunDuration);
+                var totalStartingPopulation = (long)parsedPlantStartingPopulation
+                    + parsedHerbivoreStartingPopulation
+                    + parsedCarnivoreStartingPopulation;
+                if (totalStartingPopulation > (long)nextWidth * nextHeight)
+                {
+                    validationMessage = "Starting populations cannot exceed the grid capacity.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
+
+                if (nextMaximumPopulation > 0 && totalStartingPopulation > nextMaximumPopulation)
+                {
+                    validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {nextMaximumPopulation}.";
+                    settingsMessage = validationMessage;
+                    return false;
+                }
             }
 
+            width = nextWidth;
+            height = nextHeight;
+            seed = parsedSeed;
+            maxPopulation = nextMaximumPopulation;
+            minPopulation = Mathf.Max(0, parsedMinimumPopulation);
+            stepInterval = nextStepInterval;
+            runTicks = nextRunTicks;
+            runDurationSeconds = nextRunDuration;
             plantProbability = Mathf.Clamp01(parsedPlantProbability);
             herbivoreProbability = Mathf.Clamp01(parsedHerbivoreProbability);
             carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
@@ -1002,19 +1025,6 @@ namespace SaltyGame
                 var totalStartingPopulation = (long)parsedPlantStartingPopulation
                     + parsedHerbivoreStartingPopulation
                     + parsedCarnivoreStartingPopulation;
-                if (totalStartingPopulation > (long)width * height)
-                {
-                    validationMessage = "Starting populations cannot exceed the grid capacity.";
-                    settingsMessage = validationMessage;
-                    return false;
-                }
-
-                if (maxPopulation > 0 && totalStartingPopulation > maxPopulation)
-                {
-                    validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {maxPopulation}.";
-                    settingsMessage = validationMessage;
-                    return false;
-                }
 
                 plantStartingPopulation = parsedPlantStartingPopulation;
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
@@ -1127,7 +1137,7 @@ namespace SaltyGame
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
             settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, five-skill upgrade path, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
-            PrepareNextRun();
+            // StartSimulation prepares the pending run after all setup fields are applied.
             validationMessage = settingsMessage;
             return true;
         }
@@ -1630,6 +1640,7 @@ namespace SaltyGame
         {
             if (Run == null
                 || (Run.Status != SimulationRunStatus.Running
+                    && Run.Status != SimulationRunStatus.Paused
                     && Run.Status != SimulationRunStatus.AwaitingDecision))
             {
                 return;

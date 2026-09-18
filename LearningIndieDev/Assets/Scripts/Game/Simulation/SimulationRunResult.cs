@@ -420,6 +420,7 @@ namespace SaltyGame
         public bool End()
         {
             if (Status != SimulationRunStatus.Running
+                && Status != SimulationRunStatus.Paused
                 && Status != SimulationRunStatus.AwaitingDecision)
             {
                 return false;

@@ -106,7 +106,6 @@ GameObject:
   - component: {fileID: 100003}
   - component: {fileID: 100004}
   - component: {fileID: 100005}
-  - component: {fileID: 100016}
   - component: {fileID: 100006}
   - component: {fileID: 100007}
   - component: {fileID: 100008}
@@ -276,23 +275,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d6d8a2c7f1b4e5aa6c3d9f0182b7e44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_GalapagOS_Desktop
-  genomeCatalogProvider: {fileID: 100016}
+  genomeCatalogProvider: {fileID: 0}
   genomeSpeciesId: hare
---- !u!114 &100016
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6c2d9e4b1a3478ca53f0e6d9b2c4157, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeCatalogProvider
-  speciesMaps:
-  - {fileID: 11400000, guid: 29e6b3f0d8c2571fa49e5e2bad7368f4, type: 2}
-  - {fileID: 11400000, guid: 7b2e9d3f5a1c6048b6e8f0d2c4a7159e, type: 2}
 --- !u!114 &100006
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -311,7 +295,7 @@ MonoBehaviour:
   xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
   simulationCamera: {fileID: 100014}
   simulationView: {fileID: 100015}
-  simulationXaml: {fileID: -8414808784256213763, guid: d9f8c2b3e8e74769a9f0d8c1b3a6e542, type: 3}
+  simulationXaml: {fileID: -8414808784256213763, guid: 39cb684d85274e16950d0df949c634a1, type: 3}
   simulationPreview: {fileID: 100008}
   simulationViewModel: {fileID: 100009}
   simulationBoardViewModel: {fileID: 100010}
@@ -415,7 +399,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 29355477be96127469aed699dd82b4be, type: 3}
   m_Name:
   m_EditorClassIdentifier: Noesis.NoesisGUI::NoesisView
-  _xaml: {fileID: -8414808784256213763, guid: d9f8c2b3e8e74769a9f0d8c1b3a6e542, type: 3}
+  _xaml: {fileID: -8414808784256213763, guid: 39cb684d85274e16950d0df949c634a1, type: 3}
   _texture: {fileID: 0}
   _isPPAAEnabled: 0
   _tessellationMaxPixelError: 0.4

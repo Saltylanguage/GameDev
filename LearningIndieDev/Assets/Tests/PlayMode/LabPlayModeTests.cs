@@ -162,6 +162,7 @@ namespace SaltyGame.PlayModeTests
             var runtime = Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
             Assert.That(runtime, Is.Not.Null);
             var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicks(
                 "8",
@@ -272,20 +273,14 @@ namespace SaltyGame.PlayModeTests
             var geneLabWindow = openWindows[1];
             Assert.That((float)GetProperty(geneLabWindow, "Width"), Is.InRange(960f, 1450f));
             Assert.That((float)GetProperty(geneLabWindow, "Height"), Is.InRange(560f, 820f));
-            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("HARE"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("NO GENOME MAP"));
             Assert.That(GetProperty(geneLabWindow, "ActiveGenomeCapacityText"), Is.EqualTo("0 / 8"));
-            Assert.That(GetProperty(geneLabWindow, "GenomeCatalogStateText").ToString(), Does.StartWith("AUTHORING SNAPSHOT"));
+            Assert.That(GetProperty(geneLabWindow, "GenomeCatalogStateText"), Is.EqualTo("NO AUTHORING SNAPSHOT"));
 
             var genomeNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
-            Assert.That(genomeNodes.Count, Is.EqualTo(5));
-            Assert.That(GetProperty(genomeNodes[0], "NodeId"), Is.EqualTo("hare.guarded-burrow"));
-            Assert.That(GetProperty(genomeNodes[0], "DisplayName"), Is.EqualTo("Guarded Burrow"));
-            Assert.That(GetProperty(genomeNodes[0], "StateText"), Is.EqualTo("CATALOG ENTRY"));
-            Assert.That(GetProperty(genomeNodes[3], "NodeId"), Is.EqualTo("hare.safe-foraging"));
-            Assert.That(GetProperty(genomeNodes[3], "PrerequisiteText"),
-                Is.EqualTo("REQUIRES · hare.swift-digging, hare.keen-hearing"));
+            Assert.That(genomeNodes.Count, Is.EqualTo(0));
             var genomeTreeSegments = (IList)GetProperty(geneLabWindow, "GenomeTreeSegments");
-            Assert.That(genomeTreeSegments.Count, Is.GreaterThan(0));
+            Assert.That(genomeTreeSegments.Count, Is.EqualTo(0));
             Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeWidth"), Is.GreaterThan(0f));
             Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeHeight"), Is.GreaterThan(0f));
 
@@ -316,45 +311,6 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openWindows.Count, Is.EqualTo(1));
             openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
             Assert.That(openWindows.Count, Is.EqualTo(1));
-        }
-
-        [UnityTest]
-        public IEnumerator GalapagOSGeneLabDebugToggleSwapsAuthoredGenomeMaps()
-        {
-            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
-            yield return null;
-            yield return null;
-
-            var viewModel = GameObject.Find("GalapagOS Desktop Test Camera")
-                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
-            Assert.That(viewModel, Is.Not.Null);
-
-            var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
-            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Gene Lab" });
-
-            var openWindows = (IList)GetProperty(viewModel, "OpenDesktopWindows");
-            Assert.That(openWindows.Count, Is.EqualTo(1));
-            var geneLabWindow = openWindows[0];
-            var selectCommand = GetProperty(geneLabWindow, "SelectGenomeSpeciesCommand");
-            var hareHeight = (float)GetProperty(geneLabWindow, "GenomeTreeHeight");
-
-            Execute(selectCommand, "fox");
-
-            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("FOX"));
-            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesIdText"), Is.EqualTo("fox"));
-            var foxNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
-            Assert.That(foxNodes.Count, Is.EqualTo(7));
-            Assert.That(GetProperty(foxNodes[0], "NodeId"), Is.EqualTo("fox.silent-paw"));
-            Assert.That(((IList)GetProperty(geneLabWindow, "GenomeTreeSegments")).Count, Is.GreaterThan(0));
-            Assert.That((float)GetProperty(geneLabWindow, "GenomeTreeHeight"), Is.GreaterThan(hareHeight));
-
-            Execute(selectCommand, "hare");
-
-            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesNameText"), Is.EqualTo("HARE"));
-            Assert.That(GetProperty(geneLabWindow, "GenomeSpeciesIdText"), Is.EqualTo("hare"));
-            var hareNodes = (IList)GetProperty(geneLabWindow, "GenomeNodes");
-            Assert.That(hareNodes.Count, Is.EqualTo(5));
-            Assert.That(GetProperty(hareNodes[0], "NodeId"), Is.EqualTo("hare.guarded-burrow"));
         }
 
         static IEnumerator LoadLab()
@@ -401,12 +357,5 @@ namespace SaltyGame.PlayModeTests
             command.GetType().GetMethod("Execute")?.Invoke(command, new object[] { null });
         }
 
-        static void Execute(object command, object parameter)
-        {
-            var canExecute = (bool)command.GetType().GetMethod("CanExecute")
-                ?.Invoke(command, new[] { parameter });
-            Assert.That(canExecute, Is.True);
-            command.GetType().GetMethod("Execute")?.Invoke(command, new[] { parameter });
-        }
     }
 }

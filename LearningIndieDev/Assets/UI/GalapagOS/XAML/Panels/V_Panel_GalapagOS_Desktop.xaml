@@ -683,29 +683,18 @@
                         <RowDefinition Height="92" />
                       </Grid.RowDefinitions>
                       <Grid>
-                        <Grid.ColumnDefinitions>
-                          <ColumnDefinition Width="*" />
-                          <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                           <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="23" Height="23" Margin="0,0,10,0" />
                           <TextBlock Text="{Binding GenomeSpeciesNameText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                           <TextBlock Text="GENOME" Margin="8,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                           <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="23" Height="23" Margin="10,0,0,0" />
                         </StackPanel>
-                        <StackPanel Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right">
-                          <TextBlock Text="DEBUG MAP" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" />
-                          <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
-                            <Button Content="HARE" Width="54" Height="24" FontSize="10" Margin="0,0,4,0" Command="{Binding SelectGenomeSpeciesCommand}" CommandParameter="hare" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                            <Button Content="FOX" Width="54" Height="24" FontSize="10" Command="{Binding SelectGenomeSpeciesCommand}" CommandParameter="fox" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                          </StackPanel>
-                        </StackPanel>
                       </Grid>
 
                       <Viewbox Grid.Row="1" Stretch="Uniform">
                         <Grid Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
                           <Canvas Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
-                            <TextBlock Canvas.Left="24" Canvas.Top="10" Text="AUTHORED GENOME TREE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <TextBlock Canvas.Left="24" Canvas.Top="10" Text="GENOME TREE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <TextBlock Canvas.Left="24" Canvas.Top="27" Text="{Binding GenomeCatalogStateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_Olive}" />
 
                             <ItemsControl Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}" ItemsSource="{Binding GenomeTreeSegments}">

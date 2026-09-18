@@ -30,10 +30,11 @@
 - `Terrain_01.spriteatlasv2` packs `Assets/Art/Terrain/Blob/64`. Its existing
   GUID is retained for scene references. The Noesis view model resolves names
   directly, so atlas packing order is not simulation or presentation state.
-- Grass currently uses the shared mask table. The live board draws the
-  matching Grass mask for Grass cells; Bare owns the neutral layer. Desert will
-  use the same table once its own authored family is available. Grass is never
-  used as a substitute for missing Desert tiles.
+- Every passable cell resolves a tile mask. Bare cells use the Grass neighbor
+  mask, so a dirt cell surrounded by Grass receives the right full or partial
+  Grass shape instead of remaining an un-tiled brown square. Bare remains a
+  distinct terrain when neighbor occupancy is sampled. Desert keeps its own
+  family and never falls back to Grass art.
 
 ## Smart-tiling model
 
@@ -47,13 +48,10 @@ N = 1, NE = 2, E = 4, SE = 8, S = 16, SW = 32, W = 64, NW = 128
 Mask `000` is the full-dirt image (no grass vertices); mask `255` is entirely
 grass. Other raw masks are normalized for diagonal bridges, then resolved
 through the 47 named variants in `TerrainTileResolver`. The board samples the
-eight neighboring cells around each visual tile and keeps the mask
-presentation-only, so it does not alter simulation determinism.
-
-Grass currently uses the shared mask table. The live board draws the matching
-Grass mask for Grass cells; Bare owns the neutral layer. The plain brown base
-is still a fallback, and Desert will use the same mask table once its own
-authored family is available.
+eight neighboring cells at every visual tile, including Bare dirt. Mask `000`
+is used only when none of those neighbors are Grass; a Bare center surrounded
+by Grass resolves to `255`. This stays presentation-only and does not alter
+simulation determinism.
 
 ## Planning concerns
 
@@ -79,6 +77,10 @@ Check that record before replacing a family or changing the renderer.
 - `TerrainTilePreviewWindow` previews all 47 Grass masks from the named files.
 - The runtime still uses one batched Noesis board; no Tilemap or `RuleTile`
   dependency was added.
+- Regression tests now cover a Bare center surrounded by Grass in both the
+  resolver and board snapshot. Post-fix Unity validation is pending: the
+  repository preflight found the Unity editor already open and refused to run
+  tests, rather than closing it or risking its state.
 
 ## Remaining validation
 

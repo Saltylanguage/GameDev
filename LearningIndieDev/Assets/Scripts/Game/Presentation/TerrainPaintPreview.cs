@@ -129,16 +129,15 @@ namespace SaltyGame
             GUI.DrawTexture(rect, Texture2D.whiteTexture);
             GUI.color = previousColor;
 
-            if (TerrainVisualFamilies.TryGet(cell.TerrainId, out var family))
+            if (TerrainVisualFamilies.TryGetTerrainTileFamily(cell.TerrainId, out var family))
             {
-                var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, cell.TerrainId);
+                var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, family);
                 var tiles = family == TerrainVisualFamily.Grass ? grassTiles : desertTiles;
                 if (tiles[mask] != null)
                 {
                     DrawSprite(tiles[mask], rect);
                 }
             }
-            // Bare/empty cells intentionally show only the universal base.
 
             // Do not draw a box per cell: the blob sprites must meet across
             // boundaries, otherwise the diagnostic grid masks the transitions.

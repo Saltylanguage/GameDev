@@ -45,11 +45,7 @@ namespace SaltyGame
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
                     var cell = run.Cells.GetCell(x, y);
-                    var terrainMask = TerrainTileResolver.ResolveTerrainMask(
-                        run.Cells,
-                        x,
-                        y,
-                        cell.TerrainId);
+                    var terrainMask = TerrainTileResolver.ResolveTerrainMask(run.Cells, x, y, cell.TerrainId);
                     cells[x + y * run.Cells.Width] = SimulationCellSnapshot.Create(cell, terrainMask);
                 }
             }

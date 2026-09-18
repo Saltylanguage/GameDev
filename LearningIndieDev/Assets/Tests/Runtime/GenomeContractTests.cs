@@ -165,6 +165,7 @@ namespace SaltyGame.Tests
 
                 secondObject = new GameObject("Reloaded Genome Profile Session");
                 var secondSession = secondObject.AddComponent<Helper_ProfileSession>();
+                secondSession.Reload();
 
                 Assert.That(secondSession.Current.HasLoadedProfile, Is.True);
                 Assert.That(secondSession.Current.TryGetGenomeProfile(

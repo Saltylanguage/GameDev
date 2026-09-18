@@ -20,7 +20,7 @@ work are listed below with their board locations.
 | Status | Active |
 | Goal | Prove that a player can complete and understand one six-round Forest Edge expedition (10 seconds of simulation time per round), recover from bad states, and return to the Lab through the GalapagOS route. |
 | Capacity | Josh 20h; Sim 20h; 40h planning capacity. |
-| Entry state | S2 is closed; shared branches are consolidated at `cab5838d`; CF-0 through CF-5, EX-010, target-resolution graphics acceptance, and the Windows smoke are complete. The initial S3-01 baseline had two terrain failures; the latest retained rerun is green (EditMode 251/251, no-graphics PlayMode 28 passed with two expected skips, graphics-capable PlayMode 30/30). Trello card status still awaits Josh's review. |
+| Entry state | S2 is closed; shared branches are consolidated at `cab5838d`; CF-0 through CF-5, EX-010, target-resolution graphics acceptance, and the Windows smoke are complete. The initial S3-01 baseline had two terrain failures. Current local validation: EditMode 251/251; no-graphics PlayMode 28 passed with two expected graphics-only skips; the focused graphics-capable ForestEdge scene test passed 1/1. Trello card status still awaits Josh's review. |
 | Primary outcome | The player can move through the Forest Edge expedition, its choices and results, and back to the Lab without stalls, errors, or becoming stranded. Mutations create visible, understandable effects on the simulation. |
 | Carry-over | Fox mating/eating telemetry only — Sim, reviewed by Josh, 2h. |
 | M2 relationship | This sprint prepares M2; species/build co-design moves to S4. |
@@ -137,11 +137,20 @@ scope trade or added capacity before it can start.
 - The settings rejection path now leaves the active run intact: global values
   are validated before commit, and experimental setup no longer rebuilds a
   pending run before all setup fields are applied.
-- The latest retained rerun is `artifacts/unity-tests-20260917-220612/`:
+- The latest complete retained bundle is `artifacts/unity-tests-20260917-222442/`:
   EditMode 251/251 passed; no-graphics PlayMode 28 passed with two expected
-  graphics-only skips; the additional graphics-capable PlayMode run passed
-  30/30. No failures were reported. This resolves the test gate locally; the
-  Trello card status remains unchanged pending Josh's review.
+  graphics-only skips. After the final ForestEdge population fix, the focused
+  graphics-capable scene/visual test passed 1/1 and captured setup, running,
+  rewards, and results under `artifacts/visual-evidence-20260917-222658/`.
+  A separate attempt to run the full graphics-capable suite exited during
+  Unity startup without producing test results, so that attempt is
+  inconclusive. The earlier 30/30 graphics run predates the population fix.
+  The Trello card status remains unchanged pending Josh's review.
+- A subsequent terrain correction changed mask selection for Bare cells and
+  added resolver/snapshot regression tests so Grass patches fill empty dirt
+  cells. These changes have not been validated yet: the approved Unity test
+  preflight found the editor open (PID 9624) and refused to run. The results
+  above predate this correction; rerun after the editor is closed.
 - Next: review/accept the retained results and reconcile the Trello card status.
 
 ## Risk register

@@ -24,6 +24,14 @@ passed 28 with two expected graphics-only skips. A graphics-capable ForestEdge
 board capture also passed 1/1 and shows the Grass/Dirt tiles in context. See
 [`handoffs/2026-09-17-codex-terrain-art-standard-64px.md`](handoffs/2026-09-17-codex-terrain-art-standard-64px.md).
 
+Follow-up review found that empty Bare cells were not receiving Grass masks.
+Snapshots and both board/paint-preview renderers now resolve a Grass neighbor
+mask for Bare cells too, so dirt cells inside a Grass field can display their
+Grass vertices. Resolver and snapshot regression tests were added, but this
+follow-up has not yet been validated in Unity: the approved test preflight
+refused to run while the editor was already open. The test counts above predate
+this fix.
+
 **Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
 Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
 kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
@@ -158,7 +166,8 @@ failed, 1 skipped; 29 total). Profile persistence and Genome asset-change
 tests now pass. In that retained run, both remaining EditMode failures were
 terrain checks against the absent `Assets/Art/Terrain/Blob/64` set and atlas.
 The Grass family and atlas are now integrated, and focused terrain checks pass
-(EditMode 3/3; PlayMode 1/1). The latest retained full S3-01 rerun is green:
+(EditMode 3/3; PlayMode 1/1). The earlier full S3-01 rerun, before the final
+population initialization fix, recorded:
 EditMode 251/251, no-graphics PlayMode 28 passed with two expected
 graphics-only skips, and graphics-capable PlayMode 30/30. The artifact is
 `artifacts/unity-tests-20260917-220612/`. PlayMode covers the direct-start
@@ -167,6 +176,15 @@ preservation path. The earlier terrain blocker is resolved locally. The
 Trello S3-01 card status still awaits Josh's review; see the
 [S3 control record](Sprints/S3-control-record.md). Existing graphics
 acceptance evidence is also retained at 1280×720 and 1920×1080.
+
+The latest retained bundle after the population initialization fix, before the
+empty-cell tiling follow-up, is `artifacts/unity-tests-20260917-222442/`:
+EditMode 251/251 passed; no-graphics PlayMode 28 passed with two expected
+graphics-only skips. The focused graphics-capable ForestEdge scene test passed
+1/1 and captured setup, running, rewards, and results under
+`artifacts/visual-evidence-20260917-222658/`. A separate full graphics-suite
+attempt exited during Unity startup without producing a result file and is
+inconclusive.
 
 - Durable product direction: [`PROJECT_CONTEXT.md`](PROJECT_CONTEXT.md)
 - Vertical-slice product brief: [`PRODUCT_BRIEF.md`](PRODUCT_BRIEF.md)

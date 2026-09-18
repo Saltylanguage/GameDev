@@ -2,7 +2,7 @@
 
 **Date:** 2026-09-17  
 **Owner:** Codex  
-**Status:** Grass runtime integration complete; Desert art remains pending
+**Status:** Grass runtime integration updated for empty-cell neighbor masks; post-fix Unity validation is pending
 
 ## Decision
 
@@ -29,7 +29,9 @@ separate migration is approved.
   47 Grass entries. Missing Desert entries are optional and do not disable Grass
   rendering or get replaced with Grass art.
 - The board applies the normalized mask through its existing batched Noesis
-  renderer. The authored `Grass_000` is full dirt; `Grass_255` is full grass.
+  renderer. Every passable cell resolves a neighbor mask; Bare dirt selects the
+  Grass family so surrounding Grass can fill its tile. The authored
+  `Grass_000` is full dirt; `Grass_255` is full grass.
 - ForestEdge's zero explicit plant count previously suppressed its authored
   Grass probability when the simulation applied other species' starting counts.
   Zero counts are now omitted from that override, so the ForestEdge grid contains
@@ -70,17 +72,20 @@ single-sprite import, no mipmaps, and stable sprite names. Focused Unity checks
 passed: terrain asset/atlas EditMode tests 3/3 and the prototype-scene Grass
 runtime initialization test 1/1. The atlas exposes every Grass mask; `000` and
 `255` were visually checked against the confirmed full-dirt/full-grass meaning.
-The full retained EditMode suite passed 251/251. The retained no-graphics
-PlayMode run passed 28 tests with two expected graphics-only skips; its results
-are under `artifacts/unity-tests-20260917-222442/`. The focused graphics-capable
-ForestEdge scene/visual test passed 1/1 and captured setup, running, rewards, and
-results at 1280x720 under `artifacts/visual-evidence-20260917-222658/`. The
-board now visibly uses both Grass and Dirt shapes. The full graphics-only suite
-was not rerun after the last scenario-population fix.
+Before the empty-cell follow-up, the retained EditMode suite passed 251/251,
+no-graphics PlayMode passed 28 with two expected graphics-only skips, and the
+focused graphics-capable ForestEdge visual test passed 1/1. Those artifacts are
+under `artifacts/unity-tests-20260917-222442/` and
+`artifacts/visual-evidence-20260917-222658/`. Regression tests now cover a Bare
+tile surrounded by Grass. They have not yet been run: the repository test
+preflight refused to start because Unity was already open (PID 9624), and no
+editor process was closed.
 
 ## Next safe step
 
-Review all integrated masks in the editor preview and at gameplay scale on the
-target resolutions. When Desert art is authored, map its representatives to the
-same resolver masks, add it to the atlas, and run its asset and runtime contract
-checks. Do not use Grass as a fallback for missing Desert sprites.
+After closing Unity, rerun the repository test suite and focused graphics
+capture, then verify that dirt holes inside Grass patches now show the
+neighbor-derived mask. Review all integrated masks at gameplay scale. When
+Desert art is authored, map its representatives to the same resolver masks, add
+it to the atlas, and run its asset and runtime contract checks. Do not use Grass
+as a fallback for missing Desert sprites.

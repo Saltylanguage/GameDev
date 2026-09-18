@@ -29,6 +29,19 @@ namespace SaltyGame
             return false;
         }
 
+        public static bool TryGetTerrainTileFamily(TerrainId terrainId, out TerrainVisualFamily family)
+        {
+            if (terrainId == TerrainIds.Bare)
+            {
+                // Bare dirt still receives the Grass edge mask so Grass can
+                // extend into this tile from any of its neighboring cells.
+                family = TerrainVisualFamily.Grass;
+                return true;
+            }
+
+            return TryGet(terrainId, out family);
+        }
+
         public static TerrainVisualFamily Get(TerrainId terrainId)
         {
             if (TryGet(terrainId, out var family))
@@ -76,9 +89,19 @@ namespace SaltyGame
 
         public static int ResolveTerrainMask(Grid<SpeciesCell> cells, int x, int y, TerrainId terrainId)
         {
+            if (terrainId == TerrainIds.Bare)
+            {
+                return ResolveTerrainMask(cells, x, y, TerrainVisualFamily.Grass);
+            }
+
             return TerrainVisualFamilies.TryGet(terrainId, out var family)
-                ? NormalizeMask(ComputeRawMask(cells, x, y, family))
+                ? ResolveTerrainMask(cells, x, y, family)
                 : 0;
+        }
+
+        public static int ResolveTerrainMask(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)
+        {
+            return NormalizeMask(ComputeRawMask(cells, x, y, family));
         }
 
         public static int ComputeRawMask(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)

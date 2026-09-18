@@ -23,7 +23,7 @@ namespace SaltyGame
 
         GenomeCatalogSnapshot catalog;
         readonly ProfileSessionSnapshot profile;
-        SpeciesId? selectedSpecies;
+        readonly SpeciesId? selectedSpecies;
 
         public GenomeLabViewModel(
             GenomeCatalogSnapshot catalog,
@@ -100,23 +100,6 @@ namespace SaltyGame
             OnPropertyChanged(nameof(NodeCountText));
             OnPropertyChanged(nameof(GenomeTreeWidth));
             OnPropertyChanged(nameof(GenomeTreeHeight));
-        }
-
-        public void SelectSpecies(string speciesId)
-        {
-            if (string.IsNullOrWhiteSpace(speciesId))
-            {
-                return;
-            }
-
-            var nextSpecies = new SpeciesId(speciesId);
-            if (selectedSpecies.HasValue && selectedSpecies.Value == nextSpecies)
-            {
-                return;
-            }
-
-            selectedSpecies = nextSpecies;
-            BindCatalog(catalog);
         }
 
         Dictionary<string, GenomeNodeLayout> CreateNodeLayouts(

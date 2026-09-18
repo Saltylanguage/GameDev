@@ -33,21 +33,13 @@ namespace SaltyGame.PlayModeTests
             Assert.That(viewModel, Is.Not.Null);
             Assert.That(camera.GetComponent("SaltyGame.VM_SimulationBoard"), Is.Not.Null);
 
-            var selectedScenarioIndex = viewModel.GetType().GetProperty("SelectedScenarioIndex");
             var canStart = viewModel.GetType().GetProperty("CanStart");
-            Assert.That(selectedScenarioIndex, Is.Not.Null);
             Assert.That(canStart, Is.Not.Null);
-
-            selectedScenarioIndex.SetValue(viewModel, 2);
-            Assert.That(root.GetComponent<CellularAutomataPrototypeRuntime>().SpeciesPreview.SelectedScenario.name,
-                Is.EqualTo("Wetland"));
-            Assert.That(canStart.GetValue(viewModel), Is.True);
-            selectedScenarioIndex.SetValue(viewModel, 1);
-            Assert.That(canStart.GetValue(viewModel), Is.True);
-            selectedScenarioIndex.SetValue(viewModel, 0);
-            Assert.That(canStart.GetValue(viewModel), Is.True);
-            selectedScenarioIndex.SetValue(viewModel, 2);
-            Assert.That(canStart.GetValue(viewModel), Is.True);
+            var preview = root.GetComponent<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+            Assert.That(preview.SelectedScenario.name, Is.EqualTo("ForestEdge"));
+            Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("hare"));
+            Assert.That(canStart.GetValue(viewModel), Is.False);
         }
 
         [UnityTest]
@@ -79,6 +71,56 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator CellularPrototypeInitializesEveryAuthoredGrassTerrainSprite()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+            {
+                Assert.Ignore("Terrain sprite initialization requires a graphics-capable Unity player.");
+            }
+
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+
+            var camera = GameObject.Find("Prototype Camera");
+            var viewModel = camera?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(viewModel, Is.Not.Null, "CellularAutomataPrototype must initialize VM_SimulationShell.");
+
+            var grassTiles = viewModel.GetType()
+                .GetField("grassTerrainTiles", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(viewModel) as Array;
+            Assert.That(grassTiles, Is.Not.Null, "The terrain atlas must produce Grass presentation sprites at runtime.");
+            Assert.That(grassTiles.Length, Is.EqualTo(256), "Grass presentation uses direct eight-bit mask slots.");
+
+            foreach (var mask in TerrainTileResolver.AllValidMasks)
+            {
+                Assert.That(grassTiles.GetValue(mask), Is.Not.Null, $"Grass mask {mask:D3} must be initialized.");
+            }
+
+            var boardViewModel = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+            Assert.That(boardViewModel, Is.Not.Null);
+            var snapshot = boardViewModel.GetType()
+                .GetProperty("Snapshot", BindingFlags.Instance | BindingFlags.Public)
+                ?.GetValue(boardViewModel) as SimulationBoardSnapshot;
+            Assert.That(snapshot, Is.Not.Null, "The prototype scene must provide a terrain snapshot.");
+            var grassCellCount = 0;
+            foreach (var cell in snapshot.Cells)
+            {
+                if (cell.TerrainId == TerrainIds.Grass)
+                {
+                    grassCellCount++;
+                }
+            }
+
+            Assert.That(grassCellCount, Is.GreaterThan(0), "ForestEdge must place Grass cells for the renderer to tile.");
+
+            var desertTiles = viewModel.GetType()
+                .GetField("desertTerrainTiles", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(viewModel) as Array;
+            Assert.That(desertTiles, Is.Not.Null, "Missing Desert art must not disable the terrain atlas family slots.");
+        }
+
+        [UnityTest]
         public IEnumerator DefaultFeaturesShowHerbivoreStatLineAfterRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -86,6 +128,7 @@ namespace SaltyGame.PlayModeTests
 
             var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
             Assert.That(runtime, Is.Not.Null);
+            runtime.SpeciesPreview.StopSimulation();
             Assert.That(runtime.SpeciesPreview.BevExperimentalFeaturesEnabled, Is.True);
             Assert.That(runtime.SpeciesPreview.FoxAttackCooldownTicks, Is.EqualTo(0));
 
@@ -171,6 +214,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
 
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
             var viewModel = GameObject.Find("Prototype Camera")
                 ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(viewModel, Is.Not.Null);
@@ -207,6 +251,7 @@ namespace SaltyGame.PlayModeTests
                 ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(runtime, Is.Not.Null);
             Assert.That(viewModel, Is.Not.Null);
+            runtime.SpeciesPreview.StopSimulation();
 
             var viewModelType = viewModel.GetType();
             viewModelType.GetProperty("DeveloperMode")?.SetValue(viewModel, true);
@@ -215,16 +260,18 @@ namespace SaltyGame.PlayModeTests
             viewModelType.GetProperty("HerbivoreStartingPopulationText")?.SetValue(viewModel, "40");
             viewModelType.GetProperty("CarnivoreStartingPopulationText")?.SetValue(viewModel, "40");
 
-            var runSeedBefore = runtime.SpeciesPreview.Run.Seed;
+            var runBeforeInvalidSettings = runtime.SpeciesPreview.Run;
+            var runSeedBefore = runBeforeInvalidSettings.Seed;
             var applySettingsCommand = viewModelType.GetProperty("ApplySettingsCommand")?.GetValue(viewModel);
             applySettingsCommand?.GetType().GetMethod("Execute")?.Invoke(applySettingsCommand, new object[] { null });
 
+            var settingsMessage = viewModelType.GetProperty("SettingsMessage")?.GetValue(viewModel) as string;
+            StringAssert.Contains("total 120 cannot exceed maximum population 100", settingsMessage);
+            Assert.That(runtime.SpeciesPreview.Run, Is.SameAs(runBeforeInvalidSettings));
             Assert.That(runtime.SpeciesPreview.Run.Seed, Is.EqualTo(runSeedBefore));
             Assert.That(viewModelType.GetProperty("PlantStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
             Assert.That(viewModelType.GetProperty("HerbivoreStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
             Assert.That(viewModelType.GetProperty("CarnivoreStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
-            var settingsMessage = viewModelType.GetProperty("SettingsMessage")?.GetValue(viewModel) as string;
-            StringAssert.Contains("total 120 cannot exceed maximum population 100", settingsMessage);
         }
 
         static SpeciesId FindSpeciesId(SpeciesSimulationPreview preview, SpeciesRole role)
@@ -251,6 +298,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
 
             var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
             var viewModel = GameObject.Find("Prototype Camera")
                 ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(viewModel, Is.Not.Null);
@@ -418,11 +466,12 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
 
             var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicks(
                 "8",
                 "8",
-                preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                "0",
                 preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
                 "4",
@@ -509,6 +558,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
 
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
             var viewModel = GameObject.Find("Prototype Camera")
                 ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(viewModel, Is.Not.Null);
@@ -570,6 +620,7 @@ namespace SaltyGame.PlayModeTests
                 yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
                 yield return null;
                 var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+                preview.StopSimulation();
                 Assert.That(preview.TryApplyExperimentalFeatures(true, "0", out var message), Is.True, message);
                 Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
                 // The seed selects the first experimental offer deterministically.
@@ -628,6 +679,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
 
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
             Assert.That(preview.TryApplyExperimentalFeatures(true, "0", out var message), Is.True, message);
             Assert.That(preview.TrySetPlayerSpecies("fox", out message), Is.True, message);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out message), Is.True, message);
@@ -670,6 +722,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
             Assert.That(viewModel, Is.Not.Null);
             Assert.That(runtime.SpeciesPreview.ContinuousPhasesEnabled, Is.True);
+
+            runtime.SpeciesPreview.StopSimulation();
 
             var continuousSettingsApplied = runtime.SpeciesPreview.TryApplyContinuousPhases(
                 enabled: false,
@@ -717,6 +771,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
             Assert.That(viewModel, Is.Not.Null);
 
+            runtime.SpeciesPreview.StopSimulation();
             var viewModelType = viewModel.GetType();
             viewModelType.GetProperty("DeveloperMode")?.SetValue(viewModel, true);
             viewModelType.GetProperty("RunTicksText")?.SetValue(viewModel, "4");

@@ -130,11 +130,11 @@ namespace SaltyGame
 
         void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
-            // Terrain masks sit over the neutral base; inactive Grass vertices,
-            // including mask 000, are opaque dirt in the authored tile art.
+            // Every passable tile samples its neighbors: Bare uses the Grass
+            // mask too, so Grass vertices can fill dirt tiles inside a field.
             context.DrawRectangle(cell.IsPassable ? Brushes.SaddleBrown : Brushes.Black, null, cellRect);
 
-            if (TerrainVisualFamilies.TryGet(cell.TerrainId, out var family))
+            if (TerrainVisualFamilies.TryGetTerrainTileFamily(cell.TerrainId, out var family))
             {
                 var tiles = family == TerrainVisualFamily.Grass
                     ? grassTerrainTiles

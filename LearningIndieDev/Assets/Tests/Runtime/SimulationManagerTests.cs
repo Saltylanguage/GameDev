@@ -150,6 +150,21 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void EndCompletesPausedRun()
+        {
+            var manager = CreateManager(durationSeconds: 1f);
+            var completionCount = 0;
+            manager.RunCompleted += _ => completionCount++;
+
+            Assert.That(manager.Start(), Is.True);
+            Assert.That(manager.Pause(), Is.True);
+            Assert.That(manager.End(), Is.True);
+
+            Assert.That(manager.Run.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            Assert.That(completionCount, Is.EqualTo(1));
+        }
+
+        [Test]
         public void ContinuousSkipPreservesWorldHistoryAndMetricsUntilTheSameAbsoluteTick()
         {
             var initialCells = CreateContinuityFixture();
@@ -482,6 +497,27 @@ namespace SaltyGame.Tests
             Assert.That(
                 snapshot.SpeciesRoles[SpeciesIds.Carnivore],
                 Is.EqualTo(SpeciesRole.Carnivore));
+        }
+
+        [Test]
+        public void BoardSnapshotResolvesGrassNeighborsForBareCells()
+        {
+            var grid = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Grass(1f));
+            grid.SetCell(1, 1, SpeciesCell.Empty);
+            var run = new SimulationRunState(
+                grid,
+                SpeciesIds.Herbivore,
+                seed: 17,
+                durationSeconds: 1f);
+
+            var snapshot = SimulationBoardSnapshot.Create(
+                run,
+                SpeciesRuleDefaults.Create(),
+                SpeciesIds.Herbivore);
+
+            var center = snapshot.GetCell(1, 1);
+            Assert.That(center.TerrainId, Is.EqualTo(TerrainIds.Bare));
+            Assert.That(center.TerrainVariantMask, Is.EqualTo(TerrainTileResolver.FullMask));
         }
 
         static SimulationManager CreateManager(float durationSeconds = 0.2f)

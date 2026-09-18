@@ -433,8 +433,6 @@ namespace SaltyGame
             OpenGeneLabCommand = new DelegateCommand(openGeneLab ?? (() => { }));
             OpenHistoryCommand = new DelegateCommand(openHistory ?? (() => { }));
             GenomeLab = genomeLab ?? new GenomeLabViewModel(GenomeCatalogSnapshot.Empty);
-            SelectGenomeSpeciesCommand = new DelegateCommand(
-                parameter => GenomeLab.SelectSpecies(parameter?.ToString()));
             GenomeLab.PropertyChanged += HandleGenomeLabPropertyChanged;
         }
 
@@ -447,7 +445,6 @@ namespace SaltyGame
         public DelegateCommand CloseCommand { get; }
         public DelegateCommand OpenGeneLabCommand { get; private set; }
         public DelegateCommand OpenHistoryCommand { get; private set; }
-        public DelegateCommand SelectGenomeSpeciesCommand { get; }
         public GenomeLabViewModel GenomeLab { get; }
         public ObservableCollection<GenomeLabNodeViewModel> GenomeNodes => GenomeLab.Nodes;
         public ObservableCollection<GenomeLabTreeSegmentViewModel> GenomeTreeSegments => GenomeLab.GenomeTreeSegments;

@@ -16,6 +16,37 @@ namespace SaltyGame.PlayModeTests
         const string SimulationCameraName = "GalapagOS Simulation View";
 
         [UnityTest]
+        public IEnumerator GalapagOSDesktopHomeCapturesVisualEvidenceWithoutOpeningWindows()
+        {
+            Screen.SetResolution(
+                GetVisualDimension("CELLSIM_VISUAL_WIDTH", 1280),
+                GetVisualDimension("CELLSIM_VISUAL_HEIGHT", 720),
+                false);
+            yield return null;
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+
+            var desktopRoot = GameObject.Find(DesktopCameraName);
+            Assert.That(desktopRoot, Is.Not.Null);
+            var desktopCamera = desktopRoot.GetComponent<Camera>();
+            Assert.That(desktopCamera, Is.Not.Null);
+            Assert.That(desktopCamera.enabled, Is.True);
+
+            var viewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            Assert.That(viewModel, Is.Not.Null);
+            var openWindows = (System.Collections.IList)GetProperty(viewModel, "OpenDesktopWindows");
+            Assert.That(openWindows.Count, Is.Zero, "Home capture must start before any desktop app is opened.");
+
+            var outputDirectory = TryGetVisualOutputDirectory();
+            if (outputDirectory == null)
+            {
+                Assert.Pass("Set CELLSIM_VISUAL_OUTPUT to capture GalapagOS desktop-home evidence.");
+            }
+
+            yield return CaptureCamera(outputDirectory, "01-galapagos-desktop-home", desktopCamera);
+        }
+
+        [UnityTest]
         public IEnumerator GalapagOSDesktopAndSimulationCaptureGameViewEvidence()
         {
             Screen.SetResolution(

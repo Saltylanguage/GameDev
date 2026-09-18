@@ -44,7 +44,7 @@ namespace SaltyGame.EditorTools
             var grass = CreateLegacyPlant();
             CreateScenario("ForestEdge", new[]
             {
-                Entry(grass, 0.65f), Entry(herbivores[0], 0f, 22), Entry(carnivores[0], 0f, 4),
+                Entry(grass, 0.4f), Entry(herbivores[0], 0f, 22), Entry(carnivores[0], 0f, 4),
             });
             CreateScenario("Wetland", new[]
             {
