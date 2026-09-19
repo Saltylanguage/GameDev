@@ -1018,8 +1018,7 @@
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Width="900"
-              Height="620"
-              d:IsHidden="True">
+              Height="620">
             <Border Margin="8,8,0,0"
                     Background="{DynamicResource Chrono_TreeBark}"
                     CornerRadius="12"
@@ -1028,7 +1027,8 @@
             <Border Background="{DynamicResource Chrono_LightCream}"
                     BorderBrush="{DynamicResource Chrono_Olive}"
                     BorderThickness="3"
-                    CornerRadius="12"
+                    CornerRadius="14"
+                    Padding="3"
                     ClipToBounds="True">
                 <Grid>
                     <Image Source="{StaticResource GalapagOS.Image.Simulation.PaperTexture}"
@@ -1075,7 +1075,7 @@
                                                FontSize="9"
                                                FontWeight="Bold"
                                                Foreground="{DynamicResource Chrono_TreeBark}" />
-                                    <TextBlock Text="PHASE COMPLETE"
+                                    <TextBlock Text="{Binding PhaseDecisionTitleText}"
                                                Margin="0,1,0,0"
                                                FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                                FontSize="28"
@@ -1098,7 +1098,7 @@
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
-                            <TextBlock Text="The habitat is paused at its phase boundary. Record one live adaptation, or continue with the current field conditions."
+                            <TextBlock Text="The habitat is paused at its phase boundary. Choose a Mutation, or continue with the current field conditions."
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                        FontSize="14"
                                        Foreground="{DynamicResource Chrono_TreeBark}"
@@ -1110,37 +1110,14 @@
                                     Background="{DynamicResource Chrono_VanillaCream}"
                                     BorderBrush="{DynamicResource Chrono_Sand}"
                                     BorderThickness="2"
-                                    CornerRadius="6">
-                                <Grid>
-                                    <Image Source="{StaticResource GalapagOS.Image.Simulation.PaperTexture}"
-                                           Stretch="UniformToFill"
-                                           Opacity="0.34"
-                                           IsHitTestVisible="False" />
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="2*" />
-                                            <ColumnDefinition Width="1" />
-                                            <ColumnDefinition Width="1.15*" />
-                                        </Grid.ColumnDefinitions>
-                                        <TextBlock Text="{Binding PhaseRewardText}"
-                                                   Foreground="{DynamicResource Chrono_Olive}"
-                                                   FontSize="14"
-                                                   FontWeight="Bold"
-                                                   TextWrapping="Wrap"
-                                                   VerticalAlignment="Center" />
-                                        <Border Grid.Column="1"
-                                                Margin="12,0"
-                                                Background="{DynamicResource Chrono_Sand}" />
-                                        <TextBlock Grid.Column="2"
-                                                   Text="{Binding RunDetailsText}"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="10"
-                                                   Foreground="{DynamicResource Chrono_TreeBark}"
-                                                   TextWrapping="Wrap"
-                                                   TextAlignment="Right"
-                                                   VerticalAlignment="Center" />
-                                    </Grid>
-                                </Grid>
+                                    CornerRadius="8"
+                                    ClipToBounds="True">
+                                <TextBlock Text="{Binding PhaseRewardText}"
+                                           Foreground="{DynamicResource Chrono_Olive}"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center" />
                             </Border>
 
                             <Grid Margin="0,0,0,8">
@@ -1149,7 +1126,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="CHOOSE ONE LIVE ADAPTATION"
+                                <TextBlock Text="CHOOSE A MUTATION"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="10"
                                            FontWeight="Bold"
@@ -1201,7 +1178,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="ADAPTATION RECORD"
+                                                <TextBlock Text="MUTATION RECORD"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                                            FontSize="8"
@@ -1248,7 +1225,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="ADAPTATION RECORD"
+                                                <TextBlock Text="MUTATION RECORD"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                                            FontSize="8"
@@ -1295,7 +1272,7 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="ADAPTATION RECORD"
+                                                <TextBlock Text="MUTATION RECORD"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                                            FontSize="8"
@@ -1361,12 +1338,12 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Width="820"
-                Padding="32"
+                Padding="32" Opacity="0"
                 Background="{DynamicResource Chrono_LightCream}"
                 BorderBrush="{DynamicResource Chrono_Olive}"
                 BorderThickness="3"
-                CornerRadius="8" d:IsHidden="True">
-            <StackPanel>
+                CornerRadius="8">
+            <StackPanel Opacity="0" d:IsHidden="True">
                 <TextBlock Text="EXPEDITION NOTE · REWARD REVIEW"
                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                            FontSize="10"
@@ -1451,13 +1428,12 @@
         <Border Visibility="{Binding ResultsVisibility}"
                 Background="{DynamicResource Chrono_TreeBark}"
                 Opacity="0.18"
-                IsHitTestVisible="False" />
+                IsHitTestVisible="False"/>
         <Grid Visibility="{Binding ResultsVisibility}"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"
               Width="900"
-              Height="620"
-              d:IsHidden="True">
+              Height="620">
             <Border Margin="8,8,0,0"
                     Background="{DynamicResource Chrono_TreeBark}"
                     CornerRadius="12"
@@ -1551,10 +1527,6 @@
                                         BorderThickness="2"
                                         CornerRadius="6">
                                     <Grid>
-                                        <Image Source="{StaticResource GalapagOS.Image.Simulation.PaperTexture}"
-                                               Stretch="UniformToFill"
-                                               Opacity="0.34"
-                                               IsHitTestVisible="False" />
                                         <StackPanel>
                                             <TextBlock Text="RUN RECORD"
                                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
@@ -1645,8 +1617,7 @@
         </Grid>
         <Border Visibility="{Binding EndConfirmationVisibility}"
                 Background="{DynamicResource Chrono_TreeBark}"
-                Opacity="0.48"
-                d:IsHidden="True" />
+                Opacity="0.48" d:IsHidden="True"/>
         <Grid Visibility="{Binding EndConfirmationVisibility}"
               HorizontalAlignment="Center"
               VerticalAlignment="Center"

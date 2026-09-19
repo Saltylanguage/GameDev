@@ -926,6 +926,10 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(runtime.SpeciesPreview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            var phaseDecisionTitle = viewModel.GetType()
+                .GetProperty("PhaseDecisionTitleText")
+                ?.GetValue(viewModel) as string;
+            Assert.That(phaseDecisionTitle, Is.EqualTo("PHASE 01 COMPLETE"));
 
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;

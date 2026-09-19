@@ -80,6 +80,7 @@ namespace SaltyGame
         string experimentalUpgradeCountText;
         string currencyText;
         string phaseRewardText;
+        string phaseDecisionTitleText;
         string settingsMessage;
         string gridWidthText;
         string gridHeightText;
@@ -181,6 +182,7 @@ namespace SaltyGame
         public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
         public string PhaseRewardText => phaseRewardText;
+        public string PhaseDecisionTitleText => phaseDecisionTitleText;
         public string ScenarioText => scenarioText;
         public string PlayerSpeciesText => playerSpeciesText;
         public string RosterText => rosterText;
@@ -918,6 +920,10 @@ namespace SaltyGame
             Set(ref runStatusText, GetRunStatusText(run), nameof(RunStatusText));
             Set(ref runDetailsText, GetRunDetailsText(run), nameof(RunDetailsText));
             Set(
+                ref phaseDecisionTitleText,
+                GetPhaseDecisionTitleText(state, run),
+                nameof(PhaseDecisionTitleText));
+            Set(
                 ref experimentalHerbivoreStatLineSummary,
                 showExperimentalHerbivoreStatLine
                     ? isHerbivorePlayer
@@ -1588,6 +1594,19 @@ namespace SaltyGame
                 run.TargetTicks > 0 ? run.TargetTicks.ToString(CultureInfo.InvariantCulture) : "?",
                 run.ElapsedSeconds,
                 run.DurationSeconds);
+        }
+
+        static string GetPhaseDecisionTitleText(SpeciesPreviewState state, SimulationRunState run)
+        {
+            if (state != SpeciesPreviewState.PhaseDecision || run == null)
+            {
+                return "PHASE COMPLETE";
+            }
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "PHASE {0:00} COMPLETE",
+                Mathf.Max(1, run.PhaseIndex));
         }
 
         static string GetExperimentalHerbivoreStatLineSummary(SimulationRunState run, SpeciesId species)
