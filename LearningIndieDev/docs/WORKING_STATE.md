@@ -5,6 +5,32 @@ become a master changelog.
 
 ## Current focus
 
+**Forest Edge balance iteration: 2026-09-21.** The first matched 600-tick
+Hare/Fox pass provisionally moves Forest Edge's explicit starting Fox population
+from 4 to 6. Across seeds 10100–10119 this increased direct Fox pressure: mean
+Fox kills rose from 20.35 to 24.25 and Hare combat deaths rose from 20.35 to
+24.25, with no Hare extinction. Keep Fox 6 as the working comparison baseline.
+Fox/Hare population equality and final population are descriptive only, not the
+balance score. The current direct measures are predation encounters and kills,
+Hare post-contact survival, starvation pressure, and whether phase 3 remains
+weakened. A paired 300-tick continuation also found the existing Tough Hide →
+Threat Exposure path improved Hare post-contact survival (`pAVI` 0.39→0.46)
+while increasing phase-3 starvation pressure (31.4→35.5 deaths/run). Evidence
+and the rejected Hare starting-energy trial are recorded in the [first balance
+handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md).
+The same handoff records the subsequent Fox mating-state fix: mutually ready
+adjacent Foxes take mating priority over foraging and do not move while mating.
+The six-phase follow-up reduced phase-3 `Mating↔Wandering` transitions from
+4.8/5.2 per run to 0.2/0.2, with the live EditMode suite passing 236/236.
+The latest follow-up adds a shared 24-tick reproduction cooldown after an
+eligible attempt, suppresses mate-seeking during that cooldown, and prevents
+full reproduction groups from staying in `Mating`. A real mating pair gets
+one shared attempt per tick so it can split cleanly afterward. The mating
+filter passed 4/4 and the full EditMode suite passed 237/237. The latest live
+five-seed continuation recorded three Fox births, but zero aggregate `Mating`
+state ticks; that telemetry/eligibility discrepancy is the next follow-up,
+not a Fox/Hare population-equality target.
+
 **Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
 default across `SpeciesSimulation`, runner construction, checkpoint restore,
 the `CellSim` wrappers, and job submission. `RestoreCheckpoint` was the last
@@ -98,13 +124,15 @@ the current clean EditMode suite recorded at the top of this file.
 **Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
 Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
 kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
-2026-09-17–2026-09-30. Josh closed S3-01; post-Bare-cell-fix Unity validation
-is a separate open follow-up in Loose Ends P1-031 and is not represented as a
-test pass. Trello S3-01 is in Done with this caveat recorded. S3-02's contract
-is complete, and Josh has marked its Trello card complete. S3-03 is complete
-and Unity-validated with results retained in its handoff. The S3-02 card's
-acceptance wording may still need a cleanup pass to
-remove the deferred board-size and playable-plant decisions.
+2026-09-17–2026-09-30. Josh closed S3-01; the latest retained clean validation
+records EditMode 234/234 and no-graphics PlayMode 28/30 with 0 failures and two
+expected graphics-only skips. The focused phase-decision UI check and the
+separate Settings/Collection and Main Menu reviews remain open in Loose Ends
+P1-031. Trello S3-01 is in Done with its validation caveat recorded. S3-02's
+contract is complete, and Josh has marked its Trello card complete. S3-03 is
+complete and Unity-validated with results retained in its handoff. The S3-02
+card's acceptance wording may still need a cleanup pass to remove the deferred
+board-size and playable-plant decisions.
 S3-05 duration/memory measurement remains uncommitted stretch work
 and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
 loop with tested recovery and return to the Lab, meaningful and understandable
@@ -250,10 +278,11 @@ EditMode 251/251, no-graphics PlayMode 28 passed with two expected
 graphics-only skips, and graphics-capable PlayMode 30/30. The artifact is
 `artifacts/unity-tests-20260917-220612/`. PlayMode covers the direct-start
 Forest Edge/Hare route, Lab launch/return, and settings-rejection/run-
-preservation path. The earlier terrain blocker is resolved locally. The
-Trello S3-01 card status still awaits Josh's review; see the
-[S3 control record](Sprints/S3-control-record.md). Existing graphics
-acceptance evidence is also retained at 1280×720 and 1920×1080.
+preservation path. The earlier terrain blocker is resolved locally.
+The older paragraph above describes the 2026-09-17 validation snapshot. The
+Trello S3-01 card was subsequently marked Done; see the [S3 control
+record](Sprints/S3-control-record.md). Existing graphics acceptance evidence
+is also retained at 1280×720 and 1920×1080.
 
 The latest retained bundle after the population initialization fix, before the
 empty-cell tiling follow-up, is `artifacts/unity-tests-20260917-222442/`:

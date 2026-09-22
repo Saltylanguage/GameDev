@@ -25,4 +25,6 @@
                  UriSource="../Art/Species/Animals/Standardized/64/Animals_01_Rabbit.png" />
     <BitmapImage x:Key="GalapagOS.Image.Species.Rabbit.128"
                  UriSource="../Art/Species/Animals/Standardized/128/Animals_01_Rabbit.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Simulation.Rabbit.64"
+                 UriSource="../Art/Species/Animals/Chrono_Rabbit_Tile_Face.png" />
 </ResourceDictionary>

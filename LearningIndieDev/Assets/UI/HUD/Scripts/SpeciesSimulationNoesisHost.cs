@@ -106,6 +106,12 @@ namespace SaltyGame
             }
         }
 
+        void Update()
+        {
+            simulationBoard?.UpdateFoxHuntCue();
+            simulationBoard?.UpdateMatingCue();
+        }
+
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)
         {
             if (args.PropertyName == nameof(VM_SimulationBoard.Snapshot))
@@ -116,7 +122,24 @@ namespace SaltyGame
 
         void ApplyBoardSnapshot()
         {
-            simulationBoard?.SetSnapshot(boardViewModel?.Snapshot);
+            if (simulationBoard == null || boardViewModel == null)
+            {
+                return;
+            }
+
+            simulationBoard.SetSnapshot(boardViewModel.Snapshot);
+            simulationBoard.SetFoxHuntCue(
+                boardViewModel.FoxHuntCueX,
+                boardViewModel.FoxHuntCueY,
+                boardViewModel.FoxHuntCueTick);
+            simulationBoard.SetMatingCue(
+                boardViewModel.MatingCueX,
+                boardViewModel.MatingCueY,
+                boardViewModel.MatingCueMateX,
+                boardViewModel.MatingCueMateY,
+                boardViewModel.MatingCueOffspringX,
+                boardViewModel.MatingCueOffspringY,
+                boardViewModel.MatingCueTick);
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

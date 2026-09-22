@@ -131,6 +131,49 @@ namespace SaltyGame
         public bool IsCreature { get; }
     }
 
+    /// <summary>
+    /// A positional birth event for presentation systems. Unlike the aggregate
+    /// activity counters, this keeps the parent and newborn cells for the tick
+    /// in which a creature was actually placed.
+    /// </summary>
+    public readonly struct SpeciesBirthEvent
+    {
+        internal SpeciesBirthEvent(
+            SpeciesId species,
+            long parentEntityId,
+            int parentX,
+            int parentY,
+            int mateX,
+            int mateY,
+            long childEntityId,
+            int childX,
+            int childY,
+            int tick)
+        {
+            Species = species;
+            ParentEntityId = parentEntityId;
+            ParentX = parentX;
+            ParentY = parentY;
+            MateX = mateX;
+            MateY = mateY;
+            ChildEntityId = childEntityId;
+            ChildX = childX;
+            ChildY = childY;
+            Tick = tick;
+        }
+
+        public SpeciesId Species { get; }
+        public long ParentEntityId { get; }
+        public int ParentX { get; }
+        public int ParentY { get; }
+        public int MateX { get; }
+        public int MateY { get; }
+        public long ChildEntityId { get; }
+        public int ChildX { get; }
+        public int ChildY { get; }
+        public int Tick { get; }
+    }
+
     public readonly struct SpeciesCombatRollEvent
     {
         internal SpeciesCombatRollEvent(
@@ -926,6 +969,8 @@ namespace SaltyGame
             new List<SpeciesBehaviorTransition>();
         readonly List<SpeciesDeathEvent> deathEvents =
             new List<SpeciesDeathEvent>();
+        readonly List<SpeciesBirthEvent> birthEvents =
+            new List<SpeciesBirthEvent>();
         readonly List<SpeciesCombatRollEvent> combatRollEvents =
             new List<SpeciesCombatRollEvent>();
         readonly List<SpeciesCombatCooldownSuppressionEvent> combatCooldownSuppressionEvents =
@@ -1016,6 +1061,7 @@ namespace SaltyGame
 
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions => behaviorTransitions;
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents => deathEvents;
+        public IReadOnlyList<SpeciesBirthEvent> BirthEvents => birthEvents;
         public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents => combatRollEvents;
         public IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents =>
             combatCooldownSuppressionEvents;
@@ -1050,6 +1096,7 @@ namespace SaltyGame
             encounteredPredatorSpeciesThisStep.Clear();
             behaviorTransitions.Clear();
             deathEvents.Clear();
+            birthEvents.Clear();
             combatRollEvents.Clear();
             combatCooldownSuppressionEvents.Clear();
             currentTick = -1;
@@ -1564,6 +1611,35 @@ namespace SaltyGame
             }
 
             reproductionBySpecies[species] = GetReproductionActivity(species).Add(outcome);
+        }
+
+        internal void RecordBirth(
+            SpeciesId species,
+            long parentEntityId,
+            int parentX,
+            int parentY,
+            int mateX,
+            int mateY,
+            long childEntityId,
+            int childX,
+            int childY)
+        {
+            if (!species.IsValid)
+            {
+                return;
+            }
+
+            birthEvents.Add(new SpeciesBirthEvent(
+                species,
+                parentEntityId,
+                parentX,
+                parentY,
+                mateX,
+                mateY,
+                childEntityId,
+                childX,
+                childY,
+                currentTick));
         }
 
         internal void RecordDeath(

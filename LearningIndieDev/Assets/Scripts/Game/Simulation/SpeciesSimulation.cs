@@ -20,6 +20,7 @@ namespace SaltyGame
     public static class SpeciesSimulation
     {
         public const int FixedRateDiagnosticPeriodTicks = 3;
+        const int ReproductionCooldownTicks = 24;
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
 
         public static bool DoesOpposedRollHit(
@@ -322,6 +323,7 @@ namespace SaltyGame
         {
             ResolveAging(next);
             ResolveAttackCooldowns(next, experimentalOptions);
+            ResolveReproductionCooldowns(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
         }
 
@@ -1359,7 +1361,8 @@ namespace SaltyGame
                 }
 
                 if (currentCell.BehaviorState == SpeciesBehaviorState.Sleeping
-                    || currentCell.BehaviorState == SpeciesBehaviorState.Attacking)
+                    || currentCell.BehaviorState == SpeciesBehaviorState.Attacking
+                    || currentCell.BehaviorState == SpeciesBehaviorState.Mating)
                 {
                     moved[sourceIndex] = true;
                     continue;
@@ -1635,6 +1638,7 @@ namespace SaltyGame
             var canSeekMate = speciesRules.ReproductionChance > 0f
                 && speciesRules.ReproductionNeighborCount > 0
                 && HasReproductionEnergy(currentCell, speciesRules)
+                && currentCell.ReproductionCooldownTicksRemaining <= 0
                 && CountPatternSpeciesNeighbors(
                     source,
                     x,
@@ -1652,7 +1656,8 @@ namespace SaltyGame
                     currentCell.SpeciesId,
                     speciesRules,
                     random,
-                    out mateTarget);
+                    out mateTarget)
+                && mateTarget.Cell.ReproductionCooldownTicksRemaining <= 0;
             var prioritizeMate = hasMate
                 && speciesRules.Awareness.Intelligence > 0
                 && HasReproductionEnergy(currentCell, speciesRules);
@@ -1928,7 +1933,8 @@ namespace SaltyGame
                 cell.FoodEaten,
                 cell.FoodReserve,
                 cell.IsAlpha,
-                entityId: cell.EntityId);
+                entityId: cell.EntityId,
+                reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining);
             if (cell.TrackingTargetEntityId > 0 && cell.TrackingTicksRemaining > 0)
             {
                 movedCell = movedCell.WithTrackingTarget(
@@ -2018,7 +2024,9 @@ namespace SaltyGame
                     cell.FoodEaten,
                     cell.FoodReserve,
                     cell.IsAlpha,
-                    entityId: cell.EntityId).WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
+                    entityId: cell.EntityId,
+                    reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
+                    .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
@@ -2049,6 +2057,22 @@ namespace SaltyGame
                     {
                         next.SetCell(x, y, cell.WithAttackCooldown(
                             cell.AttackCooldownTicksRemaining - 1));
+                    }
+                }
+            }
+        }
+
+        static void ResolveReproductionCooldowns(Grid<SpeciesCell> next)
+        {
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature && cell.ReproductionCooldownTicksRemaining > 0)
+                    {
+                        next.SetCell(x, y, cell.WithReproductionCooldown(
+                            cell.ReproductionCooldownTicksRemaining - 1));
                     }
                 }
             }
@@ -2343,6 +2367,13 @@ namespace SaltyGame
                         continue;
                     }
 
+                    if (parent.ReproductionCooldownTicksRemaining > 0
+                        || (currentParent.ReproductionCooldownTicksRemaining > 0
+                            && currentParent.BehaviorState == SpeciesBehaviorState.Mating))
+                    {
+                        continue;
+                    }
+
                     if (!HasReproductionEnergy(currentParent, speciesRules))
                     {
                         metrics?.RecordReproductionOutcome(
@@ -2352,6 +2383,8 @@ namespace SaltyGame
                     }
 
                     var sameSpeciesNeighbors = 0;
+                    var mateX = -1;
+                    var mateY = -1;
                     if (speciesRules.ReproductionNeighborCount > 0
                         || speciesRules.MaxReproductionGroupSize > 0)
                     {
@@ -2361,6 +2394,11 @@ namespace SaltyGame
                                 && IsSameSpecies(neighbor, parent.SpeciesId))
                             {
                                 sameSpeciesNeighbors++;
+                                if (mateX < 0)
+                                {
+                                    mateX = x + offset.x;
+                                    mateY = y + offset.y;
+                                }
                             }
                         }
                     }
@@ -2384,7 +2422,14 @@ namespace SaltyGame
 
                     var reproductionPattern = speciesRules.ReproductionPattern;
                     var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
-                    if (random.NextDouble() > speciesRules.ReproductionChance)
+                    var reproductionSucceeded = random.NextDouble() <= speciesRules.ReproductionChance;
+                    ApplyReproductionCooldown(
+                        next,
+                        x,
+                        y,
+                        parent.SpeciesId,
+                        reproductionPattern);
+                    if (!reproductionSucceeded)
                     {
                         metrics?.RecordReproductionOutcome(
                             parent.SpeciesId,
@@ -2445,6 +2490,19 @@ namespace SaltyGame
                         claimed[childIndex] = true;
                         births++;
                         metrics?.Record(parent.SpeciesId, births: 1);
+                        if (!parentIsPlant)
+                        {
+                            metrics?.RecordBirth(
+                                parent.SpeciesId,
+                                parent.EntityId,
+                                x,
+                                y,
+                                mateX,
+                                mateY,
+                                offspring.EntityId,
+                                childX,
+                                childY);
+                        }
                     }
 
                     if (births > 0)
@@ -2453,7 +2511,7 @@ namespace SaltyGame
                             parent.SpeciesId,
                             SpeciesReproductionOutcome.SuccessfulAttempt);
                         next.SetCell(x, y, ConsumeReproductionEnergy(
-                            currentParent,
+                            next.GetCell(x, y),
                             speciesRules.ReproductionFoodRequired * births));
                     }
                     else
@@ -2463,6 +2521,37 @@ namespace SaltyGame
                             SpeciesReproductionOutcome.BlockedNoBirthLocation);
                     }
                 }
+            }
+        }
+
+        static void ApplyReproductionCooldown(
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesId species,
+            GridPattern reproductionPattern)
+        {
+            var parent = next.GetCell(x, y);
+            if (parent.IsCreature && parent.SpeciesId == species)
+            {
+                next.SetCell(x, y, parent.WithReproductionCooldown(ReproductionCooldownTicks));
+            }
+
+            foreach (var offset in reproductionPattern.Offsets)
+            {
+                var neighborX = x + offset.x;
+                var neighborY = y + offset.y;
+                if (!next.TryGetCell(neighborX, neighborY, out var neighbor)
+                    || !neighbor.IsCreature
+                    || neighbor.SpeciesId != species)
+                {
+                    continue;
+                }
+
+                next.SetCell(
+                    neighborX,
+                    neighborY,
+                    neighbor.WithReproductionCooldown(ReproductionCooldownTicks));
             }
         }
 
@@ -2936,6 +3025,25 @@ namespace SaltyGame
                 return SpeciesBehaviorState.Sleeping;
             }
 
+            var hasReadyMate = speciesRules.ReproductionChance > 0f
+                && HasReproductionEnergy(cell, speciesRules)
+                && cell.ReproductionCooldownTicksRemaining <= 0
+                && SpeciesPerception.TryFindMateTarget(
+                    cells,
+                    x,
+                    y,
+                    cell.SpeciesId,
+                    speciesRules,
+                    random,
+                    out var mate)
+                && HasReproductionEnergy(mate.Cell, speciesRules)
+                && mate.Cell.ReproductionCooldownTicksRemaining <= 0
+                && HasReproductionNeighbor(cells, x, y, cell.SpeciesId, speciesRules);
+            if (hasReadyMate)
+            {
+                return SpeciesBehaviorState.Mating;
+            }
+
             if (ShouldForage(cell, speciesRules)
                 && SpeciesPerception.TryFindFoodTarget(
                     cells,
@@ -2956,20 +3064,6 @@ namespace SaltyGame
                 && SpeciesPerception.TryFindTrackedFoodTarget(cells, cell, speciesRules, out _))
             {
                 return SpeciesBehaviorState.Hunting;
-            }
-
-            if (speciesRules.ReproductionChance > 0f
-                && HasReproductionEnergy(cell, speciesRules)
-                && SpeciesPerception.TryFindMateTarget(
-                    cells,
-                    x,
-                    y,
-                    cell.SpeciesId,
-                    speciesRules,
-                    random,
-                    out _))
-            {
-                return SpeciesBehaviorState.Mating;
             }
 
             if (cell.BehaviorState == SpeciesBehaviorState.Threatened)
@@ -2999,6 +3093,30 @@ namespace SaltyGame
         static bool ShouldForage(SpeciesCell cell, SpeciesRules rules)
         {
             return rules.DietTargetId.HasValue && cell.Energy <= rules.ForageBelowEnergy;
+        }
+
+        static bool HasReproductionNeighbor(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesId species,
+            SpeciesRules speciesRules)
+        {
+            var requiredNeighbors = Math.Max(1, speciesRules.ReproductionNeighborCount);
+            var neighbors = 0;
+            foreach (var offset in speciesRules.ReproductionPattern.Offsets)
+            {
+                if (cells.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
+                    && neighbor.IsCreature
+                    && neighbor.SpeciesId == species)
+                {
+                    neighbors++;
+                }
+            }
+
+            return neighbors >= requiredNeighbors
+                && (speciesRules.MaxReproductionGroupSize <= 0
+                    || neighbors + 1 < speciesRules.MaxReproductionGroupSize);
         }
 
         static bool IsAdjacent(int x, int y, Vector2Int target)

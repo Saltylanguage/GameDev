@@ -426,6 +426,11 @@ settle them in foundational grid code.
 - Keep the existing role colors for readability: plants green, herbivores blue,
   and carnivores red. Species-specific shape and a restrained accent color can
   provide identity without weakening the role language.
+- The accepted emotional direction for Forest Edge event feedback is **"deadly
+  but cute"** when a Fox hunts and **"sad but cute"** when a Hare is hunted.
+  Threat, escape, attack, kill, and feeding must remain visually distinct. The
+  proposed cue vocabulary is in
+  [`SIMULATION_EVENT_VISUALS_IDEATION.md`](Art%20Direction/SIMULATION_EVENT_VISUALS_IDEATION.md).
 - The Noesis board now consumes transparent raster atlases derived from the
   supplied animal and terrain references instead of the previous hard-coded
   vector silhouettes. The atlas build is deterministic and preserves the

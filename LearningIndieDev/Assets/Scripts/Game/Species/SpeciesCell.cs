@@ -66,7 +66,8 @@ namespace SaltyGame
             long trackingTargetEntityId = 0,
             int trackingTargetX = 0,
             int trackingTargetY = 0,
-            int trackingTicksRemaining = 0)
+            int trackingTicksRemaining = 0,
+            int reproductionCooldownTicksRemaining = 0)
         {
             if (health < 0)
             {
@@ -124,6 +125,14 @@ namespace SaltyGame
                     "Attack cooldown ticks cannot be negative.");
             }
 
+            if (reproductionCooldownTicksRemaining < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(reproductionCooldownTicksRemaining),
+                    reproductionCooldownTicksRemaining,
+                    "Reproduction cooldown ticks cannot be negative.");
+            }
+
             if (trackingTargetEntityId < 0)
             {
                 throw new ArgumentOutOfRangeException(
@@ -159,6 +168,7 @@ namespace SaltyGame
             BehaviorState = behaviorState;
             BehaviorStateTicks = behaviorStateTicks;
             AttackCooldownTicksRemaining = attackCooldownTicksRemaining;
+            ReproductionCooldownTicksRemaining = reproductionCooldownTicksRemaining;
             TrackingTargetEntityId = isOccupied && !isResourceSpecies ? trackingTargetEntityId : 0L;
             TrackingTargetX = TrackingTargetEntityId > 0 ? trackingTargetX : 0;
             TrackingTargetY = TrackingTargetEntityId > 0 ? trackingTargetY : 0;
@@ -268,6 +278,7 @@ namespace SaltyGame
         public SpeciesBehaviorState BehaviorState { get; }
         public int BehaviorStateTicks { get; }
         public int AttackCooldownTicksRemaining { get; }
+        public int ReproductionCooldownTicksRemaining { get; }
         public long TrackingTargetEntityId { get; }
         public int TrackingTargetX { get; }
         public int TrackingTargetY { get; }
@@ -282,7 +293,8 @@ namespace SaltyGame
             float foodReserve,
             bool isAlpha = false,
             long entityId = 0,
-            float? energyRemainder = null)
+            float? energyRemainder = null,
+            int? reproductionCooldownTicksRemaining = null)
         {
             var resolvedEntityId = entityId > 0
                 ? entityId
@@ -293,6 +305,10 @@ namespace SaltyGame
             var preserveTracking = IsCreature
                 && SpeciesId == species
                 && resolvedEntityId == EntityId;
+            var resolvedReproductionCooldown = reproductionCooldownTicksRemaining
+                ?? (IsCreature && SpeciesId == species && resolvedEntityId == EntityId
+                    ? ReproductionCooldownTicksRemaining
+                    : 0);
             return new SpeciesCell(
                 species,
                 true,
@@ -317,7 +333,8 @@ namespace SaltyGame
                 trackingTargetEntityId: preserveTracking ? TrackingTargetEntityId : 0L,
                 trackingTargetX: preserveTracking ? TrackingTargetX : 0,
                 trackingTargetY: preserveTracking ? TrackingTargetY : 0,
-                trackingTicksRemaining: preserveTracking ? TrackingTicksRemaining : 0);
+                trackingTicksRemaining: preserveTracking ? TrackingTicksRemaining : 0,
+                reproductionCooldownTicksRemaining: resolvedReproductionCooldown);
         }
 
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
@@ -351,7 +368,8 @@ namespace SaltyGame
                 TrackingTargetEntityId,
                 TrackingTargetX,
                 TrackingTargetY,
-                TrackingTicksRemaining);
+                TrackingTicksRemaining,
+                ReproductionCooldownTicksRemaining);
         }
 
         public SpeciesCell WithAttackCooldown(int ticks)
@@ -390,7 +408,8 @@ namespace SaltyGame
                 TrackingTargetEntityId,
                 TrackingTargetX,
                 TrackingTargetY,
-                TrackingTicksRemaining);
+                TrackingTicksRemaining,
+                ReproductionCooldownTicksRemaining);
         }
 
         public SpeciesCell WithTrackingTarget(long entityId, int x, int y, int ticksRemaining)
@@ -432,7 +451,8 @@ namespace SaltyGame
                 entityId,
                 x,
                 y,
-                ticksRemaining);
+                ticksRemaining,
+                ReproductionCooldownTicksRemaining);
         }
 
         public SpeciesCell WithoutEntity()
@@ -515,7 +535,48 @@ namespace SaltyGame
                 trackingTargetEntityId: TrackingTargetEntityId,
                 trackingTargetX: TrackingTargetX,
                 trackingTargetY: TrackingTargetY,
-                trackingTicksRemaining: TrackingTicksRemaining);
+                trackingTicksRemaining: TrackingTicksRemaining,
+                reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining);
+        }
+
+        public SpeciesCell WithReproductionCooldown(int ticks)
+        {
+            if (ticks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ticks), ticks, "Reproduction cooldown ticks cannot be negative.");
+            }
+
+            if (!IsCreature)
+            {
+                return this;
+            }
+
+            return new SpeciesCell(
+                SpeciesId,
+                true,
+                Health,
+                Energy,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                IsAlpha,
+                TerrainId,
+                TerrainEnergy,
+                isResourceSpecies,
+                isResourceTerrain,
+                IsPassable,
+                MovementCost,
+                resourceSpeciesId,
+                BehaviorState,
+                BehaviorStateTicks,
+                EntityId,
+                AttackCooldownTicksRemaining,
+                EnergyRemainder,
+                TrackingTargetEntityId,
+                TrackingTargetX,
+                TrackingTargetY,
+                TrackingTicksRemaining,
+                ticks);
         }
     }
 }

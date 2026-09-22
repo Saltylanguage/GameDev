@@ -302,7 +302,7 @@ MonoBehaviour:
   animalAtlas: {fileID: 100100200, guid: 4f65e1e4d733ccc4d8113314e433af9b, type: 3}
   terrainAtlas: {fileID: 100100200, guid: c97b93d070e278c44be95a371f6c3bc6, type: 3}
   foxSprite: {fileID: 21300000, guid: f4778a5b151cd84468e8c0311713747b, type: 3}
-  rabbitSprite: {fileID: 21300000, guid: ccd6d5fc02e74e64b8efbb4c373fa1f4, type: 3}
+  rabbitSprite: {fileID: 21300000, guid: 105ab43c2f5048f478cac4a1ae7b3cac, type: 3}
 --- !u!1 &100012
 GameObject:
   m_ObjectHideFlags: 0

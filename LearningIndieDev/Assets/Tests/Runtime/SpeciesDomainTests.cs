@@ -1830,6 +1830,11 @@ namespace SaltyGame.Tests
             Assert.That(next.GetCell(2, 0).TerrainEnergy, Is.EqualTo(2f));
             Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(1));
             Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
+            Assert.That(metrics.BirthEvents, Has.Count.EqualTo(1));
+            Assert.That(metrics.BirthEvents[0].Species, Is.EqualTo(SpeciesIds.Carnivore));
+            Assert.That(metrics.BirthEvents[0].ChildX, Is.EqualTo(2));
+            Assert.That(metrics.BirthEvents[0].ChildY, Is.EqualTo(0));
+            Assert.That(metrics.BirthEvents[0].ParentX, Is.EqualTo(1));
             var reproduction = metrics.GetReproductionActivity(SpeciesIds.Carnivore);
             Assert.That(reproduction.Candidates, Is.EqualTo(2));
             Assert.That(reproduction.SuccessfulAttempts, Is.EqualTo(1));
@@ -3657,6 +3662,120 @@ namespace SaltyGame.Tests
             SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(7));
 
             Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+        }
+
+        [Test]
+        public void MatingPairStaysInPlaceInsteadOfWanderingAway()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            var first = new SpeciesCell(SpeciesIds.Carnivore, energy: 60);
+            var second = new SpeciesCell(SpeciesIds.Carnivore, energy: 60);
+            source.SetCell(0, 0, first);
+            source.SetCell(1, 0, second);
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 7);
+
+            Assert.That(next.GetCell(0, 0).EntityId, Is.EqualTo(first.EntityId));
+            Assert.That(next.GetCell(1, 0).EntityId, Is.EqualTo(second.EntityId));
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(next.GetCell(1, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+        }
+
+        [Test]
+        public void ReadyMatingPairTakesPriorityOverForaging()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create())
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 1.5f,
+                    movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackAmount: 2,
+                    blockPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                    blockAmount: 0,
+                    dietPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 0.03f,
+                    reproductionFoodRequired: 48,
+                    maxReproductionGroupSize: 3,
+                    startingEnergy: 121,
+                    forageBelowEnergy: 130,
+                    energyValue: 12,
+                    metabolism: 1,
+                    awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1),
+                    role: SpeciesRole.Carnivore,
+                    maximumEnergy: 240),
+            };
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 121));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 121));
+            source.SetCell(4, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 17));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(7));
+
+            Assert.That(next.GetCell(1, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(next.GetCell(2, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+        }
+
+        [Test]
+        public void MatingAttemptAppliesCooldownAndLetsThePairSplit()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create())
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 1.5f,
+                    movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackAmount: 2,
+                    blockPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                    blockAmount: 0,
+                    dietPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: SpeciesRuleDefaults.CreateCardinalPattern(),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 3,
+                    startingEnergy: 60,
+                    forageBelowEnergy: 16,
+                    energyValue: 12,
+                    metabolism: 1,
+                    awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1),
+                    role: SpeciesRole.Carnivore,
+                    maximumEnergy: 96),
+            };
+            var source = new Grid<SpeciesCell>(5, 1);
+            var first = new SpeciesCell(SpeciesIds.Carnivore, energy: 60);
+            var second = new SpeciesCell(SpeciesIds.Carnivore, energy: 60);
+            source.SetCell(1, 0, first);
+            source.SetCell(2, 0, second);
+
+            var afterAttempt = SpeciesSimulation.Step(source, rules, seed: 7);
+
+            Assert.That(afterAttempt.GetCell(1, 0).ReproductionCooldownTicksRemaining, Is.GreaterThan(0));
+            Assert.That(afterAttempt.GetCell(2, 0).ReproductionCooldownTicksRemaining, Is.GreaterThan(0));
+
+            var afterCooldownStarts = afterAttempt;
+            for (var tick = 0; tick < 3; tick++)
+            {
+                afterCooldownStarts = SpeciesSimulation.Step(afterCooldownStarts, rules, seed: 7);
+            }
+            var firstStayed = afterCooldownStarts.GetCell(1, 0).EntityId == first.EntityId;
+            var secondStayed = afterCooldownStarts.GetCell(2, 0).EntityId == second.EntityId;
+            var occupants = new List<string>();
+            for (var x = 0; x < afterCooldownStarts.Width; x++)
+            {
+                var cell = afterCooldownStarts.GetCell(x, 0);
+                if (cell.IsCreature)
+                {
+                    occupants.Add($"{x}:{cell.EntityId}:{cell.BehaviorState}:{cell.ReproductionCooldownTicksRemaining}");
+                }
+            }
+            Assert.That(firstStayed && secondStayed, Is.False, string.Join(" | ", occupants));
         }
 
         [Test]

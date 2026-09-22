@@ -3,6 +3,14 @@
 > **Status:** Active | **Dates:** 2026-09-17–2026-09-30 | **Cadence:** two weeks
 > **Kicked off:** 2026-09-17 | **Roadmap baseline:** v2.2
 
+> **Current-state note — 2026-09-21:** The kickoff and early execution snapshots
+> below are historical. The current `ProjectMain` baseline is `ab56904b`; the
+> latest retained clean run records EditMode 234/234 and no-graphics PlayMode
+> 28/30 with 0 failures and 2 expected graphics-only skips. Phase-selection UI
+> polish is committed, but its focused PlayMode validation remains pending;
+> wrapper attempts were refused while the shared Editor returned to `playing`. An
+> active Forest Edge balance pass is currently uncommitted and provisional.
+
 Sprint 3 is about making the existing Forest Edge expedition safe to play from
 start to finish, while making Mutations understandable and improving the look
 and feel of the player interface. It does not repeat Sprint 2's Mutation
@@ -20,7 +28,7 @@ work are listed below with their board locations.
 | Status | Active |
 | Goal | Prove that a player can complete and understand one six-round Forest Edge expedition (10 seconds of simulation time per round), recover from bad states, and return to the Lab through the GalapagOS route. |
 | Capacity | Josh 20h; Sim 20h; 40h planning capacity. |
-| Entry state | S2 is closed; shared branches are consolidated at `cab5838d`; CF-0 through CF-5, EX-010, target-resolution graphics acceptance, and the Windows smoke are complete. The initial S3-01 baseline had two terrain failures. Current local validation: EditMode 251/251; no-graphics PlayMode 28 passed with two expected graphics-only skips; the focused graphics-capable ForestEdge scene test passed 1/1. Trello card status still awaits Josh's review. |
+| Entry state | S2 is closed; shared branches are consolidated at `cab5838d`; CF-0 through CF-5, EX-010, target-resolution graphics acceptance, and the Windows smoke are complete. The initial S3-01 validation shown here is historical; see the current-state note above for the latest retained clean result. |
 | Primary outcome | The player can move through the Forest Edge expedition, its choices and results, and back to the Lab without stalls, errors, or becoming stranded. Mutations create visible, understandable effects on the simulation. |
 | Carry-over | Fox mating/eating telemetry only — Sim, reviewed by Josh, 2h. |
 | M2 relationship | This sprint prepares M2; species/build co-design moves to S4. |
@@ -89,8 +97,10 @@ Mutation selection, and no S3-04 Skip reward.
 ## Delivery order
 
 1. **Keep evidence honest:** Josh closed S3-01 on 2026-09-18 after integration.
-   Post-fix Unity validation remains a separate open follow-up in Loose Ends
-   P1-031; no passing result is claimed.
+   The latest retained clean run records EditMode 234/234 and no-graphics
+   PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. Focused
+   phase-decision validation and the separate Main Menu/Settings review remain
+   open under Loose Ends P1-031.
 2. **Lock the product contract:** S3-02 is complete. Its explicit deferrals do
    not block implementation; any stale Trello acceptance wording is a
    non-blocking cleanup.
@@ -107,8 +117,9 @@ Mutation selection, and no S3-04 Skip reward.
 - Caller and confirmation: Josh explicitly confirmed the plan and kickoff on
   2026-09-17.
 - Verification time: 2026-09-17 16:13 America/Toronto.
-- The seven committed work cards are in `Current Work`; `🎯 Upcoming Work`,
-  `🛠️ In Progress`, and `⛔ Blocked` are empty.
+- This kickoff board snapshot is historical. Later execution notes record
+  S3-01, S3-02, and S3-03 as complete; do not use the old `no cards in Done`
+  sentence below as the current board state.
 - S3-05 is in `🗂️ Backlog` as stretch work and is not committed.
 - Trello records owners and estimates in each card description. The card-write
   connection did not set Trello member assignments.
@@ -121,19 +132,18 @@ Mutation selection, and no S3-04 Skip reward.
   [BkJwxhkw](https://trello.com/c/BkJwxhkw). The S3-05 stretch card is
   [M1Icx6FY](https://trello.com/c/M1Icx6FY). The S3 control card is
   [zfzJkUnj](https://trello.com/c/zfzJkUnj).
-- The board currently has no cards in `✅ Done` and 35 cards in its `Archived`
-  list. This differs from the earlier S2 closeout snapshot; no unfinished S2
-  cards were in the active workflow lists, and the archived history was left
-  unchanged.
+- The kickoff snapshot recorded no cards in `✅ Done` and 35 cards in its
+  `Archived` list. That is historical board state; later execution notes below
+  record S3-01, S3-02, and S3-03 as complete.
 
 ## S3-01 execution status
 
-- **Current sprint snapshot (2026-09-18):** Josh closed S3-01 after
-  integration. Post-fix full Unity suites were run after the Island Survivor
-  retirement: EditMode 233/234 (the known non-blocking final-phase assertion)
-  and no-graphics PlayMode 28/30 (0 failures, 2 expected graphics-only skips).
-  Bare-cell resolver and snapshot regressions passed. See the current evidence
-  in [WORKING_STATE](WORKING_STATE.md) and P1-031. The Trello card is in `✅ Done`, marked
+- **Current sprint snapshot (2026-09-21):** Josh closed S3-01 after
+  integration. The latest retained clean run after the Island Survivor
+  retirement recorded EditMode 234/234 and no-graphics PlayMode 28/30 (0
+  failures, 2 expected graphics-only skips). Bare-cell resolver and snapshot
+  regressions passed. See the current evidence
+  in [WORKING_STATE](../WORKING_STATE.md) and P1-031. The Trello card is in `✅ Done`, marked
   complete, and retains this caveat in its description. S3-02 is complete as a
   product contract; see [S3-02](S3-02-expedition-contract.md). Josh confirms
   S3-03 is complete; its Trello card is in `✅ Done` and marked complete. The
@@ -188,16 +198,12 @@ Mutation selection, and no S3-04 Skip reward.
   inconclusive. The earlier 30/30 graphics run predates the population fix.
   Josh closed S3-01 and moved its Trello card to Done on 2026-09-18; the card
   description records that post-fix validation remains outstanding.
-- The terrain correction now changes mask selection for Bare cells and adds
+- The terrain correction changes mask selection for Bare cells and adds
   resolver/snapshot regression tests so Grass patches fill empty dirt cells.
-  The migration and correction are pushed, but the correction has not been
-  validated in Unity; all retained test results above predate it. The earlier
-  preflight refusal while Unity was open remains the reason no post-fix result
-  is retained.
-- Next: run the focused terrain regression and appropriate EditMode/PlayMode
-  suites when Unity is available, then record evidence under Loose Ends P1-031.
-  If a defect appears, create corrective work; do not reopen S3-01 without a
-  specific reason.
+  The focused Bare-cell regressions passed in the later clean validation. The
+  remaining P1-031 work is the phase-decision UI check and the separate
+  Settings/Collection and Main Menu review; do not reopen S3-01 without a
+  specific defect.
 
 ## S3-02 completion status
 
@@ -217,7 +223,7 @@ Mutation selection, and no S3-04 Skip reward.
 
 | Priority | Risk | Owner | Exit evidence |
 | --- | --- | --- | --- |
-| P1 | The latest full EditMode suite has one known final-phase assertion failure; Main Menu/graphics acceptance remains a separate review. | Josh | Keep the non-blocking assertion visible; resolve the Settings/Collection result gap and complete the remaining human UI review in Loose Ends P1-031. |
+| P1 | The latest retained clean suites pass, while phase-decision UI validation, the Settings/Collection result gap, and Main Menu/graphics review remain separate follow-ups. | Josh | Run the focused UI check when the shared Editor is free; then resolve the Settings/Collection gap and complete the remaining human review in Loose Ends P1-031. |
 | P0 | A player can become stranded by a broken state transition, error, or reset path. | Josh | Tests cover the main route and recovery paths back to the Lab; no known soft-lock remains. |
 | P1 | The successful-run currency measure and conversion are still being developed; optional Skip and bonus-event rewards are unsettled. | Josh + Sim | Link the approved performance measure when ready; this does not block S3-02. |
 | P1 | Flow and UI work could expand into profile saving, settlement, or production Genome actions. | Josh | S3-03 ends at a safe expedition and return route; profile saving remains in S4. |

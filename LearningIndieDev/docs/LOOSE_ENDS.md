@@ -3,10 +3,13 @@
 This is the actionable ledger for unresolved project, planning, ownership, and
 documentation gaps. Closed history stays in Git and task handoffs.
 
-## Current status — 2026-09-18
+## Current status — 2026-09-21
 
 - No P0 issue is verified. ProjectMain and origin/ProjectMain are at
-  34d16ce4, which includes the S3-03 flow and recovery closeout.
+  ab56904b, which includes the S3-03 flow/recovery closeout and the phase
+  Mutation-selection polish. The worktree is currently dirty because the
+  active Forest Edge balance pass is editing the scenario asset and its
+  working-state note.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
@@ -18,21 +21,14 @@ documentation gaps. Closed history stays in Git and task handoffs.
   choice or Skip after rounds 1–5. The contract requires three Mutation offers
   plus Skip; the current offer path still exposes two. S3-04 records this gap
   and the decisions still needed.
-- Latest post-retirement Unity results: EditMode 233/234 (one known flow-test
-  failure) and no-graphics PlayMode 28/30 (0 failures, 2 expected graphics-only
-  skips). The Bare-cell resolver and snapshot regressions passed. Graphics
-  acceptance previously passed 1/1 at both 1280x720 and 1920x1080; this cleanup
-  did not rerun graphics acceptance. Do not describe the full EditMode suite as
-  green. Results: [EditMode](../artifacts/unity-tests-20260918-132117/EditMode-results.xml),
-  [PlayMode](../artifacts/unity-tests-direct-20260918-132826/PlayMode-results.xml).
-- Josh directed that the remaining EditMode assertion not block current work:
-  current game flow does not wait for a decision after the final phase. Keep
-  its result visible and non-blocking; its fixture tick values are not the
-  player-facing run contract.
-- The [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md) still contains
-  an earlier note that completed S3-03 changes are local and need pushing. The
-  current branch and later handoffs supersede that action note; verify branch
-  state before treating it as current.
+- The latest retained clean automation run recorded EditMode 234/234 and
+  no-graphics PlayMode 28/30 (0 failures, 2 expected graphics-only skips).
+  The Bare-cell resolver and snapshot regressions passed. Graphics acceptance
+  previously passed 1/1 at both 1280x720 and 1920x1080. The phase-selection
+  polish added in ab56904b has not yet had its focused PlayMode run; the shared
+  Editor was playing when that handoff was written. Keep the retained result
+  bounded by its artifact and handoff, and do not claim a fresh UI acceptance
+  run until it is executed.
 
 ## Triage rules
 
@@ -81,22 +77,19 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-031 — Validation status and player-shell review need reconciliation
 
-- **Status:** Post-fix full Unity runs after Island Survivor removal completed.
-  EditMode has one known non-blocking failure; no-graphics PlayMode has 0
-  failures and 2 expected graphics-only skips. The focused Bare-cell regressions
-  passed. The Settings/Collection focused invocation produced no results XML,
-  and Main Menu branding/generated-art acceptance remains human review.
-- **Evidence:** [current EditMode results](../artifacts/unity-tests-20260918-132117/EditMode-results.xml),
-  [current PlayMode results](../artifacts/unity-tests-direct-20260918-132826/PlayMode-results.xml),
-  and the [Unity Pipeline handoff](handoffs/2026-09-18-1201-codex-unity-pipeline-package.md).
-  The failed assertion is
-  SimulationManagerTests.ContinuousSkipPreservesWorldHistoryAndMetricsUntilTheSameAbsoluteTick
-  ([SimulationManagerTests.cs](../Assets/Tests/Runtime/SimulationManagerTests.cs):201): expected
-  AwaitingDecision, received Complete. The user has explicitly made this
-  failure non-blocking for current progress.
-- **Next action:** Reconcile the stale push note in the [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md)
-  against the live branch/handoff. Keep the Settings/Collection result gap and
-  Main Menu human review separate from the completed S3-01 scope.
+- **Status:** The latest retained clean run is EditMode 234/234 and no-graphics
+  PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. The
+  obsolete final-phase assertion was removed during the automation closeout.
+  The Settings/Collection focused invocation produced no results XML, and Main
+  Menu branding/generated-art acceptance remains human review.
+- **Evidence:** [clean test artifacts](../artifacts/unity-tests-20260918-144956/),
+  the [Unity automation handoff](handoffs/2026-09-18-1452-sol-unity-automation-lane-integration-closeout.md),
+  and the [phase-selection polish handoff](handoffs/2026-09-18-2208-codex-upgrade-selection-polish.md).
+- **Next action:** Run the focused phase-decision PlayMode check after the
+  shared Editor is free. Two attempts after a reversible `editor_stop` were
+  refused because the Editor returned to `playing`; no new test artifact was
+  produced. Then keep the Settings/Collection result gap and Main Menu human
+  review separate from the completed S3-01 scope.
 - **Owner:** Josh + UI/repository maintainer. **Confidence:** High.
 
 ### P1-032 — Desktop route drops profile and launch context
@@ -128,6 +121,20 @@ documentation gaps. Closed history stays in Git and task handoffs.
   with the recorded deferrals. Do not choose board size or return plants to
   scope as part of this cleanup.
 - **Owner:** Josh + simulation/design owner. **Confidence:** High.
+
+### P1-034 — Forest Edge balance pass is provisional and uncommitted
+
+- **Status:** An active balance task is iterating the opening Fox/Hare ratio.
+  The worktree currently contains an uncommitted scenario change, and the
+  first Fox 6 handoff is no longer sufficient to describe the live trial while
+  the task continues evaluating alternatives.
+- **Evidence:** [Forest Edge scenario](../Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset),
+  [current balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
+  and the active `Tune fox hare forest values` task.
+- **Next action:** Finish the current one-variable comparison, choose or reject
+  the working baseline, then commit the scenario and evidence together. Keep
+  the result provisional until the next matched pass supports it.
+- **Owner:** Josh + Sim. **Confidence:** High.
 
 ### P2-005 — Raw worker artifact retention policy
 

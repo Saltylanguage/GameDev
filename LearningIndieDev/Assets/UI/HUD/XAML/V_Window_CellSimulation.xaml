@@ -75,7 +75,7 @@
                         <StackPanel Grid.Column="1"
                                     Orientation="Horizontal"
                                     HorizontalAlignment="Center">
-                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}"
+                            <Image Source="{StaticResource GalapagOS.Image.Simulation.Rabbit.64}"
                                    Width="26"
                                    Height="26"
                                    Stretch="Uniform"
@@ -146,7 +146,9 @@
                                    IsHitTestVisible="False" />
                         <game:SpeciesSimulationBoard x:Name="SimulationBoard"
                                                      HorizontalAlignment="Stretch"
-                                                     VerticalAlignment="Stretch" />
+                                                     VerticalAlignment="Stretch"
+                                                     MinimumCellWidth="32"
+                                                     MinimumCellHeight="32" />
                         <Border Margin="-6"
                                 BorderBrush="{DynamicResource Chrono_VanillaCream}"
                                 BorderThickness="2"
@@ -327,7 +329,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.32}"
+                                <Image Source="{StaticResource GalapagOS.Image.Simulation.Rabbit.64}"
                                        Width="24"
                                        Height="24"
                                        Stretch="Uniform"

@@ -9,6 +9,8 @@ namespace SaltyGame
     /// </summary>
     public sealed class VM_SimulationBoard : MonoBehaviour, INotifyPropertyChanged
     {
+        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
+
         SpeciesSimulationPreview preview;
         SimulationRunState lastRun;
         int lastTick = -1;
@@ -19,6 +21,16 @@ namespace SaltyGame
         public event PropertyChangedEventHandler PropertyChanged;
 
         public SimulationBoardSnapshot Snapshot => snapshot;
+        public int FoxHuntCueX { get; private set; }
+        public int FoxHuntCueY { get; private set; }
+        public int FoxHuntCueTick { get; private set; } = -1;
+        public int MatingCueX { get; private set; }
+        public int MatingCueY { get; private set; }
+        public int MatingCueMateX { get; private set; }
+        public int MatingCueMateY { get; private set; }
+        public int MatingCueOffspringX { get; private set; }
+        public int MatingCueOffspringY { get; private set; }
+        public int MatingCueTick { get; private set; } = -1;
         public bool HasSelection => snapshot != null && snapshot.TryGetCell(selectedX, selectedY, out _);
         public int SelectedX => selectedX;
         public int SelectedY => selectedY;
@@ -85,6 +97,73 @@ namespace SaltyGame
             if (!force && ReferenceEquals(lastRun, run) && lastTick == tick)
             {
                 return;
+            }
+
+            if (!ReferenceEquals(lastRun, run))
+            {
+                FoxHuntCueTick = -1;
+                MatingCueTick = -1;
+            }
+            else if (run != null && tick > lastTick)
+            {
+                var births = run.Metrics.BirthEvents;
+                for (var index = births.Count - 1; index >= 0; index--)
+                {
+                    var birth = births[index];
+                    if (birth.Tick <= lastTick)
+                    {
+                        break;
+                    }
+
+                    MatingCueX = birth.ParentX;
+                    MatingCueY = birth.ParentY;
+                    MatingCueMateX = birth.MateX;
+                    MatingCueMateY = birth.MateY;
+                    MatingCueOffspringX = birth.ChildX;
+                    MatingCueOffspringY = birth.ChildY;
+                    MatingCueTick = birth.Tick;
+                    break;
+                }
+
+                var transitions = run.Metrics.BehaviorTransitions;
+                for (var index = transitions.Count - 1; index >= 0; index--)
+                {
+                    var transition = transitions[index];
+                    if (transition.Tick <= lastTick)
+                    {
+                        break;
+                    }
+
+                    if (transition.Species != FoxSpeciesId
+                        || transition.CurrentState != SpeciesBehaviorState.Hunting)
+                    {
+                        continue;
+                    }
+
+                    var found = false;
+                    for (var y = 0; y < run.Cells.Height && !found; y++)
+                    {
+                        for (var x = 0; x < run.Cells.Width; x++)
+                        {
+                            var cell = run.Cells.GetCell(x, y);
+                            if (cell.IsCreature
+                                && cell.SpeciesId == FoxSpeciesId
+                                && cell.EntityId == transition.EntityId)
+                            {
+                                FoxHuntCueX = x;
+                                FoxHuntCueY = y;
+                                FoxHuntCueTick = transition.Tick;
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (found)
+                    {
+                        break;
+                    }
+                }
             }
 
             lastRun = run;

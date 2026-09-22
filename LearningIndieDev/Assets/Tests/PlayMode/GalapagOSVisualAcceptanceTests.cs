@@ -123,6 +123,68 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));
+
+            ((SpeciesSimulationPreview)preview).PauseSimulation();
+            var host = desktopRoot.GetComponent("SaltyGame.GalapagOSDesktopNoesisHost");
+            Assert.That(host, Is.Not.Null);
+            var board = host
+                .GetType()
+                .GetField("simulationBoard", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(host);
+            Assert.That(board, Is.Not.Null);
+            var setHuntCue = board.GetType().GetMethod("SetFoxHuntCue");
+            Assert.That(setHuntCue, Is.Not.Null);
+            var boardSnapshot = (SimulationBoardSnapshot)snapshot;
+            var foxId = new SpeciesId("fox");
+            setHuntCue.Invoke(board, new object[] { 0, 0, -1 });
+            yield return null;
+            yield return CaptureCamera(outputDirectory, "04-fox-hunt-before", simulationCamera, settleFrames: 1);
+            var foxFound = false;
+            for (var y = 0; y < boardSnapshot.Height && !foxFound; y++)
+            {
+                for (var x = 0; x < boardSnapshot.Width; x++)
+                {
+                    if (boardSnapshot.GetCell(x, y).SpeciesId != foxId)
+                    {
+                        continue;
+                    }
+
+                    setHuntCue.Invoke(board, new object[] { x, y, boardSnapshot.Tick + 1 });
+                    foxFound = true;
+                    break;
+                }
+            }
+
+            Assert.That(foxFound, Is.True, "Visual proof needs a Fox on the board.");
+            yield return CaptureCamera(outputDirectory, "05-fox-hunt-cue", simulationCamera, settleFrames: 1);
+
+            var setMatingCue = board.GetType().GetMethod("SetMatingCue");
+            Assert.That(setMatingCue, Is.Not.Null);
+            setMatingCue.Invoke(board, new object[] { 0, 0, 0, 0, 0, 0, -1 });
+            yield return null;
+            yield return CaptureCamera(outputDirectory, "06-mating-before", simulationCamera, settleFrames: 1);
+
+            var hareId = new SpeciesId("hare");
+            var hareFound = false;
+            for (var y = 0; y < boardSnapshot.Height && !hareFound; y++)
+            {
+                for (var x = 0; x < boardSnapshot.Width; x++)
+                {
+                    if (boardSnapshot.GetCell(x, y).SpeciesId != hareId)
+                    {
+                        continue;
+                    }
+
+                    var mateX = x + 1 < boardSnapshot.Width ? x + 1 : x - 1;
+                    var childY = y + 1 < boardSnapshot.Height ? y + 1 : y - 1;
+                    setMatingCue.Invoke(board, new object[] { x, y, mateX, y, x, childY, boardSnapshot.Tick + 2 });
+                    hareFound = true;
+                    break;
+                }
+            }
+
+            Assert.That(hareFound, Is.True, "Visual proof needs a Hare on the board.");
+            yield return CaptureCamera(outputDirectory, "07-mating-cue", simulationCamera, settleFrames: 12);
         }
 
         [UnityTest]
@@ -198,9 +260,9 @@ namespace SaltyGame.PlayModeTests
             return directory;
         }
 
-        static IEnumerator CaptureCamera(string directory, string name, Camera camera)
+        static IEnumerator CaptureCamera(string directory, string name, Camera camera, int settleFrames = 10)
         {
-            for (var frame = 0; frame < 10; frame++)
+            for (var frame = 0; frame < settleFrames; frame++)
             {
                 yield return null;
             }

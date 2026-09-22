@@ -180,12 +180,12 @@ or seed panel without a scope decision.
   original no-graphics PlayMode suite passed 31/33 with 0 failures and two
   expected graphics-only skips, using an isolated copy; no graphics pass is
   claimed for that run. After the Island Survivor test removal on 2026-09-18,
-  the current full suites report EditMode 233/234 (one known non-blocking
-  final-phase assertion) and no-graphics PlayMode 28/30 (0 failures, 2 expected
-  graphics-only skips). The earlier S3-03 run and its artifact bundle remain
-  historical evidence. The changes are still local and the handoff's next step
-  is to push them. Review that checkpoint after it is available, then avoid
-  overlapping implementation edits.
+  the latest retained clean suites report EditMode 234/234 and no-graphics
+  PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. The
+  earlier S3-03 run and its artifact bundle remain historical evidence. The
+  baseline is already pushed; the phase-selection polish handoff still needs
+  its focused PlayMode validation after the shared Editor is free. Avoid
+  overlapping implementation edits while that check is pending.
 - S3-03 closed the run-flow work; S3-04 must not silently reopen it. Keep the
   three-offer correction limited to satisfying the already-approved contract
   and add focused coverage. S3-04 owns readability, the five-Mutation bridge,

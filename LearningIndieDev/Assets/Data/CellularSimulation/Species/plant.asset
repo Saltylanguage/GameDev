@@ -43,7 +43,7 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 0
-  reproductionChance: 0.03
+  reproductionChance: 0.015
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 0
   startingEnergy: 0
