@@ -120,6 +120,7 @@ namespace SaltyGame
             Append(builder, rules.MaxReproductionGroupSize);
             Append(builder, rules.StartingEnergy);
             Append(builder, rules.ForageBelowEnergy);
+            Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
@@ -129,6 +130,7 @@ namespace SaltyGame
             Append(builder, rules.SeedDropChance);
             Append(builder, rules.EnergyValue);
             Append(builder, rules.Metabolism);
+            Append(builder, rules.EnergyLossIntervalTicks);
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);

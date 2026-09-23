@@ -1729,6 +1729,203 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void FullEnergyForagerWaitsToMateUntilFull()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 17));
+            source.SetCell(1, 0, new SpeciesCell(hare, energy: 17));
+            var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: SpeciesIds.Plant,
+                    reproductionPattern: horizontal,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    metabolism: 1,
+                    forageBelowEnergy: 6,
+                    maximumEnergy: 24,
+                    foragesUntilFull: true),
+            };
+
+            var hungryPair = SpeciesSimulation.Step(source, rules, seed: 42);
+            Assert.That(hungryPair.GetCell(2, 0).IsCreature, Is.False);
+
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 24));
+            source.SetCell(1, 0, new SpeciesCell(hare, energy: 24));
+            var fullPair = SpeciesSimulation.Step(source, rules, seed: 42);
+            Assert.That(fullPair.GetCell(2, 0).IsCreature, Is.True);
+        }
+
+        [Test]
+        public void FullEnergyForagerRefillsToItsCapAndWaitsUntilBelowThresholdToEatAgain()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 5));
+            source.SetCell(1, 0, SpeciesCell.Grass(10f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: new GridPattern(new[] { Vector2Int.right }),
+                    dietTarget: SpeciesIds.Plant,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 1,
+                    forageBelowEnergy: 6,
+                    maximumEnergy: 8,
+                    foragesUntilFull: true),
+                [SpeciesIds.Plant] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    energyValue: 2,
+                    metabolism: 0,
+                    role: SpeciesRole.Plant),
+            };
+
+            var refillStarted = SpeciesSimulation.Step(source, rules, seed: 42);
+            Assert.That(refillStarted.GetCell(0, 0).Energy, Is.EqualTo(6));
+            Assert.That(refillStarted.GetCell(1, 0).TerrainEnergy, Is.EqualTo(8f));
+
+            var reserveFilled = SpeciesSimulation.Step(refillStarted, rules, seed: 42);
+            Assert.That(reserveFilled.GetCell(0, 0).Energy, Is.EqualTo(7));
+            Assert.That(reserveFilled.GetCell(1, 0).TerrainEnergy, Is.EqualTo(6f));
+
+            var reserveSpent = SpeciesSimulation.Step(reserveFilled, rules, seed: 42);
+            Assert.That(reserveSpent.GetCell(1, 0).Energy, Is.EqualTo(6));
+            Assert.That(reserveSpent.GetCell(1, 0).TerrainEnergy, Is.EqualTo(6f));
+
+            var thresholdReached = SpeciesSimulation.Step(reserveSpent, rules, seed: 42);
+            Assert.That(thresholdReached.GetCell(0, 0).Energy, Is.EqualTo(5));
+            Assert.That(thresholdReached.GetCell(1, 0).TerrainEnergy, Is.EqualTo(6f));
+
+            var refillResumed = SpeciesSimulation.Step(thresholdReached, rules, seed: 42);
+            Assert.That(refillResumed.GetCell(0, 0).Energy, Is.EqualTo(6));
+            Assert.That(refillResumed.GetCell(1, 0).TerrainEnergy, Is.EqualTo(4f));
+        }
+
+        [Test]
+        public void MetabolismConsumesOneEnergyEveryConfiguredTenTicks()
+        {
+            var hare = new SpeciesId("hare");
+            var cells = new Grid<SpeciesCell>(1, 1);
+            cells.SetCell(0, 0, new SpeciesCell(hare, energy: 10));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    metabolism: 1,
+                    energyLossIntervalTicks: 10),
+            };
+
+            for (var tick = 0; tick < 9; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 42);
+            }
+            Assert.That(cells.GetCell(0, 0).Energy, Is.EqualTo(10));
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 42);
+            Assert.That(cells.GetCell(0, 0).Energy, Is.EqualTo(9));
+
+            for (var tick = 0; tick < 9; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 42);
+            }
+            Assert.That(cells.GetCell(0, 0).Energy, Is.EqualTo(9));
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 42);
+            Assert.That(cells.GetCell(0, 0).Energy, Is.EqualTo(8));
+        }
+
+        [Test]
+        public void FullEnergyForagerAtMaximumReserveSeeksMateWithoutEatingOnTheWay()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 24));
+            source.SetCell(1, 0, SpeciesCell.Grass(10f));
+            source.SetCell(4, 0, new SpeciesCell(hare, energy: 24));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: new GridPattern(new[] { Vector2Int.right }),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: new GridPattern(new[] { Vector2Int.right }),
+                    dietTarget: SpeciesIds.Plant,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.right }),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 2,
+                    metabolism: 1,
+                    awareness: new SpeciesAwarenessRules(visionRange: 5),
+                    forageBelowEnergy: 6,
+                    maximumEnergy: 24,
+                    foragesUntilFull: true),
+                [SpeciesIds.Plant] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    energyValue: 2,
+                    metabolism: 0,
+                    role: SpeciesRole.Plant),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(10f));
+            Assert.That(next.GetCell(4, 0).SpeciesId, Is.EqualTo(hare));
+        }
+
+        [Test]
         public void PredatorForagesOnlyAtOrBelowItsEnergyThreshold()
         {
             var source = new Grid<SpeciesCell>(2, 1);

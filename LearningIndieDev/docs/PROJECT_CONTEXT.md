@@ -132,6 +132,17 @@ uncertainty or regression risk.
   than maximize one species, master every species, or complete every data set.
   Improving one Genome may create a readable imbalance that encourages the
   player to run and develop plants, herbivores, and predators in response.
+- **Working two-stage game concept (2026-09-22; exploratory, not a finalized
+  specification):** Bevin reported a direction being discussed with Salty in
+  which the player first tries to survive as a species as long as possible to
+  earn data; eventual population collapse without intervention is expected in
+  this phase. The player then takes that data to a second game area and spends
+  it on species upgrades to build a healthy environment that cannot collapse.
+  The player beats the scenario and advances only after reaching that healthy
+  environment. The upgrade set, data award, area transition, and measurable
+  definition of a healthy, collapse-resistant environment remain open. The
+  current [product brief](PRODUCT_BRIEF.md) still defines the bounded vertical
+  slice and should not be silently treated as replaced by this concept.
 - Current progression boundary (2026-09-12): the first Genome
   identity/profile/launch/run snapshot contract and data-driven authoring
   skeleton are implemented, including per-species profile persistence,

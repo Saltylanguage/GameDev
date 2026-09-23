@@ -305,7 +305,9 @@ namespace SaltyGame
                 digestionEnergyBonus,
                 crowdingTolerance,
                 fleeMovementSpeedBonus,
-                trackingPersistenceSteps);
+                trackingPersistenceSteps,
+                rules.ForagesUntilFull,
+                rules.EnergyLossIntervalTicks);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()

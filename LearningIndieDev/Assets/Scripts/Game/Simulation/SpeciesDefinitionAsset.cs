@@ -25,12 +25,14 @@ namespace SaltyGame
         [SerializeField, Min(0)] int maxReproductionGroupSize;
         [SerializeField, Min(0)] int startingEnergy;
         [SerializeField, Min(0)] int forageBelowEnergy;
+        [SerializeField] bool foragesUntilFull;
         [SerializeField, Range(0f, 1f)] float wiltChance;
         [SerializeField, Min(0)] int crowdingEnergyPenalty;
         [SerializeField, Min(0f)] float startingFoodReserve;
         [SerializeField, Range(0f, 1f)] float seedDropChance;
         [SerializeField, Min(0)] int energyValue;
         [SerializeField] int metabolism = 1;
+        [SerializeField, Min(1)] int energyLossIntervalTicks = 1;
         [SerializeField, Min(0)] int visionRange;
         [SerializeField, Min(0)] int intelligence;
         [SerializeField, Min(0)] int maximumEnergy;
@@ -73,7 +75,9 @@ namespace SaltyGame
                 forageBelowEnergy,
                 maximumEnergy,
                 litterMinimum,
-                litterMaximum);
+                litterMaximum,
+                foragesUntilFull: foragesUntilFull,
+                energyLossIntervalTicks: energyLossIntervalTicks);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

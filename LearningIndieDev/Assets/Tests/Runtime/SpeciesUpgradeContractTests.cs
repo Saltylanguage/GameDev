@@ -54,6 +54,32 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void MaximumEnergyUpgradePreservesFullForageThreshold()
+        {
+            var rules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                forageBelowEnergy: 6,
+                maximumEnergy: 24,
+                foragesUntilFull: true);
+            var modifier = new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumEnergy, 4f);
+
+            var upgraded = SpeciesAttributeRegistry.Apply(rules, modifier);
+
+            Assert.That(upgraded.MaximumEnergy, Is.EqualTo(28));
+            Assert.That(upgraded.ForageBelowEnergy, Is.EqualTo(6));
+            Assert.That(upgraded.ForagesUntilFull, Is.True);
+        }
+
+        [Test]
         public void LegacyUpgradeSnapshotPreservesLegacyAttackEffects()
         {
             var legacy = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId);

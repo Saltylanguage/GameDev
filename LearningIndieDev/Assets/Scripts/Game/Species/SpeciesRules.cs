@@ -36,7 +36,9 @@ namespace SaltyGame
             float digestionEnergyBonus = 0f,
             int crowdingTolerance = 0,
             float fleeMovementSpeedBonus = 0f,
-            int trackingPersistenceSteps = 0)
+            int trackingPersistenceSteps = 0,
+            bool foragesUntilFull = false,
+            int energyLossIntervalTicks = 1)
         {
             if (movementSpeed < 0f)
             {
@@ -79,6 +81,14 @@ namespace SaltyGame
                     nameof(trackingPersistenceSteps),
                     trackingPersistenceSteps,
                     "Tracking persistence steps cannot be negative.");
+            }
+
+            if (energyLossIntervalTicks < 1)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(energyLossIntervalTicks),
+                    energyLossIntervalTicks,
+                    "Energy loss interval must be at least one tick.");
             }
 
             if (blockAmount < 0)
@@ -188,6 +198,8 @@ namespace SaltyGame
             CrowdingTolerance = crowdingTolerance;
             FleeMovementSpeedBonus = fleeMovementSpeedBonus;
             TrackingPersistenceSteps = trackingPersistenceSteps;
+            ForagesUntilFull = foragesUntilFull;
+            EnergyLossIntervalTicks = energyLossIntervalTicks;
         }
 
         public float MovementSpeed { get; }
@@ -211,6 +223,8 @@ namespace SaltyGame
         public int MaxReproductionGroupSize { get; }
         public int StartingEnergy { get; }
         public int ForageBelowEnergy { get; }
+        public bool ForagesUntilFull { get; }
+        public int EnergyLossIntervalTicks { get; }
         public float WiltChance { get; }
         public int CrowdingEnergyPenalty { get; }
         public int CrowdingCost => CrowdingEnergyPenalty;

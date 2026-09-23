@@ -52,12 +52,14 @@ MonoBehaviour:
   maxReproductionGroupSize: 3
   startingEnergy: 6
   forageBelowEnergy: 6
+  foragesUntilFull: 1
   wiltChance: 0
   crowdingEnergyPenalty: 2
   startingFoodReserve: 0
   seedDropChance: 0.05
   energyValue: 96
   metabolism: 1
+  energyLossIntervalTicks: 10
   visionRange: 5
   intelligence: 1
   maximumEnergy: 24
