@@ -23,13 +23,47 @@ adjacent Foxes take mating priority over foraging and do not move while mating.
 The six-phase follow-up reduced phase-3 `Mating↔Wandering` transitions from
 4.8/5.2 per run to 0.2/0.2, with the live EditMode suite passing 236/236.
 The latest follow-up adds a shared 24-tick reproduction cooldown after an
-eligible attempt, suppresses mate-seeking during that cooldown, and prevents
-full reproduction groups from staying in `Mating`. A real mating pair gets
-one shared attempt per tick so it can split cleanly afterward. The mating
-filter passed 4/4 and the full EditMode suite passed 237/237. The latest live
-five-seed continuation recorded three Fox births, but zero aggregate `Mating`
-state ticks; that telemetry/eligibility discrepancy is the next follow-up,
-not a Fox/Hare population-equality target.
+eligible attempt and prevents full reproduction groups from staying in
+`Mating`. A 2026-09-22 review found that the cooldown blocked state selection
+and vision-based mate pursuit, but a local movement fallback still pulled
+cooldown or low-energy Foxes toward each other. The current correction gates
+both mate-pursuit paths on both animals being eligible. A focused regression
+was added and passed; the full live EditMode suite now passes 240/240. Earlier
+mating coverage passed 4/4 focused and 237/237 before this correction. The
+latest live five-seed
+continuation recorded three Fox births, but zero aggregate `Mating` state
+ticks; that telemetry/eligibility discrepancy remains a follow-up, not a
+Fox/Hare population-equality target.
+
+**Hare starvation follow-up: 2026-09-22.** The grass reserve increase from
+10 to 11.5 did not change matched Hare starvation deaths, so it was not kept.
+Using the same Forest Edge scenario, seeds 1–20, 600 ticks, and the current
+Hare bite value of 5, grass reproduction `0.0015` produced 283 Hare
+starvation deaths. Grass reproduction `0.0115` produced 236, a provisional
+16.61% reduction. Keep `0.0115` as the working value; the result is a
+starvation-pressure target, not a population-matching claim. Evidence is
+recorded in the [grass-starvation candidate](../artifacts/cellular-experiment-20260922-075959/report.json)
+and [matched control](../artifacts/cellular-experiment-20260922-074858/report.json).
+
+**Fox hunt / Hare escape follow-up: 2026-09-22.** Hungry Foxes now use their
+visible Hare target for vision-based pursuit while in `Hunting`, instead of
+falling back to wandering unless prey is already adjacent. Herbivores now enter
+`Threatened` when a predator is visible, including a stationary Fox outside
+attack range, and the existing escape movement chooses an available cell that
+increases distance from that Fox. Focused EditMode checks cover visible-prey
+hunting, stationary-threat perception, stationary-Fox escape, and the existing
+Fox-pursuit fixture. This is a capability fix, not a claim that Fox and Hare
+populations should match; a matched Forest Edge run is still needed to assess
+its ecological effect.
+
+**GalapagOS simulation field fit: 2026-09-23.** The desktop starts with the
+legacy Lab placeholder collapsed. Forest Edge now uses a 36×21 grid (756 cells,
+about 10% fewer than 42×20) while retaining its authored starting animal
+counts. The board resolves square cells from its available width and height,
+then applies the user's zoom, so the default view fits the whole grid. The C#
+test-project build passed and the simulation XAML is well-formed. Visual
+PlayMode acceptance is pending because the connected Editor is in Play Mode;
+its current camera capture shows Noesis' invalid-license screen.
 
 **Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
 default across `SpeciesSimulation`, runner construction, checkpoint restore,

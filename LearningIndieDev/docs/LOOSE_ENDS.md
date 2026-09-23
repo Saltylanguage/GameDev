@@ -3,13 +3,15 @@
 This is the actionable ledger for unresolved project, planning, ownership, and
 documentation gaps. Closed history stays in Git and task handoffs.
 
-## Current status — 2026-09-21
+## Current status — 2026-09-22
 
-- No P0 issue is verified. ProjectMain and origin/ProjectMain are at
-  ab56904b, which includes the S3-03 flow/recovery closeout and the phase
-  Mutation-selection polish. The worktree is currently dirty because the
-  active Forest Edge balance pass is editing the scenario asset and its
-  working-state note.
+- No P0 issue is verified. Local `ProjectMain` is at `c6b3282c` and is one
+  commit ahead of `origin/ProjectMain`; that commit contains the Forest Edge
+  balance/UI pass and its handoff. The worktree still has four uncommitted
+  follow-on edits: the Forest Edge scenario, `SpeciesCell.cs`, its domain test,
+  and the Chrono Rabbit tile art. Preserve those edits until the active balance
+  follow-up is reconciled; do not treat the local commit as the shared sprint
+  baseline yet.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
@@ -21,14 +23,13 @@ documentation gaps. Closed history stays in Git and task handoffs.
   choice or Skip after rounds 1–5. The contract requires three Mutation offers
   plus Skip; the current offer path still exposes two. S3-04 records this gap
   and the decisions still needed.
-- The latest retained clean automation run recorded EditMode 234/234 and
-  no-graphics PlayMode 28/30 (0 failures, 2 expected graphics-only skips).
-  The Bare-cell resolver and snapshot regressions passed. Graphics acceptance
-  previously passed 1/1 at both 1280x720 and 1920x1080. The phase-selection
-  polish added in ab56904b has not yet had its focused PlayMode run; the shared
-  Editor was playing when that handoff was written. Keep the retained result
-  bounded by its artifact and handoff, and do not claim a fresh UI acceptance
-  run until it is executed.
+- The retained no-graphics acceptance baseline remains EditMode 234/234 and
+  PlayMode 28/30 (0 failures, 2 expected graphics-only skips). Newer targeted
+  evidence is narrower: the Species domain filter passed 96/96 and the latest
+  graphics-capable visual capture passed 1/1. Those results support the current
+  balance/UI edits but do not replace the broader acceptance baseline. The
+  focused phase-decision PlayMode check and the separate Main Menu/Settings
+  human review remain open.
 
 ## Triage rules
 
@@ -77,20 +78,22 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-031 — Validation status and player-shell review need reconciliation
 
-- **Status:** The latest retained clean run is EditMode 234/234 and no-graphics
-  PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. The
-  obsolete final-phase assertion was removed during the automation closeout.
-  The Settings/Collection focused invocation produced no results XML, and Main
-  Menu branding/generated-art acceptance remains human review.
+- **Status:** The retained broad acceptance baseline is still EditMode 234/234
+  and no-graphics PlayMode 28/30 with 0 failures and 2 expected graphics-only
+  skips. Since then, the Species domain filter passed 96/96 and the latest
+  graphics-capable visual capture passed 1/1, but neither is a replacement for
+  the full acceptance run. The Settings/Collection focused invocation still
+  has no results XML, and Main Menu branding/generated-art acceptance remains
+  human review.
 - **Evidence:** [clean test artifacts](../artifacts/unity-tests-20260918-144956/),
+  [latest targeted EditMode artifacts](../artifacts/unity-tests-20260921-232912/),
+  [latest visual capture artifacts](../artifacts/visual-evidence-20260921-232618/),
   the [Unity automation handoff](handoffs/2026-09-18-1452-sol-unity-automation-lane-integration-closeout.md),
   and the [phase-selection polish handoff](handoffs/2026-09-18-2208-codex-upgrade-selection-polish.md).
 - **Next action:** Run the focused phase-decision PlayMode check after the
-  shared Editor is free. Two attempts after a reversible `editor_stop` were
-  refused because the Editor returned to `playing`; no new test artifact was
-  produced. Then keep the Settings/Collection result gap and Main Menu human
-  review separate from the completed S3-01 scope.
-- **Owner:** Josh + UI/repository maintainer. **Confidence:** High.
+  shared Editor is free. Keep the Settings/Collection result gap and Main Menu
+  human review separate from the completed S3-01 scope. **Owner:** Josh +
+  UI/repository maintainer. **Confidence:** High.
 
 ### P1-032 — Desktop route drops profile and launch context
 
@@ -124,17 +127,36 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-034 — Forest Edge balance pass is provisional and uncommitted
 
-- **Status:** An active balance task is iterating the opening Fox/Hare ratio.
-  The worktree currently contains an uncommitted scenario change, and the
-  first Fox 6 handoff is no longer sufficient to describe the live trial while
-  the task continues evaluating alternatives.
+- **Status:** The committed Fox 6 pass is a provisional working comparison
+  baseline, and its follow-up fixed mutually-ready Fox mating priority,
+  separation, and the shared 24-tick reproduction cooldown. The balance task's
+  latest turn is complete, but the worktree still contains four uncommitted
+  follow-on edits, so the result is not yet the shared sprint baseline. The
+  current evidence supports the mating-state fix; it does not approve final
+  Forest Edge balance.
 - **Evidence:** [Forest Edge scenario](../Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset),
   [current balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
-  and the active `Tune fox hare forest values` task.
-- **Next action:** Finish the current one-variable comparison, choose or reject
-  the working baseline, then commit the scenario and evidence together. Keep
-  the result provisional until the next matched pass supports it.
-- **Owner:** Josh + Sim. **Confidence:** High.
+  `c6b3282c` (`Balance Forest Edge simulation and improve board feedback`), and
+  the completed `Tune fox hare forest values` task.
+- **Next action:** Reconcile the four dirty files with the committed baseline,
+  then run one matched one-variable comparison before deciding whether to keep
+  Fox 6 and committing the scenario/evidence together. **Owner:** Josh + Sim.
+  **Confidence:** High.
+
+### P1-035 — Fox mating telemetry does not yet explain eligibility
+
+- **Status:** The mating stability and cooldown regressions are covered, and
+  the live mating filter passed 4/4; however, the latest five-seed, 600-tick,
+  six-phase continuation recorded three Fox births while aggregate `Mating`
+  state telemetry was zero. This is an evidence/telemetry discrepancy, not a
+  reason to claim the reproduction behavior is fully validated.
+- **Evidence:** [balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
+  [cooldown experiment](../artifacts/cellular-experiment-20260921-232331/), and
+  the latest targeted EditMode artifact [96/96 domain tests](../artifacts/unity-tests-20260921-232912/).
+- **Next action:** Run a targeted reproduction/telemetry check that records
+  eligibility, mating state, cooldown, and birth outcome in the same run;
+  explain or correct the zero-state count before closing S3-08. **Owner:**
+  Josh + Sim. **Confidence:** High.
 
 ### P2-005 — Raw worker artifact retention policy
 

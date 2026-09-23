@@ -481,7 +481,38 @@ namespace SaltyGame
         {
             if (isResourceTerrain)
             {
-                return WithTerrainEnergy(0f);
+                if (!IsOccupied)
+                {
+                    return Empty;
+                }
+
+                var bare = TerrainDefaults.Bare;
+                return new SpeciesCell(
+                    SpeciesId,
+                    IsOccupied,
+                    Health,
+                    Energy,
+                    Age,
+                    FoodEaten,
+                    FoodReserve,
+                    IsAlpha,
+                    bare.Id,
+                    terrainEnergy: 0f,
+                    isResourceSpecies: isResourceSpecies,
+                    isResourceTerrain: false,
+                    isPassable: bare.IsPassable,
+                    movementCost: bare.MovementCost,
+                    resourceSpeciesId: default,
+                    behaviorState: BehaviorState,
+                    behaviorStateTicks: BehaviorStateTicks,
+                    entityId: EntityId,
+                    attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
+                    energyRemainder: EnergyRemainder,
+                    trackingTargetEntityId: TrackingTargetEntityId,
+                    trackingTargetX: TrackingTargetX,
+                    trackingTargetY: TrackingTargetY,
+                    trackingTicksRemaining: TrackingTicksRemaining,
+                    reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining);
             }
 
             return IsOccupied && isResourceSpecies ? WithoutEntity() : this;

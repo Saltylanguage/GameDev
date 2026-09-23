@@ -376,7 +376,7 @@ namespace SaltyGame
         float gameSpeed = 1f;
         bool muted;
         bool startMenuOpen;
-        bool labWindowOpen = true;
+        bool labWindowOpen;
         bool desktopAppOpen;
         bool volumePanelOpen;
         bool notificationsPanelOpen;

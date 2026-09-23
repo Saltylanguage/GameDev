@@ -44,6 +44,39 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator SimulationZoomCommandsChangeTheLiveBoardScale()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var camera = GameObject.Find("Prototype Camera");
+            var viewModel = camera?.GetComponent("SaltyGame.VM_SimulationShell");
+            var host = GameObject.Find("Cellular Automata Prototype")
+                ?.GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            Assert.That(viewModel, Is.Not.Null);
+            Assert.That(host, Is.Not.Null);
+
+            var viewModelType = viewModel.GetType();
+            var boardField = host.GetType().GetField("simulationBoard", BindingFlags.Instance | BindingFlags.NonPublic);
+            var board = boardField?.GetValue(host);
+            Assert.That(board, Is.Not.Null);
+
+            var zoomInCommand = viewModelType.GetProperty("ZoomInCommand")?.GetValue(viewModel);
+            zoomInCommand?.GetType().GetMethod("Execute")?.Invoke(zoomInCommand, new object[] { null });
+            yield return null;
+
+            Assert.That(viewModelType.GetProperty("BoardZoom")?.GetValue(viewModel), Is.EqualTo(1.25f));
+            Assert.That(board.GetType().GetProperty("Zoom")?.GetValue(board), Is.EqualTo(1.25f));
+
+            var resetZoomCommand = viewModelType.GetProperty("ResetZoomCommand")?.GetValue(viewModel);
+            resetZoomCommand?.GetType().GetMethod("Execute")?.Invoke(resetZoomCommand, new object[] { null });
+            yield return null;
+
+            Assert.That(viewModelType.GetProperty("BoardZoom")?.GetValue(viewModel), Is.EqualTo(1f));
+            Assert.That(board.GetType().GetProperty("Zoom")?.GetValue(board), Is.EqualTo(1f));
+        }
+
+        [UnityTest]
         public IEnumerator CellularPrototypeInitializesEveryAuthoredAnimalSprite()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)

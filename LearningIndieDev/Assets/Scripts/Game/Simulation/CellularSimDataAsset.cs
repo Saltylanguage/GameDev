@@ -112,6 +112,9 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int maximumEnergy;
             [SerializeField, Min(1)] internal int litterMinimum = 1;
             [SerializeField, Min(1)] internal int litterMaximum = 1;
+            [SerializeField]
+            [Tooltip("Optional per-state duration and movement overrides. Built-in state rules can be overridden here.")]
+            internal SpeciesBehaviorStateRule[] behaviorStateRules;
             [Header("Alpha Offspring")]
             [SerializeField, Range(0f, 1f)] internal float alphaChance;
             [SerializeField, Min(0)] internal int alphaHealthBonus;
@@ -146,7 +149,8 @@ namespace SaltyGame
                     forageBelowEnergy,
                     maximumEnergy,
                     litterMinimum,
-                    litterMaximum);
+                    litterMaximum,
+                    behaviorStateRules: behaviorStateRules);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -181,8 +185,20 @@ namespace SaltyGame
                     maximumEnergy = rules.MaximumEnergy,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,
+                    behaviorStateRules = Copy(rules.BehaviorStateRules),
                     role = rules.Role,
                 };
+            }
+
+            static SpeciesBehaviorStateRule[] Copy(IReadOnlyList<SpeciesBehaviorStateRule> source)
+            {
+                var copy = new SpeciesBehaviorStateRule[source.Count];
+                for (var index = 0; index < copy.Length; index++)
+                {
+                    copy[index] = source[index];
+                }
+
+                return copy;
             }
 
             static Vector2Int[] Copy(GridPattern pattern)

@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30a9d289a2854be9bf7f1f3c2839d814, type: 3}
   m_Name: ForestEdge
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.ScenarioDefinitionAsset
-  width: 20
-  height: 20
+  width: 36
+  height: 21
   runDurationSeconds: 20
   stepInterval: 0.2
+  runTicks: 0
   maxPopulation: 0
   minPopulation: 0
   species:

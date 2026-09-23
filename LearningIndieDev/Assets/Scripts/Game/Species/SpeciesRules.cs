@@ -1,9 +1,55 @@
 using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace SaltyGame
 {
+    [Serializable]
+    public struct SpeciesBehaviorStateRule
+    {
+        [SerializeField] SpeciesBehaviorState state;
+        [SerializeField, Min(0)]
+        [Tooltip("Minimum number of simulation ticks spent in this state. Urgent threat responses can still interrupt it.")]
+        int minimumDurationTicks;
+        [SerializeField]
+        [Tooltip("Keep the animal in place while this state is active.")]
+        bool stopsMovement;
+
+        public SpeciesBehaviorStateRule(
+            SpeciesBehaviorState state,
+            int minimumDurationTicks,
+            bool stopsMovement)
+        {
+            if (minimumDurationTicks < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(minimumDurationTicks),
+                    minimumDurationTicks,
+                    "Behavior state duration cannot be negative.");
+            }
+
+            this.state = state;
+            this.minimumDurationTicks = minimumDurationTicks;
+            this.stopsMovement = stopsMovement;
+        }
+
+        public SpeciesBehaviorState State => state;
+        public int MinimumDurationTicks => minimumDurationTicks;
+        public bool StopsMovement => stopsMovement;
+    }
+
     public sealed class SpeciesRules
     {
+        static readonly SpeciesBehaviorStateRule[] DefaultBehaviorStateRules =
+        {
+            new SpeciesBehaviorStateRule(SpeciesBehaviorState.Sleeping, 8, stopsMovement: true),
+            new SpeciesBehaviorStateRule(SpeciesBehaviorState.Attacking, 0, stopsMovement: true),
+            new SpeciesBehaviorStateRule(SpeciesBehaviorState.Mating, 3, stopsMovement: true),
+        };
+
+        readonly Dictionary<SpeciesBehaviorState, SpeciesBehaviorStateRule> behaviorStateRulesByState;
+        readonly IReadOnlyList<SpeciesBehaviorStateRule> behaviorStateRules;
+
         public SpeciesRules(
             float movementSpeed,
             GridPattern movementPattern,
@@ -36,7 +82,8 @@ namespace SaltyGame
             float digestionEnergyBonus = 0f,
             int crowdingTolerance = 0,
             float fleeMovementSpeedBonus = 0f,
-            int trackingPersistenceSteps = 0)
+            int trackingPersistenceSteps = 0,
+            IReadOnlyList<SpeciesBehaviorStateRule> behaviorStateRules = null)
         {
             if (movementSpeed < 0f)
             {
@@ -80,6 +127,35 @@ namespace SaltyGame
                     trackingPersistenceSteps,
                     "Tracking persistence steps cannot be negative.");
             }
+
+            behaviorStateRulesByState = new Dictionary<SpeciesBehaviorState, SpeciesBehaviorStateRule>();
+            foreach (var rule in DefaultBehaviorStateRules)
+            {
+                behaviorStateRulesByState.Add(rule.State, rule);
+            }
+
+            if (behaviorStateRules != null)
+            {
+                var overriddenStates = new HashSet<SpeciesBehaviorState>();
+                for (var index = 0; index < behaviorStateRules.Count; index++)
+                {
+                    var rule = behaviorStateRules[index];
+                    if (!Enum.IsDefined(typeof(SpeciesBehaviorState), rule.State)
+                        || rule.MinimumDurationTicks < 0
+                        || !overriddenStates.Add(rule.State))
+                    {
+                        throw new ArgumentException(
+                            "Behavior state rules must use unique states and non-negative durations.",
+                            nameof(behaviorStateRules));
+                    }
+
+                    behaviorStateRulesByState[rule.State] = rule;
+                }
+            }
+
+            var orderedBehaviorStateRules = new List<SpeciesBehaviorStateRule>(behaviorStateRulesByState.Values);
+            orderedBehaviorStateRules.Sort((left, right) => left.State.CompareTo(right.State));
+            this.behaviorStateRules = orderedBehaviorStateRules.AsReadOnly();
 
             if (blockAmount < 0)
             {
@@ -190,6 +266,13 @@ namespace SaltyGame
             TrackingPersistenceSteps = trackingPersistenceSteps;
         }
 
+        public bool TryGetBehaviorStateRule(
+            SpeciesBehaviorState state,
+            out SpeciesBehaviorStateRule rule)
+        {
+            return behaviorStateRulesByState.TryGetValue(state, out rule);
+        }
+
         public float MovementSpeed { get; }
         public GridPattern MovementPattern { get; }
         public GridPattern AttackPattern { get; }
@@ -228,5 +311,6 @@ namespace SaltyGame
         public int CrowdingTolerance { get; }
         public float FleeMovementSpeedBonus { get; }
         public int TrackingPersistenceSteps { get; }
+        public IReadOnlyList<SpeciesBehaviorStateRule> BehaviorStateRules => behaviorStateRules;
     }
 }

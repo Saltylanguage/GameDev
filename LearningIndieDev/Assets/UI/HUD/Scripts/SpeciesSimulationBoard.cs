@@ -42,8 +42,7 @@ namespace SaltyGame
         CroppedBitmap[] grassTerrainTiles;
         CroppedBitmap[] desertTerrainTiles;
         SpeciesId playerSpecies;
-        float minimumCellWidth = 32f;
-        float minimumCellHeight = 32f;
+        float zoom = 1f;
         int foxHuntCueTick = -1;
         int foxHuntCueX;
         int foxHuntCueY;
@@ -66,30 +65,19 @@ namespace SaltyGame
         SolidColorBrush heartFillBrush;
         SolidColorBrush sparkleBrush;
 
-        /// <summary>
-        /// Minimum square-cell width in the board's render space. Configure
-        /// this from the board XAML when the temporary grid needs larger cells.
-        /// </summary>
-        public float MinimumCellWidth
+        /// <summary>Multiplier applied after fitting the grid to the board area.</summary>
+        public float Zoom
         {
-            get => minimumCellWidth;
+            get => zoom;
             set
             {
-                minimumCellWidth = Math.Max(0f, value);
-                InvalidateVisual();
-            }
-        }
+                var next = Mathf.Clamp(value, 0.5f, 2f);
+                if (Mathf.Approximately(zoom, next))
+                {
+                    return;
+                }
 
-        /// <summary>
-        /// Minimum square-cell height in the board's render space. The larger
-        /// of the width and height minimums controls the square cell size.
-        /// </summary>
-        public float MinimumCellHeight
-        {
-            get => minimumCellHeight;
-            set
-            {
-                minimumCellHeight = Math.Max(0f, value);
+                zoom = next;
                 InvalidateVisual();
             }
         }
@@ -258,8 +246,7 @@ namespace SaltyGame
                 return;
             }
 
-            var cellSize = Math.Min(width / snapshot.Width, height / snapshot.Height);
-            cellSize = Math.Max(cellSize, Math.Max(MinimumCellWidth, MinimumCellHeight));
+            var cellSize = Math.Min(width / snapshot.Width, height / snapshot.Height) * Zoom;
             var boardWidth = cellSize * snapshot.Width;
             var boardHeight = cellSize * snapshot.Height;
             var left = (width - boardWidth) * 0.5f;

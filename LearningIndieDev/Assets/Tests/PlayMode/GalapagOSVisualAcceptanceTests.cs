@@ -35,6 +35,10 @@ namespace SaltyGame.PlayModeTests
 
             var viewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
             Assert.That(viewModel, Is.Not.Null);
+            Assert.That(
+                GetProperty(viewModel, "LabWindowVisibility").ToString(),
+                Is.EqualTo("Collapsed"),
+                "The desktop home screen must start without the legacy Lab placeholder window.");
             var openWindows = (System.Collections.IList)GetProperty(viewModel, "OpenDesktopWindows");
             Assert.That(openWindows.Count, Is.Zero, "Home capture must start before any desktop app is opened.");
 
@@ -111,15 +115,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(simulationViewModel, "RunningVisibility").ToString(), Is.EqualTo("Visible"));
             Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
             Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
-            Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(42));
-            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+            Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
+            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(21));
 
             var boardViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
             var snapshot = GetProperty(boardViewModel, "Snapshot");
             Assert.That(snapshot, Is.Not.Null);
-            Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(42));
-            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(20));
+            Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(36));
+            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(21));
 
             Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));

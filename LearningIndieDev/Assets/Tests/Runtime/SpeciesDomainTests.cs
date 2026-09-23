@@ -2416,9 +2416,10 @@ namespace SaltyGame.Tests
             Assert.That(vacatedGrass.IsPlantResource, Is.True);
             Assert.That(vacatedGrass.ResourceSpeciesId, Is.EqualTo(SpeciesIds.Plant));
             Assert.That(depletedUnderCreature.IsCreature, Is.True);
-            Assert.That(depletedUnderCreature.TerrainId, Is.EqualTo(TerrainIds.Grass));
+            Assert.That(depletedUnderCreature.TerrainId, Is.EqualTo(TerrainIds.Bare));
             Assert.That(depletedUnderCreature.TerrainEnergy, Is.EqualTo(0f));
-            Assert.That(depletedUnderCreature.WithTerrainEnergy(1f).IsPlantResource, Is.True);
+            Assert.That(depletedUnderCreature.IsPlantResource, Is.False);
+            Assert.That(depletedUnderCreature.WithTerrainEnergy(1f).IsPlantResource, Is.False);
         }
 
         [Test]
@@ -3539,6 +3540,20 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void BehaviorSystemChoosesHuntingForVisiblePrey()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 6));
+            source.SetCell(3, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 6));
+            var next = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, next, rules, new System.Random(4));
+
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Hunting));
+        }
+
+        [Test]
         public void BehaviorSystemChoosesAttackingForAdjacentPrey()
         {
             var rules = SpeciesRuleDefaults.Create();
@@ -3591,7 +3606,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void BehaviorSystemDoesNotFeelStationaryThreat()
+        public void BehaviorSystemFeelsVisibleStationaryThreat()
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(3, 1);
@@ -3609,11 +3624,11 @@ namespace SaltyGame.Tests
                 new System.Random(7),
                 previousSource: previous);
 
-            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Wandering));
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Threatened));
         }
 
         [Test]
-        public void BehaviorSystemDoesNotFeelApproachingThreatOutsideAttackRange()
+        public void BehaviorSystemFeelsVisibleThreatOutsideAttackRange()
         {
             var rules = SpeciesRuleDefaults.Create();
             var source = new Grid<SpeciesCell>(4, 1);
@@ -3647,7 +3662,25 @@ namespace SaltyGame.Tests
                 new System.Random(8),
                 previousSource: previous);
 
-            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Wandering));
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Threatened));
+        }
+
+        [Test]
+        public void HareMovesAwayFromAVisibleStationaryFox()
+        {
+            var rules = SpeciesRuleDefaults.Create();
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 6));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 6));
+
+            var next = SpeciesSimulation.Step(
+                source,
+                rules,
+                seed: 12,
+                previousSource: source.Copy());
+
+            Assert.That(next.GetCell(0, 0).SpeciesId, Is.EqualTo(SpeciesIds.Herbivore));
+            Assert.That(next.GetCell(2, 0).SpeciesId, Is.EqualTo(SpeciesIds.Carnivore));
         }
 
         [Test]
@@ -3776,6 +3809,47 @@ namespace SaltyGame.Tests
                 }
             }
             Assert.That(firstStayed && secondStayed, Is.False, string.Join(" | ", occupants));
+        }
+
+        [Test]
+        public void FoxDoesNotSeekAMateThatIsOnCooldown()
+        {
+            var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var fox = new SpeciesId("fox");
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: horizontal,
+                    attackPattern: horizontal,
+                    attackAmount: 2,
+                    blockPattern: horizontal,
+                    blockAmount: 0,
+                    dietPattern: horizontal,
+                    dietTarget: null,
+                    reproductionPattern: horizontal,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 3,
+                    startingEnergy: 150,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1),
+                    role: SpeciesRole.Carnivore,
+                    maximumEnergy: 240),
+            };
+            var source = new Grid<SpeciesCell>(5, 1);
+            source.SetCell(1, 0, new SpeciesCell(fox, energy: 150));
+            source.SetCell(
+                3,
+                0,
+                new SpeciesCell(fox, energy: 150).WithReproductionCooldown(5));
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 7);
+
+            Assert.That(next.GetCell(2, 0).IsCreature, Is.False);
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(4, 0).IsCreature, Is.True);
         }
 
         [Test]

@@ -87,6 +87,7 @@ namespace SaltyGame
                 Intelligence = rules.Awareness.Intelligence;
                 IntelligenceText = rules.Awareness.Intelligence.ToString(CultureInfo.InvariantCulture);
                 TrackingPersistenceSteps = rules.TrackingPersistenceSteps;
+                BehaviorStateRules = rules.BehaviorStateRules.ToArray();
                 ReproductionEnabled = rules.ReproductionChance > 0f;
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
@@ -144,6 +145,7 @@ namespace SaltyGame
             public int Intelligence;
             public string IntelligenceText;
             public int TrackingPersistenceSteps;
+            public SpeciesBehaviorStateRule[] BehaviorStateRules;
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
@@ -2156,7 +2158,8 @@ namespace SaltyGame
                     maximumEnergy: draft.MaximumEnergy,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
-                    trackingPersistenceSteps: draft.TrackingPersistenceSteps);
+                    trackingPersistenceSteps: draft.TrackingPersistenceSteps,
+                    behaviorStateRules: draft.BehaviorStateRules);
             }
 
             return result;
