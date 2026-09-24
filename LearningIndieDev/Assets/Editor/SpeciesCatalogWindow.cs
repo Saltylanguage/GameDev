@@ -11,7 +11,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public sealed class SpeciesCatalogWindow : EditorWindow
     {
-        const string CatalogPath = "Assets/Data/CellularSimulation/Species";
+        const string CatalogPath = "Assets/Data/ProductionData";
         const string SpeciesArtPath = "Assets/Art/Species";
         const float CardMinimumWidth = 330f;
         const float CardMaximumWidth = 430f;
