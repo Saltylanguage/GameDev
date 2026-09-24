@@ -19,6 +19,7 @@ namespace SaltyGame.EditorTools
         const float IconSize = 68f;
 
         static readonly string[] RoleFilters = { "All", "Plants", "Herbivores", "Carnivores" };
+        static readonly string[] Tabs = { "Species Catalog", "Scenario Roster" };
 
         sealed class CatalogEntry
         {
@@ -28,15 +29,24 @@ namespace SaltyGame.EditorTools
             public Texture2D Icon;
             public string IconKey;
             public bool ShowAdvanced;
+            public bool HasScenarioStart;
+            public float StartingProbability;
+            public int StartingPopulation;
         }
 
         readonly List<CatalogEntry> entries = new List<CatalogEntry>();
+        readonly List<ScenarioDefinitionAsset> scenarios = new List<ScenarioDefinitionAsset>();
+        readonly List<CatalogEntry> scenarioSpeciesEntries = new List<CatalogEntry>();
+        readonly Dictionary<string, CatalogEntry> scenarioOnlyEntries = new Dictionary<string, CatalogEntry>(StringComparer.Ordinal);
         readonly List<string> speciesArtPaths = new List<string>();
         readonly Dictionary<string, int> idCounts = new Dictionary<string, int>(StringComparer.Ordinal);
 
         Vector2 scrollPosition;
         string searchText = string.Empty;
+        string selectedScenarioPath = string.Empty;
+        int selectedTab;
         int roleFilter;
+        int missingScenarioSpeciesCount;
 
         GUIStyle titleStyle;
         GUIStyle subtitleStyle;
@@ -77,9 +87,21 @@ namespace SaltyGame.EditorTools
             EnsureStyles();
             UpdateIdCounts();
             DrawCatalogHeader();
-            DrawToolbar();
-            DrawSummary();
-            DrawCatalogCards();
+            selectedTab = GUILayout.Toolbar(selectedTab, Tabs, EditorStyles.toolbarButton, GUILayout.Height(24f));
+            EditorGUILayout.Space(4f);
+
+            if (selectedTab == 0)
+            {
+                DrawToolbar();
+                DrawSummary();
+                DrawCatalogCards();
+            }
+            else
+            {
+                DrawScenarioToolbar();
+                DrawScenarioSummary();
+                DrawScenarioCards();
+            }
         }
 
         void DrawCatalogHeader()
@@ -125,6 +147,157 @@ namespace SaltyGame.EditorTools
                     AssetDatabase.SaveAssets();
                 }
             }
+        }
+
+        void DrawScenarioToolbar()
+        {
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.toolbar))
+            {
+                var scenarioNames = new string[Mathf.Max(1, scenarios.Count)];
+                if (scenarios.Count == 0)
+                {
+                    scenarioNames[0] = "No production scenarios";
+                }
+                else
+                {
+                    for (var i = 0; i < scenarios.Count; i++)
+                    {
+                        scenarioNames[i] = scenarios[i].name;
+                    }
+                }
+
+                using (new EditorGUI.DisabledScope(scenarios.Count == 0))
+                {
+                    var selectedIndex = GetSelectedScenarioIndex();
+                    var nextIndex = EditorGUILayout.Popup(
+                        "Scenario",
+                        selectedIndex,
+                        scenarioNames,
+                        EditorStyles.toolbarPopup,
+                        GUILayout.MinWidth(220f));
+                    if (nextIndex != selectedIndex && nextIndex >= 0 && nextIndex < scenarios.Count)
+                    {
+                        selectedScenarioPath = AssetDatabase.GetAssetPath(scenarios[nextIndex]);
+                        RefreshSelectedScenarioEntries();
+                    }
+                }
+
+                GUILayout.FlexibleSpace();
+                if (GUILayout.Button("Collapse", EditorStyles.toolbarButton, GUILayout.Width(62f)))
+                {
+                    SetScenarioAdvancedVisibility(false);
+                }
+
+                if (GUILayout.Button("Refresh", EditorStyles.toolbarButton, GUILayout.Width(58f)))
+                {
+                    RefreshCatalog();
+                }
+
+                if (GUILayout.Button("Save Assets", EditorStyles.toolbarButton, GUILayout.Width(78f)))
+                {
+                    AssetDatabase.SaveAssets();
+                }
+            }
+        }
+
+        void DrawScenarioSummary()
+        {
+            var scenario = GetSelectedScenario();
+            if (scenario == null)
+            {
+                EditorGUILayout.HelpBox(
+                    $"No ScenarioDefinitionAsset files were found under {CatalogPath}.",
+                    MessageType.Info);
+                return;
+            }
+
+            var serializedScenario = new SerializedObject(scenario);
+            serializedScenario.UpdateIfRequiredOrScript();
+            var width = Find(serializedScenario, "width");
+            var height = Find(serializedScenario, "height");
+            var runTicks = Find(serializedScenario, "runTicks");
+            var duration = Find(serializedScenario, "runDurationSeconds");
+            var stepInterval = Find(serializedScenario, "stepInterval");
+
+            using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+            {
+                GUILayout.Label(scenario.name, EditorStyles.boldLabel, GUILayout.Width(130f));
+                GUILayout.Label(
+                    $"Grid  {GetIntValue(width)} × {GetIntValue(height)}",
+                    GUILayout.Width(112f));
+                var seconds = runTicks != null && runTicks.intValue > 0 && stepInterval != null
+                    ? runTicks.intValue * stepInterval.floatValue
+                    : GetFloatValue(duration);
+                GUILayout.Label($"Run  {seconds:0.##}s", GUILayout.Width(78f));
+                GUILayout.Label($"{scenarioSpeciesEntries.Count} species", GUILayout.Width(90f));
+                GUILayout.FlexibleSpace();
+
+                if (missingScenarioSpeciesCount > 0)
+                {
+                    GUILayout.Label(
+                        $"{missingScenarioSpeciesCount} missing reference(s)",
+                        EditorStyles.miniBoldLabel);
+                }
+                else
+                {
+                    GUILayout.Label(AssetDatabase.GetAssetPath(scenario), pathStyle);
+                }
+            }
+        }
+
+        void DrawScenarioCards()
+        {
+            if (GetSelectedScenario() == null)
+            {
+                return;
+            }
+
+            if (scenarioSpeciesEntries.Count == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    missingScenarioSpeciesCount > 0
+                        ? "This scenario has no valid species references."
+                        : "This scenario does not contain any species.",
+                    MessageType.Warning);
+                return;
+            }
+
+            var availableWidth = Mathf.Max(CardMinimumWidth, position.width - 30f);
+            var columnCount = Mathf.Max(1, Mathf.FloorToInt((availableWidth + CardGap) / (CardMinimumWidth + CardGap)));
+            var cardWidth = Mathf.Min(
+                CardMaximumWidth,
+                (availableWidth - CardGap * (columnCount - 1)) / columnCount);
+
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition);
+            for (var rowStart = 0; rowStart < scenarioSpeciesEntries.Count; rowStart += columnCount)
+            {
+                using (new EditorGUILayout.HorizontalScope())
+                {
+                    for (var column = 0; column < columnCount; column++)
+                    {
+                        var entryIndex = rowStart + column;
+                        if (entryIndex < scenarioSpeciesEntries.Count)
+                        {
+                            DrawSpeciesCard(scenarioSpeciesEntries[entryIndex], cardWidth, showScenarioStart: true);
+                        }
+                        else
+                        {
+                            GUILayout.Space(cardWidth);
+                        }
+
+                        if (column < columnCount - 1)
+                        {
+                            GUILayout.Space(CardGap);
+                        }
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+
+                GUILayout.Space(CardGap);
+            }
+
+            EditorGUILayout.EndScrollView();
         }
 
         void DrawSummary()
@@ -238,7 +411,7 @@ namespace SaltyGame.EditorTools
             EditorGUILayout.EndScrollView();
         }
 
-        void DrawSpeciesCard(CatalogEntry entry, float cardWidth)
+        void DrawSpeciesCard(CatalogEntry entry, float cardWidth, bool showScenarioStart = false)
         {
             if (entry.Asset == null || entry.SerializedObject == null)
             {
@@ -252,6 +425,16 @@ namespace SaltyGame.EditorTools
             using (new EditorGUILayout.VerticalScope(cardStyle, GUILayout.Width(cardWidth)))
             {
                 DrawCardHeader(entry, id);
+                if (showScenarioStart && entry.HasScenarioStart)
+                {
+                    using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                    {
+                        GUILayout.Label("Scenario start", EditorStyles.miniBoldLabel, GUILayout.Width(82f));
+                        GUILayout.Label($"Chance  {entry.StartingProbability:P0}", GUILayout.Width(90f));
+                        GUILayout.Label($"Population  {entry.StartingPopulation}");
+                    }
+                }
+
                 DrawValidation(entry, id);
 
                 DrawSectionLabel("AT A GLANCE");
@@ -549,8 +732,15 @@ namespace SaltyGame.EditorTools
             {
                 advancedByPath[entry.Path] = entry.ShowAdvanced;
             }
+            foreach (var entry in scenarioOnlyEntries.Values)
+            {
+                advancedByPath[entry.Path] = entry.ShowAdvanced;
+            }
 
             entries.Clear();
+            scenarios.Clear();
+            scenarioSpeciesEntries.Clear();
+            scenarioOnlyEntries.Clear();
             CacheSpeciesArtPaths();
 
             var guids = AssetDatabase.FindAssets("t:SpeciesDefinitionAsset", new[] { CatalogPath });
@@ -577,7 +767,146 @@ namespace SaltyGame.EditorTools
             }
 
             entries.Sort(CompareEntries);
+
+            var scenarioGuids = AssetDatabase.FindAssets("t:ScenarioDefinitionAsset", new[] { CatalogPath });
+            foreach (var guid in scenarioGuids)
+            {
+                var path = AssetDatabase.GUIDToAssetPath(guid);
+                var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(path);
+                if (scenario != null)
+                {
+                    scenarios.Add(scenario);
+                }
+            }
+
+            scenarios.Sort((left, right) =>
+            {
+                var nameComparison = string.Compare(left.name, right.name, StringComparison.OrdinalIgnoreCase);
+                return nameComparison != 0
+                    ? nameComparison
+                    : string.Compare(
+                        AssetDatabase.GetAssetPath(left),
+                        AssetDatabase.GetAssetPath(right),
+                        StringComparison.Ordinal);
+            });
+
+            var selectedScenarioExists = false;
+            foreach (var scenario in scenarios)
+            {
+                if (string.Equals(AssetDatabase.GetAssetPath(scenario), selectedScenarioPath, StringComparison.Ordinal))
+                {
+                    selectedScenarioExists = true;
+                    break;
+                }
+            }
+
+            if (!selectedScenarioExists)
+            {
+                selectedScenarioPath = scenarios.Count == 0
+                    ? string.Empty
+                    : AssetDatabase.GetAssetPath(scenarios[0]);
+            }
+
+            RefreshSelectedScenarioEntries(advancedByPath);
             Repaint();
+        }
+
+        void RefreshSelectedScenarioEntries(Dictionary<string, bool> advancedByPath = null)
+        {
+            if (advancedByPath == null)
+            {
+                advancedByPath = new Dictionary<string, bool>(StringComparer.Ordinal);
+                foreach (var entry in scenarioOnlyEntries.Values)
+                {
+                    advancedByPath[entry.Path] = entry.ShowAdvanced;
+                }
+            }
+
+            scenarioSpeciesEntries.Clear();
+            missingScenarioSpeciesCount = 0;
+            var scenario = GetSelectedScenario();
+            if (scenario == null || scenario.Species == null)
+            {
+                return;
+            }
+
+            foreach (var speciesEntry in scenario.Species)
+            {
+                var asset = speciesEntry == null ? null : speciesEntry.Definition;
+                if (asset == null)
+                {
+                    missingScenarioSpeciesCount++;
+                    continue;
+                }
+
+                var path = AssetDatabase.GetAssetPath(asset);
+                var catalogEntry = FindCatalogEntry(asset, path);
+                if (catalogEntry == null)
+                {
+                    catalogEntry = new CatalogEntry
+                    {
+                        Path = path,
+                        Asset = asset,
+                        SerializedObject = new SerializedObject(asset),
+                        ShowAdvanced = !string.IsNullOrEmpty(path)
+                            && advancedByPath.TryGetValue(path, out var wasExpanded)
+                            && wasExpanded,
+                    };
+
+                    TryGetId(catalogEntry, out var id);
+                    UpdateEntryIcon(catalogEntry, id);
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        scenarioOnlyEntries[path] = catalogEntry;
+                    }
+                }
+
+                catalogEntry.HasScenarioStart = true;
+                catalogEntry.StartingProbability = speciesEntry.StartingProbability;
+                catalogEntry.StartingPopulation = speciesEntry.StartingPopulation;
+                scenarioSpeciesEntries.Add(catalogEntry);
+            }
+        }
+
+        CatalogEntry FindCatalogEntry(SpeciesDefinitionAsset asset, string path)
+        {
+            foreach (var entry in entries)
+            {
+                if (entry.Asset == asset)
+                {
+                    return entry;
+                }
+            }
+
+            return !string.IsNullOrEmpty(path) && scenarioOnlyEntries.TryGetValue(path, out var scenarioEntry)
+                ? scenarioEntry
+                : null;
+        }
+
+        ScenarioDefinitionAsset GetSelectedScenario()
+        {
+            foreach (var scenario in scenarios)
+            {
+                if (string.Equals(AssetDatabase.GetAssetPath(scenario), selectedScenarioPath, StringComparison.Ordinal))
+                {
+                    return scenario;
+                }
+            }
+
+            return null;
+        }
+
+        int GetSelectedScenarioIndex()
+        {
+            for (var i = 0; i < scenarios.Count; i++)
+            {
+                if (string.Equals(AssetDatabase.GetAssetPath(scenarios[i]), selectedScenarioPath, StringComparison.Ordinal))
+                {
+                    return i;
+                }
+            }
+
+            return 0;
         }
 
         void CacheSpeciesArtPaths()
@@ -717,9 +1046,25 @@ namespace SaltyGame.EditorTools
             }
         }
 
+        void SetScenarioAdvancedVisibility(bool visible)
+        {
+            foreach (var entry in scenarioSpeciesEntries)
+            {
+                entry.ShowAdvanced = visible;
+            }
+        }
+
         void HandleUndoRedo()
         {
             foreach (var entry in entries)
+            {
+                if (TryGetId(entry, out var id) && !string.Equals(id, entry.IconKey, StringComparison.Ordinal))
+                {
+                    UpdateEntryIcon(entry, id);
+                }
+            }
+
+            foreach (var entry in scenarioOnlyEntries.Values)
             {
                 if (TryGetId(entry, out var id) && !string.Equals(id, entry.IconKey, StringComparison.Ordinal))
                 {
@@ -800,6 +1145,16 @@ namespace SaltyGame.EditorTools
         {
             var property = Find(serializedObject, propertyName);
             return property != null && property.isArray ? property.arraySize : 0;
+        }
+
+        static int GetIntValue(SerializedProperty property)
+        {
+            return property == null ? 0 : property.intValue;
+        }
+
+        static float GetFloatValue(SerializedProperty property)
+        {
+            return property == null ? 0f : property.floatValue;
         }
 
         static string GetDisplayName(string id, string fallback)
