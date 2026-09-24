@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ForestEdge
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.ScenarioDefinitionAsset
   width: 36
-  height: 21
+  height: 20
   runDurationSeconds: 20
   stepInterval: 0.2
   runTicks: 0

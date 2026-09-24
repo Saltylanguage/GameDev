@@ -113,16 +113,16 @@ documentation gaps. Closed history stays in Git and task handoffs.
   Mutation offers or Skip after rounds 1–5. The current player offer path
   returns two. The S3-04 plan says the owner must decide whether the smallest
   offer correction belongs there or should be tracked separately. The completed
-  S3-02 Trello card may still require deferred board-size and playable-plant
-  decisions.
+  S3-02 Trello card may still need wording updated for the 36×20 Forest Edge
+  default and the still-deferred playable-plant decision.
 - **Evidence:** [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md),
   [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md), and Trello card c3i7HO09.
-  The 42x20 asset versus 36x20 generator discrepancy remains explicitly
-  deferred in the GDD/TDD templates.
+  The production scenario now defaults to 36×20. The editor generator creates
+  a separate legacy scenario, so its 36×20 setting was not the gameplay source.
 - **Next action:** Assign the three-offer correction without reopening S3-02.
-  If the completed Trello card still has the old acceptance text, replace it
-  with the recorded deferrals. Do not choose board size or return plants to
-  scope as part of this cleanup.
+  If the completed Trello card still has old acceptance text, clarify the
+  36×20 default and keep playable plants deferred. The current player offer
+  path still needs its separate three-offer correction.
 - **Owner:** Josh + simulation/design owner. **Confidence:** High.
 
 ### P1-034 — Forest Edge balance pass is provisional and uncommitted

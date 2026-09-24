@@ -105,13 +105,23 @@ populations should match; a matched Forest Edge run is still needed to assess
 its ecological effect.
 
 **GalapagOS simulation field fit: 2026-09-23.** The desktop starts with the
-legacy Lab placeholder collapsed. Forest Edge now uses a 36×21 grid (756 cells,
-about 10% fewer than 42×20) while retaining its authored starting animal
-counts. The board resolves square cells from its available width and height,
-then applies the user's zoom, so the default view fits the whole grid. The C#
-test-project build passed and the simulation XAML is well-formed. Visual
-PlayMode acceptance is pending because the connected Editor is in Play Mode;
-its current camera capture shows Noesis' invalid-license screen.
+legacy Lab placeholder collapsed. Forest Edge's production scenario now uses
+36×20 (720 cells, about 14.3% fewer than 42×20) while retaining its authored
+starting animal counts. The production asset is the gameplay source of truth;
+the editor generator writes to the separate legacy `CellularSimulation`
+scenario path, so changing that generated asset did not change gameplay. The
+board resolves square cells from its available width and height, then applies
+the user's zoom, so the default view fits the whole grid. The existing visual
+acceptance assertions now expect 36×20. Unity PlayMode acceptance was not
+rerun for this change.
+
+**Saved-grid override follow-up: 2026-09-24.** The connected Editor had a
+64×64 v3 saved default, which was overriding the Forest Edge production asset
+and matching the square board in the screenshot. Startup now migrates older
+saved settings once, preserving their other values and replacing only width
+and height with the selected scenario's authored dimensions. Newer saved
+defaults still retain custom dimensions. The connected Editor is not in Play
+Mode, so the visual result awaits the next runtime launch.
 
 **Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
 default across `SpeciesSimulation`, runner construction, checkpoint restore,
@@ -213,8 +223,8 @@ separate Settings/Collection and Main Menu reviews remain open in Loose Ends
 P1-031. Trello S3-01 is in Done with its validation caveat recorded. S3-02's
 contract is complete, and Josh has marked its Trello card complete. S3-03 is
 complete and Unity-validated with results retained in its handoff. The S3-02
-card's acceptance wording may still need a cleanup pass to remove the deferred
-board-size and playable-plant decisions.
+card's acceptance wording may still need a cleanup pass to reflect the 36×20
+Forest Edge default and the still-deferred playable-plant decision.
 S3-05 duration/memory measurement remains uncommitted stretch work
 and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
 loop with tested recovery and return to the Lab, meaningful and understandable
@@ -277,9 +287,9 @@ rounds 1–5 each lead to a three-Mutation choice or Skip; round 6 ends in resul
 with no upgrade. Victory is survival to the end of round 6; rewards use a
 performance measure currently in development (not simply final population).
 Extra bonus-event rewards are possible but undecided. Extinction ends
-immediately as a failed run with no rewards. Board size is deferred, and
-playable plants (including Fern) are on hold. Older engineering and research
-records still contain ten-phase/200-tick values; those are historical
+immediately as a failed run with no rewards. The Forest Edge production default
+is 36×20; playable plants (including Fern) remain on hold. Older engineering
+and research records still contain ten-phase/200-tick values; those are historical
 configurations, not the current player contract. The upgrade direction now
 separates temporary per-run Species-Simulation **Mutations** from permanent
 **Genome Upgrades**, bought with currency in the Gene Lab application and

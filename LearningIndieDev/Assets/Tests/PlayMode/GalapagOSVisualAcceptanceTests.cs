@@ -116,14 +116,14 @@ namespace SaltyGame.PlayModeTests
             Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
             Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
             Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
-            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(21));
+            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
 
             var boardViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
             var snapshot = GetProperty(boardViewModel, "Snapshot");
             Assert.That(snapshot, Is.Not.Null);
             Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(36));
-            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(21));
+            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(20));
 
             Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));

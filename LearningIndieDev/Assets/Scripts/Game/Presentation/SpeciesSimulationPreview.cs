@@ -279,7 +279,8 @@ namespace SaltyGame
         string phaseRewardMessage;
         bool savedSettingsLoaded;
 
-        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
+        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
+        const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public SpeciesProgression Progression => progression;
@@ -1789,7 +1790,10 @@ namespace SaltyGame
 
         void LoadSavedSettings()
         {
-            if (!PlayerPrefs.HasKey(DefaultSettingsKey))
+            var settingsKey = PlayerPrefs.HasKey(DefaultSettingsKey)
+                ? DefaultSettingsKey
+                : PreviousDefaultSettingsKey;
+            if (!PlayerPrefs.HasKey(settingsKey))
             {
                 return;
             }
@@ -1797,16 +1801,25 @@ namespace SaltyGame
             SavedSettings saved;
             try
             {
-                saved = JsonUtility.FromJson<SavedSettings>(PlayerPrefs.GetString(DefaultSettingsKey));
+                saved = JsonUtility.FromJson<SavedSettings>(PlayerPrefs.GetString(settingsKey));
             }
             catch (Exception)
             {
-                PlayerPrefs.DeleteKey(DefaultSettingsKey);
+                PlayerPrefs.DeleteKey(settingsKey);
                 return;
             }
             if (saved == null)
             {
                 return;
+            }
+
+            if (settingsKey == PreviousDefaultSettingsKey && SelectedScenario != null)
+            {
+                var authoredData = SelectedScenario.CreateRuntimeData();
+                saved.width = authoredData.Width;
+                saved.height = authoredData.Height;
+                PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
+                PlayerPrefs.Save();
             }
 
             width = Mathf.Max(1, saved.width);
