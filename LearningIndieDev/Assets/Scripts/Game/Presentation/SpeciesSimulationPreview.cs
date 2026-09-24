@@ -77,6 +77,8 @@ namespace SaltyGame
                 LitterMaximum = rules.LitterMaximum;
                 LitterMaximumText = rules.LitterMaximum.ToString(CultureInfo.InvariantCulture);
                 ForageBelowEnergy = rules.ForageBelowEnergy;
+                ForagesUntilFull = rules.ForagesUntilFull;
+                EnergyLossIntervalTicks = rules.EnergyLossIntervalTicks;
                 ForageBelowEnergyText = rules.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
                 EnergyValue = rules.EnergyValue;
                 EnergyValueText = rules.EnergyValue.ToString(CultureInfo.InvariantCulture);
@@ -87,6 +89,7 @@ namespace SaltyGame
                 Intelligence = rules.Awareness.Intelligence;
                 IntelligenceText = rules.Awareness.Intelligence.ToString(CultureInfo.InvariantCulture);
                 TrackingPersistenceSteps = rules.TrackingPersistenceSteps;
+                BehaviorStateRules = rules.BehaviorStateRules.ToArray();
                 ReproductionEnabled = rules.ReproductionChance > 0f;
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
@@ -135,6 +138,8 @@ namespace SaltyGame
             public string LitterMaximumText;
             public int ForageBelowEnergy;
             public string ForageBelowEnergyText;
+            public bool ForagesUntilFull;
+            public int EnergyLossIntervalTicks = 1;
             public int EnergyValue;
             public string EnergyValueText;
             public int Metabolism;
@@ -144,6 +149,7 @@ namespace SaltyGame
             public int Intelligence;
             public string IntelligenceText;
             public int TrackingPersistenceSteps;
+            public SpeciesBehaviorStateRule[] BehaviorStateRules;
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
@@ -2156,7 +2162,10 @@ namespace SaltyGame
                     maximumEnergy: draft.MaximumEnergy,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
-                    trackingPersistenceSteps: draft.TrackingPersistenceSteps);
+                    trackingPersistenceSteps: draft.TrackingPersistenceSteps,
+                    behaviorStateRules: draft.BehaviorStateRules,
+                    foragesUntilFull: draft.ForagesUntilFull,
+                    energyLossIntervalTicks: Math.Max(1, draft.EnergyLossIntervalTicks));
             }
 
             return result;

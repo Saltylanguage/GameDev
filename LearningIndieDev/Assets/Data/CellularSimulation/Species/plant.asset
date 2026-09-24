@@ -43,7 +43,7 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 0
-  reproductionChance: 0.015
+  reproductionChance: 0.0115
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 0
   startingEnergy: 0
@@ -52,10 +52,13 @@ MonoBehaviour:
   crowdingEnergyPenalty: 0
   startingFoodReserve: 10
   seedDropChance: 0
-  energyValue: 2
+  energyValue: 5
   metabolism: 0
   visionRange: 0
   intelligence: 0
+  maximumEnergy: 0
+  litterMinimum: 1
+  litterMaximum: 1
   alphaChance: 0
   alphaHealthBonus: 0
   alphaEnergyBonus: 0

@@ -100,18 +100,23 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int maxReproductionGroupSize;
             [SerializeField, Min(0)] internal int startingEnergy;
             [SerializeField, Min(0)] internal int forageBelowEnergy;
+            [SerializeField] internal bool foragesUntilFull;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
             [SerializeField, Min(0)] internal int crowdingEnergyPenalty;
             [SerializeField, Min(0f)] internal float startingFoodReserve;
             [SerializeField, Range(0f, 1f)] internal float seedDropChance;
             [SerializeField, Min(0)] internal int energyValue;
             [SerializeField] internal int metabolism = 1;
+            [SerializeField, Min(1)] internal int energyLossIntervalTicks = 1;
             [Header("Awareness")]
             [SerializeField, Min(0)] internal int visionRange;
             [SerializeField, Min(0)] internal int intelligence;
             [SerializeField, Min(0)] internal int maximumEnergy;
             [SerializeField, Min(1)] internal int litterMinimum = 1;
             [SerializeField, Min(1)] internal int litterMaximum = 1;
+            [SerializeField]
+            [Tooltip("Optional per-state duration and movement overrides. Built-in state rules can be overridden here.")]
+            internal SpeciesBehaviorStateRule[] behaviorStateRules;
             [Header("Alpha Offspring")]
             [SerializeField, Range(0f, 1f)] internal float alphaChance;
             [SerializeField, Min(0)] internal int alphaHealthBonus;
@@ -146,7 +151,10 @@ namespace SaltyGame
                     forageBelowEnergy,
                     maximumEnergy,
                     litterMinimum,
-                    litterMaximum);
+                    litterMaximum,
+                    behaviorStateRules: behaviorStateRules,
+                    foragesUntilFull: foragesUntilFull,
+                    energyLossIntervalTicks: energyLossIntervalTicks);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -170,19 +178,33 @@ namespace SaltyGame
                     maxReproductionGroupSize = rules.MaxReproductionGroupSize,
                     startingEnergy = rules.StartingEnergy,
                     forageBelowEnergy = rules.ForageBelowEnergy,
+                    foragesUntilFull = rules.ForagesUntilFull,
                     wiltChance = rules.WiltChance,
                     crowdingEnergyPenalty = rules.CrowdingEnergyPenalty,
                     startingFoodReserve = rules.StartingFoodReserve,
                     seedDropChance = rules.SeedDropChance,
                     energyValue = rules.EnergyValue,
                     metabolism = rules.Metabolism,
+                    energyLossIntervalTicks = rules.EnergyLossIntervalTicks,
                     visionRange = rules.Awareness.VisionRange,
                     intelligence = rules.Awareness.Intelligence,
                     maximumEnergy = rules.MaximumEnergy,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,
+                    behaviorStateRules = Copy(rules.BehaviorStateRules),
                     role = rules.Role,
                 };
+            }
+
+            static SpeciesBehaviorStateRule[] Copy(IReadOnlyList<SpeciesBehaviorStateRule> source)
+            {
+                var copy = new SpeciesBehaviorStateRule[source.Count];
+                for (var index = 0; index < copy.Length; index++)
+                {
+                    copy[index] = source[index];
+                }
+
+                return copy;
             }
 
             static Vector2Int[] Copy(GridPattern pattern)

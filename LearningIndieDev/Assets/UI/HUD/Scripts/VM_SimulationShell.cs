@@ -29,6 +29,10 @@ namespace SaltyGame
 
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
+        const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
+        const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;
+        const float BoardZoomStep = 0.25f;
+
         static readonly string[] AnimalSpriteNames =
         {
             "Animals_01_Wolf",
@@ -113,6 +117,7 @@ namespace SaltyGame
         bool canPause;
         bool canResume;
         bool canEnd;
+        float boardZoom = 1f;
         bool canContinueWithoutUpgrade;
         bool canPurchaseRewardOption1;
         bool canPurchaseRewardOption2;
@@ -160,6 +165,9 @@ namespace SaltyGame
         public DelegateCommand StartCommand { get; private set; }
         public DelegateCommand PauseCommand { get; private set; }
         public DelegateCommand ResumeCommand { get; private set; }
+        public DelegateCommand ZoomOutCommand { get; private set; }
+        public DelegateCommand ResetZoomCommand { get; private set; }
+        public DelegateCommand ZoomInCommand { get; private set; }
         public DelegateCommand EndCommand { get; private set; }
         public DelegateCommand ConfirmEndCommand { get; private set; }
         public DelegateCommand CancelEndConfirmationCommand { get; private set; }
@@ -194,6 +202,10 @@ namespace SaltyGame
         public string HerbivorePopulationText => herbivorePopulationText;
         public string CarnivorePopulationText => carnivorePopulationText;
         public SimulationTimelineItem[] PhaseTimelineItems => phaseTimelineItems;
+        public float BoardZoom => boardZoom;
+        public string BoardZoomText => $"{Mathf.RoundToInt(boardZoom * 100f)}%";
+        public bool CanZoomOut => boardZoom > MinimumBoardZoom;
+        public bool CanZoomIn => boardZoom < MaximumBoardZoom;
         public string SettingsMessage => settingsMessage;
         public string GridWidthText
         {
@@ -844,6 +856,9 @@ namespace SaltyGame
             StartCommand = new DelegateCommand(StartSimulation);
             PauseCommand = new DelegateCommand(() => preview?.PauseSimulation());
             ResumeCommand = new DelegateCommand(() => preview?.ResumeSimulation());
+            ZoomOutCommand = new DelegateCommand(() => SetBoardZoom(boardZoom - BoardZoomStep), () => CanZoomOut);
+            ResetZoomCommand = new DelegateCommand(() => SetBoardZoom(1f));
+            ZoomInCommand = new DelegateCommand(() => SetBoardZoom(boardZoom + BoardZoomStep), () => CanZoomIn);
             EndCommand = new DelegateCommand(ShowEndConfirmation, CanEndCurrentRun);
             ConfirmEndCommand = new DelegateCommand(ConfirmEnd, CanEndCurrentRun);
             CancelEndConfirmationCommand = new DelegateCommand(CancelEndConfirmation);
@@ -862,6 +877,23 @@ namespace SaltyGame
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
             ReturnToLabCommand = new DelegateCommand(ReturnToLab, () => CanReturnToLab);
             CloseWindowCommand = new DelegateCommand(CloseWindow, () => CanCloseWindow);
+        }
+
+        internal void SetBoardZoom(float value)
+        {
+            var next = Mathf.Clamp(value, MinimumBoardZoom, MaximumBoardZoom);
+            if (Mathf.Approximately(boardZoom, next))
+            {
+                return;
+            }
+
+            boardZoom = next;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BoardZoom)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(BoardZoomText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanZoomOut)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanZoomIn)));
+            ZoomOutCommand?.RaiseCanExecuteChanged();
+            ZoomInCommand?.RaiseCanExecuteChanged();
         }
 
         void Start()

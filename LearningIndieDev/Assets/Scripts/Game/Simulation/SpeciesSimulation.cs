@@ -321,7 +321,7 @@ namespace SaltyGame
             SpeciesExperimentalOptions experimentalOptions = null,
             Grid<SpeciesCell> previousSource = null)
         {
-            ResolveAging(next);
+            ResolveAging(next, rules);
             ResolveAttackCooldowns(next, experimentalOptions);
             ResolveReproductionCooldowns(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
@@ -1360,9 +1360,8 @@ namespace SaltyGame
                     continue;
                 }
 
-                if (currentCell.BehaviorState == SpeciesBehaviorState.Sleeping
-                    || currentCell.BehaviorState == SpeciesBehaviorState.Attacking
-                    || currentCell.BehaviorState == SpeciesBehaviorState.Mating)
+                if (speciesRules.TryGetBehaviorStateRule(currentCell.BehaviorState, out var behaviorStateRule)
+                    && behaviorStateRule.StopsMovement)
                 {
                     moved[sourceIndex] = true;
                     continue;
@@ -1406,7 +1405,40 @@ namespace SaltyGame
                     continue;
                 }
 
+                if (speciesRules.ForagesUntilFull
+                    && HasReproductionEnergy(currentCell, speciesRules)
+                    && currentCell.ReproductionCooldownTicksRemaining <= 0
+                    && speciesRules.Awareness.VisionRange > 0
+                    && SpeciesPerception.TryFindMateTarget(
+                        source,
+                        x,
+                        y,
+                        currentCell.SpeciesId,
+                        speciesRules,
+                        random,
+                        out var mateTarget)
+                    && HasReproductionEnergy(mateTarget.Cell, speciesRules)
+                    && mateTarget.Cell.ReproductionCooldownTicksRemaining <= 0
+                    && TryMoveTowardPerceivedTarget(
+                        source,
+                        next,
+                        x,
+                        y,
+                        currentCell,
+                        speciesRules,
+                        mateTarget,
+                        movementPass,
+                        plantEnergyValue,
+                        moved,
+                        claimed,
+                        random,
+                        metrics))
+                {
+                    continue;
+                }
+
                 if (speciesRules.ReproductionNeighborCount > 0
+                    && HasReproductionEnergy(currentCell, speciesRules)
                     && CountPatternSpeciesNeighbors(
                         source,
                         x,
@@ -1583,7 +1615,9 @@ namespace SaltyGame
             System.Random random,
             SpeciesSimulationMetrics metrics)
         {
-            if (currentCell.BehaviorState != SpeciesBehaviorState.Threatened)
+            var isThreatened = currentCell.BehaviorState == SpeciesBehaviorState.Threatened;
+            var isHunting = currentCell.BehaviorState == SpeciesBehaviorState.Hunting;
+            if (!isThreatened && !isHunting)
             {
                 return false;
             }
@@ -1593,14 +1627,15 @@ namespace SaltyGame
                 return false;
             }
 
-            if (SpeciesPerception.TryFindThreatTarget(
-                source,
-                x,
-                y,
-                currentCell.SpeciesId,
-                rules,
-                random,
-                out var threatTarget))
+            if (isThreatened
+                && SpeciesPerception.TryFindThreatTarget(
+                    source,
+                    x,
+                    y,
+                    currentCell.SpeciesId,
+                    rules,
+                    random,
+                    out var threatTarget))
             {
                 if (TryMoveAwayFromThreat(
                     source,
@@ -1635,10 +1670,7 @@ namespace SaltyGame
                     currentCell,
                     speciesRules,
                     out trackedFoodTarget);
-            var canSeekMate = speciesRules.ReproductionChance > 0f
-                && speciesRules.ReproductionNeighborCount > 0
-                && HasReproductionEnergy(currentCell, speciesRules)
-                && currentCell.ReproductionCooldownTicksRemaining <= 0
+            var canSeekMate = CanSeekMate(currentCell, speciesRules)
                 && CountPatternSpeciesNeighbors(
                     source,
                     x,
@@ -1657,10 +1689,10 @@ namespace SaltyGame
                     speciesRules,
                     random,
                     out mateTarget)
+                && CanSeekMate(mateTarget.Cell, speciesRules)
                 && mateTarget.Cell.ReproductionCooldownTicksRemaining <= 0;
             var prioritizeMate = hasMate
-                && speciesRules.Awareness.Intelligence > 0
-                && HasReproductionEnergy(currentCell, speciesRules);
+                && speciesRules.Awareness.Intelligence > 0;
 
             if (prioritizeMate
                 && TryMoveTowardPerceivedTarget(
@@ -1855,7 +1887,9 @@ namespace SaltyGame
                 moved,
                 claimed,
                 random,
-                metrics);
+                metrics,
+                feedOnDietTarget: !speciesRules.ForagesUntilFull
+                    || target.Intent != SpeciesMovementIntent.Mate);
         }
 
         static bool TryMoveTo(
@@ -1895,13 +1929,16 @@ namespace SaltyGame
                 && feedOnDietTarget
                 && SpeciesPerception.IsDietTarget(sourceTarget, speciesRules.DietTargetId.Value))
             {
-                if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))
+                if (ShouldForage(cell, speciesRules))
                 {
-                    return false;
-                }
+                    if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))
+                    {
+                        return false;
+                    }
 
-                moved[GetIndex(source, x, y)] = true;
-                return true;
+                    moved[GetIndex(source, x, y)] = true;
+                    return true;
+                }
             }
 
             var movementSpeed = speciesRules.MovementSpeed
@@ -1944,7 +1981,9 @@ namespace SaltyGame
                     cell.TrackingTicksRemaining);
             }
 
-            next.SetCell(targetX, targetY, movedCell.WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
+            next.SetCell(targetX, targetY, movedCell
+                .WithForageReservePhase(cell.ForagePhase)
+                .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
             moved[GetIndex(source, x, y)] = true;
             moved[targetIndex] = true;
             claimed[targetIndex] = true;
@@ -1970,6 +2009,11 @@ namespace SaltyGame
             System.Random random,
             SpeciesSimulationMetrics metrics)
         {
+            if (!CanSeekMate(cell, speciesRules))
+            {
+                return false;
+            }
+
             var pattern = speciesRules.MovementPattern;
             var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
             for (var offsetIndex = 0; offsetIndex < pattern.Count; offsetIndex++)
@@ -1983,9 +2027,10 @@ namespace SaltyGame
                 }
 
                 var targetIndex = GetIndex(source, targetX, targetY);
+                var target = source.GetCell(targetX, targetY);
                 if (claimed[targetIndex]
-                    || !source.GetCell(targetX, targetY).IsPassable
-                    || source.GetCell(targetX, targetY).IsCreature
+                    || !target.IsPassable
+                    || target.IsCreature
                     || next.GetCell(targetX, targetY).IsCreature)
                 {
                     continue;
@@ -2002,6 +2047,36 @@ namespace SaltyGame
                 if (sameSpeciesNeighbors < speciesRules.ReproductionNeighborCount
                     || (speciesRules.MaxReproductionGroupSize > 0
                         && sameSpeciesNeighbors + 1 > speciesRules.MaxReproductionGroupSize))
+                {
+                    continue;
+                }
+
+                var hasReadyMate = false;
+                foreach (var reproductionOffset in speciesRules.ReproductionPattern.Offsets)
+                {
+                    var neighborX = targetX + reproductionOffset.x;
+                    var neighborY = targetY + reproductionOffset.y;
+                    if (neighborX == x && neighborY == y)
+                    {
+                        continue;
+                    }
+
+                    if (!source.TryGetCell(
+                            neighborX,
+                            neighborY,
+                            out var neighbor)
+                        || !neighbor.IsCreature
+                        || neighbor.SpeciesId != cell.SpeciesId
+                        || !CanSeekMate(neighbor, speciesRules))
+                    {
+                        continue;
+                    }
+
+                    hasReadyMate = true;
+                    break;
+                }
+
+                if (!hasReadyMate)
                 {
                     continue;
                 }
@@ -2026,6 +2101,7 @@ namespace SaltyGame
                     cell.IsAlpha,
                     entityId: cell.EntityId,
                     reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
+                    .WithForageReservePhase(cell.ForagePhase)
                     .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
@@ -2097,7 +2173,9 @@ namespace SaltyGame
             }
         }
 
-        static void ResolveAging(Grid<SpeciesCell> next)
+        static void ResolveAging(
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
         {
             for (var y = 0; y < next.Height; y++)
             {
@@ -2106,14 +2184,23 @@ namespace SaltyGame
                     var cell = next.GetCell(x, y);
                     if (cell.IsOccupied)
                     {
-                        next.SetCell(x, y, cell.WithEntity(
+                        var aged = cell.WithEntity(
                             cell.SpeciesId,
                             cell.Health,
                             cell.Energy,
                             cell.Age + 1,
                             cell.FoodEaten,
                             cell.FoodReserve,
-                            cell.IsAlpha));
+                            cell.IsAlpha);
+                        if (aged.IsCreature
+                            && rules.TryGetValue(aged.SpeciesId, out var speciesRules)
+                            && speciesRules.ForagesUntilFull
+                            && aged.Energy >= speciesRules.MaximumEnergy)
+                        {
+                            aged = aged.WithForageReservePhase(ForageReservePhase.Full);
+                        }
+
+                        next.SetCell(x, y, aged);
                     }
                 }
             }
@@ -2151,7 +2238,8 @@ namespace SaltyGame
                     var cell = next.GetCell(x, y);
                     if (!cell.IsCreature
                         || !rules.TryGetValue(cell.SpeciesId, out var speciesRules)
-                        || speciesRules.Metabolism <= 0)
+                        || speciesRules.Metabolism <= 0
+                        || cell.Age % speciesRules.EnergyLossIntervalTicks != 0)
                     {
                         continue;
                     }
@@ -2594,7 +2682,7 @@ namespace SaltyGame
                     : cell.Energy + energyGain;
                 energyRemainder = 0f;
             }
-            return cell.WithEntity(
+            var fed = cell.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
                 nextEnergy,
@@ -2603,11 +2691,21 @@ namespace SaltyGame
                 cell.FoodReserve + foodAmount,
                 cell.IsAlpha,
                 energyRemainder: energyRemainder);
+            return rules.ForagesUntilFull
+                ? fed.WithForageReservePhase(nextEnergy >= rules.MaximumEnergy
+                    ? ForageReservePhase.Full
+                    : ForageReservePhase.Refilling)
+                : fed;
         }
 
         static bool ShouldForage(SpeciesCell cell, SpeciesRules rules)
         {
-            return rules.DietTargetId.HasValue && cell.Energy <= rules.ForageBelowEnergy;
+            return rules.DietTargetId.HasValue
+                && (rules.ForagesUntilFull
+                    ? cell.Energy < rules.ForageBelowEnergy
+                        || (cell.ForagePhase == ForageReservePhase.Refilling
+                            && cell.Energy < rules.MaximumEnergy)
+                    : cell.Energy <= rules.ForageBelowEnergy);
         }
 
         static bool TryFeedOnPlant(
@@ -2717,11 +2815,27 @@ namespace SaltyGame
 
         static bool HasReproductionEnergy(SpeciesCell cell, SpeciesRules rules)
         {
+            if (rules.ForagesUntilFull
+                && cell.ForagePhase != ForageReservePhase.Full
+                && cell.Energy < rules.MaximumEnergy)
+            {
+                return false;
+            }
+
             var minimumEnergy = rules.Role == SpeciesRole.Carnivore
                 && rules.MaximumEnergy > 0
                 ? Math.Max(rules.ReproductionFoodRequired, rules.MaximumEnergy / 2)
                 : rules.ReproductionFoodRequired;
             return GetReproductionEnergy(cell) > minimumEnergy;
+        }
+
+        internal static bool CanSeekMate(SpeciesCell cell, SpeciesRules rules)
+        {
+            return cell.IsCreature
+                && rules.ReproductionChance > 0f
+                && rules.ReproductionNeighborCount > 0
+                && cell.ReproductionCooldownTicksRemaining <= 0
+                && HasReproductionEnergy(cell, rules);
         }
 
         static SpeciesCell ConsumeReproductionEnergy(SpeciesCell cell, int amount)
@@ -2846,7 +2960,6 @@ namespace SaltyGame
     public static class SpeciesBehaviorSystem
     {
         const int SleepAfterIdleTicks = 10;
-        const int SleepDurationTicks = 8;
 
         public static void Update(
             Grid<SpeciesCell> source,
@@ -3019,15 +3132,26 @@ namespace SaltyGame
                 return SpeciesBehaviorState.Threatened;
             }
 
-            if (cell.BehaviorState == SpeciesBehaviorState.Sleeping
-                && cell.BehaviorStateTicks < SleepDurationTicks)
+            if (speciesRules.Role == SpeciesRole.Herbivore
+                && SpeciesPerception.TryFindThreatTarget(
+                    cells,
+                    x,
+                    y,
+                    cell.SpeciesId,
+                    rules,
+                    random,
+                    out _))
             {
-                return SpeciesBehaviorState.Sleeping;
+                return SpeciesBehaviorState.Threatened;
             }
 
-            var hasReadyMate = speciesRules.ReproductionChance > 0f
-                && HasReproductionEnergy(cell, speciesRules)
-                && cell.ReproductionCooldownTicksRemaining <= 0
+            if (speciesRules.TryGetBehaviorStateRule(cell.BehaviorState, out var activeStateRule)
+                && cell.BehaviorStateTicks < activeStateRule.MinimumDurationTicks)
+            {
+                return cell.BehaviorState;
+            }
+
+            var hasReadyMate = SpeciesSimulation.CanSeekMate(cell, speciesRules)
                 && SpeciesPerception.TryFindMateTarget(
                     cells,
                     x,
@@ -3036,7 +3160,7 @@ namespace SaltyGame
                     speciesRules,
                     random,
                     out var mate)
-                && HasReproductionEnergy(mate.Cell, speciesRules)
+                && CanSeekMate(mate.Cell, speciesRules)
                 && mate.Cell.ReproductionCooldownTicksRemaining <= 0
                 && HasReproductionNeighbor(cells, x, y, cell.SpeciesId, speciesRules);
             if (hasReadyMate)
@@ -3090,9 +3214,22 @@ namespace SaltyGame
             return cell.Energy > minimumEnergy;
         }
 
+        static bool CanSeekMate(SpeciesCell cell, SpeciesRules rules)
+        {
+            return (!rules.ForagesUntilFull
+                    || cell.ForagePhase == ForageReservePhase.Full
+                    || cell.Energy >= rules.MaximumEnergy)
+                && HasReproductionEnergy(cell, rules);
+        }
+
         static bool ShouldForage(SpeciesCell cell, SpeciesRules rules)
         {
-            return rules.DietTargetId.HasValue && cell.Energy <= rules.ForageBelowEnergy;
+            return rules.DietTargetId.HasValue
+                && (rules.ForagesUntilFull
+                    ? cell.Energy < rules.ForageBelowEnergy
+                        || (cell.ForagePhase == ForageReservePhase.Refilling
+                            && cell.Energy < rules.MaximumEnergy)
+                    : cell.Energy <= rules.ForageBelowEnergy);
         }
 
         static bool HasReproductionNeighbor(

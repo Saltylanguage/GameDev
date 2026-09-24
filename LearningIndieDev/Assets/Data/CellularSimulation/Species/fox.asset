@@ -64,7 +64,7 @@ MonoBehaviour:
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0
   seedDropChance: 0
-  energyValue: 12
+  energyValue: 100
   metabolism: 1
   visionRange: 12
   intelligence: 1

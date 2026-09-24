@@ -3,6 +3,13 @@ using System.Threading;
 
 namespace SaltyGame
 {
+    internal enum ForageReservePhase : byte
+    {
+        Idle,
+        Refilling,
+        Full,
+    }
+
     [Obsolete("Use TerrainId and TerrainDefinition instead.")]
     public enum SpeciesTerrain
     {
@@ -67,7 +74,8 @@ namespace SaltyGame
             int trackingTargetX = 0,
             int trackingTargetY = 0,
             int trackingTicksRemaining = 0,
-            int reproductionCooldownTicksRemaining = 0)
+            int reproductionCooldownTicksRemaining = 0,
+            ForageReservePhase forageReservePhase = ForageReservePhase.Idle)
         {
             if (health < 0)
             {
@@ -169,6 +177,9 @@ namespace SaltyGame
             BehaviorStateTicks = behaviorStateTicks;
             AttackCooldownTicksRemaining = attackCooldownTicksRemaining;
             ReproductionCooldownTicksRemaining = reproductionCooldownTicksRemaining;
+            ForagePhase = isOccupied && !isResourceSpecies
+                ? forageReservePhase
+                : ForageReservePhase.Idle;
             TrackingTargetEntityId = isOccupied && !isResourceSpecies ? trackingTargetEntityId : 0L;
             TrackingTargetX = TrackingTargetEntityId > 0 ? trackingTargetX : 0;
             TrackingTargetY = TrackingTargetEntityId > 0 ? trackingTargetY : 0;
@@ -279,6 +290,7 @@ namespace SaltyGame
         public int BehaviorStateTicks { get; }
         public int AttackCooldownTicksRemaining { get; }
         public int ReproductionCooldownTicksRemaining { get; }
+        internal ForageReservePhase ForagePhase { get; }
         public long TrackingTargetEntityId { get; }
         public int TrackingTargetX { get; }
         public int TrackingTargetY { get; }
@@ -334,7 +346,10 @@ namespace SaltyGame
                 trackingTargetX: preserveTracking ? TrackingTargetX : 0,
                 trackingTargetY: preserveTracking ? TrackingTargetY : 0,
                 trackingTicksRemaining: preserveTracking ? TrackingTicksRemaining : 0,
-                reproductionCooldownTicksRemaining: resolvedReproductionCooldown);
+                reproductionCooldownTicksRemaining: resolvedReproductionCooldown,
+                forageReservePhase: IsCreature && resolvedEntityId == EntityId
+                    ? ForagePhase
+                    : ForageReservePhase.Idle);
         }
 
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
@@ -369,7 +384,8 @@ namespace SaltyGame
                 TrackingTargetX,
                 TrackingTargetY,
                 TrackingTicksRemaining,
-                ReproductionCooldownTicksRemaining);
+                ReproductionCooldownTicksRemaining,
+                ForagePhase);
         }
 
         public SpeciesCell WithAttackCooldown(int ticks)
@@ -409,7 +425,8 @@ namespace SaltyGame
                 TrackingTargetX,
                 TrackingTargetY,
                 TrackingTicksRemaining,
-                ReproductionCooldownTicksRemaining);
+                ReproductionCooldownTicksRemaining,
+                ForagePhase);
         }
 
         public SpeciesCell WithTrackingTarget(long entityId, int x, int y, int ticksRemaining)
@@ -452,7 +469,8 @@ namespace SaltyGame
                 x,
                 y,
                 ticksRemaining,
-                ReproductionCooldownTicksRemaining);
+                ReproductionCooldownTicksRemaining,
+                ForagePhase);
         }
 
         public SpeciesCell WithoutEntity()
@@ -481,7 +499,38 @@ namespace SaltyGame
         {
             if (isResourceTerrain)
             {
-                return WithTerrainEnergy(0f);
+                if (!IsOccupied)
+                {
+                    return Empty;
+                }
+
+                var bare = TerrainDefaults.Bare;
+                return new SpeciesCell(
+                    SpeciesId,
+                    IsOccupied,
+                    Health,
+                    Energy,
+                    Age,
+                    FoodEaten,
+                    FoodReserve,
+                    IsAlpha,
+                    bare.Id,
+                    terrainEnergy: 0f,
+                    isResourceSpecies: isResourceSpecies,
+                    isResourceTerrain: false,
+                    isPassable: bare.IsPassable,
+                    movementCost: bare.MovementCost,
+                    resourceSpeciesId: default,
+                    behaviorState: BehaviorState,
+                    behaviorStateTicks: BehaviorStateTicks,
+                    entityId: EntityId,
+                    attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
+                    energyRemainder: EnergyRemainder,
+                    trackingTargetEntityId: TrackingTargetEntityId,
+                    trackingTargetX: TrackingTargetX,
+                    trackingTargetY: TrackingTargetY,
+                    trackingTicksRemaining: TrackingTicksRemaining,
+                    reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining);
             }
 
             return IsOccupied && isResourceSpecies ? WithoutEntity() : this;
@@ -536,7 +585,8 @@ namespace SaltyGame
                 trackingTargetX: TrackingTargetX,
                 trackingTargetY: TrackingTargetY,
                 trackingTicksRemaining: TrackingTicksRemaining,
-                reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining);
+                reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining,
+                forageReservePhase: ForagePhase);
         }
 
         public SpeciesCell WithReproductionCooldown(int ticks)
@@ -576,7 +626,44 @@ namespace SaltyGame
                 TrackingTargetX,
                 TrackingTargetY,
                 TrackingTicksRemaining,
-                ticks);
+                ticks,
+                ForagePhase);
+        }
+
+        internal SpeciesCell WithForageReservePhase(ForageReservePhase phase)
+        {
+            if (!IsCreature)
+            {
+                return this;
+            }
+
+            return new SpeciesCell(
+                SpeciesId,
+                true,
+                Health,
+                Energy,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                IsAlpha,
+                TerrainId,
+                TerrainEnergy,
+                isResourceSpecies,
+                isResourceTerrain,
+                IsPassable,
+                MovementCost,
+                resourceSpeciesId,
+                BehaviorState,
+                BehaviorStateTicks,
+                EntityId,
+                AttackCooldownTicksRemaining,
+                EnergyRemainder,
+                TrackingTargetEntityId,
+                TrackingTargetX,
+                TrackingTargetY,
+                TrackingTicksRemaining,
+                ReproductionCooldownTicksRemaining,
+                phase);
         }
     }
 }

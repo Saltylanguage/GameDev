@@ -94,9 +94,11 @@ There was no explicit mating delay before this follow-up: an eligible parent
 could attempt reproduction on every tick. The runtime now applies a shared
 **24-tick reproduction cooldown** to the parent and its reproduction-pattern
 neighbors after an eligible attempt, including a failed chance roll or an
-unavailable birth location. Mate-seeking is suppressed during that cooldown,
-so the pair is released to hunt or wander before they can seek one another
-again. A real `Mating` pair also performs one shared attempt per tick, which
+unavailable birth location. The initial fix suppressed `Mating` selection and
+vision-based mate pursuit during that cooldown. A later review found the local
+movement fallback still pulled cooldown or low-energy Foxes toward each other;
+the 2026-09-22 correction below closes that path too. A real `Mating` pair
+also performs one shared attempt per tick, which
 prevents both parents from creating newborns on opposite escape sides and
 boxing themselves in. A full reproduction group is no longer selected as
 `Mating`.
@@ -109,3 +111,62 @@ That run recorded three Fox births across five seeds, while its aggregate
 `Mating` state telemetry was zero; treat that as a follow-up telemetry/
 eligibility signal for the next balance pass, not as a population-equality
 metric.
+
+## Hare starvation-pressure follow-up
+
+The next one-variable question was whether the earlier grass scarcity change
+was helping the intended outcome. The grass reserve increase from 10 to 11.5
+produced no change in matched Hare starvation deaths, so reserve was restored
+to 10. Grass reproduction was then tested against the same current Forest
+Edge setup: 42×20 grid, seeds 1–20, 600 ticks, Live execution, and the
+current Hare bite value of 5.
+
+| Measure | Control | Candidate | Change |
+| --- | ---: | ---: | ---: |
+| Grass reproduction chance | 0.0015 | 0.0115 | +0.0100 |
+| Hare starvation deaths | 283 | 236 | -16.61% |
+
+The candidate is provisional working balance, selected because it lands near
+the requested 15% reduction without relying on Fox/Hare population equality.
+The raw [candidate report](../../artifacts/cellular-experiment-20260922-075959/report.json)
+and [matched control report](../../artifacts/cellular-experiment-20260922-074858/report.json)
+remain authoritative. The current plant asset keeps `startingFoodReserve: 10`
+and `energyValue: 5`, so a full grass tile still supplies two 5-energy bites
+before returning to dirt.
+
+## Fox hunt / Hare escape perception follow-up
+
+Hungry Foxes now route toward visible Hare prey while their behavior state is
+`Hunting`. Previously the vision-target movement path was only reachable for
+`Threatened` creatures, so a Fox could detect a distant Hare but fall back to
+wandering instead of pursuing it. Herbivores now enter `Threatened` whenever a
+predator is visible, including when the Fox is stationary or outside attack
+range; the existing escape movement then selects an available cell that
+strictly increases distance from the perceived threat when one exists.
+
+Focused EditMode coverage includes visible-prey hunting,
+`BehaviorSystemFeelsVisibleStationaryThreat`,
+`BehaviorSystemFeelsVisibleThreatOutsideAttackRange`,
+`HareMovesAwayFromAVisibleStationaryFox`, and the existing
+`HareFleesApproachingFoxWhileFoxPursuesVisibleHare` fixture. This is a local
+behavior-capability fix and not a population-matching target. A matched
+Forest Edge run remains necessary before drawing an ecological balance
+conclusion.
+
+## Fox pair movement correction: 2026-09-22
+
+Two isolated Foxes could keep moving toward one another after a reproduction
+attempt, even when one Fox was still on cooldown or lacked reproduction energy.
+The vision-pursuit path checked readiness, but the local `TryMoveTowardMate`
+fallback did not check either animal. It could therefore override ordinary
+low-crowding wandering and repeatedly pull an ineligible pair back together.
+
+Both mate-pursuit paths now use the same eligibility check for the acting
+animal and prospective mate: reproduction is enabled, each has enough energy,
+and neither is on cooldown. Added the focused regression
+`FoxDoesNotSeekAMateThatIsOnCooldown`, which checks that an eligible Fox does
+not step toward its cooldown partner. `dotnet build SaltyGame.Tests.csproj
+--no-restore` passed with existing obsolete-API warnings. After Play Mode
+stopped, the focused regression passed 1/1 and the full live EditMode suite
+passed 240/240. Results are in [the focused run](../../artifacts/unity-tests-20260922-232259/EditMode-results.json)
+and [the full suite](../../artifacts/unity-tests-20260922-232310/EditMode-results.json).

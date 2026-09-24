@@ -146,9 +146,7 @@
                                    IsHitTestVisible="False" />
                         <game:SpeciesSimulationBoard x:Name="SimulationBoard"
                                                      HorizontalAlignment="Stretch"
-                                                     VerticalAlignment="Stretch"
-                                                     MinimumCellWidth="32"
-                                                     MinimumCellHeight="32" />
+                                                     VerticalAlignment="Stretch" />
                         <Border Margin="-6"
                                 BorderBrush="{DynamicResource Chrono_VanillaCream}"
                                 BorderThickness="2"
@@ -168,7 +166,8 @@
                                 BorderBrush="{DynamicResource Chrono_Sand}"
                                 BorderThickness="1"
                                 CornerRadius="5"
-                                Opacity="0.92">
+                                Opacity="0.92"
+                                IsHitTestVisible="False">
                             <TextBlock Text="FIELD OBSERVATION BOARD"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="9"
@@ -183,7 +182,8 @@
                                 BorderBrush="{DynamicResource Chrono_Sand}"
                                 BorderThickness="1"
                                 CornerRadius="5"
-                                Opacity="0.92">
+                                Opacity="0.92"
+                                IsHitTestVisible="False">
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="8" Height="8" Fill="{DynamicResource Chrono_Olive}" Margin="0,0,5,0" />
                                 <TextBlock Text="PLAYER SPECIES"
@@ -605,6 +605,87 @@
                                 Height="44"
                                 FontSize="13"
                                 Padding="7,4" />
+                    </Grid>
+                </Border>
+
+                <Border Visibility="{Binding BoardVisibility}"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Bottom"
+                        Width="248"
+                        Height="64"
+                        Margin="0,0,18,0"
+                        Padding="10,6"
+                        Background="{DynamicResource Chrono_LightCream}"
+                        BorderBrush="{DynamicResource Chrono_Sand}"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                    <Grid>
+                        <Image Source="{StaticResource GalapagOS.Image.Simulation.PaperTexture}"
+                               Stretch="UniformToFill"
+                               Opacity="0.34"
+                               IsHitTestVisible="False" />
+                        <Rectangle Fill="{StaticResource GalapagOS.Brush.PaperRules}"
+                                   Opacity="0.10"
+                                   IsHitTestVisible="False" />
+                        <Border Margin="2"
+                                BorderBrush="{DynamicResource Chrono_VanillaCream}"
+                                BorderThickness="2"
+                                CornerRadius="5"
+                                IsHitTestVisible="False" />
+                        <Border Margin="5"
+                                BorderBrush="{DynamicResource Chrono_Sand}"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Opacity="0.36"
+                                IsHitTestVisible="False" />
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center">
+                            <TextBlock Text="ZOOM"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0" />
+                            <Button Command="{Binding ZoomOutCommand}"
+                                    Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                    Width="42"
+                                    Height="38"
+                                    Padding="8,6"
+                                    Margin="0,0,4,0">
+                                <Path Data="{StaticResource GalapagOS.Icon.ZoomOut}"
+                                      Width="18"
+                                      Height="18"
+                                      Stretch="Uniform"
+                                      Stroke="{DynamicResource Chrono_TreeBark}"
+                                      StrokeThickness="2"
+                                      Fill="Transparent" />
+                            </Button>
+                            <Button Command="{Binding ResetZoomCommand}"
+                                    Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                    Width="58"
+                                    Height="38"
+                                    Padding="4,4"
+                                    Margin="0,0,4,0"
+                                    FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                    FontSize="10"
+                                    FontWeight="Bold"
+                                    Content="{Binding BoardZoomText}" />
+                            <Button Command="{Binding ZoomInCommand}"
+                                    Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                    Width="42"
+                                    Height="38"
+                                    Padding="8,6">
+                                <Path Data="{StaticResource GalapagOS.Icon.ZoomIn}"
+                                      Width="18"
+                                      Height="18"
+                                      Stretch="Uniform"
+                                      Stroke="{DynamicResource Chrono_TreeBark}"
+                                      StrokeThickness="2"
+                                      Fill="Transparent" />
+                            </Button>
+                        </StackPanel>
                     </Grid>
                 </Border>
 

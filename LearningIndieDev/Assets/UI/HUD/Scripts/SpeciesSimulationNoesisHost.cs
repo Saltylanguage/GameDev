@@ -77,11 +77,13 @@ namespace SaltyGame
                 return;
             }
 
+            simulationBoard.ZoomRequested += HandleBoardZoomRequested;
             simulationBoard.SetSpriteVisuals(
                 viewModel.AnimalSprites,
                 viewModel.GrassTerrainTiles,
                 viewModel.DesertTerrainTiles);
             boardViewModel.PropertyChanged += HandleBoardPropertyChanged;
+            viewModel.PropertyChanged += HandleViewModelPropertyChanged;
             ApplyBoardSnapshot();
 
             // The Lab is the setup entry point; the simulation scene should open live.
@@ -100,9 +102,19 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            if (simulationBoard != null)
+            {
+                simulationBoard.ZoomRequested -= HandleBoardZoomRequested;
+            }
+
             if (boardViewModel != null)
             {
                 boardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
+            }
+
+            if (viewModel != null)
+            {
+                viewModel.PropertyChanged -= HandleViewModelPropertyChanged;
             }
         }
 
@@ -120,6 +132,14 @@ namespace SaltyGame
             }
         }
 
+        void HandleViewModelPropertyChanged(object sender, PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName == nameof(VM_SimulationShell.BoardZoom))
+            {
+                ApplyBoardZoom();
+            }
+        }
+
         void ApplyBoardSnapshot()
         {
             if (simulationBoard == null || boardViewModel == null)
@@ -128,6 +148,7 @@ namespace SaltyGame
             }
 
             simulationBoard.SetSnapshot(boardViewModel.Snapshot);
+            ApplyBoardZoom();
             simulationBoard.SetFoxHuntCue(
                 boardViewModel.FoxHuntCueX,
                 boardViewModel.FoxHuntCueY,
@@ -140,6 +161,19 @@ namespace SaltyGame
                 boardViewModel.MatingCueOffspringX,
                 boardViewModel.MatingCueOffspringY,
                 boardViewModel.MatingCueTick);
+        }
+
+        void ApplyBoardZoom()
+        {
+            if (simulationBoard != null && viewModel != null)
+            {
+                simulationBoard.Zoom = viewModel.BoardZoom;
+            }
+        }
+
+        void HandleBoardZoomRequested(float zoom)
+        {
+            viewModel?.SetBoardZoom(zoom);
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

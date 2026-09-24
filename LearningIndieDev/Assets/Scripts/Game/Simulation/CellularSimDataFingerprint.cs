@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v6";
+        public const string Version = "cellular-sim-data-v7";
         public const string RunVersion = "cellular-sim-run-v3";
 
         public static string Create(CellularSimData data)
@@ -120,6 +120,7 @@ namespace SaltyGame
             Append(builder, rules.MaxReproductionGroupSize);
             Append(builder, rules.StartingEnergy);
             Append(builder, rules.ForageBelowEnergy);
+            Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
@@ -129,6 +130,7 @@ namespace SaltyGame
             Append(builder, rules.SeedDropChance);
             Append(builder, rules.EnergyValue);
             Append(builder, rules.Metabolism);
+            Append(builder, rules.EnergyLossIntervalTicks);
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
@@ -136,6 +138,15 @@ namespace SaltyGame
             Append(builder, rules.CrowdingTolerance);
             Append(builder, rules.FleeMovementSpeedBonus);
             Append(builder, rules.TrackingPersistenceSteps);
+            builder.Append("stateRules[");
+            foreach (var stateRule in rules.BehaviorStateRules)
+            {
+                Append(builder, (int)stateRule.State);
+                Append(builder, stateRule.MinimumDurationTicks);
+                Append(builder, stateRule.StopsMovement);
+            }
+
+            builder.Append(']');
         }
 
         static void AppendTerrain(StringBuilder builder, TerrainDefinition terrain)
