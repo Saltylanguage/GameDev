@@ -85,7 +85,10 @@ namespace SaltyGame
             int trackingPersistenceSteps = 0,
             IReadOnlyList<SpeciesBehaviorStateRule> behaviorStateRules = null,
             bool foragesUntilFull = false,
-            int energyLossIntervalTicks = 1)
+            int energyLossIntervalTicks = 1,
+            float forageThresholdFraction = 0f,
+            float matingEnergyThresholdFraction = 0f,
+            float matingEnergyCostFraction = 0f)
         {
             if (movementSpeed < 0f)
             {
@@ -137,6 +140,10 @@ namespace SaltyGame
                     energyLossIntervalTicks,
                     "Energy loss interval must be at least one tick.");
             }
+
+            ValidateEnergyFraction(forageThresholdFraction, nameof(forageThresholdFraction));
+            ValidateEnergyFraction(matingEnergyThresholdFraction, nameof(matingEnergyThresholdFraction));
+            ValidateEnergyFraction(matingEnergyCostFraction, nameof(matingEnergyCostFraction));
 
             behaviorStateRulesByState = new Dictionary<SpeciesBehaviorState, SpeciesBehaviorStateRule>();
             foreach (var rule in DefaultBehaviorStateRules)
@@ -276,6 +283,46 @@ namespace SaltyGame
             TrackingPersistenceSteps = trackingPersistenceSteps;
             ForagesUntilFull = foragesUntilFull;
             EnergyLossIntervalTicks = energyLossIntervalTicks;
+            ForageThresholdFraction = forageThresholdFraction;
+            MatingEnergyThresholdFraction = matingEnergyThresholdFraction;
+            MatingEnergyCostFraction = matingEnergyCostFraction;
+        }
+
+        static void ValidateEnergyFraction(float value, string parameterName)
+        {
+            if (value < 0f || value > 1f || float.IsNaN(value) || float.IsInfinity(value))
+            {
+                throw new ArgumentOutOfRangeException(
+                    parameterName,
+                    value,
+                    "Energy fractions must be finite values between zero and one.");
+            }
+        }
+
+        int EnergyFromMaximumFraction(float fraction)
+        {
+            return (int)Math.Ceiling((decimal)MaximumEnergy * (decimal)fraction);
+        }
+
+        public int ForageThresholdEnergy => ForageThresholdFraction > 0f && MaximumEnergy > 0
+            ? EnergyFromMaximumFraction(ForageThresholdFraction)
+            : ForageBelowEnergy;
+
+        public int MatingEnergyCost => MatingEnergyCostFraction > 0f && MaximumEnergy > 0
+            ? EnergyFromMaximumFraction(MatingEnergyCostFraction)
+            : ReproductionFoodRequired;
+
+        public bool HasMatingEnergy(int energy)
+        {
+            if (MatingEnergyThresholdFraction > 0f && MaximumEnergy > 0)
+            {
+                return energy >= EnergyFromMaximumFraction(MatingEnergyThresholdFraction);
+            }
+
+            var minimumEnergy = Role == SpeciesRole.Carnivore && MaximumEnergy > 0
+                ? Math.Max(ReproductionFoodRequired, MaximumEnergy / 2)
+                : ReproductionFoodRequired;
+            return energy > minimumEnergy;
         }
 
         public bool TryGetBehaviorStateRule(
@@ -308,6 +355,9 @@ namespace SaltyGame
         public int ForageBelowEnergy { get; }
         public bool ForagesUntilFull { get; }
         public int EnergyLossIntervalTicks { get; }
+        public float ForageThresholdFraction { get; }
+        public float MatingEnergyThresholdFraction { get; }
+        public float MatingEnergyCostFraction { get; }
         public float WiltChance { get; }
         public int CrowdingEnergyPenalty { get; }
         public int CrowdingCost => CrowdingEnergyPenalty;

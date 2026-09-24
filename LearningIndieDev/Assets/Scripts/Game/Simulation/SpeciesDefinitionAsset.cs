@@ -25,6 +25,9 @@ namespace SaltyGame
         [SerializeField, Min(0)] int maxReproductionGroupSize;
         [SerializeField, Min(0)] int startingEnergy;
         [SerializeField, Min(0)] int forageBelowEnergy;
+        [SerializeField, Range(0f, 1f)] float forageThresholdFraction;
+        [SerializeField, Range(0f, 1f)] float matingEnergyThresholdFraction;
+        [SerializeField, Range(0f, 1f)] float matingEnergyCostFraction;
         [SerializeField] bool foragesUntilFull;
         [SerializeField, Range(0f, 1f)] float wiltChance;
         [SerializeField, Min(0)] int crowdingEnergyPenalty;
@@ -81,7 +84,10 @@ namespace SaltyGame
                 litterMaximum,
                 behaviorStateRules: behaviorStateRules,
                 foragesUntilFull: foragesUntilFull,
-                energyLossIntervalTicks: energyLossIntervalTicks);
+                energyLossIntervalTicks: energyLossIntervalTicks,
+                forageThresholdFraction: forageThresholdFraction,
+                matingEnergyThresholdFraction: matingEnergyThresholdFraction,
+                matingEnergyCostFraction: matingEnergyCostFraction);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

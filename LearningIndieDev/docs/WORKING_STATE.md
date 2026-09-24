@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**Fox hunting and mating energy: 2026-09-23.** Foxes now prioritize
+hunting when below 75% of maximum energy and prey is available; that priority
+interrupts the short Mating state and defers a reproduction outcome while the
+Fox is hunting, eating, or attacking. They can seek a mate at 25% maximum
+energy. Each reproduction attempt has a 45% success chance. A successful birth
+costs both Fox parents 15% of maximum energy per
+offspring (36 each at the authored 240-energy cap); offspring still start with
+the authored 48 energy. A pair at exactly 25% when it enters Mating can still
+resolve that attempt when metabolism runs first during the tick. The thresholds
+and cost scale when maximum energy changes. Focused Fox tests passed 10/10.
+The full EditMode suite passed 248/249; the remaining failure is the existing
+`EfficientDigestionAccumulatesFractionalEnergyDeterministically` test
+(expected 23, got 0), also seen before this change. No matched Forest Edge
+balance batch has been run, so treat these as provisional values. See the
+[Fox tuning change](handoffs/2026-09-23-2054-codex-fox-hunt-mating-energy.md).
+
 **Forest Edge hare energy behavior: 2026-09-23.** Hare energy loss now occurs
 once every 10 simulation ticks. Reserve feeding uses a 6-energy trigger and a
 24-energy refill target: dropping below 6 starts refilling; after reaching 24,

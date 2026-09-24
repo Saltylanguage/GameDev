@@ -3230,6 +3230,18 @@ namespace SaltyGame.Tests
                     SpeciesIds.Herbivore,
                     CreateRules(litterMaximum: 2)).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(forageThresholdFraction: 0.75f)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(matingEnergyThresholdFraction: 0.25f)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(matingEnergyCostFraction: 0.15f)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
         }
 
         [Test]
@@ -3419,7 +3431,10 @@ namespace SaltyGame.Tests
             int litterMinimum = 1,
             int litterMaximum = 1,
             int? attackModifier = null,
-            int? damageAmount = null)
+            int? damageAmount = null,
+            float forageThresholdFraction = 0f,
+            float matingEnergyThresholdFraction = 0f,
+            float matingEnergyCostFraction = 0f)
         {
             return new SpeciesRules(
                 movementSpeed,
@@ -3441,7 +3456,10 @@ namespace SaltyGame.Tests
                 litterMinimum: litterMinimum,
                 litterMaximum: litterMaximum,
                 attackModifier: attackModifier,
-                damageAmount: damageAmount);
+                damageAmount: damageAmount,
+                forageThresholdFraction: forageThresholdFraction,
+                matingEnergyThresholdFraction: matingEnergyThresholdFraction,
+                matingEnergyCostFraction: matingEnergyCostFraction);
         }
 
         static SpeciesSimulationMetrics StepWithReproductionMetrics(
@@ -3514,6 +3532,149 @@ namespace SaltyGame.Tests
     public sealed class SpeciesBehaviorTests
     {
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);
+
+        [Test]
+        public void FoxPrioritizesPreyBelowItsForageThresholdAndCanMateAtTwentyFivePercent()
+        {
+            var fox = new SpeciesId("fox");
+            var hare = new SpeciesId("hare");
+            var neighbors = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var foxRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: hare,
+                reproductionPattern: neighbors,
+                reproductionNeighborCount: 1,
+                reproductionChance: 1f,
+                reproductionFoodRequired: 48,
+                maxReproductionGroupSize: 3,
+                metabolism: 0,
+                awareness: new SpeciesAwarenessRules(visionRange: 4, intelligence: 1),
+                role: SpeciesRole.Carnivore,
+                maximumEnergy: 240,
+                forageThresholdFraction: 0.75f,
+                matingEnergyThresholdFraction: 0.25f,
+                matingEnergyCostFraction: 0.15f);
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = foxRules,
+            };
+            var hungry = new Grid<SpeciesCell>(5, 1);
+            hungry.SetCell(1, 0, new SpeciesCell(fox, energy: 179)
+                .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
+            hungry.SetCell(2, 0, new SpeciesCell(fox, energy: 179));
+            hungry.SetCell(4, 0, new SpeciesCell(hare, energy: 10));
+            var hungryNext = hungry.Copy();
+
+            SpeciesBehaviorSystem.Update(hungry, hungryNext, rules, new System.Random(7));
+
+            Assert.That(hungryNext.GetCell(1, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Hunting));
+            Assert.That(hungryNext.GetCell(2, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Hunting));
+            Assert.That(foxRules.ForageThresholdEnergy, Is.EqualTo(180));
+            var hungryStep = SpeciesSimulation.Step(hungry, rules, seed: 7);
+            Assert.That(hungryStep.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(hungryStep.GetCell(3, 0).IsCreature, Is.False);
+            Assert.That(foxRules.HasMatingEnergy(59), Is.False);
+            Assert.That(foxRules.HasMatingEnergy(60), Is.True);
+
+            var satiated = new Grid<SpeciesCell>(5, 1);
+            satiated.SetCell(1, 0, new SpeciesCell(fox, energy: 180));
+            satiated.SetCell(2, 0, new SpeciesCell(fox, energy: 180));
+            satiated.SetCell(4, 0, new SpeciesCell(hare, energy: 10));
+            var satiatedNext = satiated.Copy();
+
+            SpeciesBehaviorSystem.Update(satiated, satiatedNext, rules, new System.Random(7));
+
+            Assert.That(satiatedNext.GetCell(1, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(satiatedNext.GetCell(2, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+        }
+
+        [Test]
+        public void FoxMatingChargesBothParentsFractionOfMaximumEnergyWithoutChangingOffspringEnergy()
+        {
+            var fox = new SpeciesId("fox");
+            var neighbors = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: neighbors,
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 48,
+                    maxReproductionGroupSize: 3,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    role: SpeciesRole.Carnivore,
+                    maximumEnergy: 240,
+                    forageThresholdFraction: 0.75f,
+                    matingEnergyThresholdFraction: 0.25f,
+                    matingEnergyCostFraction: 0.15f),
+            };
+            var source = new Grid<SpeciesCell>(4, 1);
+            source.SetCell(1, 0, new SpeciesCell(fox, energy: 200));
+            source.SetCell(2, 0, new SpeciesCell(fox, energy: 200));
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 7);
+
+            Assert.That(rules[fox].MatingEnergyCost, Is.EqualTo(36));
+            Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(164));
+            Assert.That(next.GetCell(2, 0).Energy, Is.EqualTo(164));
+            Assert.That(next.GetCell(0, 0).SpeciesId, Is.EqualTo(fox));
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(48));
+        }
+
+        [Test]
+        public void FoxesAtMatingThresholdBeforeMetabolismCanMateAndBothPayTheCost()
+        {
+            var fox = new SpeciesId("fox");
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 48,
+                    maxReproductionGroupSize: 3,
+                    metabolism: 1,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    role: SpeciesRole.Carnivore,
+                    maximumEnergy: 240,
+                    forageThresholdFraction: 0.75f,
+                    matingEnergyThresholdFraction: 0.25f,
+                    matingEnergyCostFraction: 0.15f),
+            };
+            var source = new Grid<SpeciesCell>(4, 1);
+            source.SetCell(1, 0, new SpeciesCell(fox, energy: 60));
+            source.SetCell(2, 0, new SpeciesCell(fox, energy: 60));
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 7);
+
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(48));
+            Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(23));
+            Assert.That(next.GetCell(2, 0).Energy, Is.EqualTo(23));
+        }
 
         [Test]
         public void BehaviorSystemChoosesEatingForAdjacentFood()

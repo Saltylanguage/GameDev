@@ -308,7 +308,10 @@ namespace SaltyGame
                 trackingPersistenceSteps,
                 rules.BehaviorStateRules,
                 rules.ForagesUntilFull,
-                rules.EnergyLossIntervalTicks);
+                rules.EnergyLossIntervalTicks,
+                rules.ForageThresholdFraction,
+                rules.MatingEnergyThresholdFraction,
+                rules.MatingEnergyCostFraction);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()

@@ -100,6 +100,9 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int maxReproductionGroupSize;
             [SerializeField, Min(0)] internal int startingEnergy;
             [SerializeField, Min(0)] internal int forageBelowEnergy;
+            [SerializeField, Range(0f, 1f)] internal float forageThresholdFraction;
+            [SerializeField, Range(0f, 1f)] internal float matingEnergyThresholdFraction;
+            [SerializeField, Range(0f, 1f)] internal float matingEnergyCostFraction;
             [SerializeField] internal bool foragesUntilFull;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
             [SerializeField, Min(0)] internal int crowdingEnergyPenalty;
@@ -154,7 +157,10 @@ namespace SaltyGame
                     litterMaximum,
                     behaviorStateRules: behaviorStateRules,
                     foragesUntilFull: foragesUntilFull,
-                    energyLossIntervalTicks: energyLossIntervalTicks);
+                    energyLossIntervalTicks: energyLossIntervalTicks,
+                    forageThresholdFraction: forageThresholdFraction,
+                    matingEnergyThresholdFraction: matingEnergyThresholdFraction,
+                    matingEnergyCostFraction: matingEnergyCostFraction);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -178,6 +184,9 @@ namespace SaltyGame
                     maxReproductionGroupSize = rules.MaxReproductionGroupSize,
                     startingEnergy = rules.StartingEnergy,
                     forageBelowEnergy = rules.ForageBelowEnergy,
+                    forageThresholdFraction = rules.ForageThresholdFraction,
+                    matingEnergyThresholdFraction = rules.MatingEnergyThresholdFraction,
+                    matingEnergyCostFraction = rules.MatingEnergyCostFraction,
                     foragesUntilFull = rules.ForagesUntilFull,
                     wiltChance = rules.WiltChance,
                     crowdingEnergyPenalty = rules.CrowdingEnergyPenalty,
