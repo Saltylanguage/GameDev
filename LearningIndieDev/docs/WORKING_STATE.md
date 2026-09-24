@@ -5,6 +5,38 @@ become a master changelog.
 
 ## Current focus
 
+**Forest Edge hare energy behavior: 2026-09-23.** Hare energy loss now occurs
+once every 10 simulation ticks. Reserve feeding uses a 6-energy trigger and a
+24-energy refill target: dropping below 6 starts refilling; after reaching 24,
+the hare stops eating until it falls below 6 again. Other species retain their
+existing per-tick metabolism. Focused tests cover the refill cycle, metabolism
+cadence, and maximum-energy upgrade behavior. Unity test verification is
+pending; the user is currently running an expedition, so avoid interrupting it.
+See the [hare feeding and mating handoff](handoffs/2026-09-23-codex-hare-full-energy-mate-seeking.md).
+
+**Field observation board pan and zoom: 2026-09-22.** The custom board now
+handles captured left-drag panning and cursor-anchored wheel zoom (0.75x–4x),
+with bounds based on the visible board area. This moves the behavior into
+`SpeciesSimulationBoard` so shell XAML rewrites cannot silently drop it again.
+Static diff checks and a scratch C# compile passed (0 errors; one external System.Net.Http version warning). Unity's live Pipeline connection was unavailable, so Editor compilation and runtime interaction still need confirmation. See the
+[pan and zoom handoff](handoffs/2026-09-22-2355-codex-board-pan-zoom.md).
+
+**Forest Edge current authored values: 2026-09-22 diagnostic batches.** Two
+Clean CellSim runs used seeds 10100-10119 at 600 and 1,200 ticks on commit
+`c6b3282`, with the authored 20x20 / 0.2-second Forest Edge setup, opposed-roll
+combat, natural attack opportunities, and no upgrades. Foxes ended extinct in
+20/20 seeds by tick 600; Hares ended extinct in 10/20 at both horizons and
+averaged 0.80 / 0.85 final individuals. Mean Fox combat kills and starvation
+deaths were 15.65 and 15.85 per run, while mean Hare births were 0.60 / 0.80.
+Bevin reports an exploratory two-stage concept with Salty: species survival to
+earn data first, where collapse without intervention is expected, then data
+investment in upgrades to build a healthy, collapse-resistant environment.
+These no-upgrade runs are only a first-stage pressure baseline; they do not test
+upgraded play or the second-stage goal. This concept is not a finalized spec or
+success gate. See the [diagnostic batch
+handoff](handoffs/2026-09-22-2200-codex-forest-edge-current-values-diagnostic-batches.md)
+and its raw reports and summaries. The September 21 42x20 Fox-6 comparison and
+mating-fix evidence remain in the [first balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md).
 **Forest Edge balance iteration: 2026-09-21.** The first matched 600-tick
 Hare/Fox pass provisionally moves Forest Edge's explicit starting Fox population
 from 4 to 6. Across seeds 10100–10119 this increased direct Fox pressure: mean

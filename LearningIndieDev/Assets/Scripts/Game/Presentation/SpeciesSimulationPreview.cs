@@ -77,6 +77,8 @@ namespace SaltyGame
                 LitterMaximum = rules.LitterMaximum;
                 LitterMaximumText = rules.LitterMaximum.ToString(CultureInfo.InvariantCulture);
                 ForageBelowEnergy = rules.ForageBelowEnergy;
+                ForagesUntilFull = rules.ForagesUntilFull;
+                EnergyLossIntervalTicks = rules.EnergyLossIntervalTicks;
                 ForageBelowEnergyText = rules.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
                 EnergyValue = rules.EnergyValue;
                 EnergyValueText = rules.EnergyValue.ToString(CultureInfo.InvariantCulture);
@@ -136,6 +138,8 @@ namespace SaltyGame
             public string LitterMaximumText;
             public int ForageBelowEnergy;
             public string ForageBelowEnergyText;
+            public bool ForagesUntilFull;
+            public int EnergyLossIntervalTicks = 1;
             public int EnergyValue;
             public string EnergyValueText;
             public int Metabolism;
@@ -2159,7 +2163,9 @@ namespace SaltyGame
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
                     trackingPersistenceSteps: draft.TrackingPersistenceSteps,
-                    behaviorStateRules: draft.BehaviorStateRules);
+                    behaviorStateRules: draft.BehaviorStateRules,
+                    foragesUntilFull: draft.ForagesUntilFull,
+                    energyLossIntervalTicks: Math.Max(1, draft.EnergyLossIntervalTicks));
             }
 
             return result;

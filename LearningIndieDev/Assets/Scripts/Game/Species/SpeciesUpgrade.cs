@@ -202,7 +202,9 @@ namespace SaltyGame
                 crowdingTolerance: crowdingTolerance,
                 fleeMovementSpeedBonus: fleeMovementSpeedBonus,
                 trackingPersistenceSteps: trackingPersistenceSteps,
-                behaviorStateRules: rules.BehaviorStateRules);
+                behaviorStateRules: rules.BehaviorStateRules,
+                foragesUntilFull: rules.ForagesUntilFull,
+                energyLossIntervalTicks: rules.EnergyLossIntervalTicks);
         }
     }
 

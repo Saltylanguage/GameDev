@@ -100,12 +100,14 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int maxReproductionGroupSize;
             [SerializeField, Min(0)] internal int startingEnergy;
             [SerializeField, Min(0)] internal int forageBelowEnergy;
+            [SerializeField] internal bool foragesUntilFull;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
             [SerializeField, Min(0)] internal int crowdingEnergyPenalty;
             [SerializeField, Min(0f)] internal float startingFoodReserve;
             [SerializeField, Range(0f, 1f)] internal float seedDropChance;
             [SerializeField, Min(0)] internal int energyValue;
             [SerializeField] internal int metabolism = 1;
+            [SerializeField, Min(1)] internal int energyLossIntervalTicks = 1;
             [Header("Awareness")]
             [SerializeField, Min(0)] internal int visionRange;
             [SerializeField, Min(0)] internal int intelligence;
@@ -150,7 +152,9 @@ namespace SaltyGame
                     maximumEnergy,
                     litterMinimum,
                     litterMaximum,
-                    behaviorStateRules: behaviorStateRules);
+                    behaviorStateRules: behaviorStateRules,
+                    foragesUntilFull: foragesUntilFull,
+                    energyLossIntervalTicks: energyLossIntervalTicks);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -174,12 +178,14 @@ namespace SaltyGame
                     maxReproductionGroupSize = rules.MaxReproductionGroupSize,
                     startingEnergy = rules.StartingEnergy,
                     forageBelowEnergy = rules.ForageBelowEnergy,
+                    foragesUntilFull = rules.ForagesUntilFull,
                     wiltChance = rules.WiltChance,
                     crowdingEnergyPenalty = rules.CrowdingEnergyPenalty,
                     startingFoodReserve = rules.StartingFoodReserve,
                     seedDropChance = rules.SeedDropChance,
                     energyValue = rules.EnergyValue,
                     metabolism = rules.Metabolism,
+                    energyLossIntervalTicks = rules.EnergyLossIntervalTicks,
                     visionRange = rules.Awareness.VisionRange,
                     intelligence = rules.Awareness.Intelligence,
                     maximumEnergy = rules.MaximumEnergy,

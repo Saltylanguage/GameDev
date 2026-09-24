@@ -77,6 +77,7 @@ namespace SaltyGame
                 return;
             }
 
+            simulationBoard.ZoomRequested += HandleBoardZoomRequested;
             simulationBoard.SetSpriteVisuals(
                 viewModel.AnimalSprites,
                 viewModel.GrassTerrainTiles,
@@ -101,6 +102,11 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            if (simulationBoard != null)
+            {
+                simulationBoard.ZoomRequested -= HandleBoardZoomRequested;
+            }
+
             if (boardViewModel != null)
             {
                 boardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
@@ -163,6 +169,11 @@ namespace SaltyGame
             {
                 simulationBoard.Zoom = viewModel.BoardZoom;
             }
+        }
+
+        void HandleBoardZoomRequested(float zoom)
+        {
+            viewModel?.SetBoardZoom(zoom);
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

@@ -29,8 +29,8 @@ namespace SaltyGame
 
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
-        const float MinimumBoardZoom = 0.5f;
-        const float MaximumBoardZoom = 2f;
+        const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
+        const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;
         const float BoardZoomStep = 0.25f;
 
         static readonly string[] AnimalSpriteNames =
@@ -879,7 +879,7 @@ namespace SaltyGame
             CloseWindowCommand = new DelegateCommand(CloseWindow, () => CanCloseWindow);
         }
 
-        void SetBoardZoom(float value)
+        internal void SetBoardZoom(float value)
         {
             var next = Mathf.Clamp(value, MinimumBoardZoom, MaximumBoardZoom);
             if (Mathf.Approximately(boardZoom, next))

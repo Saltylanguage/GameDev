@@ -12,6 +12,9 @@ namespace SaltyGame
     /// </summary>
     public sealed class SpeciesSimulationBoard : FrameworkElement
     {
+        internal const float MinimumZoomScale = 0.75f;
+        internal const float MaximumZoomScale = 4f;
+        const float ZoomPerWheelNotch = 1.15f;
         const float FoxHuntCueDuration = 0.55f;
         const float MatingCueDuration = 0.82f;
         static readonly string[] HeartPixels =
@@ -59,11 +62,29 @@ namespace SaltyGame
         float matingCueStartedAt;
         float nextMatingCueFrame;
         bool matingCueActive;
+        readonly MatrixTransform panZoomTransform;
+        float panOffsetX;
+        float panOffsetY;
+        Point lastPanPosition;
+        bool isPanning;
         SolidColorBrush foxHuntShadowBrush;
         SolidColorBrush foxHuntAccentBrush;
         SolidColorBrush heartShadowBrush;
         SolidColorBrush heartFillBrush;
         SolidColorBrush sparkleBrush;
+
+        public event Action<float> ZoomRequested;
+
+        public SpeciesSimulationBoard()
+        {
+            panZoomTransform = new MatrixTransform();
+            panZoomTransform.Matrix = new Matrix(1f, 0f, 0f, 1f, 0f, 0f);
+            RenderTransform = panZoomTransform;
+            MouseLeftButtonDown += OnPanStarted;
+            MouseWheel += OnZoom;
+            LostMouseCapture += OnLostMouseCapture;
+            Unloaded += OnBoardUnloaded;
+        }
 
         /// <summary>Multiplier applied after fitting the grid to the board area.</summary>
         public float Zoom
@@ -71,13 +92,15 @@ namespace SaltyGame
             get => zoom;
             set
             {
-                var next = Mathf.Clamp(value, 0.5f, 2f);
+                var next = Mathf.Clamp(value, MinimumZoomScale, MaximumZoomScale);
                 if (Mathf.Approximately(zoom, next))
                 {
                     return;
                 }
 
                 zoom = next;
+                ConstrainPanToViewport();
+                ApplyPanZoomTransform();
                 InvalidateVisual();
             }
         }
@@ -221,7 +244,189 @@ namespace SaltyGame
 
             snapshot = nextSnapshot;
             playerSpecies = snapshot?.PlayerSpecies ?? default;
+            ConstrainPanToViewport();
+            ApplyPanZoomTransform();
             InvalidateVisual();
+        }
+
+        void OnPanStarted(object sender, MouseButtonEventArgs e)
+        {
+            var viewport = Parent as UIElement;
+            if (viewport == null)
+            {
+                return;
+            }
+
+            lastPanPosition = e.GetPosition(viewport);
+            if (!CaptureMouse())
+            {
+                return;
+            }
+
+            isPanning = true;
+            MouseMove += OnPanMoved;
+            MouseLeftButtonUp += OnPanEnded;
+            e.Handled = true;
+        }
+
+        void OnPanMoved(object sender, MouseEventArgs e)
+        {
+            if (!isPanning)
+            {
+                return;
+            }
+
+            if (e.LeftButton != MouseButtonState.Pressed)
+            {
+                ReleaseMouseCapture();
+                EndPan();
+                return;
+            }
+
+            var viewport = Parent as UIElement;
+            if (viewport == null)
+            {
+                return;
+            }
+
+            var position = e.GetPosition(viewport);
+            panOffsetX += position.X - lastPanPosition.X;
+            panOffsetY += position.Y - lastPanPosition.Y;
+            lastPanPosition = position;
+            ConstrainPanToViewport();
+            ApplyPanZoomTransform();
+            e.Handled = true;
+        }
+
+        void OnPanEnded(object sender, MouseButtonEventArgs e)
+        {
+            ReleaseMouseCapture();
+            EndPan();
+            e.Handled = true;
+        }
+
+        void OnLostMouseCapture(object sender, MouseEventArgs e)
+        {
+            EndPan();
+        }
+
+        void OnBoardUnloaded(object sender, RoutedEventArgs e)
+        {
+            EndPan();
+            ReleaseMouseCapture();
+        }
+
+        void EndPan()
+        {
+            if (!isPanning)
+            {
+                return;
+            }
+
+            isPanning = false;
+            MouseMove -= OnPanMoved;
+            MouseLeftButtonUp -= OnPanEnded;
+        }
+
+        void OnZoom(object sender, MouseWheelEventArgs e)
+        {
+            if (snapshot == null || e.Delta == 0)
+            {
+                return;
+            }
+
+            var viewport = Parent as UIElement;
+            if (viewport == null)
+            {
+                return;
+            }
+
+            var oldZoom = Zoom;
+            var nextZoom = Mathf.Clamp(
+                oldZoom * Mathf.Pow(ZoomPerWheelNotch, e.Delta / 120f),
+                MinimumZoomScale,
+                MaximumZoomScale);
+            if (Mathf.Approximately(nextZoom, oldZoom))
+            {
+                return;
+            }
+
+            var width = ActualWidth > 0f ? ActualWidth : Width;
+            var height = ActualHeight > 0f ? ActualHeight : Height;
+            if (width <= 0f || height <= 0f)
+            {
+                return;
+            }
+
+            GetBoardLayout(width, height, out var oldCellSize, out var oldLeft, out var oldTop);
+            if (oldCellSize <= 0f)
+            {
+                return;
+            }
+
+            var position = e.GetPosition(viewport);
+            var contentX = (position.X - panOffsetX - oldLeft) / oldCellSize;
+            var contentY = (position.Y - panOffsetY - oldTop) / oldCellSize;
+            if (ZoomRequested != null)
+            {
+                ZoomRequested(nextZoom);
+            }
+            else
+            {
+                Zoom = nextZoom;
+            }
+
+            GetBoardLayout(width, height, out var newCellSize, out var newLeft, out var newTop);
+            panOffsetX = position.X - newLeft - contentX * newCellSize;
+            panOffsetY = position.Y - newTop - contentY * newCellSize;
+            ConstrainPanToViewport();
+            ApplyPanZoomTransform();
+            e.Handled = true;
+        }
+
+        void ConstrainPanToViewport()
+        {
+            if (snapshot == null || snapshot.Width <= 0 || snapshot.Height <= 0)
+            {
+                return;
+            }
+
+            var viewport = Parent as FrameworkElement;
+            var viewportWidth = viewport != null ? viewport.ActualWidth : ActualWidth;
+            var viewportHeight = viewport != null ? viewport.ActualHeight : ActualHeight;
+            var width = ActualWidth > 0f ? ActualWidth : Width;
+            var height = ActualHeight > 0f ? ActualHeight : Height;
+            if (viewportWidth <= 0f || viewportHeight <= 0f || width <= 0f || height <= 0f)
+            {
+                return;
+            }
+
+            GetBoardLayout(width, height, out var cellSize, out var left, out var top);
+            var right = left + cellSize * snapshot.Width;
+            var bottom = top + cellSize * snapshot.Height;
+            ConstrainOffset(viewportWidth, left, right, ref panOffsetX);
+            ConstrainOffset(viewportHeight, top, bottom, ref panOffsetY);
+        }
+
+        void GetBoardLayout(float width, float height, out float cellSize, out float left, out float top)
+        {
+            cellSize = Math.Min(width / snapshot.Width, height / snapshot.Height) * Zoom;
+            left = (width - cellSize * snapshot.Width) * 0.5f;
+            top = (height - cellSize * snapshot.Height) * 0.5f;
+        }
+
+        static void ConstrainOffset(float viewportSize, float contentStart, float contentEnd, ref float offset)
+        {
+            var minimumOffset = viewportSize - contentEnd;
+            var maximumOffset = -contentStart;
+            offset = minimumOffset > maximumOffset
+                ? (viewportSize - contentStart - contentEnd) * 0.5f
+                : Mathf.Clamp(offset, minimumOffset, maximumOffset);
+        }
+
+        void ApplyPanZoomTransform()
+        {
+            panZoomTransform.Matrix = new Matrix(1f, 0f, 0f, 1f, panOffsetX, panOffsetY);
         }
 
         public void SetPlayerSpecies(SpeciesId species)
