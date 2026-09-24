@@ -17,6 +17,7 @@ namespace SaltyGame
         ForageBelowEnergy,
         ReproductionChance,
         TrackingPersistenceSteps,
+        PopulationReinforcement,
     }
 
     public sealed class SpeciesUpgrade
@@ -36,6 +37,15 @@ namespace SaltyGame
             if (value <= 0f || float.IsNaN(value) || float.IsInfinity(value))
             {
                 throw new ArgumentOutOfRangeException(nameof(value), value, "Upgrade value must be finite and greater than zero.");
+            }
+
+            if (type == SpeciesUpgradeType.PopulationReinforcement
+                && (value > int.MaxValue || value != Math.Truncate(value)))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    value,
+                    "Population reinforcement must be a positive whole number.");
             }
 
             Id = id;
@@ -92,6 +102,8 @@ namespace SaltyGame
                 case SpeciesUpgradeType.TrackingPersistenceSteps:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.TrackingPersistenceSteps, Value));
                     break;
+                case SpeciesUpgradeType.PopulationReinforcement:
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
             }
@@ -99,10 +111,13 @@ namespace SaltyGame
             return new SpeciesUpgradeSnapshot(
                 Id,
                 SpeciesUpgradeCatalog.GetDisplayName(Id),
-                "Legacy upgrade converted to the run upgrade contract.",
+                Type == SpeciesUpgradeType.PopulationReinforcement
+                    ? $"Add {(int)Value} {targetSpecies.Value} to the next phase."
+                    : "Legacy upgrade converted to the run upgrade contract.",
                 targetSpecies,
                 Cost,
-                modifiers);
+                modifiers,
+                populationToAdd: Type == SpeciesUpgradeType.PopulationReinforcement ? (int)Value : 0);
         }
 
         public SpeciesRules Apply(SpeciesRules rules)
@@ -164,6 +179,8 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.TrackingPersistenceSteps:
                     trackingPersistenceSteps += (int)Value;
+                    break;
+                case SpeciesUpgradeType.PopulationReinforcement:
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
@@ -245,6 +262,9 @@ namespace SaltyGame
         public const string BroodDriveId = "brood-drive";
         public const int BroodDriveMaxLevel = 10;
         public const float BroodDriveChancePerLevel = 0.01f;
+        public const string PopulationReinforcementId = "population-reinforcement";
+        public const int PopulationReinforcementCount = 1;
+        public const int PopulationReinforcementMaxLevel = int.MaxValue;
 
         public static int GetMaxLevel(string upgradeId)
         {
@@ -257,7 +277,13 @@ namespace SaltyGame
                 : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
                 : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
                 : upgradeId == BroodDriveId ? BroodDriveMaxLevel
+                : upgradeId == PopulationReinforcementId ? PopulationReinforcementMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
+        }
+
+        public static bool IsRepeatableRunUpgradeId(string upgradeId)
+        {
+            return string.Equals(upgradeId, PopulationReinforcementId, StringComparison.Ordinal);
         }
         public const string ThreatExposureId = "threat-exposure";
         public const string LegacyThreatResponseId = "threat-response";
@@ -361,6 +387,12 @@ namespace SaltyGame
                         5,
                         SpeciesUpgradeType.ReproductionChance,
                         BroodDriveChancePerLevel);
+                case PopulationReinforcementId:
+                    return new SpeciesUpgrade(
+                        PopulationReinforcementId,
+                        5,
+                        SpeciesUpgradeType.PopulationReinforcement,
+                        PopulationReinforcementCount);
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
@@ -454,6 +486,8 @@ namespace SaltyGame
                     return "HUNT URGENCY";
                 case BroodDriveId:
                     return "BROOD DRIVE";
+                case PopulationReinforcementId:
+                    return "REINFORCEMENTS";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return "THREAT EXPOSURE";
@@ -578,6 +612,7 @@ namespace SaltyGame
             {
                 Create(upgradeIds[primaryIndex]),
                 Create(upgradeIds[alternativeIndex]),
+                Create(PopulationReinforcementId),
             };
         }
     }

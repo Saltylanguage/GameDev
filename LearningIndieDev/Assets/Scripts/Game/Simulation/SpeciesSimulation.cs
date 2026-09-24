@@ -23,6 +23,124 @@ namespace SaltyGame
         const int ReproductionCooldownTicks = 24;
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
 
+        public static bool CanAddBoundaryPopulation(
+            Grid<SpeciesCell> source,
+            int amount,
+            int maxPopulation)
+        {
+            ValidateBoundaryPopulationArguments(source, amount, maxPopulation);
+            var openCellCount = 0;
+            var populationCount = 0;
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (!cell.IsOccupied && cell.IsPassable)
+                    {
+                        openCellCount++;
+                    }
+
+                    if (cell.IsCreature || cell.IsPlantResource)
+                    {
+                        populationCount++;
+                    }
+                }
+            }
+
+            return openCellCount >= amount
+                && (maxPopulation == 0 || amount <= maxPopulation - populationCount);
+        }
+
+        public static bool TryAddBoundaryPopulation(
+            Grid<SpeciesCell> source,
+            SpeciesId species,
+            SpeciesRules speciesRules,
+            int amount,
+            int maxPopulation,
+            int seed,
+            out Grid<SpeciesCell> result)
+        {
+            if (!species.IsValid)
+            {
+                throw new ArgumentException("Target species id is required.", nameof(species));
+            }
+
+            if (speciesRules == null)
+            {
+                throw new ArgumentNullException(nameof(speciesRules));
+            }
+
+            if (!CanAddBoundaryPopulation(source, amount, maxPopulation))
+            {
+                result = null;
+                return false;
+            }
+
+            var candidates = new List<int>();
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var cell = source.GetCell(x, y);
+                    if (!cell.IsOccupied && cell.IsPassable)
+                    {
+                        candidates.Add(x + y * source.Width);
+                    }
+                }
+            }
+
+            var random = new System.Random(seed);
+            for (var index = 0; index < amount; index++)
+            {
+                var selectedIndex = index + random.Next(candidates.Count - index);
+                var temporary = candidates[index];
+                candidates[index] = candidates[selectedIndex];
+                candidates[selectedIndex] = temporary;
+            }
+
+            result = source.Copy();
+            var energy = speciesRules.MaximumEnergy > 0
+                ? Math.Min(speciesRules.MaximumEnergy, speciesRules.StartingEnergy)
+                : speciesRules.StartingEnergy;
+            for (var index = 0; index < amount; index++)
+            {
+                var cellIndex = candidates[index];
+                var x = cellIndex % source.Width;
+                var y = cellIndex / source.Width;
+                result.SetCell(x, y, result.GetCell(x, y).WithEntity(
+                    species,
+                    health: 1,
+                    energy: energy,
+                    age: 0,
+                    foodEaten: 0,
+                    foodReserve: 0f));
+            }
+
+            return true;
+        }
+
+        static void ValidateBoundaryPopulationArguments(
+            Grid<SpeciesCell> source,
+            int amount,
+            int maxPopulation)
+        {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
+            if (amount <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount), amount, "Population addition must be positive.");
+            }
+
+            if (maxPopulation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxPopulation), maxPopulation, "Maximum population cannot be negative.");
+            }
+        }
+
         public static bool DoesOpposedRollHit(
             int attackRoll,
             int attackModifier,

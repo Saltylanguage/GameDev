@@ -751,11 +751,19 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ExperimentalHerbivoreOffersKeepTheChosenPathAndCycleTheOtherFour()
+        public void ExperimentalOffersKeepTwoRotatingChoicesAndAlwaysShowReinforcementsThird()
         {
             var initial = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(null, rotation: 0, seed: 42);
-            Assert.That(initial, Has.Length.EqualTo(2));
+            Assert.That(initial, Has.Length.EqualTo(3));
             Assert.That(initial[0].Id, Is.Not.EqualTo(initial[1].Id));
+            Assert.That(initial[2].Id, Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementId));
+
+            var predator = SpeciesUpgradeCatalog.CreateExperimentalPredatorOffer(null, rotation: 0, seed: 42);
+            Assert.That(predator, Has.Length.EqualTo(3));
+            Assert.That(predator[2].Id, Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementId));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.PopulationReinforcementId),
+                Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementMaxLevel));
 
             var alternatives = new HashSet<string>();
             for (var rotation = 0; rotation < 4; rotation++)
@@ -776,6 +784,7 @@ namespace SaltyGame.Tests
                 rotation: 0,
                 seed: 42);
             Assert.That(legacyOffer[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureId));
+            Assert.That(legacyOffer[2].Id, Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementId));
         }
 
         [Test]

@@ -5,6 +5,16 @@ become a master changelog.
 
 ## Current focus
 
+**Population Reinforcements phase Mutation: 2026-09-23.** The active
+experimental offer now uses its third slot for a repeatable `+1` individual of
+the player species. A seeded placement chooses an unoccupied, passable cell for
+the next phase, respects the population cap, and is retained if the expedition
+restarts. This is one selection per phase decision; no balance batch has been
+run. The option inherits the current legacy choice cost of 5 Data. The existing
+S3-04 product notes describe Mutations as free, so the broader economy
+discrepancy remains unresolved. See the
+[Population Reinforcements handoff](handoffs/2026-09-23-codex-population-reinforcement-mutation.md).
+
 **Fox hunting and mating energy: 2026-09-23.** Foxes now prioritize
 hunting when below 75% of maximum energy and prey is available; that priority
 interrupts the short Mating state and defers a reproduction outcome while the
@@ -225,11 +235,12 @@ The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
 support a precise claim; raw statistics remain off the player surface. The
-approved S3 bridge uses the five existing experimental Hare Mutations, shows
-three distinct choices per boundary, allows a selected Mutation to return at a
-later boundary, and increments its level while stacking/reapplying its effect
-when selected again. Mutation selection is free and Skip has no S3-04 reward.
-The next step is implementation plus the bounded candidate/evidence review.
+approved S3 bridge uses the five existing experimental Hare Mutations as the
+rotating offer pool and shows three choices per boundary. The third choice is
+now the fixed, repeatable Reinforcements Mutation, which adds one selected
+species individual at a deterministic open cell in the following phase.
+Selected Mutations can return at later boundaries; Skip has no S3-04 reward.
+The population addition and its balance remain provisional pending evidence.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
