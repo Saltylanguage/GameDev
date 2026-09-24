@@ -80,6 +80,49 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void MaximumEnergyUpgradeScalesFoxForageAndMatingPercentages()
+        {
+            var rules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: EmptyPattern,
+                attackAmount: 0,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: null,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                role: SpeciesRole.Carnivore,
+                maximumEnergy: 240,
+                forageThresholdFraction: 0.75f,
+                matingEnergyThresholdFraction: 0.25f,
+                matingEnergyCostFraction: 0.15f);
+
+            var upgraded = SpeciesAttributeRegistry.Apply(
+                rules,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumEnergy, 4f));
+
+            Assert.That(upgraded.ForageThresholdEnergy, Is.EqualTo(183));
+            Assert.That(upgraded.HasMatingEnergy(60), Is.False);
+            Assert.That(upgraded.HasMatingEnergy(61), Is.True);
+            Assert.That(upgraded.MatingEnergyCost, Is.EqualTo(37));
+            Assert.That(upgraded.ForageThresholdFraction, Is.EqualTo(0.75f));
+            Assert.That(upgraded.MatingEnergyThresholdFraction, Is.EqualTo(0.25f));
+            Assert.That(upgraded.MatingEnergyCostFraction, Is.EqualTo(0.15f));
+
+            var legacyUpgrade = new SpeciesUpgrade(
+                "fox-rule-preservation-test",
+                cost: 0,
+                type: SpeciesUpgradeType.MovementSpeed,
+                value: 0.5f).Apply(rules);
+
+            Assert.That(legacyUpgrade.ForageThresholdEnergy, Is.EqualTo(180));
+            Assert.That(legacyUpgrade.HasMatingEnergy(60), Is.True);
+            Assert.That(legacyUpgrade.MatingEnergyCost, Is.EqualTo(36));
+        }
+
+        [Test]
         public void LegacyUpgradeSnapshotPreservesLegacyAttackEffects()
         {
             var legacy = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerAttackId);

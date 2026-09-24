@@ -9,30 +9,18 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6dc8c8d37aa2456db179a3f374d16515, type: 3}
-  m_Name: owl
-  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
-  id: owl
-  movementSpeed: 0.9
+  m_Script: {fileID: 11500000, guid: 8c94efc4b1594b759d427f497dda78db, type: 3}
+  m_Name: hare
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.HerbivoreSpeciesDefinitionAsset
+  id: hare
+  movementSpeed: 2.2
   movementPattern:
-  - {x: -1, y: 1}
   - {x: 0, y: 1}
-  - {x: 1, y: 1}
-  - {x: -1, y: 0}
   - {x: 1, y: 0}
-  - {x: -1, y: -1}
   - {x: 0, y: -1}
-  - {x: 1, y: -1}
-  attackPattern:
-  - {x: -1, y: 1}
-  - {x: 0, y: 1}
-  - {x: 1, y: 1}
   - {x: -1, y: 0}
-  - {x: 1, y: 0}
-  - {x: -1, y: -1}
-  - {x: 0, y: -1}
-  - {x: 1, y: -1}
-  attackAmount: 2
+  attackPattern: []
+  attackAmount: 1
   blockPattern:
   - {x: 0, y: 1}
   - {x: 1, y: 0}
@@ -48,26 +36,39 @@ MonoBehaviour:
   - {x: -1, y: -1}
   - {x: 0, y: -1}
   - {x: 1, y: -1}
-  dietTargetId: snail
+  dietTargetId: plant
   reproductionPattern:
+  - {x: -1, y: 1}
   - {x: 0, y: 1}
-  - {x: 1, y: 0}
-  - {x: 0, y: -1}
+  - {x: 1, y: 1}
   - {x: -1, y: 0}
+  - {x: 1, y: 0}
+  - {x: -1, y: -1}
+  - {x: 0, y: -1}
+  - {x: 1, y: -1}
   reproductionNeighborCount: 1
-  reproductionChance: 0.02
-  reproductionFoodRequired: 1
+  reproductionChance: 0.04
+  reproductionFoodRequired: 16
   maxReproductionGroupSize: 3
-  startingEnergy: 28
-  forageBelowEnergy: 28
+  startingEnergy: 6
+  forageBelowEnergy: 6
+  forageThresholdFraction: 0
+  matingEnergyThresholdFraction: 0
+  matingEnergyCostFraction: 0
+  foragesUntilFull: 1
   wiltChance: 0
-  crowdingEnergyPenalty: 1
+  crowdingEnergyPenalty: 2
   startingFoodReserve: 0
-  seedDropChance: 0
-  energyValue: 8
+  seedDropChance: 0.05
+  energyValue: 96
   metabolism: 1
+  energyLossIntervalTicks: 10
   visionRange: 5
   intelligence: 1
+  maximumEnergy: 24
+  litterMinimum: 1
+  litterMaximum: 2
+  behaviorStateRules: []
   alphaChance: 0
   alphaHealthBonus: 0
   alphaEnergyBonus: 0

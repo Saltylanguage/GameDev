@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 6dc8c8d37aa2456db179a3f374d16515, type: 3}
-  m_Name: carnivore
+  m_Name: fox
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.CarnivoreSpeciesDefinitionAsset
-  id: carnivore
-  movementSpeed: 1.5
+  id: fox
+  movementSpeed: 1
   movementPattern:
   - {x: -1, y: 1}
   - {x: 0, y: 1}
@@ -48,29 +48,35 @@ MonoBehaviour:
   - {x: -1, y: -1}
   - {x: 0, y: -1}
   - {x: 1, y: -1}
-  dietTargetId: herbivore
+  dietTargetId: hare
   reproductionPattern:
   - {x: 0, y: 1}
   - {x: 1, y: 0}
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 1
-  reproductionChance: 0.03
-  reproductionFoodRequired: 16
+  reproductionChance: 0.45
+  reproductionFoodRequired: 48
   maxReproductionGroupSize: 3
-  startingEnergy: 48
-  forageBelowEnergy: 16
+  startingEnergy: 120
+  forageBelowEnergy: 120
+  forageThresholdFraction: 0.75
+  matingEnergyThresholdFraction: 0.25
+  matingEnergyCostFraction: 0.15
+  foragesUntilFull: 0
   wiltChance: 0
   crowdingEnergyPenalty: 1
   startingFoodReserve: 0
   seedDropChance: 0
-  energyValue: 12
+  energyValue: 100
   metabolism: 1
-  visionRange: 4
+  energyLossIntervalTicks: 1
+  visionRange: 12
   intelligence: 1
-  maximumEnergy: 96
+  maximumEnergy: 240
   litterMinimum: 1
   litterMaximum: 1
+  behaviorStateRules: []
   alphaChance: 0
   alphaHealthBonus: 0
   alphaEnergyBonus: 0

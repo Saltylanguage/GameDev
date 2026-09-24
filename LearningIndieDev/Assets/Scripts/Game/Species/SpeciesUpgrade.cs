@@ -204,7 +204,10 @@ namespace SaltyGame
                 trackingPersistenceSteps: trackingPersistenceSteps,
                 behaviorStateRules: rules.BehaviorStateRules,
                 foragesUntilFull: rules.ForagesUntilFull,
-                energyLossIntervalTicks: rules.EnergyLossIntervalTicks);
+                energyLossIntervalTicks: rules.EnergyLossIntervalTicks,
+                forageThresholdFraction: rules.ForageThresholdFraction,
+                matingEnergyThresholdFraction: rules.MatingEnergyThresholdFraction,
+                matingEnergyCostFraction: rules.MatingEnergyCostFraction);
         }
     }
 

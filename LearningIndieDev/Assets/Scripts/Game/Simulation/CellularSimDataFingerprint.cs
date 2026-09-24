@@ -120,6 +120,9 @@ namespace SaltyGame
             Append(builder, rules.MaxReproductionGroupSize);
             Append(builder, rules.StartingEnergy);
             Append(builder, rules.ForageBelowEnergy);
+            Append(builder, rules.ForageThresholdFraction);
+            Append(builder, rules.MatingEnergyThresholdFraction);
+            Append(builder, rules.MatingEnergyCostFraction);
             Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
             Append(builder, rules.LitterMinimum);
