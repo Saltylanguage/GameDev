@@ -290,7 +290,12 @@ namespace SaltyGame
         public int GetUpgradeLevel(string upgradeId) => progression?.GetUpgradeLevel(upgradeId) ?? 0;
         public int RewardOptionCount => usingAuthoredRewardOptions
             ? authoredRewardOptions.Length
-            : rewardOptions.Length;
+            : previewState == SpeciesPreviewState.PhaseDecision
+                ? rewardOptions.Length
+                : rewardOptions.Length > 0
+                    && rewardOptions[rewardOptions.Length - 1].Type == SpeciesUpgradeType.PopulationReinforcement
+                    ? rewardOptions.Length - 1
+                    : rewardOptions.Length;
         public string GetRewardOptionId(int rewardIndex)
         {
             if (usingAuthoredRewardOptions)
@@ -300,7 +305,7 @@ namespace SaltyGame
                     : string.Empty;
             }
 
-            return rewardIndex >= 0 && rewardIndex < rewardOptions.Length
+            return rewardIndex >= 0 && rewardIndex < RewardOptionCount
                 ? rewardOptions[rewardIndex].Id
                 : string.Empty;
         }
@@ -317,17 +322,21 @@ namespace SaltyGame
                 return FormatAuthoredRewardOption(authoredRewardOptions[rewardIndex]);
             }
 
-            if (rewardIndex < 0 || rewardIndex >= rewardOptions.Length)
+            if (rewardIndex < 0 || rewardIndex >= RewardOptionCount)
             {
                 return string.Empty;
             }
 
             var legacyUpgrade = rewardOptions[rewardIndex];
+            var legacySnapshot = legacyUpgrade.CreateSnapshot(playerSpecies);
+            var effectSummary = legacySnapshot.PopulationToAdd > 0
+                ? $"+{legacySnapshot.PopulationToAdd} {playerSpecies.Value.ToUpperInvariant()}"
+                : string.Join(", ", legacySnapshot.Modifiers.Select(FormatModifierForDisplay));
             var display = string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}\n{1}\nCOST {2} DATA\n{3}",
                 SpeciesUpgradeCatalog.GetDisplayName(legacyUpgrade.Id),
-                string.Join(", ", legacyUpgrade.CreateSnapshot(playerSpecies).Modifiers.Select(FormatModifierForDisplay)),
+                effectSummary,
                 legacyUpgrade.Cost,
                 GetLegacyRewardStatus(legacyUpgrade));
             if (!coupledSpeciesResponsesEnabled
@@ -1414,6 +1423,7 @@ namespace SaltyGame
                 && progression != null
                 && rewardIndex >= 0
                 && rewardIndex < rewardOptions.Length
+                && rewardOptions[rewardIndex].Type != SpeciesUpgradeType.PopulationReinforcement
                 && progression.CanPurchase(rewardOptions[rewardIndex]);
         }
 
@@ -1567,12 +1577,14 @@ namespace SaltyGame
                 ? simulationHelper.ContinueWithBoundaryState(
                     nextRules,
                     CreateExperimentalOptions(),
-                    GetAppliedRunUpgrades())
+                    GetAppliedRunUpgrades(),
+                    authoredUpgrade)
                 : simulationManager != null
                     && simulationManager.ContinueWithBoundaryState(
                         nextRules,
                         CreateExperimentalOptions(),
-                        GetAppliedRunUpgrades());
+                        GetAppliedRunUpgrades(),
+                        authoredUpgrade);
             if (!continued)
             {
                 // The status check above makes this an unreachable path in the
@@ -1602,8 +1614,12 @@ namespace SaltyGame
             }
 
             var snapshot = upgrade.CreateSnapshot(playerSpecies);
-            if (!snapshot.CanApplyAfterRunStart
-                || !coupledSpeciesResponsesEnabled
+            if (!snapshot.CanApplyAfterRunStart || !CanAddBoundaryPopulation(snapshot))
+            {
+                return false;
+            }
+
+            if (!coupledSpeciesResponsesEnabled
                 || !SpeciesUpgradeCatalog.TryGetCoupledResponse(
                     playerSpecies,
                     upgrade.Id,
@@ -1634,6 +1650,18 @@ namespace SaltyGame
             if (progression.GetUpgradeLevel(upgrade.Id) >= SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id))
             {
                 return "MAX LEVEL";
+            }
+
+            if (upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
+                && previewState != SpeciesPreviewState.PhaseDecision)
+            {
+                return "AVAILABLE AT PHASE BREAK";
+            }
+
+            if (upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
+                && !CanAddBoundaryPopulation(upgrade.CreateSnapshot(playerSpecies)))
+            {
+                return "NO ROOM FOR REINFORCEMENTS";
             }
 
             return progression.Currency < upgrade.Cost
@@ -2032,14 +2060,24 @@ namespace SaltyGame
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
-                || progression.GetUpgradeLevel(upgrade.Id) > 0
+                || (progression.GetUpgradeLevel(upgrade.Id) > 0
+                    && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
+                        || upgrade.PopulationToAdd == 0))
                 || progression.Currency < upgrade.Cost)
             {
                 return false;
             }
 
+            if (upgrade.PopulationToAdd > 0 && previewState != SpeciesPreviewState.PhaseDecision)
+            {
+                return false;
+            }
+
             if (previewState == SpeciesPreviewState.PhaseDecision
-                && (!continuousPhasesEnabled || phaseDecisionCommitted || !upgrade.CanApplyAfterRunStart))
+                && (!continuousPhasesEnabled
+                    || phaseDecisionCommitted
+                    || !upgrade.CanApplyAfterRunStart
+                    || !CanAddBoundaryPopulation(upgrade)))
             {
                 return false;
             }
@@ -2116,14 +2154,33 @@ namespace SaltyGame
 
         static string FormatSnapshotSummary(SpeciesUpgradeSnapshot upgrade, bool appliedToCurrentRun = false)
         {
-            var modifiers = string.Join(
-                ", ",
-                upgrade.Modifiers.Select(
-                    FormatModifierForDisplay));
+            var effects = upgrade.PopulationToAdd > 0
+                ? $"Adds {upgrade.PopulationToAdd} {upgrade.TargetSpecies.Value} to the next phase at a deterministic open cell."
+                : string.Join(", ", upgrade.Modifiers.Select(FormatModifierForDisplay));
             var timing = appliedToCurrentRun
-                ? "Applied to this run and carried into the next run."
+                ? "Added to the next phase and retained if this run restarts."
                 : "Applied to the next run.";
-            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {modifiers}. {timing}";
+            return $"{upgrade.DisplayName} — {upgrade.Description} Effects: {effects}. {timing}";
+        }
+
+        bool CanAddBoundaryPopulation(SpeciesUpgradeSnapshot upgrade)
+        {
+            if (upgrade == null || upgrade.PopulationToAdd == 0)
+            {
+                return true;
+            }
+
+            if (Run == null
+                || !rules.TryGetValue(upgrade.TargetSpecies, out _)
+                || !SpeciesSimulation.CanAddBoundaryPopulation(Run.Cells, upgrade.PopulationToAdd, maxPopulation))
+            {
+                return false;
+            }
+
+            return SpeciesSimulation.CanAddBoundaryPopulation(
+                Run.CopyInitialCells(),
+                upgrade.PopulationToAdd,
+                maxPopulation);
         }
 
         static string FormatModifierForDisplay(SpeciesUpgradeModifier modifier)

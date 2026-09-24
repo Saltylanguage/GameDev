@@ -112,11 +112,12 @@ namespace SaltyGame
         public bool ContinueWithBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
-            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout,
+            SpeciesUpgradeSnapshot selectedUpgrade = null)
         {
             if (runner == null
                 || runner.Run.Status != SimulationRunStatus.AwaitingDecision
-                || !runner.InstallBoundaryState(nextRules, nextExperimentalOptions, nextUpgradeLoadout)
+                || !runner.InstallBoundaryState(nextRules, nextExperimentalOptions, nextUpgradeLoadout, selectedUpgrade)
                 || !runner.Run.ContinueWithoutUpgrade())
             {
                 return false;

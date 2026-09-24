@@ -148,8 +148,11 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
+            var currentLevel = GetUpgradeLevel(upgrade.Id);
             if (upgrade.TargetSpecies != Definition.Id
-                || GetUpgradeLevel(upgrade.Id) > 0)
+                || (currentLevel > 0
+                    && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
+                        || upgrade.PopulationToAdd == 0)))
             {
                 return false;
             }
@@ -172,7 +175,7 @@ namespace SaltyGame
 
             var nextRules = upgrade.Apply(CurrentRules);
             CurrentRules = nextRules;
-            purchasedUpgradeLevels[upgrade.Id] = 1;
+            purchasedUpgradeLevels[upgrade.Id] = currentLevel + 1;
             orderedUpgradeIds.Add(upgrade.Id);
             appliedRunUpgrades.Add(upgrade);
             PurchasedUpgradeCount++;

@@ -76,12 +76,14 @@ namespace SaltyGame
         public bool ContinueWithBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
-            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout,
+            SpeciesUpgradeSnapshot selectedUpgrade = null)
         {
             return simulationManager.ContinueWithBoundaryState(
                 nextRules,
                 nextExperimentalOptions,
-                nextUpgradeLoadout);
+                nextUpgradeLoadout,
+                selectedUpgrade);
         }
 
         public bool EndRun()

@@ -130,7 +130,7 @@ namespace SaltyGame
 
     public sealed class SimulationRunState
     {
-        readonly Grid<SpeciesCell> initialCells;
+        Grid<SpeciesCell> initialCells;
         readonly List<SpeciesPopulationSnapshot> populationHistory;
         readonly List<SpeciesUpgradeSnapshot> upgradeLoadout;
         readonly List<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
@@ -214,6 +214,44 @@ namespace SaltyGame
         public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline { get; }
         public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public SpeciesSimulationMetrics Metrics { get; }
+
+        internal Grid<SpeciesCell> CopyInitialCells()
+        {
+            return initialCells.Copy();
+        }
+
+        internal bool InstallBoundaryPopulation(
+            Grid<SpeciesCell> nextCells,
+            Grid<SpeciesCell> nextInitialCells)
+        {
+            if (Status != SimulationRunStatus.AwaitingDecision)
+            {
+                return false;
+            }
+
+            if (nextCells == null)
+            {
+                throw new ArgumentNullException(nameof(nextCells));
+            }
+
+            if (nextInitialCells == null)
+            {
+                throw new ArgumentNullException(nameof(nextInitialCells));
+            }
+
+            if (nextCells.Width != Cells.Width
+                || nextCells.Height != Cells.Height
+                || nextInitialCells.Width != initialCells.Width
+                || nextInitialCells.Height != initialCells.Height)
+            {
+                throw new ArgumentException("Boundary population grids must match the run dimensions.");
+            }
+
+            Cells = nextCells.Copy();
+            initialCells = nextInitialCells.Copy();
+            populationHistory[populationHistory.Count - 1] = SpeciesPopulationSnapshot.Create(Cells, Tick);
+            return true;
+        }
 
         internal void SetUpgradeLoadout(
             IEnumerable<SpeciesUpgradeSnapshot> upgrades,

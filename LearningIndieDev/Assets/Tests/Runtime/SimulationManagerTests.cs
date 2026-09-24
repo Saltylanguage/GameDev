@@ -245,6 +245,109 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void BoundaryPopulationUpgradeAddsOneDeterministicAnimalAndSurvivesRestart()
+        {
+            var cells = new Grid<SpeciesCell>(5, 1, (x, _) => x == 0
+                ? new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 24)
+                : x == 1 ? SpeciesCell.Grass(10f) : SpeciesCell.Empty);
+            var originalCells = cells.Copy();
+            var rules = SpeciesRuleDefaults.Create();
+            var run = new SimulationRunState(
+                cells,
+                SpeciesIds.Herbivore,
+                seed: 42,
+                durationSeconds: 0.5f);
+            run.ConfigureContinuousPhases(1);
+            var manager = new SimulationManager();
+            manager.SetRunner(new SpeciesSimulationRunner(run, rules, 0.1f, maxPopulation: 3));
+            var upgrade = new SpeciesUpgradeSnapshot(
+                SpeciesUpgradeCatalog.PopulationReinforcementId,
+                "REINFORCEMENTS",
+                "Add one hare to the next phase.",
+                SpeciesIds.Herbivore,
+                5,
+                new SpeciesUpgradeModifier[0],
+                populationToAdd: 1);
+
+            Assert.That(manager.Start(), Is.True);
+            run.Advance(run.Cells, 0.1f);
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
+            Assert.That(run.PhaseResults[0].ClosingPopulation.GetCount(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(
+                manager.ContinueWithBoundaryState(
+                    rules,
+                    SpeciesExperimentalOptions.None,
+                    new[] { upgrade },
+                    upgrade),
+                Is.True);
+
+            Assert.That(CountSpecies(run.Cells, SpeciesIds.Herbivore), Is.EqualTo(2));
+            Assert.That(
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(SpeciesIds.Herbivore),
+                Is.EqualTo(2));
+            Assert.That(run.Cells.GetCell(1, 0).IsTerrainResource, Is.True);
+            AssertGridEqual(originalCells, cells);
+
+            run.Advance(run.Cells, 0.1f);
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(2));
+            Assert.That(
+                run.PhaseResults[1].OpeningPopulation.GetCount(SpeciesIds.Herbivore),
+                Is.EqualTo(2));
+            var restored = run.CreateCheckpoint().Restore();
+            Assert.That(CountSpecies(restored.Cells, SpeciesIds.Herbivore), Is.EqualTo(2));
+            Assert.That(
+                restored.PopulationHistory[restored.PopulationHistory.Count - 1].GetCount(SpeciesIds.Herbivore),
+                Is.EqualTo(2));
+
+            Assert.That(manager.Restart(), Is.True);
+            Assert.That(CountSpecies(run.Cells, SpeciesIds.Herbivore), Is.EqualTo(2));
+            var restartSpawnIndex = FindSpeciesIndex(run.Cells, SpeciesIds.Herbivore, skipFirst: true);
+            Assert.That(manager.Restart(), Is.True);
+            Assert.That(
+                FindSpeciesIndex(run.Cells, SpeciesIds.Herbivore, skipFirst: true),
+                Is.EqualTo(restartSpawnIndex));
+        }
+
+        [Test]
+        public void BoundaryPopulationPlacementIsSeededAndCapacityCheckedAtomically()
+        {
+            var cells = new Grid<SpeciesCell>(4, 1, (x, _) => x == 0
+                ? new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 24)
+                : x == 1 ? SpeciesCell.Grass(10f) : SpeciesCell.Empty);
+            var rules = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
+
+            Assert.That(SpeciesSimulation.TryAddBoundaryPopulation(
+                cells,
+                SpeciesIds.Herbivore,
+                rules,
+                amount: 1,
+                maxPopulation: 4,
+                seed: 871,
+                out var first), Is.True);
+            Assert.That(SpeciesSimulation.TryAddBoundaryPopulation(
+                cells,
+                SpeciesIds.Herbivore,
+                rules,
+                amount: 1,
+                maxPopulation: 4,
+                seed: 871,
+                out var second), Is.True);
+            Assert.That(FindSpeciesIndex(first, SpeciesIds.Herbivore, skipFirst: true),
+                Is.EqualTo(FindSpeciesIndex(second, SpeciesIds.Herbivore, skipFirst: true)));
+            Assert.That(CountSpecies(cells, SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(SpeciesSimulation.CanAddBoundaryPopulation(cells, amount: 1, maxPopulation: 2), Is.False);
+            Assert.That(SpeciesSimulation.TryAddBoundaryPopulation(
+                cells,
+                SpeciesIds.Herbivore,
+                rules,
+                amount: 2,
+                maxPopulation: 3,
+                seed: 871,
+                out var rejected), Is.False);
+            Assert.That(rejected, Is.Null);
+        }
+
+        [Test]
         public void ContinuousRunPublishesVersionedPhaseWindowsAndUpgradeTimeline()
         {
             var data = new CellularSimData(
@@ -478,6 +581,49 @@ namespace SaltyGame.Tests
             return new Grid<SpeciesCell>(2, 1, (x, _) => x == 0
                 ? new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 24)
                 : SpeciesCell.Grass(10f));
+        }
+
+        static int CountSpecies(Grid<SpeciesCell> cells, SpeciesId species)
+        {
+            var count = 0;
+            for (var y = 0; y < cells.Height; y++)
+            {
+                for (var x = 0; x < cells.Width; x++)
+                {
+                    if (cells.GetCell(x, y).IsCreature && cells.GetCell(x, y).SpeciesId == species)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        static int FindSpeciesIndex(Grid<SpeciesCell> cells, SpeciesId species, bool skipFirst = false)
+        {
+            var foundFirst = false;
+            for (var y = 0; y < cells.Height; y++)
+            {
+                for (var x = 0; x < cells.Width; x++)
+                {
+                    var cell = cells.GetCell(x, y);
+                    if (!cell.IsCreature || cell.SpeciesId != species)
+                    {
+                        continue;
+                    }
+
+                    if (skipFirst && !foundFirst)
+                    {
+                        foundFirst = true;
+                        continue;
+                    }
+
+                    return x + y * cells.Width;
+                }
+            }
+
+            return -1;
         }
 
         static void AdvanceTicks(SimulationManager manager, int count)

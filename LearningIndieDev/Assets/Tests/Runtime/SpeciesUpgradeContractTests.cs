@@ -474,6 +474,24 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PopulationReinforcementSnapshotHasNoStatModifierAndCanBeRepeated()
+        {
+            var rules = CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null);
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesIds.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.PopulationReinforcementId)
+                .CreateSnapshot(SpeciesIds.Herbivore);
+
+            Assert.That(upgrade.PopulationToAdd, Is.EqualTo(1));
+            Assert.That(upgrade.Modifiers, Is.Empty);
+            Assert.That(upgrade.CanApplyAfterRunStart, Is.True);
+            Assert.That(progression.TryApplyRunUpgrade(upgrade), Is.True);
+            Assert.That(progression.TryApplyRunUpgrade(upgrade), Is.True);
+            Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(2));
+            Assert.That(progression.OrderedUpgradeIds, Is.EqualTo(new[] { upgrade.Id, upgrade.Id }));
+            Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+        }
+
+        [Test]
         public void RunnerCarriesOrderedUpgradeSnapshotsIntoTheRunResult()
         {
             var snapshot = new SpeciesUpgradeSnapshot(

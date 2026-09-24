@@ -53,7 +53,8 @@ namespace SaltyGame
             int cost,
             IEnumerable<SpeciesUpgradeModifier> modifiers,
             IEnumerable<string> prerequisiteUpgradeIds = null,
-            IEnumerable<string> excludedUpgradeIds = null)
+            IEnumerable<string> excludedUpgradeIds = null,
+            int populationToAdd = 0)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -80,6 +81,14 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(cost), cost, "Upgrade cost cannot be negative.");
             }
 
+            if (populationToAdd < 0)
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(populationToAdd),
+                    populationToAdd,
+                    "Population added by an upgrade cannot be negative.");
+            }
+
             if (modifiers == null)
             {
                 throw new ArgumentNullException(nameof(modifiers));
@@ -101,7 +110,7 @@ namespace SaltyGame
                 copiedModifiers.Add(modifier);
             }
 
-            if (copiedModifiers.Count == 0)
+            if (copiedModifiers.Count == 0 && populationToAdd == 0)
             {
                 throw new ArgumentException("An upgrade must contain at least one modifier.", nameof(modifiers));
             }
@@ -111,6 +120,7 @@ namespace SaltyGame
             Description = description.Trim();
             TargetSpecies = targetSpecies;
             Cost = cost;
+            PopulationToAdd = populationToAdd;
             Scope = SpeciesUpgradeScope.PerRun;
             this.modifiers = new ReadOnlyCollection<SpeciesUpgradeModifier>(copiedModifiers);
             this.prerequisiteUpgradeIds = CopyIds(prerequisiteUpgradeIds, nameof(prerequisiteUpgradeIds));
@@ -124,6 +134,7 @@ namespace SaltyGame
         public string Description { get; }
         public SpeciesId TargetSpecies { get; }
         public int Cost { get; }
+        public int PopulationToAdd { get; }
         public SpeciesUpgradeScope Scope { get; }
         public IReadOnlyList<SpeciesUpgradeModifier> Modifiers => modifiers;
         public IReadOnlyList<string> PrerequisiteUpgradeIds => prerequisiteUpgradeIds;
@@ -182,6 +193,12 @@ namespace SaltyGame
             {
                 Append(canonical, modifier.AttributeId);
                 Append(canonical, modifier.SignedValue);
+            }
+
+            if (PopulationToAdd > 0)
+            {
+                Append(canonical, "population-to-add");
+                Append(canonical, PopulationToAdd);
             }
 
             foreach (var prerequisiteId in prerequisiteUpgradeIds)

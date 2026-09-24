@@ -896,9 +896,13 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.RewardOptionCount, Is.EqualTo(2));
+            Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
+            Assert.That(
+                preview.GetRewardOptionId(2),
+                Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementId));
+            StringAssert.Contains("+1 FOX", preview.GetRewardOptionDisplayName(2));
             var predatorSkillIds = new[] { "relentless-pursuit", "piercing-bite", "hunt-urgency", "brood-drive" };
-            for (var index = 0; index < preview.RewardOptionCount; index++)
+            for (var index = 0; index < 2; index++)
             {
                 var optionId = preview.GetRewardOptionId(index);
                 Assert.That(Array.IndexOf(predatorSkillIds, optionId), Is.GreaterThanOrEqualTo(0));

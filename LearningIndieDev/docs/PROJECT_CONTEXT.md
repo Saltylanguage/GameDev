@@ -113,11 +113,14 @@ uncertainty or regression risk.
   simpler directional abstraction rather than presenting a noisy result as a
   guarantee.
 - For the bounded S3-04 bridge, the five existing experimental Hare Mutations
-  form the offer pool. Each boundary shows three distinct Mutations and Skip.
-  A selected Mutation may be offered again later; selecting it again increases
-  its level and stacks/reapplies its defined effect. These Mutation choices are
-  free, and Skip has no S3-04 reward. A broader Mutation economy or future Skip
-  bonus remains deferred.
+  form the rotating offer pool. Each boundary shows three Mutations and Skip:
+  the first two rotate from the existing pool, and option three is the fixed,
+  repeatable Reinforcements choice. It adds one selected-species individual to
+  the next phase at a deterministic unoccupied, passable cell, subject to the
+  board and population limits. A selected Mutation may be offered again later;
+  selecting it again increases its level and applies its effect again. Skip has
+  no S3-04 reward. A broader Mutation economy or future Skip bonus remains
+  deferred.
 - The player can turn unlocked Genome nodes on or off between simulations. The
   active Genome is frozen at launch and applies to every population of its
   species, including when that species is not controlled by the player.

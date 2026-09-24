@@ -35,6 +35,11 @@ Each Mutation is presented with a small icon and keyword (for example,
 at a glance and apparent during the following round. A Mutation is temporary
 and lasts only for its current run.
 
+In the active experimental offer, the third choice is always Reinforcements:
+it adds one individual of the selected species to the following round at a
+deterministically selected unoccupied, passable cell. It can be selected again
+at later phase decisions, subject to available space and the population limit.
+
 ## Run and decision cadence
 
 A run contains **six simulation rounds**, each lasting **10 seconds of

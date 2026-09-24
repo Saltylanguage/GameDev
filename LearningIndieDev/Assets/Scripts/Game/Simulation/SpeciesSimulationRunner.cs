@@ -138,7 +138,8 @@ namespace SaltyGame
         public bool InstallBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
-            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout,
+            SpeciesUpgradeSnapshot selectedUpgrade = null)
         {
             if (Run.Status != SimulationRunStatus.AwaitingDecision)
             {
@@ -148,6 +149,51 @@ namespace SaltyGame
             if (nextRules == null)
             {
                 throw new ArgumentNullException(nameof(nextRules));
+            }
+
+            if (selectedUpgrade != null && selectedUpgrade.PopulationToAdd > 0)
+            {
+                if (!nextRules.TryGetValue(selectedUpgrade.TargetSpecies, out var targetRules))
+                {
+                    return false;
+                }
+
+                var currentCells = Run.Cells;
+                var initialCells = Run.CopyInitialCells();
+                if (!SpeciesSimulation.CanAddBoundaryPopulation(
+                        currentCells,
+                        selectedUpgrade.PopulationToAdd,
+                        maxPopulation)
+                    || !SpeciesSimulation.CanAddBoundaryPopulation(
+                        initialCells,
+                        selectedUpgrade.PopulationToAdd,
+                        maxPopulation)
+                    || !SpeciesSimulation.TryAddBoundaryPopulation(
+                        currentCells,
+                        selectedUpgrade.TargetSpecies,
+                        targetRules,
+                        selectedUpgrade.PopulationToAdd,
+                        maxPopulation,
+                        CreateBoundaryPopulationSeed(isRestartGrid: false),
+                        out var nextCells)
+                    || !SpeciesSimulation.TryAddBoundaryPopulation(
+                        initialCells,
+                        selectedUpgrade.TargetSpecies,
+                        targetRules,
+                        selectedUpgrade.PopulationToAdd,
+                        maxPopulation,
+                        CreateBoundaryPopulationSeed(isRestartGrid: true),
+                        out var nextInitialCells))
+                {
+                    return false;
+                }
+
+                if (!Run.InstallBoundaryPopulation(nextCells, nextInitialCells))
+                {
+                    return false;
+                }
+
+                previousCells = Run.Cells;
             }
 
             if (simulationData != null)
@@ -178,6 +224,18 @@ namespace SaltyGame
             experimentalOptions = nextExperimentalOptions ?? SpeciesExperimentalOptions.None;
             Run.SetUpgradeLoadout(nextUpgradeLoadout, experimentalOptions.CoupledSpeciesResponsesEnabled);
             return true;
+        }
+
+        int CreateBoundaryPopulationSeed(bool isRestartGrid)
+        {
+            unchecked
+            {
+                var value = Run.Seed;
+                value = value * 31 + Run.Tick;
+                value = value * 31 + Run.PhaseIndex;
+                value = value * 31 + Run.UpgradeLoadout.Count;
+                return value ^ (isRestartGrid ? 0x6D2B79F5 : 0x1B873593);
+            }
         }
 
         public bool AdvanceOneTick()
