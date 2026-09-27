@@ -26,6 +26,14 @@ namespace SaltyGame
             "..###..",
             "...#...",
         };
+        static readonly string[] BirthPoofPixels =
+        {
+            "..##..##..",
+            ".########.",
+            "##########",
+            ".########.",
+            "...####...",
+        };
 
         static readonly Dictionary<SpeciesId, int> AnimalAtlasIndexBySpecies =
             new Dictionary<SpeciesId, int>
@@ -61,7 +69,9 @@ namespace SaltyGame
         int matingCueOffspringY;
         float matingCueStartedAt;
         float nextMatingCueFrame;
+        float matingCuePauseStartedAt;
         bool matingCueActive;
+        bool matingCuePaused;
         readonly MatrixTransform panZoomTransform;
         float panOffsetX;
         float panOffsetY;
@@ -72,6 +82,8 @@ namespace SaltyGame
         SolidColorBrush heartShadowBrush;
         SolidColorBrush heartFillBrush;
         SolidColorBrush sparkleBrush;
+        SolidColorBrush birthPoofShadowBrush;
+        SolidColorBrush birthPoofFillBrush;
 
         public event Action<float> ZoomRequested;
 
@@ -187,6 +199,7 @@ namespace SaltyGame
             matingCueOffspringY = offspringY;
             matingCueStartedAt = Time.unscaledTime;
             nextMatingCueFrame = matingCueStartedAt;
+            matingCuePaused = false;
             matingCueActive = true;
             InvalidateVisual();
         }
@@ -199,14 +212,39 @@ namespace SaltyGame
             }
 
             matingCueActive = false;
+            matingCuePaused = false;
             InvalidateVisual();
         }
 
         public void UpdateMatingCue()
         {
+            UpdateMatingCue(false);
+        }
+
+        public void UpdateMatingCue(bool paused)
+        {
             if (!matingCueActive)
             {
                 return;
+            }
+
+            if (paused)
+            {
+                if (!matingCuePaused)
+                {
+                    matingCuePauseStartedAt = Time.unscaledTime;
+                    matingCuePaused = true;
+                }
+
+                return;
+            }
+
+            if (matingCuePaused)
+            {
+                var pausedDuration = Time.unscaledTime - matingCuePauseStartedAt;
+                matingCueStartedAt += pausedDuration;
+                nextMatingCueFrame += pausedDuration;
+                matingCuePaused = false;
             }
 
             if (Time.unscaledTime - matingCueStartedAt >= MatingCueDuration)
@@ -474,6 +512,13 @@ namespace SaltyGame
                         Math.Max(0f, cellSize - gap * 2f));
 
                     DrawTerrain(context, cell, cellRect);
+                    if (matingCueActive
+                        && matingCueOffspringX == x
+                        && matingCueOffspringY == y)
+                    {
+                        DrawBirthPoof(context, cellRect, cellSize);
+                    }
+
                     if (cell.IsCreature || (cell.IsPlantResource && !cell.IsTerrainResource))
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
@@ -523,7 +568,7 @@ namespace SaltyGame
                 return;
             }
 
-            var progress = Mathf.Clamp01((Time.unscaledTime - matingCueStartedAt) / MatingCueDuration);
+            var progress = GetMatingCueProgress();
             var fadeIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress / 0.22f));
             var fadeOut = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((progress - 0.7f) / 0.3f));
             var alpha = fadeIn * fadeOut;
@@ -559,6 +604,43 @@ namespace SaltyGame
             var sparkle = GetSparkleBrush();
             sparkle.Opacity = sparkleAlpha;
             DrawSparkle(context, childCenterX, childCenterY, pixel * 1.5f * sparkleScale, sparkle);
+        }
+
+        void DrawBirthPoof(DrawingContext context, NoesisRect cellRect, float cellSize)
+        {
+            if (!matingCueActive)
+            {
+                return;
+            }
+
+            var progress = GetMatingCueProgress();
+            var poofProgress = Mathf.Clamp01(progress / 0.58f);
+            var fadeIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress / 0.12f));
+            var fadeOut = 1f - Mathf.SmoothStep(0f, 1f, poofProgress);
+            var alpha = fadeIn * fadeOut;
+            var scale = Mathf.Lerp(0.55f, 1.28f, Mathf.SmoothStep(0f, 1f, poofProgress));
+            var pixel = Math.Max(1f, (float)Math.Round(cellSize * 0.07f));
+            var centerX = cellRect.X + cellRect.Width * 0.5f;
+            var height = BirthPoofPixels.Length * pixel * scale;
+            var top = cellRect.Y + (cellRect.Height - height) * 0.5f;
+            var shadow = GetBirthPoofShadowBrush();
+            var fill = GetBirthPoofFillBrush();
+            shadow.Opacity = alpha * 0.42f;
+            fill.Opacity = alpha * 0.74f;
+            DrawPixelArt(
+                context,
+                BirthPoofPixels,
+                centerX + pixel * 0.35f,
+                top + pixel * 0.35f,
+                pixel * scale,
+                shadow);
+            DrawPixelArt(context, BirthPoofPixels, centerX, top, pixel * scale, fill);
+        }
+
+        float GetMatingCueProgress()
+        {
+            var currentTime = matingCuePaused ? matingCuePauseStartedAt : Time.unscaledTime;
+            return Mathf.Clamp01((currentTime - matingCueStartedAt) / MatingCueDuration);
         }
 
         static void DrawPawPrint(DrawingContext context, float x, float y, float pixel, Brush brush)
@@ -631,6 +713,16 @@ namespace SaltyGame
         SolidColorBrush GetSparkleBrush()
         {
             return sparkleBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 255, 244, 176));
+        }
+
+        SolidColorBrush GetBirthPoofShadowBrush()
+        {
+            return birthPoofShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 103, 80, 52));
+        }
+
+        SolidColorBrush GetBirthPoofFillBrush()
+        {
+            return birthPoofFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 255, 246, 215));
         }
 
         void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)

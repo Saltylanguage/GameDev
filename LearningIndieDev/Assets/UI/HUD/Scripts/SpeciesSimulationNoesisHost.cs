@@ -121,7 +121,8 @@ namespace SaltyGame
         void Update()
         {
             simulationBoard?.UpdateFoxHuntCue();
-            simulationBoard?.UpdateMatingCue();
+            simulationBoard?.UpdateMatingCue(
+                preview != null && preview.State == SpeciesPreviewState.Paused);
         }
 
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)
