@@ -788,6 +788,37 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PhaseMutationOffersShowThreeDistinctHerbivoreMutations()
+        {
+            var ids = new HashSet<string>
+            {
+                SpeciesUpgradeCatalog.ToughHideId,
+                SpeciesUpgradeCatalog.EfficientDigestionId,
+                SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesUpgradeCatalog.ReproductiveDriveId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            for (var rotation = 0; rotation < 4; rotation++)
+            {
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    SpeciesUpgradeCatalog.ToughHideId,
+                    rotation,
+                    seed: 42);
+
+                Assert.That(offer, Has.Length.EqualTo(3));
+                Assert.That(offer[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+                var offeredIds = new HashSet<string>();
+                foreach (var upgrade in offer)
+                {
+                    Assert.That(ids.Contains(upgrade.Id), Is.True);
+                    offeredIds.Add(upgrade.Id);
+                }
+
+                Assert.That(offeredIds, Has.Count.EqualTo(3));
+            }
+        }
+
+        [Test]
         public void UpgradeCatalogProvidesStrongerBlockDiagnosticDefinition()
         {
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerBlockTwoId);

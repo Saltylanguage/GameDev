@@ -3,7 +3,7 @@
 This is the actionable ledger for unresolved project, planning, ownership, and
 documentation gaps. Closed history stays in Git and task handoffs.
 
-## Current status — 2026-09-22
+## Current status — 2026-09-27
 
 - No P0 issue is verified. Local `ProjectMain` is at `c6b3282c` and is one
   commit ahead of `origin/ProjectMain`; that commit contains the Forest Edge
@@ -20,16 +20,18 @@ documentation gaps. Closed history stays in Git and task handoffs.
   (Mutation readability), S3-06 (visual polish), and S3-08 (Fox telemetry);
   S3-07 is reserve and S3-05 is stretch.
 - The accepted expedition contract is six 10-second rounds, with a Mutation
-  choice or Skip after rounds 1–5. The contract requires three Mutation offers
-  plus Skip; the current offer path still exposes two. S3-04 records this gap
-  and the decisions still needed.
+  choice or Skip after rounds 1–5. The player offer now shows three distinct
+  free Mutations plus Skip, and focused tests cover repeat stacking and
+  continuation. Tough Hide's first bounded evidence review is recorded and its
+  copy/card markers are accepted for this slice. The completed S3-02 Trello card
+  wording has not been refreshed.
 - The retained no-graphics acceptance baseline remains EditMode 234/234 and
   PlayMode 28/30 (0 failures, 2 expected graphics-only skips). Newer targeted
   evidence is narrower: the Species domain filter passed 96/96 and the latest
   graphics-capable visual capture passed 1/1. Those results support the current
   balance/UI edits but do not replace the broader acceptance baseline. The
-  focused phase-decision PlayMode check and the separate Main Menu/Settings
-  human review remain open.
+  focused phase-decision PlayMode check passed 1/1 on 2026-09-27; the separate
+  Main Menu/Settings human review remains open.
 
 ## Triage rules
 
@@ -40,18 +42,6 @@ documentation gaps. Closed history stays in Git and task handoffs.
 - **P2** — useful cleanup or follow-up that is not currently blocking.
 
 ## Open items
-
-### P1-016 — Mutation catalog readability and evidence review
-
-- **Status:** The catalog and authoring path exist. The bounded EX-007 decision
-  is accepted; readability and a bounded Forest Edge/Hare review remain open
-  under S3-04.
-- **Evidence:** [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md) and
-  [Next Work Bucket Plan](NEXT_WORK_BUCKET_PLAN.md). EX-009's zero-delta result
-  is implementation evidence, not a balance conclusion.
-- **Next action:** Complete the S3-04 readability and bounded evidence review.
-  Record broader catalog balance or promotion as separate work.
-- **Owner:** Josh; Sim supplies evidence. **Confidence:** High.
 
 ### P1-026 — Remote worker branch has stale Unity lifecycle tooling
 
@@ -109,20 +99,17 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-033 — Mutation offer contract and completed-card wording disagree
 
-- **Status:** S3-02 is complete and its contract is authoritative: three
-  Mutation offers or Skip after rounds 1–5. The current player offer path
-  returns two. The S3-04 plan says the owner must decide whether the smallest
-  offer correction belongs there or should be tracked separately. The completed
+- **Status:** The player offer path now returns three Mutation choices or Skip
+  at each phase boundary; the runtime gap is resolved under S3-04. The completed
   S3-02 Trello card may still need wording updated for the 36×20 Forest Edge
   default and the still-deferred playable-plant decision.
 - **Evidence:** [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md),
   [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md), and Trello card c3i7HO09.
   The production scenario now defaults to 36×20. The editor generator creates
   a separate legacy scenario, so its 36×20 setting was not the gameplay source.
-- **Next action:** Assign the three-offer correction without reopening S3-02.
-  If the completed Trello card still has old acceptance text, clarify the
-  36×20 default and keep playable plants deferred. The current player offer
-  path still needs its separate three-offer correction.
+- **Next action:** If the completed Trello card still has old acceptance text,
+  clarify the 36×20 default and keep playable plants deferred. No board edit
+  was made during this S3-04 implementation.
 - **Owner:** Josh + simulation/design owner. **Confidence:** High.
 
 ### P1-034 — Forest Edge balance pass is provisional and uncommitted

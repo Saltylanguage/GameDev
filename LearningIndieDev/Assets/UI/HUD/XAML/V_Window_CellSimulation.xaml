@@ -1386,7 +1386,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="ONE PURCHASE PER PHASE · THE HABITAT REMAINS PAUSED"
+                                <TextBlock Text="ONE MUTATION PER PHASE · THE HABITAT REMAINS PAUSED"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="8"
                                            Foreground="{DynamicResource Chrono_Olive}"
@@ -1394,7 +1394,7 @@
                                 <StackPanel Grid.Column="1"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right">
-                                    <Button Content="CONTINUE WITHOUT UPGRADE"
+                                    <Button Content="SKIP"
                                             Command="{Binding ContinueWithoutUpgradeCommand}"
                                             IsEnabled="{Binding CanContinueWithoutUpgrade}"
                                             Style="{StaticResource GalapagOS.Button.SecondaryPaper}"

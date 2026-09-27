@@ -1,6 +1,6 @@
 # S3-04 — Mutation readability and bounded Forest Edge review
 
-**Status:** Approved working plan — ready for implementation; bounded candidate review remains
+**Status:** Implementation, comparison, and player-facing review complete
 **Owner:** Josh (product and player-facing acceptance)
 **Evidence owner:** Sim
 **Planned effort:** Josh 2h; Sim 6h
@@ -13,6 +13,13 @@ recognize its consequence in the following phase. Test one bounded
 Forest Edge/Hare slice and record an accept-or-revise decision. This is a
 readability and scoped evidence review, not approval of the full Mutation
 catalog or a production-balance claim.
+
+The first implementation and evidence pass is recorded in the
+[2026-09-27 Tough Hide handoff](../handoffs/2026-09-27-codex-s3-04-tough-hide.md).
+The five existing Mutations now produce three free, distinct options at phase
+decisions, with Skip and repeat-level behavior. Josh's player-copy and generic
+card-marker treatment was accepted for this slice after reviewing the bounded
+Tough Hide evidence.
 
 ## Locked product boundaries
 
@@ -42,7 +49,7 @@ catalog or a production-balance claim.
 - Keep player copy separate from researcher evidence. No raw diagnostics or
   unsupported causal certainty enters the player window.
 
-## Current implementation audit and decision gate
+## Baseline implementation audit at plan approval — 2026-09-26
 
 This is a source/test inspection, not a Unity runtime test. The live player
 preview currently forces `bevExperimentalFeaturesEnabled` on in
@@ -162,8 +169,8 @@ or seed panel without a scope decision.
   phase without treating every downstream population or ecological change as
   the Mutation's effect.
 - A bounded Forest Edge/Hare evidence note records the candidate, exact
-  snapshot, inputs/seeds, observed result, limitations, and Josh's accept/revise
-  decision.
+  snapshot, inputs/seeds, observed result, limitations, and an explicit copy
+  and presentation decision.
 - Focused regression coverage verifies three distinct offers plus Skip at each
   decision boundary, selection taking effect on the next phase without
   replacing the run, player copy staying within the approved display contract,
@@ -217,10 +224,12 @@ or seed panel without a scope decision.
 - Deciding a Skip bonus or changing the performance-to-currency formula.
 - Broad visual polish owned by S3-06.
 
-## Remaining owner review
+## Review decision
 
-- After the candidate audit, approve the small review set before the matched
-  run begins.
+The current review accepts “Block more incoming attacks” and the existing
+generic A/B/C card markers for this slice. The matched run is complete and
+supports the directional copy, but does not establish a broader balance or
+player-fun claim. Mutation-specific artwork remains outside this slice.
 
 ## Confirmed product decisions
 
@@ -240,12 +249,12 @@ stacks/reapplies its defined effect. Mutation choices are free during this
 slice, and Skip has no reward; a future Skip bonus or broader Mutation economy
 is deferred.
 
-**Proposed first review candidate:** Tough Hide from the current experimental
+**First review candidate, approved by Josh:** Tough Hide from the current experimental
 Hare set. It is a compact defensive effect with a direct `CombatBlocked`
 phase-window metric in
 [`SpeciesSimulationMetrics.cs`](../../Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs).
 Compare a matched no-Mutation arm with an arm selecting it after round 1 and
 skipping later choices. Use the repeatable blocked-attack effect to author the
 directional player description; keep any next-phase population result as an
-observation rather than a promised effect. Josh must approve or replace this
-candidate before the evidence run.
+observation rather than a promised effect. The matched comparison is complete;
+see the handoff for its results and limitations.

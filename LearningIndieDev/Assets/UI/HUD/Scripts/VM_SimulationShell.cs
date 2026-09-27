@@ -325,6 +325,7 @@ namespace SaltyGame
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeveloperMode)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DeveloperSettingsVisibility)));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PlayerSettingsVisibility)));
+                Refresh(true);
             }
         }
         public Visibility DeveloperSettingsVisibility => developerMode ? Visibility.Visible : Visibility.Collapsed;
@@ -930,11 +931,13 @@ namespace SaltyGame
                 && playerRules.Role == SpeciesRole.Herbivore;
             var isCarnivorePlayer = playerRules != null && playerRules.Role == SpeciesRole.Carnivore;
             var showExperimentalHerbivoreStatLine =
-                (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
+                developerMode
+                && (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
                 && (isHerbivorePlayer || isCarnivorePlayer);
             var showExperimentalUpgradeCount =
-                (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
+                developerMode
+                && (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
                 && preview.BevExperimentalFeaturesEnabled
                 && isHerbivorePlayer;
             if (!force && state == lastState && runStatus == lastRunStatus && tick == lastTick)

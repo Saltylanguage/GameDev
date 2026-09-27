@@ -247,6 +247,7 @@ namespace SaltyGame
         SpeciesUpgrade[] rewardOptions = LegacyRewardOptions;
         SpeciesUpgradeSnapshot[] authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
         bool usingAuthoredRewardOptions;
+        bool usingExperimentalHerbivoreMutations;
 
         SpeciesId playerSpecies;
         readonly List<SpeciesId> rosterSpecies = new List<SpeciesId>();
@@ -329,6 +330,13 @@ namespace SaltyGame
             }
 
             var legacyUpgrade = rewardOptions[rewardIndex];
+            if (usingExperimentalHerbivoreMutations && previewState == SpeciesPreviewState.PhaseDecision)
+            {
+                return FormatHerbivoreMutationChoice(
+                    legacyUpgrade.Id,
+                    (progression?.GetUpgradeLevel(legacyUpgrade.Id) ?? 0) + 1);
+            }
+
             var legacySnapshot = legacyUpgrade.CreateSnapshot(playerSpecies);
             var effectSummary = legacySnapshot.PopulationToAdd > 0
                 ? $"+{legacySnapshot.PopulationToAdd} {playerSpecies.Value.ToUpperInvariant()}"
@@ -364,6 +372,15 @@ namespace SaltyGame
         {
             if (selectedUpgradeSnapshot != null)
             {
+                if (usingExperimentalHerbivoreMutations
+                    && selectedUpgradeAppliedToCurrentRun
+                    && SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId(selectedUpgradeSnapshot.Id))
+                {
+                    return FormatHerbivoreMutationChoice(
+                        selectedUpgradeSnapshot.Id,
+                        progression.GetUpgradeLevel(selectedUpgradeSnapshot.Id));
+                }
+
                 return FormatSnapshotSummary(selectedUpgradeSnapshot, selectedUpgradeAppliedToCurrentRun);
             }
 
@@ -762,11 +779,7 @@ namespace SaltyGame
                 progression?.AddCurrency(phaseResult.CurrencyEarned);
                 lastSettledPhaseIndex = run.PhaseIndex;
                 phaseDecisionCommitted = false;
-                phaseRewardMessage = string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Phase {0} complete: {1} data earned from current survivors.",
-                    run.PhaseIndex,
-                    phaseResult.CurrencyEarned);
+                phaseRewardMessage = FormatPhaseDecisionSummary(run, phaseResult.CurrencyEarned);
                 PrepareRewardOptions();
                 previewState = SpeciesPreviewState.PhaseDecision;
             }
@@ -1538,7 +1551,10 @@ namespace SaltyGame
             else
             {
                 var upgrade = rewardOptions[rewardIndex];
-                if (!progression.TryPurchase(upgrade))
+                var applied = usingExperimentalHerbivoreMutations
+                    ? progression.TryApplyFreeUpgrade(CreateFreeHerbivoreMutation(upgrade))
+                    : progression.TryPurchase(upgrade);
+                if (!applied)
                 {
                     return false;
                 }
@@ -1609,12 +1625,23 @@ namespace SaltyGame
 
         bool CanPurchaseLegacyBoundaryReward(SpeciesUpgrade upgrade)
         {
-            if (upgrade == null || !progression.CanPurchase(upgrade))
+            if (upgrade == null)
             {
                 return false;
             }
 
-            var snapshot = upgrade.CreateSnapshot(playerSpecies);
+            var mutation = usingExperimentalHerbivoreMutations
+                ? CreateFreeHerbivoreMutation(upgrade)
+                : upgrade;
+            var canApply = usingExperimentalHerbivoreMutations
+                ? progression.CanApplyFreeUpgrade(mutation)
+                : progression.CanPurchase(upgrade);
+            if (!canApply)
+            {
+                return false;
+            }
+
+            var snapshot = mutation.CreateSnapshot(playerSpecies);
             if (!snapshot.CanApplyAfterRunStart || !CanAddBoundaryPopulation(snapshot))
             {
                 return false;
@@ -1672,13 +1699,22 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot GetBoundaryUpgrade(int rewardIndex)
         {
-            return usingAuthoredRewardOptions
-                ? rewardIndex >= 0 && rewardIndex < authoredRewardOptions.Length
+            if (usingAuthoredRewardOptions)
+            {
+                return rewardIndex >= 0 && rewardIndex < authoredRewardOptions.Length
                     ? authoredRewardOptions[rewardIndex]
-                    : null
-                : rewardIndex >= 0 && rewardIndex < rewardOptions.Length
-                    ? rewardOptions[rewardIndex].CreateSnapshot(playerSpecies)
                     : null;
+            }
+
+            if (rewardIndex < 0 || rewardIndex >= rewardOptions.Length)
+            {
+                return null;
+            }
+
+            var upgrade = usingExperimentalHerbivoreMutations
+                ? CreateFreeHerbivoreMutation(rewardOptions[rewardIndex])
+                : rewardOptions[rewardIndex];
+            return upgrade.CreateSnapshot(playerSpecies);
         }
 
         public void ContinueWithoutUpgrade()
@@ -2001,6 +2037,7 @@ namespace SaltyGame
         {
             authoredRewardOptions = Array.Empty<SpeciesUpgradeSnapshot>();
             usingAuthoredRewardOptions = false;
+            usingExperimentalHerbivoreMutations = false;
             if (!bevExperimentalFeaturesEnabled)
             {
                 var authoredOptions = new List<SpeciesUpgradeSnapshot>();
@@ -2031,18 +2068,94 @@ namespace SaltyGame
                 return;
             }
 
+            var isPhaseDecision = continuousPhasesEnabled
+                && Run?.Status == SimulationRunStatus.AwaitingDecision;
             rewardOptions = playerRules.Role == SpeciesRole.Herbivore
-                ? SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
-                    lastExperimentalUpgradeId,
-                    experimentalOfferRotation,
-                    Run?.Seed ?? seed)
+                ? isPhaseDecision
+                    ? SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                        lastExperimentalUpgradeId,
+                        experimentalOfferRotation,
+                        Run?.Seed ?? seed)
+                    : SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
+                        lastExperimentalUpgradeId,
+                        experimentalOfferRotation,
+                        Run?.Seed ?? seed)
                 : playerRules.Role == SpeciesRole.Carnivore
                     ? SpeciesUpgradeCatalog.CreateExperimentalPredatorOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
                         Run?.Seed ?? seed)
                     : LegacyRewardOptions;
+            usingExperimentalHerbivoreMutations = isPhaseDecision
+                && playerRules.Role == SpeciesRole.Herbivore;
             experimentalOfferRotation++;
+        }
+
+        static SpeciesUpgrade CreateFreeHerbivoreMutation(SpeciesUpgrade upgrade)
+        {
+            return new SpeciesUpgrade(upgrade.Id, 0, upgrade.Type, upgrade.Value);
+        }
+
+        static string FormatHerbivoreMutationChoice(string upgradeId, int level)
+        {
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                "{0}  ·  LV {1}\n{2}",
+                SpeciesUpgradeCatalog.GetDisplayName(upgradeId),
+                level,
+                GetHerbivoreMutationDescription(upgradeId));
+        }
+
+        static string GetHerbivoreMutationDescription(string upgradeId)
+        {
+            switch (upgradeId)
+            {
+                case SpeciesUpgradeCatalog.ToughHideId:
+                    return "Block more incoming attacks.";
+                case SpeciesUpgradeCatalog.EfficientDigestionId:
+                    return "Gain more energy from food.";
+                case SpeciesUpgradeCatalog.CrowdingToleranceId:
+                    return "Lose less energy when crowded.";
+                case SpeciesUpgradeCatalog.ReproductiveDriveId:
+                    return "Make successful reproduction more likely.";
+                case SpeciesUpgradeCatalog.ThreatExposureId:
+                    return "Evade predator attacks more often.";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Hare Mutation.");
+            }
+        }
+
+        string FormatPhaseDecisionSummary(SimulationRunState run, int currencyEarned)
+        {
+            var summary = string.Format(
+                CultureInfo.InvariantCulture,
+                "Phase {0} complete: {1} data earned from current survivors.",
+                run.PhaseIndex,
+                currencyEarned);
+            if (run.PhaseResults.Count == 0)
+            {
+                return summary;
+            }
+
+            var completedPhase = run.PhaseResults[run.PhaseResults.Count - 1];
+            var speciesName = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(playerSpecies.Value);
+            summary += string.Format(
+                CultureInfo.InvariantCulture,
+                " {0} population at phase end: {1}.",
+                speciesName,
+                completedPhase.ClosingPopulation.GetCount(playerSpecies));
+            if (completedPhase.EffectiveUpgradeLoadout.Any(
+                    upgrade => upgrade.Id == SpeciesUpgradeCatalog.ToughHideId))
+            {
+                var blockedIncomingAttacks = completedPhase.Metrics.CombatRollEvents.Count(
+                    combat => combat.TargetSpecies == playerSpecies && !combat.Hit);
+                summary += string.Format(
+                    CultureInfo.InvariantCulture,
+                    " Incoming attacks blocked this phase: {0}.",
+                    blockedIncomingAttacks);
+            }
+
+            return summary;
         }
 
         SpeciesExperimentalOptions CreateExperimentalOptions()

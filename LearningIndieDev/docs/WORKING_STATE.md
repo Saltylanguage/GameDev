@@ -5,8 +5,19 @@ become a master changelog.
 
 ## Current focus
 
-**Population Reinforcements phase Mutation: 2026-09-23.** The active
-experimental offer now uses its third slot for a repeatable `+1` individual of
+**S3-04 Mutation readability and first bounded review: 2026-09-27.** The
+phase-choice path now offers three distinct free Hare Mutations plus Skip,
+allows repeat picks to increase the level, and keeps the same expedition
+running. Tough Hide was approved as the first evidence candidate. A matched
+20-seed, six-phase Forest Edge/Hare comparison supports the directional copy
+“Block more incoming attacks,” but does not establish a broad population
+benefit. The player-facing copy and generic A/B/C markers are accepted for this
+slice. Focused EditMode 1/1 and three PlayMode checks passed in the installed
+Unity Editor. See the
+[S3-04 Tough Hide handoff](handoffs/2026-09-27-codex-s3-04-tough-hide.md).
+
+**Population Reinforcements phase Mutation (historical snapshot): 2026-09-23.**
+At that point the experimental offer used its third slot for a repeatable `+1` individual of
 the player species. A seeded placement chooses an unoccupied, passable cell for
 the next phase, respects the population cap, and is retained if the expedition
 restarts. This is one selection per phase decision; no balance batch has been

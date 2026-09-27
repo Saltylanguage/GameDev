@@ -11,6 +11,14 @@
 > wrapper attempts were refused while the shared Editor returned to `playing`. An
 > active Forest Edge balance pass is currently uncommitted and provisional.
 
+> **Current-state update — 2026-09-27:** S3-04's three-choice/free/repeatable
+> phase bridge is implemented. The first Tough Hide review used matched seeds
+> 10100–10119 in a six-phase Forest Edge/Hare comparison; the directional
+> player copy “Block more incoming attacks” and the existing generic A/B/C
+> markers are accepted for this slice. Focused Unity EditMode and PlayMode
+> checks passed. See the
+> [Tough Hide handoff](../handoffs/2026-09-27-codex-s3-04-tough-hide.md).
+
 Sprint 3 is about making the existing Forest Edge expedition safe to play from
 start to finish, while making Mutations understandable and improving the look
 and feel of the player interface. It does not repeat Sprint 2's Mutation
@@ -59,7 +67,8 @@ work are listed below with their board locations.
    2026-09-26; playable plants remain deferred.
 4. The agreed player-facing choices must be made clear in the interface:
    three glanceable Mutations or Skip after rounds 1–5, with pause and confirmed
-   End but no Restart.
+   End but no Restart. The three-choice phase bridge is implemented and
+   focused-tested; S3-04 copy/card-marker review is accepted for this slice.
 5. The current player interface needs visual polish and integration with the
    simulation flow to move toward a shippable presentation.
 6. Fox telemetry is the only S2 carry-over and needs to remain visible in the
@@ -95,13 +104,19 @@ candidates and one bounded Forest Edge/Hare evidence slice. Josh approved the
 five-effect bridge, later repeat offers with level/stack progression, free
 Mutation selection, and no S3-04 Skip reward.
 
+The first Tough Hide candidate is implemented and measured in a bounded
+20-seed matched panel. Its handoff records exact phase-local combat counts,
+population observations, report provenance, and the pending Josh accept/revise
+decision. This does not close S3-04 or mark the other four descriptions as
+balance-tested.
+
 ## Delivery order
 
 1. **Keep evidence honest:** Josh closed S3-01 on 2026-09-18 after integration.
    The latest retained clean run records EditMode 234/234 and no-graphics
-   PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. Focused
-   phase-decision validation and the separate Main Menu/Settings review remain
-   open under Loose Ends P1-031.
+   PlayMode 28/30 with 0 failures and 2 expected graphics-only skips. The
+   focused phase-decision regression passed 1/1 on 2026-09-27; the separate
+   Main Menu/Settings review remains open under Loose Ends P1-031.
 2. **Lock the product contract:** S3-02 is complete. Its explicit deferrals do
    not block implementation; any stale Trello acceptance wording is a
    non-blocking cleanup.
@@ -168,8 +183,9 @@ Mutation selection, and no S3-04 Skip reward.
   and two expected graphics-only skips. Unity imported and compiled the UI
   host in an isolated copy while the working project editors were open. Reports
   are retained under `artifacts/s3-03-test-results-20260918/`. The separate
-  three-offer contract gap remains in S3-04; this closes S3-03 flow/recovery,
-  not the Sprint 3 acceptance gate.
+  At that 2026-09-18 handoff, the three-offer gap remained open in S3-04; the
+  later 2026-09-27 handoff records its implementation and focused validation.
+  This closes S3-03 flow/recovery, not the Sprint 3 acceptance gate.
 
 - Started 2026-09-17. After Unity was closed, fresh full-suite runs completed
   and retained XML/logs:
