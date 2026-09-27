@@ -34,17 +34,50 @@ namespace SaltyGame
             ".########.",
             "...####...",
         };
-        static readonly string[] CanopyPixels =
+        static readonly string[][] CanopyVariants =
         {
-            "....11211....",
-            "..112222221..",
-            ".12223232221.",
-            "1223223223221",
-            "1222323322221",
-            "1223223223221",
-            ".12222222221.",
-            "..111222111..",
-            "....11111....",
+            new[]
+            {
+                ".......111.......",
+                ".....1122211.....",
+                "...11222222211...",
+                "..1222222222221..",
+                ".122222322222221.",
+                "12222222222222221",
+                "12222242222322221",
+                ".122223222222221.",
+                "..1222222222221..",
+                "...11222222211...",
+                ".....1122211.....",
+            },
+            new[]
+            {
+                "......1111.......",
+                "....11222211.....",
+                "..1122222222211..",
+                ".122222222222221.",
+                "12222222222222221",
+                "12222232222422221",
+                "12222222222222221",
+                ".122222222222221.",
+                "..1222222222221..",
+                "...11222222211...",
+                "....112222211....",
+            },
+            new[]
+            {
+                ".......111.......",
+                "....112222211....",
+                "..1122222222211..",
+                ".122222222222221.",
+                "12222222222222221",
+                "12222322222242221",
+                "12222222222222221",
+                "1222222222222221.",
+                "..1222222222221..",
+                "...11222222211...",
+                ".....1122211.....",
+            },
         };
         static readonly string[] RockPixels =
         {
@@ -112,8 +145,12 @@ namespace SaltyGame
         SolidColorBrush birthPoofShadowBrush;
         SolidColorBrush birthPoofFillBrush;
         SolidColorBrush canopyShadowBrush;
+        SolidColorBrush canopyDeepBrush;
         SolidColorBrush canopyFillBrush;
         SolidColorBrush canopyLightBrush;
+        SolidColorBrush treeBarkShadowBrush;
+        SolidColorBrush treeBarkFillBrush;
+        SolidColorBrush treeBarkLightBrush;
         SolidColorBrush meadowBrush;
         SolidColorBrush flowerBrush;
         SolidColorBrush pebbleBrush;
@@ -593,15 +630,25 @@ namespace SaltyGame
 
         void DrawForestEdge(DrawingContext context, float left, float top, float cellSize)
         {
-            // Crowns overhang from outside the playable field. They suggest a
-            // forest boundary without marking traversable cells as walls.
+            // Keep the tree trunks narrow and near the boundary. The crowns
+            // carry the forest silhouette while leaving the field readable.
             var pixel = Math.Max(2f, (float)Math.Round(cellSize * 0.28f));
             var shadow = canopyShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 47, 72, 40));
+            var deep = canopyDeepBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 54, 83, 44));
             var fill = canopyFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 77, 112, 55));
-            var light = canopyLightBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 114, 145, 70));
-            shadow.Opacity = 0.92f;
-            fill.Opacity = 0.85f;
-            light.Opacity = 0.82f;
+            var light = canopyLightBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 148, 172, 83));
+            shadow.Opacity = 0.98f;
+            deep.Opacity = 0.98f;
+            fill.Opacity = 0.94f;
+            light.Opacity = 0.92f;
+
+            var barkShadow = treeBarkShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 67, 47, 34));
+            var barkFill = treeBarkFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 139, 88, 48));
+            var barkLight = treeBarkLightBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 191, 134, 69));
+            barkShadow.Opacity = 0.98f;
+            barkFill.Opacity = 0.96f;
+            barkLight.Opacity = 0.90f;
+
             for (var index = 0; index < CanopyPositions.Length; index++)
             {
                 if (index == 4)
@@ -610,8 +657,11 @@ namespace SaltyGame
                 }
 
                 var centerX = left + CanopyPositions[index] * snapshot.Width * cellSize;
-                DrawCanopy(context, centerX, top - pixel * (7f + index % 2 * 0.35f),
-                    pixel, shadow, fill, light);
+                var crownTop = top - pixel * (10.2f + index % 3 * 0.2f);
+                DrawTreeTrunk(context, centerX, crownTop, pixel, 6,
+                    barkShadow, barkFill, barkLight);
+                DrawCanopy(context, centerX, crownTop, pixel, index % CanopyVariants.Length,
+                    shadow, deep, fill, light);
             }
 
             var rockDark = rockShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 68, 69, 59));
@@ -620,8 +670,12 @@ namespace SaltyGame
             for (var index = 0; index < 3; index++)
             {
                 var centerY = top + (index + 0.5f) * snapshot.Height * cellSize / 3f;
-                DrawCanopy(context, left - pixel * 6.2f, centerY - pixel * 4f,
-                    pixel, shadow, fill, light);
+                var centerX = left - pixel * 7.8f;
+                var crownTop = centerY - pixel * (5.1f + index % 2 * 0.2f);
+                DrawTreeTrunk(context, centerX, crownTop, pixel, 7,
+                    barkShadow, barkFill, barkLight);
+                DrawCanopy(context, centerX, crownTop, pixel, (index + 1) % CanopyVariants.Length,
+                    shadow, deep, fill, light);
                 if (index != 1)
                 {
                     DrawRockCluster(context, left - pixel * 5.5f,
@@ -662,20 +716,37 @@ namespace SaltyGame
             }
         }
 
-        static void DrawCanopy(DrawingContext context, float centerX, float top,
-            float pixel, Brush shadow, Brush fill, Brush light)
+        static void DrawTreeTrunk(DrawingContext context, float centerX, float canopyTop,
+            float pixel, int heightPixels, Brush shadow, Brush fill, Brush light)
         {
-            var left = centerX - CanopyPixels[0].Length * pixel * 0.5f;
-            for (var row = 0; row < CanopyPixels.Length; row++)
+            // Draw the bark first so the foliage overlaps its upper end like a
+            // real crown. A narrow highlight keeps the trunk readable at board scale.
+            var trunkTop = canopyTop + pixel * 8f;
+            var trunkHeight = pixel * heightPixels;
+            context.DrawRectangle(shadow, null,
+                new NoesisRect(centerX - pixel * 1.5f, trunkTop, pixel * 3f, trunkHeight));
+            context.DrawRectangle(fill, null,
+                new NoesisRect(centerX - pixel * 0.5f, trunkTop, pixel * 2f, trunkHeight));
+            context.DrawRectangle(light, null,
+                new NoesisRect(centerX - pixel * 0.5f, trunkTop + pixel, pixel, Math.Max(pixel, trunkHeight - pixel)));
+        }
+
+        static void DrawCanopy(DrawingContext context, float centerX, float top,
+            float pixel, int variant, Brush shadow, Brush deep, Brush fill, Brush light)
+        {
+            var pixels = CanopyVariants[variant];
+            var left = centerX - pixels[0].Length * pixel * 0.5f;
+            for (var row = 0; row < pixels.Length; row++)
             {
-                for (var column = 0; column < CanopyPixels[row].Length; column++)
+                for (var column = 0; column < pixels[row].Length; column++)
                 {
                     Brush brush;
-                    switch (CanopyPixels[row][column])
+                    switch (pixels[row][column])
                     {
                         case '1': brush = shadow; break;
                         case '2': brush = fill; break;
                         case '3': brush = light; break;
+                        case '4': brush = deep; break;
                         default: continue;
                     }
 
