@@ -390,6 +390,37 @@
                              Stroke="{DynamicResource GalapagOS.Window.BorderBrush}"
                              StrokeThickness="2"
                              Visibility="{Binding CompletePipVisibility}" />
+                    <Image x:Name="ActiveTimelineBunny"
+                           Source="{StaticResource GalapagOS.Image.Simulation.Rabbit.64}"
+                           Width="20"
+                           Height="22"
+                           Margin="-1,0,0,0"
+                           Stretch="Uniform"
+                           HorizontalAlignment="Left"
+                           VerticalAlignment="Center"
+                           RenderTransformOrigin="0.5,0.9"
+                           Visibility="{Binding ActivePipVisibility}">
+                        <Image.RenderTransform>
+                            <TranslateTransform />
+                        </Image.RenderTransform>
+                        <Image.Triggers>
+                            <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="ActiveTimelineBunny"
+                                                         Storyboard.TargetProperty="RenderTransform.Y"
+                                                         From="0"
+                                                         To="-3"
+                                                         Duration="0:0:0.30"
+                                                         AccelerationRatio="0.45"
+                                                         DecelerationRatio="0.45"
+                                                         AutoReverse="True"
+                                                         RepeatBehavior="Forever" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </Image.Triggers>
+                    </Image>
                 </Grid>
             </DataTemplate>
 

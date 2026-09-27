@@ -143,6 +143,9 @@ namespace SaltyGame
         string herbivorePopulationText;
         string carnivorePopulationText;
         SimulationTimelineItem[] phaseTimelineItems = Array.Empty<SimulationTimelineItem>();
+        int phaseTimelineCachedCount = -1;
+        int phaseTimelineCachedPhase;
+        bool phaseTimelineCachedComplete;
         Helper_SceneTransition sceneTransition;
         Helper_ProfileSession profileSession;
         Action desktopClose;
@@ -1458,18 +1461,27 @@ namespace SaltyGame
 
             currentPhase = Mathf.Clamp(currentPhase, 1, phaseCount);
             Set(ref phaseText, $"PHASE {currentPhase:00}", nameof(PhaseText));
-            var timeline = new SimulationTimelineItem[phaseCount];
-            for (var index = 0; index < phaseCount; index++)
+            var timelineComplete = run?.Status == SimulationRunStatus.Complete;
+            if (phaseTimelineCachedCount != phaseCount
+                || phaseTimelineCachedPhase != currentPhase
+                || phaseTimelineCachedComplete != timelineComplete)
             {
-                var phase = index + 1;
-                timeline[index] = new SimulationTimelineItem(
-                    phase,
-                    run?.Status == SimulationRunStatus.Complete || phase < currentPhase,
-                    run?.Status != SimulationRunStatus.Complete && phase == currentPhase,
-                    phase == phaseCount);
-            }
+                var timeline = new SimulationTimelineItem[phaseCount];
+                for (var index = 0; index < phaseCount; index++)
+                {
+                    var phase = index + 1;
+                    timeline[index] = new SimulationTimelineItem(
+                        phase,
+                        timelineComplete || phase < currentPhase,
+                        !timelineComplete && phase == currentPhase,
+                        phase == phaseCount);
+                }
 
-            Set(ref phaseTimelineItems, timeline, nameof(PhaseTimelineItems));
+                Set(ref phaseTimelineItems, timeline, nameof(PhaseTimelineItems));
+                phaseTimelineCachedCount = phaseCount;
+                phaseTimelineCachedPhase = currentPhase;
+                phaseTimelineCachedComplete = timelineComplete;
+            }
         }
 
         static int GetPopulationMeterMaximum(int configuredMaximum, int current, int fallback)
