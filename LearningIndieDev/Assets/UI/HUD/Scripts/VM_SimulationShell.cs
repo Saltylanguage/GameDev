@@ -83,6 +83,8 @@ namespace SaltyGame
         string experimentalHerbivoreStatLineSummary;
         string experimentalUpgradeCountText;
         string currencyText;
+        string phaseCurrencyText;
+        string harePurchaseText;
         string phaseRewardText;
         string phaseDecisionTitleText;
         string settingsMessage;
@@ -122,6 +124,7 @@ namespace SaltyGame
         bool canPurchaseRewardOption1;
         bool canPurchaseRewardOption2;
         bool canPurchaseRewardOption3;
+        bool canBuyHare;
         bool canPlayNextSimulation;
         string rewardOption1Text;
         string rewardOption2Text;
@@ -151,6 +154,7 @@ namespace SaltyGame
         Visibility runningVisibility;
         Visibility pausedVisibility;
         Visibility phaseDecisionVisibility;
+        Visibility harePurchaseVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
         Visibility experimentalHerbivoreStatLineSummaryVisibility;
@@ -175,6 +179,7 @@ namespace SaltyGame
         public DelegateCommand PurchaseRewardOption1Command { get; private set; }
         public DelegateCommand PurchaseRewardOption2Command { get; private set; }
         public DelegateCommand PurchaseRewardOption3Command { get; private set; }
+        public DelegateCommand BuyHareCommand { get; private set; }
         public DelegateCommand ContinueWithoutUpgradeCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
         public DelegateCommand ApplySettingsCommand { get; private set; }
@@ -189,6 +194,8 @@ namespace SaltyGame
         public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
         public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
+        public string PhaseCurrencyText => phaseCurrencyText;
+        public string HarePurchaseText => harePurchaseText;
         public string PhaseRewardText => phaseRewardText;
         public string PhaseDecisionTitleText => phaseDecisionTitleText;
         public string ScenarioText => scenarioText;
@@ -389,6 +396,7 @@ namespace SaltyGame
         public bool CanPurchaseRewardOption1 => canPurchaseRewardOption1;
         public bool CanPurchaseRewardOption2 => canPurchaseRewardOption2;
         public bool CanPurchaseRewardOption3 => canPurchaseRewardOption3;
+        public bool CanBuyHare => canBuyHare;
         public string RewardOption1Text => rewardOption1Text;
         public string RewardOption2Text => rewardOption2Text;
         public string RewardOption3Text => rewardOption3Text;
@@ -463,6 +471,7 @@ namespace SaltyGame
         public Visibility RunningVisibility => runningVisibility;
         public Visibility PausedVisibility => pausedVisibility;
         public Visibility PhaseDecisionVisibility => phaseDecisionVisibility;
+        public Visibility HarePurchaseVisibility => harePurchaseVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
         public Visibility ExperimentalHerbivoreStatLineSummaryVisibility => experimentalHerbivoreStatLineSummaryVisibility;
@@ -871,6 +880,13 @@ namespace SaltyGame
             PurchaseRewardOption1Command = new DelegateCommand(() => preview?.PurchaseReward(0));
             PurchaseRewardOption2Command = new DelegateCommand(() => preview?.PurchaseReward(1));
             PurchaseRewardOption3Command = new DelegateCommand(() => preview?.PurchaseReward(2));
+            BuyHareCommand = new DelegateCommand(() =>
+            {
+                if (preview?.BuyHare() == true)
+                {
+                    Refresh(true);
+                }
+            });
             ContinueWithoutUpgradeCommand = new DelegateCommand(() => preview?.ContinueWithoutUpgrade());
             PlayNextSimulationCommand = new DelegateCommand(() => preview?.PlayNextSimulation());
             ApplySettingsCommand = new DelegateCommand(ApplySettings);
@@ -982,6 +998,16 @@ namespace SaltyGame
             Set(ref currencyText, preview.Progression == null
                 ? "Currency: 0"
                 : $"Currency: {preview.Progression.Currency}", nameof(CurrencyText));
+            Set(ref phaseCurrencyText,
+                $"{preview.Progression?.Currency ?? 0} FIELD DATA",
+                nameof(PhaseCurrencyText));
+            Set(ref harePurchaseText,
+                preview.Progression?.Currency < SpeciesSimulationPreview.HareCost
+                    ? $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA  ·  NEED {SpeciesSimulationPreview.HareCost - preview.Progression.Currency} MORE"
+                    : !preview.CanBuyHare
+                        ? "NO ROOM FOR HARE"
+                        : $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA",
+                nameof(HarePurchaseText));
             Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
             var isContinuousRun = preview.ContinuousPhasesEnabled
                 && run?.SupportsContinuation == true;
@@ -1041,6 +1067,7 @@ namespace SaltyGame
             Set(ref canPurchaseRewardOption1, preview.CanPurchaseReward(0), nameof(CanPurchaseRewardOption1));
             Set(ref canPurchaseRewardOption2, preview.CanPurchaseReward(1), nameof(CanPurchaseRewardOption2));
             Set(ref canPurchaseRewardOption3, preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));
+            Set(ref canBuyHare, preview.CanBuyHare, nameof(CanBuyHare));
             Set(ref canPlayNextSimulation, state == SpeciesPreviewState.Results, nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
@@ -1051,6 +1078,11 @@ namespace SaltyGame
             Set(ref runningVisibility, state == SpeciesPreviewState.Running ? Visibility.Visible : Visibility.Collapsed, nameof(RunningVisibility));
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
             Set(ref phaseDecisionVisibility, state == SpeciesPreviewState.PhaseDecision ? Visibility.Visible : Visibility.Collapsed, nameof(PhaseDecisionVisibility));
+            Set(ref harePurchaseVisibility,
+                state == SpeciesPreviewState.PhaseDecision
+                    && preview.PlayerSpecies.Value == "hare"
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(HarePurchaseVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
             Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));

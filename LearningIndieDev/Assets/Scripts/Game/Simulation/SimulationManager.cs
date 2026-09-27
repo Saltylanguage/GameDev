@@ -109,6 +109,11 @@ namespace SaltyGame
             return true;
         }
 
+        public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
+        {
+            return runner != null && runner.TryAddBoundaryPopulation(species, amount);
+        }
+
         public bool ContinueWithBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,

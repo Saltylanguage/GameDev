@@ -335,7 +335,11 @@ decision moments with three temporary Mutations or Skip at each, one after
 each of phases 1–5. Permanent currency purchases in
 the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
 player skip for extra currency is undecided and non-blocking; if adopted, it
-uses the same currency as Genome Upgrades. S3-04 Mutation choices are free and
+uses the same currency as Genome Upgrades. At Hare phase decisions, a separate
+repeatable reinforcement purchase adds one Hare to the next phase for 10 Field
+Data while space and Data remain; it does not use the Mutation choice. The
+phase screen shows the available Data and labels free Mutation offers. S3-04
+Mutation choices are free and
 should be readable at a glance through an icon, identity, and evidence-backed
 qualitative direction (for example, “Hunter Lv2 — better tracking and sharper
 teeth”); no Stat-Line breakdown is shown. Restart is removed; End abandons

@@ -151,49 +151,12 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(nextRules));
             }
 
-            if (selectedUpgrade != null && selectedUpgrade.PopulationToAdd > 0)
+            if (selectedUpgrade != null && selectedUpgrade.PopulationToAdd > 0
+                && (!nextRules.TryGetValue(selectedUpgrade.TargetSpecies, out var targetRules)
+                    || !TryAddBoundaryPopulation(
+                        selectedUpgrade.TargetSpecies, targetRules, selectedUpgrade.PopulationToAdd)))
             {
-                if (!nextRules.TryGetValue(selectedUpgrade.TargetSpecies, out var targetRules))
-                {
-                    return false;
-                }
-
-                var currentCells = Run.Cells;
-                var initialCells = Run.CopyInitialCells();
-                if (!SpeciesSimulation.CanAddBoundaryPopulation(
-                        currentCells,
-                        selectedUpgrade.PopulationToAdd,
-                        maxPopulation)
-                    || !SpeciesSimulation.CanAddBoundaryPopulation(
-                        initialCells,
-                        selectedUpgrade.PopulationToAdd,
-                        maxPopulation)
-                    || !SpeciesSimulation.TryAddBoundaryPopulation(
-                        currentCells,
-                        selectedUpgrade.TargetSpecies,
-                        targetRules,
-                        selectedUpgrade.PopulationToAdd,
-                        maxPopulation,
-                        CreateBoundaryPopulationSeed(isRestartGrid: false),
-                        out var nextCells)
-                    || !SpeciesSimulation.TryAddBoundaryPopulation(
-                        initialCells,
-                        selectedUpgrade.TargetSpecies,
-                        targetRules,
-                        selectedUpgrade.PopulationToAdd,
-                        maxPopulation,
-                        CreateBoundaryPopulationSeed(isRestartGrid: true),
-                        out var nextInitialCells))
-                {
-                    return false;
-                }
-
-                if (!Run.InstallBoundaryPopulation(nextCells, nextInitialCells))
-                {
-                    return false;
-                }
-
-                previousCells = Run.Cells;
+                return false;
             }
 
             if (simulationData != null)
@@ -223,6 +186,43 @@ namespace SaltyGame
 
             experimentalOptions = nextExperimentalOptions ?? SpeciesExperimentalOptions.None;
             Run.SetUpgradeLoadout(nextUpgradeLoadout, experimentalOptions.CoupledSpeciesResponsesEnabled);
+            return true;
+        }
+
+        public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
+        {
+            if (Run.Status != SimulationRunStatus.AwaitingDecision
+                || !rules.TryGetValue(species, out var targetRules))
+            {
+                return false;
+            }
+
+            return TryAddBoundaryPopulation(species, targetRules, amount);
+        }
+
+        bool TryAddBoundaryPopulation(SpeciesId species, SpeciesRules targetRules, int amount)
+        {
+            if (Run.Status != SimulationRunStatus.AwaitingDecision)
+            {
+                return false;
+            }
+
+            var currentCells = Run.Cells;
+            var initialCells = Run.CopyInitialCells();
+            if (!SpeciesSimulation.CanAddBoundaryPopulation(currentCells, amount, maxPopulation)
+                || !SpeciesSimulation.CanAddBoundaryPopulation(initialCells, amount, maxPopulation)
+                || !SpeciesSimulation.TryAddBoundaryPopulation(
+                    currentCells, species, targetRules, amount, maxPopulation,
+                    CreateBoundaryPopulationSeed(isRestartGrid: false), out var nextCells)
+                || !SpeciesSimulation.TryAddBoundaryPopulation(
+                    initialCells, species, targetRules, amount, maxPopulation,
+                    CreateBoundaryPopulationSeed(isRestartGrid: true), out var nextInitialCells)
+                || !Run.InstallBoundaryPopulation(nextCells, nextInitialCells))
+            {
+                return false;
+            }
+
+            previousCells = Run.Cells;
             return true;
         }
 

@@ -19,6 +19,7 @@ namespace SaltyGame
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
         public const int ContinuousExpeditionPhaseCount = 6;
+        public const int HareCost = 10;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
@@ -1441,6 +1442,34 @@ namespace SaltyGame
                 && progression.CanPurchase(rewardOptions[rewardIndex]);
         }
 
+        public bool CanBuyHare => previewState == SpeciesPreviewState.PhaseDecision
+            && playerSpecies.Value == "hare"
+            && !phaseDecisionCommitted
+            && Run?.Status == SimulationRunStatus.AwaitingDecision
+            && progression?.Currency >= HareCost
+            && CanAddBoundaryPopulation(
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.PopulationReinforcementId)
+                    .CreateSnapshot(playerSpecies));
+
+        public bool BuyHare()
+        {
+            if (!CanBuyHare
+                || !(simulationHelper != null
+                    ? simulationHelper.TryAddBoundaryPopulation(playerSpecies, 1)
+                    : simulationManager != null
+                        && simulationManager.TryAddBoundaryPopulation(playerSpecies, 1)))
+            {
+                return false;
+            }
+
+            if (!progression.TrySpend(HareCost))
+            {
+                throw new InvalidOperationException("Validated Hare purchase could not be charged.");
+            }
+
+            return true;
+        }
+
         public bool PurchaseReward(int rewardIndex)
         {
             if (!CanPurchaseReward(rewardIndex))
@@ -2100,7 +2129,7 @@ namespace SaltyGame
         {
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}  ·  LV {1}\n{2}",
+                "{0}  ·  LV {1}\n{2}\nFREE",
                 SpeciesUpgradeCatalog.GetDisplayName(upgradeId),
                 level,
                 GetHerbivoreMutationDescription(upgradeId));
