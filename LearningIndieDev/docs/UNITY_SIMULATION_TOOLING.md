@@ -226,6 +226,46 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperime
     -SeedCount 50 `
     -PlayerSpeciesId herbivore
 
+## Forest Edge diagnostic scenario fixtures
+
+These TestData assets are manual, seeded comparison fixtures. Run them through
+`Run-CellularExperiment.ps1` with the same seed panel and tick count when
+comparing outcomes:
+
+| Scenario | Starting setup | Use |
+| --- | --- | --- |
+| `Assets/Data/TestData/ForestEdgeNoFoxDiagnostic.asset` | 22 Hares using the production Hare asset; 40% plant start; no Foxes | No-Fox reference using the currently authored Hare rules. |
+| `Assets/Data/TestData/ForestEdgeNoFoxRepro10Diagnostic.asset` | 22 Hares using `HareRepro10Diagnostic`; 40% plant start; no Foxes | Compare against the first fixture to explore a 10% Hare reproduction setting without Foxes. |
+| `Assets/Data/TestData/ForestEdgeRepro10Diagnostic.asset` | 22 `HareRepro10Diagnostic` Hares; 40% plant start; six production Foxes | Compare against the second fixture to explore adding the starting Fox population. |
+
+`HareRepro10Diagnostic.asset` is a species-definition fixture referenced by
+the two 10%-reproduction scenarios; it is not a scenario to pass directly.
+The first scenario follows the production Hare asset through its Unity GUID,
+so its rules change when that production asset changes. The 10% Hare fixture
+contains its own copied rules and may drift from production in other fields.
+Check both species definitions before treating a comparison as a one-variable
+experiment. These runs are diagnostic only; they do not approve production
+balance values.
+
+Example: run the three scenarios as a matched 20-seed, 600-tick panel from the
+`LearningIndieDev` directory, then compare each report bundle:
+
+```powershell
+$scenarios = @(
+    'Assets/Data/TestData/ForestEdgeNoFoxDiagnostic.asset',
+    'Assets/Data/TestData/ForestEdgeNoFoxRepro10Diagnostic.asset',
+    'Assets/Data/TestData/ForestEdgeRepro10Diagnostic.asset'
+)
+foreach ($scenario in $scenarios) {
+    powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
+        -ScenarioPath $scenario `
+        -SeedStart 10100 `
+        -SeedCount 20 `
+        -RunTicks 600 `
+        -PlayerSpeciesId hare
+}
+```
+
 # Matched control/upgrade arm; use the same seeds for both invocations.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `

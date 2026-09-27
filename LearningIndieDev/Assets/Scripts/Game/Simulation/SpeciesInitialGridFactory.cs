@@ -78,7 +78,64 @@ namespace SaltyGame
                 populationCount++;
             }
 
+            StaggerInitialPlantGrowth(data, grid, random);
+
             return grid;
+        }
+
+        static void StaggerInitialPlantGrowth(
+            CellularSimData data,
+            Grid<SpeciesCell> grid,
+            Random random)
+        {
+            foreach (var terrain in data.TerrainDefinitions.Values)
+            {
+                if (terrain.GrowthIntervalSeconds <= 0f)
+                {
+                    continue;
+                }
+
+                var intervalTicks = GetGrowthIntervalTicks(
+                    terrain.GrowthIntervalSeconds,
+                    data.StepInterval);
+                for (var y = 0; y < grid.Height; y++)
+                {
+                    for (var x = 0; x < grid.Width; x++)
+                    {
+                        var cell = grid.GetCell(x, y);
+                        var resourceSpecies = cell.ResourceSpeciesId.IsValid
+                            ? cell.ResourceSpeciesId
+                            : cell.SpeciesId;
+                        if (!cell.IsPlantResource
+                            || cell.TerrainId != terrain.Id
+                            || !data.SpeciesRules.TryGetValue(resourceSpecies, out var speciesRules)
+                            || !speciesRules.IsPlant)
+                        {
+                            continue;
+                        }
+
+                        // Starting plants represent an established patch, so give
+                        // them different points in the growth cycle rather than
+                        // letting the entire initial patch spread at once.
+                        grid.SetCell(
+                            x,
+                            y,
+                            cell.WithTerrainResourceGrowthElapsedTicks(random.Next(intervalTicks)));
+                    }
+                }
+            }
+        }
+
+        static int GetGrowthIntervalTicks(float growthIntervalSeconds, float stepIntervalSeconds)
+        {
+            var tickCount = Math.Ceiling(
+                (double)growthIntervalSeconds / stepIntervalSeconds - 0.000001d);
+            if (tickCount >= int.MaxValue)
+            {
+                return int.MaxValue;
+            }
+
+            return Math.Max(1, (int)tickCount);
         }
 
         static void PlaceExplicitStartingPopulations(

@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c526ec1c6e1646fdaea26a52d72ed7a5, type: 3}
+  m_Name: LargerMinimumLitter
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.SpeciesUpgradeAsset
+  upgradeId: larger-minimum-litter
+  displayName: 'Hare: Larger Minimum Litter'
+  description: Increase the minimum number of offspring in each litter by one.
+  targetSpeciesId: hare
+  cost: 5
+  modifiers:
+  - attributeId: reproduction.litter-minimum
+    signedValue: 1
+  prerequisiteUpgradeIds: []
+  excludedUpgradeIds: []

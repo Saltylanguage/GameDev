@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SaltyGame
 {
@@ -28,9 +29,12 @@ namespace SaltyGame
         [SerializeField, Range(0f, 1f)] float forageThresholdFraction;
         [SerializeField, Range(0f, 1f)] float matingEnergyThresholdFraction;
         [SerializeField, Range(0f, 1f)] float matingEnergyCostFraction;
+        [SerializeField] bool distributeMatingEnergyToOffspring;
         [SerializeField] bool foragesUntilFull;
         [SerializeField, Range(0f, 1f)] float wiltChance;
-        [SerializeField, Min(0)] int crowdingEnergyPenalty;
+        [SerializeField, FormerlySerializedAs("crowdingEnergyPenalty"), Min(1)]
+        [Tooltip("Multiplier applied to normal metabolism while the local group is crowded. One means no extra cost.")]
+        int crowdingMetabolismMultiplier = 2;
         [SerializeField, Min(0f)] float startingFoodReserve;
         [SerializeField, Range(0f, 1f)] float seedDropChance;
         [SerializeField, Min(0)] int energyValue;
@@ -71,7 +75,7 @@ namespace SaltyGame
                 maxReproductionGroupSize,
                 startingEnergy,
                 wiltChance,
-                crowdingEnergyPenalty,
+                Math.Max(1, crowdingMetabolismMultiplier),
                 startingFoodReserve,
                 seedDropChance,
                 energyValue,
@@ -87,7 +91,8 @@ namespace SaltyGame
                 energyLossIntervalTicks: energyLossIntervalTicks,
                 forageThresholdFraction: forageThresholdFraction,
                 matingEnergyThresholdFraction: matingEnergyThresholdFraction,
-                matingEnergyCostFraction: matingEnergyCostFraction);
+                matingEnergyCostFraction: matingEnergyCostFraction,
+                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

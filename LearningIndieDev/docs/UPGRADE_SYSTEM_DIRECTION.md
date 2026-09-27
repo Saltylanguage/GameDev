@@ -247,7 +247,7 @@ contract. Direct mechanic tests must pass before ecological trials.
 | `trailblazer-long-stride` | Trailblazer | Movement speed +0.5 | Reproduction neighbor count +1 | Attributable movement, target arrivals, missing-mate blocks |
 | `trailblazer-far-sight` | Trailblazer | Vision range +1 | Metabolism +1 | Targets detected beyond the old range, energy trajectory, starvation deaths |
 | `warren-guarded-burrow` | Warren | Block +2 | Movement speed -0.25 | Blocks, prevented hits/damage, movement |
-| `warren-room-to-breed` | Warren | Reproduction group limit +1 and crowding penalty -1, floored at zero | Metabolism +1 | Group-limit blocks, crowding penalties, births, local Fern depletion |
+| `warren-room-to-breed` | Warren | Reproduction group limit +1 and crowding metabolism multiplier 2→1 | Metabolism +1 | Group-limit blocks, crowded metabolism, starvation, births, local Fern depletion |
 | `gardeners-seed-pouches` | Gardeners | Starting food reserve +2 | Starting energy -2 | Reserve consumed, seed attempts/successes, early starvation exposure |
 | `gardeners-careful-sowing` | Gardeners | Seed-drop chance +0.10, capped at 1.0 | Movement speed -0.25 | Successful drops, new Fern cells, Fern population-time integral, movement |
 

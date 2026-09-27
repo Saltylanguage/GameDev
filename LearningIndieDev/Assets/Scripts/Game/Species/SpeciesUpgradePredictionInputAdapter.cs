@@ -16,7 +16,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class SpeciesUpgradePredictionInputAdapter
     {
-        public const string ProductionCatalogPath = "Assets/Data/CellularSimulation/Upgrades/Production";
+        public const string ProductionCatalogPath = "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production";
         public const string SchemaVersion = "species-upgrade-prediction-input-v1";
 
         public static SpeciesUpgradeSnapshot[] Resolve(IReadOnlyList<string> orderedUpgradeIds)

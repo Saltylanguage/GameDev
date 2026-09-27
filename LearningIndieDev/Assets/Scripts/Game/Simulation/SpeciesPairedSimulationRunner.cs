@@ -100,7 +100,8 @@ namespace SaltyGame
                 tick: baselineTick,
                 experimentalOptions: experimentalOptions,
                 baselinePreviousSource: baselinePreviousCells,
-                blockPlusTwoPreviousSource: blockPlusTwoPreviousCells);
+                blockPlusTwoPreviousSource: blockPlusTwoPreviousCells,
+                stepIntervalSeconds: baselineData.StepInterval);
             OpportunityControl.Add(result, pairedOpportunityId, observations);
             baselinePreviousCells = BaselineRun.Cells;
             blockPlusTwoPreviousCells = BlockPlusTwoRun.Cells;

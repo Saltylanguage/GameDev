@@ -766,7 +766,7 @@ namespace SaltyGame.Tests
                 Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementMaxLevel));
 
             var alternatives = new HashSet<string>();
-            for (var rotation = 0; rotation < 4; rotation++)
+            for (var rotation = 0; rotation < 6; rotation++)
             {
                 var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                     SpeciesUpgradeCatalog.ToughHideId,
@@ -777,7 +777,7 @@ namespace SaltyGame.Tests
                 alternatives.Add(offer[1].Id);
             }
 
-            Assert.That(alternatives, Has.Count.EqualTo(4));
+            Assert.That(alternatives, Has.Count.EqualTo(6));
 
             var legacyOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                 SpeciesUpgradeCatalog.LegacyThreatResponseId,
@@ -1807,6 +1807,109 @@ namespace SaltyGame.Tests
             Assert.That(fullPair.GetCell(2, 0).IsCreature, Is.True);
         }
 
+        [TestCase(2, 24)]
+        [TestCase(6, 8)]
+        public void HareMatingAtSeventyFivePercentPaysFixedCostAndSharesEnergyAcrossLitter(
+            int litterSize,
+            int expectedOffspringEnergy)
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(5, 5);
+            source.SetCell(2, 2, new SpeciesCell(hare, energy: 36, age: 1));
+            source.SetCell(2, 3, new SpeciesCell(hare, energy: 36, age: 1));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    startingEnergy: 12,
+                    maximumEnergy: 48,
+                    litterMinimum: litterSize,
+                    litterMaximum: litterSize,
+                    metabolism: 0,
+                    foragesUntilFull: true,
+                    matingEnergyThresholdFraction: 0.75f,
+                    matingEnergyCostFraction: 0.5f,
+                    distributeMatingEnergyToOffspring: true),
+            };
+            var behaviorNext = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, behaviorNext, rules, new System.Random(42));
+            Assert.That(behaviorNext.GetCell(2, 2).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(behaviorNext.GetCell(2, 3).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Mating));
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var offspringCount = 0;
+            var totalOffspringEnergy = 0;
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature && cell.SpeciesId == hare
+                        && !(x == 2 && (y == 2 || y == 3)))
+                    {
+                        offspringCount++;
+                        totalOffspringEnergy += cell.Energy;
+                        Assert.That(cell.Energy, Is.EqualTo(expectedOffspringEnergy));
+                    }
+                }
+            }
+
+            Assert.That(offspringCount, Is.EqualTo(litterSize));
+            Assert.That(totalOffspringEnergy, Is.EqualTo(48));
+            Assert.That(next.GetCell(2, 2).Energy, Is.EqualTo(12));
+            Assert.That(next.GetCell(2, 3).Energy, Is.EqualTo(12));
+        }
+
+        [Test]
+        public void HareBelowSeventyFivePercentDoesNotEnterMatingIntention()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 35));
+            source.SetCell(1, 0, new SpeciesCell(hare, energy: 35));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maximumEnergy: 48,
+                    foragesUntilFull: true,
+                    matingEnergyThresholdFraction: 0.75f,
+                    matingEnergyCostFraction: 0.5f,
+                    distributeMatingEnergyToOffspring: true),
+            };
+            var behaviorNext = source.Copy();
+
+            SpeciesBehaviorSystem.Update(source, behaviorNext, rules, new System.Random(42));
+            Assert.That(behaviorNext.GetCell(0, 0).BehaviorState, Is.Not.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(behaviorNext.GetCell(1, 0).BehaviorState, Is.Not.EqualTo(SpeciesBehaviorState.Mating));
+            Assert.That(SpeciesSimulation.Step(source, rules, seed: 42).GetCell(2, 0).IsCreature, Is.False);
+        }
+
         [Test]
         public void FullEnergyForagerRefillsToItsCapAndWaitsUntilBelowThresholdToEatAgain()
         {
@@ -1964,6 +2067,169 @@ namespace SaltyGame.Tests
             Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
             Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(10f));
             Assert.That(next.GetCell(4, 0).SpeciesId, Is.EqualTo(hare));
+        }
+
+        [Test]
+        public void ReadyHareTravelsToDistantMateInsteadOfForaging()
+        {
+            var hare = new SpeciesId("hare");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var source = new Grid<SpeciesCell>(11, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 5));
+            source.SetCell(1, 0, SpeciesCell.Grass(10f));
+            source.SetCell(10, 0, new SpeciesCell(hare, energy: 5));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: right,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Plant,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 3,
+                    forageBelowEnergy: 6,
+                    maximumEnergy: 48,
+                    foragesUntilFull: true,
+                    metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 5),
+                    matingEnergyThresholdFraction: 0.1f,
+                    matingEnergyCostFraction: 0.1f,
+                    distributeMatingEnergyToOffspring: true),
+                [SpeciesIds.Plant] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    energyValue: 2,
+                    metabolism: 0,
+                    role: SpeciesRole.Plant),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+
+            Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(1, 0).Energy, Is.EqualTo(5));
+            Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(10f));
+        }
+
+        [Test]
+        public void ThreeHaresCanReproduceWithinTheirLocalGroupLimit()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(5, 5);
+            source.SetCell(1, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(2, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(3, 2, new SpeciesCell(hare, energy: 24));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 7,
+                    maximumEnergy: 48,
+                    litterMinimum: 2,
+                    litterMaximum: 2,
+                    metabolism: 0,
+                    matingEnergyThresholdFraction: 0.5f,
+                    matingEnergyCostFraction: 0.5f,
+                    distributeMatingEnergyToOffspring: true),
+            };
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var hareCount = 0;
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    if (next.GetCell(x, y).IsCreature && next.GetCell(x, y).SpeciesId == hare)
+                    {
+                        hareCount++;
+                    }
+                }
+            }
+
+            Assert.That(hareCount, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void ThreeSeparatedHaresSeekAcrossVisionRangeAndProduceAFirstLitter()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(17, 5);
+            source.SetCell(1, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(8, 2, new SpeciesCell(hare, energy: 24));
+            source.SetCell(15, 2, new SpeciesCell(hare, energy: 24));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 2),
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    reproductionNeighborCount: 1,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 16,
+                    maxReproductionGroupSize: 7,
+                    maximumEnergy: 48,
+                    litterMinimum: 2,
+                    litterMaximum: 2,
+                    foragesUntilFull: true,
+                    metabolism: 0,
+                    matingEnergyThresholdFraction: 0.5f,
+                    matingEnergyCostFraction: 0.5f,
+                    distributeMatingEnergyToOffspring: true),
+            };
+
+            for (var tick = 0; tick < 20; tick++)
+            {
+                source = SpeciesSimulation.Step(source, rules, seed: 42);
+            }
+
+            var hareCount = 0;
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    if (source.GetCell(x, y).IsCreature && source.GetCell(x, y).SpeciesId == hare)
+                    {
+                        hareCount++;
+                    }
+                }
+            }
+
+            Assert.That(hareCount, Is.GreaterThan(3));
         }
 
         [Test]
@@ -3026,7 +3292,10 @@ namespace SaltyGame.Tests
                 dietTarget: SpeciesIds.Plant,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
-                forageBelowEnergy: 20,
+                // Keep the animal hungry for all 20 bites so this isolates
+                // fractional remainder accumulation rather than threshold
+                // crossing and subsequent movement onto the food cell.
+                forageBelowEnergy: 100,
                 metabolism: 0,
                 digestionEnergyBonus: SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel);
             var rules = new Dictionary<SpeciesId, SpeciesRules>
@@ -3284,6 +3553,13 @@ namespace SaltyGame.Tests
                     SpeciesIds.Herbivore,
                     CreateRules(matingEnergyCostFraction: 0.15f)).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
+            Assert.That(first.WithSpeciesRules(
+                    SpeciesIds.Herbivore,
+                    CreateRules(
+                        maximumEnergy: 10,
+                        matingEnergyCostFraction: 0.15f,
+                        distributeMatingEnergyToOffspring: true)).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
         }
 
         [Test]
@@ -3476,7 +3752,8 @@ namespace SaltyGame.Tests
             int? damageAmount = null,
             float forageThresholdFraction = 0f,
             float matingEnergyThresholdFraction = 0f,
-            float matingEnergyCostFraction = 0f)
+            float matingEnergyCostFraction = 0f,
+            bool distributeMatingEnergyToOffspring = false)
         {
             return new SpeciesRules(
                 movementSpeed,
@@ -3501,7 +3778,8 @@ namespace SaltyGame.Tests
                 damageAmount: damageAmount,
                 forageThresholdFraction: forageThresholdFraction,
                 matingEnergyThresholdFraction: matingEnergyThresholdFraction,
-                matingEnergyCostFraction: matingEnergyCostFraction);
+                matingEnergyCostFraction: matingEnergyCostFraction,
+                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring);
         }
 
         static SpeciesSimulationMetrics StepWithReproductionMetrics(
@@ -4597,7 +4875,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void CrowdingRemovesLowEnergyHaresWhenTheGroupExceedsItsLimit()
+        public void CrowdingDoublesMetabolismInsteadOfKillingHaresDirectly()
         {
             var neighborhood = new GridPattern(new[]
             {
@@ -4626,7 +4904,7 @@ namespace SaltyGame.Tests
                     reproductionChance: 0f,
                     maxReproductionGroupSize: 3,
                     startingEnergy: 3,
-                    crowdingEnergyPenalty: 2,
+                    crowdingMetabolismMultiplier: 2,
                     metabolism: 1,
                     role: SpeciesRole.Herbivore),
             };
@@ -4639,7 +4917,8 @@ namespace SaltyGame.Tests
 
             var next = SpeciesSimulation.Step(source, rules, seed: 7, metrics: metrics);
 
-            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.Zero);
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).StarvationDeaths, Is.Zero);
             var survivingHares = 0;
             for (var y = 0; y < next.Height; y++)
             {
@@ -4652,7 +4931,8 @@ namespace SaltyGame.Tests
                 }
             }
 
-            Assert.That(survivingHares, Is.EqualTo(3));
+            Assert.That(survivingHares, Is.EqualTo(4));
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(1));
 
             var tolerantRules = new Dictionary<SpeciesId, SpeciesRules>
             {
@@ -4672,6 +4952,7 @@ namespace SaltyGame.Tests
                 }
             }
             Assert.That(tolerantSurvivors, Is.EqualTo(4));
+            Assert.That(tolerantNext.GetCell(0, 0).Energy, Is.EqualTo(2));
         }
 
         [Test]

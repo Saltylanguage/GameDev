@@ -46,6 +46,13 @@ S3-02 proposals are discarded.
   chooses Skip, then continues to the next round.
 - Finishing round 6 leads to the result; there is no additional upgrade.
 
+## Mutation economy confirmation — 2026-09-24
+
+- Mutation choices at the five phase boundaries are free: selecting one
+  deducts no Data, including the fixed repeatable Reinforcements option. Skip
+  grants no reward under the S3-04 contract. This does not change permanent
+  Genome upgrade pricing in the Gene Lab.
+
 ## Still open or deferred, not blocking S3-02
 
 - A possible Skip bonus is undecided. If adopted, it uses the same currency as

@@ -5,33 +5,28 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ## Current status — 2026-09-27
 
-- No P0 issue is verified. Local `ProjectMain` is at `c6b3282c` and is one
-  commit ahead of `origin/ProjectMain`; that commit contains the Forest Edge
-  balance/UI pass and its handoff. The worktree still has four uncommitted
-  follow-on edits: the Forest Edge scenario, `SpeciesCell.cs`, its domain test,
-  and the Chrono Rabbit tile art. Preserve those edits until the active balance
-  follow-up is reconciled; do not treat the local commit as the shared sprint
-  baseline yet.
+- No P0 issue is verified. `BevBranch` incorporates the Forest Edge visual
+  pass. The directly installed Unity 6000.4.6f1 Editor compiled the merged
+  project; the incoming ecology values have not received a matched Forest
+  Edge balance review or full visual acceptance.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
   tracks the remaining candidates separately.
-- S3-01, S3-02, and S3-03 are complete. Current Sprint 3 work is S3-04
-  (Mutation readability), S3-06 (visual polish), and S3-08 (Fox telemetry);
-  S3-07 is reserve and S3-05 is stretch.
+- S3-01 through S3-04 are complete. S3-08 Fox telemetry clarification is
+  validated; S3-06 visual polish is in progress, S3-07 is reserve, and S3-05
+  is stretch.
 - The accepted expedition contract is six 10-second rounds, with a Mutation
   choice or Skip after rounds 1–5. The player offer now shows three distinct
   free Mutations plus Skip, and focused tests cover repeat stacking and
   continuation. Tough Hide's first bounded evidence review is recorded and its
   copy/card markers are accepted for this slice. The completed S3-02 Trello card
-  wording has not been refreshed.
-- The retained no-graphics acceptance baseline remains EditMode 234/234 and
-  PlayMode 28/30 (0 failures, 2 expected graphics-only skips). Newer targeted
-  evidence is narrower: the Species domain filter passed 96/96 and the latest
-  graphics-capable visual capture passed 1/1. Those results support the current
-  balance/UI edits but do not replace the broader acceptance baseline. The
-  focused phase-decision PlayMode check passed 1/1 on 2026-09-27; the separate
-  Main Menu/Settings human review remains open.
+  wording has not been refreshed. The earlier two-Mutation-plus-Reinforcements
+  offer is superseded by this S3-04 implementation.
+- The latest retained full Unity run from 2026-09-24 passed EditMode 256/256
+  and PlayMode 33/33. Newer focused S3-04 and S3-08 checks passed. The merge
+  received a direct Editor compile on 2026-09-27; no post-merge test suite was
+  run.
 
 ## Triage rules
 
@@ -45,11 +40,16 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-026 — Remote worker branch has stale Unity lifecycle tooling
 
-- **Status:** The current tree has the lifecycle cleanup, but
-  origin/codex/cellsim-worker still has a different UnityTooling.ps1;
-  no local worker branch is checked out.
+- **Status:** Still open. A fresh 2026-09-24 comparison confirms a material
+  source divergence: the remote worker file is blob
+  `c1abb327c9abbac939b4dac34cb8b434875ac233`, while the current verified file is
+  `33d399b16c29c30bdc21f7f5945decd28c24c8db`. The remote still has the older
+  process-lock/preflight flow and lacks the current Pipeline CLI/state-routing
+  implementation. This requires propagating and validating code on the worker
+  branch, not a documentation-only correction; that shared branch was not
+  changed in this pass.
 - **Evidence:** [process-lifecycle handoff](handoffs/2026-09-03-1130-codex-process-lifecycle-cleanup.md)
-  and the 2026-09-17 file comparison.
+  and the 2026-09-24 `UnityTooling.ps1` blob comparison.
 - **Next action:** Propagate the cleanup before the next remote worker run and
   verify process cleanup there.
 - **Owner:** Simulation/tooling owner. **Confidence:** High.
@@ -68,36 +68,43 @@ documentation gaps. Closed history stays in Git and task handoffs.
 
 ### P1-031 — Validation status and player-shell review need reconciliation
 
-- **Status:** The retained broad acceptance baseline is still EditMode 234/234
-  and no-graphics PlayMode 28/30 with 0 failures and 2 expected graphics-only
-  skips. Since then, the Species domain filter passed 96/96 and the latest
-  graphics-capable visual capture passed 1/1, but neither is a replacement for
-  the full acceptance run. The Settings/Collection focused invocation still
-  has no results XML, and Main Menu branding/generated-art acceptance remains
+- **Status:** The final post-change run passed EditMode 256/256 and PlayMode
+  33/33. Two stale checks were corrected: the Main Menu test now waits for its
+  0.95-second scene transition, and the fractional-digestion fixture keeps its
+  animal hungry for all 20 bites so it tests remainder accumulation instead
+  of threshold crossing and movement. Dedicated Settings and My Collection
+  PlayMode checks pass. Main Menu branding/generated-art acceptance remains
   human review.
-- **Evidence:** [clean test artifacts](../artifacts/unity-tests-20260918-144956/),
-  [latest targeted EditMode artifacts](../artifacts/unity-tests-20260921-232912/),
-  [latest visual capture artifacts](../artifacts/visual-evidence-20260921-232618/),
-  the [Unity automation handoff](handoffs/2026-09-18-1452-sol-unity-automation-lane-integration-closeout.md),
+- **Evidence:** [full EditMode and PlayMode results](../artifacts/unity-tests-20260924-134934/),
+  [focused My Collection result](../artifacts/unity-tests-20260924-134853/),
+  [focused Main Menu rerun](../artifacts/unity-tests-20260924-133132/),
+  [Main Menu test timing correction](../Assets/Tests/PlayMode/MainMenuPlayModeTests.cs),
+  [fractional digestion fixture](../Assets/Tests/Runtime/SpeciesDomainTests.cs),
+  [population reinforcement handoff](handoffs/2026-09-23-codex-population-reinforcement-mutation.md),
+  [Unity automation handoff](handoffs/2026-09-18-1452-sol-unity-automation-lane-integration-closeout.md),
   and the [phase-selection polish handoff](handoffs/2026-09-18-2208-codex-upgrade-selection-polish.md).
-- **Next action:** Run the focused phase-decision PlayMode check after the
-  shared Editor is free. Keep the Settings/Collection result gap and Main Menu
-  human review separate from the completed S3-01 scope. **Owner:** Josh +
-  UI/repository maintainer. **Confidence:** High.
+- **Next action:** Complete the human visual review of Main Menu branding and
+  generated-art promotion. **Owner:** Josh + UI/repository maintainer.
+  **Confidence:** High.
 
 ### P1-032 — Desktop route drops profile and launch context
 
-- **Status:** The Desktop starts a local Forest Edge/Hare preview instead of
-  consuming the profile and frozen launch request. This is separate from the
-  completed S3-03 Lab-to-expedition flow.
+- **Status:** Scheduled as the first item in the next post-S3 work block,
+  ahead of S4-01, in the S4 draft. The draft forecasts 2026-10-01–2026-10-14,
+  but still requires an estimate and feature-capacity trade at kickoff before
+  implementation; the 8h integration/review reserve remains protected. This is
+  separate from the completed S3-03 Lab-to-expedition flow.
 - **Evidence:** Helper_SceneTransition.LoadDesktop,
-  GalapagOSDesktopNoesisHost.OpenSimulation, and the GDD/TDD route matrices.
-- **Next action:** Decide when profile and launch-context transfer becomes a
-  required Desktop contract. Keep persistence and reward settlement out of S3
-  unless explicitly rescheduled.
+  GalapagOSDesktopNoesisHost.OpenSimulation, the [Desktop delivery plan](MAIN_MENU_LAB_DELIVERY_PLAN.md),
+  the [S4 control record](Sprints/S4-control-record.md), and the GDD/TDD route
+  matrices.
+- **Next action:** At S4 kickoff, size and capacity-trade the migration, then
+  route Desktop launch through `SimulationLaunchRequest` and verify the frozen
+  scenario/species/profile inputs. Keep persistence and reward settlement out
+  of this migration.
 - **Owner:** Josh + UI/runtime owner. **Confidence:** High.
 
-### P1-033 — Mutation offer contract and completed-card wording disagree
+### P1-036 — S3-02 Trello wording may lag the accepted expedition contract
 
 - **Status:** The player offer path now returns three Mutation choices or Skip
   at each phase boundary; the runtime gap is resolved under S3-04. The completed
@@ -110,24 +117,25 @@ documentation gaps. Closed history stays in Git and task handoffs.
 - **Next action:** If the completed Trello card still has old acceptance text,
   clarify the 36×20 default and keep playable plants deferred. No board edit
   was made during this S3-04 implementation.
-- **Owner:** Josh + simulation/design owner. **Confidence:** High.
+- **Owner:** Sprint board owner + simulation/design owner. **Confidence:** High.
 
-### P1-034 — Forest Edge balance pass is provisional and uncommitted
+### P1-034 — Forest Edge balance values remain provisional
 
-- **Status:** The committed Fox 6 pass is a provisional working comparison
-  baseline, and its follow-up fixed mutually-ready Fox mating priority,
-  separation, and the shared 24-tick reproduction cooldown. The balance task's
-  latest turn is complete, but the worktree still contains four uncommitted
-  follow-on edits, so the result is not yet the shared sprint baseline. The
-  current evidence supports the mating-state fix; it does not approve final
-  Forest Edge balance.
-- **Evidence:** [Forest Edge scenario](../Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset),
-  [current balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
-  `c6b3282c` (`Balance Forest Edge simulation and improve board feedback`), and
-  the completed `Tune fox hare forest values` task.
-- **Next action:** Reconcile the four dirty files with the committed baseline,
-  then run one matched one-variable comparison before deciding whether to keep
-  Fox 6 and committing the scenario/evidence together. **Owner:** Josh + Sim.
+- **Status:** The `+1` minimum- and maximum-litter Mutations were approved
+  for production on 2026-09-24. The incoming Forest Edge branch changes the
+  production Fox and Hare baselines, including crowding metabolism, Hare
+  reproduction, and grass reseeding. The user chose those incoming values for
+  this merge; their ecological effect has not been established by a matched
+  Forest Edge comparison.
+- **Evidence:** [Hare asset](../Assets/Data/ProductionData/CellularSimulation/Species/hare.asset),
+  [Fox asset](../Assets/Data/ProductionData/CellularSimulation/Species/fox.asset),
+  [SpeciesUpgrade.cs](../Assets/Scripts/Game/Species/SpeciesUpgrade.cs),
+  [current-value diagnostic handoff](handoffs/2026-09-22-2200-codex-forest-edge-current-values-diagnostic-batches.md),
+  [Fox/Hare balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
+  and commits `5e0e28c2` / `0ba7a9cd`.
+- **Next action:** Run a matched Forest Edge comparison before treating the
+  incoming Fox/Hare values as balance-approved. Keep that question separate
+  from the approved production Mutations. **Owner:** Josh + Sim.
   **Confidence:** High.
 
 ### P1-035 — Fox mating telemetry does not yet explain eligibility
@@ -184,6 +192,20 @@ and sequencing remain in [Project Hygiene Ticket Summaries](PROJECT_HYGIENE_TICK
   tools/Generate-BlobTerrainTiles.ps1, but that script is absent from the
   current project tree. The active authored-representative workflow is recorded
   in the [terrain handoff](handoffs/2026-09-17-codex-terrain-art-standard-64px.md).
+- **P2-006 resolved:** Documented the manual Forest Edge diagnostic scenario
+  comparisons and their mutable-asset caveats in
+  [Unity Simulation Tooling](UNITY_SIMULATION_TOOLING.md).
+- **P2-025 resolved:** Removed the absent `Assets/Materials/` placeholder from
+  the [main-flow cleanup inventory](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md).
+- **P1-033 resolved:** Confirmed phase-boundary Mutations are free, including
+  the fixed repeatable Reinforcements third choice; aligned the S3-02/S3-04
+  records and S3 control row. The full Unity run passed EditMode 256/256 and
+  PlayMode 33/33, including zero-Data legacy, authored, and Reinforcements
+  choices and the same-run repeated-choice regression ([retained results](../artifacts/unity-tests-20260924-134934/)).
+  The separate legacy terminal reward path still retains its catalog costs.
 - Removed the long 2026-08-20 historical-open and R-001–R-034 resolved-item
   catalogues. Their source handoffs and Git history remain available; this file
   now lists actionable gaps only.
+- The prior `ProjectMain` staged-bundle snapshot was superseded by the active
+  `Balance/ForestEdge` branch and commits `5e0e28c2`/`0ba7a9cd`; its branch and
+  validation follow-ups are no longer current.

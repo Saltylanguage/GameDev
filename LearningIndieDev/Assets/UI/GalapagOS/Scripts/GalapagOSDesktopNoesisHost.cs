@@ -164,7 +164,8 @@ namespace SaltyGame
         void Update()
         {
             simulationBoard?.UpdateFoxHuntCue();
-            simulationBoard?.UpdateMatingCue();
+            simulationBoard?.UpdateMatingCue(
+                simulationPreview != null && simulationPreview.State == SpeciesPreviewState.Paused);
         }
 
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -174,6 +175,8 @@ namespace SaltyGame
                 ApplyBoardSnapshot();
             }
         }
+
+        int lastBirthSoundTick = -1;
 
         void ApplyBoardSnapshot()
         {
@@ -187,6 +190,7 @@ namespace SaltyGame
                 simulationBoardViewModel.FoxHuntCueX,
                 simulationBoardViewModel.FoxHuntCueY,
                 simulationBoardViewModel.FoxHuntCueTick);
+            simulationBoard.SetHuntFootprints(simulationBoardViewModel.HuntFootprints);
             simulationBoard.SetMatingCue(
                 simulationBoardViewModel.MatingCueX,
                 simulationBoardViewModel.MatingCueY,
@@ -195,6 +199,17 @@ namespace SaltyGame
                 simulationBoardViewModel.MatingCueOffspringX,
                 simulationBoardViewModel.MatingCueOffspringY,
                 simulationBoardViewModel.MatingCueTick);
+            simulationBoard.SetBirthCues(simulationBoardViewModel.RecentBirths);
+            if (simulationBoardViewModel.MatingCueTick < 0)
+            {
+                lastBirthSoundTick = -1;
+            }
+            if (simulationBoardViewModel.MatingCueTick >= 0
+                && simulationBoardViewModel.MatingCueTick != lastBirthSoundTick)
+            {
+                SimulationBirthChime.Play(gameObject);
+                lastBirthSoundTick = simulationBoardViewModel.MatingCueTick;
+            }
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

@@ -66,7 +66,7 @@ namespace SaltyGame
             int maxReproductionGroupSize = 0,
             int startingEnergy = 0,
             float wiltChance = 0f,
-            int crowdingEnergyPenalty = 0,
+            int crowdingMetabolismMultiplier = 2,
             float startingFoodReserve = 0f,
             float seedDropChance = 0f,
             int energyValue = 0,
@@ -88,7 +88,8 @@ namespace SaltyGame
             int energyLossIntervalTicks = 1,
             float forageThresholdFraction = 0f,
             float matingEnergyThresholdFraction = 0f,
-            float matingEnergyCostFraction = 0f)
+            float matingEnergyCostFraction = 0f,
+            bool distributeMatingEnergyToOffspring = false)
         {
             if (movementSpeed < 0f)
             {
@@ -224,14 +225,25 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(litterMaximum), litterMaximum, "Maximum litter size cannot be less than the minimum.");
             }
 
+            if (distributeMatingEnergyToOffspring
+                && (maximumEnergy <= 0 || matingEnergyCostFraction <= 0f))
+            {
+                throw new ArgumentException(
+                    "Distributing mating energy to offspring requires maximum energy and a fractional mating cost.",
+                    nameof(distributeMatingEnergyToOffspring));
+            }
+
             if (wiltChance < 0f || wiltChance > 1f)
             {
                 throw new ArgumentOutOfRangeException(nameof(wiltChance), wiltChance, "Wilt chance must be between zero and one.");
             }
 
-            if (crowdingEnergyPenalty < 0)
+            if (crowdingMetabolismMultiplier < 1)
             {
-                throw new ArgumentOutOfRangeException(nameof(crowdingEnergyPenalty), crowdingEnergyPenalty, "Crowding energy penalty cannot be negative.");
+                throw new ArgumentOutOfRangeException(
+                    nameof(crowdingMetabolismMultiplier),
+                    crowdingMetabolismMultiplier,
+                    "Crowding metabolism multiplier must be at least one.");
             }
 
             if (startingFoodReserve < 0f)
@@ -267,7 +279,7 @@ namespace SaltyGame
             StartingEnergy = startingEnergy;
             ForageBelowEnergy = forageBelowEnergy;
             WiltChance = wiltChance;
-            CrowdingEnergyPenalty = crowdingEnergyPenalty;
+            CrowdingMetabolismMultiplier = crowdingMetabolismMultiplier;
             StartingFoodReserve = startingFoodReserve;
             SeedDropChance = seedDropChance;
             EnergyValue = energyValue;
@@ -286,6 +298,7 @@ namespace SaltyGame
             ForageThresholdFraction = forageThresholdFraction;
             MatingEnergyThresholdFraction = matingEnergyThresholdFraction;
             MatingEnergyCostFraction = matingEnergyCostFraction;
+            DistributeMatingEnergyToOffspring = distributeMatingEnergyToOffspring;
         }
 
         static void ValidateEnergyFraction(float value, string parameterName)
@@ -358,9 +371,9 @@ namespace SaltyGame
         public float ForageThresholdFraction { get; }
         public float MatingEnergyThresholdFraction { get; }
         public float MatingEnergyCostFraction { get; }
+        public bool DistributeMatingEnergyToOffspring { get; }
         public float WiltChance { get; }
-        public int CrowdingEnergyPenalty { get; }
-        public int CrowdingCost => CrowdingEnergyPenalty;
+        public int CrowdingMetabolismMultiplier { get; }
         public float StartingFoodReserve { get; }
         public float SeedDropChance { get; }
         public int EnergyValue { get; }

@@ -697,11 +697,6 @@ namespace SaltyGame.PlayModeTests
 
             preview.StartSimulation();
             var run = preview.Run;
-            // Give the test a deterministic purchase budget after Start has
-            // created the session progression. The boundary still adds its
-            // survivor-based phase reward independently.
-            preview.Progression.AddCurrency(10);
-
             var timeout = Time.realtimeSinceStartup + 5f;
             while (preview.State != SpeciesPreviewState.PhaseDecision
                    && Time.realtimeSinceStartup < timeout)
@@ -714,6 +709,10 @@ namespace SaltyGame.PlayModeTests
             StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(0));
             StringAssert.Contains("Block Amount", preview.GetRewardOptionDisplayName(0));
             StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(0));
+            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(0));
+            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(0));
+            Assert.That(preview.Progression.TrySpend(preview.Progression.Currency), Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
             Assert.That(preview.CanPurchaseReward(0), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
             var blockBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount;
@@ -728,7 +727,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(
                 preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount,
                 Is.EqualTo(blockBefore + 2));
-            Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary - 5));
+            Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary));
 
             // A repeated click cannot purchase or apply the same boundary twice.
             Assert.That(preview.PurchaseReward(0), Is.False);
@@ -936,6 +935,7 @@ namespace SaltyGame.PlayModeTests
 
             preview.StartSimulation();
             preview.Progression.AddCurrency(10);
+            var run = preview.Run;
             var timeout = Time.realtimeSinceStartup + 5f;
             while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
             {
@@ -948,15 +948,63 @@ namespace SaltyGame.PlayModeTests
                 preview.GetRewardOptionId(2),
                 Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementId));
             StringAssert.Contains("+1 FOX", preview.GetRewardOptionDisplayName(2));
+            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(2));
+            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(2));
             var predatorSkillIds = new[] { "relentless-pursuit", "piercing-bite", "hunt-urgency", "brood-drive" };
             for (var index = 0; index < 2; index++)
             {
                 var optionId = preview.GetRewardOptionId(index);
                 Assert.That(Array.IndexOf(predatorSkillIds, optionId), Is.GreaterThanOrEqualTo(0));
+                StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(index));
+                StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(index));
                 StringAssert.DoesNotContain("FASTER", preview.GetRewardOptionDisplayName(index));
                 StringAssert.DoesNotContain("ATTACK", preview.GetRewardOptionDisplayName(index));
                 StringAssert.DoesNotContain("BLOCK", preview.GetRewardOptionDisplayName(index));
             }
+
+            Assert.That(preview.Progression.TrySpend(preview.Progression.Currency), Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            Assert.That(preview.CanPurchaseReward(2), Is.True);
+            Assert.That(preview.PurchaseReward(2), Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(1));
+            Assert.That(run.UpgradeLoadout[0].PopulationToAdd, Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator AuthoredMutationIsFreeAtPhaseBoundary()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            typeof(SpeciesSimulationPreview)
+                .GetField("bevExperimentalFeaturesEnabled", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(preview, false);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out var message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                "8", "8", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "4", "0.01", "0", "1", "0", false, out message), Is.True, message);
+
+            preview.StartSimulation();
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.RewardOptionCount, Is.GreaterThan(0));
+            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(0));
+            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(0));
+            Assert.That(preview.Progression.TrySpend(preview.Progression.Currency), Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
+            Assert.That(preview.CanPurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(preview.Progression.Currency, Is.Zero);
         }
 
         [UnityTest]

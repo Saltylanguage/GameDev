@@ -76,7 +76,7 @@ Record:
 
 - hare extinction frequency and final population;
 - fern minimum/final population and food consumed;
-- hare births, starvation deaths, predator deaths, and crowding deaths;
+- hare births, starvation deaths from low food or crowding, and predator deaths;
 - movement, successful seed drops, and protection activations;
 - whether each build changes the visible population shape or survival story, not merely the final number.
 

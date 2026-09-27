@@ -44,7 +44,7 @@ population or combined score by itself is not enough.
 | Energy endurance | `energy.metabolism`, `energy.starting`, `resource.starting-food-reserve` | Food consumed; food actions; starvation deaths | Energy distribution through time and starting-reserve use are not summarized directly |
 | Defense | `combat.block` | Combat opportunities, attempts, hits, blocks, damage applications, and lethal/non-lethal results | Prevented damage can be derived from blocked results but is not a separate total |
 | Reproduction access and capacity | `reproduction.neighbor-count`, `reproduction.group-size` | Candidates, missing-mate blocks, group-limit blocks, successful attempts, and births | Local mate density must be inferred from the world and block counts |
-| Crowding resilience | `crowding.energy-penalty`, `crowding.tolerance` | Crowding deaths, group-limit blocks, births, and population | Local density and energy lost to crowding are not reported directly |
+| Crowding resilience | `crowding.metabolism-multiplier`, `crowding.tolerance` | Crowded metabolism, starvation deaths, group-limit blocks, births, and population | Local density and energy spent due to crowding are not reported directly |
 | Resource recovery | `resource.seed-drop-chance` | Fern births, Fern population, Hare food activity, and food consumed | Seed-drop attempts and successes are not separate from other Fern births |
 
 The proxy gaps are measurement limits, not permission to infer the missing
@@ -58,10 +58,10 @@ run a focused mechanic test before judging balance.
 | `trailblazer-long-stride` | Mobility and escape | Movement steps, predator encounters, preyed count, missing-mate blocks | Hare pressure on Fern and the Hare/Fox relationship |
 | `trailblazer-far-sight` | Detection and search; energy endurance | Food actions and starvation are available, but direct long-range detection is missing | Resource pressure and persistence of intended feeding relationships |
 | `warren-guarded-burrow` | Defense; mobility | Blocks, hits, damage, lethal results, movement steps | Fox feeding pressure and Hare persistence |
-| `warren-room-to-breed` | Reproduction capacity; crowding resilience | Group-limit blocks, crowding deaths, births, and starvation | Fern depletion, population pressure, and recovery |
+| `warren-room-to-breed` | Reproduction capacity; crowding resilience | Group-limit blocks, crowded metabolism, starvation, and births | Fern depletion, population pressure, and recovery |
 | `gardeners-seed-pouches` | Energy endurance; resource recovery | Early starvation and food activity are proxies; direct reserve use is missing | Early Fern recovery and Hare pressure |
 | `gardeners-careful-sowing` | Resource recovery; mobility | Fern births are a proxy for successful drops; movement steps | Fern recovery, Hare food pressure, and population persistence |
-| `familial-bond-large-litters` | Crowding resilience | Crowding deaths, births, group-limit blocks, and starvation | Fern depletion and Hare population pressure |
+| `familial-bond-large-litters` | Crowding resilience | Crowded metabolism, starvation deaths, births, and group-limit blocks | Fern depletion and Hare population pressure |
 
 ## Forest Edge reference panel
 

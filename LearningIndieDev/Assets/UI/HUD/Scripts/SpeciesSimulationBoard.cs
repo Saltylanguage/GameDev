@@ -16,7 +16,7 @@ namespace SaltyGame
         internal const float MaximumZoomScale = 4f;
         const float ZoomPerWheelNotch = 1.15f;
         const float FoxHuntCueDuration = 0.55f;
-        const float MatingCueDuration = 0.82f;
+        const float MatingCueDuration = 1.1f;
         static readonly string[] HeartPixels =
         {
             ".##.##.",
@@ -25,6 +25,39 @@ namespace SaltyGame
             ".#####.",
             "..###..",
             "...#...",
+        };
+        static readonly string[] BirthPoofPixels =
+        {
+            "..##..##..",
+            ".########.",
+            "##########",
+            ".########.",
+            "...####...",
+        };
+        static readonly string[] CanopyPixels =
+        {
+            "....11211....",
+            "..112222221..",
+            ".12223232221.",
+            "1223223223221",
+            "1222323322221",
+            "1223223223221",
+            ".12222222221.",
+            "..111222111..",
+            "....11111....",
+        };
+        static readonly string[] RockPixels =
+        {
+            "...1111...",
+            ".11222211.",
+            "1222222221",
+            "1222323221",
+            ".12222221.",
+            "..111111..",
+        };
+        static readonly float[] CanopyPositions =
+        {
+            0.025f, 0.11f, 0.21f, 0.34f, 0.50f, 0.66f, 0.79f, 0.90f, 0.975f,
         };
 
         static readonly Dictionary<SpeciesId, int> AnimalAtlasIndexBySpecies =
@@ -61,7 +94,11 @@ namespace SaltyGame
         int matingCueOffspringY;
         float matingCueStartedAt;
         float nextMatingCueFrame;
+        float matingCuePauseStartedAt;
         bool matingCueActive;
+        bool matingCuePaused;
+        IReadOnlyList<SpeciesBirthEvent> birthCues = Array.Empty<SpeciesBirthEvent>();
+        IReadOnlyList<HuntFootprint> huntFootprints = Array.Empty<HuntFootprint>();
         readonly MatrixTransform panZoomTransform;
         float panOffsetX;
         float panOffsetY;
@@ -72,6 +109,17 @@ namespace SaltyGame
         SolidColorBrush heartShadowBrush;
         SolidColorBrush heartFillBrush;
         SolidColorBrush sparkleBrush;
+        SolidColorBrush birthPoofShadowBrush;
+        SolidColorBrush birthPoofFillBrush;
+        SolidColorBrush canopyShadowBrush;
+        SolidColorBrush canopyFillBrush;
+        SolidColorBrush canopyLightBrush;
+        SolidColorBrush meadowBrush;
+        SolidColorBrush flowerBrush;
+        SolidColorBrush pebbleBrush;
+        SolidColorBrush rockShadowBrush;
+        SolidColorBrush rockFillBrush;
+        SolidColorBrush rockLightBrush;
 
         public event Action<float> ZoomRequested;
 
@@ -187,6 +235,7 @@ namespace SaltyGame
             matingCueOffspringY = offspringY;
             matingCueStartedAt = Time.unscaledTime;
             nextMatingCueFrame = matingCueStartedAt;
+            matingCuePaused = false;
             matingCueActive = true;
             InvalidateVisual();
         }
@@ -199,14 +248,51 @@ namespace SaltyGame
             }
 
             matingCueActive = false;
+            matingCuePaused = false;
+            InvalidateVisual();
+        }
+
+        public void SetBirthCues(IReadOnlyList<SpeciesBirthEvent> births)
+        {
+            birthCues = births ?? Array.Empty<SpeciesBirthEvent>();
+            InvalidateVisual();
+        }
+
+        public void SetHuntFootprints(IReadOnlyList<HuntFootprint> footprints)
+        {
+            huntFootprints = footprints ?? Array.Empty<HuntFootprint>();
             InvalidateVisual();
         }
 
         public void UpdateMatingCue()
         {
+            UpdateMatingCue(false);
+        }
+
+        public void UpdateMatingCue(bool paused)
+        {
             if (!matingCueActive)
             {
                 return;
+            }
+
+            if (paused)
+            {
+                if (!matingCuePaused)
+                {
+                    matingCuePauseStartedAt = Time.unscaledTime;
+                    matingCuePaused = true;
+                }
+
+                return;
+            }
+
+            if (matingCuePaused)
+            {
+                var pausedDuration = Time.unscaledTime - matingCuePauseStartedAt;
+                matingCueStartedAt += pausedDuration;
+                nextMatingCueFrame += pausedDuration;
+                matingCuePaused = false;
             }
 
             if (Time.unscaledTime - matingCueStartedAt >= MatingCueDuration)
@@ -474,16 +560,193 @@ namespace SaltyGame
                         Math.Max(0f, cellSize - gap * 2f));
 
                     DrawTerrain(context, cell, cellRect);
+                }
+            }
+
+            DrawForestEdge(context, left, top, cellSize);
+            DrawHuntFootprints(context, left, top, cellSize);
+            for (var y = 0; y < snapshot.Height; y++)
+            {
+                for (var x = 0; x < snapshot.Width; x++)
+                {
+                    var cell = snapshot.GetCell(x, y);
+                    var cellRect = new NoesisRect(
+                        left + x * cellSize,
+                        top + (snapshot.Height - 1 - y) * cellSize,
+                        cellSize,
+                        cellSize);
+                    if (matingCueActive && IsBirthCueCell(x, y))
+                    {
+                        DrawBirthPoof(context, cellRect, cellSize);
+                    }
+
                     if (cell.IsCreature || (cell.IsPlantResource && !cell.IsTerrainResource))
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
                     }
-
                 }
             }
 
             DrawFoxHuntCue(context, left, top, cellSize);
             DrawMatingCue(context, left, top, cellSize);
+        }
+
+        void DrawForestEdge(DrawingContext context, float left, float top, float cellSize)
+        {
+            // Crowns overhang from outside the playable field. They suggest a
+            // forest boundary without marking traversable cells as walls.
+            var pixel = Math.Max(2f, (float)Math.Round(cellSize * 0.28f));
+            var shadow = canopyShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 47, 72, 40));
+            var fill = canopyFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 77, 112, 55));
+            var light = canopyLightBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 114, 145, 70));
+            shadow.Opacity = 0.92f;
+            fill.Opacity = 0.85f;
+            light.Opacity = 0.82f;
+            for (var index = 0; index < CanopyPositions.Length; index++)
+            {
+                if (index == 4)
+                {
+                    continue;
+                }
+
+                var centerX = left + CanopyPositions[index] * snapshot.Width * cellSize;
+                DrawCanopy(context, centerX, top - pixel * (7f + index % 2 * 0.35f),
+                    pixel, shadow, fill, light);
+            }
+
+            var rockDark = rockShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 68, 69, 59));
+            var rockFill = rockFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 129, 127, 105));
+            var rockLight = rockLightBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 174, 165, 129));
+            for (var index = 0; index < 3; index++)
+            {
+                var centerY = top + (index + 0.5f) * snapshot.Height * cellSize / 3f;
+                DrawCanopy(context, left - pixel * 6.2f, centerY - pixel * 4f,
+                    pixel, shadow, fill, light);
+                if (index != 1)
+                {
+                    DrawRockCluster(context, left - pixel * 5.5f,
+                        centerY + (index == 0 ? cellSize * 0.46f : -cellSize * 0.52f),
+                        pixel, rockDark, rockFill, rockLight);
+                }
+            }
+
+            var meadow = meadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 91, 130, 57));
+            var flower = flowerBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 238, 215, 130));
+            var pebble = pebbleBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 135, 119, 100));
+            for (var y = 0; y < snapshot.Height; y++)
+            {
+                for (var x = 0; x < snapshot.Width; x++)
+                {
+                    var cell = snapshot.GetCell(x, y);
+                    var hash = unchecked((x * 73856093) ^ (y * 19349663));
+                    var centerX = left + (x + 0.5f) * cellSize;
+                    var centerY = top + (snapshot.Height - y - 0.5f) * cellSize;
+                    if (cell.IsTerrainResource && cell.FoodReserve > 5f && hash % 19 == 0)
+                    {
+                        var blade = Math.Max(1f, (float)Math.Round(cellSize * 0.08f));
+                        meadow.Opacity = 0.58f;
+                        flower.Opacity = 0.84f;
+                        context.DrawRectangle(meadow, null, new NoesisRect(centerX - blade * 2f, centerY, blade, blade * 3f));
+                        context.DrawRectangle(meadow, null, new NoesisRect(centerX + blade, centerY - blade, blade, blade * 4f));
+                        context.DrawRectangle(flower, null, new NoesisRect(centerX + blade, centerY - blade * 2f, blade, blade));
+                    }
+                    else if (!cell.IsTerrainResource && hash % 47 == 0)
+                    {
+                        // Low pebbles are a traversable ground detail.
+                        var stone = Math.Max(1f, (float)Math.Round(cellSize * 0.12f));
+                        pebble.Opacity = 0.62f;
+                        context.DrawRectangle(pebble, null, new NoesisRect(centerX - stone, centerY, stone * 2f, stone));
+                        context.DrawRectangle(pebble, null, new NoesisRect(centerX + stone, centerY + stone, stone, stone));
+                    }
+                }
+            }
+        }
+
+        static void DrawCanopy(DrawingContext context, float centerX, float top,
+            float pixel, Brush shadow, Brush fill, Brush light)
+        {
+            var left = centerX - CanopyPixels[0].Length * pixel * 0.5f;
+            for (var row = 0; row < CanopyPixels.Length; row++)
+            {
+                for (var column = 0; column < CanopyPixels[row].Length; column++)
+                {
+                    Brush brush;
+                    switch (CanopyPixels[row][column])
+                    {
+                        case '1': brush = shadow; break;
+                        case '2': brush = fill; break;
+                        case '3': brush = light; break;
+                        default: continue;
+                    }
+
+                    context.DrawRectangle(brush, null,
+                        new NoesisRect(left + column * pixel, top + row * pixel, pixel, pixel));
+                }
+            }
+        }
+
+        static void DrawRockCluster(DrawingContext context, float centerX, float top,
+            float pixel, Brush shadow, Brush fill, Brush light)
+        {
+            var left = centerX - RockPixels[0].Length * pixel * 0.5f;
+            for (var row = 0; row < RockPixels.Length; row++)
+            {
+                for (var column = 0; column < RockPixels[row].Length; column++)
+                {
+                    Brush brush;
+                    switch (RockPixels[row][column])
+                    {
+                        case '1': brush = shadow; break;
+                        case '2': brush = fill; break;
+                        case '3': brush = light; break;
+                        default: continue;
+                    }
+
+                    context.DrawRectangle(brush, null,
+                        new NoesisRect(left + column * pixel, top + row * pixel, pixel, pixel));
+                }
+            }
+        }
+
+        bool IsBirthCueCell(int x, int y)
+        {
+            for (var index = 0; index < birthCues.Count; index++)
+            {
+                if (birthCues[index].ChildX == x && birthCues[index].ChildY == y)
+                {
+                    return true;
+                }
+            }
+
+            return birthCues.Count == 0 && matingCueOffspringX == x && matingCueOffspringY == y;
+        }
+
+        void DrawHuntFootprints(DrawingContext context, float left, float top, float cellSize)
+        {
+            if (huntFootprints.Count == 0)
+            {
+                return;
+            }
+
+            var brush = GetFoxHuntShadowBrush();
+            var pixel = Math.Max(1.5f, (float)Math.Round(cellSize * 0.08f));
+            for (var index = 0; index < huntFootprints.Count; index++)
+            {
+                var footprint = huntFootprints[index];
+                var age = snapshot.Tick - footprint.Tick;
+                if (age < 0 || age >= 9 || !snapshot.TryGetCell(footprint.X, footprint.Y, out _))
+                {
+                    continue;
+                }
+
+                var stride = (index & 1) == 0 ? -1f : 1f;
+                var offsetX = -footprint.DirectionY * stride * cellSize * 0.12f;
+                var offsetY = -footprint.DirectionX * stride * cellSize * 0.12f;
+                var centerX = left + (footprint.X + 0.5f) * cellSize + offsetX;
+                var centerY = top + (snapshot.Height - footprint.Y - 0.5f) * cellSize + offsetY;
+                brush.Opacity = (1f - age / 9f) * 0.78f;
+                DrawPawPrint(context, centerX - pixel * 1.5f, centerY - pixel * 1.5f, pixel, brush);
+            }
         }
 
         void DrawFoxHuntCue(DrawingContext context, float left, float top, float cellSize)
@@ -523,7 +786,7 @@ namespace SaltyGame
                 return;
             }
 
-            var progress = Mathf.Clamp01((Time.unscaledTime - matingCueStartedAt) / MatingCueDuration);
+            var progress = GetMatingCueProgress();
             var fadeIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress / 0.22f));
             var fadeOut = 1f - Mathf.SmoothStep(0f, 1f, Mathf.Clamp01((progress - 0.7f) / 0.3f));
             var alpha = fadeIn * fadeOut;
@@ -551,14 +814,76 @@ namespace SaltyGame
             DrawPixelArt(context, HeartPixels, centerX + pixel * 0.45f, heartY + pixel * 0.55f, pixel * scale, shadow);
             DrawPixelArt(context, HeartPixels, centerX, heartY, pixel * scale, fill);
 
-            var childCenterX = left + (matingCueOffspringX + 0.5f) * cellSize;
-            var childCenterY = top + (snapshot.Height - 1 - matingCueOffspringY + 0.5f) * cellSize;
             var sparkleProgress = Mathf.Clamp01(progress / 0.78f);
             var sparkleAlpha = (1f - sparkleProgress) * Mathf.SmoothStep(0f, 1f, sparkleProgress * 2f);
             var sparkleScale = Mathf.Lerp(0.45f, 1.15f, Mathf.SmoothStep(0f, 1f, sparkleProgress));
             var sparkle = GetSparkleBrush();
             sparkle.Opacity = sparkleAlpha;
-            DrawSparkle(context, childCenterX, childCenterY, pixel * 1.5f * sparkleScale, sparkle);
+            if (birthCues.Count == 0)
+            {
+                DrawBirthSparkle(context, matingCueOffspringX, matingCueOffspringY,
+                    left, top, cellSize, pixel, sparkleScale, sparkle);
+            }
+            else
+            {
+                for (var index = 0; index < birthCues.Count; index++)
+                {
+                    DrawBirthSparkle(context, birthCues[index].ChildX, birthCues[index].ChildY,
+                        left, top, cellSize, pixel, sparkleScale, sparkle);
+                }
+            }
+        }
+
+        void DrawBirthSparkle(DrawingContext context, int x, int y,
+            float left, float top, float cellSize, float pixel, float scale, Brush brush)
+        {
+            if (!snapshot.TryGetCell(x, y, out _))
+            {
+                return;
+            }
+
+            DrawSparkle(context,
+                left + (x + 0.5f) * cellSize,
+                top + (snapshot.Height - y - 0.5f) * cellSize,
+                pixel * 1.5f * scale,
+                brush);
+        }
+
+        void DrawBirthPoof(DrawingContext context, NoesisRect cellRect, float cellSize)
+        {
+            if (!matingCueActive)
+            {
+                return;
+            }
+
+            var progress = GetMatingCueProgress();
+            var poofProgress = Mathf.Clamp01(progress / 0.8f);
+            var fadeIn = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(progress / 0.08f));
+            var fadeOut = 1f - Mathf.SmoothStep(0f, 1f, poofProgress);
+            var alpha = fadeIn * fadeOut;
+            var scale = Mathf.Lerp(0.9f, 1.6f, Mathf.SmoothStep(0f, 1f, poofProgress));
+            var pixel = Math.Max(2f, (float)Math.Round(cellSize * 0.1f));
+            var centerX = cellRect.X + cellRect.Width * 0.5f;
+            var height = BirthPoofPixels.Length * pixel * scale;
+            var top = cellRect.Y + (cellRect.Height - height) * 0.5f;
+            var shadow = GetBirthPoofShadowBrush();
+            var fill = GetBirthPoofFillBrush();
+            shadow.Opacity = alpha * 0.7f;
+            fill.Opacity = alpha;
+            DrawPixelArt(
+                context,
+                BirthPoofPixels,
+                centerX + pixel * 0.35f,
+                top + pixel * 0.35f,
+                pixel * scale,
+                shadow);
+            DrawPixelArt(context, BirthPoofPixels, centerX, top, pixel * scale, fill);
+        }
+
+        float GetMatingCueProgress()
+        {
+            var currentTime = matingCuePaused ? matingCuePauseStartedAt : Time.unscaledTime;
+            return Mathf.Clamp01((currentTime - matingCueStartedAt) / MatingCueDuration);
         }
 
         static void DrawPawPrint(DrawingContext context, float x, float y, float pixel, Brush brush)
@@ -631,6 +956,16 @@ namespace SaltyGame
         SolidColorBrush GetSparkleBrush()
         {
             return sparkleBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 255, 244, 176));
+        }
+
+        SolidColorBrush GetBirthPoofShadowBrush()
+        {
+            return birthPoofShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 103, 80, 52));
+        }
+
+        SolidColorBrush GetBirthPoofFillBrush()
+        {
+            return birthPoofFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 255, 246, 215));
         }
 
         void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)

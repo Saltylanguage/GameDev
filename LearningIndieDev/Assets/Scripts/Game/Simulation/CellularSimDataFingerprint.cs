@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v7";
+        public const string Version = "cellular-sim-data-v9";
         public const string RunVersion = "cellular-sim-run-v3";
 
         public static string Create(CellularSimData data)
@@ -123,12 +123,13 @@ namespace SaltyGame
             Append(builder, rules.ForageThresholdFraction);
             Append(builder, rules.MatingEnergyThresholdFraction);
             Append(builder, rules.MatingEnergyCostFraction);
+            Append(builder, rules.DistributeMatingEnergyToOffspring);
             Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
             Append(builder, rules.WiltChance);
-            Append(builder, rules.CrowdingEnergyPenalty);
+            Append(builder, rules.CrowdingMetabolismMultiplier);
             Append(builder, rules.StartingFoodReserve);
             Append(builder, rules.SeedDropChance);
             Append(builder, rules.EnergyValue);
@@ -162,6 +163,7 @@ namespace SaltyGame
             Append(builder, terrain.PresentationColor.b);
             Append(builder, terrain.PresentationColor.a);
             Append(builder, terrain.RegrowthPerTick);
+            Append(builder, terrain.GrowthIntervalSeconds);
         }
 
         static void AppendPattern(StringBuilder builder, GridPattern pattern)

@@ -20,7 +20,7 @@ MonoBehaviour:
   modifiers:
   - attributeId: reproduction.group-size
     signedValue: 1
-  - attributeId: crowding.energy-penalty
+  - attributeId: crowding.metabolism-multiplier
     signedValue: -1
   - attributeId: energy.metabolism
     signedValue: 1

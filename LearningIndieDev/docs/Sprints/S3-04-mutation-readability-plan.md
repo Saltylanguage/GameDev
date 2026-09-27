@@ -21,15 +21,19 @@ decisions, with Skip and repeat-level behavior. Josh's player-copy and generic
 card-marker treatment was accepted for this slice after reviewing the bounded
 Tough Hide evidence.
 
+The two-pool-plus-Reinforcements bridge described in the dated planning and
+baseline sections below was superseded by this three-distinct-Mutation offer.
+Reinforcements remains historical context, not the current third choice.
+
 ## Locked product boundaries
 
 - The player gets three Mutation options or chooses Skip at the boundaries
   after rounds 1–5. A selected Mutation is temporary and applies to the current
   expedition; Mutation choices are not Genome purchases.
 - S3-04 uses the five existing experimental Hare Mutations as its bounded
-  bridge pool. Each offer contains three distinct choices. A Mutation selected
-  earlier in the expedition may appear again at a later boundary; selecting it
-  again increases its level and reapplies/stacks its defined effect.
+  rotating pool. Each phase offer contains three distinct choices from that
+  pool. Earlier pool choices may appear again later;
+  selecting one again increases its level and reapplies/stacks its effect.
 - Mutation selection is free in this S3 slice. Skip grants no reward during
   S3-04; a future Skip bonus remains a separate deferred economy decision.
 - The player-facing explanation stays bite-sized and directional. Its wording
@@ -51,21 +55,22 @@ Tough Hide evidence.
 
 ## Baseline implementation audit at plan approval — 2026-09-26
 
-This is a source/test inspection, not a Unity runtime test. The live player
-preview currently forces `bevExperimentalFeaturesEnabled` on in
+This began as a source/test inspection, not a Unity runtime test. The live
+player preview currently forces `bevExperimentalFeaturesEnabled` on in
 [`SpeciesSimulationPreview.Awake()`](../../Assets/Scripts/Game/Presentation/SpeciesSimulationPreview.cs).
 That routes phase offers through the legacy BEV catalog, whose deterministic
 offer builder in
 [`SpeciesUpgrade.cs`](../../Assets/Scripts/Game/Species/SpeciesUpgrade.cs)
-returns **two** choices (five Hare candidates are available to that builder).
-Existing PlayMode tests in
-[`SpeciesPresentationPlayModeTests.cs`](../../Assets/Tests/PlayMode/SpeciesPresentationPlayModeTests.cs)
-assert two choices. The accepted contract requires three choices at each of
-five boundaries. S3-03 is marked complete and its retained tests cover five
-choice boundaries, but they do not cover the required three options at each
-boundary. The smallest offer-builder/test correction belongs to S3-04. Do not
-report the offer as contract-complete until the three-choice requirement is
-verified.
+returns two choices from the role-specific pool and appends fixed
+Reinforcements as the third.
+The phase-choice purchase path treats both authored and legacy options as
+free and formats them without a Data cost. Focused PlayMode coverage verifies
+all three legacy choices, the repeatable Reinforcements choice, zero-Data
+selection, the authored-option path, and same-run repeated choices. The full
+Unity run passed EditMode 256/256 and PlayMode 33/33; see
+[`artifacts/unity-tests-20260924-134934`](../../artifacts/unity-tests-20260924-134934/).
+This confirms implementation behavior only, not Reinforcements balance or
+catalog approval.
 
 The preview and both current scenes serialize seven provisional authored Hare
 candidates under
@@ -77,10 +82,10 @@ already-owned asset from being chosen again. Six choices cannot guarantee
 three eligible authored options at all five boundaries if selected assets
 leave the offer pool. Passing the narrow timing check is not proof that a
 candidate's effect has been validated as a meaningful player Mutation. The
-current implementation's cost and owned/available gates are inherited upgrade
-behavior and do not define S3-04. This slice presents free Mutation choices,
-allows later repeat selections with level/stack progression, and gives Skip no
-reward. Any broader Mutation or Skip economy remains deferred.
+Phase decisions waive catalog Data costs in both offer paths; non-phase legacy
+reward purchases retain their existing costs. This slice allows repeatable pool
+choices with level/stack progression, offers repeatable Reinforcements, and
+gives Skip no reward. Any broader Mutation or Skip economy remains deferred.
 
 Initial candidate screen from the serialized assets (raw values below are for
 the internal audit only, not player copy):
@@ -101,12 +106,15 @@ current legacy `Tough Hide` option is outside this authored-asset table and is
 the separate proposed first review candidate below.
 
 **Approved S3 bridge:** keep the current five Hare BEV effects as the bounded
-S3 Mutation slice and show three distinct options from that existing set,
-while keeping research identities/evidence separate from the player-facing
-Mutation projection. Previously selected Mutations may appear at later choice
+rotating pool, show two distinct pool choices and fixed repeatable
+Reinforcements as the third choice, and keep research identities/evidence
+separate from the player-facing Mutation projection. All three phase choices
+are free. Previously selected pool Mutations may appear again at later choice
 boundaries; selecting one again increases its displayed level and stacks its
-defined effect. The seven authored candidates remain provisional; do not
-silently promote them or expand their catalog in this task.
+defined effect. Reinforcements adds one player-species individual at a
+deterministic open cell in the next phase and can be selected again. The seven
+authored candidates remain provisional; do not silently promote them or expand
+their catalog in this task.
 
 The present offer formatter includes raw modifier rows and cost/availability
 text. The current phase message reports only data earned from survivors, and
@@ -153,11 +161,12 @@ or seed panel without a scope decision.
 
 ## Acceptance
 
-- The phase boundary presents three distinct eligible temporary Mutations and
-  Skip. Mutation selection is free, previously selected Mutations can appear
-  again at later boundaries, and selecting one again increments its level and
-  stacks its defined effect. Skip has no S3-04 reward. The offer does not imply
-  Genome ownership or expose raw modifier rows.
+- The phase boundary presents three distinct eligible temporary Mutations from
+  the existing pool and Skip. All three Mutation choices are free and do not deduct Data, including
+  when the player has no Data. Pool choices can reappear at later boundaries;
+  choosing one again increments its level and stacks its defined effect.
+  Skip has no S3-04 reward. The
+  offer does not imply Genome ownership or expose raw modifier rows.
 - Each reviewed offer has a recognizable icon and readable Mutation identity.
   Its concise description communicates an evidence-backed direction for the
   species without exposing the Stat-Line or reducing the choice to numeric
@@ -172,7 +181,8 @@ or seed panel without a scope decision.
   snapshot, inputs/seeds, observed result, limitations, and an explicit copy
   and presentation decision.
 - Focused regression coverage verifies three distinct offers plus Skip at each
-  decision boundary, selection taking effect on the next phase without
+  decision boundary, free selection with zero Data, and selection taking effect
+  on the next phase without
   replacing the run, player copy staying within the approved display contract,
   phase summary values matching the completed phase window, and research-only
   diagnostics staying off the normal player surface.
@@ -199,9 +209,10 @@ or seed panel without a scope decision.
   free selection, later repeat offers with level/stack progression, and its
   bounded review. It must not infer any broader economy from inherited code.
 - The current preview has both a forced-on legacy BEV offer path and an
-  authored upgrade path that formats raw modifiers plus cost/ownership status.
-  Implement the approved five-effect bridge without treating either inherited
-  path as a broader approved Mutation economy.
+  authored upgrade path. Phase-choice formatting must not show a Data cost;
+  terminal legacy reward purchases retain their separate cost behavior.
+  Implement the approved five-effect bridge without treating either path as a
+  broader approved Mutation economy.
 - Apply the existing
   [simulation-window concern](../Planning%20Concerns/simulation-window.md),
   especially SIMWIN-C04 (keep raw diagnostics out of player UI) and SIMWIN-C03
@@ -242,12 +253,13 @@ abstraction such as “Hunter Lv2 — better tracking and sharper teeth.” This
 addresses the earlier causality-language concern; it remains an acceptance
 rule and does not require a separate durable concern record.
 
-For the bounded S3-04 bridge, use the five existing experimental Hare
-Mutations, show three distinct choices at each boundary, and allow a selected
-Mutation to appear again later. Selecting it again increments its level and
-stacks/reapplies its defined effect. Mutation choices are free during this
-slice, and Skip has no reward; a future Skip bonus or broader Mutation economy
-is deferred.
+For the bounded S3-04 bridge, offer two distinct choices from the five existing
+experimental Hare Mutations plus fixed repeatable Reinforcements at each
+boundary. Pool choices can appear again later; selecting one again increments
+its level and stacks/reapplies its defined effect. Reinforcements adds one
+player-species individual at a deterministic open cell in the following phase
+and can be selected repeatedly. All phase Mutations are free; Skip has no
+reward. A future Skip bonus or broader Mutation economy is deferred.
 
 **First review candidate, approved by Josh:** Tough Hide from the current experimental
 Hare set. It is a compact defensive effect with a direct `CombatBlocked`

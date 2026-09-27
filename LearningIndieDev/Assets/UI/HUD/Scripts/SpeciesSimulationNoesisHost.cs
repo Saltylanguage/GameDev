@@ -25,6 +25,7 @@ namespace SaltyGame
         [SerializeField] bool enableNoesisUi = true;
 
         SpeciesSimulationBoard simulationBoard;
+        int lastBirthSoundTick = -1;
 
         void Start()
         {
@@ -121,7 +122,8 @@ namespace SaltyGame
         void Update()
         {
             simulationBoard?.UpdateFoxHuntCue();
-            simulationBoard?.UpdateMatingCue();
+            simulationBoard?.UpdateMatingCue(
+                preview != null && preview.State == SpeciesPreviewState.Paused);
         }
 
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -153,6 +155,7 @@ namespace SaltyGame
                 boardViewModel.FoxHuntCueX,
                 boardViewModel.FoxHuntCueY,
                 boardViewModel.FoxHuntCueTick);
+            simulationBoard.SetHuntFootprints(boardViewModel.HuntFootprints);
             simulationBoard.SetMatingCue(
                 boardViewModel.MatingCueX,
                 boardViewModel.MatingCueY,
@@ -161,6 +164,17 @@ namespace SaltyGame
                 boardViewModel.MatingCueOffspringX,
                 boardViewModel.MatingCueOffspringY,
                 boardViewModel.MatingCueTick);
+            simulationBoard.SetBirthCues(boardViewModel.RecentBirths);
+            if (boardViewModel.MatingCueTick < 0)
+            {
+                lastBirthSoundTick = -1;
+            }
+            if (boardViewModel.MatingCueTick >= 0
+                && boardViewModel.MatingCueTick != lastBirthSoundTick)
+            {
+                SimulationBirthChime.Play(gameObject);
+                lastBirthSoundTick = boardViewModel.MatingCueTick;
+            }
         }
 
         void ApplyBoardZoom()

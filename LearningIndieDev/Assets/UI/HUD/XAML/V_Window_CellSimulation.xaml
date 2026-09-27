@@ -1026,8 +1026,8 @@
                             <TextBox Text="{Binding WiltChanceText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
-                            <TextBlock Text="Crowding cost" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding CrowdingEnergyPenaltyText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
+                            <TextBlock Text="Crowding metabolism multiplier" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>
+                            <TextBox Text="{Binding CrowdingMetabolismMultiplierText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Width="120"/>
                         </StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,3">
                             <TextBlock Text="Starting food reserve" Foreground="{DynamicResource Chrono_TreeBark}" Width="250" VerticalAlignment="Center"/>

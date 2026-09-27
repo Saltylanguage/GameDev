@@ -43,13 +43,13 @@ MonoBehaviour:
   - {x: 0, y: -1}
   - {x: -1, y: 0}
   reproductionNeighborCount: 0
-  reproductionChance: 0.0115
+  reproductionChance: 0
   reproductionFoodRequired: 1
   maxReproductionGroupSize: 0
   startingEnergy: 0
   forageBelowEnergy: 0
   wiltChance: 0.003
-  crowdingEnergyPenalty: 0
+  crowdingMetabolismMultiplier: 1
   startingFoodReserve: 10
   seedDropChance: 0
   energyValue: 5

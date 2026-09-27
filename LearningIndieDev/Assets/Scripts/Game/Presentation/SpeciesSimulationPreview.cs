@@ -81,6 +81,7 @@ namespace SaltyGame
                 ForageThresholdFraction = rules.ForageThresholdFraction;
                 MatingEnergyThresholdFraction = rules.MatingEnergyThresholdFraction;
                 MatingEnergyCostFraction = rules.MatingEnergyCostFraction;
+                DistributeMatingEnergyToOffspring = rules.DistributeMatingEnergyToOffspring;
                 ForagesUntilFull = rules.ForagesUntilFull;
                 EnergyLossIntervalTicks = rules.EnergyLossIntervalTicks;
                 ForageBelowEnergyText = rules.ForageBelowEnergy.ToString(CultureInfo.InvariantCulture);
@@ -98,8 +99,8 @@ namespace SaltyGame
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
                 WiltEnabled = rules.WiltChance > 0f;
-                CrowdingEnergyPenalty = rules.CrowdingEnergyPenalty;
-                CrowdingEnergyPenaltyText = rules.CrowdingEnergyPenalty.ToString(CultureInfo.InvariantCulture);
+                CrowdingMetabolismMultiplier = rules.CrowdingMetabolismMultiplier;
+                CrowdingMetabolismMultiplierText = rules.CrowdingMetabolismMultiplier.ToString(CultureInfo.InvariantCulture);
                 StartingFoodReserve = rules.StartingFoodReserve;
                 StartingFoodReserveText = FormatFloat(rules.StartingFoodReserve);
                 SeedDropChance = rules.SeedDropChance;
@@ -145,6 +146,7 @@ namespace SaltyGame
             public float ForageThresholdFraction;
             public float MatingEnergyThresholdFraction;
             public float MatingEnergyCostFraction;
+            public bool DistributeMatingEnergyToOffspring;
             public bool ForagesUntilFull;
             public int EnergyLossIntervalTicks = 1;
             public int EnergyValue;
@@ -160,8 +162,8 @@ namespace SaltyGame
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
-            public int CrowdingEnergyPenalty;
-            public string CrowdingEnergyPenaltyText;
+            public int CrowdingMetabolismMultiplier = 2;
+            public string CrowdingMetabolismMultiplierText = "2";
             public float StartingFoodReserve;
             public string StartingFoodReserveText;
             public bool SeedDropEnabled;
@@ -344,10 +346,12 @@ namespace SaltyGame
                 : string.Join(", ", legacySnapshot.Modifiers.Select(FormatModifierForDisplay));
             var display = string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}\n{1}\nCOST {2} DATA\n{3}",
+                "{0}\n{1}\n{2}\n{3}",
                 SpeciesUpgradeCatalog.GetDisplayName(legacyUpgrade.Id),
                 effectSummary,
-                legacyUpgrade.Cost,
+                previewState == SpeciesPreviewState.PhaseDecision
+                    ? "FREE"
+                    : $"COST {legacyUpgrade.Cost} DATA",
                 GetLegacyRewardStatus(legacyUpgrade));
             if (!coupledSpeciesResponsesEnabled
                 || !SpeciesUpgradeCatalog.TryGetCoupledResponse(
@@ -1242,7 +1246,7 @@ namespace SaltyGame
                 Intelligence = draft.Intelligence.ToString(CultureInfo.InvariantCulture),
                 WiltEnabled = draft.WiltEnabled,
                 WiltChance = FormatFloat(draft.WiltChance),
-                CrowdingEnergyPenalty = draft.CrowdingEnergyPenalty.ToString(CultureInfo.InvariantCulture),
+                CrowdingMetabolismMultiplier = draft.CrowdingMetabolismMultiplier.ToString(CultureInfo.InvariantCulture),
                 StartingFoodReserve = FormatFloat(draft.StartingFoodReserve),
                 SeedDropEnabled = draft.SeedDropEnabled,
                 SeedDropChance = FormatFloat(draft.SeedDropChance),
@@ -1286,7 +1290,7 @@ namespace SaltyGame
                 || !TryParseInt(values.VisionRange, "Vision range", out var visionRange)
                 || !TryParseInt(values.Intelligence, "Intelligence", out var intelligence)
                 || !TryParseFloat(values.WiltChance, "Wilt chance", out var wiltChance)
-                || !TryParseInt(values.CrowdingEnergyPenalty, "Crowding cost", out var crowdingEnergyPenalty)
+                || !TryParseInt(values.CrowdingMetabolismMultiplier, "Crowding metabolism multiplier", out var crowdingMetabolismMultiplier)
                 || !TryParseFloat(values.StartingFoodReserve, "Starting food reserve", out var startingFoodReserve)
                 || !TryParseFloat(values.SeedDropChance, "Seed drop chance", out var seedDropChance))
             {
@@ -1339,8 +1343,8 @@ namespace SaltyGame
             draft.WiltEnabled = values.WiltEnabled;
             draft.WiltChance = Mathf.Clamp01(wiltChance);
             draft.WiltChanceText = FormatFloat(draft.WiltChance);
-            draft.CrowdingEnergyPenalty = Mathf.Max(0, crowdingEnergyPenalty);
-            draft.CrowdingEnergyPenaltyText = draft.CrowdingEnergyPenalty.ToString(CultureInfo.InvariantCulture);
+            draft.CrowdingMetabolismMultiplier = Mathf.Max(1, crowdingMetabolismMultiplier);
+            draft.CrowdingMetabolismMultiplierText = draft.CrowdingMetabolismMultiplier.ToString(CultureInfo.InvariantCulture);
             draft.StartingFoodReserve = Mathf.Max(0f, startingFoodReserve);
             draft.StartingFoodReserveText = FormatFloat(draft.StartingFoodReserve);
             draft.SeedDropEnabled = values.SeedDropEnabled;
@@ -1567,23 +1571,15 @@ namespace SaltyGame
 
             if (usingAuthoredRewardOptions)
             {
-                if (!progression.TrySpend(authoredUpgrade.Cost))
-                {
-                    return false;
-                }
                 if (!progression.TryApplyRunUpgrade(authoredUpgrade))
                 {
-                    progression.AddCurrency(authoredUpgrade.Cost);
                     return false;
                 }
             }
             else
             {
                 var upgrade = rewardOptions[rewardIndex];
-                var applied = usingExperimentalHerbivoreMutations
-                    ? progression.TryApplyFreeUpgrade(CreateFreeHerbivoreMutation(upgrade))
-                    : progression.TryPurchase(upgrade);
-                if (!applied)
+                if (!progression.TryApplyFreeUpgrade(CreateFreeBoundaryMutation(upgrade)))
                 {
                     return false;
                 }
@@ -1659,12 +1655,8 @@ namespace SaltyGame
                 return false;
             }
 
-            var mutation = usingExperimentalHerbivoreMutations
-                ? CreateFreeHerbivoreMutation(upgrade)
-                : upgrade;
-            var canApply = usingExperimentalHerbivoreMutations
-                ? progression.CanApplyFreeUpgrade(mutation)
-                : progression.CanPurchase(upgrade);
+            var mutation = CreateFreeBoundaryMutation(upgrade);
+            var canApply = progression.CanApplyFreeUpgrade(mutation);
             if (!canApply)
             {
                 return false;
@@ -1721,7 +1713,8 @@ namespace SaltyGame
                 return "NO ROOM FOR REINFORCEMENTS";
             }
 
-            return progression.Currency < upgrade.Cost
+            return previewState != SpeciesPreviewState.PhaseDecision
+                && progression.Currency < upgrade.Cost
                 ? $"NEED {upgrade.Cost - progression.Currency} more data"
                 : "AVAILABLE";
         }
@@ -1740,9 +1733,7 @@ namespace SaltyGame
                 return null;
             }
 
-            var upgrade = usingExperimentalHerbivoreMutations
-                ? CreateFreeHerbivoreMutation(rewardOptions[rewardIndex])
-                : rewardOptions[rewardIndex];
+            var upgrade = CreateFreeBoundaryMutation(rewardOptions[rewardIndex]);
             return upgrade.CreateSnapshot(playerSpecies);
         }
 
@@ -2120,7 +2111,7 @@ namespace SaltyGame
             experimentalOfferRotation++;
         }
 
-        static SpeciesUpgrade CreateFreeHerbivoreMutation(SpeciesUpgrade upgrade)
+        static SpeciesUpgrade CreateFreeBoundaryMutation(SpeciesUpgrade upgrade)
         {
             return new SpeciesUpgrade(upgrade.Id, 0, upgrade.Type, upgrade.Value);
         }
@@ -2208,7 +2199,8 @@ namespace SaltyGame
                 || (progression.GetUpgradeLevel(upgrade.Id) > 0
                     && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
                         || upgrade.PopulationToAdd == 0))
-                || progression.Currency < upgrade.Cost)
+                || (previewState != SpeciesPreviewState.PhaseDecision
+                    && progression.Currency < upgrade.Cost))
             {
                 return false;
             }
@@ -2253,7 +2245,10 @@ namespace SaltyGame
                 upgrade.Modifiers.Select(
                     FormatModifierForDisplay));
             var status = GetAuthoredRewardStatus(upgrade);
-            return $"{upgrade.DisplayName}\n{modifiers}\nCOST {upgrade.Cost} DATA\n{status}";
+            var cost = previewState == SpeciesPreviewState.PhaseDecision
+                ? "FREE"
+                : $"COST {upgrade.Cost} DATA";
+            return $"{upgrade.DisplayName}\n{modifiers}\n{cost}\n{status}";
         }
 
         string GetAuthoredRewardStatus(SpeciesUpgradeSnapshot upgrade)
@@ -2289,7 +2284,8 @@ namespace SaltyGame
                 return $"LOCKED — conflicts with {blockedBy}";
             }
 
-            if (progression.Currency < upgrade.Cost)
+            if (previewState != SpeciesPreviewState.PhaseDecision
+                && progression.Currency < upgrade.Cost)
             {
                 return $"NEED {upgrade.Cost - progression.Currency} more data";
             }
@@ -2372,7 +2368,7 @@ namespace SaltyGame
                     maxReproductionGroupSize: draft.ReproductionEnabled ? draft.MaxReproductionGroupSize : 0,
                     startingEnergy: draft.StartingEnergy,
                     wiltChance: draft.WiltEnabled ? draft.WiltChance : 0f,
-                    crowdingEnergyPenalty: draft.CrowdingEnergyPenalty,
+                    crowdingMetabolismMultiplier: draft.CrowdingMetabolismMultiplier,
                     startingFoodReserve: draft.StartingFoodReserve,
                     seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f,
                     energyValue: draft.EnergyValue,
@@ -2389,7 +2385,8 @@ namespace SaltyGame
                     energyLossIntervalTicks: Math.Max(1, draft.EnergyLossIntervalTicks),
                     forageThresholdFraction: draft.ForageThresholdFraction,
                     matingEnergyThresholdFraction: draft.MatingEnergyThresholdFraction,
-                    matingEnergyCostFraction: draft.MatingEnergyCostFraction);
+                    matingEnergyCostFraction: draft.MatingEnergyCostFraction,
+                    distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring);
             }
 
             return result;

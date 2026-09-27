@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace SaltyGame
 {
@@ -103,9 +104,12 @@ namespace SaltyGame
             [SerializeField, Range(0f, 1f)] internal float forageThresholdFraction;
             [SerializeField, Range(0f, 1f)] internal float matingEnergyThresholdFraction;
             [SerializeField, Range(0f, 1f)] internal float matingEnergyCostFraction;
+            [SerializeField] internal bool distributeMatingEnergyToOffspring;
             [SerializeField] internal bool foragesUntilFull;
             [SerializeField, Range(0f, 1f)] internal float wiltChance;
-            [SerializeField, Min(0)] internal int crowdingEnergyPenalty;
+            [SerializeField, FormerlySerializedAs("crowdingEnergyPenalty"), Min(1)]
+            [Tooltip("Multiplier applied to normal metabolism while the local group is crowded. One means no extra cost.")]
+            internal int crowdingMetabolismMultiplier = 2;
             [SerializeField, Min(0f)] internal float startingFoodReserve;
             [SerializeField, Range(0f, 1f)] internal float seedDropChance;
             [SerializeField, Min(0)] internal int energyValue;
@@ -144,7 +148,7 @@ namespace SaltyGame
                     maxReproductionGroupSize,
                     startingEnergy,
                     wiltChance,
-                    crowdingEnergyPenalty,
+                    Math.Max(1, crowdingMetabolismMultiplier),
                     startingFoodReserve,
                     seedDropChance,
                     energyValue,
@@ -160,7 +164,8 @@ namespace SaltyGame
                     energyLossIntervalTicks: energyLossIntervalTicks,
                     forageThresholdFraction: forageThresholdFraction,
                     matingEnergyThresholdFraction: matingEnergyThresholdFraction,
-                    matingEnergyCostFraction: matingEnergyCostFraction);
+                    matingEnergyCostFraction: matingEnergyCostFraction,
+                    distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -187,9 +192,10 @@ namespace SaltyGame
                     forageThresholdFraction = rules.ForageThresholdFraction,
                     matingEnergyThresholdFraction = rules.MatingEnergyThresholdFraction,
                     matingEnergyCostFraction = rules.MatingEnergyCostFraction,
+                    distributeMatingEnergyToOffspring = rules.DistributeMatingEnergyToOffspring,
                     foragesUntilFull = rules.ForagesUntilFull,
                     wiltChance = rules.WiltChance,
-                    crowdingEnergyPenalty = rules.CrowdingEnergyPenalty,
+                    crowdingMetabolismMultiplier = rules.CrowdingMetabolismMultiplier,
                     startingFoodReserve = rules.StartingFoodReserve,
                     seedDropChance = rules.SeedDropChance,
                     energyValue = rules.EnergyValue,

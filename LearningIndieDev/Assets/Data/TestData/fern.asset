@@ -37,7 +37,7 @@ MonoBehaviour:
   startingEnergy: 12
   forageBelowEnergy: 0
   wiltChance: 0.01
-  crowdingEnergyPenalty: 0
+  crowdingMetabolismMultiplier: 1
   startingFoodReserve: 20
   seedDropChance: 0
   energyValue: 1

@@ -33,7 +33,7 @@ namespace SaltyGame
         public string Intelligence;
         public bool WiltEnabled;
         public string WiltChance;
-        public string CrowdingEnergyPenalty;
+        public string CrowdingMetabolismMultiplier;
         public string StartingFoodReserve;
         public bool SeedDropEnabled;
         public string SeedDropChance;
