@@ -9,10 +9,12 @@ become a master changelog.
 `codex/simulation-board-birth-pilot`, the Noesis board now draws a soft,
 two-tone pixel poof behind the newborn at the existing positional birth cue.
 The current heart and sparkle remain, and the cue freezes during pause. This
-is presentation-only. The live Editor reports no compile failure, but no visual
-capture has been reviewed for this effect.
-The view model still cues one child at a time; litter-wide presentation,
-authored sound, and live visual review remain open. See the
+is presentation-only. A live Forest Edge birth was caught at 1× and 100% zoom
+on the 1280×720 view, paused at tick 338; the effect was not clear enough in
+that capture to accept visually. The matching 1920×1080 capture did not
+complete because Play Mode ended between captures. The view model still cues
+one child at a time; litter-wide presentation, authored sound, and visual
+acceptance remain open. See the
 [pilot handoff](handoffs/2026-09-27-0205-codex-simulation-board-birth-poof-pilot.md).
 
 **Crowding and starvation: 2026-09-26.** Production Hares and Foxes use a

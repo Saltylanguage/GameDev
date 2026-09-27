@@ -44,16 +44,23 @@ records are unchanged.
 
 - `git diff --check` passed. Git reported only line-ending normalization
   warnings for the edited files.
-- At 2026-09-27 06:12 UTC, the Unity Editor reported `playing`,
-  `compiling=false`, and `compilationFailed=false`. I did not force a recompile
-  because that could interrupt the active play session.
-- No automated tests or live visual capture has run for this pilot. Treat the
-  effect's runtime appearance as unverified.
+- No automated tests were run.
+- A manual live review caught a real Forest Edge birth at seed `1727443675`,
+  tick 338, phase 4, 1× simulation speed, 100% board zoom, and 1280×720. The
+  preview paused after the birth event at parent `(10,5)` and child `(10,6)`.
+  The board and pause state were visible, but the poof was not clear enough in
+  that capture to accept visually. The capture was returned inline and was not
+  saved as a repository artifact.
+- A same-event 1920×1080 capture could not be completed: Unity had left Play
+  Mode after the 1280 capture. A later Play session fell back to the desktop;
+  the clean test scene was left in Edit Mode. The Editor reported no compile
+  failure before that session ended.
 
 ## Risks and incomplete work
 
-- The cloud may obscure a small newborn or read as snow/smoke at the minimum
-  board scale; inspect it in the actual view at 1280×720 and 1920×1080.
+- The cloud may be too small or low-contrast at normal zoom; inspect a retained
+  1280×720 and 1920×1080 capture before accepting or changing its scale,
+  silhouette, palette, or duration.
 - The cue still represents one newborn even when a litter places several
   children in one tick.
 - The sound cue, authoring review, and runtime verification remain open.
@@ -63,7 +70,10 @@ records are unchanged.
 
 ## Next useful step
 
-Open the Forest Edge simulation at 1280×720 and 1920×1080, capture the birth
-cue at normal zoom and 4× simulation speed, and adjust its silhouette, opacity,
-or duration from what is visible. Then review whether a single sound should
-represent the litter and add an authored clip through the project's audio path.
+Open the Forest Edge simulation through the desktop test scene, wait for a real
+birth, and pause from the birth event in the same frame. Save captures to disk
+before changing Game View resolution; record the seed, phase/tick, speed, and
+zoom with each capture. Review the cue at 1280×720 and 1920×1080, then at 1×
+and 4× speed. Adjust its art only from those retained captures. Then review
+whether a single sound should represent the litter and add an authored clip
+through the project's audio path.
