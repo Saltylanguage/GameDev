@@ -1,6 +1,6 @@
 # Simulation event visuals — first pass
 
-> Status: The Fox/Hare emotional direction below is user-approved. The Fox hunting badge is implemented as a proof of concept; other cues remain design proposals for art review.
+> Status: The Fox/Hare emotional direction below is user-approved. The Fox hunting badge and heart/newborn sparkle are implemented as proofs of concept; other cues remain design proposals for art review.
 > Scope: The Forest Edge board, especially Hare, Fox, and plant interactions.
 
 ## Goal and tone
@@ -50,7 +50,7 @@ For a lethal Fox/Hare encounter, play **focused Fox mark → sharp contact → q
 
 ## Implementation boundary to resolve later
 
-The current board renders snapshots in one batched Noesis control. Existing death records have cell coordinates and tick, but births and feeding are largely counted in metrics, and combat-roll records do not include contact coordinates. Reliable one-shot visuals will need small, positional **output events after a completed simulation tick**. They should describe resolved facts and remain separate from simulation rules, as described in the [project context](../PROJECT_CONTEXT.md). Do not infer a birth or kill from two board snapshots when multiple interactions can occur in one tick.
+The current board renders snapshots in one batched Noesis control. Birth records now include parent, mate, and child coordinates and tick; death records have cell coordinates and tick. The board view model currently selects one recent birth for its heart/sparkle cue. Feeding and combat still need precise positional outcome records for reliable one-shot visuals, and a multi-Fox paw trail needs identified movement history. New **output events after a completed simulation tick** should describe resolved facts and remain separate from simulation rules, as described in the [project context](../PROJECT_CONTEXT.md). Do not infer a birth or kill from two board snapshots when multiple interactions can occur in one tick.
 
 This is F14 visual-language exploration and preparation for F15 simulation feedback in the [roadmap](../../ROADMAP.md); it does not expand the current Sprint 3 polish scope.
 
@@ -59,3 +59,7 @@ This is F14 visual-language exploration and preparation for F15 simulation feedb
 The shared [board view model](../../Assets/UI/HUD/Scripts/VM_SimulationBoard.cs) now recognizes when the simulation's tracked Fox enters `Hunting`. The [Noesis board](../../Assets/UI/HUD/Scripts/SpeciesSimulationBoard.cs) pops a dark-brown and gold paw badge near that Fox for about half a second. Both the GalapagOS Desktop and prototype simulation hosts display it. The badge stays inside the board at its edges.
 
 This uses the existing tracked-behavior record, so it marks **one tracked Fox**, not every hunting Fox. It is an intent cue only: it does not indicate an attack, kill, or feeding. The badge is provisional art and uses wall time even if the player pauses mid-cue. The local visual acceptance capture is under `artifacts/visual-evidence-20260921-225005/`, with before and after images at 1280×720.
+
+## Mating proof of concept (current branch, inspected 2026-09-27)
+
+The shared board view model reads positional `BirthEvents` and the Noesis board draws a heart between parent and mate plus a sparkle at one child's cell. The retained [2026-09-21 capture](../../artifacts/visual-evidence-20260921-232618/07-mating-cue.png) is a prior visual check, while the code confirms the current cue path. The cue currently selects one recent birth even if multiple newborns arrive within the same update, and its wall-time animation can expire while paused. The proposed [board polish exploration](SIMULATION_BOARD_POLISH_EXPLORATION.md) builds from this moment.

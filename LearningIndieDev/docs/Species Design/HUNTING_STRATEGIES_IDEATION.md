@@ -8,6 +8,10 @@ Explore how predators could hunt through distinct, readable strategies such as c
 
 This note extends the Fox concepts in [`HARE_FOX_ITERATIVE_TREATMENT.md`](HARE_FOX_ITERATIVE_TREATMENT.md). It does not expand the current implementation scope or override that treatment's promotion gates.
 
+The proposed [hunter patrol and solo stalking feature plan](PATROL_STALK_FEATURE_PLAN.md)
+scopes the first two behaviors and records compatibility boundaries for deferred
+corralling. It does not schedule pack coordination.
+
 ## Shared hunt shape
 
 Different strategies can use the same player-facing phases:
@@ -188,4 +192,3 @@ Use fixed seeds and the same Hare/Fox fixture for A/B comparisons. Change one st
 - Is its extra state justified by a measurable gameplay difference?
 
 If the answer is no, revise the interaction before adding another strategy or generalized behavior system.
-
