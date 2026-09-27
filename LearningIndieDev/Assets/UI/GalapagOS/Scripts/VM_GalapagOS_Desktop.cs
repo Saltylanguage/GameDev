@@ -77,6 +77,7 @@ namespace SaltyGame
             VolumeUpCommand = new DelegateCommand(VolumeUp);
             ToggleMuteCommand = new DelegateCommand(ToggleMute);
             SetGameSpeedCommand = new DelegateCommand(SetGameSpeed);
+            ApplyAudioVolume();
         }
 
         void OnEnable()
@@ -318,6 +319,7 @@ namespace SaltyGame
         {
             volume = Math.Max(0f, volume - 0.1f);
             muted = false;
+            ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
         }
 
@@ -325,13 +327,20 @@ namespace SaltyGame
         {
             volume = Math.Min(1f, volume + 0.1f);
             muted = false;
+            ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
         }
 
         void ToggleMute()
         {
             muted = !muted;
+            ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
+        }
+
+        void ApplyAudioVolume()
+        {
+            AudioListener.volume = muted ? 0f : volume;
         }
 
         void SetGameSpeed(object parameter)

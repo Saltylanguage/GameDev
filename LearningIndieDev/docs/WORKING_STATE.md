@@ -5,17 +5,25 @@ become a master changelog.
 
 ## Current focus
 
-**Simulation-board birth poof pilot: 2026-09-27.** On
-`codex/simulation-board-birth-pilot`, the Noesis board now draws a soft,
-two-tone pixel poof behind the newborn at the existing positional birth cue.
-The current heart and sparkle remain, and the cue freezes during pause. This
-is presentation-only. A live Forest Edge birth was caught at 1× and 100% zoom
-on the 1280×720 view, paused at tick 338; the effect was not clear enough in
-that capture to accept visually. The matching 1920×1080 capture did not
-complete because Play Mode ended between captures. The view model still cues
-one child at a time; litter-wide presentation, authored sound, and visual
-acceptance remain open. See the
-[pilot handoff](handoffs/2026-09-27-0205-codex-simulation-board-birth-poof-pilot.md).
+**Forest Edge board visual pass: 2026-09-27.** Work is in progress on
+`codex/forest-edge-visual-pass`, based on the birth-poof pilot. The board now
+has a pixel canopy edge, low ground details tied to grass/resource state, and
+prototype side rock clusters that sit outside the traversable field. Birth
+presentation now gathers all children placed in the latest birth tick, enlarges
+the poof, and retains the heart and sparkles. A short code-synthesized litter
+chime is rate-limited and uses the desktop volume/mute controls. The view model
+tracks up to four actual adjacent-cell steps from one Fox that is currently
+hunting; their marks fade over nine simulation ticks and persist through pause.
+The retained baseline and first changed 1280×720 views are in
+[`visual-evidence-20260927-095257`](../artifacts/visual-evidence-20260927-095257/)
+and [`visual-evidence-20260927-095849`](../artifacts/visual-evidence-20260927-095849/).
+The first changed image shows a clear wooded edge, but the center still reads
+as the original grass/bare grid. Later variation and rock placement edits have
+not been captured. Unity crashed during a later live visual run; the clean lane
+then reported the project lock as unreachable. Doctor also reported the Unity
+licensing client and Unity services endpoint unreachable. The implementation
+has not received a post-audio Unity compile or full visual acceptance. See the
+[field-pass handoff](handoffs/2026-09-27-forest-edge-visual-pass.md).
 
 **Crowding and starvation: 2026-09-26.** Production Hares and Foxes use a
 2× metabolism multiplier while their local group exceeds its size limit and
