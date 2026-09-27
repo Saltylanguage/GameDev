@@ -69,6 +69,10 @@ Two further candidates for later review: a short selected-creature movement pose
 
 This is a learning order, not a sprint commitment. A rough event-data estimate and art/audio asset list should precede scheduling.
 
+### Pilot checkpoint — 2026-09-27
+
+The first visual slice is in progress on `codex/simulation-board-birth-pilot`. The board now draws a soft, two-tone pixel poof behind the newborn at the existing positional birth cue, while the heart and sparkle remain visible above it. Its timing freezes during the simulation's Paused state. This uses the current single-newborn cue path; showing a full litter still needs a multi-birth presentation decision. No active simulation sound assets or mixer path were found, so this checkpoint has no birth sound yet. The live view still needs visual review before the effect can be accepted as production art.
+
 ## Reusable review workflow for this and later screens
 
 1. **Capture the real state:** record branch/commit, seed, phase/tick, speed, zoom, and screenshots or video at 1280×720 and 1920×1080. Compare it with the approved concept; name the largest gap.
