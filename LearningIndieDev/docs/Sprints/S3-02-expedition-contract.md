@@ -1,8 +1,8 @@
 # S3-02 — Expedition contract
 
-**Status:** Complete — all S3-02 player-contract decisions were agreed on
-2026-09-17. Explicitly deferred details below are non-blocking and are not
-acceptance gaps.
+**Status:** Complete — the player-contract decisions were agreed on
+2026-09-17; the Forest Edge grid default was updated to 36×20 on 2026-09-26.
+Explicitly deferred details below are non-blocking and are not acceptance gaps.
 **Owner:** Josh · **Reviewer:** Sim · **Planned effort:** Josh 4h, Sim 2h
 
 ## Purpose
@@ -36,6 +36,8 @@ S3-02 proposals are discarded.
   bonus-event rewards are possible but not decided.
 - If the player species goes extinct, the run ends immediately as a failure
   and gives no rewards.
+- On 2026-09-26, Forest Edge's requested production default was set to a
+  **36×20** grid. This supersedes the initial board-size deferral below.
 
 ## Six-round decision cadence
 
@@ -48,8 +50,6 @@ S3-02 proposals are discarded.
 
 - A possible Skip bonus is undecided. If adopted, it uses the same currency as
   Genome Upgrades. Its amount and limits are open; do not make this a blocker.
-- Forest Edge board size is not authoritative yet. Defer the 42×20 versus
-  36×20 choice; do not block the S3 contract on it.
 - Playable plant species are on hold. Do not include Fern or plant identity in
   the current contract.
 - No real-time duration target is set. “One minute” means simulation time;

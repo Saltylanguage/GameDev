@@ -55,7 +55,8 @@ work are listed below with their board locations.
    simulation, boundary choices, results, recovery, and return to the Lab.
 3. The earlier 10-phase/200-tick product language is superseded by the S3-02
    contract: six rounds, 10 seconds of simulation time per round, and five
-   Mutation decision moments. Board size and playable plants are deferred.
+   Mutation decision moments. Forest Edge's production default is 36×20 as of
+   2026-09-26; playable plants remain deferred.
 4. The agreed player-facing choices must be made clear in the interface:
    three glanceable Mutations or Skip after rounds 1–5, with pause and confirmed
    End but no Restart.
@@ -74,7 +75,7 @@ measurement is optional stretch work and is not included in the committed total.
 | ID | Work and player outcome | Features | Owner / reviewer | Josh | Sim | Acceptance check |
 | --- | --- | --- | --- | ---: | ---: | --- |
 | S3-01 | Consolidated baseline and launch-contract acceptance | F13 | Josh / Sim | 2h | 2h | Direct-start Forest Edge/Hare is documented as canonical; recorded PlayMode failures are individually triaged and confirmed defects corrected; focused UI coverage and the full EditMode/PlayMode suites produce retained results with no unexpected failure or Noesis binding error. |
-| S3-02 | Expedition rules and acceptance inputs | F01, F06 | Josh / Sim | 4h | 2h | Six 10-second simulation rounds; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency. Board size and playable plants are explicitly deferred. |
+| S3-02 | Expedition rules and acceptance inputs | F01, F06 | Josh / Sim | 4h | 2h | Six 10-second simulation rounds; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency. Forest Edge defaults to 36×20; playable plants remain deferred. |
 | S3-03 | Complete game-state flow and recovery | F02, F05, F13 | Josh / Sim | 8h | 0h | From the Lab, the player can start and finish an expedition, use its choices, reach a clear result, recover from reset or other bad states, and return to the Lab. No known route leaves the player stalled, in error, or unable to continue. Profile saving remains S4 work. |
 | S3-04 | Mutation readability and bounded Forest Edge review | F03 | Josh product / Sim evidence | 2h | 6h | Five existing experimental Hare Mutations support three distinct free choices or Skip at each boundary; later repeat selections increase level and stack the defined effect. Evidence-backed qualitative copy and the phase summary remain player-readable, and one bounded review records an accept/revise decision. No catalog expansion is required. |
 | S3-05 | Expedition duration and memory measurement — stretch | M1 technical gate | Josh / Sim | 3h | 2h | Not included in committed capacity. If the plan is rebalanced or capacity added, measure the six-round, one-minute-simulation Forest Edge/Hare session. |

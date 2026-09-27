@@ -133,6 +133,26 @@ and height with the selected scenario's authored dimensions. Newer saved
 defaults still retain custom dimensions. The connected Editor is not in Play
 Mode, so the visual result awaits the next runtime launch.
 
+**Saved-grid migration follow-up: 2026-09-26.** The v4 migration only handled
+v3 keys; an existing v4 saved default could still override the 36×20 scenario.
+Startup now migrates both v3 and v4 dimensions into v5 from the selected
+scenario while preserving other saved values. A v5 custom grid remains intact.
+The v4 64×64 migration regression passed 1/1 in the locally installed Unity
+6000.4.6f1 Editor. The Forest Edge visual acceptance test also passed 1/1;
+both the runtime preview and board snapshot reported 36×20. Its rendered field
+capture is [here](../artifacts/direct-unity-grid-check-20260926/03-galapagos-simulation.png).
+
+**S3-08 telemetry distinction: 2026-09-26.** FSM behavior ticks are recorded
+before attack resolution; a successful Fox attack can set the persisted cell to
+Eating afterward. The latest retained 130-tick Play Mode report shows 47 Fox
+food successes with no Fox Eating decision ticks, while its reproduction funnel
+classifies all 4,550 Fox candidates and reconciles. These are separate
+decision/outcome measures, not contradictory counts. The Markdown report now
+labels FSM decision ticks explicitly, and a focused regression asserts the
+post-resolution Eating state. That targeted EditMode test passed 1/1 in the
+locally installed Unity 6000.4.6f1 Editor. This does not replace the longer
+six-phase reproduction evidence requested by P1-035; no balance values changed.
+
 **Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
 default across `SpeciesSimulation`, runner construction, checkpoint restore,
 the `CellSim` wrappers, and job submission. `RestoreCheckpoint` was the last

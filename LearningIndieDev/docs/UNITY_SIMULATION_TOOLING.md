@@ -411,6 +411,11 @@ attempt may create a litter. Schema 7 also separates behavior-state food
 intent from resolver food actions; food attempts must reconcile exactly as
 successes plus failures.
 
+A successful predator attack can set the actor's persisted next-cell state to
+Eating after its FSM decision was recorded as Attacking. Reports can therefore
+show successful food actions with zero Eating decision ticks for that species;
+those fields measure different stages of the tick.
+
 The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
 range and checks initial composition, final player-population ratio, allowed
 extinctions, and minimum state transitions. The Unity Editor menu command

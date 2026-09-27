@@ -946,7 +946,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void SuccessfulPredationRecordsFoodActionSeparatelyFromBehaviorDecision()
+        public void SuccessfulPredationSetsEatingAfterTheBehaviorDecisionIsRecorded()
         {
             var source = new Grid<SpeciesCell>(2, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
@@ -991,6 +991,7 @@ namespace SaltyGame.Tests
             var activity = metrics.GetActivity(SpeciesIds.Carnivore);
 
             Assert.That(next.GetCell(1, 0).IsOccupied, Is.False);
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Eating));
             Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(1f));
             Assert.That(activity.CombatKills, Is.EqualTo(1));
             Assert.That(activity.FoodConsumed, Is.EqualTo(1f));

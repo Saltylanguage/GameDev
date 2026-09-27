@@ -195,7 +195,9 @@ namespace SaltyGame.EditorTools
             builder.AppendLine();
             builder.AppendLine("## Behavior states");
             builder.AppendLine();
-            builder.AppendLine("| Species | State | Ticks |");
+            builder.AppendLine("These are pre-resolution FSM decisions. Food action outcomes are listed under Activity, and reproduction outcomes are listed in the funnel above.");
+            builder.AppendLine();
+            builder.AppendLine("| Species | State | Decision ticks |");
             builder.AppendLine("|---|---|---:|");
             for (var index = 0; index < report.behavior.Length; index++)
             {

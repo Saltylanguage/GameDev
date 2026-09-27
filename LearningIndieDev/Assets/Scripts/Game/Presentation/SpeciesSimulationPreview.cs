@@ -279,8 +279,9 @@ namespace SaltyGame
         string phaseRewardMessage;
         bool savedSettingsLoaded;
 
-        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
-        const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
+        const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v5";
+        const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
+        const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public SpeciesProgression Progression => progression;
@@ -1820,7 +1821,9 @@ namespace SaltyGame
         {
             var settingsKey = PlayerPrefs.HasKey(DefaultSettingsKey)
                 ? DefaultSettingsKey
-                : PreviousDefaultSettingsKey;
+                : PlayerPrefs.HasKey(PreviousDefaultSettingsKey)
+                    ? PreviousDefaultSettingsKey
+                    : LegacyDefaultSettingsKey;
             if (!PlayerPrefs.HasKey(settingsKey))
             {
                 return;
@@ -1841,7 +1844,7 @@ namespace SaltyGame
                 return;
             }
 
-            if (settingsKey == PreviousDefaultSettingsKey && SelectedScenario != null)
+            if (settingsKey != DefaultSettingsKey && SelectedScenario != null)
             {
                 var authoredData = SelectedScenario.CreateRuntimeData();
                 saved.width = authoredData.Width;
