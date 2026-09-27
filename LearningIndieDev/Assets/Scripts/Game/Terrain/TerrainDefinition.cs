@@ -13,7 +13,8 @@ namespace SaltyGame
             float movementCost,
             bool providesResource,
             Color presentationColor,
-            float regrowthPerTick = 0f)
+            float regrowthPerTick = 0f,
+            float growthIntervalSeconds = 0f)
         {
             if (!id.IsValid)
             {
@@ -30,12 +31,23 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(regrowthPerTick), regrowthPerTick, "Regrowth cannot be negative.");
             }
 
+            if (growthIntervalSeconds < 0f
+                || float.IsNaN(growthIntervalSeconds)
+                || float.IsInfinity(growthIntervalSeconds))
+            {
+                throw new ArgumentOutOfRangeException(
+                    nameof(growthIntervalSeconds),
+                    growthIntervalSeconds,
+                    "Growth interval must be a finite, non-negative duration.");
+            }
+
             Id = id;
             IsPassable = isPassable;
             MovementCost = movementCost;
             ProvidesResource = providesResource;
             PresentationColor = presentationColor;
             RegrowthPerTick = regrowthPerTick;
+            GrowthIntervalSeconds = growthIntervalSeconds;
         }
 
         public TerrainId Id { get; }
@@ -44,6 +56,7 @@ namespace SaltyGame
         public bool ProvidesResource { get; }
         public Color PresentationColor { get; }
         public float RegrowthPerTick { get; }
+        public float GrowthIntervalSeconds { get; }
     }
 
     public static class TerrainDefaults
@@ -60,7 +73,8 @@ namespace SaltyGame
             isPassable: true,
             movementCost: 1f,
             providesResource: true,
-            presentationColor: new Color(0.2f, 0.75f, 0.25f));
+            presentationColor: new Color(0.2f, 0.75f, 0.25f),
+            growthIntervalSeconds: 17.4f);
 
         public static IReadOnlyDictionary<TerrainId, TerrainDefinition> Create()
         {

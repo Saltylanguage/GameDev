@@ -560,7 +560,6 @@ namespace SaltyGame.EditorTools
         {
             DrawPropertyPair(serializedObject, "startingEnergy", "Start Energy", "energyValue", "Food Value", cardWidth);
             DrawPropertyPair(serializedObject, "metabolism", "Metabolism", "energyLossIntervalTicks", "Loss Interval", cardWidth);
-            DrawPropertyPair(serializedObject, "startingFoodReserve", "Food Reserve", "crowdingEnergyPenalty", "Crowding", cardWidth);
             DrawPropertyPair(serializedObject, "reproductionChance", "Reproduction", "reproductionNeighborCount", "Neighbors", cardWidth);
             DrawPropertyPair(serializedObject, "wiltChance", "Wilt Chance", "seedDropChance", "Seed Drop", cardWidth);
         }
@@ -620,7 +619,10 @@ namespace SaltyGame.EditorTools
             DrawProperty(Find(serializedObject, "reproductionNeighborCount"), "Required Neighbors");
             DrawProperty(Find(serializedObject, "reproductionFoodRequired"), "Food Required");
             DrawProperty(Find(serializedObject, "maxReproductionGroupSize"), "Maximum Group Size");
-            DrawProperty(Find(serializedObject, "crowdingEnergyPenalty"), "Crowding Energy Penalty");
+            if (role != SpeciesRole.Plant)
+            {
+                DrawProperty(Find(serializedObject, "crowdingMetabolismMultiplier"), "Crowding Metabolism Multiplier");
+            }
             DrawProperty(Find(serializedObject, "startingFoodReserve"), "Starting Food Reserve");
             DrawProperty(Find(serializedObject, "wiltChance"), "Wilt Chance");
             DrawProperty(Find(serializedObject, "seedDropChance"), "Seed Drop Chance");

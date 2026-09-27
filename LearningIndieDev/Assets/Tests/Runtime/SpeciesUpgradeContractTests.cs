@@ -69,7 +69,10 @@ namespace SaltyGame.Tests
                 reproductionNeighborCount: 0,
                 forageBelowEnergy: 6,
                 maximumEnergy: 24,
-                foragesUntilFull: true);
+                foragesUntilFull: true,
+                matingEnergyThresholdFraction: 0.75f,
+                matingEnergyCostFraction: 0.5f,
+                distributeMatingEnergyToOffspring: true);
             var modifier = new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumEnergy, 4f);
 
             var upgraded = SpeciesAttributeRegistry.Apply(rules, modifier);
@@ -77,6 +80,16 @@ namespace SaltyGame.Tests
             Assert.That(upgraded.MaximumEnergy, Is.EqualTo(28));
             Assert.That(upgraded.ForageBelowEnergy, Is.EqualTo(6));
             Assert.That(upgraded.ForagesUntilFull, Is.True);
+            Assert.That(upgraded.MatingEnergyThresholdFraction, Is.EqualTo(0.75f));
+            Assert.That(upgraded.MatingEnergyCostFraction, Is.EqualTo(0.5f));
+            Assert.That(upgraded.DistributeMatingEnergyToOffspring, Is.True);
+
+            var legacyUpgrade = new SpeciesUpgrade(
+                "hare-rule-preservation-test",
+                cost: 0,
+                type: SpeciesUpgradeType.MovementSpeed,
+                value: 0.5f).Apply(rules);
+            Assert.That(legacyUpgrade.DistributeMatingEnergyToOffspring, Is.True);
         }
 
         [Test]

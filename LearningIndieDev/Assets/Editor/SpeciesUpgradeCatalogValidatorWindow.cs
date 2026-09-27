@@ -11,7 +11,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public sealed class SpeciesUpgradeCatalogValidatorWindow : EditorWindow
     {
-        const string ProductionCatalogPath = "Assets/Data/CellularSimulation/Upgrades/Production";
+        const string ProductionCatalogPath = "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production";
 
         sealed class CatalogEntry
         {

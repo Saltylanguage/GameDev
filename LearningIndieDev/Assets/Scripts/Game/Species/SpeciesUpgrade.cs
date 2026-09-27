@@ -18,6 +18,8 @@ namespace SaltyGame
         ReproductionChance,
         TrackingPersistenceSteps,
         PopulationReinforcement,
+        LitterMinimum,
+        LitterMaximum,
     }
 
     public sealed class SpeciesUpgrade
@@ -104,6 +106,12 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
                     break;
+                case SpeciesUpgradeType.LitterMinimum:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.LitterMinimum, Value));
+                    break;
+                case SpeciesUpgradeType.LitterMaximum:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.LitterMaximum, Value));
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
             }
@@ -113,6 +121,10 @@ namespace SaltyGame
                 SpeciesUpgradeCatalog.GetDisplayName(Id),
                 Type == SpeciesUpgradeType.PopulationReinforcement
                     ? $"Add {(int)Value} {targetSpecies.Value} to the next phase."
+                    : Type == SpeciesUpgradeType.LitterMinimum
+                        ? $"Increase the minimum litter size by {(int)Value}."
+                        : Type == SpeciesUpgradeType.LitterMaximum
+                            ? $"Increase the maximum litter size by {(int)Value}."
                     : "Legacy upgrade converted to the run upgrade contract.",
                 targetSpecies,
                 Cost,
@@ -140,6 +152,8 @@ namespace SaltyGame
             var intelligence = rules.Awareness.Intelligence;
             var forageBelowEnergy = rules.ForageBelowEnergy;
             var trackingPersistenceSteps = rules.TrackingPersistenceSteps;
+            var litterMinimum = rules.LitterMinimum;
+            var litterMaximum = rules.LitterMaximum;
             switch (Type)
             {
                 case SpeciesUpgradeType.MovementSpeed:
@@ -182,6 +196,12 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
                     break;
+                case SpeciesUpgradeType.LitterMinimum:
+                    litterMinimum += (int)Value;
+                    break;
+                case SpeciesUpgradeType.LitterMaximum:
+                    litterMaximum += (int)Value;
+                    break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(Type), Type, "Unknown upgrade type.");
             }
@@ -202,7 +222,7 @@ namespace SaltyGame
                 rules.MaxReproductionGroupSize,
                 rules.StartingEnergy,
                 rules.WiltChance,
-                rules.CrowdingEnergyPenalty,
+                rules.CrowdingMetabolismMultiplier,
                 rules.StartingFoodReserve,
                 rules.SeedDropChance,
                 rules.EnergyValue,
@@ -211,8 +231,8 @@ namespace SaltyGame
                 role: rules.Role,
                 forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: rules.MaximumEnergy,
-                litterMinimum: rules.LitterMinimum,
-                litterMaximum: rules.LitterMaximum,
+                litterMinimum: litterMinimum,
+                litterMaximum: litterMaximum,
                 attackModifier: attackModifier,
                 damageAmount: damageAmount,
                 digestionEnergyBonus: digestionEnergyBonus,
@@ -224,7 +244,8 @@ namespace SaltyGame
                 energyLossIntervalTicks: rules.EnergyLossIntervalTicks,
                 forageThresholdFraction: rules.ForageThresholdFraction,
                 matingEnergyThresholdFraction: rules.MatingEnergyThresholdFraction,
-                matingEnergyCostFraction: rules.MatingEnergyCostFraction);
+                matingEnergyCostFraction: rules.MatingEnergyCostFraction,
+                distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring);
         }
     }
 
@@ -265,6 +286,9 @@ namespace SaltyGame
         public const string PopulationReinforcementId = "population-reinforcement";
         public const int PopulationReinforcementCount = 1;
         public const int PopulationReinforcementMaxLevel = int.MaxValue;
+        public const string LargerMinimumLitterId = "larger-minimum-litter";
+        public const string LargerMaximumLitterId = "larger-maximum-litter";
+        public const int LitterSizeIncreasePerLevel = 1;
 
         public static int GetMaxLevel(string upgradeId)
         {
@@ -306,6 +330,8 @@ namespace SaltyGame
             CrowdingToleranceId,
             ReproductiveDriveId,
             ThreatExposureId,
+            LargerMinimumLitterId,
+            LargerMaximumLitterId,
         };
 
         static readonly string[] ExperimentalPredatorUpgradeIds =
@@ -393,6 +419,18 @@ namespace SaltyGame
                         5,
                         SpeciesUpgradeType.PopulationReinforcement,
                         PopulationReinforcementCount);
+                case LargerMinimumLitterId:
+                    return new SpeciesUpgrade(
+                        LargerMinimumLitterId,
+                        5,
+                        SpeciesUpgradeType.LitterMinimum,
+                        LitterSizeIncreasePerLevel);
+                case LargerMaximumLitterId:
+                    return new SpeciesUpgrade(
+                        LargerMaximumLitterId,
+                        5,
+                        SpeciesUpgradeType.LitterMaximum,
+                        LitterSizeIncreasePerLevel);
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return new SpeciesUpgrade(
@@ -488,6 +526,10 @@ namespace SaltyGame
                     return "BROOD DRIVE";
                 case PopulationReinforcementId:
                     return "REINFORCEMENTS";
+                case LargerMinimumLitterId:
+                    return "LARGER MINIMUM LITTER";
+                case LargerMaximumLitterId:
+                    return "LARGER MAXIMUM LITTER";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
                     return "THREAT EXPOSURE";

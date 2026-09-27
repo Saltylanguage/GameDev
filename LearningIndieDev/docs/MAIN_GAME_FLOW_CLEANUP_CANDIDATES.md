@@ -17,7 +17,7 @@ historical value count as uses too.
 | --- | --- | --- |
 | **Island Survivor prototype slice — removed 2026-09-18** | The user approved retiring the off-flow prototype as one connected slice. | Removed its scene/build entry, runtime modules, dedicated tests, validator, and Island Chores textures with `.meta` files. The historical handoffs and audit remain. See [legacy prototype audit](LEGACY_PROTOTYPE_AUDIT.md). |
 | **Terrain Paint diagnostic bundle** — `Assets/Scenes/TerrainPaintTest.unity`; `Assets/Scripts/Game/Presentation/TerrainPaintPreview.cs`; `Assets/Tests/Runtime/TerrainPaintPreviewTests.cs` | The scene is not in Build Settings or the player route. It is a manual developer diagnostic. Its helper still has a focused test, so the scene, script, and test should be considered together. | Existing item [P2-022 in Loose Ends](LOOSE_ENDS.md) says to decide after the terrain asset/presentation workflow settles: keep as a bounded diagnostic, migrate, or explicitly remove. The terrain atlas itself is used elsewhere and is not part of this candidate. |
-| **Empty asset-folder placeholders** — `Assets/Audio/`, `Assets/Materials/`, `Assets/ThirdParty/` | Each directory currently contains no files. | Low-priority housekeeping only. Confirm nobody intends these as reserved import locations before removing the empty directories; this is not a runtime cleanup. |
+| **Empty asset-folder placeholders** — `Assets/Audio/`, `Assets/ThirdParty/` | Each directory currently contains no files. | Low-priority housekeeping only. Confirm nobody intends these as reserved import locations before removing the empty directories; this is not a runtime cleanup. |
 
 ## Keep out of the removal list
 

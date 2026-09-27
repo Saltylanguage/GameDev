@@ -10,19 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c526ec1c6e1646fdaea26a52d72ed7a5, type: 3}
-  m_Name: Warren_RoomToBreed
+  m_Name: LargerMaximumLitter
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.SpeciesUpgradeAsset
-  upgradeId: warren-room-to-breed
-  displayName: 'Warren: Room to Breed'
-  description: Support larger breeding groups and ease crowding pressure, but burn more energy.
+  upgradeId: larger-maximum-litter
+  displayName: 'Hare: Larger Maximum Litter'
+  description: Increase the maximum number of offspring in each litter by one.
   targetSpeciesId: hare
-  cost: 9
+  cost: 5
   modifiers:
-  - attributeId: reproduction.group-size
-    signedValue: 1
-  - attributeId: crowding.metabolism-multiplier
-    signedValue: -1
-  - attributeId: energy.metabolism
+  - attributeId: reproduction.litter-maximum
     signedValue: 1
   prerequisiteUpgradeIds: []
   excludedUpgradeIds: []

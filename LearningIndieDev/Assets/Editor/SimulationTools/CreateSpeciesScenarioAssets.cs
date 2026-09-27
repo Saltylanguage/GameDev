@@ -28,7 +28,7 @@ namespace SaltyGame.EditorTools
             };
             var herbivores = new[]
             {
-                CreateHerbivore("hare", "plant", 2.2f, 6, 0.04f, 16, 96, 24, 2, 3, 2),
+                CreateHerbivore("hare", "plant", 2.2f, 6, 0.04f, 16, 96, 24, 2, 3, 2, 0f),
                 CreateHerbivore("deer", "fern", 1.4f, 20, 0.2f),
                 CreateHerbivore("snail", "reed", 0.55f, 10, 0.3f),
                 CreateHerbivore("beetle", "reed", 1.8f, 12, 0.25f),
@@ -155,7 +155,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<PlantSpeciesDefinitionAsset>($"{id}.asset");
             SetCommon(asset, id, 0f, Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0,
-                Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0.1f, 0, 0, 0, wilt, 0,
+                Array.Empty<Vector2Int>(), Array.Empty<Vector2Int>(), 0.1f, 0, 0, 0, wilt, 1,
                 reserve, 0f, 1, -1, 0);
             return asset;
         }
@@ -164,7 +164,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<PlantSpeciesDefinitionAsset>("plant.asset");
             SetCommon(asset, "plant", 0f, Cardinal(), Cardinal(), 0,
-                Cardinal(), Cardinal(), 0.03f, 0, 1, 0, 0.003f, 0,
+                Cardinal(), Cardinal(), 0.03f, 0, 1, 0, 0.003f, 1,
                 10f, 0f, 2, 0, 0);
             Set(asset, "dietPattern", Cardinal());
             Set(asset, "startingEnergy", 0);
@@ -192,7 +192,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>("carnivore.asset");
             SetCommon(asset, "carnivore", 1.5f, Moore(), Moore(), 2,
-                Cardinal(), Cardinal(), 0.03f, 1, 16, 3, 0f, 1,
+                Cardinal(), Cardinal(), 0.03f, 1, 16, 3, 0f, 2,
                 0f, 0f, 12, 1, 4);
             Set(asset, "dietPattern", Moore());
             Set(asset, "dietTargetId", SpeciesIds.Herbivore.Value);
@@ -213,12 +213,13 @@ namespace SaltyGame.EditorTools
             int maximumEnergy = 18,
             int litterMaximum = 3,
             int maxReproductionGroupSize = 4,
-            int crowdingEnergyPenalty = 1)
+            int crowdingMetabolismMultiplier = 2,
+            float seedDropChance = 0.05f)
         {
             var asset = GetOrCreate<HerbivoreSpeciesDefinitionAsset>($"{id}.asset");
             SetCommon(asset, id, speed, Cardinal(), Array.Empty<Vector2Int>(), 0,
-                Cardinal(), Moore(), reproductionChance, 1, 1, maxReproductionGroupSize, 0f, crowdingEnergyPenalty,
-                0f, 0.05f, 4, 1, 5);
+                Cardinal(), Moore(), reproductionChance, 1, 1, maxReproductionGroupSize, 0f, crowdingMetabolismMultiplier,
+                0f, seedDropChance, 4, 1, 5);
             Set(asset, "dietTargetId", dietTarget);
             Set(asset, "attackAmount", 1);
             Set(asset, "startingEnergy", energy);
@@ -246,7 +247,7 @@ namespace SaltyGame.EditorTools
         {
             var asset = GetOrCreate<CarnivoreSpeciesDefinitionAsset>($"{id}.asset");
             SetCommon(asset, id, speed, Moore(), Moore(), 2,
-                Cardinal(), Cardinal(), reproductionChance, 1, 1, 3, 0f, 1,
+                Cardinal(), Cardinal(), reproductionChance, 1, 1, 3, 0f, 2,
                 0f, 0f, 8, 1, 4);
             Set(asset, "dietTargetId", dietTarget);
             Set(asset, "startingEnergy", energy);
@@ -298,7 +299,7 @@ namespace SaltyGame.EditorTools
             Set(asset, "startingEnergy", 0);
             Set(asset, "forageBelowEnergy", 0);
             Set(asset, "wiltChance", wilt);
-            Set(asset, "crowdingEnergyPenalty", crowding);
+            Set(asset, "crowdingMetabolismMultiplier", crowding);
             Set(asset, "startingFoodReserve", reserve);
             Set(asset, "seedDropChance", seedDrop);
             Set(asset, "energyValue", energyValue);

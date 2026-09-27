@@ -56,7 +56,7 @@ namespace SaltyGame
         StartingEnergy,
         ForageBelowEnergy,
         WiltChance,
-        CrowdingEnergyPenalty,
+        CrowdingMetabolismMultiplier,
         StartingFoodReserve,
         SeedDropChance,
         EnergyValue,
@@ -86,7 +86,7 @@ namespace SaltyGame
         public const string StartingEnergy = "energy.starting";
         public const string ForageBelowEnergy = "energy.forage-threshold";
         public const string WiltChance = "resource.wilt-chance";
-        public const string CrowdingEnergyPenalty = "crowding.energy-penalty";
+        public const string CrowdingMetabolismMultiplier = "crowding.metabolism-multiplier";
         public const string StartingFoodReserve = "resource.starting-food-reserve";
         public const string SeedDropChance = "resource.seed-drop-chance";
         public const string EnergyValue = "energy.value";
@@ -110,7 +110,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v3";
+        public const string Version = "species-attribute-registry-v4";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -171,7 +171,7 @@ namespace SaltyGame
             var startingEnergy = rules.StartingEnergy;
             var forageBelowEnergy = rules.ForageBelowEnergy;
             var wiltChance = rules.WiltChance;
-            var crowdingEnergyPenalty = rules.CrowdingEnergyPenalty;
+            var crowdingMetabolismMultiplier = rules.CrowdingMetabolismMultiplier;
             var startingFoodReserve = rules.StartingFoodReserve;
             var seedDropChance = rules.SeedDropChance;
             var energyValue = rules.EnergyValue;
@@ -226,8 +226,8 @@ namespace SaltyGame
                 case SpeciesAttributeTarget.WiltChance:
                     wiltChance += value;
                     break;
-                case SpeciesAttributeTarget.CrowdingEnergyPenalty:
-                    crowdingEnergyPenalty += (int)value;
+                case SpeciesAttributeTarget.CrowdingMetabolismMultiplier:
+                    crowdingMetabolismMultiplier += (int)value;
                     break;
                 case SpeciesAttributeTarget.StartingFoodReserve:
                     startingFoodReserve += value;
@@ -289,7 +289,7 @@ namespace SaltyGame
                 maxReproductionGroupSize,
                 startingEnergy,
                 wiltChance,
-                crowdingEnergyPenalty,
+                crowdingMetabolismMultiplier,
                 startingFoodReserve,
                 seedDropChance,
                 energyValue,
@@ -311,7 +311,8 @@ namespace SaltyGame
                 rules.EnergyLossIntervalTicks,
                 rules.ForageThresholdFraction,
                 rules.MatingEnergyThresholdFraction,
-                rules.MatingEnergyCostFraction);
+                rules.MatingEnergyCostFraction,
+                rules.DistributeMatingEnergyToOffspring);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()
@@ -330,7 +331,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.StartingEnergy, "Starting Energy", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.StartingEnergy),
                 Definition(SpeciesAttributeIds.ForageBelowEnergy, "Forage Energy Threshold", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.ForageBelowEnergy),
                 Definition(SpeciesAttributeIds.WiltChance, "Wilt Chance", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.WiltChance),
-                Definition(SpeciesAttributeIds.CrowdingEnergyPenalty, "Crowding Energy Penalty", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingEnergyPenalty),
+                Definition(SpeciesAttributeIds.CrowdingMetabolismMultiplier, "Crowding Metabolism Multiplier", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingMetabolismMultiplier),
                 Definition(SpeciesAttributeIds.StartingFoodReserve, "Starting Food Reserve", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.StartingFoodReserve),
                 Definition(SpeciesAttributeIds.SeedDropChance, "Seed Drop Chance", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.SeedDropChance),
                 Definition(SpeciesAttributeIds.EnergyValue, "Energy Value", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.EnergyValue),

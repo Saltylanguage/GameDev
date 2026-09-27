@@ -126,6 +126,7 @@ future confirmation overlay must use explicit End semantics.
 - Main Menu and GalapagOS Desktop use separate scenes and explicit scene-transition helpers. The legacy Lab scene remains available for isolated developer/test coverage.
 - Main Menu contains Profile Selection, Continue, and Quit. Profile Selection is the first-launch path; Continue loads the GalapagOS Desktop with the last loaded profile and is disabled when none exists.
 - Main Menu and Desktop use explicit `Single` scene loads. The desktop-hosted simulation uses a local camera/view composition and returns to the desktop surface after its results action; the standalone Simulation scene remains available for the legacy Lab route.
+- **Scheduled migration (P1-032):** replace the Desktop-hosted local Forest Edge/Hare preview with an Expedition Setup handoff using the selected profile and immutable `SimulationLaunchRequest`. It is scheduled as the first post-S3 work item in the S4 draft, ahead of S4-01, pending kickoff estimate and feature-capacity trade; keep persistence and reward settlement out of that migration.
 - Use explicit screen state and Noesis visual states for local overlays and polish; do not introduce a general navigation framework for this flow.
 - The cellular simulation remains a separate scene and domain boundary.
 - UI ViewModels expose presentation-ready values and explicit commands. XAML does not read simulation assets, `PlayerPrefs`, or mutable domain state directly.

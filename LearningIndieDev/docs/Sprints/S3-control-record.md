@@ -76,7 +76,7 @@ measurement is optional stretch work and is not included in the committed total.
 | S3-01 | Consolidated baseline and launch-contract acceptance | F13 | Josh / Sim | 2h | 2h | Direct-start Forest Edge/Hare is documented as canonical; recorded PlayMode failures are individually triaged and confirmed defects corrected; focused UI coverage and the full EditMode/PlayMode suites produce retained results with no unexpected failure or Noesis binding error. |
 | S3-02 | Expedition rules and acceptance inputs | F01, F06 | Josh / Sim | 4h | 2h | Six 10-second simulation rounds; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency. Board size and playable plants are explicitly deferred. |
 | S3-03 | Complete game-state flow and recovery | F02, F05, F13 | Josh / Sim | 8h | 0h | From the Lab, the player can start and finish an expedition, use its choices, reach a clear result, recover from reset or other bad states, and return to the Lab. No known route leaves the player stalled, in error, or unable to continue. Profile saving remains S4 work. |
-| S3-04 | Mutation readability and bounded Forest Edge review | F03 | Josh product / Sim evidence | 2h | 6h | Five existing experimental Hare Mutations support three distinct free choices or Skip at each boundary; later repeat selections increase level and stack the defined effect. Evidence-backed qualitative copy and the phase summary remain player-readable, and one bounded review records an accept/revise decision. No catalog expansion is required. |
+| S3-04 | Mutation readability and bounded Forest Edge review | F03 | Josh product / Sim evidence | 2h | 6h | Each boundary offers two distinct choices from the existing five-Mutation Hare pool plus fixed repeatable Reinforcements as the third choice, or Skip. All three choices are free; pool repeats stack their defined effects, and Reinforcements adds one player-species individual next phase. Evidence-backed qualitative copy and the phase summary remain player-readable, and one bounded review records an accept/revise decision. No catalog expansion is required. |
 | S3-05 | Expedition duration and memory measurement — stretch | M1 technical gate | Josh / Sim | 3h | 2h | Not included in committed capacity. If the plan is rebalanced or capacity added, measure the six-round, one-minute-simulation Forest Edge/Hare session. |
 | S3-06 | Visual polish and UI integration | F13, F14 | Josh / Sim | 2h | 2h | Apply a bounded polish pass to the expedition screens and integrate them with the player flow; capture a reviewable result at target resolutions. |
 | S3-07 | Integration, defect, and review reserve | Shared | Josh + Sim | 2h | 4h | Reserved for failures discovered while proving the S3 outcome; unused time does not become new feature scope. |
@@ -201,9 +201,9 @@ Mutation selection, and no S3-04 Skip reward.
 - The terrain correction changes mask selection for Bare cells and adds
   resolver/snapshot regression tests so Grass patches fill empty dirt cells.
   The focused Bare-cell regressions passed in the later clean validation. The
-  remaining P1-031 work is the phase-decision UI check and the separate
-  Settings/Collection and Main Menu review; do not reopen S3-01 without a
-  specific defect.
+  phase-decision UI, Settings, and My Collection PlayMode checks now pass; the
+  remaining P1-031 work is human review of Main Menu branding/generated art.
+  Do not reopen S3-01 without a specific defect.
 
 ## S3-02 completion status
 
@@ -223,7 +223,7 @@ Mutation selection, and no S3-04 Skip reward.
 
 | Priority | Risk | Owner | Exit evidence |
 | --- | --- | --- | --- |
-| P1 | The latest retained clean suites pass, while phase-decision UI validation, the Settings/Collection result gap, and Main Menu/graphics review remain separate follow-ups. | Josh | Run the focused UI check when the shared Editor is free; then resolve the Settings/Collection gap and complete the remaining human review in Loose Ends P1-031. |
+| P1 | Automated phase-decision, Settings, and My Collection checks pass; Main Menu branding/generated-art review remains a human decision. | Josh | Complete the human review recorded in Loose Ends P1-031 using the retained test evidence. |
 | P0 | A player can become stranded by a broken state transition, error, or reset path. | Josh | Tests cover the main route and recovery paths back to the Lab; no known soft-lock remains. |
 | P1 | The successful-run currency measure and conversion are still being developed; optional Skip and bonus-event rewards are unsettled. | Josh + Sim | Link the approved performance measure when ready; this does not block S3-02. |
 | P1 | Flow and UI work could expand into profile saving, settlement, or production Genome actions. | Josh | S3-03 ends at a safe expedition and return route; profile saving remains in S4. |

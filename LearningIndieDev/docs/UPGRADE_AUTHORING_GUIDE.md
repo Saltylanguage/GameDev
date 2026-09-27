@@ -24,7 +24,14 @@ follow
 
 ## Current Mutation catalog
 
-The initial production catalog contains seven Hare Mutation candidates:
+The production catalog now contains two approved Hare Mutations:
+
+- `larger-minimum-litter` — Larger Minimum Litter
+- `larger-maximum-litter` — Larger Maximum Litter
+
+The seven earlier Hare candidates remain in
+`Assets/Data/TestData/Upgrades/Production/` while their production status is
+reviewed:
 
 - `trailblazer-long-stride` — Long Stride
 - `trailblazer-far-sight` — Far Sight
@@ -34,7 +41,8 @@ The initial production catalog contains seven Hare Mutation candidates:
 - `gardeners-careful-sowing` — Careful Sowing
 - `familial-bond-large-litters` — Large Litters
 
-These values are starting hypotheses, not accepted balance.
+The two litter-size Mutations were approved for production on 2026-09-24.
+Their effect values are still subject to future balance review.
 
 The exact contract and acceptance state for every production row is tracked in
 the [Hare Mutation Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
@@ -43,23 +51,22 @@ the [Hare Mutation Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
 
 The first worked example is:
 
-`Assets/Data/CellularSimulation/Upgrades/Production/Trailblazer_LongStride.asset`
+`Assets/Data/ProductionData/CellularSimulation/Upgrades/Production/LargerMinimumLitter.asset`
 
 It is a provisional starting hypothesis, not accepted balance:
 
-- Stable ID: `trailblazer-long-stride`
-- Display name: Trailblazer: Long Stride
+- Stable ID: `larger-minimum-litter`
+- Display name: Hare: Larger Minimum Litter
 - Target species: `hare`
 - Cost: `5` scientific data
-- Modifiers: `movement.speed +0.5`; `reproduction.neighbor-count +1`
+- Modifier: `reproduction.litter-minimum +1`
 
-The second modifier is the tradeoff: the Hare needs one additional nearby
-partner to reproduce.
+This raises the minimum litter size by one.
 
 ## Create another asset
 
 1. In the Unity Project window, open
-   `Assets/Data/CellularSimulation/Upgrades/Production/`.
+   `Assets/Data/ProductionData/CellularSimulation/Upgrades/Production/`.
 2. Create **Salty Game → Upgrades → Species Per-Run Upgrade**.
 3. Give the file a readable name. The filename is presentation only; the
    `Upgrade ID` is the stable identity used by runtime, reports, and research.
@@ -112,7 +119,7 @@ should be applied:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -PlayerSpeciesId hare `
-    -UpgradeAssetSequence trailblazer-long-stride,warren-guarded-burrow
+    -UpgradeAssetSequence larger-minimum-litter,larger-maximum-litter
 ```
 
 The `SpeciesUpgradePredictionInputAdapter` resolves those IDs from
@@ -127,10 +134,10 @@ Research-only fixtures use the same adapter with an explicit catalog path:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
-    -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
+    -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
     -PlayerSpeciesId hare `
     -UpgradeAssetSequence faster-movement,crowding-tolerance `
-    -UpgradeAssetCatalogPath Assets/Data/CellularSimulation/Upgrades/Research/EX-007
+    -UpgradeAssetCatalogPath Assets/Data/TestData/Upgrades/Research/EX-007
 ```
 
 The catalog path must stay inside `Assets/` and is recorded in the report and

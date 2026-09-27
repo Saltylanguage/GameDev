@@ -263,7 +263,8 @@ namespace SaltyGame
                     combatResolutionMode: combatResolutionMode,
                     attackOpportunityMode: attackOpportunityMode,
                     experimentalOptions: experimentalOptions,
-                    previousSource: previousCells)
+                    previousSource: previousCells,
+                    stepIntervalSeconds: stepSeconds)
                 : SpeciesSimulation.Step(
                     Run.Cells,
                     simulationData,

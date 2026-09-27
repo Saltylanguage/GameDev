@@ -5,15 +5,52 @@ become a master changelog.
 
 ## Current focus
 
+**Crowding and starvation: 2026-09-26.** Production Hares and Foxes use a
+2× metabolism multiplier while their local group exceeds its size limit and
+tolerance. The crowding pass no longer kills creatures directly; lethal energy
+loss is classified as starvation. This is implemented in the
+[simulation step](../Assets/Scripts/Game/Simulation/SpeciesSimulation.cs). No
+post-change simulation or tests have been run, so the balance effect is
+unverified.
+
+**Time-based grass spread: 2026-09-24.** Grass now spreads on a per-tile
+simulation-time interval instead of a per-tick chance roll. The provisional
+17.4-second interval preserves the previous expected wait at Forest Edge's
+0.2-second tick interval. Each plant tile tracks elapsed simulation ticks,
+converted using the scenario step duration; the timer pauses while an animal
+occupies the tile and resets after successful spread. Initial plant timers are
+seeded at staggered points in the cycle to avoid a synchronized first wave.
+This changes spreading; passive food-reserve regrowth keeps its current
+behavior. No tests or matched balance runs have been run for this change, so
+the interval remains unverified. Hare seed-drop chance is zero in the
+production definition, diagnostic definition, and scenario generator, so
+Hares consume grass locally without reseeding it. See the
+[time-based grass growth handoff](handoffs/2026-09-24-codex-time-based-grass-growth.md).
+
+**Hare mate-seeking and reproductive drive: 2026-09-24.** The production Hare
+now has a 100% reproduction chance and can seek a mate at 50% of its 48-energy
+cap (24 energy), matching the existing 50%-cap mating cost. Once eligible, a
+Hare paths toward the nearest same-species individual without a reproduction
+cooldown anywhere on the board before foraging; this social search is separate
+from vision so Fox-detection range stays unchanged. The local group limit is
+raised from 3 to 7 so a pair and its maximum five-offspring litter can use the
+same patch; at that time, direct crowding deaths were still active. The
+2026-09-26 update replaced them with doubled metabolism under crowding. The
+distant-mate and gathered-three regressions passed, and the final full EditMode suite passed
+259/259 at
+[`unity-tests-20260924-150134`](../artifacts/unity-tests-20260924-150134/).
+No matched Forest Edge balance run has measured the ecological effect yet, so
+these remain provisional.
+
 **Population Reinforcements phase Mutation: 2026-09-23.** The active
 experimental offer now uses its third slot for a repeatable `+1` individual of
 the player species. A seeded placement chooses an unoccupied, passable cell for
 the next phase, respects the population cap, and is retained if the expedition
-restarts. This is one selection per phase decision; no balance batch has been
-run. The option inherits the current legacy choice cost of 5 Data. The existing
-S3-04 product notes describe Mutations as free, so the broader economy
-discrepancy remains unresolved. See the
-[Population Reinforcements handoff](handoffs/2026-09-23-codex-population-reinforcement-mutation.md).
+restarts. This is one selection per phase decision. Phase-boundary Mutations
+are free; the fixed option's separate legacy catalog cost is not charged. No
+balance batch has been run. See the
+[Population Reinforcements handoff](handoffs/2026-09-23-codex-population-reinforcement-mutation.md)
+and its [2026-09-24 free-choice follow-up](handoffs/2026-09-24-1341-codex-free-mutations-and-near-term-desktop-migration.md).
 
 **Fox hunting and mating energy: 2026-09-23.** Foxes now prioritize
 hunting when below 75% of maximum energy and prey is available; that priority
@@ -25,10 +62,9 @@ offspring (36 each at the authored 240-energy cap); offspring still start with
 the authored 48 energy. A pair at exactly 25% when it enters Mating can still
 resolve that attempt when metabolism runs first during the tick. The thresholds
 and cost scale when maximum energy changes. Focused Fox tests passed 10/10.
-The full EditMode suite passed 248/249; the remaining failure is the existing
-`EfficientDigestionAccumulatesFractionalEnergyDeterministically` test
-(expected 23, got 0), also seen before this change. No matched Forest Edge
-balance batch has been run, so treat these as provisional values. See the
+The full Unity suite passed EditMode 256/256 and PlayMode 33/33 on 2026-09-24;
+see [retained results](../artifacts/unity-tests-20260924-134934/). No matched
+Forest Edge balance batch has been run, so treat these as provisional values. See the
 [Fox tuning change](handoffs/2026-09-23-2054-codex-fox-hunt-mating-energy.md).
 
 **Forest Edge hare energy behavior: 2026-09-23.** Hare energy loss now occurs
@@ -36,8 +72,9 @@ once every 10 simulation ticks. Reserve feeding uses a 6-energy trigger and a
 24-energy refill target: dropping below 6 starts refilling; after reaching 24,
 the hare stops eating until it falls below 6 again. Other species retain their
 existing per-tick metabolism. Focused tests cover the refill cycle, metabolism
-cadence, and maximum-energy upgrade behavior. Unity test verification is
-pending; the user is currently running an expedition, so avoid interrupting it.
+cadence, and maximum-energy upgrade behavior. The full Unity suite passed
+256/256 EditMode and 33/33 PlayMode on 2026-09-24; see
+[retained results](../artifacts/unity-tests-20260924-134934/).
 See the [hare feeding and mating handoff](handoffs/2026-09-23-codex-hare-full-energy-mate-seeking.md).
 
 **Field observation board pan and zoom: 2026-09-22.** The custom board now
@@ -93,14 +130,15 @@ continuation recorded three Fox births, but zero aggregate `Mating` state
 ticks; that telemetry/eligibility discrepancy remains a follow-up, not a
 Fox/Hare population-equality target.
 
-**Hare starvation follow-up: 2026-09-22.** The grass reserve increase from
+**Historical Hare starvation comparison: 2026-09-22.** The grass reserve increase from
 10 to 11.5 did not change matched Hare starvation deaths, so it was not kept.
 Using the same Forest Edge scenario, seeds 1–20, 600 ticks, and the current
 Hare bite value of 5, grass reproduction `0.0015` produced 283 Hare
 starvation deaths. Grass reproduction `0.0115` produced 236, a provisional
-16.61% reduction. Keep `0.0115` as the working value; the result is a
-starvation-pressure target, not a population-matching claim. Evidence is
-recorded in the [grass-starvation candidate](../artifacts/cellular-experiment-20260922-075959/report.json)
+16.61% reduction. This chance-based value was superseded by the time-based
+spread interval on 2026-09-24; the measured result remains historical evidence,
+not a validation of the new interval. Evidence is recorded in the
+[grass-starvation candidate](../artifacts/cellular-experiment-20260922-075959/report.json)
 and [matched control](../artifacts/cellular-experiment-20260922-074858/report.json).
 
 **Fox hunt / Hare escape follow-up: 2026-09-22.** Hungry Foxes now use their
@@ -218,9 +256,10 @@ Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
 kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
 2026-09-17–2026-09-30. Josh closed S3-01; the latest retained clean validation
 records EditMode 234/234 and no-graphics PlayMode 28/30 with 0 failures and two
-expected graphics-only skips. The focused phase-decision UI check and the
-separate Settings/Collection and Main Menu reviews remain open in Loose Ends
-P1-031. Trello S3-01 is in Done with its validation caveat recorded. S3-02's
+expected graphics-only skips. The focused phase-decision UI check and dedicated
+Settings/My Collection PlayMode checks now pass; only Main Menu branding and
+generated-art review remains open in Loose Ends P1-031. Trello S3-01 is in Done
+with its validation caveat recorded. S3-02's
 contract is complete, and Josh has marked its Trello card complete. S3-03 is
 complete and Unity-validated with results retained in its handoff. The S3-02
 card's acceptance wording may still need a cleanup pass to remove the deferred
@@ -236,11 +275,12 @@ translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
 support a precise claim; raw statistics remain off the player surface. The
 approved S3 bridge uses the five existing experimental Hare Mutations as the
-rotating offer pool and shows three choices per boundary. The third choice is
-now the fixed, repeatable Reinforcements Mutation, which adds one selected
-species individual at a deterministic open cell in the following phase.
-Selected Mutations can return at later boundaries; Skip has no S3-04 reward.
-The population addition and its balance remain provisional pending evidence.
+rotating offer pool, with two distinct pool choices plus fixed repeatable
+Reinforcements at each boundary. All three choices are free. Pool Mutations can
+return at later boundaries and stack; Reinforcements adds one selected-species
+individual at a deterministic open cell in the following phase. Skip has no
+S3-04 reward. The population addition and its balance remain provisional
+pending evidence.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
@@ -326,7 +366,9 @@ desktop handoff, focus behavior, and procedural chime were verified in Unity,
 but title/brand and promotion of generated art remain human decisions. The
 concept images are references, not approved production assets. A focused
 Settings/Collection PlayMode invocation on 2026-09-12 exited without producing
-results XML, so it is not acceptance evidence.
+results, so it was not acceptance evidence. This gap is superseded by the
+retained 2026-09-24 full suite and focused My Collection result linked in Loose
+Ends P1-031.
 
 The 2026-09-09 artifact-retention audit and cleanup removed only approved,
 verified duplicates and old clean logs (about 1.35 GB). Compact summaries and

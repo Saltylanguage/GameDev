@@ -46,7 +46,13 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetString(viewModel, "CurrentProfileName"), Is.EqualTo("Darwin Station"));
 
             ExecuteCommand(viewModel, "ContinueCommand");
-            yield return null;
+            var transitionDeadline = Time.realtimeSinceStartup + 3f;
+            while (SceneManager.GetActiveScene().name != DesktopScene
+                && Time.realtimeSinceStartup < transitionDeadline)
+            {
+                yield return null;
+            }
+
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(DesktopScene));
             ClearProfiles();
         }

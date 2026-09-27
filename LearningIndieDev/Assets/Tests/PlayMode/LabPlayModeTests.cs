@@ -244,6 +244,27 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator GalapagOSMyCollectionAppUsesDedicatedCollectionSurface()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var viewModel = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            Assert.That(viewModel, Is.Not.Null);
+
+            var openCommand = GetProperty(viewModel, "OpenDesktopIconCommand");
+            openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "My Collection" });
+
+            var openWindows = (IList)GetProperty(viewModel, "OpenDesktopWindows");
+            Assert.That(openWindows.Count, Is.EqualTo(1));
+            Assert.That(GetProperty(openWindows[0], "Title"), Is.EqualTo("My Collection"));
+            Assert.That(GetProperty(openWindows[0], "SpeciesCollectionSurfaceVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(openWindows[0], "GenericSurfaceVisibility").ToString(), Is.EqualTo("Collapsed"));
+        }
+
+        [UnityTest]
         public IEnumerator GalapagOSDesktopAppsRemainOpenTogether()
         {
             yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");

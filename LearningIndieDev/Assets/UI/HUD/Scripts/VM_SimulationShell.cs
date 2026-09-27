@@ -376,7 +376,7 @@ namespace SaltyGame
         public string IntelligenceText { get => ruleValues.Intelligence; set => SetRule(ref ruleValues.Intelligence, value, nameof(IntelligenceText)); }
         public bool WiltEnabled { get => ruleValues.WiltEnabled; set => SetRule(ref ruleValues.WiltEnabled, value, nameof(WiltEnabled)); }
         public string WiltChanceText { get => ruleValues.WiltChance; set => SetRule(ref ruleValues.WiltChance, value, nameof(WiltChanceText)); }
-        public string CrowdingEnergyPenaltyText { get => ruleValues.CrowdingEnergyPenalty; set => SetRule(ref ruleValues.CrowdingEnergyPenalty, value, nameof(CrowdingEnergyPenaltyText)); }
+        public string CrowdingMetabolismMultiplierText { get => ruleValues.CrowdingMetabolismMultiplier; set => SetRule(ref ruleValues.CrowdingMetabolismMultiplier, value, nameof(CrowdingMetabolismMultiplierText)); }
         public string StartingFoodReserveText { get => ruleValues.StartingFoodReserve; set => SetRule(ref ruleValues.StartingFoodReserve, value, nameof(StartingFoodReserveText)); }
         public bool SeedDropEnabled { get => ruleValues.SeedDropEnabled; set => SetRule(ref ruleValues.SeedDropEnabled, value, nameof(SeedDropEnabled)); }
         public string SeedDropChanceText { get => ruleValues.SeedDropChance; set => SetRule(ref ruleValues.SeedDropChance, value, nameof(SeedDropChanceText)); }
@@ -1341,7 +1341,7 @@ namespace SaltyGame
                 nameof(LitterMinimumText), nameof(LitterMaximumText), nameof(ForageBelowEnergyText),
                 nameof(EnergyValueText),
                 nameof(MetabolismText), nameof(VisionRangeText), nameof(IntelligenceText),
-                nameof(WiltEnabled), nameof(WiltChanceText), nameof(CrowdingEnergyPenaltyText),
+                nameof(WiltEnabled), nameof(WiltChanceText), nameof(CrowdingMetabolismMultiplierText),
                 nameof(StartingFoodReserveText), nameof(SeedDropEnabled), nameof(SeedDropChanceText),
             };
 

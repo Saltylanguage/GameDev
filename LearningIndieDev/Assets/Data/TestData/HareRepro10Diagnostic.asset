@@ -57,9 +57,9 @@ MonoBehaviour:
   matingEnergyCostFraction: 0
   foragesUntilFull: 1
   wiltChance: 0
-  crowdingEnergyPenalty: 2
+  crowdingMetabolismMultiplier: 2
   startingFoodReserve: 0
-  seedDropChance: 0.05
+  seedDropChance: 0
   energyValue: 96
   metabolism: 1
   energyLossIntervalTicks: 10

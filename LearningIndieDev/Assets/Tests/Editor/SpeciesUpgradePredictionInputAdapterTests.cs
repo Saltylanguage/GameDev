@@ -14,16 +14,16 @@ namespace SaltyGame.EditorTests
         {
             var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(new[]
             {
-                "trailblazer-far-sight",
-                "trailblazer-long-stride",
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
             });
 
             Assert.That(snapshots, Has.Length.EqualTo(2));
-            Assert.That(snapshots[0].Id, Is.EqualTo("trailblazer-far-sight"));
+            Assert.That(snapshots[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.LargerMaximumLitterId));
             Assert.That(snapshots[0].TargetSpecies.Value, Is.EqualTo("hare"));
-            Assert.That(snapshots[0].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.VisionRange));
+            Assert.That(snapshots[0].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.LitterMaximum));
             Assert.That(snapshots[0].Modifiers[0].SignedValue, Is.EqualTo(1f));
-            Assert.That(snapshots[1].Id, Is.EqualTo("trailblazer-long-stride"));
+            Assert.That(snapshots[1].Id, Is.EqualTo(SpeciesUpgradeCatalog.LargerMinimumLitterId));
         }
 
         [Test]
@@ -31,8 +31,8 @@ namespace SaltyGame.EditorTests
         {
             var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(new[]
             {
-                "trailblazer-long-stride",
-                "warren-guarded-burrow",
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
             });
             var input = SpeciesUpgradePredictionInputAdapter.CreateInput(snapshots);
             var json = SpeciesUpgradePredictionInputAdapter.Serialize(snapshots);
@@ -42,16 +42,16 @@ namespace SaltyGame.EditorTests
             Assert.That(input.registryFingerprint, Is.EqualTo(SpeciesAttributeRegistry.Fingerprint));
             Assert.That(input.orderedUpgradeIds, Is.EqualTo(new[]
             {
-                "trailblazer-long-stride",
-                "warren-guarded-burrow",
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
             }));
             Assert.That(input.upgrades[0].order, Is.EqualTo(0));
             Assert.That(input.upgrades[1].order, Is.EqualTo(1));
             Assert.That(input.upgrades[0].fingerprint, Is.EqualTo(snapshots[0].Fingerprint));
-            Assert.That(input.upgrades[1].modifiers, Has.Length.EqualTo(2));
+            Assert.That(input.upgrades[1].modifiers, Has.Length.EqualTo(1));
             StringAssert.Contains("orderedLoadoutFingerprint", json);
-            StringAssert.Contains("movement.speed", json);
-            StringAssert.Contains("-0.25", json);
+            StringAssert.Contains(SpeciesAttributeIds.LitterMinimum, json);
+            StringAssert.Contains(SpeciesAttributeIds.LitterMaximum, json);
         }
 
         [Test]
@@ -60,17 +60,17 @@ namespace SaltyGame.EditorTests
             var assets = new[]
             {
                 AssetDatabase.LoadAssetAtPath<SpeciesUpgradeAsset>(
-                    "Assets/Data/CellularSimulation/Upgrades/Production/Trailblazer_LongStride.asset"),
+                    "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production/LargerMinimumLitter.asset"),
                 AssetDatabase.LoadAssetAtPath<SpeciesUpgradeAsset>(
-                    "Assets/Data/CellularSimulation/Upgrades/Production/Warren_GuardedBurrow.asset"),
+                    "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production/LargerMaximumLitter.asset"),
             };
 
             var input = SpeciesUpgradePredictionInputAdapter.CreateInputFromAssets(assets);
 
             Assert.That(input.orderedUpgradeIds, Is.EqualTo(new[]
             {
-                "trailblazer-long-stride",
-                "warren-guarded-burrow",
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
             }));
             Assert.That(input.upgrades[0].fingerprint, Is.EqualTo(assets[0].CreateSnapshot().Fingerprint));
         }
@@ -81,9 +81,9 @@ namespace SaltyGame.EditorTests
             var assets = new[]
             {
                 AssetDatabase.LoadAssetAtPath<SpeciesUpgradeAsset>(
-                    "Assets/Data/CellularSimulation/Upgrades/Research/EX-007/FasterMovement.asset"),
+                    "Assets/Data/TestData/Upgrades/Research/EX-007/FasterMovement.asset"),
                 AssetDatabase.LoadAssetAtPath<SpeciesUpgradeAsset>(
-                    "Assets/Data/CellularSimulation/Upgrades/Research/EX-007/CrowdingTolerance.asset"),
+                    "Assets/Data/TestData/Upgrades/Research/EX-007/CrowdingTolerance.asset"),
             };
 
             var input = SpeciesUpgradePredictionInputAdapter.CreateInputFromAssets(assets);
@@ -104,7 +104,7 @@ namespace SaltyGame.EditorTests
         {
             var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(
                 new[] { "faster-movement", "crowding-tolerance" },
-                "Assets/Data/CellularSimulation/Upgrades/Research/EX-011");
+                "Assets/Data/TestData/Upgrades/Research/EX-011");
 
             Assert.That(snapshots[0].TargetSpecies, Is.EqualTo(new SpeciesId("deer")));
             Assert.That(snapshots[0].Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.MovementSpeed));
@@ -119,16 +119,16 @@ namespace SaltyGame.EditorTests
         {
             var snapshots = SpeciesUpgradePredictionInputAdapter.Resolve(
                 new[] { "faster-movement", "crowding-tolerance" },
-                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007");
+                "Assets/Data/TestData/Upgrades/Research/EX-007");
             var input = SpeciesUpgradePredictionInputAdapter.CreateInput(
                 snapshots,
-                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007");
+                "Assets/Data/TestData/Upgrades/Research/EX-007");
 
             Assert.That(snapshots, Has.Length.EqualTo(2));
             Assert.That(snapshots[0].Id, Is.EqualTo("faster-movement"));
             Assert.That(snapshots[1].Id, Is.EqualTo("crowding-tolerance"));
             Assert.That(input.sourceCatalogPath, Is.EqualTo(
-                "Assets/Data/CellularSimulation/Upgrades/Research/EX-007"));
+                "Assets/Data/TestData/Upgrades/Research/EX-007"));
         }
 
         [Test]
@@ -149,13 +149,13 @@ namespace SaltyGame.EditorTests
         {
             var forward = SpeciesUpgradePredictionInputAdapter.Resolve(new[]
             {
-                "trailblazer-long-stride",
-                "warren-guarded-burrow",
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
             });
             var reverse = SpeciesUpgradePredictionInputAdapter.Resolve(new[]
             {
-                "warren-guarded-burrow",
-                "trailblazer-long-stride",
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
             });
 
             Assert.That(
@@ -176,7 +176,7 @@ namespace SaltyGame.EditorTests
 
             Assert.That(
                 SpeciesUpgradePredictionInputAdapter.TryResolve(
-                    new[] { "trailblazer-long-stride", "trailblazer-long-stride" },
+                    new[] { SpeciesUpgradeCatalog.LargerMinimumLitterId, SpeciesUpgradeCatalog.LargerMinimumLitterId },
                     out _,
                     out var duplicateMessage),
                 Is.False);

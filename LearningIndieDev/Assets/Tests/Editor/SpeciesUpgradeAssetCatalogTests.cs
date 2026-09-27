@@ -11,14 +11,10 @@ namespace SaltyGame.EditorTests
     [Category("Authoring")]
     public sealed class SpeciesUpgradeAssetCatalogTests
     {
-        const string ProductionCatalogPath = "Assets/Data/CellularSimulation/Upgrades/Production";
-        const string CarefulSowingPath = ProductionCatalogPath + "/Gardeners_CarefulSowing.asset";
-        const string SeedPouchesPath = ProductionCatalogPath + "/Gardeners_SeedPouches.asset";
-        const string FarSightPath = ProductionCatalogPath + "/Trailblazer_FarSight.asset";
-        const string TrailblazerPath = ProductionCatalogPath + "/Trailblazer_LongStride.asset";
-        const string GuardedBurrowPath = ProductionCatalogPath + "/Warren_GuardedBurrow.asset";
-        const string RoomToBreedPath = ProductionCatalogPath + "/Warren_RoomToBreed.asset";
-        const string FamilialBondPath = ProductionCatalogPath + "/FamilialBond_LargeLitters.asset";
+        const string ProductionCatalogPath = "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production";
+        const string LargerMinimumLitterPath = ProductionCatalogPath + "/LargerMinimumLitter.asset";
+        const string LargerMaximumLitterPath = ProductionCatalogPath + "/LargerMaximumLitter.asset";
+        const string HareSpeciesPath = "Assets/Data/ProductionData/CellularSimulation/Species/hare.asset";
 
         [Test]
         public void EveryProductionUpgradeAssetResolvesToAValidSnapshot()
@@ -55,66 +51,41 @@ namespace SaltyGame.EditorTests
         public void ProductionCatalogFixturesMatchTheirAcceptanceMatrix()
         {
             AssertFixture(
-                TrailblazerPath,
-                "trailblazer-long-stride",
-                "Trailblazer: Long Stride",
+                LargerMinimumLitterPath,
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
+                "Hare: Larger Minimum Litter",
                 5,
                 canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.MovementSpeed, 0.5f),
-                new ExpectedModifier(SpeciesAttributeIds.ReproductionNeighborCount, 1f));
+                new ExpectedModifier(SpeciesAttributeIds.LitterMinimum, 1f));
             AssertFixture(
-                FarSightPath,
-                "trailblazer-far-sight",
-                "Trailblazer: Far Sight",
-                8,
+                LargerMaximumLitterPath,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
+                "Hare: Larger Maximum Litter",
+                5,
                 canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.VisionRange, 1f),
-                new ExpectedModifier(SpeciesAttributeIds.Metabolism, 1f));
-            AssertFixture(
-                GuardedBurrowPath,
-                "warren-guarded-burrow",
-                "Warren: Guarded Burrow",
-                7,
-                canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.BlockAmount, 2f),
-                new ExpectedModifier(SpeciesAttributeIds.MovementSpeed, -0.25f));
-            AssertFixture(
-                RoomToBreedPath,
-                "warren-room-to-breed",
-                "Warren: Room to Breed",
-                9,
-                canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.MaxReproductionGroupSize, 1f),
-                new ExpectedModifier(SpeciesAttributeIds.CrowdingEnergyPenalty, -1f),
-                new ExpectedModifier(SpeciesAttributeIds.Metabolism, 1f));
-            AssertFixture(
-                SeedPouchesPath,
-                "gardeners-seed-pouches",
-                "Gardeners: Seed Pouches",
-                6,
-                canApplyAfterRunStart: false,
-                new ExpectedModifier(SpeciesAttributeIds.StartingFoodReserve, 2f),
-                new ExpectedModifier(SpeciesAttributeIds.StartingEnergy, -2f));
-            AssertFixture(
-                CarefulSowingPath,
-                "gardeners-careful-sowing",
-                "Gardeners: Careful Sowing",
-                8,
-                canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.SeedDropChance, 0.1f),
-                new ExpectedModifier(SpeciesAttributeIds.MovementSpeed, -0.25f));
-            AssertFixture(
-                FamilialBondPath,
-                "familial-bond-large-litters",
-                "Familial Bond: Large Litters",
-                10,
-                canApplyAfterRunStart: true,
-                new ExpectedModifier(SpeciesAttributeIds.CrowdingTolerance, 3f));
+                new ExpectedModifier(SpeciesAttributeIds.LitterMaximum, 1f));
 
             Assert.That(
-                CreateSnapshot(LoadAsset(TrailblazerPath)).Fingerprint,
-                Is.EqualTo(CreateSnapshot(LoadAsset(TrailblazerPath)).Fingerprint),
+                CreateSnapshot(LoadAsset(LargerMinimumLitterPath)).Fingerprint,
+                Is.EqualTo(CreateSnapshot(LoadAsset(LargerMinimumLitterPath)).Fingerprint),
                 "Resolving an unchanged asset must produce a deterministic fingerprint.");
+        }
+
+        [Test]
+        public void ProductionHareUsesDoubledEnergyAndLitterMatingRules()
+        {
+            var hareAsset = AssetDatabase.LoadAssetAtPath<SpeciesDefinitionAsset>(HareSpeciesPath);
+            Assert.That(hareAsset, Is.Not.Null);
+
+            var rules = hareAsset.CreateRules();
+            Assert.That(rules.StartingEnergy, Is.EqualTo(12));
+            Assert.That(rules.MaximumEnergy, Is.EqualTo(48));
+            Assert.That(rules.EnergyValue, Is.EqualTo(96));
+            Assert.That(rules.ReproductionChance, Is.EqualTo(1f));
+            Assert.That(rules.MatingEnergyThresholdFraction, Is.EqualTo(0.5f));
+            Assert.That(rules.MatingEnergyCostFraction, Is.EqualTo(0.5f));
+            Assert.That(rules.MaxReproductionGroupSize, Is.EqualTo(7));
+            Assert.That(rules.DistributeMatingEnergyToOffspring, Is.True);
         }
 
         sealed class ExpectedModifier

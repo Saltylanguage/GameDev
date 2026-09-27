@@ -32,6 +32,29 @@ These are draft card definitions, not Trello cards and not yet selected for
 closeout. The five feature cards total 32h; the separate 8h reserve brings the
 plan to 40h (Josh 20h, Sim 20h).
 
+### Priority carry-over — P1-032 Desktop launch-context migration
+
+- **Scheduled slot:** First work item in the next post-S3 work block, before
+  S4-01. The S4 forecast begins 2026-10-01, but S4 is still a draft and this
+  item needs an estimate and a capacity trade at kickoff before work starts.
+- **Proposed owner / reviewer:** Josh / UI-runtime owner.
+- **Estimate:** TBD; allocate from feature capacity, not the protected 8h
+  integration/review reserve.
+- **Outcome:** Replace the Desktop's local Forest Edge/Hare preview with the
+  profile- and Expedition-Setup-driven launch through the existing immutable
+  `SimulationLaunchRequest` contract.
+- **Acceptance:** The Desktop route passes the selected scenario, species,
+  seed/schedule, and frozen profile/Genome inputs into the simulation run; a
+  focused PlayMode handoff test proves those values arrive unchanged. The
+  normal Desktop route no longer chooses hardcoded local-preview defaults, and
+  a missing/invalid request returns to setup with a clear failure instead of
+  silently starting a local run. Keep the standalone developer preview
+  isolated. Profile persistence, reward settlement, and cloud saves remain out
+  of scope.
+- **Capacity gate:** At S4 kickoff, add the approved estimate and trade against
+  baseline feature work before promoting the card. Do not silently exceed the
+  32h feature cap or draw from the 8h reserve.
+
 ### S4-01 — Define Forest Edge build identities and counterplay
 
 - **Features:** F03, F07, F11
