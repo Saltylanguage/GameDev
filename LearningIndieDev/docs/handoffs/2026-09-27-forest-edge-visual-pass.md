@@ -82,5 +82,5 @@ scenario balance.
 ## Git state
 
 The user authorized pushing this feature branch and explicitly asked not to
-merge work. This handoff and implementation have not yet been committed or
-pushed. Do not merge.
+merge work. Implementation commit `9a66f9ec` is pushed to
+`origin/codex/forest-edge-visual-pass`; the working tree is clean. Do not merge.
