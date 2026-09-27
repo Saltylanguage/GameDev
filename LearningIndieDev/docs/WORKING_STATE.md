@@ -9,7 +9,8 @@ become a master changelog.
 `codex/simulation-board-birth-pilot`, the Noesis board now draws a soft,
 two-tone pixel poof behind the newborn at the existing positional birth cue.
 The current heart and sparkle remain, and the cue freezes during pause. This
-is presentation-only and has not been compiled or visually reviewed in Unity.
+is presentation-only. The live Editor reports no compile failure, but no visual
+capture has been reviewed for this effect.
 The view model still cues one child at a time; litter-wide presentation,
 authored sound, and live visual review remain open. See the
 [pilot handoff](handoffs/2026-09-27-0205-codex-simulation-board-birth-poof-pilot.md).

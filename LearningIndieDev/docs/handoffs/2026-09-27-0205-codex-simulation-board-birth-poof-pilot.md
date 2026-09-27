@@ -44,8 +44,11 @@ records are unchanged.
 
 - `git diff --check` passed. Git reported only line-ending normalization
   warnings for the edited files.
-- No Unity compilation, automated tests, or live visual capture has run for this
-  pilot. Treat runtime behavior and appearance as unverified.
+- At 2026-09-27 06:12 UTC, the Unity Editor reported `playing`,
+  `compiling=false`, and `compilationFailed=false`. I did not force a recompile
+  because that could interrupt the active play session.
+- No automated tests or live visual capture has run for this pilot. Treat the
+  effect's runtime appearance as unverified.
 
 ## Risks and incomplete work
 
@@ -54,6 +57,9 @@ records are unchanged.
 - The cue still represents one newborn even when a litter places several
   children in one tick.
 - The sound cue, authoring review, and runtime verification remain open.
+- The current Editor console contains earlier errors from upgrade purchases
+  attempting a reproduction chance of `1.005`. These occurred before this
+  visual pilot and are not addressed here; inspect the upgrade cap separately.
 
 ## Next useful step
 
