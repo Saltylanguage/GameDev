@@ -45,6 +45,7 @@ namespace SaltyGame.EditorTools
                     reproductionFailedChanceRoll = reproduction.FailedChanceRoll,
                     reproductionBlockedNoBirthLocation = reproduction.BlockedNoBirthLocation,
                     reproductionSuccessfulAttempts = reproduction.SuccessfulAttempts,
+                    reproductionEligibleAttempts = reproduction.EligibleAttempts,
                     reproductionReconciled = reproduction.IsReconciled,
                 };
             }
@@ -536,6 +537,7 @@ namespace SaltyGame.EditorTools
         public int reproductionFailedChanceRoll;
         public int reproductionBlockedNoBirthLocation;
         public int reproductionSuccessfulAttempts;
+        public int reproductionEligibleAttempts;
         public bool reproductionReconciled;
     }
 

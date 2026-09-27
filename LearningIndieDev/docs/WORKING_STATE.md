@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**S3-08 Fox telemetry clarification: 2026-09-27, validated.** The report
+already distinguishes pre-resolution FSM state ticks from resolver outcomes;
+the reproduction funnel now also exposes eligible attempts (chance failures,
+no-location outcomes, and successful attempts) alongside the blocked gates.
+This is a derived metric and does not change Fox behavior. The new Editor test
+initially caused Safe Mode because the project's NUnit version does not support
+`Assert.Multiple`; separate `Assert.That` calls fixed the compile error. The
+direct installed Unity CLI EditMode runs passed the report serializer and
+runtime reproduction funnel tests (1/1 each). A five-seed, 600-tick Forest
+Edge report on the authored 36x20 grid contains
+`reproductionEligibleAttempts`; the generated Markdown includes the Eligible
+column. The current Editor log has no compiler errors. The 177 warnings in the
+user's screenshot are not the Safe Mode blocker. Artifacts are under
+`artifacts/s3-08-reproduction-telemetry/`. See the [S3-08 telemetry
+handoff](handoffs/2026-09-27-codex-s3-08-fox-telemetry.md).
+
 **S3-04 Mutation readability and first bounded review: 2026-09-27.** The
 phase-choice path now offers three distinct free Hare Mutations plus Skip,
 allows repeat picks to increase the level, and keeps the same expedition

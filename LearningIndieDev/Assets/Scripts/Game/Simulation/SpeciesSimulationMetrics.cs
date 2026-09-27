@@ -64,6 +64,9 @@ namespace SaltyGame
         public int BlockedNoBirthLocation { get; }
         public int SuccessfulAttempts { get; }
 
+        public int EligibleAttempts =>
+            FailedChanceRoll + BlockedNoBirthLocation + SuccessfulAttempts;
+
         public int ClassifiedCandidates =>
             BlockedEnergy
             + BlockedMateRequirement

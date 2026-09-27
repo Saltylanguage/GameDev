@@ -13,7 +13,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 8;
+        const int ReportSchemaVersion = 9;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -180,15 +180,15 @@ namespace SaltyGame.EditorTools
             builder.AppendLine();
             builder.AppendLine("## Reproduction funnel");
             builder.AppendLine();
-            builder.AppendLine("| Species | Candidates | Energy | Mate | Group cap | Chance | No space | Successes | Births | Reconciled |");
-            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|---:|---|");
+            builder.AppendLine("| Species | Candidates | Energy | Mate | Group cap | Eligible | Chance | No space | Successes | Births | Reconciled |");
+            builder.AppendLine("|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|");
             for (var index = 0; index < report.activity.Length; index++)
             {
                 var entry = report.activity[index];
                 builder.AppendLine(
                     $"| {entry.speciesId} | {entry.reproductionCandidates} | {entry.reproductionBlockedEnergy} | "
                     + $"{entry.reproductionBlockedMateRequirement} | {entry.reproductionBlockedGroupLimit} | "
-                    + $"{entry.reproductionFailedChanceRoll} | {entry.reproductionBlockedNoBirthLocation} | "
+                    + $"{entry.reproductionEligibleAttempts} | {entry.reproductionFailedChanceRoll} | {entry.reproductionBlockedNoBirthLocation} | "
                     + $"{entry.reproductionSuccessfulAttempts} | {entry.births} | {entry.reproductionReconciled} |");
             }
 

@@ -2077,6 +2077,7 @@ namespace SaltyGame.Tests
             Assert.That(reproduction.Candidates, Is.EqualTo(2));
             Assert.That(reproduction.SuccessfulAttempts, Is.EqualTo(1));
             Assert.That(reproduction.BlockedNoBirthLocation, Is.EqualTo(1));
+            Assert.That(reproduction.EligibleAttempts, Is.EqualTo(2));
             Assert.That(reproduction.IsReconciled, Is.True);
 
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));
