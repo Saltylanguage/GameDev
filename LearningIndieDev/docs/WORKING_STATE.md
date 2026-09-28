@@ -5,6 +5,27 @@ become a master changelog.
 
 ## Current focus
 
+**Forest Edge Hare metabolism first pass: 2026-09-28.** The production Hare
+energy-loss interval is now 8 ticks instead of 10; grass, reproduction, and
+other Hare values are unchanged. This is a provisional first pass to intensify
+the no-predator famine, not a Fox–Hare equilibrium decision. The matched
+no-Fox 20-seed test showed a smaller mean Hare peak (155 vs. 171), grass
+depletion about 25 ticks earlier, and extinction by tick 600 in 20/20 runs
+(baseline 11/20). The same in-progress Hare dispersal code was present in both
+arms, so its effect is not isolated. See the [comparison analysis](../artifacts/cellular-experiment-20260928-034040/ai-analysis-v1.md),
+[candidate report](../artifacts/cellular-experiment-20260928-034040/report-summary.md),
+and [baseline report](../artifacts/cellular-experiment-20260928-033949/report-summary.md).
+
+**Crowded Hare dispersal: 2026-09-27.** The fallback Hare movement path now
+allows an overcrowded Hare to move into an adjacent passable, empty cell above
+the local group-size cap when that move reduces nearby Hare density. Normal
+mate-seeking, feeding, threat escape, and non-Hare movement retain their
+existing priorities. A focused regression test was added, but the project test
+runner did not execute it because the connected Unity Editor is currently in
+Play Mode. No map-spread or starvation experiment has been run, so this is a
+provisional behavior change, not a validated population outcome. See the
+[crowded-Hare dispersal handoff](handoffs/2026-09-27-1124-codex-crowded-hare-dispersal.md).
+
 **Forest Edge board visual pass: 2026-09-27.** Work is in progress on
 `codex/forest-edge-visual-pass`, based on the birth-poof pilot. The board now
 has a pixel canopy edge, low ground details tied to grass/resource state, and

@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8c94efc4b1594b759d427f497dda78db, type: 3}
-  m_Name: hare
+  m_Name: HareMetabolism8Diagnostic
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.HerbivoreSpeciesDefinitionAsset
   id: hare
   movementSpeed: 2.2
