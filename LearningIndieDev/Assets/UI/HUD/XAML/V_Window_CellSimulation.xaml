@@ -312,6 +312,65 @@
                                           Style="{StaticResource GalapagOS.Timeline}"
                                           ItemTemplate="{StaticResource GalapagOS_TimelineCompactItemTemplate}"
                                           Margin="0,5,0,4" />
+                            <Border Margin="0,1,0,4"
+                                    Padding="5"
+                                    Background="{DynamicResource Chrono_VanillaCream}"
+                                    BorderBrush="{DynamicResource Chrono_GoldenPollen}"
+                                    BorderThickness="2"
+                                    CornerRadius="4"
+                                    Visibility="{Binding EventReactionVisibility}"
+                                    IsHitTestVisible="False">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="46" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Width="44"
+                                            Height="44"
+                                            Background="{DynamicResource Chrono_Lime}"
+                                            BorderBrush="{DynamicResource Chrono_Olive}"
+                                            BorderThickness="2"
+                                            CornerRadius="3"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Center">
+                                        <Grid>
+                                            <Image Source="{StaticResource GalapagOS.Image.Simulation.Rabbit.64}"
+                                                   Width="40"
+                                                   Height="40"
+                                                   Stretch="Uniform"
+                                                   Visibility="{Binding EventReactionRabbitVisibility}" />
+                                            <Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}"
+                                                   Width="38"
+                                                   Height="38"
+                                                   Stretch="Uniform"
+                                                   Visibility="{Binding EventReactionFoxVisibility}" />
+                                        </Grid>
+                                    </Border>
+                                    <StackPanel Grid.Column="1"
+                                                Margin="5,0,0,0"
+                                                VerticalAlignment="Center">
+                                        <StackPanel Orientation="Horizontal">
+                                            <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}"
+                                                   Width="11"
+                                                   Height="11"
+                                                   Stretch="Uniform"
+                                                   Margin="0,0,4,0"
+                                                   VerticalAlignment="Center" />
+                                            <TextBlock Text="{Binding EventReactionTitleText}"
+                                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                                       FontSize="9"
+                                                       FontWeight="Bold"
+                                                       Foreground="{DynamicResource Chrono_Olive}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding EventReactionMessageText}"
+                                                   Margin="0,2,0,0"
+                                                   FontSize="10"
+                                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
                             <Rectangle Height="1"
                                        Margin="0,3,0,7"
                                        Fill="Transparent"

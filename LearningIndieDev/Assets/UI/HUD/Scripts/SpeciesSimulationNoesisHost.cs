@@ -7,6 +7,8 @@ namespace SaltyGame
 {
     public sealed class SpeciesSimulationNoesisHost : MonoBehaviour
     {
+        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
+
         [Header("Serialized Composition")]
         [SerializeField] SpeciesSimulationPreview preview;
         [SerializeField] Camera uiCamera;
@@ -26,6 +28,8 @@ namespace SaltyGame
 
         SpeciesSimulationBoard simulationBoard;
         int lastBirthSoundTick = -1;
+        int lastFoxHuntReactionTick = -1;
+        SimulationRunState lastReactionRun;
 
         void Start()
         {
@@ -149,6 +153,15 @@ namespace SaltyGame
                 return;
             }
 
+            var currentRun = preview != null ? preview.Run : null;
+            if (!ReferenceEquals(lastReactionRun, currentRun))
+            {
+                lastReactionRun = currentRun;
+                lastBirthSoundTick = -1;
+                lastFoxHuntReactionTick = -1;
+                viewModel?.ClearEventReaction();
+            }
+
             simulationBoard.SetSnapshot(boardViewModel.Snapshot);
             ApplyBoardZoom();
             simulationBoard.SetFoxHuntCue(
@@ -165,6 +178,16 @@ namespace SaltyGame
                 boardViewModel.MatingCueOffspringY,
                 boardViewModel.MatingCueTick);
             simulationBoard.SetBirthCues(boardViewModel.RecentBirths);
+            if (boardViewModel.FoxHuntCueTick < 0)
+            {
+                lastFoxHuntReactionTick = -1;
+            }
+            else if (boardViewModel.FoxHuntCueTick != lastFoxHuntReactionTick)
+            {
+                viewModel?.PresentFoxHuntReaction();
+                lastFoxHuntReactionTick = boardViewModel.FoxHuntCueTick;
+            }
+
             if (boardViewModel.MatingCueTick < 0)
             {
                 lastBirthSoundTick = -1;
@@ -173,6 +196,9 @@ namespace SaltyGame
                 && boardViewModel.MatingCueTick != lastBirthSoundTick)
             {
                 SimulationBirthChime.Play(gameObject);
+                var births = boardViewModel.RecentBirths;
+                var foxPortrait = births.Count > 0 && births[0].Species == FoxSpeciesId;
+                viewModel?.PresentBirthReaction(births.Count, foxPortrait);
                 lastBirthSoundTick = boardViewModel.MatingCueTick;
             }
         }
