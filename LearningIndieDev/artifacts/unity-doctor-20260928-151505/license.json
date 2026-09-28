@@ -1,0 +1,12 @@
+﻿{
+  "success": false,
+  "command": "license",
+  "data": null,
+  "errors": [
+    {
+      "code": "LICENSING_CLIENT_UNAVAILABLE",
+      "message": "Can't reach the Unity licensing client. Check your connection and try again."
+    }
+  ],
+  "warnings": []
+}

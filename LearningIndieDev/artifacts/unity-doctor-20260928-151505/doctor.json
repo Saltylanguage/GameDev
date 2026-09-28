@@ -1,0 +1,82 @@
+﻿{
+  "success": false,
+  "command": "doctor",
+  "data": {
+    "platform": "win32",
+    "arch": "x64",
+    "cliVersion": "1.0.0-beta.6",
+    "verdict": "indeterminate",
+    "checks": [
+      {
+        "id": "license",
+        "status": "fail",
+        "code": "LICENSE_CLIENT_UNREACHABLE",
+        "blocking": true,
+        "message": "The licensing client could not be reached, so license state is unknown"
+      },
+      {
+        "id": "editor",
+        "status": "pass",
+        "code": "EDITOR_OK",
+        "blocking": true,
+        "message": "Editor 6000.4.6f1 is installed"
+      },
+      {
+        "id": "disk-space",
+        "status": "warn",
+        "code": "DISK_SPACE_TIGHT",
+        "blocking": true,
+        "message": "3 GiB free on C:\\Program Files\\Unity\\Hub\\Editor is below the recommended 5 GiB"
+      },
+      {
+        "id": "network",
+        "status": "fail",
+        "code": "NETWORK_UNREACHABLE",
+        "blocking": true,
+        "message": "https://services.api.unity.com could not be reached (ECONNREFUSED)"
+      },
+      {
+        "id": "binary-on-path",
+        "status": "pass",
+        "code": "BINARY_ON_PATH",
+        "blocking": false,
+        "message": "The unity binary's directory is on PATH"
+      },
+      {
+        "id": "path-duplicates",
+        "status": "pass",
+        "code": "PATH_DUPLICATES",
+        "blocking": false,
+        "message": "No conflicting unity binaries on PATH"
+      },
+      {
+        "id": "windows-long-paths",
+        "status": "warn",
+        "code": "WINDOWS_LONG_PATHS",
+        "blocking": false,
+        "message": "Windows long-path support is disabled. Editor installs under deep paths can hit the 260-character limit"
+      },
+      {
+        "id": "git-credential-helper",
+        "status": "pass",
+        "code": "GIT_CREDENTIAL_HELPER",
+        "blocking": false,
+        "message": "A git credential helper is configured (manager)"
+      }
+    ]
+  },
+  "errors": [
+    {
+      "code": "LICENSE_CLIENT_UNREACHABLE",
+      "message": "The licensing client could not be reached, so license state is unknown"
+    },
+    {
+      "code": "NETWORK_UNREACHABLE",
+      "message": "https://services.api.unity.com could not be reached (ECONNREFUSED)"
+    }
+  ],
+  "warnings": [
+    "3 GiB free on C:\\Program Files\\Unity\\Hub\\Editor is below the recommended 5 GiB",
+    "Windows long-path support is disabled. Editor installs under deep paths can hit the 260-character limit"
+  ]
+}

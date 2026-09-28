@@ -1,0 +1,12 @@
+﻿{
+  "success": false,
+  "command": "unity command cellsim_run",
+  "data": null,
+  "errors": [
+    {
+      "code": "COMMAND_FAILED",
+      "message": "Failed to execute command 'cellsim_run': Network error: An error occurred while sending the request."
+    }
+  ],
+  "warnings": []
+}
