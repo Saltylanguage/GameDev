@@ -117,5 +117,5 @@ scenario balance.
 
 The user authorized pushing this feature branch and explicitly asked not to
 merge work. The heartbeat and event reaction implementation is commit
-`f1144b53` on `codex/forest-edge-visual-pass`; push state is recorded after the
-documentation commit. Do not merge.
+`f1144b53`; this handoff update is commit `27008863`. Both are pushed to
+`origin/codex/forest-edge-visual-pass`. Do not merge.
