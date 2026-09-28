@@ -1698,9 +1698,11 @@ namespace SaltyGame
             var statLine = run.Metrics.CreateHerbivoreStatLine(
                 species,
                 run.PopulationHistory[0].GetCount(species),
-                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species),
+                run.GetBoundaryPopulationAdded(species));
             var summary = new StringBuilder();
             AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "ADD", statLine.AddedPopulation);
             AppendMetric(summary, "HPS", statLine.PredatorActiveHerbivoreSteps);
             AppendMetric(summary, "EHS", statLine.EncounteredHerbivoreSteps);
             AppendMetric(summary, "ECN", statLine.Encounters);
@@ -1740,9 +1742,11 @@ namespace SaltyGame
             var statLine = run.Metrics.CreatePredatorStatLine(
                 species,
                 run.PopulationHistory[0].GetCount(species),
-                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species));
+                run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species),
+                run.GetBoundaryPopulationAdded(species));
             var summary = new StringBuilder();
             AppendMetric(summary, "SPO", statLine.StartingPopulation);
+            AppendMetric(summary, "ADD", statLine.AddedPopulation);
             AppendMetric(summary, "PPS", statLine.PreyActivePredatorSteps);
             AppendMetric(summary, "EPS", statLine.EncounteredPredatorSteps);
             AppendMetric(summary, "ECN", statLine.Encounters);

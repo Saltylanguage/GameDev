@@ -5,6 +5,25 @@ become a master changelog.
 
 ## Current focus
 
+**Hare purchase stat line: 2026-09-28, local change.** Successful phase-boundary
+population additions are now tracked as `ADD` in the run and checkpoint. The
+whole-run Herbivore and Predator Stat-Lines include `ADD` in expected FPO and
+survival denominators and exclude it from birth-based RFS. The in-game summary,
+JSON report, human report, CSV, and independent Hare validator expose or account
+for the new field; phase windows still start with their post-purchase opening
+population. Static diff inspection and script parsing passed. The locally
+installed Unity 6000.4.6f1 Editor compiled the project with zero Console
+errors; gameplay behavior remains unverified because no test or live purchase
+run was requested. The Editor instance used for compilation was closed.
+
+**Forest Edge starting population: 2026-09-28, local change.** The production
+scenario now explicitly starts 400 Plants, 55 Hares, and 35 Foxes on its 36x20
+grid. All three starting probabilities are zero. This promotes the user's
+previous PC-local start preset into the authored asset. The DARWIN OR DIE stat
+workbook's species sheet now shows that single baseline. The asset diff and
+saved workbook were inspected; no Unity runtime or balance run has validated
+the new ecology. The change remains uncommitted and unpushed.
+
 **S3-08 Fox telemetry clarification: 2026-09-27, validated.** The report
 already distinguishes pre-resolution FSM state ticks from resolver outcomes;
 the reproduction funnel now also exposes eligible attempts (chance failures,

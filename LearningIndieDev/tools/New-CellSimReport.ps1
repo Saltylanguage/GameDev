@@ -627,7 +627,7 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
     if ($statRuns.Count -gt 0) {
         $lines.Add('## Experimental herbivore stat line')
         $lines.Add('')
-        $statHeaders = @('Seed', 'Species', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'eAVI', 'predAVG', 'sAVI', 'cAVI', 'bAVG', 'RFS', 'APS')
+        $statHeaders = @('Seed', 'Species', 'SPO', 'ADD', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'eAVI', 'predAVG', 'sAVI', 'cAVI', 'bAVG', 'RFS', 'APS')
         $statRows = [System.Collections.Generic.List[object[]]]::new()
         foreach ($run in $statRuns) {
             $stat = $run.herbivoreStatLine
@@ -645,6 +645,7 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
                 $run.seed,
                 $stat.speciesId,
                 $stat.SPO,
+                $(if ($null -ne $stat.PSObject.Properties['ADD']) { $stat.ADD } else { 0 }),
                 $hps,
                 $ehs,
                 $stat.ECN,

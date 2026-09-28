@@ -60,7 +60,7 @@ packaged file list on the completed job record. The manifest's
 `sourceTreeDirty` now means the source state at run start; explicit
 `sourceTreeDirtyBeforeRun` and `sourceTreeDirtyAfterRun` fields preserve both
 ends of the execution window.
-The stat-line CSV includes `SPO`, `HPS`, `EHS`, `ECN`, `PREY`, `STRV`, `MAT`,
+The stat-line CSV includes `SPO`, `ADD`, `HPS`, `EHS`, `ECN`, `PREY`, `STRV`, `MAT`,
 `BIR`, `CRWD`, `FPO`, `pAVI`, `eAVI`, `predAVG`, `sAVI`, `cAVI`, `bAVG`,
 `RFS`, and `APS`, plus their validity-status columns. The report manifest
 records the source commit, Unity executable, arguments, scenario identity, and

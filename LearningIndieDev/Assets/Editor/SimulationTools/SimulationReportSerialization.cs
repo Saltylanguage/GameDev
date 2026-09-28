@@ -278,23 +278,27 @@ namespace SaltyGame.EditorTools
         {
             var startingPopulation = run.PopulationHistory[0].GetCount(species);
             var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
-            return CreateHerbivoreStatLine(run.Metrics, species, startingPopulation, finalPopulation);
+            return CreateHerbivoreStatLine(
+                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species));
         }
 
         public static SimulationHerbivoreStatLineRecord CreateHerbivoreStatLine(
             ISpeciesSimulationMetricsView metrics,
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var statLine = metrics.CreateHerbivoreStatLine(
                 species,
                 startingPopulation,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
             return new SimulationHerbivoreStatLineRecord
             {
                 speciesId = statLine.Species.Value,
                 SPO = statLine.StartingPopulation,
+                ADD = statLine.AddedPopulation,
                 HPS = statLine.PredatorActiveHerbivoreSteps,
                 EHS = statLine.EncounteredHerbivoreSteps,
                 ECN = statLine.Encounters,
@@ -331,23 +335,27 @@ namespace SaltyGame.EditorTools
         {
             var startingPopulation = run.PopulationHistory[0].GetCount(species);
             var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
-            return CreatePredatorStatLine(run.Metrics, species, startingPopulation, finalPopulation);
+            return CreatePredatorStatLine(
+                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species));
         }
 
         public static SimulationPredatorStatLineRecord CreatePredatorStatLine(
             ISpeciesSimulationMetricsView metrics,
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var statLine = metrics.CreatePredatorStatLine(
                 species,
                 startingPopulation,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
             return new SimulationPredatorStatLineRecord
             {
                 speciesId = statLine.Species.Value,
                 SPO = statLine.StartingPopulation,
+                ADD = statLine.AddedPopulation,
                 PPS = statLine.PreyActivePredatorSteps,
                 EPS = statLine.EncounteredPredatorSteps,
                 ECN = statLine.Encounters,
@@ -674,6 +682,7 @@ namespace SaltyGame.EditorTools
     {
         public string speciesId;
         public int SPO;
+        public int ADD;
         public int HPS;
         public int EHS;
         public int ECN;
@@ -708,6 +717,7 @@ namespace SaltyGame.EditorTools
     {
         public string speciesId;
         public int SPO;
+        public int ADD;
         public int PPS;
         public int EPS;
         public int ECN;

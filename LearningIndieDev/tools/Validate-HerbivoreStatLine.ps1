@@ -332,6 +332,7 @@ foreach ($run in $runs) {
     }
 
     $SPO = [int](Get-RequiredProperty $stat SPO "run $($run.seed) herbivoreStatLine")
+    $ADD = [int](Get-OptionalProperty -Object $stat -Name 'ADD')
     $HPS = [int](Get-RequiredProperty $stat HPS "run $($run.seed) herbivoreStatLine")
     $EHS = [int](Get-RequiredProperty $stat EHS "run $($run.seed) herbivoreStatLine")
     $ECN = [int](Get-RequiredProperty $stat ECN "run $($run.seed) herbivoreStatLine")
@@ -342,13 +343,13 @@ foreach ($run in $runs) {
     $CRWD = [int](Get-RequiredProperty $stat CRWD "run $($run.seed) herbivoreStatLine")
     $FPO = [int](Get-RequiredProperty $stat FPO "run $($run.seed) herbivoreStatLine")
 
-    $expectedFPO = $SPO + $BIR - $PREY - $STRV - $CRWD
+    $expectedFPO = $SPO + $ADD + $BIR - $PREY - $STRV - $CRWD
     $fpoPass = $expectedFPO -eq $FPO
     $pAVI = Get-RateResult -Numerator $PREY -Denominator $ECN
     $eAVI = Get-RateResult -Numerator $EHS -Denominator $HPS
     $predAVG = Get-ApplicableAverageResult -First $pAVI -Second $eAVI
-    $sAVI = Get-RateResult -Numerator $STRV -Denominator ($SPO + $BIR - $PREY)
-    $cAVI = Get-RateResult -Numerator $CRWD -Denominator ($SPO + $BIR - $PREY - $STRV)
+    $sAVI = Get-RateResult -Numerator $STRV -Denominator ($SPO + $ADD + $BIR - $PREY)
+    $cAVI = Get-RateResult -Numerator $CRWD -Denominator ($SPO + $ADD + $BIR - $PREY - $STRV)
     $bAVG = Get-BirthAverageResult -Births $BIR -Mating $MAT
 
     if ($bAVG.Status -eq 'INVALID') {
@@ -357,7 +358,7 @@ foreach ($run in $runs) {
         $rfs = [pscustomobject]@{ Value = $null; Status = 'N/A' }
     } else {
         $rfs = [pscustomobject]@{
-            Value = ([double]($FPO - $SPO)) * [double]$bAVG.Value
+            Value = ([double]($FPO - $SPO - $ADD)) * [double]$bAVG.Value
             Status = 'VALID'
         }
     }
@@ -413,7 +414,7 @@ foreach ($run in $runs) {
     $validationRuns.Add([pscustomobject]@{
         Seed = [int]$run.seed
         SpeciesId = $statSpeciesId
-        RawCounts = [ordered]@{ SPO = $SPO; HPS = $HPS; EHS = $EHS; ECN = $ECN; PREY = $PREY; STRV = $STRV; MAT = $MAT; BIR = $BIR; CRWD = $CRWD; FPO = $FPO }
+        RawCounts = [ordered]@{ SPO = $SPO; ADD = $ADD; HPS = $HPS; EHS = $EHS; ECN = $ECN; PREY = $PREY; STRV = $STRV; MAT = $MAT; BIR = $BIR; CRWD = $CRWD; FPO = $FPO }
         ExpectedFPO = $expectedFPO
         FpoReconciled = [bool](Get-OptionalProperty -Object $stat -Name 'fpoReconciled')
         Comparisons = $comparisons
@@ -449,7 +450,7 @@ $markdownPath = Join-Path $OutputDirectory 'herbivore-stat-validation.md'
 $result | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $jsonPath -Encoding utf8
 
 $csvHeaders = @(
-    'seed', 'speciesId', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
+    'seed', 'speciesId', 'SPO', 'ADD', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
     'FPO', 'expectedFPO', 'fpoReconciled',
     'pAVI', 'pAVIStatus', 'eAVI', 'eAVIStatus', 'predAVG', 'predAVGStatus',
     'sAVI', 'sAVIStatus', 'cAVI', 'cAVIStatus', 'bAVG', 'bAVGStatus', 'RFS', 'RFSStatus',
@@ -462,7 +463,7 @@ foreach ($validationRun in $validationRuns | Sort-Object Seed) {
     $values = @(
         $validationRun.Seed,
         $validationRun.SpeciesId,
-        $raw.SPO, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD,
+        $raw.SPO, $raw.ADD, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD,
         $raw.FPO, $validationRun.ExpectedFPO, $validationRun.FpoReconciled,
         (Get-StatLineCsvMetricValue -Comparisons $validationRun.Comparisons -Name 'pAVI'),
         (Get-StatLineCsvMetricStatus -Comparisons $validationRun.Comparisons -Name 'pAVI'),
@@ -497,11 +498,11 @@ $lines.Add('Tolerance for exported floats: ' + $Tolerance)
 $lines.Add('')
 $lines.Add('## Raw counts used')
 $lines.Add('')
-Add-MarkdownTableRow -Values @('Seed', 'Species', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO')
-Add-MarkdownTableRow -Values @('---', '---', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:')
+Add-MarkdownTableRow -Values @('Seed', 'Species', 'SPO', 'ADD', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO')
+Add-MarkdownTableRow -Values @('---', '---', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:', '---:')
 foreach ($validationRun in $validationRuns) {
     $raw = $validationRun.RawCounts
-    Add-MarkdownTableRow -Values @($validationRun.Seed, $validationRun.SpeciesId, $raw.SPO, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD, $raw.FPO, $validationRun.ExpectedFPO)
+    Add-MarkdownTableRow -Values @($validationRun.Seed, $validationRun.SpeciesId, $raw.SPO, $raw.ADD, $raw.HPS, $raw.EHS, $raw.ECN, $raw.PREY, $raw.STRV, $raw.MAT, $raw.BIR, $raw.CRWD, $raw.FPO, $validationRun.ExpectedFPO)
 }
 
 $lines.Add('')

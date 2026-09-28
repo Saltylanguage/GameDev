@@ -217,7 +217,7 @@ namespace SaltyGame
                 || !SpeciesSimulation.TryAddBoundaryPopulation(
                     initialCells, species, targetRules, amount, maxPopulation,
                     CreateBoundaryPopulationSeed(isRestartGrid: true), out var nextInitialCells)
-                || !Run.InstallBoundaryPopulation(nextCells, nextInitialCells))
+                || !Run.InstallBoundaryPopulation(nextCells, nextInitialCells, species, amount))
             {
                 return false;
             }

@@ -131,7 +131,8 @@ research comparison must also be fixed before its runs.
 ### Existing stat limitations requiring explicit retests
 
 1. The authoritative Herbivore formula is fixed:
-   `FPO = SPO + BIR - PREY - STRV - CRWD`. `PREY` means predator kills only;
+   `FPO = SPO + ADD + BIR - PREY - STRV - CRWD`. `ADD` counts successful
+   phase-boundary population additions; `PREY` means predator kills only;
    other removal causes are not folded into `PREY` or added to this formula.
    If another removal causes a mismatch, show the mismatch or limitation
    clearly rather than changing the formula.
