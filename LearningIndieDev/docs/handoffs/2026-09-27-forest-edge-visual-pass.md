@@ -31,45 +31,66 @@ scenario balance.
   it has not yet selected one. It records only an adjacent previous cell as a
   footprint, keeps up to four prints, fades each over nine simulation ticks,
   and does not age them while paused.
+- The active bunny in the compact phase tracker now makes two soft scale pulses
+  followed by a short rest, with its feet anchored to the active phase pip.
+- A small Field Ledger reaction card appears for a new litter or a Fox entering
+  Hunting. It reuses the shared rabbit-face and Fox pixel-art resources, stays
+  collapsed between notable events, and gives birth reactions priority over
+  hunt notices. Its display timer pauses with the simulation so the player can
+  read it.
 
 ## Visual evidence
 
 - Baseline capture: [`visual-evidence-20260927-095257`](../../artifacts/visual-evidence-20260927-095257/)
 - First changed capture: [`visual-evidence-20260927-095849`](../../artifacts/visual-evidence-20260927-095849/)
 - The first changed capture clearly shows the pixel canopy edge at 1280×720.
-  The field center still retains its previous grid look. Changes made after
-  that capture, including revised canopy placement and the side rock clusters,
-  are not yet visually reviewed.
+  The field center still retains its grass/bare-grid look.
+- The first 2026-09-28 capture confirmed the board visuals but exposed that the
+  panel was absent: the existing acceptance test drove the board renderer
+  directly without setting the shell's event state. The test now checks the
+  collapsed state before an event, then shows the Fox reaction and the
+  higher-priority birth reaction.
+- Reviewed 1280×720 captures:
+  [`visual-evidence-20260928-163621`](../../artifacts/visual-evidence-20260928-163621/)
+- Reviewed 1920×1080 captures:
+  [`visual-evidence-20260928-163450`](../../artifacts/visual-evidence-20260928-163450/)
+- At both sizes, the reaction card reads cleanly under phase progress and above
+  population. The hunt capture uses the Fox sprite; the birth capture uses the
+  expressive rabbit face. The active timeline bunny is visible, although a
+  timed motion comparison has not been retained yet.
 
 ## Verification state
 
-- The baseline and first changed visual acceptance captures each completed
-  through the Live runner. The first changed capture preceded the latest audio
-  and rock placement edits.
-- A later Live capture started at 10:08 local on 2026-09-27 and Unity crashed
-  before the runner saved screenshots or results. The Editor log records the
-  crash; its dump contains no readable stack report. The crash alone does not
-  establish whether these edits caused it.
-- `unity status` reports no connected Editor while
-  `LearningIndieDev/Temp/UnityLockfile` exists (last modified 2026-09-23). The
-  clean runner refuses to launch in this locked/unreachable state. Do not remove
-  the lock or terminate unverified processes to bypass this.
-- `CellSim.ps1 -Command Doctor` reports the project as unreachable, with the
-  licensing client unreachable and the Unity services endpoint refusing
-  connection.
-- `git diff --check` passes. `dotnet build Assembly-CSharp.csproj --no-restore`
-  cannot run because the generated `Temp/obj/Assembly-CSharp/project.assets.json`
-  is absent; restore did not create it. No post-audio Unity compile or
-  1920×1080 visual capture has completed.
+- The focused `GalapagOSDesktopAndSimulationCaptureGameViewEvidence` PlayMode
+  visual test passed 1/1 in the Live lane at 1280×720 and 1920×1080 on
+  2026-09-28. Unity imported and rendered the updated XAML in the connected
+  Editor; the saved captures were visually inspected.
+- The capture test asserts that the card is collapsed before an event, shows the
+  hunt copy and Fox portrait, and then replaces it with the birth copy and
+  rabbit portrait. It invokes the shell's presentation methods directly, so it
+  does not yet prove a natural metrics event passes through each host.
+- `git diff --check` passes, both edited XAML files parse as XML, and all new
+  image references use shared `StaticResource` keys.
+- A later Live capture on 2026-09-27 ended with an Editor crash; at that time the
+  project was unreachable behind its lock. `unity status` was ready again on
+  2026-09-28. The earlier crash does not establish that the visual edits caused
+  it.
+- A clean full PlayMode attempt at
+  [`unity-tests-20260928-175027`](../../artifacts/unity-tests-20260928-175027/)
+  did not start its tests. Unity's licensing client threw an
+  `ObjectDisposedException`, then Package Manager IPC timed out. The runner
+  exited without a result file, so this is infrastructure failure rather than a
+  failed product test. No automatic retry or process cleanup was attempted.
+- A timed frame-to-frame pulse comparison has not been retained.
 
 ## Open items
 
-- Re-run Unity compilation and visual acceptance when the Editor can reconnect
-  or the project can safely use the Clean lane. Capture at 1280×720 and
-  1920×1080, then review the later canopy and rock edits.
-- Review a real birth and hunt at normal zoom, 1× and 4×, with pause and mute.
-  Confirm that a litter produces one chime and that the latest child positions
-  and Fox trail are legible without hiding animals.
+- Exercise a natural birth and hunt through `VM_SimulationBoard` and both host
+  paths; check the event card at normal zoom, 1× and 4×, pause and mute. Confirm
+  that a litter produces one chime and the visual event remains readable beside
+  the board.
+- Retain a short timed capture or equivalent runtime evidence that the phase
+  bunny makes a double pulse and rests between pulses.
 - Decide whether to keep the code-synthesized chime or replace it with an
   authored clip after listening to it in the game.
 - The board center still needs stronger biome identity. A stream remains
@@ -79,8 +100,22 @@ scenario balance.
 - A brief Field Ledger birth note and explicit performance measurement remain
   open.
 
+## Workflow observations for the next visual polish pass
+
+- Search for reusable art and confirm the shared Noesis image keys before
+  generating or importing new sprites. The existing rabbit and Fox assets were
+  enough for this pass.
+- A green visual-test result is insufficient when its setup bypasses the state
+  that drives a new UI feature. Inspect the screenshots, make the test assert
+  the idle and event states, and check each target resolution.
+- Keep the display decision in the shell ViewModel, use the board's recorded
+  event cues as the source, and leave simulation rules untouched. The remaining
+  gap is an integration check from recorded event through both composition
+  hosts.
+
 ## Git state
 
 The user authorized pushing this feature branch and explicitly asked not to
-merge work. Implementation commit `9a66f9ec` is pushed to
-`origin/codex/forest-edge-visual-pass`; the working tree is clean. Do not merge.
+merge work. The heartbeat and event reaction implementation is commit
+`f1144b53` on `codex/forest-edge-visual-pass`; push state is recorded after the
+documentation commit. Do not merge.
