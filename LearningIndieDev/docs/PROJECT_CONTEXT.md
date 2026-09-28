@@ -95,6 +95,14 @@ uncertainty or regression risk.
   player species, fern as support, fox as opposition, and Trailblazer, Warren,
   and Gardeners as the three intended builds. The rationale and validation gaps
   are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
+- **Tree direction (2026-09-28):** Trees are intended as living ecosystem content
+  even if they never become a player-selectable species. They should visibly
+  grow over simulation time and provide meaningful benefits to animals, making
+  the board feel more alive. Candidate identities include connected groves and
+  animal-assisted seed dispersal. Playability, exact interactions, growth timing,
+  and production scheduling remain open; evaluate whether their growth and
+  ecological effects are readable within the current expedition pace before
+  changing the global simulation cadence.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - Every species has two distinct upgrade systems. **Mutations** are acute
