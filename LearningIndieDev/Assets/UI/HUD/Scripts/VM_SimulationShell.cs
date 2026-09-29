@@ -32,6 +32,10 @@ namespace SaltyGame
         const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
         const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;
         const float BoardZoomStep = 0.25f;
+        const float EventReactionDurationSeconds = 3.2f;
+        const float EventReactionReadWindowSeconds = 1.35f;
+        const int HuntReactionPriority = 1;
+        const int BirthReactionPriority = 2;
 
         static readonly string[] AnimalSpriteNames =
         {
@@ -145,6 +149,10 @@ namespace SaltyGame
         int carnivorePopulationMaximum;
         string herbivorePopulationText;
         string carnivorePopulationText;
+        string eventReactionTitleText;
+        string eventReactionMessageText;
+        float eventReactionRemainingSeconds;
+        int eventReactionPriority;
         SimulationTimelineItem[] phaseTimelineItems = Array.Empty<SimulationTimelineItem>();
         int phaseTimelineCachedCount = -1;
         int phaseTimelineCachedPhase;
@@ -164,6 +172,9 @@ namespace SaltyGame
         Visibility experimentalUpgradeCountVisibility;
         Visibility rewardOption3Visibility;
         Visibility boardVisibility;
+        Visibility eventReactionVisibility = Visibility.Collapsed;
+        Visibility eventReactionRabbitVisibility = Visibility.Collapsed;
+        Visibility eventReactionFoxVisibility = Visibility.Collapsed;
         Visibility endConfirmationVisibility = Visibility.Collapsed;
         bool resumeAfterEndCancellation;
 
@@ -211,6 +222,11 @@ namespace SaltyGame
         public int CarnivorePopulationMaximum => carnivorePopulationMaximum;
         public string HerbivorePopulationText => herbivorePopulationText;
         public string CarnivorePopulationText => carnivorePopulationText;
+        public string EventReactionTitleText => eventReactionTitleText;
+        public string EventReactionMessageText => eventReactionMessageText;
+        public Visibility EventReactionVisibility => eventReactionVisibility;
+        public Visibility EventReactionRabbitVisibility => eventReactionRabbitVisibility;
+        public Visibility EventReactionFoxVisibility => eventReactionFoxVisibility;
         public SimulationTimelineItem[] PhaseTimelineItems => phaseTimelineItems;
         public float BoardZoom => boardZoom;
         public string BoardZoomText => $"{Mathf.RoundToInt(boardZoom * 100f)}%";
@@ -924,7 +940,76 @@ namespace SaltyGame
 
         void Update()
         {
+            UpdateEventReactionLifetime();
             Refresh(false);
+        }
+
+        internal void PresentBirthReaction(int newbornCount, bool foxPortrait)
+        {
+            var count = Mathf.Max(1, newbornCount);
+            var title = count == 1 ? "NEW LITTLE LIFE!" : "A LITTLE LITTER!";
+            var message = count == 1
+                ? "A tiny new neighbor is here!"
+                : string.Format(CultureInfo.InvariantCulture, "{0} new little lives joined the field!", count);
+            PresentEventReaction(title, message, foxPortrait, BirthReactionPriority);
+        }
+
+        internal void PresentFoxHuntReaction()
+        {
+            PresentEventReaction(
+                "SNEAKY PAWS!",
+                "A fox is on the prowl...",
+                true,
+                HuntReactionPriority);
+        }
+
+        internal void ClearEventReaction()
+        {
+            eventReactionRemainingSeconds = 0f;
+            eventReactionPriority = 0;
+            Set(ref eventReactionVisibility, Visibility.Collapsed, nameof(EventReactionVisibility));
+            Set(ref eventReactionRabbitVisibility, Visibility.Collapsed, nameof(EventReactionRabbitVisibility));
+            Set(ref eventReactionFoxVisibility, Visibility.Collapsed, nameof(EventReactionFoxVisibility));
+        }
+
+        void PresentEventReaction(string title, string message, bool foxPortrait, int priority)
+        {
+            if (eventReactionVisibility == Visibility.Visible
+                && eventReactionRemainingSeconds > EventReactionReadWindowSeconds
+                && priority <= eventReactionPriority)
+            {
+                return;
+            }
+
+            Set(ref eventReactionTitleText, title, nameof(EventReactionTitleText));
+            Set(ref eventReactionMessageText, message, nameof(EventReactionMessageText));
+            Set(
+                ref eventReactionRabbitVisibility,
+                foxPortrait ? Visibility.Collapsed : Visibility.Visible,
+                nameof(EventReactionRabbitVisibility));
+            Set(
+                ref eventReactionFoxVisibility,
+                foxPortrait ? Visibility.Visible : Visibility.Collapsed,
+                nameof(EventReactionFoxVisibility));
+            Set(ref eventReactionVisibility, Visibility.Visible, nameof(EventReactionVisibility));
+            eventReactionRemainingSeconds = EventReactionDurationSeconds;
+            eventReactionPriority = priority;
+        }
+
+        void UpdateEventReactionLifetime()
+        {
+            if (eventReactionVisibility != Visibility.Visible
+                || preview == null
+                || preview.State != SpeciesPreviewState.Running)
+            {
+                return;
+            }
+
+            eventReactionRemainingSeconds -= Time.unscaledDeltaTime;
+            if (eventReactionRemainingSeconds <= 0f)
+            {
+                ClearEventReaction();
+            }
         }
 
         void Refresh(bool force)

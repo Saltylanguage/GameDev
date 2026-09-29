@@ -398,24 +398,49 @@
                            Stretch="Uniform"
                            HorizontalAlignment="Left"
                            VerticalAlignment="Center"
-                           RenderTransformOrigin="0.5,0.9"
+                           RenderTransformOrigin="0.5,0.88"
                            Visibility="{Binding ActivePipVisibility}">
                         <Image.RenderTransform>
-                            <TranslateTransform />
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
                         </Image.RenderTransform>
                         <Image.Triggers>
                             <EventTrigger RoutedEvent="FrameworkElement.Loaded">
                                 <BeginStoryboard>
-                                    <Storyboard>
+                                    <Storyboard Duration="0:0:1.10" RepeatBehavior="Forever">
                                         <DoubleAnimation Storyboard.TargetName="ActiveTimelineBunny"
-                                                         Storyboard.TargetProperty="RenderTransform.Y"
-                                                         From="0"
-                                                         To="-3"
-                                                         Duration="0:0:0.30"
-                                                         AccelerationRatio="0.45"
-                                                         DecelerationRatio="0.45"
-                                                         AutoReverse="True"
-                                                         RepeatBehavior="Forever" />
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                         From="1"
+                                                         To="1.16"
+                                                         Duration="0:0:0.11"
+                                                         AccelerationRatio="0.10"
+                                                         DecelerationRatio="0.55"
+                                                         AutoReverse="True" />
+                                        <DoubleAnimation Storyboard.TargetName="ActiveTimelineBunny"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                         From="1"
+                                                         To="1.16"
+                                                         Duration="0:0:0.11"
+                                                         AccelerationRatio="0.10"
+                                                         DecelerationRatio="0.55"
+                                                         AutoReverse="True" />
+                                        <DoubleAnimation Storyboard.TargetName="ActiveTimelineBunny"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleX"
+                                                         BeginTime="0:0:0.20"
+                                                         From="1"
+                                                         To="1.09"
+                                                         Duration="0:0:0.13"
+                                                         AccelerationRatio="0.10"
+                                                         DecelerationRatio="0.60"
+                                                         AutoReverse="True" />
+                                        <DoubleAnimation Storyboard.TargetName="ActiveTimelineBunny"
+                                                         Storyboard.TargetProperty="RenderTransform.ScaleY"
+                                                         BeginTime="0:0:0.20"
+                                                         From="1"
+                                                         To="1.09"
+                                                         Duration="0:0:0.13"
+                                                         AccelerationRatio="0.10"
+                                                         DecelerationRatio="0.60"
+                                                         AutoReverse="True" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </EventTrigger>

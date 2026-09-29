@@ -201,6 +201,10 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));
 
             ((SpeciesSimulationPreview)preview).PauseSimulation();
+            Assert.That(
+                GetProperty(simulationViewModel, "EventReactionVisibility").ToString(),
+                Is.EqualTo("Collapsed"),
+                "The event panel should stay out of the way before a notable event.");
             var host = desktopRoot.GetComponent("SaltyGame.GalapagOSDesktopNoesisHost");
             Assert.That(host, Is.Not.Null);
             var board = host
@@ -208,6 +212,10 @@ namespace SaltyGame.PlayModeTests
                 .GetField("simulationBoard", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.GetValue(host);
             Assert.That(board, Is.Not.Null);
+            var presentFoxReaction = simulationViewModel.GetType().GetMethod(
+                "PresentFoxHuntReaction",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(presentFoxReaction, Is.Not.Null);
             var setHuntCue = board.GetType().GetMethod("SetFoxHuntCue");
             Assert.That(setHuntCue, Is.Not.Null);
             var boardSnapshot = (SimulationBoardSnapshot)snapshot;
@@ -232,10 +240,18 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(foxFound, Is.True, "Visual proof needs a Fox on the board.");
+            presentFoxReaction.Invoke(simulationViewModel, null);
+            Assert.That(GetProperty(simulationViewModel, "EventReactionVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "EventReactionFoxVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "EventReactionTitleText"), Is.EqualTo("SNEAKY PAWS!"));
             yield return CaptureCamera(outputDirectory, "05-fox-hunt-cue", simulationCamera, settleFrames: 1);
 
             var setMatingCue = board.GetType().GetMethod("SetMatingCue");
             Assert.That(setMatingCue, Is.Not.Null);
+            var presentBirthReaction = simulationViewModel.GetType().GetMethod(
+                "PresentBirthReaction",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            Assert.That(presentBirthReaction, Is.Not.Null);
             setMatingCue.Invoke(board, new object[] { 0, 0, 0, 0, 0, 0, -1 });
             yield return null;
             yield return CaptureCamera(outputDirectory, "06-mating-before", simulationCamera, settleFrames: 1);
@@ -260,6 +276,10 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(hareFound, Is.True, "Visual proof needs a Hare on the board.");
+            presentBirthReaction.Invoke(simulationViewModel, new object[] { 1, false });
+            Assert.That(GetProperty(simulationViewModel, "EventReactionVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "EventReactionRabbitVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "EventReactionTitleText"), Is.EqualTo("NEW LITTLE LIFE!"));
             yield return CaptureCamera(outputDirectory, "07-mating-cue", simulationCamera, settleFrames: 12);
         }
 

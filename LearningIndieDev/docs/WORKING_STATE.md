@@ -52,25 +52,53 @@ slice. Focused EditMode 1/1 and three PlayMode checks passed in the installed
 Unity Editor. See the
 [S3-04 Tough Hide handoff](handoffs/2026-09-27-codex-s3-04-tough-hide.md).
 
-**Forest Edge board visual pass: 2026-09-27.** The visual pass was merged into
-`BevBranch`, based on the birth-poof pilot. The board now
-has a pixel canopy edge, low ground details tied to grass/resource state, and
-prototype side rock clusters that sit outside the traversable field. Birth
-presentation now gathers all children placed in the latest birth tick, enlarges
-the poof, and retains the heart and sparkles. A short code-synthesized litter
-chime is rate-limited and uses the desktop volume/mute controls. The view model
+**Forest Edge Hare metabolism first pass: 2026-09-28.** The production Hare
+energy-loss interval is now 8 ticks instead of 10; grass, reproduction, and
+other Hare values are unchanged. This is a provisional first pass to intensify
+the no-predator famine, not a Fox–Hare equilibrium decision. The matched
+no-Fox 20-seed test showed a smaller mean Hare peak (155 vs. 171), grass
+depletion about 25 ticks earlier, and extinction by tick 600 in 20/20 runs
+(baseline 11/20). The same in-progress Hare dispersal code was present in both
+arms, so its effect is not isolated. See the [comparison analysis](../artifacts/cellular-experiment-20260928-034040/ai-analysis-v1.md),
+[candidate report](../artifacts/cellular-experiment-20260928-034040/report-summary.md),
+and [baseline report](../artifacts/cellular-experiment-20260928-033949/report-summary.md).
+
+**Crowded Hare dispersal: 2026-09-27.** The fallback Hare movement path now
+allows an overcrowded Hare to move into an adjacent passable, empty cell above
+the local group-size cap when that move reduces nearby Hare density. Normal
+mate-seeking, feeding, threat escape, and non-Hare movement retain their
+existing priorities. A focused regression test was added, but the project test
+runner did not execute it because the connected Unity Editor was in Play Mode
+at that time. The later no-Fox comparison included this code in both arms, so
+it did not isolate the effect of dispersal. Direct map-spread validation remains
+open. See the
+[crowded-Hare dispersal handoff](handoffs/2026-09-27-1124-codex-crowded-hare-dispersal.md).
+
+**Forest Edge board visual pass: 2026-09-27–28.** The latest work from
+`codex/forest-edge-visual-pass` builds on the birth-poof pilot. The board has a
+pixel canopy edge, low ground details tied to grass/resource state, and
+prototype side rock clusters outside the traversable field. Birth presentation
+gathers all children placed in the latest birth tick, enlarges the poof, and
+retains the heart and sparkles. A short code-synthesized litter chime is
+rate-limited and uses the desktop volume/mute controls. The board view model
 tracks up to four actual adjacent-cell steps from one Fox that is currently
 hunting; their marks fade over nine simulation ticks and persist through pause.
-The retained baseline and first changed 1280×720 views are in
-[`visual-evidence-20260927-095257`](../artifacts/visual-evidence-20260927-095257/)
-and [`visual-evidence-20260927-095849`](../artifacts/visual-evidence-20260927-095849/).
-The first changed image shows a clear wooded edge, but the center still reads
-as the original grass/bare grid. Later variation and rock placement edits have
-not been captured. Unity crashed during a later live visual run; the clean lane
-then reported the project lock as unreachable. Doctor also reported the Unity
-licensing client and Unity services endpoint unreachable. The merged project
-compiled in the directly installed Unity 6000.4.6f1 Editor on 2026-09-27;
-full visual acceptance remains open. See the
+The compact phase tracker now gives its active pixel bunny a soft double
+heartbeat pulse. A small Field Ledger reaction card appears for a new birth or
+Fox hunt, stays hidden between events, uses existing rabbit/fox pixel art, and
+lets births take priority over hunt notices. The reviewed 1280×720 and
+1920×1080 captures are in
+[`visual-evidence-20260928-163621`](../artifacts/visual-evidence-20260928-163621/)
+and [`visual-evidence-20260928-163450`](../artifacts/visual-evidence-20260928-163450/).
+The center still reads mainly as a grass/bare grid; trees and other habitat
+variation remain future work. Unity crashed during a later visual attempt on
+2026-09-27, but the Editor reconnected on 2026-09-28 and the focused visual
+acceptance test passed at both resolutions. The captures manually trigger the
+reaction presentation; a natural birth/hunt through the full event route and a
+full suite have not yet been verified. A clean full PlayMode attempt on
+2026-09-28 stopped before tests began because the Unity licensing client threw
+an `ObjectDisposedException` and Package Manager IPC timed out; it produced no
+test verdict. See the
 [field-pass handoff](handoffs/2026-09-27-forest-edge-visual-pass.md).
 
 **Crowding and starvation: 2026-09-26.** Production Hares and Foxes use a

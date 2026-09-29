@@ -4362,6 +4362,51 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void OvercrowdedHareDispersesIntoALessCrowdedCellEvenIfItRemainsOverTheLimit()
+        {
+            var hare = new SpeciesId("hare");
+            var mover = new SpeciesCell(hare, energy: 10);
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(
+                    movementSpeed: 1f,
+                    movementPattern: right,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: SpeciesRuleDefaults.CreateMoorePattern(),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    reproductionFoodRequired: 100,
+                    maxReproductionGroupSize: 2,
+                    startingEnergy: 10,
+                    metabolism: 0,
+                    role: SpeciesRole.Herbivore),
+            };
+            var source = new Grid<SpeciesCell>(4, 3);
+            source.SetCell(1, 1, mover);
+            source.SetCell(0, 0, new SpeciesCell(hare, energy: 1)
+                .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
+            source.SetCell(0, 1, new SpeciesCell(hare, energy: 1)
+                .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
+            source.SetCell(1, 0, new SpeciesCell(hare, energy: 1)
+                .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
+            source.SetCell(2, 0, new SpeciesCell(hare, energy: 1)
+                .WithBehaviorState(SpeciesBehaviorState.Mating, ticks: 1));
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 17);
+
+            Assert.That(next.GetCell(1, 1).IsCreature, Is.False);
+            Assert.That(next.GetCell(2, 1).EntityId, Is.EqualTo(mover.EntityId));
+            Assert.That(next.GetCell(1, 0).SpeciesId, Is.EqualTo(hare));
+            Assert.That(next.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
+        }
+
+        [Test]
         public void BehaviorSystemChoosesMatingForAnEnergizedPair()
         {
             var rules = SpeciesRuleDefaults.Create();

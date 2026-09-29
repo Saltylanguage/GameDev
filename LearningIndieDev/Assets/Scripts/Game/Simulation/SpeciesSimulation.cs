@@ -22,6 +22,7 @@ namespace SaltyGame
         public const int FixedRateDiagnosticPeriodTicks = 3;
         const int ReproductionCooldownTicks = 24;
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
+        static readonly SpeciesId HareSpeciesId = new SpeciesId("hare");
 
         public static bool CanAddBoundaryPopulation(
             Grid<SpeciesCell> source,
@@ -1679,7 +1680,8 @@ namespace SaltyGame
                     moved,
                     claimed,
                     random,
-                    metrics);
+                    metrics,
+                    allowCrowdingDispersal: true);
             }
         }
 
@@ -1711,11 +1713,18 @@ namespace SaltyGame
             bool[] moved,
             bool[] claimed,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            bool allowCrowdingDispersal = false)
         {
             var bestX = -1;
             var bestY = -1;
             var bestCrowding = int.MaxValue;
+            var isCrowdedHare = allowCrowdingDispersal
+                && cell.SpeciesId == HareSpeciesId
+                && IsOvercrowded(source, x, y, cell.SpeciesId, speciesRules);
+            var currentCrowding = isCrowdedHare
+                ? CountNearbySpecies(source, x, y, cell.SpeciesId, excludeX: -1, excludeY: -1)
+                : -1;
 
             var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
             for (var offsetIndex = 0; offsetIndex < pattern.Count; offsetIndex++)
@@ -1767,7 +1776,8 @@ namespace SaltyGame
 
                 var crowding = CountNearbySpecies(source, targetX, targetY, cell.SpeciesId, x, y);
                 if (speciesRules.MaxReproductionGroupSize > 0
-                    && crowding + 1 > speciesRules.MaxReproductionGroupSize)
+                    && crowding + 1 > speciesRules.MaxReproductionGroupSize
+                    && (!isCrowdedHare || crowding >= currentCrowding))
                 {
                     continue;
                 }
@@ -1799,7 +1809,8 @@ namespace SaltyGame
                 moved,
                 claimed,
                 random,
-                metrics);
+                metrics,
+                allowOvercrowdedDestination: isCrowdedHare);
         }
 
         static bool TryResolveVisionMovement(
@@ -2112,7 +2123,8 @@ namespace SaltyGame
             bool[] claimed,
             System.Random random,
             SpeciesSimulationMetrics metrics,
-            bool feedOnDietTarget = true)
+            bool feedOnDietTarget = true,
+            bool allowOvercrowdedDestination = false)
         {
             if (!source.IsInBounds(targetX, targetY))
             {
@@ -2160,7 +2172,8 @@ namespace SaltyGame
             }
 
             var crowding = CountNearbySpecies(source, targetX, targetY, cell.SpeciesId, x, y);
-            if (speciesRules.MaxReproductionGroupSize > 0
+            if (!allowOvercrowdedDestination
+                && speciesRules.MaxReproductionGroupSize > 0
                 && crowding + 1 > speciesRules.MaxReproductionGroupSize)
             {
                 return false;
@@ -2546,15 +2559,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var groupSize = CountPatternSpeciesNeighbors(
-                        next,
-                        x,
-                        y,
-                        cell.SpeciesId,
-                        speciesRules.ReproductionPattern,
-                        excludeX: -1,
-                        excludeY: -1) + 1;
-                    if (groupSize <= speciesRules.MaxReproductionGroupSize + speciesRules.CrowdingTolerance)
+                    if (!IsOvercrowded(next, x, y, cell.SpeciesId, speciesRules))
                     {
                         continue;
                     }
@@ -3303,6 +3308,25 @@ namespace SaltyGame
             }
 
             return count;
+        }
+
+        static bool IsOvercrowded(
+            Grid<SpeciesCell> grid,
+            int x,
+            int y,
+            SpeciesId species,
+            SpeciesRules speciesRules)
+        {
+            return speciesRules.MaxReproductionGroupSize > 0
+                && CountPatternSpeciesNeighbors(
+                    grid,
+                    x,
+                    y,
+                    species,
+                    speciesRules.ReproductionPattern,
+                    excludeX: -1,
+                    excludeY: -1) + 1
+                    > speciesRules.MaxReproductionGroupSize + speciesRules.CrowdingTolerance;
         }
 
         static int GetIndex<T>(Grid<T> grid, int x, int y)

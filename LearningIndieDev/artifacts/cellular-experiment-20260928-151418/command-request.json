@@ -1,0 +1,23 @@
+﻿{
+    "schemaVersion":  1,
+    "arguments":  [
+                      "-seedStart",
+                      "10100",
+                      "-seedCount",
+                      "5",
+                      "-playerSpeciesId",
+                      "hare",
+                      "-upgradeId",
+                      "none",
+                      "-combatMode",
+                      "opposed-roll",
+                      "-attackOpportunityMode",
+                      "natural",
+                      "-outputPath",
+                      "D:\\GameDev\\GameDev\\LearningIndieDev\\artifacts\\cellular-experiment-20260928-151418\\report.json",
+                      "-scenarioPath",
+                      "Assets/Data/TestData/ForestEdgeNoFoxDiagnostic.asset",
+                      "-runTicks",
+                      "600"
+                  ]
+}
