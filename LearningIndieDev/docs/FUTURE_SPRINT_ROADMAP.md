@@ -70,10 +70,10 @@ S2 is not expected to close the M1 gate. The continuous-run lifecycle,
 upgrade/reward boundary, phase-aware telemetry, checkpoints, and EX-010 schedule
 are already implemented, and target-resolution graphics acceptance is complete.
 S3 closed on 2026-09-29 after the six-round player route, bounded Mutation and
-result review, visual/UI pass, and Trello reconciliation were accepted. CF-6
-duration/memory measurement remains optional stretch work. M1 remains Active
-pending its separate milestone-gate review; use that review to decide whether
-any small correction belongs before the S4 plan is refined.
+result review, visual/UI pass, and Trello reconciliation were accepted. M1
+closed on 2026-09-29 after Josh accepted the distributed exit-gate evidence;
+later changes may need retesting. CF-6 duration/memory measurement remains
+optional stretch work. Refine the S4 plan before a separate kickoff.
 
 The proposed control record is
 [`S3-control-record.md`](Sprints/S3-control-record.md).

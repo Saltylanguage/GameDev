@@ -1,6 +1,6 @@
 ﻿# S3 merged cap review
 
-[Working state](../WORKING_STATE.md) | Status: closed
+[Working state](../WORKING_STATE.md) | Status: S3 closeout snapshot; M1 status superseded by the [M1 closeout](2026-09-29-codex-m1-closeout.md)
 
 - Handoff schema: 1
 - Handoff ID: 2026-09-29-0341-codex-s3-merged-cap-review
@@ -67,6 +67,6 @@ the fix and its integration repairs.
 
 ## Next useful step
 
-Review the M1 exit gate next. If it passes, close M1, then refine the Proposed
-S4 plan; if it exposes a gap, decide whether it belongs in the M1 correction or
-the S4 backlog before kickoff.
+At the time of this S3 handoff, the next step was to review the M1 exit gate.
+The separate M1 closeout and its accepted evidence are recorded in the linked
+handoff. Refine the Proposed S4 plan before a separate kickoff.

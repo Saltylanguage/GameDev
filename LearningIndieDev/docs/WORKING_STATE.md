@@ -5,20 +5,18 @@ become a master changelog.
 
 ## Current focus
 
-**M1 exit-gate pre-review: 2026-09-29.** Sprint 3 closed after Josh's manual
-review of this conversation and the retained evidence. Josh merged `BevBranch`
-into `codex/forest-edge-visual-pass` at `51abd41d`. The approved rule hides a
-Reproductive Drive choice when it would raise chance above 1.0, and hides Fox
-Brood Drive when its paired Hare response is capped. A Clean run on that merged
-baseline plus the current local diff passed EditMode 263/263 and PlayMode
-34 tests; two graphics-only tests were skipped as expected, and none failed.
-Josh accepts the Forest Edge evidence for S3, with later balance work remaining
-iterative. The Main Menu art-direction review is complete and Chrono is working
-on the art. Committed S3 cards and the control card are in Trello Done; S3-05
-remains Backlog as uncommitted stretch work. M1 remains Active. The pre-review
-recommends completing its gate review before refining the Proposed S4 plan; the
-code and documentation diff remains uncommitted. See the
-[S3 merged-baseline closeout](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md)
+**M1 closeout complete: 2026-09-29.** Josh accepted the milestone gate using
+the distributed retained evidence; later changes may need retesting. The
+cap-aware offer fix and related integration changes are preserved in pushed
+commit `974827f2` on `codex/forest-edge-visual-pass`. Its Clean run passed
+EditMode 263/263 and PlayMode 34, with two expected graphics-only skips and no
+failures. S3 is closed; all committed S3 cards and the control card are in
+Trello Done, while S3-05 remains Backlog as stretch work. The M1 milestone card
+is marked COMPLETE. S4 remains Proposed
+and has not been kicked off; the next step is to refine its plan. The selected
+Main Menu art is in production with Chrono, and visual polish remains
+iterative. See the [M1 closeout](handoffs/2026-09-29-codex-m1-closeout.md),
+[S3 merged-baseline closeout](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md),
 and [M1 exit-gate pre-review](handoffs/2026-09-29-codex-m1-exit-gate-prereview.md).
 
 **Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
@@ -411,16 +409,17 @@ mask for Bare cells too, so dirt cells inside a Grass field can display their
 Grass vertices. Resolver and snapshot regression tests were added and pass in
 the current clean EditMode suite recorded at the top of this file.
 
-**Roadmap v2.2 remains active.** M0 is complete and M1 remains Active pending a
-separate exit-gate review. Sprint 2 closed on 2026-09-17 with Fox telemetry as
+**Roadmap v2.2 remains active.** M0 and M1 are complete; Josh closed M1 on
+2026-09-29 after accepting the distributed exit-gate evidence. Sprint 2 closed on 2026-09-17 with Fox telemetry as
 its sole carry-over. Sprint 3 closed on 2026-09-29 after manual review. The
 committed S3 cards and control card are in Trello Done; S3-05 remains in Backlog
 as uncommitted stretch work. The latest merged-baseline Clean result is recorded
 at the top of this file and in the closeout handoff. S3-02's contract is
 complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
 scope. Chrono is producing the selected Main Menu art, with further polish as
-iterative work. Review the M1 exit gate before refining the Proposed S4 plan.
-Local profile saving is an S4 candidate. The GalapagOS Desktop is the canonical
+iterative work. Refine the Proposed S4 plan; no S4 kickoff has occurred.
+Retesting may be needed as later work changes the accepted baseline. Local
+profile saving is an S4 candidate. The GalapagOS Desktop is the canonical
 player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative

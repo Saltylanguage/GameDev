@@ -1,6 +1,6 @@
 # M1 exit-gate pre-review
 
-[Working state](../WORKING_STATE.md) | Status: ready-for-owner-review; M1 remains Active
+[Working state](../WORKING_STATE.md) | Status: pre-review snapshot; superseded by the [M1 closeout](2026-09-29-codex-m1-closeout.md)
 
 - Date: 2026-09-29
 - Precondition: Sprint 3 was manually closed on 2026-09-29.

@@ -4,7 +4,7 @@
 
 ## How to read this document
 
-This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2.2 is the working baseline. Sprints 2 and 3 are closed. M1 remains Active pending its exit-gate review, and S4 remains Proposed; the S3 control record is retained as a closed execution record.
+This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2.2 is the working baseline. Sprints 2 and 3 and milestone M1 are closed. S4 remains Proposed; the S3 control record is retained as a closed execution record.
 
 - **Implemented** means executable in the current project within the stated route and limits.
 - **Connected** means reachable through the canonical player flow, not merely present in code or a legacy scene.

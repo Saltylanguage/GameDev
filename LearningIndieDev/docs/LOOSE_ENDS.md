@@ -6,10 +6,9 @@ documentation gaps. Closed history stays in Git and task handoffs.
 ## Current status — 2026-09-29
 
 - No P0 issue is verified. `codex/forest-edge-visual-pass` includes the
-  `BevBranch` merge at `51abd41d`; the approved cap fix is in the current local
-  diff. The Clean suites on that merged baseline plus the diff passed EditMode
-  263/263 and PlayMode 34 tests; two graphics-only tests were skipped as
-  expected, and none failed.
+  `BevBranch` merge at `51abd41d` and the tested cap fix in pushed commit
+  `974827f2`. The retained Clean suites passed EditMode 263/263 and PlayMode
+  34 tests; two graphics-only tests were skipped as expected, and none failed.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
@@ -27,9 +26,9 @@ documentation gaps. Closed history stays in Git and task handoffs.
 - Josh accepted the current Forest Edge evidence for S3 closeout; it does not
   establish broad ecological balance. Main Menu generated-art review is done,
   with Chrono working on the selected direction. Josh manually closed S3 on
-  2026-09-29; committed S3 cards and the control card are in Trello Done. M1 is
-  still Active pending a separate milestone gate review, which should precede
-  refinement of the Proposed S4 work list.
+  2026-09-29; committed S3 cards and the control card are in Trello Done. Josh
+  accepted M1 on 2026-09-29 using distributed evidence; later changes may need
+  retesting. Refine the Proposed S4 work list before a separate kickoff.
 
 ## Triage rules
 

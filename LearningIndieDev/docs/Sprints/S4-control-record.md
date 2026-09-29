@@ -5,10 +5,10 @@
 > **Cadence:** two weeks  
 > **Planning capacity:** up to 32h feature work plus an 8h integration/review reserve (40h total); owner allocation TBD
 
-This is a planning skeleton, not an approved sprint plan. Sprint 3 closed on
-2026-09-29; review the M1 exit gate next, then refine and confirm this plan's
-work, estimates, owners, and acceptance checks before promoting anything into
-an active sprint.
+This is a planning skeleton, not an approved sprint plan. Sprint 3 and M1
+closed on 2026-09-29. Refine and confirm this plan's work, estimates, owners,
+and acceptance checks before promoting anything into an active sprint; a
+separate kickoff is still required.
 
 ## Proposed outcome
 

@@ -14,7 +14,7 @@
 
 > **Current-state update — 2026-09-29:** Josh merged `BevBranch` into
 > `codex/forest-edge-visual-pass` at `51abd41d`. The approved cap fix and small
-> integration repairs are in the local diff. Clean EditMode passed 263/263;
+> integration repairs are preserved in pushed commit `974827f2`. Clean EditMode passed 263/263;
 > Clean PlayMode passed 34 tests; two graphics-only tests were skipped as
 > expected, and none failed. Invalid Reproductive Drive and capped coupled Fox
 > Brood Drive choices are hidden. Josh accepts the current Forest Edge evidence
@@ -22,8 +22,9 @@
 > with later visual polish continuing iteratively. S3-08 telemetry is
 > validated. Main Menu art direction is reviewed and Chrono is working on the
 > art. Josh manually closed S3 on 2026-09-29; the committed S3 cards and control
-> card are reconciled in Trello. M1 remains Active pending a separate milestone
-> gate review; S4 planning follows that review.
+> card are reconciled in Trello. M1 was separately accepted and closed on
+> 2026-09-29 using the distributed evidence package; later changes may require
+> retesting. S4 remains Proposed pending plan refinement and a separate kickoff.
 
 > **Current-state update — 2026-09-27:** S3-04's three-choice/free/repeatable
 > phase bridge is implemented. The first Tough Hide review used matched seeds
@@ -285,7 +286,8 @@ Forest Edge ecology as broadly balance-tested.
   offer/integration notes are reconciled. S3-02 already matched the accepted
   contract. Owner and reviewer names remain in each card description; the
   Trello member-assignment fields are empty, as in the kickoff board convention.
-  M1 remains Active until its separate milestone review.
+  M1 is closed under its separate 2026-09-29 gate review; see the
+  [M1 closeout handoff](../handoffs/2026-09-29-codex-m1-closeout.md).
 
 ## Sprint 3 closeout decision — 2026-09-29
 
@@ -307,8 +309,10 @@ Josh confirmed each exit criterion after reviewing the recorded evidence:
 - [x] No unresolved P0 item blocks S3 closeout.
 - [x] Current documents, retained test evidence, handoffs, and board cards agree.
 
-S3 is closed. M1 remains Active pending the separate gate review in the
-ROADMAP; this closeout does not mark the M1 milestone complete or start S4.
+S3 was closed before the separate M1 gate review and did not itself close the
+milestone. Josh subsequently accepted M1 on 2026-09-29; see the
+[M1 closeout handoff](../handoffs/2026-09-29-codex-m1-closeout.md). S4 remains
+Proposed and has not been kicked off.
 
 ## Out of scope
 
