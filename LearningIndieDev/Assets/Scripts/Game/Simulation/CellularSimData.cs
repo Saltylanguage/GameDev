@@ -460,6 +460,25 @@ namespace SaltyGame
                 startingPopulations);
         }
 
+        public CellularSimData WithGridSizeAndStartingPopulations(
+            int width,
+            int height,
+            IReadOnlyDictionary<SpeciesId, int> populations)
+        {
+            return new CellularSimData(
+                width,
+                height,
+                startingProbabilities,
+                speciesRules,
+                RunDurationSeconds,
+                StepInterval,
+                MaxPopulation,
+                MinPopulation,
+                terrainDefinitions,
+                alphaOffspringRules,
+                populations);
+        }
+
         CellularSimData CreateUpdated(
             IReadOnlyDictionary<SpeciesId, float> updatedProbabilities,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> updatedRules,

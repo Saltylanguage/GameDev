@@ -1,10 +1,10 @@
 # GalapagOS — Technical Design Document
 
-> Status: Working engineering baseline; implementation truth is separated from roadmap intent | Owner: Josh Campbell | Last updated: 2026-09-17 | Engine: Unity 6000.4.6f1
+> Status: Working engineering baseline; implementation truth is separated from roadmap intent | Owner: Josh Campbell | Last updated: 2026-09-29 | Engine: Unity 6000.4.6f1
 
 ## How to read this document
 
-This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2.2 is the working baseline. Sprint 2 closed and Sprint 3 was kicked off on 2026-09-17; S3 execution scope and capacity are recorded in the active control record.
+This is the engineering source of truth for runtime ownership, data contracts, deterministic behavior, scene composition, verification, and known disconnections. The [Game Design Document](GDD_TEMPLATE.md) owns player intent. [`ROADMAP.md`](../ROADMAP.md) owns scheduling; roadmap v2.2 is the working baseline. Sprints 2 and 3 and milestone M1 are closed. S4 remains Proposed; the S3 control record is retained as a closed execution record.
 
 - **Implemented** means executable in the current project within the stated route and limits.
 - **Connected** means reachable through the canonical player flow, not merely present in code or a legacy scene.

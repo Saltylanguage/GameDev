@@ -72,7 +72,7 @@ namespace SaltyGame
             }
 
             return Currency >= upgrade.Cost
-                && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+                && CanApplyFreeUpgrade(upgrade);
         }
 
         public bool TryPurchase(SpeciesUpgrade upgrade)
@@ -94,7 +94,9 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            return GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id);
+            return GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
+                && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
+                    || CurrentRules.ReproductionChance + upgrade.Value <= 1f);
         }
 
         public bool TryApplyFreeUpgrade(SpeciesUpgrade upgrade)

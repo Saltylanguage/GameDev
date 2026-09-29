@@ -1,6 +1,6 @@
 # GalapagOS — Game Design Document
 
-> Status: Working product baseline; Sprint 2 closed, Sprint 3 active after kickoff on 2026-09-17 | Owner: Josh Campbell | Last updated: 2026-09-17 | Horizon: prototype to vertical slice
+> Status: Working product baseline; Sprint 2, Sprint 3, and M1 closed (M1: 2026-09-29); S4 Proposed | Owner: Josh Campbell | Last updated: 2026-09-29 | Horizon: prototype to vertical slice
 >
 > **Naming note:** GalapagOS is the working player-facing title. Final title approval remains open.
 

@@ -320,6 +320,25 @@ namespace SaltyGame.PlayModeTests
             Assert.That(viewModelType.GetProperty("CarnivoreStartingPopulationText")?.GetValue(viewModel), Is.EqualTo("40"));
         }
 
+        [UnityTest]
+        public IEnumerator AuthoredStartingPopulationRejectsGridThatCannotFitIt()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            var runBefore = preview.Run;
+
+            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                "8", "8", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "4", "0.01", "0", "1", "0", false, out var message), Is.False);
+            StringAssert.Contains("Starting populations cannot exceed the grid capacity", message);
+            Assert.That(preview.Run, Is.SameAs(runBefore));
+        }
+
         static SpeciesId FindSpeciesId(SpeciesSimulationPreview preview, SpeciesRole role)
         {
             foreach (var entry in preview.ActiveSpeciesRules)
@@ -707,7 +726,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
             Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("tough-hide"));
             StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(0));
-            StringAssert.Contains("Block Amount", preview.GetRewardOptionDisplayName(0));
+            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(0));
             StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(0));
             StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(0));
             StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(0));
@@ -830,10 +849,42 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FiveHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossDecisionBoundaries()
+        public IEnumerator FoxOfferHidesBroodDriveWhenItsHareResponseIsCapped()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            Assert.That(preview.TryApplyExperimentalFeatures(true, true, "0", out var message), Is.True, message);
+            Assert.That(preview.TrySetPlayerSpecies("fox", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+                "36", "20", "3", preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
+                preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
+                "4", "0.01", "0", "1", "0", false, out message), Is.True, message);
+
+            preview.StartSimulation();
+            var timeout = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+            {
+                yield return null;
+            }
+
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.ActiveSpeciesRules[new SpeciesId("hare")].ReproductionChance, Is.EqualTo(1f));
+            Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
+            Assert.That(preview.GetRewardOptionId(0), Is.Not.EqualTo(SpeciesUpgradeCatalog.BroodDriveId));
+            Assert.That(preview.GetRewardOptionId(1), Is.Not.EqualTo(SpeciesUpgradeCatalog.BroodDriveId));
+            Assert.That(preview.CanPurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(0), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator ApplicableHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossDecisionBoundaries()
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
-                "reproductive-drive", "threat-exposure" };
+                "threat-exposure" };
             for (var skillIndex = 0; skillIndex < ids.Length; skillIndex++)
             {
                 yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -852,6 +903,8 @@ namespace SaltyGame.PlayModeTests
                 var run = preview.Run;
                 var originalRules = preview.Progression.CurrentRules;
                 preview.Progression.AddCurrency(100);
+                Assert.That(preview.Progression.CanApplyFreeUpgrade(
+                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)), Is.False);
                 var upgrade = SpeciesUpgradeCatalog.Create(ids[skillIndex]);
                 // Preload one level, then exercise every in-expedition choice.
                 Assert.That(preview.Progression.TryPurchase(upgrade), Is.True);
@@ -983,11 +1036,12 @@ namespace SaltyGame.PlayModeTests
                 .GetField("bevExperimentalFeaturesEnabled", BindingFlags.Instance | BindingFlags.NonPublic)
                 .SetValue(preview, false);
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var message), Is.True, message);
-            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "8", "8", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
                 preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
-                "4", "0.01", "0", "1", "0", false, out message), Is.True, message);
+                "4", "0.01", "0", "1", "0", false,
+                "20", "10", "0", out message), Is.True, message);
 
             preview.StartSimulation();
             var timeout = Time.realtimeSinceStartup + 5f;

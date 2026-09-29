@@ -1,7 +1,7 @@
 # Cellular Automata Roguelike Roadmap v2.2
 
 > **Status:** Active production roadmap | **Version:** 2.2 | **Updated:**
-> 2026-09-17 | **Cadence:** Two weeks, approximately 20 hours per developer |
+> 2026-09-29 | **Cadence:** Two weeks, approximately 20 hours per developer |
 > **Product owner:** Josh
 
 This is the product-level source of truth for what the team is trying to make,
@@ -100,13 +100,13 @@ small evidence-producing corrections.
 
 ## Current production position
 
-| Area | Status on 2026-09-17 | What remains |
+| Area | Status on 2026-09-29 | What remains |
 | --- | --- | --- |
 | Product definition | Complete for M0 | Revisit only when evidence changes the slice. |
-| First Mutation catalog | Implemented: seven authored Hare candidates, stable application, previews, provenance, and focused tests | Player readability, Forest Edge reference-panel approval, and balance/promotion review. |
-| Continuous expedition runtime | CF-0 through CF-5 implemented and verified; EX-010 accepted as bounded evidence | CF-6 duration and peak-memory measurement is stretch work, not an M1 closeout gate. |
-| Player shell | Main Menu, GalapagOS Desktop, standalone Lab route, Simulation, and representative results surfaces exist; direct-start Forest Edge/Hare is the current Desktop test contract | S3 is proving the full game-state route, recovery, boundary choices, terminal outcomes, and return to the Lab; profile saving is scheduled for S4. |
-| Graphics/build evidence | Target-resolution graphics acceptance and Windows development-player smoke complete | Feature-specific comprehension and presentation review. |
+| First Mutation catalog | Implemented: seven authored Hare candidates, stable application, previews, provenance, and focused tests | S3 V1 readability and bounded Forest Edge review are accepted; wider balance and promotion review remain iterative follow-up. |
+| Continuous expedition runtime | CF-0 through CF-5 implemented and verified; EX-010 accepted as bounded evidence; S3 six-round route and recovery accepted | M1 exit gate accepted and closed 2026-09-29; later changes may need retesting. CF-6 duration and peak-memory measurement remains stretch work. |
+| Player shell | Main Menu, GalapagOS Desktop, standalone Lab route, Simulation, and representative results surfaces exist; direct-start Forest Edge/Hare is the current Desktop test contract | S3 route, recovery, boundary choices, terminal outcomes, return to the Lab, and bounded UI polish are accepted. Profile saving remains S4 work; selected Main Menu art is in production. |
+| Graphics/build evidence | Target-resolution graphics acceptance, Windows development-player smoke, and bounded S3 interface review complete | Further visual polish and feature-specific comprehension checks continue iteratively. |
 | Profile and progression | Local profile identity plus the first per-species Genome profile, immutable launch/run snapshot, metadata catalog, and Gene Lab display foundation exist | One approved executable Genome node, player buying/activation, versioned progression data, settlement, migration, reset, and corrupt-save behavior. |
 | Research | P0–P3 and EX-010 are accepted within their approved bounds; EX-011 is accepted only as a bounded Open Range/Deer result for its tested ordered upgrade combination | No further experiment is selected; any new question requires a separate human-owned contract. |
 
@@ -115,10 +115,21 @@ small evidence-producing corrections.
 | Milestone | Status | Exit gate |
 | --- | --- | --- |
 | **M0 — Production definition** | **Complete** | Product brief, slice roster, three builds, player/Dev Lab boundary, target platform, and non-goals are recorded. |
-| **M1 — Playable upgrade loop** | **Active** | A player completes one six-round, one-minute-simulation Forest Edge expedition, makes five understandable Mutation decisions, sees the expected effects and result, and can reproduce the run in the developer evidence path without raw tuning fields. |
+| **M1 — Playable upgrade loop** | **Complete — 2026-09-29** | A player completes one six-round, one-minute-simulation Forest Edge expedition, makes five understandable Mutation decisions, sees the expected effects and result, and can reproduce the run in the developer evidence path without raw tuning fields. |
 | **M2 — Vertical slice** | Horizon | Three builds are understandable; the full menu-to-expedition-to-settlement-to-next-expedition loop works; one Genome unlock persists and applies correctly; presentation and feedback are ready for external playtesting. |
 | **M3 — Content alpha** | Hold until M2 | Several species and scenarios create distinct pressures; representative Genome configurations remain viable; feature scope, performance budgets, and save compatibility are controlled. |
 | **M4 — Beta and release preparation** | Hold until M3 | Content is complete and work is focused on defects, balance, onboarding, accessibility, input, performance, compatibility, platform work, and release operations. |
+
+## M1 closeout — 2026-09-29
+
+Josh accepted the M1 exit gate using the distributed evidence recorded in the
+[M1 closeout handoff](docs/handoffs/2026-09-29-codex-m1-closeout.md). The Clean
+suite passed EditMode 263/263 and PlayMode 34 passed, 2 expected graphics-only
+skips, 0 failed. The cap fix and related integration changes are preserved in
+commit `974827f2` on `codex/forest-edge-visual-pass`, pushed to `origin`.
+Josh accepts the evidence package without a single artifact pairing a complete
+player run with its developer report; later changes may require retesting. S4
+remains Proposed and has not been kicked off.
 
 ## Delivery schedule
 
@@ -139,7 +150,7 @@ The authoritative execution detail remains
 
 ### Sprint 3 — M1 closeout
 
-> **State:** Active; kickoff verified 2026-09-17 | **Dates:**
+> **State:** Closed 2026-09-29; kickoff verified 2026-09-17 | **Dates:**
 > 2026-09-17–2026-09-30 | **Capacity:** Josh 20h; Sim 20h; 40h total
 
 **Primary outcome:** the player can complete one six-round Forest Edge
@@ -148,15 +159,18 @@ Mutation choices, recover from a bad game state, and return to the Lab without
 stalls, errors, or soft-locks. The expedition screens receive a bounded visual
 polish and UI integration pass.
 
+S3 closed on 2026-09-29 after manual review. M1 was separately accepted and
+closed on 2026-09-29; S4 remains Proposed and has not been kicked off.
+
 Committed capacity allocation (profile saving remains in S4; performance
 measurement is stretch work):
 
 | Work | Features | Josh | Sim | Acceptance result |
 | --- | --- | ---: | ---: | --- |
 | Consolidated baseline and launch-contract acceptance | F13 | 2h | 2h | Direct-start Forest Edge/Hare is the accepted contract, obsolete fixtures are updated, and retained EditMode/PlayMode results have no unexpected failure. |
-| Expedition rules and acceptance inputs | F01, F06 | 4h | 2h | Six rounds of ten seconds' simulation time; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency are recorded. Board size and playable plants remain explicitly deferred. |
+| Expedition rules and acceptance inputs | F01, F06 | 4h | 2h | Six rounds of ten seconds' simulation time; five three-option Mutation/Skip decisions; Pause, confirmed End/no rewards before round 6, no Restart; survival victory at round 6, immediate extinction failure/no rewards, and performance-based currency are recorded. Forest Edge defaults to 36×20; playable plants remain deferred. |
 | Complete game-state flow and recovery | F02, F05, F13 | 8h | — | The player can start and finish an expedition, recover from reset or other bad states, and return to the Lab without stalls, errors, or soft-locks. Profile saving remains S4 work. |
-| Mutation readability and Forest Edge evidence follow-up | F03 | 2h | 6h | Five existing experimental Hare Mutations provide three distinct free choices or Skip at each boundary; later repeat selections increase level and stack the defined effect. Evidence-backed qualitative copy and one bounded Forest Edge/Hare review produce a recorded decision. |
+| Mutation readability and Forest Edge evidence follow-up | F03 | 2h | 6h | Each boundary offers three distinct applicable free Mutations from the existing five-Mutation Hare pool, or Skip. Invalid choices are hidden, repeats stack their defined effects, and Reinforcements remain a separate purchase. Evidence-backed qualitative copy and the bounded Forest Edge/Hare review are accepted for S3 V1. |
 | Visual polish and UI integration | F13, F14 | 2h | 2h | A bounded polish pass improves the expedition screens and integrates them with the player flow. |
 | Integration, defect, and review reserve | Shared | 2h | 4h | Capacity remains available for discovered acceptance failures. |
 | Fox telemetry carry-over | Supporting evidence | 0h | 2h | Close the mating/eating telemetry discrepancy with a regression assertion and a recorded decision. |
@@ -170,8 +184,11 @@ current allocations without a scope trade or additional capacity.
 The 4-hour visual polish and UI integration split is 2h Josh / 2h Sim. Josh's
 capacity is fully allocated; the remaining 2h of Sim capacity is uncommitted.
 S3 kickoff operation `S3-KICKOFF-20260917-01` is recorded in the control record
-and Trello control card. S3-01, S3-02, S3-03, S3-04, S3-06, S3-07, and S3-08
-are in `Current Work`; S3-05 remains in Backlog as uncommitted stretch work.
+and Trello control card. S3 closed on 2026-09-29: committed cards S3-01 through
+S3-04, S3-06 through S3-08, and the control card are in `✅ Done`; S3-05 remains
+in Backlog as uncommitted stretch work. M1 closed on 2026-09-29 after Josh
+accepted the distributed exit-gate evidence. S4 remains Proposed pending plan
+refinement and a separate kickoff.
 
 During S3, any scope or allocation change needs an explicit capacity review.
 Preserve the 40-hour planning limit, the M1 outcome, and the integration
@@ -308,7 +325,7 @@ belongs in the sprint control record and task board.
 - [Product brief](docs/PRODUCT_BRIEF.md)
 - [Feature rationale and dependency triage](docs/GAME_FEATURE_ROADMAP_TRIAGE.md)
 - [Sprint 2 plan](docs/NEXT_WORK_BUCKET_PLAN.md)
-- [Active Sprint 3 control record](docs/Sprints/S3-control-record.md)
+- [Closed Sprint 3 control record](docs/Sprints/S3-control-record.md)
 - [Mutation and Genome direction](docs/UPGRADE_SYSTEM_DIRECTION.md)
 - [Scientific data economy](docs/SCIENTIFIC_DATA_ECONOMY.md)
 - [Main Menu and home-base delivery](docs/MAIN_MENU_LAB_DELIVERY_PLAN.md)

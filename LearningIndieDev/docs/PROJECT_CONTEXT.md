@@ -84,11 +84,13 @@ uncertainty or regression risk.
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
 - [`ROADMAP.md`](../ROADMAP.md) version 2.2 is the active production baseline
-  as of 2026-09-17: M0 is complete, M1 is active, Sprint 2 is closed, and
-  Sprint 3 is active for 2026-09-17–2026-09-30. S3 prioritizes a safe,
-  recoverable Forest Edge game-state loop, understandable Mutation effects,
-  and bounded visual polish/UI integration. Local profile saving is scheduled
-  for S4; S4–S7 remain forecast windows except for that assigned S4 work. The
+  as of 2026-09-29: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
+  closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
+  loop, understandable Mutation effects, and bounded visual polish/UI
+  integration. Josh accepted M1 using distributed retained evidence; later
+  changes may need retesting. Refine the Proposed S4 work list before kickoff.
+  Local profile saving remains a candidate for S4; S4–S7 remain forecast
+  windows, not committed sprints. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the
@@ -120,15 +122,17 @@ uncertainty or regression risk.
   to numeric values. When the evidence cannot support a precise claim, use a
   simpler directional abstraction rather than presenting a noisy result as a
   guarantee.
-- For the bounded S3-04 bridge, the five existing experimental Hare Mutations
-  form the rotating offer pool. Each boundary shows three Mutations and Skip:
-  the first two rotate from the existing pool, and option three is the fixed,
-  repeatable Reinforcements choice. It adds one selected-species individual to
-  the next phase at a deterministic unoccupied, passable cell, subject to the
-  board and population limits. A selected Mutation may be offered again later;
-  selecting it again increases its level and applies its effect again. Skip has
-  no S3-04 reward. A broader Mutation economy or future Skip bonus remains
-  deferred.
+- For the S3-04 V1 bridge, the five existing experimental Hare Mutations form
+  the rotating phase offer pool. Each boundary shows three distinct applicable
+  Mutations or Skip. A Mutation is hidden when its effect would be invalid at
+  the current species stats, including the capped Hare Reproductive Drive and
+  its coupled Fox Brood Drive response. A selected Mutation may be offered
+  again later; selecting it again increases its level and applies its effect
+  again. Repeatable Hare Reinforcements remain a separate phase-boundary
+  purchase that adds one Hare to the next phase when Field Data, board space,
+  and population limits allow. The S3 behavior is a V1; further Mutation and
+  interface iteration remains future work. A broader Mutation economy or
+  future Skip bonus remains deferred.
 - The player can turn unlocked Genome nodes on or off between simulations. The
   active Genome is frozen at launch and applies to every population of its
   species, including when that species is not controlled by the player.

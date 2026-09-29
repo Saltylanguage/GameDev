@@ -165,7 +165,7 @@ namespace SaltyGame.PlayModeTests
             var preview = runtime.SpeciesPreview;
             preview.StopSimulation();
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
-            Assert.That(preview.TryApplyGlobalSettingsForTicks(
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "8",
                 "8",
                 preview.BaseSeed.ToString(),
@@ -177,6 +177,9 @@ namespace SaltyGame.PlayModeTests
                 preview.HerbivoreProbability.ToString(),
                 preview.CarnivoreProbability.ToString(),
                 randomizeSeed: false,
+                "20",
+                "10",
+                "0",
                 out var settingsMessage), Is.True, settingsMessage);
 
             var simulationViewModel = GameObject.Find("Prototype Camera")

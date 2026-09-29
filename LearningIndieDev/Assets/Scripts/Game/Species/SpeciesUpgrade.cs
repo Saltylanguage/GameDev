@@ -323,6 +323,15 @@ namespace SaltyGame
         [Obsolete("Use ThreatExposureMaxLevel.")]
         public const int ThreatResponseMaxLevel = ThreatExposureMaxLevel;
 
+        static readonly string[] PhaseHerbivoreUpgradeIds =
+        {
+            ToughHideId,
+            EfficientDigestionId,
+            CrowdingToleranceId,
+            ReproductiveDriveId,
+            ThreatExposureId,
+        };
+
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
         {
             ToughHideId,
@@ -344,42 +353,47 @@ namespace SaltyGame
 
         public static bool IsExperimentalHerbivoreMutationId(string upgradeId)
         {
-            return Array.IndexOf(ExperimentalHerbivoreUpgradeIds, upgradeId) >= 0;
+            return Array.IndexOf(PhaseHerbivoreUpgradeIds, upgradeId) >= 0;
         }
 
         public static SpeciesUpgrade[] CreateExperimentalHerbivoreMutationOffer(
             string continuingUpgradeId,
             int rotation,
-            int seed)
+            int seed,
+            Func<SpeciesUpgrade, bool> canOffer = null)
         {
             if (rotation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
             }
 
-            var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);
+            var primaryIndex = Array.IndexOf(PhaseHerbivoreUpgradeIds, continuingUpgradeId);
             var seededValue = seed & int.MaxValue;
             var hasContinuingUpgrade = primaryIndex >= 0;
             if (!hasContinuingUpgrade)
             {
-                primaryIndex = seededValue % ExperimentalHerbivoreUpgradeIds.Length;
+                primaryIndex = seededValue % PhaseHerbivoreUpgradeIds.Length;
             }
 
             var alternativeRotation = hasContinuingUpgrade
-                ? rotation % (ExperimentalHerbivoreUpgradeIds.Length - 1)
-                : (seededValue / ExperimentalHerbivoreUpgradeIds.Length)
-                    % (ExperimentalHerbivoreUpgradeIds.Length - 1);
-            var offer = new SpeciesUpgrade[3];
-            for (var index = 0; index < offer.Length; index++)
+                ? rotation % (PhaseHerbivoreUpgradeIds.Length - 1)
+                : (seededValue / PhaseHerbivoreUpgradeIds.Length)
+                    % (PhaseHerbivoreUpgradeIds.Length - 1);
+            var offer = new List<SpeciesUpgrade>(3);
+            for (var index = 0; index < PhaseHerbivoreUpgradeIds.Length && offer.Count < 3; index++)
             {
                 var offset = index == 0
                     ? 0
-                    : 1 + ((alternativeRotation + index - 1) % (ExperimentalHerbivoreUpgradeIds.Length - 1));
-                offer[index] = Create(ExperimentalHerbivoreUpgradeIds[
-                    (primaryIndex + offset) % ExperimentalHerbivoreUpgradeIds.Length]);
+                    : 1 + ((alternativeRotation + index - 1) % (PhaseHerbivoreUpgradeIds.Length - 1));
+                var upgrade = Create(PhaseHerbivoreUpgradeIds[
+                    (primaryIndex + offset) % PhaseHerbivoreUpgradeIds.Length]);
+                if (canOffer == null || canOffer(upgrade))
+                {
+                    offer.Add(upgrade);
+                }
             }
 
-            return offer;
+            return offer.ToArray();
         }
 
         public static SpeciesUpgrade Create(string id)
@@ -581,7 +595,8 @@ namespace SaltyGame
         public static SpeciesUpgrade[] CreateExperimentalHerbivoreOffer(
             string continuingUpgradeId,
             int rotation,
-            int seed)
+            int seed,
+            Func<SpeciesUpgrade, bool> canOffer = null)
         {
             if (IsThreatExposureId(continuingUpgradeId))
             {
@@ -592,7 +607,8 @@ namespace SaltyGame
                 continuingUpgradeId,
                 rotation,
                 seed,
-                ExperimentalHerbivoreUpgradeIds);
+                ExperimentalHerbivoreUpgradeIds,
+                canOffer);
         }
 
         public static bool TryGetCoupledResponse(
@@ -658,20 +674,23 @@ namespace SaltyGame
         public static SpeciesUpgrade[] CreateExperimentalPredatorOffer(
             string continuingUpgradeId,
             int rotation,
-            int seed)
+            int seed,
+            Func<SpeciesUpgrade, bool> canOffer = null)
         {
             return CreateExperimentalOffer(
                 continuingUpgradeId,
                 rotation,
                 seed,
-                ExperimentalPredatorUpgradeIds);
+                ExperimentalPredatorUpgradeIds,
+                canOffer);
         }
 
         static SpeciesUpgrade[] CreateExperimentalOffer(
             string continuingUpgradeId,
             int rotation,
             int seed,
-            string[] upgradeIds)
+            string[] upgradeIds,
+            Func<SpeciesUpgrade, bool> canOffer)
         {
             if (rotation < 0)
             {
@@ -689,13 +708,21 @@ namespace SaltyGame
             var alternativeRotation = hasContinuingUpgrade
                 ? rotation % (upgradeIds.Length - 1)
                 : (seededValue / upgradeIds.Length) % (upgradeIds.Length - 1);
-            var alternativeIndex = (primaryIndex + 1 + alternativeRotation) % upgradeIds.Length;
-            return new[]
+            var offer = new List<SpeciesUpgrade>(3);
+            for (var index = 0; index < upgradeIds.Length && offer.Count < 2; index++)
             {
-                Create(upgradeIds[primaryIndex]),
-                Create(upgradeIds[alternativeIndex]),
-                Create(PopulationReinforcementId),
-            };
+                var offset = index == 0
+                    ? 0
+                    : 1 + ((alternativeRotation + index - 1) % (upgradeIds.Length - 1));
+                var upgrade = Create(upgradeIds[(primaryIndex + offset) % upgradeIds.Length]);
+                if (canOffer == null || canOffer(upgrade))
+                {
+                    offer.Add(upgrade);
+                }
+            }
+
+            offer.Add(Create(PopulationReinforcementId));
+            return offer.ToArray();
         }
     }
 }

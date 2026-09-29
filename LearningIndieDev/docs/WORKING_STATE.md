@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**S4 planning draft: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
+cap-aware offer fix are recorded in pushed commits `25642440` and `974827f2`.
+The S4 control record proposes Sim's next contribution as bounded build
+configuration and matched-seed evidence work, based on his recent Forest Edge,
+Mutation, telemetry, and report changes. Seven draft cards (P1-032 and S4-01
+through S4-05 plus S4-07) are staged in Trello Upcoming Work for planning
+review. S4 remains Proposed: confirm Sim's ownership, estimate, and
+availability; resolve the unestimated P1-032 Desktop migration capacity; and
+keep the 8h reserve protected before finalizing scope or scheduling kickoff.
+S4 profile persistence is currently scoped to local player choices; versioned
+progression and Genome persistence remain later work. The M1 Trello card is
+COMPLETE, and S3-05 remains Backlog stretch work. See the [S4 planning
+record](Sprints/S4-control-record.md), [Sim kickoff handoff (ready for
+review)](handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md), and [M1
+closeout](handoffs/2026-09-29-codex-m1-closeout.md).
+
 **Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
 population additions are now tracked as `ADD` in the run and checkpoint. The
 whole-run Herbivore and Predator Stat-Lines include `ADD` in expected FPO and
@@ -52,6 +68,25 @@ slice. Focused EditMode 1/1 and three PlayMode checks passed in the installed
 Unity Editor. See the
 [S3-04 Tough Hide handoff](handoffs/2026-09-27-codex-s3-04-tough-hide.md).
 
+**Forest Edge board visual pass: 2026-09-27.** The visual pass was merged into
+`BevBranch`, based on the birth-poof pilot. The board now
+has a pixel canopy edge, low ground details tied to grass/resource state, and
+prototype side rock clusters that sit outside the traversable field. Birth
+presentation now gathers all children placed in the latest birth tick, enlarges
+the poof, and retains the heart and sparkles. A short code-synthesized litter
+chime is rate-limited and uses the desktop volume/mute controls. The view model
+tracks up to four actual adjacent-cell steps from one Fox that is currently
+hunting; their marks fade over nine simulation ticks and persist through pause.
+The retained baseline and first changed 1280×720 views are in
+[`visual-evidence-20260927-095257`](../artifacts/visual-evidence-20260927-095257/)
+and [`visual-evidence-20260927-095849`](../artifacts/visual-evidence-20260927-095849/).
+The first changed image shows a clear wooded edge, but the center still reads
+as the original grass/bare grid. Later variation and rock placement edits have
+not been captured. Unity crashed during a later live visual run; the clean lane
+then reported the project lock as unreachable. Doctor also reported the Unity
+licensing client and Unity services endpoint unreachable. The merged project
+compiled in the directly installed Unity 6000.4.6f1 Editor on 2026-09-27;
+full visual acceptance remains open. See the
 **Forest Edge Hare metabolism first pass: 2026-09-28.** The production Hare
 energy-loss interval is now 8 ticks instead of 10; grass, reproduction, and
 other Hare values are unchanged. This is a provisional first pass to intensify
@@ -68,14 +103,13 @@ allows an overcrowded Hare to move into an adjacent passable, empty cell above
 the local group-size cap when that move reduces nearby Hare density. Normal
 mate-seeking, feeding, threat escape, and non-Hare movement retain their
 existing priorities. A focused regression test was added, but the project test
-runner did not execute it because the connected Unity Editor was in Play Mode
-at that time. The later no-Fox comparison included this code in both arms, so
-it did not isolate the effect of dispersal. Direct map-spread validation remains
-open. See the
+runner did not execute it because the connected Unity Editor is currently in
+Play Mode. No map-spread or starvation experiment has been run, so this is a
+provisional behavior change, not a validated population outcome. See the
 [crowded-Hare dispersal handoff](handoffs/2026-09-27-1124-codex-crowded-hare-dispersal.md).
 
-**Forest Edge board visual pass: 2026-09-27–28.** The latest work from
-`codex/forest-edge-visual-pass` builds on the birth-poof pilot. The board has a
+**Forest Edge board visual pass: 2026-09-27–28.** Work continues on
+`codex/forest-edge-visual-pass`, based on the birth-poof pilot. The board has a
 pixel canopy edge, low ground details tied to grass/resource state, and
 prototype side rock clusters outside the traversable field. Birth presentation
 gathers all children placed in the latest birth tick, enlarges the poof, and
@@ -377,25 +411,18 @@ mask for Bare cells too, so dirt cells inside a Grass field can display their
 Grass vertices. Resolver and snapshot regression tests were added and pass in
 the current clean EditMode suite recorded at the top of this file.
 
-**Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
-Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
-kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
-2026-09-17–2026-09-30. Josh closed S3-01; the latest retained clean validation
-records EditMode 234/234 and no-graphics PlayMode 28/30 with 0 failures and two
-expected graphics-only skips. The focused phase-decision UI check and dedicated
-Settings/My Collection PlayMode checks now pass; only Main Menu branding and
-generated-art review remains open in Loose Ends P1-031. Trello S3-01 is in Done
-with its validation caveat recorded. S3-02's
-contract is complete, and Josh has marked its Trello card complete. S3-03 is
-complete and Unity-validated with results retained in its handoff. The S3-02
-card's acceptance wording may still need a cleanup pass to reflect the 36×20
-Forest Edge default and the still-deferred playable-plant decision.
-S3-05 duration/memory measurement remains uncommitted stretch work
-and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
-loop with tested recovery and return to the Lab, meaningful and understandable
-Mutations, and a bounded visual polish/UI integration pass. Local profile
-saving is scheduled for S4. The GalapagOS Desktop is the canonical player home;
-the standalone Lab remains a legacy/developer route.
+**Roadmap v2.2 remains active.** M0 and M1 are complete; Josh closed M1 on
+2026-09-29 after accepting the distributed exit-gate evidence. Sprint 2 closed on 2026-09-17 with Fox telemetry as
+its sole carry-over. Sprint 3 closed on 2026-09-29 after manual review. The
+committed S3 cards and control card are in Trello Done; S3-05 remains in Backlog
+as uncommitted stretch work. The latest merged-baseline Clean result is recorded
+at the top of this file and in the closeout handoff. S3-02's contract is
+complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
+scope. Chrono is producing the selected Main Menu art, with further polish as
+iterative work. Refine the Proposed S4 plan; no S4 kickoff has occurred.
+Retesting may be needed as later work changes the accepted baseline. Local
+profile saving is an S4 candidate. The GalapagOS Desktop is the canonical
+player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
@@ -589,7 +616,7 @@ inconclusive.
 - Genome fixture and document reconciliation: [`handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md`](handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md)
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
-- Active Sprint 3 safe game loop and M1 closeout: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
+- Closed Sprint 3 closeout and M1 gate review: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
 - S3-04 Mutation readability and bounded review plan: [`Sprints/S3-04-mutation-readability-plan.md`](Sprints/S3-04-mutation-readability-plan.md)
 - S3-02 expedition contract complete: [`Sprints/S3-02-expedition-contract.md`](Sprints/S3-02-expedition-contract.md)
 - S3-03 flow and recovery work: [`handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md`](handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md)
