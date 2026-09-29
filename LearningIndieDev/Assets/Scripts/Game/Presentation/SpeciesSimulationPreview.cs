@@ -335,9 +335,25 @@ namespace SaltyGame
             var legacyUpgrade = rewardOptions[rewardIndex];
             if (usingExperimentalHerbivoreMutations && previewState == SpeciesPreviewState.PhaseDecision)
             {
-                return FormatHerbivoreMutationChoice(
+                var mutationDisplay = FormatHerbivoreMutationChoice(
                     legacyUpgrade.Id,
                     (progression?.GetUpgradeLevel(legacyUpgrade.Id) ?? 0) + 1);
+                if (coupledSpeciesResponsesEnabled
+                    && SpeciesUpgradeCatalog.TryGetCoupledResponse(
+                        playerSpecies,
+                        legacyUpgrade.Id,
+                        out var coupledResponderSpecies,
+                        out var coupledResponseUpgradeId))
+                {
+                    return string.Format(
+                        CultureInfo.InvariantCulture,
+                        "{0}\n{1} responds: {2}",
+                        mutationDisplay,
+                        CultureInfo.InvariantCulture.TextInfo.ToTitleCase(coupledResponderSpecies.Value),
+                        SpeciesUpgradeCatalog.GetDisplayName(coupledResponseUpgradeId));
+                }
+
+                return mutationDisplay;
             }
 
             var legacySnapshot = legacyUpgrade.CreateSnapshot(playerSpecies);
@@ -1057,24 +1073,37 @@ namespace SaltyGame
                 }
             }
 
-            if (hasStartingPopulationValues)
-            {
-                var totalStartingPopulation = (long)parsedPlantStartingPopulation
+            var totalStartingPopulation = hasStartingPopulationValues
+                ? (long)parsedPlantStartingPopulation
                     + parsedHerbivoreStartingPopulation
-                    + parsedCarnivoreStartingPopulation;
-                if (totalStartingPopulation > (long)nextWidth * nextHeight)
+                    + parsedCarnivoreStartingPopulation
+                : startingPopulationOverrideEnabled
+                    ? (long)plantStartingPopulation
+                        + herbivoreStartingPopulation
+                        + carnivoreStartingPopulation
+                    : 0L;
+            if (SelectedScenario != null
+                && ((hasStartingPopulationValues && totalStartingPopulation == 0)
+                    || (!hasStartingPopulationValues && !startingPopulationOverrideEnabled)))
+            {
+                foreach (var population in SelectedScenario.CreateRuntimeData().StartingPopulations.Values)
                 {
-                    validationMessage = "Starting populations cannot exceed the grid capacity.";
-                    settingsMessage = validationMessage;
-                    return false;
+                    totalStartingPopulation += population;
                 }
+            }
 
-                if (nextMaximumPopulation > 0 && totalStartingPopulation > nextMaximumPopulation)
-                {
-                    validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {nextMaximumPopulation}.";
-                    settingsMessage = validationMessage;
-                    return false;
-                }
+            if (totalStartingPopulation > (long)nextWidth * nextHeight)
+            {
+                validationMessage = "Starting populations cannot exceed the grid capacity.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            if (nextMaximumPopulation > 0 && totalStartingPopulation > nextMaximumPopulation)
+            {
+                validationMessage = $"Starting populations total {totalStartingPopulation} cannot exceed maximum population {nextMaximumPopulation}.";
+                settingsMessage = validationMessage;
+                return false;
             }
 
             width = nextWidth;
@@ -1090,14 +1119,14 @@ namespace SaltyGame
             carnivoreProbability = Mathf.Clamp01(parsedCarnivoreProbability);
             if (hasStartingPopulationValues)
             {
-                var totalStartingPopulation = (long)parsedPlantStartingPopulation
+                var configuredStartingPopulation = (long)parsedPlantStartingPopulation
                     + parsedHerbivoreStartingPopulation
                     + parsedCarnivoreStartingPopulation;
 
                 plantStartingPopulation = parsedPlantStartingPopulation;
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
                 carnivoreStartingPopulation = parsedCarnivoreStartingPopulation;
-                startingPopulationOverrideEnabled = totalStartingPopulation > 0;
+                startingPopulationOverrideEnabled = configuredStartingPopulation > 0;
             }
             randomizeSeedOnStart = randomizeSeed;
             settingsMessage = hasStartingPopulationValues
@@ -2090,21 +2119,28 @@ namespace SaltyGame
 
             var isPhaseDecision = continuousPhasesEnabled
                 && Run?.Status == SimulationRunStatus.AwaitingDecision;
+            Func<SpeciesUpgrade, bool> canOffer = upgrade => progression != null
+                && (isPhaseDecision
+                    ? CanPurchaseLegacyBoundaryReward(upgrade)
+                    : progression.CanApplyFreeUpgrade(upgrade));
             rewardOptions = playerRules.Role == SpeciesRole.Herbivore
                 ? isPhaseDecision
                     ? SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
-                        Run?.Seed ?? seed)
+                        Run?.Seed ?? seed,
+                        canOffer)
                     : SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
-                        Run?.Seed ?? seed)
+                        Run?.Seed ?? seed,
+                        canOffer)
                 : playerRules.Role == SpeciesRole.Carnivore
                     ? SpeciesUpgradeCatalog.CreateExperimentalPredatorOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
-                        Run?.Seed ?? seed)
+                        Run?.Seed ?? seed,
+                        canOffer)
                     : LegacyRewardOptions;
             usingExperimentalHerbivoreMutations = isPhaseDecision
                 && playerRules.Role == SpeciesRole.Herbivore;
@@ -2537,13 +2573,14 @@ namespace SaltyGame
         {
             if (SelectedScenario != null)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData()
-                    .WithGridSize(width, height)
+                var scenarioData = SelectedScenario.CreateRuntimeData();
+                var authoredData = (startingPopulationOverrideEnabled
+                        ? scenarioData.WithGridSizeAndStartingPopulations(
+                            width, height, CreateStartingPopulations())
+                        : scenarioData.WithGridSize(width, height))
                     .WithRunTicks(RunTicks, stepInterval)
                     .WithSpeciesRules(playerSpecies, rules[playerSpecies]);
-                return startingPopulationOverrideEnabled
-                    ? authoredData.WithStartingPopulations(CreateStartingPopulations())
-                    : authoredData;
+                return authoredData;
             }
 
             return new CellularSimData(

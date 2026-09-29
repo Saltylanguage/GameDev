@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**M1 exit-gate pre-review: 2026-09-29.** Sprint 3 closed after Josh's manual
+review of this conversation and the retained evidence. Josh merged `BevBranch`
+into `codex/forest-edge-visual-pass` at `51abd41d`. The approved rule hides a
+Reproductive Drive choice when it would raise chance above 1.0, and hides Fox
+Brood Drive when its paired Hare response is capped. A Clean run on that merged
+baseline plus the current local diff passed EditMode 263/263 and PlayMode
+34 tests; two graphics-only tests were skipped as expected, and none failed.
+Josh accepts the Forest Edge evidence for S3, with later balance work remaining
+iterative. The Main Menu art-direction review is complete and Chrono is working
+on the art. Committed S3 cards and the control card are in Trello Done; S3-05
+remains Backlog as uncommitted stretch work. M1 remains Active. The pre-review
+recommends completing its gate review before refining the Proposed S4 plan; the
+code and documentation diff remains uncommitted. See the
+[S3 merged-baseline closeout](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md)
+and [M1 exit-gate pre-review](handoffs/2026-09-29-codex-m1-exit-gate-prereview.md).
+
 **Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
 population additions are now tracked as `ADD` in the run and checkpoint. The
 whole-run Herbivore and Predator Stat-Lines include `ADD` in expected FPO and
@@ -395,25 +411,17 @@ mask for Bare cells too, so dirt cells inside a Grass field can display their
 Grass vertices. Resolver and snapshot regression tests were added and pass in
 the current clean EditMode suite recorded at the top of this file.
 
-**Roadmap v2.2 is active as of 2026-09-17.** M0 is complete and M1 is active.
-Sprint 2 closed on 2026-09-17 with Fox telemetry as its sole carry-over. S3
-kickoff `S3-KICKOFF-20260917-01` is verified: the committed plan is active for
-2026-09-17–2026-09-30. Josh closed S3-01; the latest retained clean validation
-records EditMode 234/234 and no-graphics PlayMode 28/30 with 0 failures and two
-expected graphics-only skips. The focused phase-decision UI check and dedicated
-Settings/My Collection PlayMode checks now pass; only Main Menu branding and
-generated-art review remains open in Loose Ends P1-031. Trello S3-01 is in Done
-with its validation caveat recorded. S3-02's
-contract is complete, and Josh has marked its Trello card complete. S3-03 is
-complete and Unity-validated with results retained in its handoff. The S3-02
-card's acceptance wording may still need a cleanup pass to reflect the 36×20
-Forest Edge default and the still-deferred playable-plant decision.
-S3-05 duration/memory measurement remains uncommitted stretch work
-and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
-loop with tested recovery and return to the Lab, meaningful and understandable
-Mutations, and a bounded visual polish/UI integration pass. Local profile
-saving is scheduled for S4. The GalapagOS Desktop is the canonical player home;
-the standalone Lab remains a legacy/developer route.
+**Roadmap v2.2 remains active.** M0 is complete and M1 remains Active pending a
+separate exit-gate review. Sprint 2 closed on 2026-09-17 with Fox telemetry as
+its sole carry-over. Sprint 3 closed on 2026-09-29 after manual review. The
+committed S3 cards and control card are in Trello Done; S3-05 remains in Backlog
+as uncommitted stretch work. The latest merged-baseline Clean result is recorded
+at the top of this file and in the closeout handoff. S3-02's contract is
+complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
+scope. Chrono is producing the selected Main Menu art, with further polish as
+iterative work. Review the M1 exit gate before refining the Proposed S4 plan.
+Local profile saving is an S4 candidate. The GalapagOS Desktop is the canonical
+player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
@@ -607,7 +615,7 @@ inconclusive.
 - Genome fixture and document reconciliation: [`handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md`](handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md)
 - Main Menu polish and refinement handoff: [`handoffs/2026-09-09-codex-main-menu-polish-first-pass.md`](handoffs/2026-09-09-codex-main-menu-polish-first-pass.md)
 - Artifact retention audit: [`handoffs/2026-09-09-artifact-retention-audit.md`](handoffs/2026-09-09-artifact-retention-audit.md)
-- Active Sprint 3 safe game loop and M1 closeout: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
+- Closed Sprint 3 closeout and M1 gate review: [`Sprints/S3-control-record.md`](Sprints/S3-control-record.md)
 - S3-04 Mutation readability and bounded review plan: [`Sprints/S3-04-mutation-readability-plan.md`](Sprints/S3-04-mutation-readability-plan.md)
 - S3-02 expedition contract complete: [`Sprints/S3-02-expedition-contract.md`](Sprints/S3-02-expedition-contract.md)
 - S3-03 flow and recovery work: [`handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md`](handoffs/2026-09-18-0036-codex-s3-03-flow-recovery.md)

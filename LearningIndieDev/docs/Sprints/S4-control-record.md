@@ -5,9 +5,10 @@
 > **Cadence:** two weeks  
 > **Planning capacity:** up to 32h feature work plus an 8h integration/review reserve (40h total); owner allocation TBD
 
-This is a planning skeleton, not an approved sprint plan. Revisit it after S3
-closeout, then refine and confirm the work, estimates, owners, and acceptance
-checks before promoting anything into the active sprint.
+This is a planning skeleton, not an approved sprint plan. Sprint 3 closed on
+2026-09-29; review the M1 exit gate next, then refine and confirm this plan's
+work, estimates, owners, and acceptance checks before promoting anything into
+an active sprint.
 
 ## Proposed outcome
 
@@ -188,11 +189,13 @@ work + 3h reserve. Feature work is capped at 32h; total planned capacity is
 - Broad species/scenario expansion and full reactive-ecology implementation
   remain out of scope. Any design spike must be small and must not displace the
   primary outcome or the 8h reserve.
-- S4 remains Proposed until S3 is closed and a separate kickoff is confirmed.
+- S4 remains Proposed until the M1 exit gate is reviewed, this plan is refined,
+  and a separate kickoff is confirmed.
 
 ## Before promotion to `🎯 Upcoming Work`
 
-- Reconcile S3 closeout and carry-over decisions.
+- [x] Reconcile S3 closeout: committed work is in Trello Done; S3-05 remains
+  uncommitted stretch work in Backlog.
 - Define each candidate card's problem/outcome, stable task ID, owner, reviewer,
   estimate, dependencies/risks, and observable acceptance check.
 - Confirm profile data and restart/recovery boundaries.

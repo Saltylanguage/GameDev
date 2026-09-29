@@ -69,9 +69,11 @@ persistence into a generalized upgrade framework.
 S2 is not expected to close the M1 gate. The continuous-run lifecycle,
 upgrade/reward boundary, phase-aware telemetry, checkpoints, and EX-010 schedule
 are already implemented, and target-resolution graphics acceptance is complete.
-Use this sprint for the current build/performance gate, the remaining player-
-facing Mutation/result route, and board/task reconciliation. Keep the catalog
-small and do not expand content merely to fill capacity.
+S3 closed on 2026-09-29 after the six-round player route, bounded Mutation and
+result review, visual/UI pass, and Trello reconciliation were accepted. CF-6
+duration/memory measurement remains optional stretch work. M1 remains Active
+pending its separate milestone-gate review; use that review to decide whether
+any small correction belongs before the S4 plan is refined.
 
 The proposed control record is
 [`S3-control-record.md`](Sprints/S3-control-record.md).

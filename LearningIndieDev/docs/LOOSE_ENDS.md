@@ -3,30 +3,33 @@
 This is the actionable ledger for unresolved project, planning, ownership, and
 documentation gaps. Closed history stays in Git and task handoffs.
 
-## Current status — 2026-09-27
+## Current status — 2026-09-29
 
-- No P0 issue is verified. `BevBranch` incorporates the Forest Edge visual
-  pass. The directly installed Unity 6000.4.6f1 Editor compiled the merged
-  project; the incoming ecology values have not received a matched Forest
-  Edge balance review or full visual acceptance.
+- No P0 issue is verified. `codex/forest-edge-visual-pass` includes the
+  `BevBranch` merge at `51abd41d`; the approved cap fix is in the current local
+  diff. The Clean suites on that merged baseline plus the diff passed EditMode
+  263/263 and PlayMode 34 tests; two graphics-only tests were skipped as
+  expected, and none failed.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
   tracks the remaining candidates separately.
-- S3-01 through S3-04 are complete. S3-08 Fox telemetry clarification is
-  validated; S3-06 visual polish is in progress, S3-07 is reserve, and S3-05
-  is stretch.
+- S3-01 through S3-04 and S3-06 through S3-08 are complete. S3-08 Fox
+  telemetry clarification is validated. The bounded S3-06 pass is accepted;
+  future polish remains iterative. S3-05 remains uncommitted stretch work in
+  Backlog.
 - The accepted expedition contract is six 10-second rounds, with a Mutation
   choice or Skip after rounds 1–5. The player offer now shows three distinct
-  free Mutations plus Skip, and focused tests cover repeat stacking and
-  continuation. Tough Hide's first bounded evidence review is recorded and its
-  copy/card markers are accepted for this slice. The completed S3-02 Trello card
-  wording has not been refreshed. The earlier two-Mutation-plus-Reinforcements
-  offer is superseded by this S3-04 implementation.
-- The latest retained full Unity run from 2026-09-24 passed EditMode 256/256
-  and PlayMode 33/33. Newer focused S3-04 and S3-08 checks passed. The merge
-  received a direct Editor compile on 2026-09-27; no post-merge test suite was
-  run.
+  applicable free Mutations plus Skip. Invalid Reproductive Drive and coupled
+  Fox Brood Drive offers are hidden. Hare Reinforcements remain a separate
+  purchase. The S3-04 V1 path and Tough Hide evidence are accepted for the
+  current sprint; future mutation iteration remains open.
+- Josh accepted the current Forest Edge evidence for S3 closeout; it does not
+  establish broad ecological balance. Main Menu generated-art review is done,
+  with Chrono working on the selected direction. Josh manually closed S3 on
+  2026-09-29; committed S3 cards and the control card are in Trello Done. M1 is
+  still Active pending a separate milestone gate review, which should precede
+  refinement of the Proposed S4 work list.
 
 ## Triage rules
 
@@ -66,27 +69,6 @@ documentation gaps. Closed history stays in Git and task handoffs.
   owner.
 - **Owner:** Josh with design/simulation owners. **Confidence:** High.
 
-### P1-031 — Validation status and player-shell review need reconciliation
-
-- **Status:** The final post-change run passed EditMode 256/256 and PlayMode
-  33/33. Two stale checks were corrected: the Main Menu test now waits for its
-  0.95-second scene transition, and the fractional-digestion fixture keeps its
-  animal hungry for all 20 bites so it tests remainder accumulation instead
-  of threshold crossing and movement. Dedicated Settings and My Collection
-  PlayMode checks pass. Main Menu branding/generated-art acceptance remains
-  human review.
-- **Evidence:** [full EditMode and PlayMode results](../artifacts/unity-tests-20260924-134934/),
-  [focused My Collection result](../artifacts/unity-tests-20260924-134853/),
-  [focused Main Menu rerun](../artifacts/unity-tests-20260924-133132/),
-  [Main Menu test timing correction](../Assets/Tests/PlayMode/MainMenuPlayModeTests.cs),
-  [fractional digestion fixture](../Assets/Tests/Runtime/SpeciesDomainTests.cs),
-  [population reinforcement handoff](handoffs/2026-09-23-codex-population-reinforcement-mutation.md),
-  [Unity automation handoff](handoffs/2026-09-18-1452-sol-unity-automation-lane-integration-closeout.md),
-  and the [phase-selection polish handoff](handoffs/2026-09-18-2208-codex-upgrade-selection-polish.md).
-- **Next action:** Complete the human visual review of Main Menu branding and
-  generated-art promotion. **Owner:** Josh + UI/repository maintainer.
-  **Confidence:** High.
-
 ### P1-032 — Desktop route drops profile and launch context
 
 - **Status:** Scheduled as the first item in the next post-S3 work block,
@@ -104,54 +86,22 @@ documentation gaps. Closed history stays in Git and task handoffs.
   of this migration.
 - **Owner:** Josh + UI/runtime owner. **Confidence:** High.
 
-### P1-036 — S3-02 Trello wording may lag the accepted expedition contract
-
-- **Status:** The player offer path now returns three Mutation choices or Skip
-  at each phase boundary; the runtime gap is resolved under S3-04. The completed
-  S3-02 Trello card may still need wording updated for the 36×20 Forest Edge
-  default and the still-deferred playable-plant decision.
-- **Evidence:** [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md),
-  [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md), and Trello card c3i7HO09.
-  The production scenario now defaults to 36×20. The editor generator creates
-  a separate legacy scenario, so its 36×20 setting was not the gameplay source.
-- **Next action:** If the completed Trello card still has old acceptance text,
-  clarify the 36×20 default and keep playable plants deferred. No board edit
-  was made during this S3-04 implementation.
-- **Owner:** Sprint board owner + simulation/design owner. **Confidence:** High.
-
 ### P1-034 — Forest Edge balance values remain provisional
 
-- **Status:** The `+1` minimum- and maximum-litter Mutations were approved
-  for production on 2026-09-24. The incoming Forest Edge branch changes the
-  production Fox and Hare baselines, including crowding metabolism, Hare
-  reproduction, and grass reseeding. The user chose those incoming values for
-  this merge; their ecological effect has not been established by a matched
-  Forest Edge comparison.
+- **Status:** Josh accepts the current Forest Edge evidence for this S3
+  closeout. The incoming production Fox and Hare baselines, including crowding
+  metabolism, Hare reproduction, and grass reseeding, remain provisional for
+  later iteration; this is not a broad balance approval or a current S3 gate.
 - **Evidence:** [Hare asset](../Assets/Data/ProductionData/CellularSimulation/Species/hare.asset),
   [Fox asset](../Assets/Data/ProductionData/CellularSimulation/Species/fox.asset),
   [SpeciesUpgrade.cs](../Assets/Scripts/Game/Species/SpeciesUpgrade.cs),
   [current-value diagnostic handoff](handoffs/2026-09-22-2200-codex-forest-edge-current-values-diagnostic-batches.md),
   [Fox/Hare balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
   and commits `5e0e28c2` / `0ba7a9cd`.
-- **Next action:** Run a matched Forest Edge comparison before treating the
-  incoming Fox/Hare values as balance-approved. Keep that question separate
-  from the approved production Mutations. **Owner:** Josh + Sim.
+- **Next action:** Continue matched Forest Edge balance work when selected for a
+  later iteration. Keep it separate from the accepted S3 V1 Mutation offer.
+  **Owner:** Josh + Sim.
   **Confidence:** High.
-
-### P1-035 — Fox mating telemetry does not yet explain eligibility
-
-- **Status:** The mating stability and cooldown regressions are covered, and
-  the live mating filter passed 4/4; however, the latest five-seed, 600-tick,
-  six-phase continuation recorded three Fox births while aggregate `Mating`
-  state telemetry was zero. This is an evidence/telemetry discrepancy, not a
-  reason to claim the reproduction behavior is fully validated.
-- **Evidence:** [balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
-  [cooldown experiment](../artifacts/cellular-experiment-20260921-232331/), and
-  the latest targeted EditMode artifact [96/96 domain tests](../artifacts/unity-tests-20260921-232912/).
-- **Next action:** Run a targeted reproduction/telemetry check that records
-  eligibility, mating state, cooldown, and birth outcome in the same run;
-  explain or correct the zero-state count before closing S3-08. **Owner:**
-  Josh + Sim. **Confidence:** High.
 
 ### P2-005 — Raw worker artifact retention policy
 
@@ -183,7 +133,7 @@ and sequencing remain in [Project Hygiene Ticket Summaries](PROJECT_HYGIENE_TICK
 - **CF-6 performance measurement (former P1-030):** Optional stretch work with
   no committed capacity. Reopen only when time is explicitly scheduled.
 
-## Pruned in this review
+## Resolved or pruned in this review
 
 - The Island Survivor runtime slice was removed on 2026-09-18 after confirming
   it was outside the Main Menu → Desktop → Simulation flow. Historical
@@ -203,6 +153,25 @@ and sequencing remain in [Project Hygiene Ticket Summaries](PROJECT_HYGIENE_TICK
   PlayMode 33/33, including zero-Data legacy, authored, and Reinforcements
   choices and the same-run repeated-choice regression ([retained results](../artifacts/unity-tests-20260924-134934/)).
   The separate legacy terminal reward path still retains its catalog costs.
+- **P1-031 resolved for the S3 review:** Josh completed the Main Menu generated-
+  art direction review; Chrono is working on the art. The merged-baseline Clean
+  run passed EditMode 263/263 and PlayMode 34 tests; two graphics-only tests
+  were skipped as expected, and none failed. See the [S3 merged-baseline handoff](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md)
+  and [retained results](../artifacts/unity-tests-20260929-033047/). Art
+  production and further UI polish remain future work.
+- **P1-035 resolved:** The S3-08 report now distinguishes pre-resolution `Mating`
+  state ticks from resolver candidate evaluations. Eligible attempts reconcile
+  with failed chance rolls, unavailable birth locations, and successful
+  attempts in both report paths; the five-seed Forest Edge check and focused
+  regressions passed. See the
+  [S3-08 telemetry handoff](handoffs/2026-09-27-codex-s3-08-fox-telemetry.md).
+- **P1-036 resolved:** Verified the S3-02 Trello card already records the
+  36×20 production default and defers playable Fern/Plant identity, Skip bonus,
+  and the final performance-to-currency formula. Reconciled S3-01's stale
+  post-fix verification caveat, S3-03/04's stale offer/integration notes, and
+  S3-06's Forest Edge approval wording. S3-07 and the S3 control card are now
+  complete in Done. See the [S3 control record](Sprints/S3-control-record.md)
+  and [merged-baseline closeout handoff](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md).
 - Removed the long 2026-08-20 historical-open and R-001–R-034 resolved-item
   catalogues. Their source handoffs and Git history remain available; this file
   now lists actionable gaps only.

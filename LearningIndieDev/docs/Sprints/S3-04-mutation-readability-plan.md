@@ -242,6 +242,13 @@ generic A/B/C card markers for this slice. The matched run is complete and
 supports the directional copy, but does not establish a broader balance or
 player-fun claim. Mutation-specific artwork remains outside this slice.
 
+**S3 V1 closeout update — 2026-09-29:** Josh accepts the current Forest Edge
+evidence for this sprint. The merged implementation offers three distinct
+applicable Mutations from the five-Mutation Hare pool or Skip, and hides
+Reproductive Drive or a coupled Fox Brood Drive response when it cannot apply.
+The clean merged-baseline suite passes. This satisfies the current S3 V1 gate;
+later mutation, ecology, and visual iteration remains expected.
+
 ## Confirmed product decisions
 
 Josh confirmed that Mutation hints, prompts, and descriptions are authored
@@ -253,13 +260,14 @@ abstraction such as “Hunter Lv2 — better tracking and sharper teeth.” This
 addresses the earlier causality-language concern; it remains an acceptance
 rule and does not require a separate durable concern record.
 
-For the bounded S3-04 bridge, offer two distinct choices from the five existing
-experimental Hare Mutations plus fixed repeatable Reinforcements at each
-boundary. Pool choices can appear again later; selecting one again increments
-its level and stacks/reapplies its defined effect. Reinforcements adds one
-player-species individual at a deterministic open cell in the following phase
-and can be selected repeatedly. All phase Mutations are free; Skip has no
-reward. A future Skip bonus or broader Mutation economy is deferred.
+For the bounded S3-04 bridge, each boundary offers three distinct applicable
+choices from the five existing experimental Hare Mutations, or Skip. Pool
+choices can appear again later; selecting one again increments its level and
+stacks/reapplies its defined effect. An inapplicable effect is hidden, including
+when a coupled species response is capped. All phase Mutations are free; Skip
+has no reward. Repeatable Hare Reinforcements are a separate 10-Data purchase
+that adds one individual in the following phase when space and population
+limits allow. A future Skip bonus or broader Mutation economy is deferred.
 
 **First review candidate, approved by Josh:** Tough Hide from the current experimental
 Hare set. It is a compact defensive effect with a direct `CombatBlocked`

@@ -486,13 +486,16 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void InvalidUpgradeApplicationDoesNotSpendOrChangeProgression()
+        public void InapplicableReproductiveDriveDoesNotSpendOrChangeProgression()
         {
             var rules = CreateReproductionRules(reproductionChance: 1f);
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
             progression.AddCurrency(5);
-            Assert.Throws<ArgumentOutOfRangeException>(() => progression.TryPurchase(
-                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId);
+            Assert.That(progression.CanPurchase(upgrade), Is.False);
+            Assert.That(progression.CanApplyFreeUpgrade(upgrade), Is.False);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.TryApplyFreeUpgrade(upgrade), Is.False);
             Assert.That(progression.Currency, Is.EqualTo(5));
             Assert.That(progression.CurrentRules, Is.SameAs(rules));
             Assert.That(progression.PurchasedUpgradeCount, Is.Zero);
@@ -816,6 +819,26 @@ namespace SaltyGame.Tests
 
                 Assert.That(offeredIds, Has.Count.EqualTo(3));
             }
+        }
+
+        [Test]
+        public void PhaseMutationOfferSkipsCappedReproductiveDriveAndKeepsThreeChoices()
+        {
+            var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                SpeciesUpgradeCatalog.ReproductiveDriveId,
+                rotation: 2,
+                seed: 3,
+                canOffer: upgrade => upgrade.Id != SpeciesUpgradeCatalog.ReproductiveDriveId);
+
+            Assert.That(offer, Has.Length.EqualTo(3));
+            var offeredIds = new HashSet<string>();
+            foreach (var upgrade in offer)
+            {
+                Assert.That(upgrade.Id, Is.Not.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveId));
+                offeredIds.Add(upgrade.Id);
+            }
+
+            Assert.That(offeredIds, Has.Count.EqualTo(3));
         }
 
         [Test]

@@ -49,8 +49,10 @@ S3-02 proposals are discarded.
 ## Mutation economy confirmation — 2026-09-24
 
 - Mutation choices at the five phase boundaries are free: selecting one
-  deducts no Data, including the fixed repeatable Reinforcements option. Skip
-  grants no reward under the S3-04 contract. This does not change permanent
+  deducts no Data. Skip grants no reward under the S3-04 contract. Repeatable
+  Hare Reinforcements are a separate purchase, outside the three Mutation
+  choices; they cost 10 Field Data and add one Hare to the next phase when
+  board space and population limits allow. This does not change permanent
   Genome upgrade pricing in the Gene Lab.
 
 ## Still open or deferred, not blocking S3-02
