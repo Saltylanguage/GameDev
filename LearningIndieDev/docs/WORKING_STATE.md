@@ -5,19 +5,21 @@ become a master changelog.
 
 ## Current focus
 
-**M1 closeout complete: 2026-09-29.** Josh accepted the milestone gate using
-the distributed retained evidence; later changes may need retesting. The
-cap-aware offer fix and related integration changes are preserved in pushed
-commit `974827f2` on `codex/forest-edge-visual-pass`. Its Clean run passed
-EditMode 263/263 and PlayMode 34, with two expected graphics-only skips and no
-failures. S3 is closed; all committed S3 cards and the control card are in
-Trello Done, while S3-05 remains Backlog as stretch work. The M1 milestone card
-is marked COMPLETE. S4 remains Proposed
-and has not been kicked off; the next step is to refine its plan. The selected
-Main Menu art is in production with Chrono, and visual polish remains
-iterative. See the [M1 closeout](handoffs/2026-09-29-codex-m1-closeout.md),
-[S3 merged-baseline closeout](handoffs/2026-09-29-0341-codex-s3-merged-cap-review.md),
-and [M1 exit-gate pre-review](handoffs/2026-09-29-codex-m1-exit-gate-prereview.md).
+**S4 planning draft: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
+cap-aware offer fix are recorded in pushed commits `25642440` and `974827f2`.
+The S4 control record proposes Sim's next contribution as bounded build
+configuration and matched-seed evidence work, based on his recent Forest Edge,
+Mutation, telemetry, and report changes. Seven draft cards (P1-032 and S4-01
+through S4-05 plus S4-07) are staged in Trello Upcoming Work for planning
+review. S4 remains Proposed: confirm Sim's ownership, estimate, and
+availability; resolve the unestimated P1-032 Desktop migration capacity; and
+keep the 8h reserve protected before finalizing scope or scheduling kickoff.
+S4 profile persistence is currently scoped to local player choices; versioned
+progression and Genome persistence remain later work. The M1 Trello card is
+COMPLETE, and S3-05 remains Backlog stretch work. See the [S4 planning
+record](Sprints/S4-control-record.md), [Sim kickoff handoff (ready for
+review)](handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md), and [M1
+closeout](handoffs/2026-09-29-codex-m1-closeout.md).
 
 **Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
 population additions are now tracked as `ADD` in the run and checkpoint. The

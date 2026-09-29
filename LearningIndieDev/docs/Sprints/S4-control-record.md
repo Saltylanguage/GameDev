@@ -26,12 +26,97 @@ changing the deterministic run contract.
 | Save and restore local profile choices | F13, F17 | Confirm the persisted fields, restart boundary, and recovery behavior; keep this separate from active-expedition resume and production progression saves. |
 | Small design-only spikes, if capacity remains | F04, F09, F10, F19 | Optional only; select narrowly after the primary outcome and reserve are protected. |
 
+## Planning checkpoint — Sim discussion before finalizing
+
+This section records a proposal for the owner discussion. Draft cards are now
+staged in `🎯 Upcoming Work` so they can be reviewed with Sim. The assignments
+and estimates below are not approved by Sim; staging these cards does not
+finalize scope or start S4.
+
+See the [Sim kickoff handoff](../handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md)
+for the requested capacity, feasibility, evidence, scope, and profile-boundary
+decisions.
+
+Sim's recent work provides a clear path into a bounded build-and-evidence
+slice: he integrated purchased-population accounting into simulation reports
+and validation tools (`1f4c7c8e`), made Hare Mutation offers readable and
+eligibility-aware (`16f06ea7`), added phase-boundary Reinforcements
+(`c310746d`), exposed reproduction telemetry (`cafaf6fd`), and maintained the
+Forest Edge starting contract and balance (`7e6ed38c`, `f4fa9bf8`).
+
+### Provisional Sim work sequence
+
+1. **S4-01 — co-review the strategy matrix (2h in this draft).** Josh leads
+   the player meaning and trade-offs for Trailblazer, Warren, and Gardeners;
+   Sim checks whether each can be represented with supported rules and named
+   inputs. Confirm whether the names describe species, builds, or loadouts.
+2. **S4-02 — lead the three bounded configurations (8h in this draft).** If
+   S4-01 is feasible, Sim implements only the approved differences using
+   existing simulation and Mutation rules. Keep new mechanics out unless a
+   separate scope trade is approved.
+3. **S4-03 — lead the matched-seed evidence (4h in this draft).** Compare the
+   three configurations with the same scenario, starting state, seed set, and
+   windows. Preserve fingerprints and report limits; Josh leads the player
+   review and accept/revise decision. Confirm the seed count and review surface
+   with Sim before setting acceptance details.
+4. **S4-04/05 — keep profile ownership with Josh (3h from Sim in this draft,
+   primarily review).** Sim can review that selected profile inputs are frozen
+   at launch and do not break deterministic runs. Ask whether this support is
+   needed; the contract and player save/restore flow should remain Josh-led.
+
+This draft allocates Sim 17h of feature work and 3h of the protected reserve.
+Ask him to confirm both the sequence and actual availability. This proposal
+builds on his recent simulation, Mutation, and evidence work without assuming
+he owns product decisions or profile persistence.
+
+### Open planning decisions
+
+- **P1-032 capacity:** The Desktop launch-context migration is scheduled before
+  S4-01, but its estimate is still TBD and it is outside the five-card 32h
+  feature baseline. Estimate it and name the capacity trade before kickoff.
+- **Keep balance scope bounded:** `FUTURE_SPRINT_ROADMAP.md` describes a wider
+  S4 balance lane (shared capability map, reference panel, Adaptation Value,
+  and reachable Mutation-path analysis) than this 40h draft. Confirm with Sim
+  which small comparison is necessary for the three-build outcome; defer the
+  broader lane unless the team approves a scope and capacity trade.
+- **Profile boundary:** Keep S4 to local player choices if retained. Clarify
+  that versioned progression saves, migration, settlement, and Genome
+  persistence stay in S6; confirm the minimal field set and restart behavior.
+- **Optional Genome contract:** S4-06 costs 4h beyond the baseline. Keep it out
+  unless Josh and Sim explicitly trade away other feature work.
+
+### Questions for the Sim discussion
+
+- Can the three build identities be expressed with supported species and
+  Mutation rules? Which smallest differences would make their choices clear?
+- What seed count, measurements, and report fields are enough to compare them
+  without turning S4 into broad balance research?
+- Are the proposed 8h for configurations and 4h for matched evidence realistic,
+  and is 17h of feature work plus 3h reserve available?
+- Does the Desktop launch-context migration or the profile field set create a
+  dependency for the configuration/evidence work?
+- Which parts of the wider capability-map, reference-panel, and Adaptation
+  Value direction are needed now, and which can remain future work?
+
 ## Proposed task cards — baseline set
 
-These are draft card definitions, not Trello cards and not yet selected for
-`🎯 Upcoming Work`. IDs, owners, and estimates are proposals to refine after S3
-closeout. The five feature cards total 32h; the separate 8h reserve brings the
-plan to 40h (Josh 20h, Sim 20h).
+These draft cards are in `🎯 Upcoming Work` for planning review. IDs, owners,
+and estimates remain proposals to refine with Sim. The five feature cards
+total 32h; the separate 8h reserve brings the plan to 40h (Josh 20h, Sim 20h).
+
+| Task | Trello card |
+| --- | --- |
+| P1-032 — Desktop launch-context migration (pre-S4; estimate/trade TBD) | [Open card](https://trello.com/c/Enm8Avxu/111-p1-032-desktop-launch-context-migration) |
+| S4-01 — Build identities and counterplay | [Open card](https://trello.com/c/74VBPME5/112-s4-01-define-forest-edge-build-identities-and-counterplay) |
+| S4-02 — Three bounded configurations | [Open card](https://trello.com/c/j22jDrAu/113-s4-02-implement-three-bounded-forest-edge-build-configurations) |
+| S4-03 — Matched-seed comparisons and in-game review | [Open card](https://trello.com/c/xyDDiiRC/114-s4-03-run-matched-seed-comparisons-and-complete-in-game-review) |
+| S4-04 — Local profile save/restore contract | [Open card](https://trello.com/c/JiVmlHhh/115-s4-04-define-the-local-profile-save-restore-contract) |
+| S4-05 — Save and restore approved profile fields | [Open card](https://trello.com/c/78M83hds/116-s4-05-save-and-restore-approved-local-profile-fields) |
+| S4-07 — Integration, defects, and review reserve | [Open card](https://trello.com/c/e5xd0K7c/117-s4-07-integration-defects-and-review-reserve) |
+
+S4-06, the optional Genome contract spike, remains out of the baseline and has
+no Trello card. The descriptions identify owners and estimates as provisional;
+they are not assigned to Trello members yet.
 
 ### Priority carry-over — P1-032 Desktop launch-context migration
 
@@ -147,9 +232,9 @@ plan to 40h (Josh 20h, Sim 20h).
   unused rather than becoming new feature scope.
 - **Why S4:** The forecast explicitly protects 8h for integration and review.
 
-**Baseline allocation:** Josh 15h feature work + 5h reserve; Sim 17h feature
-work + 3h reserve. Feature work is capped at 32h; total planned capacity is
-40h.
+**Draft allocation to validate:** Josh 15h feature work + 5h reserve; Sim 17h
+feature work + 3h reserve. Feature work is capped at 32h; total planned
+capacity is 40h.
 
 ## Optional card requiring a capacity trade
 
@@ -189,15 +274,18 @@ work + 3h reserve. Feature work is capped at 32h; total planned capacity is
 - Broad species/scenario expansion and full reactive-ecology implementation
   remain out of scope. Any design spike must be small and must not displace the
   primary outcome or the 8h reserve.
-- S4 remains Proposed until the M1 exit gate is reviewed, this plan is refined,
-  and a separate kickoff is confirmed.
+- S4 remains Proposed until Sim reviews the proposed ownership and capacity,
+  this plan is refined, and a separate kickoff is confirmed.
 
-## Before promotion to `🎯 Upcoming Work`
+## Before final approval and kickoff
 
 - [x] Reconcile S3 closeout: committed work is in Trello Done; S3-05 remains
   uncommitted stretch work in Backlog.
-- Define each candidate card's problem/outcome, stable task ID, owner, reviewer,
-  estimate, dependencies/risks, and observable acceptance check.
+- [x] Stage the draft task cards in `🎯 Upcoming Work` for planning review.
+- Confirm the proposed Sim work sequence, estimates, and available capacity
+  with Sim before finalizing the plan.
+- Confirm each draft card's problem/outcome, task ID, owner, reviewer, estimate,
+  dependencies/risks, and observable acceptance check with the team.
 - Confirm profile data and restart/recovery boundaries.
 - Confirm matched-seed evidence and the in-game review gate.
 - Allocate no more than 32h to feature work and retain 8h for integration,
