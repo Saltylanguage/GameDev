@@ -17,7 +17,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 26;
+        const int ReportSchemaVersion = 27;
         const string MetricDictionaryId = "cellsim-experiment-metrics";
         const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;

@@ -627,7 +627,7 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
     if ($statRuns.Count -gt 0) {
         $lines.Add('## Experimental herbivore stat line')
         $lines.Add('')
-        $statHeaders = @('Seed', 'Species', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'eAVI', 'predAVG', 'sAVI', 'cAVI', 'bAVG', 'RFS', 'APS')
+        $statHeaders = @('Seed', 'Species', 'SPO', 'ADD', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD', 'FPO', 'Expected FPO', 'FPO reconciled', 'pAVI', 'eAVI', 'predAVG', 'sAVI', 'cAVI', 'bAVG', 'RFS', 'APS')
         $statRows = [System.Collections.Generic.List[object[]]]::new()
         foreach ($run in $statRuns) {
             $stat = $run.herbivoreStatLine
@@ -645,6 +645,7 @@ if ($report.experimentalFeatures -eq 'bev-experimental') {
                 $run.seed,
                 $stat.speciesId,
                 $stat.SPO,
+                $(if ($null -ne $stat.PSObject.Properties['ADD']) { $stat.ADD } else { 0 }),
                 $hps,
                 $ehs,
                 $stat.ECN,
@@ -855,6 +856,7 @@ foreach ($speciesId in $species) {
     $failedChance = 0d
     $blockedNoSpace = 0d
     $successfulAttempts = 0d
+    $eligibleAttempts = 0d
     $births = 0d
     $allRunsReconciled = $true
     foreach ($run in @($report.runs)) {
@@ -865,6 +867,7 @@ foreach ($speciesId in $species) {
         $chanceValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionFailedChanceRoll'
         $spaceValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionBlockedNoBirthLocation'
         $successValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionSuccessfulAttempts'
+        $eligibleValue = Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'reproductionEligibleAttempts'
         $candidates += $candidateValue
         $blockedEnergy += $energyValue
         $blockedMate += $mateValue
@@ -872,6 +875,7 @@ foreach ($speciesId in $species) {
         $failedChance += $chanceValue
         $blockedNoSpace += $spaceValue
         $successfulAttempts += $successValue
+        $eligibleAttempts += $eligibleValue
         $births += Get-ActivityValue -Run $run -SpeciesId $speciesId -Property 'births'
         if ($candidateValue -ne ($energyValue + $mateValue + $groupValue + $chanceValue + $spaceValue + $successValue)) {
             $allRunsReconciled = $false
@@ -884,6 +888,7 @@ foreach ($speciesId in $species) {
         (Get-Number ($blockedEnergy / [double]$report.seedCount)),
         (Get-Number ($blockedMate / [double]$report.seedCount)),
         (Get-Number ($blockedGroup / [double]$report.seedCount)),
+        (Get-Number ($eligibleAttempts / [double]$report.seedCount)),
         (Get-Number ($failedChance / [double]$report.seedCount)),
         (Get-Number ($blockedNoSpace / [double]$report.seedCount)),
         (Get-Number ($successfulAttempts / [double]$report.seedCount)),
@@ -891,9 +896,9 @@ foreach ($speciesId in $species) {
         $allRunsReconciled
     ))
 }
-Add-MarkdownTable -Lines $lines -Headers @('Species', 'Candidates', 'Energy', 'Mate', 'Group cap', 'Chance', 'No space', 'Successes', 'Births', 'Reconciled') -Rows $reproductionRows.ToArray()
+Add-MarkdownTable -Lines $lines -Headers @('Species', 'Candidates', 'Energy', 'Mate', 'Group cap', 'Eligible', 'Chance', 'No space', 'Successes', 'Births', 'Reconciled') -Rows $reproductionRows.ToArray()
 $lines.Add('')
-$lines.Add('Each reproduction candidate is classified once by the first resolver gate that prevents offspring, or as a successful attempt when at least one birth is created. Mating behavior ticks are decision intent and are not expected to equal candidate evaluations.')
+$lines.Add('Eligible attempts passed the energy, mate, and group-cap checks and reached chance or birth-location processing. Each candidate is classified once by the first resolver gate that prevents offspring, or as a successful attempt when at least one birth is created. Mating behavior ticks are pre-resolution FSM decisions and are not expected to equal candidate evaluations.')
 $lines.Add('')
 $lines.Add('## Average mortality per run')
 $lines.Add('')

@@ -15,6 +15,78 @@ namespace SaltyGame.PlayModeTests
         const string SceneName = "GalapagOSDesktopTest";
         const string DesktopCameraName = "GalapagOS Desktop Test Camera";
         const string SimulationCameraName = "GalapagOS Simulation View";
+        const string CurrentDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v5";
+        const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
+        const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
+
+        [UnityTest]
+        public IEnumerator LegacySquareGridSettingsMigrateOnStartup()
+        {
+            var keys = new[]
+            {
+                CurrentDefaultSettingsKey,
+                PreviousDefaultSettingsKey,
+                LegacyDefaultSettingsKey,
+            };
+            var hadValues = new bool[keys.Length];
+            var originalValues = new string[keys.Length];
+            for (var i = 0; i < keys.Length; i++)
+            {
+                hadValues[i] = PlayerPrefs.HasKey(keys[i]);
+                originalValues[i] = PlayerPrefs.GetString(keys[i]);
+            }
+
+            try
+            {
+                yield return SceneManager.LoadSceneAsync(SceneName);
+                yield return null;
+
+                var desktopRoot = GameObject.Find(DesktopCameraName);
+                Assert.That(desktopRoot, Is.Not.Null);
+                var preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
+                Assert.That(preview, Is.Not.Null);
+                Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
+
+                preview.SaveCurrentSettingsAsDefault();
+                var authoredSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
+                var legacySettings = authoredSettings
+                    .Replace($"\"width\":{(int)GetProperty(preview, "GridWidth")}", "\"width\":64")
+                    .Replace($"\"height\":{(int)GetProperty(preview, "GridHeight")}", "\"height\":64");
+                StringAssert.Contains("\"width\":64", legacySettings);
+                StringAssert.Contains("\"height\":64", legacySettings);
+
+                PlayerPrefs.SetString(PreviousDefaultSettingsKey, legacySettings);
+                PlayerPrefs.DeleteKey(CurrentDefaultSettingsKey);
+                PlayerPrefs.Save();
+
+                yield return SceneManager.LoadSceneAsync(SceneName);
+                yield return null;
+
+                desktopRoot = GameObject.Find(DesktopCameraName);
+                preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
+                Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
+                Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
+                var migratedSettings = PlayerPrefs.GetString(CurrentDefaultSettingsKey);
+                StringAssert.Contains("\"width\":36", migratedSettings);
+                StringAssert.Contains("\"height\":20", migratedSettings);
+            }
+            finally
+            {
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    if (hadValues[i])
+                    {
+                        PlayerPrefs.SetString(keys[i], originalValues[i]);
+                    }
+                    else
+                    {
+                        PlayerPrefs.DeleteKey(keys[i]);
+                    }
+                }
+
+                PlayerPrefs.Save();
+            }
+        }
 
         [UnityTest]
         public IEnumerator GalapagOSDesktopHomeCapturesVisualEvidenceWithoutOpeningWindows()
@@ -116,14 +188,14 @@ namespace SaltyGame.PlayModeTests
             Assert.That(((UnityEngine.Object)GetProperty(preview, "SelectedScenario")).name, Is.EqualTo("ForestEdge"));
             Assert.That(GetProperty(GetProperty(preview, "PlayerSpecies"), "Value"), Is.EqualTo("hare"));
             Assert.That(GetProperty(preview, "GridWidth"), Is.EqualTo(36));
-            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(21));
+            Assert.That(GetProperty(preview, "GridHeight"), Is.EqualTo(20));
 
             var boardViewModel = desktopRoot.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
             var snapshot = GetProperty(boardViewModel, "Snapshot");
             Assert.That(snapshot, Is.Not.Null);
             Assert.That(GetProperty(snapshot, "Width"), Is.EqualTo(36));
-            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(21));
+            Assert.That(GetProperty(snapshot, "Height"), Is.EqualTo(20));
 
             Assert.That(GetProperty(simulationViewModel, "HerbivorePopulation"), Is.GreaterThan(0));
             Assert.That(GetProperty(simulationViewModel, "CarnivorePopulation"), Is.GreaterThan(0));

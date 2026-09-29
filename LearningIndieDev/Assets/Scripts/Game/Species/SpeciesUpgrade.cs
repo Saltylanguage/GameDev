@@ -342,6 +342,46 @@ namespace SaltyGame
             BroodDriveId,
         };
 
+        public static bool IsExperimentalHerbivoreMutationId(string upgradeId)
+        {
+            return Array.IndexOf(ExperimentalHerbivoreUpgradeIds, upgradeId) >= 0;
+        }
+
+        public static SpeciesUpgrade[] CreateExperimentalHerbivoreMutationOffer(
+            string continuingUpgradeId,
+            int rotation,
+            int seed)
+        {
+            if (rotation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rotation), rotation, "Offer rotation cannot be negative.");
+            }
+
+            var primaryIndex = Array.IndexOf(ExperimentalHerbivoreUpgradeIds, continuingUpgradeId);
+            var seededValue = seed & int.MaxValue;
+            var hasContinuingUpgrade = primaryIndex >= 0;
+            if (!hasContinuingUpgrade)
+            {
+                primaryIndex = seededValue % ExperimentalHerbivoreUpgradeIds.Length;
+            }
+
+            var alternativeRotation = hasContinuingUpgrade
+                ? rotation % (ExperimentalHerbivoreUpgradeIds.Length - 1)
+                : (seededValue / ExperimentalHerbivoreUpgradeIds.Length)
+                    % (ExperimentalHerbivoreUpgradeIds.Length - 1);
+            var offer = new SpeciesUpgrade[3];
+            for (var index = 0; index < offer.Length; index++)
+            {
+                var offset = index == 0
+                    ? 0
+                    : 1 + ((alternativeRotation + index - 1) % (ExperimentalHerbivoreUpgradeIds.Length - 1));
+                offer[index] = Create(ExperimentalHerbivoreUpgradeIds[
+                    (primaryIndex + offset) % ExperimentalHerbivoreUpgradeIds.Length]);
+            }
+
+            return offer;
+        }
+
         public static SpeciesUpgrade Create(string id)
         {
             if (string.IsNullOrWhiteSpace(id))

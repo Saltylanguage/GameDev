@@ -1,6 +1,6 @@
 # S3-04 — Mutation readability and bounded Forest Edge review
 
-**Status:** Approved working plan — ready for implementation; bounded candidate review remains
+**Status:** Implementation, comparison, and player-facing review complete
 **Owner:** Josh (product and player-facing acceptance)
 **Evidence owner:** Sim
 **Planned effort:** Josh 2h; Sim 6h
@@ -14,16 +14,25 @@ Forest Edge/Hare slice and record an accept-or-revise decision. This is a
 readability and scoped evidence review, not approval of the full Mutation
 catalog or a production-balance claim.
 
+The first implementation and evidence pass is recorded in the
+[2026-09-27 Tough Hide handoff](../handoffs/2026-09-27-codex-s3-04-tough-hide.md).
+The five existing Mutations now produce three free, distinct options at phase
+decisions, with Skip and repeat-level behavior. Josh's player-copy and generic
+card-marker treatment was accepted for this slice after reviewing the bounded
+Tough Hide evidence.
+
+The two-pool-plus-Reinforcements bridge described in the dated planning and
+baseline sections below was superseded by this three-distinct-Mutation offer.
+Reinforcements remains historical context, not the current third choice.
+
 ## Locked product boundaries
 
 - The player gets three Mutation options or chooses Skip at the boundaries
   after rounds 1–5. A selected Mutation is temporary and applies to the current
   expedition; Mutation choices are not Genome purchases.
 - S3-04 uses the five existing experimental Hare Mutations as its bounded
-  rotating pool. Each phase offer contains two distinct choices from that pool
-  plus the fixed, repeatable Reinforcements Mutation as its third choice.
-  Reinforcements adds one player-species individual at a deterministic open
-  cell in the following phase. Earlier pool choices may appear again later;
+  rotating pool. Each phase offer contains three distinct choices from that
+  pool. Earlier pool choices may appear again later;
   selecting one again increases its level and reapplies/stacks its effect.
 - Mutation selection is free in this S3 slice. Skip grants no reward during
   S3-04; a future Skip bonus remains a separate deferred economy decision.
@@ -44,7 +53,7 @@ catalog or a production-balance claim.
 - Keep player copy separate from researcher evidence. No raw diagnostics or
   unsupported causal certainty enters the player window.
 
-## Current implementation audit and decision gate
+## Baseline implementation audit at plan approval — 2026-09-26
 
 This began as a source/test inspection, not a Unity runtime test. The live
 player preview currently forces `bevExperimentalFeaturesEnabled` on in
@@ -152,12 +161,11 @@ or seed panel without a scope decision.
 
 ## Acceptance
 
-- The phase boundary presents two distinct eligible temporary Mutations from
-  the existing pool, fixed repeatable Reinforcements as the third choice, and
-  Skip. All three Mutation choices are free and do not deduct Data, including
+- The phase boundary presents three distinct eligible temporary Mutations from
+  the existing pool and Skip. All three Mutation choices are free and do not deduct Data, including
   when the player has no Data. Pool choices can reappear at later boundaries;
   choosing one again increments its level and stacks its defined effect.
-  Reinforcements can be selected repeatedly. Skip has no S3-04 reward. The
+  Skip has no S3-04 reward. The
   offer does not imply Genome ownership or expose raw modifier rows.
 - Each reviewed offer has a recognizable icon and readable Mutation identity.
   Its concise description communicates an evidence-backed direction for the
@@ -170,11 +178,11 @@ or seed panel without a scope decision.
   phase without treating every downstream population or ecological change as
   the Mutation's effect.
 - A bounded Forest Edge/Hare evidence note records the candidate, exact
-  snapshot, inputs/seeds, observed result, limitations, and Josh's accept/revise
-  decision.
-- Focused regression coverage verifies the two-pool-plus-Reinforcements offer
-  and Skip at each decision boundary, free selection with zero Data, selection
-  taking effect on the next phase without
+  snapshot, inputs/seeds, observed result, limitations, and an explicit copy
+  and presentation decision.
+- Focused regression coverage verifies three distinct offers plus Skip at each
+  decision boundary, free selection with zero Data, and selection taking effect
+  on the next phase without
   replacing the run, player copy staying within the approved display contract,
   phase summary values matching the completed phase window, and research-only
   diagnostics staying off the normal player surface.
@@ -227,10 +235,12 @@ or seed panel without a scope decision.
 - Deciding a Skip bonus or changing the performance-to-currency formula.
 - Broad visual polish owned by S3-06.
 
-## Remaining owner review
+## Review decision
 
-- After the candidate audit, approve the small review set before the matched
-  run begins.
+The current review accepts “Block more incoming attacks” and the existing
+generic A/B/C card markers for this slice. The matched run is complete and
+supports the directional copy, but does not establish a broader balance or
+player-fun claim. Mutation-specific artwork remains outside this slice.
 
 ## Confirmed product decisions
 
@@ -251,12 +261,12 @@ player-species individual at a deterministic open cell in the following phase
 and can be selected repeatedly. All phase Mutations are free; Skip has no
 reward. A future Skip bonus or broader Mutation economy is deferred.
 
-**Proposed first review candidate:** Tough Hide from the current experimental
+**First review candidate, approved by Josh:** Tough Hide from the current experimental
 Hare set. It is a compact defensive effect with a direct `CombatBlocked`
 phase-window metric in
 [`SpeciesSimulationMetrics.cs`](../../Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs).
 Compare a matched no-Mutation arm with an arm selecting it after round 1 and
 skipping later choices. Use the repeatable blocked-attack effect to author the
 directional player description; keep any next-phase population result as an
-observation rather than a promised effect. Josh must approve or replace this
-candidate before the evidence run.
+observation rather than a promised effect. The matched comparison is complete;
+see the handoff for its results and limitations.

@@ -73,6 +73,11 @@ namespace SaltyGame
             return simulationManager.ContinueWithoutUpgrade();
         }
 
+        public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
+        {
+            return simulationManager.TryAddBoundaryPopulation(species, amount);
+        }
+
         public bool ContinueWithBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,

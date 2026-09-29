@@ -1224,14 +1224,26 @@
                                                FontWeight="Bold"
                                                Foreground="{DynamicResource Chrono_TreeBark}" />
                                 </StackPanel>
-                                <Image Grid.Column="2"
-                                       Source="{StaticResource GalapagOS.Image.Simulation.BotanicalSketch}"
-                                       Height="58"
-                                       HorizontalAlignment="Right"
-                                       VerticalAlignment="Center"
-                                       Stretch="Uniform"
-                                       Opacity="0.66"
-                                       IsHitTestVisible="False" />
+                                <Border Grid.Column="2"
+                                        Padding="8,6"
+                                        Background="{DynamicResource Chrono_LightCream}"
+                                        BorderBrush="{DynamicResource Chrono_Olive}"
+                                        BorderThickness="2"
+                                        CornerRadius="6">
+                                    <StackPanel HorizontalAlignment="Center">
+                                        <TextBlock Text="AVAILABLE TO SPEND"
+                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                                   FontSize="8"
+                                                   Foreground="{DynamicResource Chrono_Olive}"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock Text="{Binding PhaseCurrencyText}"
+                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                                   FontSize="19"
+                                                   FontWeight="Bold"
+                                                   Foreground="{DynamicResource Chrono_TreeBark}"
+                                                   HorizontalAlignment="Center" />
+                                    </StackPanel>
+                                </Border>
                             </Grid>
                         </Border>
 
@@ -1282,7 +1294,7 @@
                                            StrokeThickness="2"
                                            VerticalAlignment="Center" />
                                 <TextBlock Grid.Column="2"
-                                           Text="FIELD DATA PURCHASE"
+                                           Text="ONE FREE CHOICE"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="8"
                                            Foreground="{DynamicResource Chrono_Olive}" />
@@ -1432,6 +1444,41 @@
                                 </Button>
                             </StackPanel>
 
+                            <Border Visibility="{Binding HarePurchaseVisibility}"
+                                    Margin="0,14,0,0"
+                                    Padding="14,10"
+                                    Background="{DynamicResource Chrono_VanillaCream}"
+                                    BorderBrush="{DynamicResource Chrono_Olive}"
+                                    BorderThickness="2"
+                                    CornerRadius="8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Text="HARE REINFORCEMENTS"
+                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                                   FontSize="11"
+                                                   FontWeight="Bold"
+                                                   Foreground="{DynamicResource Chrono_TreeBark}" />
+                                        <TextBlock Text="Add one Hare for the next phase. Buy again while Data and space remain."
+                                                   FontSize="11"
+                                                   Foreground="{DynamicResource Chrono_Olive}"
+                                                   TextWrapping="Wrap" />
+                                    </StackPanel>
+                                    <Button Grid.Column="1"
+                                            Content="{Binding HarePurchaseText}"
+                                            Command="{Binding BuyHareCommand}"
+                                            IsEnabled="{Binding CanBuyHare}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                            Width="290"
+                                            Height="44"
+                                            Margin="12,0,0,0"
+                                            FontSize="11" />
+                                </Grid>
+                            </Border>
+
                             </StackPanel>
                         </ScrollViewer>
 
@@ -1445,7 +1492,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="ONE PURCHASE PER PHASE · THE HABITAT REMAINS PAUSED"
+                                <TextBlock Text="ONE MUTATION PER PHASE · THE HABITAT REMAINS PAUSED"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="8"
                                            Foreground="{DynamicResource Chrono_Olive}"
@@ -1453,7 +1500,7 @@
                                 <StackPanel Grid.Column="1"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right">
-                                    <Button Content="CONTINUE WITHOUT UPGRADE"
+                                    <Button Content="SKIP"
                                             Command="{Binding ContinueWithoutUpgradeCommand}"
                                             IsEnabled="{Binding CanContinueWithoutUpgrade}"
                                             Style="{StaticResource GalapagOS.Button.SecondaryPaper}"

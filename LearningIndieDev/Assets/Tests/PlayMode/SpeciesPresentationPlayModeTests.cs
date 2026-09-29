@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -155,7 +157,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator DefaultFeaturesShowHerbivoreStatLineAfterRun()
+        public IEnumerator ExperimentalDiagnosticsStayHiddenUntilDeveloperModeEnabled()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -183,8 +185,8 @@ namespace SaltyGame.PlayModeTests
             StringAssert.Contains("species stat lines", message);
 
             var settingsApplied = runtime.SpeciesPreview.TryApplyGlobalSettings(
-                "8",
-                "8",
+                "36",
+                "20",
                 runtime.SpeciesPreview.BaseSeed.ToString(CultureInfo.InvariantCulture),
                 runtime.SpeciesPreview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 runtime.SpeciesPreview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
@@ -213,6 +215,16 @@ namespace SaltyGame.PlayModeTests
                 .GetProperty("ExperimentalHerbivoreStatLineSummary")
                 ?.GetValue(viewModel) as string;
             var summaryVisibility = viewModel.GetType()
+                .GetProperty("ExperimentalHerbivoreStatLineSummaryVisibility")
+                ?.GetValue(viewModel)
+                ?.ToString();
+            Assert.That(summaryVisibility, Is.EqualTo("Collapsed"));
+
+            viewModel.GetType().GetProperty("DeveloperMode")?.SetValue(viewModel, true);
+            summary = viewModel.GetType()
+                .GetProperty("ExperimentalHerbivoreStatLineSummary")
+                ?.GetValue(viewModel) as string;
+            summaryVisibility = viewModel.GetType()
                 .GetProperty("ExperimentalHerbivoreStatLineSummaryVisibility")
                 ?.GetValue(viewModel)
                 ?.ToString();
@@ -343,8 +355,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(phaseSettingsApplied, Is.True, phaseMessage);
 
             var settingsApplied = preview.TryApplyGlobalSettingsForTicks(
-                "8",
-                "8",
+                "36",
+                "20",
                 preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
                 preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
@@ -385,6 +397,20 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+            Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
+            var mutationIds = new HashSet<string>
+            {
+                SpeciesUpgradeCatalog.ToughHideId,
+                SpeciesUpgradeCatalog.EfficientDigestionId,
+                SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesUpgradeCatalog.ReproductiveDriveId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            var offeredIds = Enumerable.Range(0, preview.RewardOptionCount)
+                .Select(preview.GetRewardOptionId)
+                .ToArray();
+            Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
+            Assert.That(offeredIds.All(mutationIds.Contains), Is.True);
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Tick, Is.EqualTo(2));
             Assert.That(run.TargetTicks, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
@@ -400,9 +426,11 @@ namespace SaltyGame.PlayModeTests
                 viewModel.GetType().GetProperty("CanCloseWindow")?.GetValue(viewModel),
                 Is.EqualTo(false));
 
+            var currencyBeforeSkip = preview.Progression.Currency;
             preview.ContinueWithoutUpgrade();
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(preview.Progression.Currency, Is.EqualTo(currencyBeforeSkip));
 
             for (var phase = 2; phase < SpeciesSimulationPreview.ContinuousExpeditionPhaseCount; phase++)
             {
@@ -654,8 +682,8 @@ namespace SaltyGame.PlayModeTests
             preview.StopSimulation();
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicks(
-                "8",
-                "8",
+                "36",
+                "20",
                 "0",
                 preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
@@ -816,7 +844,7 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
                 // The seed selects the first experimental offer deterministically.
                 Assert.That(preview.TryApplyGlobalSettingsForTicks(
-                    "8", "8", skillIndex.ToString(CultureInfo.InvariantCulture),
+                    "36", "20", skillIndex.ToString(CultureInfo.InvariantCulture),
                     preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                     preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
                     "10", "0.01", "0", "1", "0", false, out message), Is.True, message);
@@ -835,7 +863,25 @@ namespace SaltyGame.PlayModeTests
                         yield return null;
                     }
                     Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                    Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
+                    var offeredIds = Enumerable.Range(0, preview.RewardOptionCount)
+                        .Select(preview.GetRewardOptionId)
+                        .ToArray();
+                    Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
+                    Assert.That(offeredIds.All(id => ids.Contains(id)), Is.True);
+                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Contain($"LV {phase + 1}"));
+                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("COST"));
+                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("DATA"));
                     Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(upgrade.Id));
+                    if (upgrade.Id == SpeciesUpgradeCatalog.ToughHideId && phase > 1)
+                    {
+                        var completedPhase = run.PhaseResults[run.PhaseResults.Count - 1];
+                        var blockedIncomingAttacks = completedPhase.Metrics.CombatRollEvents.Count(
+                            combat => combat.TargetSpecies == preview.PlayerSpecies && !combat.Hit);
+                        StringAssert.Contains(
+                            $"Incoming attacks blocked this phase: {blockedIncomingAttacks}",
+                            preview.PhaseRewardMessage);
+                    }
                     Assert.That(preview.CanPurchaseReward(0), Is.True);
                     var currency = preview.Progression.Currency;
                     Assert.That(preview.PurchaseReward(0), Is.True);
@@ -845,6 +891,7 @@ namespace SaltyGame.PlayModeTests
                     Assert.That(preview.Progression.Currency, Is.EqualTo(currency));
                     Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(phase + 1));
                     Assert.That(run.UpgradeAcquisitionTimeline, Has.Count.EqualTo(phase + 1));
+                    Assert.That(run.UpgradeLoadout[phase].Cost, Is.Zero);
                     Assert.That(run.UpgradeAcquisitionTimeline[phase].EffectiveTick, Is.EqualTo(phase));
                     Assert.That(run.UpgradeAcquisitionTimeline[phase].Order, Is.EqualTo(phase));
                     Assert.That(preview.ActiveSpeciesRules[preview.PlayerSpecies], Is.SameAs(preview.Progression.CurrentRules));
@@ -881,7 +928,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TrySetPlayerSpecies("fox", out message), Is.True, message);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out message), Is.True, message);
             Assert.That(preview.TryApplyGlobalSettingsForTicks(
-                "8", "8", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
+                "36", "20", preview.BaseSeed.ToString(CultureInfo.InvariantCulture),
                 preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
                 "4", "0.01", "0", "1", "0", false, out message), Is.True, message);
@@ -981,8 +1028,8 @@ namespace SaltyGame.PlayModeTests
                 out var continuousMessage);
             Assert.That(continuousSettingsApplied, Is.True, continuousMessage);
             var settingsApplied = runtime.SpeciesPreview.TryApplyGlobalSettingsForTicks(
-                "8",
-                "8",
+                "36",
+                "20",
                 runtime.SpeciesPreview.BaseSeed.ToString(CultureInfo.InvariantCulture),
                 runtime.SpeciesPreview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                 runtime.SpeciesPreview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),

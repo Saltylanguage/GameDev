@@ -56,10 +56,12 @@ flowchart LR
   scenario path, per-species activity, behavior-state ticks, tracked entity
   transitions, per-death cause events, and the ordered per-run upgrade contract
   snapshots (including modifier values and fingerprints); the Markdown is the
-  quick human/agent summary. The Play Mode report schema is 8 after this
-  addition; phase-aware reports also include phase windows, acquisition timing,
-  and the checkpoint-compatible state contract. Older reports remain readable
-  as historical artifacts.
+  quick human/agent summary. Play Mode schema 9 and experiment schema 27 report
+  eligible attempts separately from blocked gates. FSM mating ticks are
+  pre-resolution decision intent; resolver outcomes are reported independently.
+  Phase-aware reports also include phase windows, acquisition timing, and the
+  checkpoint-compatible state contract. Older reports remain readable as
+  historical artifacts.
 
 ### Deterministic simulation experiments
 
@@ -74,7 +76,9 @@ flowchart LR
   combat damage/kills, total deaths, directly resolved mortality causes, and a
   reconciled reproduction funnel. The funnel classifies each reproduction
   candidate once as energy-, mate-, group-, chance-, or space-blocked, or as a
-  successful attempt. Plant births include successful seed drops.
+  successful attempt. Eligible attempts passed energy, mate, and group-cap
+  checks and reached chance or birth-location processing. Plant births include
+  successful seed drops.
 - Use either a `CellularSimDataAsset` in `Assets/` or a fresh default scenario
   snapshot. Neither path mutates active runtime state.
 - Support arbitrary species IDs already defined by `CellularSimData`; reports do
@@ -450,6 +454,11 @@ offspring; the existing births counter remains separate because a successful
 attempt may create a litter. Schema 7 also separates behavior-state food
 intent from resolver food actions; food attempts must reconcile exactly as
 successes plus failures.
+
+A successful predator attack can set the actor's persisted next-cell state to
+Eating after its FSM decision was recorded as Attacking. Reports can therefore
+show successful food actions with zero Eating decision ticks for that species;
+those fields measure different stages of the tick.
 
 The runtime `SimulationTestHarness` runs a named scenario over a fixed seed
 range and checks initial composition, final player-population ratio, allowed

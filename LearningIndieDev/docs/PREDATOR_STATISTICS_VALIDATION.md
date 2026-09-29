@@ -9,14 +9,14 @@ decision.
 
 | Statistic | Formula | Raw inputs | Undefined/invalid handling |
 | --- | --- | --- | --- |
-| FPO | `SPO + BIR - STRV - CRWD` | `SPO`, `BIR`, `STRV`, `CRWD` | Compare with observed final population; mismatch is an FPO reconciliation failure. |
+| FPO | `SPO + ADD + BIR - STRV - CRWD` | `SPO`, `ADD`, `BIR`, `STRV`, `CRWD` | `ADD` counts successful boundary population additions. Compare with observed final population; mismatch is an FPO reconciliation failure. |
 | hAVG | `KIL / HAT` | `KIL`, `HAT` | `HAT=0, KIL=0` is N/A. Positive KIL with no attempts, negative counts, or KIL>HAT is INVALID. |
 | aAVG | `EPS / PPS` | `EPS`, `PPS` | `PPS=0, EPS=0` is N/A. Positive EPS with no prey-active predator steps, negative counts, or EPS>PPS is INVALID. |
 | huntAVG | Average of applicable hAVG and aAVG | hAVG, aAVG | One valid component stands alone. Both N/A is N/A. Any INVALID component makes huntAVG INVALID. |
-| sAVI | `1 - STRV / (SPO + BIR)` | `STRV`, `SPO`, `BIR` | Zero exposure with zero STRV is N/A; positive STRV, negative exposure, or STRV>denominator is INVALID. |
-| cAVI | `1 - CRWD / (SPO + BIR - STRV)` | `CRWD`, `SPO`, `BIR`, `STRV` | Zero exposure with zero CRWD is N/A; positive CRWD, negative exposure, or CRWD>denominator is INVALID. |
+| sAVI | `1 - STRV / (SPO + ADD + BIR)` | `STRV`, `SPO`, `ADD`, `BIR` | Zero exposure with zero STRV is N/A; positive STRV, negative exposure, or STRV>denominator is INVALID. |
+| cAVI | `1 - CRWD / (SPO + ADD + BIR - STRV)` | `CRWD`, `SPO`, `ADD`, `BIR`, `STRV` | Zero exposure with zero CRWD is N/A; positive CRWD, negative exposure, or CRWD>denominator is INVALID. |
 | bAVG | `BIR / MAT` | `BIR`, `MAT` | `MAT=0, BIR=0` is N/A. Positive BIR with no mating opportunity or BIR>MAT is INVALID. |
-| RFS | `(FPO - SPO) * bAVG` | `FPO`, `SPO`, `bAVG` | Valid zero bAVG remains a valid zero multiplier; N/A and INVALID propagate. |
+| RFS | `(FPO - SPO - ADD) * bAVG` | `FPO`, `SPO`, `ADD`, `bAVG` | Purchases are excluded from biological growth. Valid zero bAVG remains a valid zero multiplier; N/A and INVALID propagate. |
 | AHS | `RFS + huntAVG - (1-sAVI) - (1-cAVI)` | RFS, huntAVG, sAVI, cAVI | N/A contributions are neutral. Any INVALID component or FPO reconciliation failure makes AHS INVALID. |
 
 ## Raw-count origins
@@ -24,6 +24,7 @@ decision.
 | Raw value | Current source |
 | --- | --- |
 | SPO/FPO | First and final `PopulationHistory` snapshots for the predator species. |
+| ADD | Successful boundary population additions recorded by the run state. |
 | PPS | At the start of each step with at least one living member of the predator's diet target, count every living predator of that species once. |
 | EPS | On the first eligible encounter in a step, add that step's full living predator population for the species. EPS is species-wide and cannot exceed PPS. |
 | ECN | `RecordPredatorEncounter`, after pre-contact avoidance and when an eligible predator-prey combat opportunity is recorded. |

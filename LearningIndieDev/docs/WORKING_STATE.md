@@ -5,6 +5,72 @@ become a master changelog.
 
 ## Current focus
 
+**Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
+population additions are now tracked as `ADD` in the run and checkpoint. The
+whole-run Herbivore and Predator Stat-Lines include `ADD` in expected FPO and
+survival denominators and exclude it from birth-based RFS. The in-game summary,
+JSON report, human report, CSV, and independent Hare validator expose or account
+for the new field; phase windows still start with their post-purchase opening
+population. Static diff inspection and script parsing passed. The locally
+installed Unity 6000.4.6f1 Editor compiled the project with zero Console
+errors; gameplay behavior remains unverified because no test or live purchase
+run was requested. The Editor instance used for compilation was closed.
+
+**Forest Edge starting population: 2026-09-28, shared on BevBranch.** The production
+scenario now explicitly starts 400 Plants, 55 Hares, and 35 Foxes on its 36x20
+grid. All three starting probabilities are zero. This promotes the user's
+previous PC-local start preset into the authored asset. The DARWIN OR DIE stat
+workbook's species sheet now shows that single baseline. The asset diff and
+saved workbook were inspected; no Unity runtime or balance run has validated
+the new ecology. The authored baseline and stat-line accounting were pushed as
+`1f4c7c8` before the latest Salty roadmap HTML merge.
+
+**S3-08 Fox telemetry clarification: 2026-09-27, validated.** The report
+already distinguishes pre-resolution FSM state ticks from resolver outcomes;
+the reproduction funnel now also exposes eligible attempts (chance failures,
+no-location outcomes, and successful attempts) alongside the blocked gates.
+This is a derived metric and does not change Fox behavior. The new Editor test
+initially caused Safe Mode because the project's NUnit version does not support
+`Assert.Multiple`; separate `Assert.That` calls fixed the compile error. The
+direct installed Unity CLI EditMode runs passed the report serializer and
+runtime reproduction funnel tests (1/1 each). A five-seed, 600-tick Forest
+Edge report on the authored 36x20 grid contains
+`reproductionEligibleAttempts`; the generated Markdown includes the Eligible
+column. The current Editor log has no compiler errors. The 177 warnings in the
+user's screenshot are not the Safe Mode blocker. Artifacts are under
+`artifacts/s3-08-reproduction-telemetry/`. See the [S3-08 telemetry
+handoff](handoffs/2026-09-27-codex-s3-08-fox-telemetry.md).
+
+**S3-04 Mutation readability and first bounded review: 2026-09-27.** The
+phase-choice path now offers three distinct free Hare Mutations plus Skip,
+allows repeat picks to increase the level, and keeps the same expedition
+running. Tough Hide was approved as the first evidence candidate. A matched
+20-seed, six-phase Forest Edge/Hare comparison supports the directional copy
+“Block more incoming attacks,” but does not establish a broad population
+benefit. The player-facing copy and generic A/B/C markers are accepted for this
+slice. Focused EditMode 1/1 and three PlayMode checks passed in the installed
+Unity Editor. See the
+[S3-04 Tough Hide handoff](handoffs/2026-09-27-codex-s3-04-tough-hide.md).
+
+**Forest Edge board visual pass: 2026-09-27.** The visual pass was merged into
+`BevBranch`, based on the birth-poof pilot. The board now
+has a pixel canopy edge, low ground details tied to grass/resource state, and
+prototype side rock clusters that sit outside the traversable field. Birth
+presentation now gathers all children placed in the latest birth tick, enlarges
+the poof, and retains the heart and sparkles. A short code-synthesized litter
+chime is rate-limited and uses the desktop volume/mute controls. The view model
+tracks up to four actual adjacent-cell steps from one Fox that is currently
+hunting; their marks fade over nine simulation ticks and persist through pause.
+The retained baseline and first changed 1280×720 views are in
+[`visual-evidence-20260927-095257`](../artifacts/visual-evidence-20260927-095257/)
+and [`visual-evidence-20260927-095849`](../artifacts/visual-evidence-20260927-095849/).
+The first changed image shows a clear wooded edge, but the center still reads
+as the original grass/bare grid. Later variation and rock placement edits have
+not been captured. Unity crashed during a later live visual run; the clean lane
+then reported the project lock as unreachable. Doctor also reported the Unity
+licensing client and Unity services endpoint unreachable. The merged project
+compiled in the directly installed Unity 6000.4.6f1 Editor on 2026-09-27;
+full visual acceptance remains open. See the
 **Forest Edge Hare metabolism first pass: 2026-09-28.** The production Hare
 energy-loss interval is now 8 ticks instead of 10; grass, reproduction, and
 other Hare values are unchanged. This is a provisional first pass to intensify
@@ -90,8 +156,8 @@ distant-mate and gathered-three regressions passed, and the final full EditMode 
 No matched Forest Edge balance run has measured the ecological effect yet, so
 these remain provisional.
 
-**Population Reinforcements phase Mutation: 2026-09-23.** The active
-experimental offer now uses its third slot for a repeatable `+1` individual of
+**Population Reinforcements phase Mutation (historical snapshot): 2026-09-23.**
+At that point the experimental offer used its third slot for a repeatable `+1` individual of
 the player species. A seeded placement chooses an unoccupied, passable cell for
 the next phase, respects the population cap, and is retained if the expedition
 restarts. This is one selection per phase decision. Phase-boundary Mutations
@@ -201,13 +267,43 @@ populations should match; a matched Forest Edge run is still needed to assess
 its ecological effect.
 
 **GalapagOS simulation field fit: 2026-09-23.** The desktop starts with the
-legacy Lab placeholder collapsed. Forest Edge now uses a 36×21 grid (756 cells,
-about 10% fewer than 42×20) while retaining its authored starting animal
-counts. The board resolves square cells from its available width and height,
-then applies the user's zoom, so the default view fits the whole grid. The C#
-test-project build passed and the simulation XAML is well-formed. Visual
-PlayMode acceptance is pending because the connected Editor is in Play Mode;
-its current camera capture shows Noesis' invalid-license screen.
+legacy Lab placeholder collapsed. Forest Edge's production scenario now uses
+36×20 (720 cells, about 14.3% fewer than 42×20) while retaining its authored
+starting animal counts. The production asset is the gameplay source of truth;
+the editor generator writes to the separate legacy `CellularSimulation`
+scenario path, so changing that generated asset did not change gameplay. The
+board resolves square cells from its available width and height, then applies
+the user's zoom, so the default view fits the whole grid. The existing visual
+acceptance assertions now expect 36×20. Unity PlayMode acceptance was not
+rerun for this change.
+
+**Saved-grid override follow-up: 2026-09-24.** The connected Editor had a
+64×64 v3 saved default, which was overriding the Forest Edge production asset
+and matching the square board in the screenshot. Startup now migrates older
+saved settings once, preserving their other values and replacing only width
+and height with the selected scenario's authored dimensions. Newer saved
+defaults still retain custom dimensions. The connected Editor is not in Play
+Mode, so the visual result awaits the next runtime launch.
+
+**Saved-grid migration follow-up: 2026-09-26.** The v4 migration only handled
+v3 keys; an existing v4 saved default could still override the 36×20 scenario.
+Startup now migrates both v3 and v4 dimensions into v5 from the selected
+scenario while preserving other saved values. A v5 custom grid remains intact.
+The v4 64×64 migration regression passed 1/1 in the locally installed Unity
+6000.4.6f1 Editor. The Forest Edge visual acceptance test also passed 1/1;
+both the runtime preview and board snapshot reported 36×20. Its rendered field
+capture is [here](../artifacts/direct-unity-grid-check-20260926/03-galapagos-simulation.png).
+
+**S3-08 telemetry distinction: 2026-09-26.** FSM behavior ticks are recorded
+before attack resolution; a successful Fox attack can set the persisted cell to
+Eating afterward. The latest retained 130-tick Play Mode report shows 47 Fox
+food successes with no Fox Eating decision ticks, while its reproduction funnel
+classifies all 4,550 Fox candidates and reconciles. These are separate
+decision/outcome measures, not contradictory counts. The Markdown report now
+labels FSM decision ticks explicitly, and a focused regression asserts the
+post-resolution Eating state. That targeted EditMode test passed 1/1 in the
+locally installed Unity 6000.4.6f1 Editor. This does not replace the longer
+six-phase reproduction evidence requested by P1-035; no balance values changed.
 
 **Combat default reconciliation: 2026-09-18.** Opposed-roll combat is now the
 default across `SpeciesSimulation`, runner construction, checkpoint restore,
@@ -310,8 +406,8 @@ generated-art review remains open in Loose Ends P1-031. Trello S3-01 is in Done
 with its validation caveat recorded. S3-02's
 contract is complete, and Josh has marked its Trello card complete. S3-03 is
 complete and Unity-validated with results retained in its handoff. The S3-02
-card's acceptance wording may still need a cleanup pass to remove the deferred
-board-size and playable-plant decisions.
+card's acceptance wording may still need a cleanup pass to reflect the 36×20
+Forest Edge default and the still-deferred playable-plant decision.
 S3-05 duration/memory measurement remains uncommitted stretch work
 and 2h of Sim capacity remains unallocated. S3's priority is a safe game-state
 loop with tested recovery and return to the Lab, meaningful and understandable
@@ -322,13 +418,11 @@ The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative
 player guidance, with simpler directional language when the evidence cannot
 support a precise claim; raw statistics remain off the player surface. The
-approved S3 bridge uses the five existing experimental Hare Mutations as the
-rotating offer pool, with two distinct pool choices plus fixed repeatable
-Reinforcements at each boundary. All three choices are free. Pool Mutations can
-return at later boundaries and stack; Reinforcements adds one selected-species
-individual at a deterministic open cell in the following phase. Skip has no
-S3-04 reward. The population addition and its balance remain provisional
-pending evidence.
+earlier S3 bridge used two rotating Hare Mutations plus fixed repeatable
+Reinforcements. S3-04 replaced that offer with three distinct free Hare
+Mutations from the five-effect pool; repeat selections at later boundaries
+increase the selected level. Skip has no S3-04 reward. The earlier population
+addition and its balance remain provisional historical work.
 
 **CF-0 through CF-5 are implemented and verified.** This includes continuation
 parity, boundary upgrades, the controlled preview path, phase/final Stat-Lines,
@@ -366,7 +460,11 @@ decision moments with three temporary Mutations or Skip at each, one after
 each of phases 1–5. Permanent currency purchases in
 the Gene Lab are Genome Upgrades that fill a Genome skill tree. Letting the
 player skip for extra currency is undecided and non-blocking; if adopted, it
-uses the same currency as Genome Upgrades. S3-04 Mutation choices are free and
+uses the same currency as Genome Upgrades. At Hare phase decisions, a separate
+repeatable reinforcement purchase adds one Hare to the next phase for 10 Field
+Data while space and Data remain; it does not use the Mutation choice. The
+phase screen shows the available Data and labels free Mutation offers. S3-04
+Mutation choices are free and
 should be readable at a glance through an icon, identity, and evidence-backed
 qualitative direction (for example, “Hunter Lv2 — better tracking and sharper
 teeth”); no Stat-Line breakdown is shown. Restart is removed; End abandons
@@ -376,9 +474,9 @@ rounds 1–5 each lead to a three-Mutation choice or Skip; round 6 ends in resul
 with no upgrade. Victory is survival to the end of round 6; rewards use a
 performance measure currently in development (not simply final population).
 Extra bonus-event rewards are possible but undecided. Extinction ends
-immediately as a failed run with no rewards. Board size is deferred, and
-playable plants (including Fern) are on hold. Older engineering and research
-records still contain ten-phase/200-tick values; those are historical
+immediately as a failed run with no rewards. The Forest Edge production default
+is 36×20; playable plants (including Fern) remain on hold. Older engineering
+and research records still contain ten-phase/200-tick values; those are historical
 configurations, not the current player contract. The upgrade direction now
 separates temporary per-run Species-Simulation **Mutations** from permanent
 **Genome Upgrades**, bought with currency in the Gene Lab application and

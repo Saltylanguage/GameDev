@@ -788,6 +788,37 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PhaseMutationOffersShowThreeDistinctHerbivoreMutations()
+        {
+            var ids = new HashSet<string>
+            {
+                SpeciesUpgradeCatalog.ToughHideId,
+                SpeciesUpgradeCatalog.EfficientDigestionId,
+                SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesUpgradeCatalog.ReproductiveDriveId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            for (var rotation = 0; rotation < 4; rotation++)
+            {
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    SpeciesUpgradeCatalog.ToughHideId,
+                    rotation,
+                    seed: 42);
+
+                Assert.That(offer, Has.Length.EqualTo(3));
+                Assert.That(offer[0].Id, Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+                var offeredIds = new HashSet<string>();
+                foreach (var upgrade in offer)
+                {
+                    Assert.That(ids.Contains(upgrade.Id), Is.True);
+                    offeredIds.Add(upgrade.Id);
+                }
+
+                Assert.That(offeredIds, Has.Count.EqualTo(3));
+            }
+        }
+
+        [Test]
         public void UpgradeCatalogProvidesStrongerBlockDiagnosticDefinition()
         {
             var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.StrongerBlockTwoId);
@@ -946,7 +977,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void SuccessfulPredationRecordsFoodActionSeparatelyFromBehaviorDecision()
+        public void SuccessfulPredationSetsEatingAfterTheBehaviorDecisionIsRecorded()
         {
             var source = new Grid<SpeciesCell>(2, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
@@ -991,6 +1022,7 @@ namespace SaltyGame.Tests
             var activity = metrics.GetActivity(SpeciesIds.Carnivore);
 
             Assert.That(next.GetCell(1, 0).IsOccupied, Is.False);
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Eating));
             Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(1f));
             Assert.That(activity.CombatKills, Is.EqualTo(1));
             Assert.That(activity.FoodConsumed, Is.EqualTo(1f));
@@ -2311,6 +2343,7 @@ namespace SaltyGame.Tests
             Assert.That(reproduction.Candidates, Is.EqualTo(2));
             Assert.That(reproduction.SuccessfulAttempts, Is.EqualTo(1));
             Assert.That(reproduction.BlockedNoBirthLocation, Is.EqualTo(1));
+            Assert.That(reproduction.EligibleAttempts, Is.EqualTo(2));
             Assert.That(reproduction.IsReconciled, Is.True);
 
             source.SetCell(1, 0, new SpeciesCell(SpeciesArchetype.Carnivore, energy: 0));

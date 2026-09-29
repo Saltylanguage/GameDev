@@ -43,7 +43,7 @@ This is the engineering source of truth for runtime ownership, data contracts, d
 | Player schedule | 6 rounds × 10 seconds of simulation time; 5 Mutation choices after rounds 1–5 | **Committed product contract** |
 | Tick conversion | At a 0.1-second step interval, one 10-second round is 100 completed ticks; simulation time is authoritative | **Runtime/configuration acceptance pending** |
 | Player controls/outcomes | Pause; confirmed End abandons with no rewards before round 6; no Restart; survival through round 6 wins; extinction immediately fails with no rewards | **Committed product contract** |
-| Forest Edge size and plants | Board size deferred; playable plant species on hold | **Not part of current contract** |
+| Forest Edge size and plants | Production scenario defaults to 36×20; simulation settings can override it; playable plants remain on hold | **Authored default selected** |
 | Performance | No wall-clock target; full-session duration/memory measurement is optional stretch work | **Not an M1 closeout gate** |
 
 ## 2. Architecture and ownership
@@ -410,7 +410,7 @@ The M1 player-flow gate needs evidence that:
 | Desktop bypasses `SimulationLaunchRequest` | Player choices, profile, seed, schedule, and future Genome may not reach the run | Establish one Desktop-owned session/launch boundary and remove local-default authority |
 | Profile snapshot is discarded on scene load | Results, wallet, Genome, history, and settings have no durable owner | Define session lifetime before adding progression |
 | Round-duration conversion | Product time is authoritative; tick count depends on the configured step interval | Assert the round duration converts to the intended tick count for the active scenario |
-| Forest Edge board size | Asset, generator, and architecture map disagree; size is deferred from the current contract | Record actual dimensions in evidence; resolve before board-size-dependent balance comparisons |
+| Forest Edge scenario dimensions | Gameplay reads the production scenario asset; older saved settings could override it with stale dimensions | Migrate v3 saved dimensions to the selected scenario once; keep acceptance tied to the production asset and record actual dimensions in research evidence |
 | Playable plant species | Plant playability and Fern naming are on hold | Do not include a plant species in current player-flow acceptance |
 | Only first three of seven Mutation assets are reachable | Warren/Gardeners builds cannot be evaluated through the player loop | Implement deterministic offer selection/eligibility and coverage |
 | Inert enabled-looking controls | UI advertises features that cannot execute | Bind and test them or present them as unavailable |
@@ -450,6 +450,8 @@ The M1 player-flow gate needs evidence that:
 
 | Date | Change | Reason |
 | --- | --- | --- |
+| 2026-09-24 | Migrate v3 saved settings to the selected scenario's authored dimensions while preserving other saved values. | Prevent stale local grid dimensions from overriding the gameplay scenario after an update. |
+| 2026-09-23 | Set the production Forest Edge scenario default to 36×20 and bind the existing visual acceptance check to it. | Keep gameplay data and its runtime regression aligned. |
 | 2026-09-12 | Replaced the placeholder template with the current architecture, exact tick pipeline, data boundaries, route matrix, and verification state. | Engineering status must distinguish present code from connected player behavior. |
 | 2026-09-12 | Recorded profile/launch bypass, phase-length, board-size, Fern/Plant, offer reachability, inert controls, generic results, and persistence gaps. | These are current execution or source-of-truth failures that were missing from the TDD. |
 | 2026-09-12 | Aligned planning language with roadmap v2 while preserving the S3 review gate. | Avoid turning provisional planning into an implementation claim. |

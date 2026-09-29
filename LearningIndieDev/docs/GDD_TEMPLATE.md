@@ -101,7 +101,7 @@ The Desktop simulation host creates and starts its own local preview. It does no
 - **Victory:** the player species survives through round 6. Extinction ends the run immediately as a failure with no rewards.
 - **Currency:** successful-run currency uses a performance measure in development, not simply final population. A Skip bonus and additional bonus-event awards are undecided and non-blocking.
 - **Permanent progression:** Genome Upgrades are bought with currency in the Gene Lab application on the GalapagOS Desktop and fill a Genome skill tree.
-- **Deferred:** Forest Edge board size is not authoritative; playable plant species, including Fern, are on hold.
+- **Authored default:** Forest Edge uses a 36×20 grid; playable plant species, including Fern, are on hold.
 - **Disk resume:** outside the initial slice; same-world continuation is currently in memory only.
 
 ### Expedition outcomes
@@ -148,9 +148,9 @@ rewards are possible but not decided.
 
 Each cell has terrain plus separate ecological occupancy data. Terrain, resource/plant state, and creature state can coexist only where the authored and runtime rules allow. Simulation decisions are resolved from the previous committed grid, then the next grid is committed as one completed tick.
 
-Forest Edge board size is **deferred** and is not part of the current player
-contract. Until the runtime asset, generator, and architecture map are
-reconciled, balance evidence must record the actual scenario dimensions used.
+The Forest Edge production scenario defaults to **36×20** (720 cells).
+Simulation settings can override the grid before a run, so balance evidence
+must record the actual scenario dimensions used.
 
 ### Slice species
 
@@ -283,7 +283,6 @@ The Main Menu has an initial procedural chime. A systematic audio language for i
 | Decision or gap | Why it matters | Required next evidence/owner | Status |
 | --- | --- | --- | --- |
 | Final player-facing title | Menu branding and document naming currently differ in capitalization/history | Product owner review | **Open** |
-| Forest Edge board size | Asset, generator, and map disagree, but board size is outside the current player contract | Defer; record actual dimensions in evidence | **Deferred; non-blocking** |
 | Playable plant species and Fern/Plant naming | Playable plants are on hold | Revisit only when plant play returns to scope | **Deferred; non-blocking** |
 | Skip bonus | Skipping may earn Genome Upgrade currency; whether it does is undecided | Decide amount and limits only when needed | **Undecided; non-blocking** |
 | Expedition Planner interaction and launch payload | Current acceptance starts Forest Edge/Hare directly; selected-profile/request handoff is still unresolved | Define an immutable request boundary before making launch choices authoritative | **Planned; underspecified** |
@@ -311,6 +310,7 @@ The Main Menu has an initial procedural chime. A systematic audio language for i
 
 | Date | Change | Reason |
 | --- | --- | --- |
+| 2026-09-23 | Set the Forest Edge production scenario default to 36×20. | Resolve the mismatch between the generated research scenario and the asset used by gameplay. |
 | 2026-09-12 | Replaced the placeholder template with a current product baseline and explicit implemented/planned/open labels. | The old document mixed aspirations with implementation claims and did not expose disconnected player routes. |
 | 2026-09-12 | Recorded cadence, board-size, Fern/Plant, profile handoff, Mutation reachability, result, and simulation-control gaps. | These gaps affect the main flow or evidence validity and need visible ownership. |
 | 2026-09-12 | Aligned the slice with roadmap v2 while preserving its review status. | Prevent a proposed Sprint 3 plan from being mistaken for an approved commitment. |

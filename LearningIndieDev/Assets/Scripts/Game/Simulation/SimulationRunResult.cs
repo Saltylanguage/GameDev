@@ -135,6 +135,7 @@ namespace SaltyGame
         readonly List<SpeciesUpgradeSnapshot> upgradeLoadout;
         readonly List<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
         readonly List<SimulationPhaseResult> phaseResults;
+        readonly Dictionary<SpeciesId, int> boundaryPopulationAdded = new Dictionary<SpeciesId, int>();
         readonly SpeciesSimulationMetrics metrics;
         SpeciesSimulationMetricsSnapshot phaseMetricsStart;
         SpeciesPopulationSnapshot phasePopulationStart;
@@ -215,6 +216,11 @@ namespace SaltyGame
         public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public SpeciesSimulationMetrics Metrics { get; }
 
+        public int GetBoundaryPopulationAdded(SpeciesId species)
+        {
+            return boundaryPopulationAdded.TryGetValue(species, out var count) ? count : 0;
+        }
+
         internal Grid<SpeciesCell> CopyInitialCells()
         {
             return initialCells.Copy();
@@ -222,7 +228,9 @@ namespace SaltyGame
 
         internal bool InstallBoundaryPopulation(
             Grid<SpeciesCell> nextCells,
-            Grid<SpeciesCell> nextInitialCells)
+            Grid<SpeciesCell> nextInitialCells,
+            SpeciesId species,
+            int amount)
         {
             if (Status != SimulationRunStatus.AwaitingDecision)
             {
@@ -250,6 +258,8 @@ namespace SaltyGame
             Cells = nextCells.Copy();
             initialCells = nextInitialCells.Copy();
             populationHistory[populationHistory.Count - 1] = SpeciesPopulationSnapshot.Create(Cells, Tick);
+            boundaryPopulationAdded.TryGetValue(species, out var added);
+            boundaryPopulationAdded[species] = added + amount;
             return true;
         }
 
@@ -550,6 +560,7 @@ namespace SaltyGame
                 PopulationHistory,
                 UpgradeAcquisitionTimeline,
                 PhaseResults,
+                boundaryPopulationAdded,
                 previousCells);
         }
 
@@ -612,6 +623,10 @@ namespace SaltyGame
             run.upgradeAcquisitionTimeline.AddRange(checkpoint.UpgradeAcquisitionTimeline);
             run.phaseResults.Clear();
             run.phaseResults.AddRange(checkpoint.PhaseResults);
+            foreach (var entry in checkpoint.BoundaryPopulationAdded)
+            {
+                run.boundaryPopulationAdded.Add(entry.Key, entry.Value);
+            }
             run.phasePopulationStart = run.populationHistory[run.populationHistory.Count - 1];
             run.phaseMetricsStart = run.metrics.CreateSnapshot();
             run.phaseOpen = false;
@@ -709,6 +724,7 @@ namespace SaltyGame
         readonly IReadOnlyList<SpeciesPopulationSnapshot> populationHistory;
         readonly IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
         readonly IReadOnlyList<SimulationPhaseResult> phaseResults;
+        readonly IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded;
         readonly Grid<SpeciesCell> previousCells;
 
         internal SimulationRunCheckpoint(
@@ -729,6 +745,7 @@ namespace SaltyGame
             IReadOnlyList<SpeciesPopulationSnapshot> populationHistory,
             IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline,
             IReadOnlyList<SimulationPhaseResult> phaseResults,
+            IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded,
             Grid<SpeciesCell> previousCells)
         {
             this.cells = cells.Copy();
@@ -748,6 +765,8 @@ namespace SaltyGame
             this.populationHistory = new List<SpeciesPopulationSnapshot>(populationHistory).AsReadOnly();
             this.upgradeAcquisitionTimeline = new List<SimulationUpgradeAcquisition>(upgradeAcquisitionTimeline).AsReadOnly();
             this.phaseResults = new List<SimulationPhaseResult>(phaseResults).AsReadOnly();
+            this.boundaryPopulationAdded = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
+                new Dictionary<SpeciesId, int>(boundaryPopulationAdded));
             this.previousCells = previousCells == null ? null : previousCells.Copy();
         }
 
@@ -767,6 +786,7 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesPopulationSnapshot> PopulationHistory => populationHistory;
         public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline => upgradeAcquisitionTimeline;
         public IReadOnlyList<SimulationPhaseResult> PhaseResults => phaseResults;
+        public IReadOnlyDictionary<SpeciesId, int> BoundaryPopulationAdded => boundaryPopulationAdded;
 
         public Grid<SpeciesCell> CopyCells()
         {

@@ -141,7 +141,7 @@ function Export-HerbivoreStatLineCsv {
 
     $report = Get-Content -LiteralPath $ReportPath -Raw | ConvertFrom-Json
     $headers = @(
-        'seed', 'speciesId', 'SPO', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
+        'seed', 'speciesId', 'SPO', 'ADD', 'HPS', 'EHS', 'ECN', 'PREY', 'STRV', 'MAT', 'BIR', 'CRWD',
         'FPO', 'expectedFPO', 'fpoReconciled',
         'pAVI', 'pAVIStatus', 'eAVI', 'eAVIStatus', 'predAVG', 'predAVGStatus',
         'sAVI', 'sAVIStatus', 'cAVI', 'cAVIStatus', 'bAVG', 'bAVGStatus', 'RFS', 'RFSStatus',
@@ -160,6 +160,7 @@ function Export-HerbivoreStatLineCsv {
             $run.seed,
             (Get-StatLinePropertyValue -Stat $stat -PropertyName 'speciesId' -Default ''),
             (Get-StatLinePropertyValue -Stat $stat -PropertyName 'SPO'),
+            (Get-StatLinePropertyValue -Stat $stat -PropertyName 'ADD' -Default 0),
             (Get-StatLinePropertyValue -Stat $stat -PropertyName 'HPS'),
             (Get-StatLinePropertyValue -Stat $stat -PropertyName 'EHS'),
             (Get-StatLinePropertyValue -Stat $stat -PropertyName 'ECN'),

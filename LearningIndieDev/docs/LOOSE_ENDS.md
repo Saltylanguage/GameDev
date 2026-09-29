@@ -3,34 +3,30 @@
 This is the actionable ledger for unresolved project, planning, ownership, and
 documentation gaps. Closed history stays in Git and task handoffs.
 
-## Current status — 2026-09-24
+## Current status — 2026-09-27
 
-- No P0 issue is verified. The active checkout is `Balance/ForestEdge` at
-  `0ba7a9cd`, synced with `origin/Balance/ForestEdge`. The worktree has two
-  related uncommitted changes: Hare litter minimum/maximum `1–2` to `2–5`, and
-  experimental `LitterMinimum`/`LitterMaximum` upgrade support in
-  `SpeciesUpgrade.cs`. Preserve them until the current balance follow-up is
-  explicitly accepted, committed, or reverted; do not treat them as the shared
-  balance baseline yet.
+- No P0 issue is verified. `BevBranch` incorporates the Forest Edge visual
+  pass. The directly installed Unity 6000.4.6f1 Editor compiled the merged
+  project; the incoming ecology values have not received a matched Forest
+  Edge balance review or full visual acceptance.
 - Island Survivor slice retirement completed on 2026-09-18: its scene, runtime,
   dedicated tests/validator, and Island Chores textures are removed; historical
   handoffs remain unchanged. The [main-flow cleanup record](MAIN_GAME_FLOW_CLEANUP_CANDIDATES.md)
   tracks the remaining candidates separately.
-- S3-01, S3-02, and S3-03 are complete. Current Sprint 3 work is S3-04
-  (Mutation readability), S3-06 (visual polish), and S3-08 (Fox telemetry);
-  S3-07 is reserve and S3-05 is stretch.
+- S3-01 through S3-04 are complete. S3-08 Fox telemetry clarification is
+  validated; S3-06 visual polish is in progress, S3-07 is reserve, and S3-05
+  is stretch.
 - The accepted expedition contract is six 10-second rounds, with a Mutation
-  choice or Skip after rounds 1–5. The contract requires three Mutation offers
-  plus Skip. The active offer contains two distinct choices from the role's
-  existing five-Mutation pool plus fixed repeatable Reinforcements as the
-  third. All phase choices are free. S3-02, S3-04, and the S3 control record
-  now agree; broader Reinforcements balance remains provisional.
-- The latest retained Unity run is
-  [2026-09-24](../artifacts/unity-tests-20260924-134934/): EditMode 256/256
-  and PlayMode 33/33 passed. It covers free legacy/authored choices, zero-Data
-  selection, repeat choices, the fixed Reinforcements option, same-run
-  continuation, and dedicated Settings/My Collection surfaces. Only the Main
-  Menu branding/generated-art visual review remains open under P1-031.
+  choice or Skip after rounds 1–5. The player offer now shows three distinct
+  free Mutations plus Skip, and focused tests cover repeat stacking and
+  continuation. Tough Hide's first bounded evidence review is recorded and its
+  copy/card markers are accepted for this slice. The completed S3-02 Trello card
+  wording has not been refreshed. The earlier two-Mutation-plus-Reinforcements
+  offer is superseded by this S3-04 implementation.
+- The latest retained full Unity run from 2026-09-24 passed EditMode 256/256
+  and PlayMode 33/33. Newer focused S3-04 and S3-08 checks passed. The merge
+  received a direct Editor compile on 2026-09-27; no post-merge test suite was
+  run.
 
 ## Triage rules
 
@@ -41,22 +37,6 @@ documentation gaps. Closed history stays in Git and task handoffs.
 - **P2** — useful cleanup or follow-up that is not currently blocking.
 
 ## Open items
-
-### P1-016 — Mutation catalog readability and evidence review
-
-- **Status:** The catalog and authoring path exist. The bounded EX-007 decision
-  is accepted; readability and a bounded Forest Edge/Hare review remain open
-  under S3-04. The current third offer is a fixed Reinforcements entry rather
-  than another catalog choice, so its presentation and evidence still need to
-  be reconciled with the catalog plan.
-- **Evidence:** [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md) and
-  [Next Work Bucket Plan](NEXT_WORK_BUCKET_PLAN.md). EX-009's zero-delta result
-  is implementation evidence, not a balance conclusion.
-- **Next action:** Complete the S3-04 readability and bounded evidence review,
-  including the Reinforcements presentation. Record broader catalog balance or
-  promotion as separate work, and do not imply that Reinforcements has passed
-  balance review before a matched batch exists.
-- **Owner:** Josh; Sim supplies evidence. **Confidence:** High.
 
 ### P1-026 — Remote worker branch has stale Unity lifecycle tooling
 
@@ -124,21 +104,39 @@ documentation gaps. Closed history stays in Git and task handoffs.
   of this migration.
 - **Owner:** Josh + UI/runtime owner. **Confidence:** High.
 
-### P1-034 — Forest Edge balance branch and Hare baseline are provisional
+### P1-036 — S3-02 Trello wording may lag the accepted expedition contract
 
-- **Status:** Josh approved the `+1` minimum- and maximum-litter Mutations for
-  production on 2026-09-24; their production assets and active Hare offer
-  definitions now use the approved effects. Separately, the worktree changes
-  Hare's base litter from `1–2` to `2–5`. No matched Forest Edge comparison
-  accepts that base change as the shared balance baseline.
+- **Status:** The player offer path now returns three Mutation choices or Skip
+  at each phase boundary; the runtime gap is resolved under S3-04. The completed
+  S3-02 Trello card may still need wording updated for the 36×20 Forest Edge
+  default and the still-deferred playable-plant decision.
+- **Evidence:** [S3-02 expedition contract](Sprints/S3-02-expedition-contract.md),
+  [S3-04 plan](Sprints/S3-04-mutation-readability-plan.md), and Trello card c3i7HO09.
+  The production scenario now defaults to 36×20. The editor generator creates
+  a separate legacy scenario, so its 36×20 setting was not the gameplay source.
+- **Next action:** If the completed Trello card still has old acceptance text,
+  clarify the 36×20 default and keep playable plants deferred. No board edit
+  was made during this S3-04 implementation.
+- **Owner:** Sprint board owner + simulation/design owner. **Confidence:** High.
+
+### P1-034 — Forest Edge balance values remain provisional
+
+- **Status:** The `+1` minimum- and maximum-litter Mutations were approved
+  for production on 2026-09-24. The incoming Forest Edge branch changes the
+  production Fox and Hare baselines, including crowding metabolism, Hare
+  reproduction, and grass reseeding. The user chose those incoming values for
+  this merge; their ecological effect has not been established by a matched
+  Forest Edge comparison.
 - **Evidence:** [Hare asset](../Assets/Data/ProductionData/CellularSimulation/Species/hare.asset),
+  [Fox asset](../Assets/Data/ProductionData/CellularSimulation/Species/fox.asset),
   [SpeciesUpgrade.cs](../Assets/Scripts/Game/Species/SpeciesUpgrade.cs),
   [current-value diagnostic handoff](handoffs/2026-09-22-2200-codex-forest-edge-current-values-diagnostic-batches.md),
   [Fox/Hare balance handoff](handoffs/2026-09-21-codex-forest-edge-first-balance-pass.md),
   and commits `5e0e28c2` / `0ba7a9cd`.
-- **Next action:** Run a matched Forest Edge comparison before accepting the
-  `2–5` base litter values. Keep that balance question separate from the
-  approved production Mutations. **Owner:** Josh + Sim. **Confidence:** High.
+- **Next action:** Run a matched Forest Edge comparison before treating the
+  incoming Fox/Hare values as balance-approved. Keep that question separate
+  from the approved production Mutations. **Owner:** Josh + Sim.
+  **Confidence:** High.
 
 ### P1-035 — Fox mating telemetry does not yet explain eligibility
 

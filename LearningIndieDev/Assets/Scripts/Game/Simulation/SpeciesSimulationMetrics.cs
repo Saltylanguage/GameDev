@@ -64,6 +64,9 @@ namespace SaltyGame
         public int BlockedNoBirthLocation { get; }
         public int SuccessfulAttempts { get; }
 
+        public int EligibleAttempts =>
+            FailedChanceRoll + BlockedNoBirthLocation + SuccessfulAttempts;
+
         public int ClassifiedCandidates =>
             BlockedEnergy
             + BlockedMateRequirement
@@ -455,7 +458,8 @@ namespace SaltyGame
             int mating,
             int births,
             int crowding,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             if (!species.IsValid)
             {
@@ -464,12 +468,12 @@ namespace SaltyGame
 
             if (startingPopulation < 0 || predatorActiveHerbivoreSteps < 0
                 || encounteredHerbivoreSteps < 0 || encounters < 0 || preyed < 0 || starved < 0
-                || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0)
+                || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0 || addedPopulation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
             }
 
-            var populationBeforeStarvation = startingPopulation + births - preyed;
+            var populationBeforeStarvation = startingPopulation + addedPopulation + births - preyed;
             var populationBeforeCrowding = populationBeforeStarvation - starved;
             var inversePreyedAverageStatus = GetRateStatus(preyed, encounters);
             var inverseEncounterAverageStatus = GetRateStatus(
@@ -505,7 +509,7 @@ namespace SaltyGame
                 ? (float)births / mating
                 : 0f;
 
-            var replicationFitnessNumerator = finalPopulation - startingPopulation;
+            var replicationFitnessNumerator = finalPopulation - startingPopulation - addedPopulation;
             var replicationFitnessStatus = GetReplicationFitnessStatus(birthAverageStatus);
             var replicationFitnessScore = replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? replicationFitnessNumerator * birthAverage
@@ -545,6 +549,7 @@ namespace SaltyGame
 
             Species = species;
             StartingPopulation = startingPopulation;
+            AddedPopulation = addedPopulation;
             PredatorActiveHerbivoreSteps = predatorActiveHerbivoreSteps;
             EncounteredHerbivoreSteps = encounteredHerbivoreSteps;
             Encounters = encounters;
@@ -645,6 +650,7 @@ namespace SaltyGame
 
         public SpeciesId Species { get; }
         public int StartingPopulation { get; }
+        public int AddedPopulation { get; }
         public int PredatorActiveHerbivoreSteps { get; }
         public int EncounteredHerbivoreSteps { get; }
         public int Encounters { get; }
@@ -688,7 +694,8 @@ namespace SaltyGame
             int mating,
             int births,
             int crowding,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             if (!species.IsValid)
             {
@@ -698,12 +705,12 @@ namespace SaltyGame
             if (startingPopulation < 0 || preyActivePredatorSteps < 0
                 || encounteredPredatorSteps < 0 || encounters < 0 || huntAttempts < 0
                 || preyKilled < 0 || starved < 0 || mating < 0 || births < 0
-                || crowding < 0 || finalPopulation < 0)
+                || crowding < 0 || finalPopulation < 0 || addedPopulation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Predator stat counts cannot be negative.");
             }
 
-            var populationBeforeStarvation = startingPopulation + births;
+            var populationBeforeStarvation = startingPopulation + addedPopulation + births;
             var populationBeforeCrowding = populationBeforeStarvation - starved;
             var huntSuccessStatus = GetRateStatus(preyKilled, huntAttempts);
             var preyAccessStatus = GetRateStatus(encounteredPredatorSteps, preyActivePredatorSteps);
@@ -735,7 +742,7 @@ namespace SaltyGame
                 ? (float)births / mating
                 : 0f;
 
-            var replicationFitnessNumerator = finalPopulation - startingPopulation;
+            var replicationFitnessNumerator = finalPopulation - startingPopulation - addedPopulation;
             var replicationFitnessStatus = GetReplicationFitnessStatus(birthAverageStatus);
             var replicationFitnessScore = replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? replicationFitnessNumerator * birthAverage
@@ -774,6 +781,7 @@ namespace SaltyGame
 
             Species = species;
             StartingPopulation = startingPopulation;
+            AddedPopulation = addedPopulation;
             PreyActivePredatorSteps = preyActivePredatorSteps;
             EncounteredPredatorSteps = encounteredPredatorSteps;
             Encounters = encounters;
@@ -875,6 +883,7 @@ namespace SaltyGame
 
         public SpeciesId Species { get; }
         public int StartingPopulation { get; }
+        public int AddedPopulation { get; }
         public int PreyActivePredatorSteps { get; }
         public int EncounteredPredatorSteps { get; }
         public int Encounters { get; }
@@ -927,8 +936,8 @@ namespace SaltyGame
         int ControlledOpportunityEligible { get; }
         int ControlledOpportunityUnfulfilledNoTarget { get; }
         int ControlledOpportunityUnfulfilledInvalidated { get; }
-        SpeciesHerbivoreStatLine CreateHerbivoreStatLine(SpeciesId species, int startingPopulation, int finalPopulation);
-        SpeciesPredatorStatLine CreatePredatorStatLine(SpeciesId species, int startingPopulation, int finalPopulation);
+        SpeciesHerbivoreStatLine CreateHerbivoreStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0);
+        SpeciesPredatorStatLine CreatePredatorStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0);
     }
 
     public sealed class SpeciesSimulationMetrics : ISpeciesSimulationMetricsView
@@ -1451,7 +1460,8 @@ namespace SaltyGame
         public SpeciesHerbivoreStatLine CreateHerbivoreStatLine(
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -1484,13 +1494,15 @@ namespace SaltyGame
                 GetReproductionActivity(species).Candidates,
                 GetActivity(species).Births,
                 crowding,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
         }
 
         public SpeciesPredatorStatLine CreatePredatorStatLine(
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -1525,7 +1537,8 @@ namespace SaltyGame
                 GetReproductionActivity(species).Candidates,
                 activity.Births,
                 crowding,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
         }
 
         internal void RecordControlledOpportunityScheduled()
@@ -2057,7 +2070,8 @@ namespace SaltyGame
         public SpeciesHerbivoreStatLine CreateHerbivoreStatLine(
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -2090,13 +2104,15 @@ namespace SaltyGame
                 GetReproductionActivity(species).Candidates,
                 GetActivity(species).Births,
                 crowding,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
         }
 
         public SpeciesPredatorStatLine CreatePredatorStatLine(
             SpeciesId species,
             int startingPopulation,
-            int finalPopulation)
+            int finalPopulation,
+            int addedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -2131,7 +2147,8 @@ namespace SaltyGame
                 GetReproductionActivity(species).Candidates,
                 activity.Births,
                 crowding,
-                finalPopulation);
+                finalPopulation,
+                addedPopulation);
         }
     }
 }
