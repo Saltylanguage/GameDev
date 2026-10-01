@@ -84,13 +84,14 @@ uncertainty or regression risk.
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
 - [`ROADMAP.md`](../ROADMAP.md) version 2.2 is the active production baseline
-  as of 2026-09-29: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
+  as of 2026-10-01: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
   closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
   loop, understandable Mutation effects, and bounded visual polish/UI
   integration. Josh accepted M1 using distributed retained evidence; later
-  changes may need retesting. Refine the Proposed S4 work list before kickoff.
-  Local profile saving remains a candidate for S4; S4–S7 remain forecast
-  windows, not committed sprints. The
+  changes may need retesting. S4 is Active from 2026-10-01: three-build Forest
+  Edge evidence plus the Desktop active-profile launch. Local profile-choice
+  save/restore is deferred. Later S5–S7 windows remain forecasts until their
+  kickoffs are confirmed. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the
