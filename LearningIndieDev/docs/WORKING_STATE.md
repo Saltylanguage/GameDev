@@ -5,6 +5,14 @@ become a master changelog.
 
 ## Current focus
 
+**S4-01 Hare strategy workbook: 2026-10-01, ready for Salty review.** Bevin
+approved starting values, costs and example paths for Trailblazer, Warren
+and Gardeners. The workbook is now a repository review artifact; team review,
+implementation and balance evidence remain. Read the
+[workbook handoff](handoffs/2026-10-01-1711-codex-s4-01-hare-workbook-review.md)
+for the decisions and a review prompt for Salty and his agent. The intended
+400/25/15, 0.1-second test fixture differs from committed scenario defaults.
+
 **S4 Sim review: 2026-09-30, ready for Josh's review.** Sim accepts
 20h (17h feature + 3h protected reserve). The agreed direction combines six
 shared basic Hare skills into Trailblazer, Warren, and Gardeners, with ordered
