@@ -45,5 +45,6 @@ that job and its source revision intact.
 
 The Pipeline CLI/state-routing migration remains separate: it would require the
 new package, wrappers, CLI availability on the mini PC, and a decision about
-this pending job. P1-026 stays open until the shared worker branch is updated
-and the worker host confirms cleanup. This local branch has not been pushed.
+this pending job. The backport was pushed to `origin/codex/cellsim-worker` at
+`a227f118`. P1-026 stays open until the worker host confirms cleanup and the
+Pipeline CLI/state-routing migration is addressed.
