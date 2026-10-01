@@ -1,4 +1,4 @@
-<UserControl xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+<UserControl x:Name="MainMenu" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -226,11 +226,20 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <Grid Background="#FF9DCDEB">
+  <Grid x:Name="RootGrid" Background="#FF9DCDEB">
     <Image Source="{StaticResource GalapagOS.Image.Background.MainMenu}"
            Stretch="UniformToFill"
-           RenderOptions.BitmapScalingMode="NearestNeighbor" />
-    <Rectangle Fill="{StaticResource Menu.LeftScrim}" IsHitTestVisible="False" />
+           RenderOptions.BitmapScalingMode="NearestNeighbor"/>
+    <Rectangle IsHitTestVisible="False">
+      <Rectangle.Fill>
+        <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+          <GradientStop Offset="0" Color="#D9203715"/>
+          <GradientStop Offset="0.3" Color="#B61A3715"/>
+          <GradientStop Offset="0.54" Color="#4D153720"/>
+          <GradientStop Offset="0.76" Color="#001E3715"/>
+        </LinearGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
 
     <Viewbox Stretch="Uniform" StretchDirection="Both">
       <Grid x:Name="LaunchCanvas" Width="1280" Height="720">
@@ -249,65 +258,24 @@
               <DoubleAnimation Storyboard.TargetName="FooterStrip"
                                Storyboard.TargetProperty="Opacity"
                                From="0" To="1" BeginTime="0:0:0.28" Duration="0:0:0.4" />
-              <DoubleAnimation Storyboard.TargetName="PollenOne"
-                               Storyboard.TargetProperty="RenderTransform.Y"
-                               From="0" To="-18" Duration="0:0:3.8"
-                               AutoReverse="True" RepeatBehavior="Forever" />
-              <DoubleAnimation Storyboard.TargetName="PollenOne"
-                               Storyboard.TargetProperty="Opacity"
-                               From="0.18" To="0.58" Duration="0:0:2.9"
-                               AutoReverse="True" RepeatBehavior="Forever" />
-              <DoubleAnimation Storyboard.TargetName="PollenTwo"
-                               Storyboard.TargetProperty="RenderTransform.Y"
-                               From="0" To="-13" BeginTime="0:0:0.7" Duration="0:0:3.2"
-                               AutoReverse="True" RepeatBehavior="Forever" />
-              <DoubleAnimation Storyboard.TargetName="PollenTwo"
-                               Storyboard.TargetProperty="Opacity"
-                               From="0.12" To="0.45" BeginTime="0:0:0.7" Duration="0:0:2.5"
-                               AutoReverse="True" RepeatBehavior="Forever" />
-              <DoubleAnimation Storyboard.TargetName="PollenThree"
-                               Storyboard.TargetProperty="RenderTransform.Y"
-                               From="0" To="-22" BeginTime="0:0:1.3" Duration="0:0:4.4"
-                               AutoReverse="True" RepeatBehavior="Forever" />
             </Storyboard>
           </BeginStoryboard>
         </EventTrigger>
       </Grid.Triggers>
 
-      <Canvas IsHitTestVisible="False">
-        <Ellipse x:Name="PollenOne"
-                 Canvas.Left="1036" Canvas.Top="318"
-                 Width="6" Height="6"
-                 Fill="{StaticResource Menu.Pollen}" Opacity="0.18">
-          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-        </Ellipse>
-        <Ellipse x:Name="PollenTwo"
-                 Canvas.Left="1132" Canvas.Top="236"
-                 Width="4" Height="4"
-                 Fill="{StaticResource Menu.Cream}" Opacity="0.12">
-          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-        </Ellipse>
-        <Ellipse x:Name="PollenThree"
-                 Canvas.Left="924" Canvas.Top="398"
-                 Width="5" Height="5"
-                 Fill="{StaticResource Menu.Pollen}" Opacity="0.28">
-          <Ellipse.RenderTransform><TranslateTransform /></Ellipse.RenderTransform>
-        </Ellipse>
-      </Canvas>
-
       <Border Height="92"
               VerticalAlignment="Bottom"
               Background="#3822180D"
-              IsHitTestVisible="False" />
+              IsHitTestVisible="False" d:IsHidden="True"/>
 
-      <Grid Margin="68,44,68,44">
+      <Grid x:Name="MainMenu_ContentGrid" Margin="68,44,68,44" d:IsHidden="True">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto" />
           <RowDefinition Height="*" />
           <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0"
+        <StackPanel x:Name="GalapagOS_TitleStack" Grid.Row="0"
                     Width="520"
                     HorizontalAlignment="Left">
           <StackPanel Orientation="Horizontal">
@@ -357,18 +325,18 @@
                 Background="{StaticResource Menu.PanelBackground}"
                 BorderBrush="{StaticResource Menu.DarkOlive}"
                 BorderThickness="2"
-                CornerRadius="12">
+                CornerRadius="12" d:IsHidden="True">
           <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
           <Border.Effect>
             <DropShadowEffect Color="#99372C15" BlurRadius="18" Direction="315" ShadowDepth="8" />
           </Border.Effect>
-          <StackPanel>
-            <Grid Margin="0,0,0,16">
+          <StackPanel x:Name="Popup_ExpeditionSelection">
+            <Grid x:Name="Header" Margin="0,0,0,16">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
               </Grid.ColumnDefinitions>
-              <Border Width="44"
+              <Border x:Name="ProfileIcon" Width="44"
                       Height="44"
                       Background="{StaticResource Menu.Lime}"
                       BorderBrush="{StaticResource Menu.DarkOlive}"
@@ -379,7 +347,7 @@
                        Height="28"
                        Stretch="Uniform" />
               </Border>
-              <StackPanel Grid.Column="1" Margin="12,1,0,0">
+              <StackPanel x:Name="LabelStack" Grid.Column="1" Margin="12,1,0,0">
                 <TextBlock Text="EXPEDITION DESK"
                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                            FontSize="11"
@@ -489,177 +457,79 @@
                      Foreground="{StaticResource Menu.Cream}" />
         </Grid>
       </Grid>
-
       <Grid Visibility="{Binding ProfileSelectionVisibility}" Panel.ZIndex="20">
-        <Border Background="#B8372C15" />
-        <Border Width="640"
-                MaxHeight="620"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="{StaticResource Menu.PanelBackground}"
-                BorderBrush="{StaticResource Menu.DarkOlive}"
-                BorderThickness="2"
-                CornerRadius="12">
+        <Border x:Name="Popup_ProfileSelection" Width="640" HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="620" Background="{StaticResource Menu.PanelBackground}" BorderBrush="{StaticResource Menu.DarkOlive}" BorderThickness="2" CornerRadius="12">
           <Border.Effect>
-            <DropShadowEffect Color="#CC372C15" BlurRadius="24" Direction="315" ShadowDepth="10" />
+            <DropShadowEffect Color="#CC372C15" BlurRadius="24" Direction="315" ShadowDepth="10"/>
           </Border.Effect>
           <Grid>
             <Grid.RowDefinitions>
-              <RowDefinition Height="76" />
-              <RowDefinition Height="*" />
+              <RowDefinition Height="76"/>
+              <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-
             <Border Background="{StaticResource Menu.Lime}" CornerRadius="10,10,0,0">
               <Grid>
-                <Rectangle Height="30"
-                           VerticalAlignment="Top"
-                           Margin="0,6,0,0"
-                           Fill="{DynamicResource GalapagOS.Brush.TopStripes}" />
+                <Rectangle Height="30" Margin="0,6,0,0" VerticalAlignment="Top" Fill="{DynamicResource GalapagOS.Brush.TopStripes}"/>
                 <StackPanel Orientation="Horizontal" Margin="24,0" VerticalAlignment="Center">
-                  <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}"
-                         Width="36"
-                         Height="36"
-                         Stretch="Uniform" />
+                  <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Stretch="Uniform" Width="36" Height="36"/>
                   <StackPanel Margin="12,0,0,0">
-                    <TextBlock Text="RESEARCHER PROFILES"
-                               FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                               FontSize="22"
-                               FontWeight="Bold"
-                               Foreground="{StaticResource Menu.Ink}" />
-                    <TextBlock Text="WHO IS ENTERING THE FIELD?"
-                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                               FontSize="9"
-                               Foreground="{StaticResource Menu.DarkOlive}" />
+                    <TextBlock Text="RESEARCHER PROFILES" Foreground="{StaticResource Menu.Ink}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="22" FontWeight="Bold"/>
+                    <TextBlock Text="WHO IS ENTERING THE FIELD?" Foreground="{StaticResource Menu.DarkOlive}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9"/>
                   </StackPanel>
                 </StackPanel>
               </Grid>
             </Border>
-
-            <StackPanel Grid.Row="1" Margin="28,24,28,26">
-              <TextBlock Text="NEW RESEARCHER"
-                         FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                         FontSize="11"
-                         Foreground="{StaticResource Menu.DarkOlive}" />
-              <TextBlock Text="Name your first field profile. Your expeditions and discoveries will be kept here."
-                         Margin="0,5,0,12"
-                         TextWrapping="Wrap"
-                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                         FontSize="14"
-                         Foreground="{StaticResource Menu.Ink}" />
+            <StackPanel Margin="28,24,28,26" Grid.Row="1">
+              <TextBlock Text="NEW RESEARCHER" Foreground="{StaticResource Menu.DarkOlive}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11"/>
+              <TextBlock Text="Name your first field profile. Your expeditions and discoveries will be kept here." Margin="0,5,0,12" Foreground="{StaticResource Menu.Ink}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" TextWrapping="Wrap"/>
               <Grid>
                 <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="*" />
-                  <ColumnDefinition Width="12" />
-                  <ColumnDefinition Width="190" />
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="12"/>
+                  <ColumnDefinition Width="190"/>
                 </Grid.ColumnDefinitions>
-                <TextBox Text="{Binding ProfileNameInput}"
-                         Height="46"
-                         VerticalContentAlignment="Center"
-                         Style="{StaticResource Menu.ProfileInput}" />
-                <Button Grid.Column="2"
-                        Content="CREATE PROFILE"
-                        Command="{Binding CreateInitialProfileCommand}"
-                        IsEnabled="{Binding CreateInitialProfileEnabled}"
-                        Style="{StaticResource Menu.PrimaryButton}"
-                        MinHeight="46"
-                        Padding="14,8"
-                        FontSize="14" />
+                <TextBox Text="{Binding ProfileNameInput}" Height="46" VerticalContentAlignment="Center" Style="{StaticResource Menu.ProfileInput}"/>
+                <Button Content="CREATE PROFILE" Command="{Binding CreateInitialProfileCommand}" Grid.Column="2" Padding="14,8" MinHeight="46" FontSize="14" Style="{StaticResource Menu.PrimaryButton}" IsEnabled="{Binding CreateInitialProfileEnabled}"/>
               </Grid>
-
               <Grid Margin="0,22,0,10">
-                <TextBlock Text="SAVED PROFILES"
-                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                           FontSize="11"
-                           Foreground="{StaticResource Menu.DarkOlive}" />
-                <Border Height="1"
-                        Margin="118,0,0,0"
-                        Background="#506F7E3A"
-                        VerticalAlignment="Center" />
+                <TextBlock Text="SAVED PROFILES" Foreground="{StaticResource Menu.DarkOlive}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11"/>
+                <Border Height="1" Margin="118,0,0,0" VerticalAlignment="Center" Background="#506F7E3A"/>
               </Grid>
-
-              <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+              <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="220">
                 <ItemsControl ItemsSource="{Binding Profiles}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                      <Button Content="{Binding ProfileName}"
-                              Command="{Binding SelectCommand}"
-                              Style="{StaticResource Menu.ProfileButton}" />
+                      <Button Content="{Binding ProfileName}" Command="{Binding SelectCommand}" Style="{StaticResource Menu.ProfileButton}"/>
                     </DataTemplate>
                   </ItemsControl.ItemTemplate>
                 </ItemsControl>
               </ScrollViewer>
-
-              <Button Content="BACK TO MAIN MENU"
-                      Command="{Binding CloseProfileSelectionCommand}"
-                      Width="220"
-                      Margin="0,18,0,0"
-                      HorizontalAlignment="Left"
-                      Style="{StaticResource Menu.SecondaryButton}" />
+              <Button Content="BACK TO MAIN MENU" Command="{Binding CloseProfileSelectionCommand}" Width="220" Margin="0,18,0,0" HorizontalAlignment="Left" Style="{StaticResource Menu.SecondaryButton}"/>
             </StackPanel>
           </Grid>
         </Border>
       </Grid>
 
       <Grid Visibility="{Binding QuitConfirmationVisibility}" Panel.ZIndex="30">
-        <Border Background="#C3372C15" />
-        <Border Width="500"
-                Padding="30"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="{StaticResource Menu.PanelBackground}"
-                BorderBrush="{StaticResource Menu.DarkOlive}"
-                BorderThickness="2"
-                CornerRadius="12">
+        <Border x:Name="DesktopOverlayFilter" Background="#C3372C15" />
+        <Border x:Name="Popup_ExitDesktop" Width="500" HorizontalAlignment="Center" VerticalAlignment="Center" Padding="30" Background="{StaticResource Menu.PanelBackground}" BorderBrush="{StaticResource Menu.DarkOlive}" BorderThickness="2" CornerRadius="12">
           <Border.Effect>
-            <DropShadowEffect Color="#CC372C15" BlurRadius="24" Direction="315" ShadowDepth="10" />
+            <DropShadowEffect Color="#CC372C15" BlurRadius="24" Direction="315" ShadowDepth="10"/>
           </Border.Effect>
           <StackPanel>
-            <Border Width="54"
-                    Height="54"
-                    Background="{StaticResource Menu.Coral}"
-                    BorderBrush="{StaticResource Menu.Ink}"
-                    BorderThickness="2"
-                    CornerRadius="27"
-                    HorizontalAlignment="Center">
-              <TextBlock Text="×"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"
-                         FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                         FontSize="34"
-                         FontWeight="Bold"
-                         Foreground="{StaticResource Menu.Ink}" />
+            <Border Width="54" Height="54" HorizontalAlignment="Center" Background="{StaticResource Menu.Coral}" BorderBrush="{StaticResource Menu.Ink}" BorderThickness="2" CornerRadius="27">
+              <TextBlock Text="×" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{StaticResource Menu.Ink}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="34" FontWeight="Bold"/>
             </Border>
-            <TextBlock Text="LEAVE THE FIELD?"
-                       Margin="0,16,0,0"
-                       HorizontalAlignment="Center"
-                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                       FontSize="26"
-                       FontWeight="Bold"
-                       Foreground="{StaticResource Menu.Ink}" />
-            <TextBlock Text="Your current profile is safe. GalapagOS will close and the meadow will keep growing without you."
-                       Margin="20,9,20,22"
-                       HorizontalAlignment="Center"
-                       TextAlignment="Center"
-                       TextWrapping="Wrap"
-                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                       FontSize="14"
-                       Foreground="{StaticResource Menu.Ink}" />
+            <TextBlock Text="LEAVE THE FIELD?" Margin="0,16,0,0" HorizontalAlignment="Center" Foreground="{StaticResource Menu.Ink}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="26" FontWeight="Bold"/>
+            <TextBlock Text="Your current profile is safe. GalapagOS will close and the meadow will keep growing without you." Margin="20,9,20,22" HorizontalAlignment="Center" Foreground="{StaticResource Menu.Ink}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap"/>
             <Grid>
               <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="12" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="12"/>
+                <ColumnDefinition Width="*"/>
               </Grid.ColumnDefinitions>
-              <Button Content="STAY"
-                      Command="{Binding CancelQuitCommand}"
-                      Style="{StaticResource Menu.SecondaryButton}" />
-              <Button Grid.Column="2"
-                      Content="QUIT TO DESKTOP"
-                      Command="{Binding ConfirmQuitCommand}"
-                      Style="{StaticResource Menu.PrimaryButton}"
-                      FontSize="14"
-                      MinHeight="46"
-                      Padding="14,8" />
+              <Button Content="STAY" Command="{Binding CancelQuitCommand}" Style="{StaticResource Menu.SecondaryButton}"/>
+              <Button Content="QUIT TO DESKTOP" Command="{Binding ConfirmQuitCommand}" Grid.Column="2" Padding="14,8" MinHeight="46" FontSize="14" Style="{StaticResource Menu.PrimaryButton}"/>
             </Grid>
           </StackPanel>
         </Border>
@@ -669,7 +539,7 @@
             Panel.ZIndex="40"
             Background="#F1091512"
             Opacity="0"
-            IsHitTestVisible="False">
+            IsHitTestVisible="False" d:IsHidden="True">
         <Grid.Triggers>
           <EventTrigger RoutedEvent="FrameworkElement.Loaded">
             <BeginStoryboard>
@@ -733,7 +603,7 @@
                     BorderBrush="#226F7E3A"
                     BorderThickness="1"
                     CornerRadius="5"
-                    IsHitTestVisible="False" />
+                    IsHitTestVisible="False"/>
           </Grid>
         </Border>
       </Grid>
@@ -741,7 +611,7 @@
       <Grid x:Name="DesktopTransitionOverlay"
             Visibility="{Binding DesktopTransitionVisibility}"
             Panel.ZIndex="50"
-            Opacity="0" Background="#F1608A80" IsHitTestVisible="False">
+            Opacity="0" Background="#F1608A80" IsHitTestVisible="False" d:IsHidden="True">
         <Grid.Triggers>
           <EventTrigger RoutedEvent="FrameworkElement.Loaded">
             <BeginStoryboard>
@@ -773,7 +643,7 @@
             <Border Margin="20"
                     BorderBrush="#226F7E3A"
                     BorderThickness="1"
-                    CornerRadius="5" />
+                    CornerRadius="5"/>
             <StackPanel x:Name="TransitionCopy"
                         HorizontalAlignment="Center"
                         VerticalAlignment="Center"

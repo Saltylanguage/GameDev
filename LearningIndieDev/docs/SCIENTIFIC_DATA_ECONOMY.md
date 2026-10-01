@@ -1,5 +1,14 @@
 # Scientific Data Economy — Future Work
 
+> **Progression update — 2026-10-01:** The current direction is a permanent
+> whole-species Genome-tree unlock followed by resettable upgrade allocation;
+> resetting costs generic data. This supersedes the individual permanent-node
+> purchases and free reallocation described below. Rabbit Data buys tree access
+> and active upgrades; reset refunds the allocation for a flat Research Data
+> fee. Gene Lab opens after three completed runs, wins or losses. Fee and node
+> prices remain balance values. See the [P1-029 design
+> handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
+
 Status: **approved product direction; deferred until the vertical-slice upgrade loop is proven**.
 
 ## Concept
@@ -61,11 +70,14 @@ progress later**.
 
 ## The Lab
 
-Every species has its own Genome tree. Purchasing a node unlocks it permanently;
-the player may turn unlocked nodes on or off between simulations. The active
-Genome is frozen at launch and applies to every population of that species,
-including when the player is controlling another species. Candidate uses
-include:
+Each species has its own Genome tree. Rabbit Data permanently unlocks the full
+Rabbit tree. Individual Rabbit upgrades are purchased into a resettable active
+allocation with Rabbit Data; resetting refunds that allocation and charges a
+flat Research Data fee. Exact node prices and the reset fee are balance values.
+Other species' wallet mappings remain open until those trees are designed.
+The active Genome is frozen at launch and applies to every population of that
+species, including when the player is controlling another species. Candidate
+uses include:
 
 - improving a species stat within a controlled balance budget;
 - unlocking a new species behaviour or ecological response;
@@ -84,10 +96,10 @@ libraries should offer legal cross-species active configurations that form a
 richer and more resilient ecology; every possible configuration need not do so.
 
 The current planning baseline is an **8-point active Genome capacity per
-species**. Unlocked nodes can be reallocated freely between simulations, while
-the active configuration is frozen at launch. Authored node costs, capacity
-growth, and the broader Genome economy remain open; do not infer them from the
-Gene Lab mock or the runtime shim.
+species**. Resetting an active allocation costs a flat Research Data fee and
+refunds its Rabbit Data spend. The active configuration is frozen at launch.
+Authored node prices, exact reset fee, capacity growth, and the broader Genome
+economy remain open; do not infer them from the Gene Lab mock or runtime shim.
 
 Biome projects are a possible separate use for banked data. These would improve
 or reshape the habitat itself—such as water retention, habitat corridors, soil

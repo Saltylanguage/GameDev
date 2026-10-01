@@ -73,12 +73,26 @@ S3 closed on 2026-09-29 after the six-round player route, bounded Mutation and
 result review, visual/UI pass, and Trello reconciliation were accepted. M1
 closed on 2026-09-29 after Josh accepted the distributed exit-gate evidence;
 later changes may need retesting. CF-6 duration/memory measurement remains
-optional stretch work. Refine the S4 plan before a separate kickoff.
+optional stretch work. S4 was activated on 2026-10-01; its focused scope and
+capacity are recorded in the active S4 control record.
 
 The proposed control record is
 [`S3-control-record.md`](Sprints/S3-control-record.md).
 
 ### S4 — Species and scenario co-design with an accelerator lane
+
+The approved planning baseline is narrower than the horizon described below:
+it covers three Hare build strategies in Forest Edge, matched-seed evidence,
+in-game review, and the P1-032 Desktop active-profile launch. Local
+profile-choice save/restore and the broader balance/accelerator lane remain
+deferred. See [`S4-control-record.md`](Sprints/S4-control-record.md) for the
+current scope and capacity.
+
+The production Fox and Hare baselines, including crowding metabolism, Hare
+reproduction, and grass reseeding, remain provisional (former loose end
+P1-034). S3 acceptance did not approve broad ecological balance. Revisit
+these values with matched Forest Edge comparisons when the balance lane is
+scheduled; keep that decision separate from the accepted S3 Mutation offer.
 
 Select the smallest vertical-slice roster, write concise species identities,
 and create a scenario matrix that pressures different strategies. Run fixed-seed

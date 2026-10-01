@@ -17,31 +17,45 @@ The September planning notes below are dated snapshots. Use the
 [S4 Trello control card](https://trello.com/c/Zn4UpBYc) for current scope,
 ownership and capacity; those older notes are not a fresh kickoff decision.
 
-**S4 Sim review: 2026-09-30, ready for Josh's review.** Sim accepts
-20h (17h feature + 3h protected reserve). The agreed direction combines six
-shared basic Hare skills into Trailblazer, Warren, and Gardeners, with ordered
-20-seed screening, a separate 200-seed confirmation panel, full DARWIN OR DIE
-slash-line interpretation, diagnostic evidence, and in-game review. Original
-task hours are starting estimates with an early checkpoint. Josh must still
-confirm his responsibilities and estimate P1-032; name its feature-capacity
-trade while protecting the team's 8h reserve before a separate kickoff. S4
-remains Proposed. See the [accepted Sim review](handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md).
+**S4 active: 2026-10-01.** Sim accepts 20h (14h feature, 3h protected
+reserve, and 3h unallocated). Josh confirmed his 20h
+availability and responsibilities. Josh chose the active profile plus current
+defaults for P1-032 (Forest Edge, Hare, seed 10100), accepted its 6h estimate,
+deferred local profile-choice save/restore, and approved 400/25/15 with a
+0.1-second step as an experiment variant; the authored production asset
+remains 400/55/35 at 0.2 seconds. Missing or invalid profile context must fail
+closed to visible profile selection. The control/candidate pilot was attempted
+but Unity licensing and Package Manager failures stopped it before simulation;
+no experiment result or S4-02/03 re-estimate exists. Josh accepts the current
+S4-02/03 estimates as planning assumptions. The pilot remains an early
+checkpoint before the full screen, not a kickoff blocker. S4 is Active from
+2026-10-01; P1-032 and S4-01/02/03/07 are in Trello Current Work, with the
+S4 control card in Roadmap & Milestones. S4-04/05 remain in Backlog. The 8h
+reserve is protected.
+See the [S4 control record](Sprints/S4-control-record.md), [kickoff handoff](handoffs/2026-10-01-codex-s4-kickoff.md), and [accepted Sim
+review](handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md).
 
-**S4 planning draft: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
+**Loose Ends disposition: 2026-10-01.** P2-005 raw-artifact retention and
+P2-022 Terrain Paint diagnostic retention are decided. CF-6 remains optional
+Backlog work, and P2-015 is no longer an unbounded cleanup ticket. No raw
+reports or Unity assets were removed. See the [ledger](LOOSE_ENDS.md) and
+[review handoff](handoffs/2026-10-01-0112-codex-loose-ends-retention-decisions.md).
+
+**P1-029 contract accepted: 2026-10-01.** Josh approved the Fertile Droppings
+direction and progression defaults: Gene Lab after three completed runs, a
+permanent Rabbit tree license, Rabbit Data-funded active upgrades, a refunded
+resettable allocation with a flat Research Data fee, and the existing 8-point
+capacity. The node's scent behavior and numeric balance are not implemented or
+validated. P1-029 is closed as a design gap; implementation remains future
+work. See the [accepted contract](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md)
+and [Loose Ends](LOOSE_ENDS.md).
+
+**S4 planning basis: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
 cap-aware offer fix are recorded in pushed commits `25642440` and `974827f2`.
-The S4 control record proposes Sim's next contribution as bounded build
-configuration and matched-seed evidence work, based on his recent Forest Edge,
-Mutation, telemetry, and report changes. Seven draft cards (P1-032 and S4-01
-through S4-05 plus S4-07) are staged in Trello Upcoming Work for planning
-review. S4 remains Proposed: confirm Sim's ownership, estimate, and
-availability; resolve the unestimated P1-032 Desktop migration capacity; and
-keep the 8h reserve protected before finalizing scope or scheduling kickoff.
-S4 profile persistence is currently scoped to local player choices; versioned
-progression and Genome persistence remain later work. The M1 Trello card is
-COMPLETE, and S3-05 remains Backlog stretch work. See the [S4 planning
-record](Sprints/S4-control-record.md), [Sim kickoff handoff (ready for
-review)](handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md), and [M1
-closeout](handoffs/2026-09-29-codex-m1-closeout.md).
+Sim's proposed work builds on his recent Forest Edge, Mutation, telemetry, and
+report changes. The M1 Trello card is COMPLETE, and S3-05 remains Backlog
+stretch work. See the [Sim kickoff handoff](handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md)
+and [M1 closeout](handoffs/2026-09-29-codex-m1-closeout.md).
 
 **Hare purchase stat line: 2026-09-28, shared on BevBranch.** Successful phase-boundary
 population additions are now tracked as `ADD` in the run and checkpoint. The
@@ -496,9 +510,10 @@ as uncommitted stretch work. The latest merged-baseline Clean result is recorded
 at the top of this file and in the closeout handoff. S3-02's contract is
 complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
 scope. Chrono is producing the selected Main Menu art, with further polish as
-iterative work. Refine the Proposed S4 plan; no S4 kickoff has occurred.
-Retesting may be needed as later work changes the accepted baseline. Local
-profile saving is an S4 candidate. The GalapagOS Desktop is the canonical
+iterative work. At S3 closeout, the S4 plan still needed refinement; S4 was
+subsequently activated on 2026-10-01. Retesting may be needed as later work
+changes the accepted baseline. Local profile-choice save/restore is deferred beyond S4.
+The GalapagOS Desktop is the canonical
 player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
 translate repeatable, predictable Stat-Line impacts into concise qualitative

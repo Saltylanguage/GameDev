@@ -281,11 +281,11 @@ composition.
 ### P2-015 — Decompose the largest multi-responsibility files
 
 **Priority:** P2  
-**Status:** Deferred staged refactor  
+**Status:** Pruned from the active loose-ends ledger 2026-10-01; candidate seams retained for a demonstrated blocker
 **Owner:** Sim + UI/tooling owners  
 **Size:** Large, split into multiple implementation tickets  
-**Dependency:** P3/Unity and UI acceptance gates are green; current behavior is
-captured by focused tests.
+**Dependency:** A specific change is blocked or repeatedly coupled by one of
+the listed seams, and current behavior is captured by focused tests.
 
 **Goal:** Reduce change coupling without destabilizing the active simulation,
 Noesis shell, or experiment evidence pipeline.

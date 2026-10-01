@@ -2,6 +2,15 @@
 
 [Working state](../WORKING_STATE.md) | Status: ready-for-review
 
+> **Planning correction, 2026-09-30:** Josh selected 400 Plants / 25 Hares /
+> 15 Foxes for the S4 comparison. The scenario row below records the review's
+> intended comparison values, but its phrase “Current production Forest Edge”
+> is inaccurate: the checked-in production asset is 400 / 55 / 35 with a
+> 0.2-second step. Use a separately identified 25/15 input and the explicit
+> 0.1-second comparison step. See the current [S4 control record](../Sprints/S4-control-record.md)
+> before running or interpreting the experiment. This note preserves Sim's
+> reviewed proposal rather than rewriting it as a different historical review.
+
 - Handoff schema: 1
 - Handoff ID: 2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan
 - Owner: codex

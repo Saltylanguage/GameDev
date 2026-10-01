@@ -7,6 +7,13 @@ Status: audit and conservative cleanup completed. Thirteen explicitly approved
 empty directories and 41 approved raw log/report files were removed after
 verification. The inventory counts below describe the pre-cleanup state.
 
+**2026-10-01 decision:** The first cleanup already removed raw report/log files
+from `20260811-222638` and `20260905-035528`; their compact summaries remain.
+Retain the raw `20260905-063539`, `063730`, and `063858` bundles because their
+reports need trailing-comma recovery. The clean `20260905-064045` bundle remains
+the representative. No further duplicate removal is approved by this audit;
+the candidate table below records the historical comparison.
+
 ## What was checked
 
 The audit covered `LearningIndieDev/artifacts`, the project documentation that
@@ -174,9 +181,10 @@ result XML files. It was filtered from the hash-verified pre-cleanup index so
 the deleted rows are not presented as current evidence; no remaining log was
 rewritten.
 
-## Safe next cleanup sequence
+## Sequence for any future candidate
 
-1. Review the five semantic duplicate bundle candidates above.
+1. Identify a newly selected candidate and confirm its source and retained
+   representative; the five candidates above have been decided.
 2. Move approved candidates to a recoverable local archive, then rerun the
    summarizer and confirm the retained representative summaries have no parse
    warnings.

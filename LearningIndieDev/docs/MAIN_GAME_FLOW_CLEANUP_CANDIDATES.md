@@ -1,7 +1,8 @@
 # Main Game Flow Cleanup Candidates
 
-**Status:** The Island Survivor candidate was removed on 2026-09-18. The other
-rows remain review-only candidates; no other files were deleted for this work.
+**Status:** The Island Survivor candidate was removed on 2026-09-18. The Terrain
+Paint diagnostic was explicitly retained on 2026-10-01. The empty folder row
+remains a review-only candidate; no other files were deleted for this work.
 
 For Unity assets listed below, their `.meta` sidecars are part of the same
 review bundle.
@@ -16,7 +17,7 @@ historical value count as uses too.
 | Candidate | Why it is on the list | Current guardrail |
 | --- | --- | --- |
 | **Island Survivor prototype slice — removed 2026-09-18** | The user approved retiring the off-flow prototype as one connected slice. | Removed its scene/build entry, runtime modules, dedicated tests, validator, and Island Chores textures with `.meta` files. The historical handoffs and audit remain. See [legacy prototype audit](LEGACY_PROTOTYPE_AUDIT.md). |
-| **Terrain Paint diagnostic bundle** — `Assets/Scenes/TerrainPaintTest.unity`; `Assets/Scripts/Game/Presentation/TerrainPaintPreview.cs`; `Assets/Tests/Runtime/TerrainPaintPreviewTests.cs` | The scene is not in Build Settings or the player route. It is a manual developer diagnostic. Its helper still has a focused test, so the scene, script, and test should be considered together. | Existing item [P2-022 in Loose Ends](LOOSE_ENDS.md) says to decide after the terrain asset/presentation workflow settles: keep as a bounded diagnostic, migrate, or explicitly remove. The terrain atlas itself is used elsewhere and is not part of this candidate. |
+| **Terrain Paint diagnostic bundle — retained 2026-10-01** — `Assets/Scenes/TerrainPaintTest.unity`; `Assets/Scripts/Game/Presentation/TerrainPaintPreview.cs`; `Assets/Tests/Runtime/TerrainPaintPreviewTests.cs` | The scene is not in Build Settings or the player route. It is a manual developer diagnostic for the authored terrain atlas and mask resolver. | [P2-022](LOOSE_ENDS.md) is resolved by keeping the scene, script, and test together. Its IMGUI surface is confined to this diagnostic; no player-UI migration is scheduled. Review this decision only if the terrain authoring workflow changes or the diagnostic stops being useful. |
 | **Empty asset-folder placeholders** — `Assets/Audio/`, `Assets/ThirdParty/` | Each directory currently contains no files. | Low-priority housekeeping only. Confirm nobody intends these as reserved import locations before removing the empty directories; this is not a runtime cleanup. |
 
 ## Keep out of the removal list
