@@ -13,6 +13,10 @@ implementation and balance evidence remain. Read the
 for the decisions and a review prompt for Salty and his agent. The intended
 400/25/15, 0.1-second test fixture differs from committed scenario defaults.
 
+The September planning notes below are dated snapshots. Use the
+[S4 Trello control card](https://trello.com/c/Zn4UpBYc) for current scope,
+ownership and capacity; those older notes are not a fresh kickoff decision.
+
 **S4 Sim review: 2026-09-30, ready for Josh's review.** Sim accepts
 20h (17h feature + 3h protected reserve). The agreed direction combines six
 shared basic Hare skills into Trailblazer, Warren, and Gardeners, with ordered
@@ -50,14 +54,69 @@ installed Unity 6000.4.6f1 Editor compiled the project with zero Console
 errors; gameplay behavior remains unverified because no test or live purchase
 run was requested. The Editor instance used for compilation was closed.
 
-**Forest Edge starting population: 2026-09-28, shared on BevBranch.** The production
-scenario now explicitly starts 400 Plants, 55 Hares, and 35 Foxes on its 36x20
-grid. All three starting probabilities are zero. This promotes the user's
-previous PC-local start preset into the authored asset. The DARWIN OR DIE stat
-workbook's species sheet now shows that single baseline. The asset diff and
-saved workbook were inspected; no Unity runtime or balance run has validated
-the new ecology. The authored baseline and stat-line accounting were pushed as
-`1f4c7c8` before the latest Salty roadmap HTML merge.
+**Forest Edge population cleanup: 2026-10-01, ready for review on BevBranch.**
+See the [cleanup handoff](handoffs/2026-10-01-1916-codex-population-configuration-cleanup.md) for scope and verification. The shared
+production default remains 36x20, 400 Plants / 55 Hares / 35 Foxes, zero
+starting probabilities and a 0.2-second step. The proposed S4 fixture uses
+400/25/15 and an explicit 0.1-second step through experiment inputs; it does
+not replace the production asset. `CellSim Run -StartingPopulations` now passes
+those inputs through the existing runner. Saved explicit preview presets are
+preserved; preview settings without an override follow the selected asset.
+Unity 6000.4.6f1 clean focused validation passed 10/10
+`PopulationConfigurationTests` EditMode cases and 2/2 existing developer-settings
+PlayMode cases. A one-seed, two-tick `CellSim Run` smoke check at 0.1 seconds
+recorded 400/25/15 at tick zero; the production asset still matches HEAD.
+The checks exercise combined grid/count overrides, invalid inputs, saved v4/v5
+presets, defaults following authored counts, and edit/Undo/save/reload.
+Local results are under `artifacts/unity-tests-20261001-180224/`,
+`artifacts/unity-tests-20261001-180800/` and
+`artifacts/cellular-experiment-20261001-180623/`. This is focused functional
+validation, not a full-suite, visual Catalog interaction or balance acceptance.
+
+**Historical Forest Edge no-choice run: 2026-09-29, local on BevBranch.** This
+run used a locally edited 36x20 scenario with 400 Plants, 25 Hares and 15
+Foxes, all starting probabilities zero. It did not establish a shared baseline.
+A matched 200-seed no-choice run (10100–10299) through the locally installed
+Unity Editor, using the saved desktop 0.1-second step, observed Hare extinction
+in 178/200 runs (median tick 211) and Fox extinction in 196/200 (median tick
+351); only 4 runs reached tick 600. Plants averaged 402.05 at tick 200, while
+Hare combat deaths outnumbered starvation deaths, consistent with predation
+being the main early pressure in that configuration. Later checkpoint counts
+are censored by runs ending when the selected Fox player species goes extinct. The scenario
+asset still authors a 0.2-second step; this evidence is for the live saved
+0.1-second setting. See the [shared historical evidence summary](Research/Reports/2026-10-01-historical-forest-edge-populations/report.md).
+Raw reports and the original analysis remain in ignored local artifacts.
+
+**Historical composite-Mutation pilot: 2026-09-29, local.** The catalog Mutation,
+`warren-guarded-burrow` (block +2, movement speed -0.25), was tested alone
+against a same-seed no-Mutation control on seeds 10100-10119 using a local
+400/25/15 Forest Edge start, a 0.2-second step and Hare as the player species.
+This differs from the 0.1-second, Fox-player historical baseline above.
+It was acquired after phase 1 and retained through
+the six 100-tick phases. Control had 2/20 Hare extinctions and mean terminal
+Hare 119.05; Guarded Burrow had 0/20 and mean terminal Hare 137.10. Mean APS
+was 1.35887 versus 1.56838. All 20 slash lines per arm independently validated
+with the documented HPS/EHS/ECN raw-event limitations. This is directional pilot
+evidence only. Guarded Burrow combines block and a movement penalty; it does
+not validate the proposed S4 basic Hide skill. Reconcile the earlier full
+200-seed follow-up with the current S4 pilot-first plan before scheduling more
+work. The [shared historical summary and per-seed slash lines](Research/Reports/2026-10-01-historical-forest-edge-populations/report.md)
+preserve the comparison; raw reports and validators remain local artifacts.
+
+**Previous Forest Edge baseline: 2026-09-29.** The 400 Plants / 55 Hares / 5
+Foxes run remains a historical comparison. Its report is local-only at
+`artifacts/forest-edge-startpop-screen-20260929/report.md`; it is not part of
+the shared evidence package.
+
+**Scenario population authoring: 2026-09-29, local.** The Species Catalog's
+Scenario Roster exposes editable starting-population fields on each species
+card. Edits use Unity's serialized-object Undo path; click **Save Assets** to
+persist them, then start or restart a preview without an explicit population
+override to use the selected scenario's authored values. The historical run
+loaded the locally edited scenario asset without a starting-population
+override and verified 400 Plants / 25
+Hares / 15 Foxes at tick zero in all 200 seeds. The screenshot/run values are
+recorded locally. This authoring tool does not approve a production balance change.
 
 **S3-08 Fox telemetry clarification: 2026-09-27, validated.** The report
 already distinguishes pre-resolution FSM state ticks from resolver outcomes;

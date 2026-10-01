@@ -3,6 +3,7 @@ param(
     [ValidateSet('Auto', 'Live', 'Clean')]
     [string]$Execution = 'Auto',
     [string]$ScenarioPath,
+    [string]$StartingPopulations = '',
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)]
     [int]$SeedCount = 20,
@@ -180,6 +181,10 @@ elseif (-not [string]::IsNullOrWhiteSpace($UpgradeAssetCatalogPath)) {
 
 if ($null -ne $assetPath) {
     $arguments += @('-scenarioPath', $assetPath)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($StartingPopulations)) {
+    $arguments += @('-startingPopulations', $StartingPopulations)
 }
 
 if ($GridWidth -gt 0) {

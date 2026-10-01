@@ -1127,6 +1127,13 @@ namespace SaltyGame
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
                 carnivoreStartingPopulation = parsedCarnivoreStartingPopulation;
                 startingPopulationOverrideEnabled = configuredStartingPopulation > 0;
+                if (!startingPopulationOverrideEnabled && SelectedScenario != null)
+                {
+                    var authoredData = SelectedScenario.CreateRuntimeData();
+                    plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
+                    herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
+                    carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
+                }
             }
             randomizeSeedOnStart = randomizeSeed;
             settingsMessage = hasStartingPopulationValues
@@ -1938,6 +1945,17 @@ namespace SaltyGame
                 PlayerPrefs.Save();
             }
 
+            if (SelectedScenario != null && !saved.startingPopulationOverrideEnabled)
+            {
+                var authoredData = SelectedScenario.CreateRuntimeData();
+                var authoredPlant = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
+                var authoredHerbivore = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
+                var authoredCarnivore = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
+                saved.plantStartingPopulation = authoredPlant;
+                saved.herbivoreStartingPopulation = authoredHerbivore;
+                saved.carnivoreStartingPopulation = authoredCarnivore;
+            }
+
             width = Mathf.Max(1, saved.width);
             height = Mathf.Max(1, saved.height);
             seed = saved.seed;
@@ -2678,7 +2696,7 @@ namespace SaltyGame
             plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
             herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
             carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
-            startingPopulationOverrideEnabled = authoredData.StartingPopulations.Count > 0;
+            startingPopulationOverrideEnabled = false;
             rules = new Dictionary<SpeciesId, SpeciesRules>(authoredData.SpeciesRules);
             ruleDrafts = CreateRuleDrafts(rules);
             if (!rules.ContainsKey(playerSpecies))

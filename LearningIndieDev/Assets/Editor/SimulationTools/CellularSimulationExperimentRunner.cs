@@ -35,6 +35,7 @@ namespace SaltyGame.EditorTools
         const string DefaultUpgradeId = "none";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
+        const string StartingPopulationsArgument = "-startingPopulations";
         const string RunTicksArgument = "-runTicks";
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
         const string PhaseUpgradeScheduleArgument = "-phaseUpgradeSchedule";
@@ -777,14 +778,42 @@ namespace SaltyGame.EditorTools
                         stepInterval);
             }
 
-            if (options.GridWidth == 0 && options.GridHeight == 0)
+            if (options.StartingPopulations == null)
             {
-                return updatedData;
+                return options.GridWidth == 0 && options.GridHeight == 0
+                    ? updatedData
+                    : updatedData.WithGridSize(
+                        options.GridWidth == 0 ? updatedData.Width : options.GridWidth,
+                        options.GridHeight == 0 ? updatedData.Height : options.GridHeight);
             }
 
-            return updatedData.WithGridSize(
+            var populations = new Dictionary<SpeciesId, int>();
+            foreach (var entry in options.StartingPopulations.Split(','))
+            {
+                var parts = entry.Split('=');
+                if (parts.Length != 2
+                    || string.IsNullOrWhiteSpace(parts[0])
+                    || !int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
+                    || count < 0)
+                {
+                    throw new ArgumentException(
+                        $"'{StartingPopulationsArgument}' must use species=count pairs with nonnegative counts.",
+                        StartingPopulationsArgument);
+                }
+
+                var species = new SpeciesId(parts[0]);
+                if (populations.ContainsKey(species))
+                {
+                    throw new ArgumentException($"Duplicate starting population for '{species}'.", StartingPopulationsArgument);
+                }
+
+                populations.Add(species, count);
+            }
+
+            return updatedData.WithGridSizeAndStartingPopulations(
                 options.GridWidth == 0 ? updatedData.Width : options.GridWidth,
-                options.GridHeight == 0 ? updatedData.Height : options.GridHeight);
+                options.GridHeight == 0 ? updatedData.Height : options.GridHeight,
+                populations);
         }
 
         static SpeciesExperimentalOptions GetExperimentalOptions(CommandLineOptions options)
@@ -1495,6 +1524,7 @@ namespace SaltyGame.EditorTools
             public bool CoupledSpeciesResponses { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
+            public string StartingPopulations { get; private set; }
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
             public string[][] PhaseUpgradeSchedule { get; private set; }
@@ -1608,6 +1638,7 @@ namespace SaltyGame.EditorTools
                     CoupledSpeciesResponses = GetBooleanValue(arguments, CoupledSpeciesResponsesArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
+                    StartingPopulations = GetOptionalValue(arguments, StartingPopulationsArgument),
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
                     PhaseUpgradeSchedule = phaseUpgradeSchedule,

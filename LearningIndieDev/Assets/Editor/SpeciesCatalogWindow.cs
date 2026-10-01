@@ -32,6 +32,7 @@ namespace SaltyGame.EditorTools
             public bool HasScenarioStart;
             public float StartingProbability;
             public int StartingPopulation;
+            public int ScenarioEntryIndex;
         }
 
         readonly List<CatalogEntry> entries = new List<CatalogEntry>();
@@ -243,11 +244,16 @@ namespace SaltyGame.EditorTools
                     GUILayout.Label(AssetDatabase.GetAssetPath(scenario), pathStyle);
                 }
             }
+
+            EditorGUILayout.HelpBox(
+                "Edit Starting population on each species card, then click Save Assets. The next simulation run uses these scenario values.",
+                MessageType.Info);
         }
 
         void DrawScenarioCards()
         {
-            if (GetSelectedScenario() == null)
+            var scenario = GetSelectedScenario();
+            if (scenario == null)
             {
                 return;
             }
@@ -262,6 +268,9 @@ namespace SaltyGame.EditorTools
                 return;
             }
 
+            var serializedScenario = new SerializedObject(scenario);
+            serializedScenario.UpdateIfRequiredOrScript();
+            var speciesProperty = serializedScenario.FindProperty("species");
             var availableWidth = Mathf.Max(CardMinimumWidth, position.width - 30f);
             var columnCount = Mathf.Max(1, Mathf.FloorToInt((availableWidth + CardGap) / (CardMinimumWidth + CardGap)));
             var cardWidth = Mathf.Min(
@@ -278,7 +287,16 @@ namespace SaltyGame.EditorTools
                         var entryIndex = rowStart + column;
                         if (entryIndex < scenarioSpeciesEntries.Count)
                         {
-                            DrawSpeciesCard(scenarioSpeciesEntries[entryIndex], cardWidth, showScenarioStart: true);
+                            var scenarioEntry = speciesProperty != null
+                                && scenarioSpeciesEntries[entryIndex].ScenarioEntryIndex < speciesProperty.arraySize
+                                ? speciesProperty.GetArrayElementAtIndex(
+                                    scenarioSpeciesEntries[entryIndex].ScenarioEntryIndex)
+                                : null;
+                            DrawSpeciesCard(
+                                scenarioSpeciesEntries[entryIndex],
+                                cardWidth,
+                                showScenarioStart: true,
+                                scenarioEntry: scenarioEntry);
                         }
                         else
                         {
@@ -298,6 +316,11 @@ namespace SaltyGame.EditorTools
             }
 
             EditorGUILayout.EndScrollView();
+            if (serializedScenario.ApplyModifiedProperties())
+            {
+                RefreshSelectedScenarioEntries();
+                Repaint();
+            }
         }
 
         void DrawSummary()
@@ -411,7 +434,11 @@ namespace SaltyGame.EditorTools
             EditorGUILayout.EndScrollView();
         }
 
-        void DrawSpeciesCard(CatalogEntry entry, float cardWidth, bool showScenarioStart = false)
+        void DrawSpeciesCard(
+            CatalogEntry entry,
+            float cardWidth,
+            bool showScenarioStart = false,
+            SerializedProperty scenarioEntry = null)
         {
             if (entry.Asset == null || entry.SerializedObject == null)
             {
@@ -427,11 +454,21 @@ namespace SaltyGame.EditorTools
                 DrawCardHeader(entry, id);
                 if (showScenarioStart && entry.HasScenarioStart)
                 {
-                    using (new EditorGUILayout.HorizontalScope(EditorStyles.helpBox))
+                    var populationProperty = scenarioEntry?.FindPropertyRelative("startingPopulation");
+                    using (new EditorGUILayout.VerticalScope(EditorStyles.helpBox))
                     {
-                        GUILayout.Label("Scenario start", EditorStyles.miniBoldLabel, GUILayout.Width(82f));
-                        GUILayout.Label($"Chance  {entry.StartingProbability:P0}", GUILayout.Width(90f));
-                        GUILayout.Label($"Population  {entry.StartingPopulation}");
+                        EditorGUILayout.LabelField("Scenario start", EditorStyles.miniBoldLabel);
+                        EditorGUILayout.LabelField($"Starting chance  {entry.StartingProbability:P0}");
+                        if (populationProperty != null)
+                        {
+                            populationProperty.intValue = Mathf.Max(
+                                0,
+                                EditorGUILayout.IntField("Starting population", populationProperty.intValue));
+                        }
+                        else
+                        {
+                            EditorGUILayout.LabelField($"Starting population  {entry.StartingPopulation}");
+                        }
                     }
                 }
 
@@ -832,8 +869,9 @@ namespace SaltyGame.EditorTools
                 return;
             }
 
-            foreach (var speciesEntry in scenario.Species)
+            for (var scenarioIndex = 0; scenarioIndex < scenario.Species.Count; scenarioIndex++)
             {
+                var speciesEntry = scenario.Species[scenarioIndex];
                 var asset = speciesEntry == null ? null : speciesEntry.Definition;
                 if (asset == null)
                 {
@@ -864,6 +902,7 @@ namespace SaltyGame.EditorTools
                 }
 
                 catalogEntry.HasScenarioStart = true;
+                catalogEntry.ScenarioEntryIndex = scenarioIndex;
                 catalogEntry.StartingProbability = speciesEntry.StartingProbability;
                 catalogEntry.StartingPopulation = speciesEntry.StartingPopulation;
                 scenarioSpeciesEntries.Add(catalogEntry);

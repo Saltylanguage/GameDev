@@ -25,6 +25,7 @@ param(
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
     [string]$ScenarioPath,
+    [string]$StartingPopulations = '',
 [string]$PlayerSpeciesId = 'herbivore',
 [string]$UpgradeId = 'none',
 [string]$UpgradeSequence = '',
@@ -58,6 +59,7 @@ CellSim Test [-Mode EditMode|PlayMode|All] [-Execution Auto|Live|Clean] [-TestFi
 CellSim Visuals [-Execution Auto|Live|Clean] [-TestFilter SaltyGame.PlayModeTests.SomeTest]
 CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-RunTicks 600] [-RunDurationSeconds 60] [-StepIntervalSeconds 0.1] [-ScenarioPath Assets/...]
+             [-StartingPopulations 'plant=400,hare=25,fox=15']
              [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide] [-UpgradeValueOverride 0.75]
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
@@ -86,7 +88,7 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -Execution $Execution -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
-        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
+        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath
@@ -108,7 +110,7 @@ switch ($Command) {
     'Baseline' {
         $testOutput = & (Join-Path $PSScriptRoot 'tools/Invoke-UnityTests.ps1') -Mode All -Execution Clean -ProjectPath $ProjectPath -UnityPath $UnityPath
         $testResult = @($testOutput | Where-Object { $_.PSObject.Properties.Name -contains 'ArtifactDirectory' } | Select-Object -Last 1)
-        $runOutput = & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution Clean -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -PlayerSpeciesId $PlayerSpeciesId -ProjectPath $ProjectPath -UnityPath $UnityPath
+        $runOutput = & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution Clean -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -PlayerSpeciesId $PlayerSpeciesId -ProjectPath $ProjectPath -UnityPath $UnityPath
         $runResult = @($runOutput | Where-Object { $_.PSObject.Properties.Name -contains 'Report' } | Select-Object -Last 1)
         if ($testResult.Count -ne 1 -or $runResult.Count -ne 1) {
             throw 'CellSim Baseline did not receive the expected test and experiment results.'

@@ -38,6 +38,30 @@ flowchart LR
     E --> F["Human review, Codex analysis,\nand focused next experiment"]
 ```
 
+## Starting population overrides
+
+Use an explicit experiment input to compare starting populations without editing
+the production scenario. For example, the proposed S4 fixture can be launched as:
+
+```powershell
+.\CellSim.ps1 -Command Run -Execution Auto -SeedStart 10100 -SeedCount 1 `
+    -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
+    -StartingPopulations 'plant=400,hare=25,fox=15' `
+    -PlayerSpeciesId hare -RunTicks 600 -StepIntervalSeconds 0.1
+```
+
+This is a fixture example, not the complete S4 upgrade schedule or an approved
+balance run. `-StartingPopulations` also works with `CellSim Baseline` and the
+underlying `tools/Run-CellularExperiment.ps1`. The underlying Unity argument is
+`-startingPopulations`. Values use the scenario's stable, case-sensitive species
+IDs, separated by commas. They replace the explicit starting-count dictionary;
+they do not change starting probabilities. Omit the argument to use the asset's
+authored counts. Counts must be nonnegative whole numbers, species IDs must
+exist, and duplicate IDs or totals over grid/scenario capacity are rejected.
+When grid size and populations are supplied together, both are validated as
+one configuration. The experiment request and report retain the inputs and
+actual tick-zero populations.
+
 ## What this enables
 
 ### Reliable development feedback
