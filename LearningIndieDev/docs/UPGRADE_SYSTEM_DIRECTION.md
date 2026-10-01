@@ -1,18 +1,25 @@
 # Upgrade System Direction — Mutations and Genomes
 
-Status: **approved product direction; the first Mutation contract, Genome
+Status: **Product direction approved.** The first Mutation contract, Genome
 identity/profile/snapshot contract, and data-driven Genome authoring skeleton
-exist, while Genome effects and the scalable balance model remain planned
-work**. The current Genome slice includes profile persistence, an immutable
-launch/run boundary, ScriptableObject catalog snapshots, and a responsive
-species-bound Gene Lab binding; production effect catalog and behavior
-application remain deferred.
+exist. Josh approved the first Hare Genome contract on 2026-10-01; its runtime
+effect and balance evidence remain follow-up work. The current Genome slice
+includes profile persistence, an immutable launch/run boundary, ScriptableObject
+catalog snapshots, and a responsive species-bound Gene Lab binding. Production
+effect catalog and behavior application remain deferred.
 Feature owner: **Josh**. Sim participates only in explicitly scheduled evidence
 and review work; this contract slice does not yet make Genome effects part of
 simulation rules.
 Active concern record: [`Planning concerns/upgrade-system.md`](Planning%20Concerns/upgrade-system.md).
 Balance guideline:
 [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+
+> **Progression update — 2026-10-01:** Josh approved a
+> permanent species-tree license followed by resettable upgrade allocations;
+> a reset costs generic data. The runtime profile schema still stores permanent
+> node IDs, so persistence must be reconciled before production Genome
+> implementation. See the [P1-029 design
+> handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
 
 ## Two upgrade systems
 
@@ -22,7 +29,7 @@ their ownership and lifetime must remain visibly separate.
 | System | Player meaning | Lifetime | Application |
 | --- | --- | --- | --- |
 | **Mutation** | An acute adaptation chosen during the current expedition | Resets when the expedition ends | Applies to the selected species and remains active for later phases |
-| **Genome** | A permanently unlocked species option configured in the Gene Lab | The unlock persists; active choices can change between simulations | The active configuration applies to every population of that species, including when it is not player-controlled |
+| **Genome** | A permanent species-tree license with a resettable active upgrade allocation configured in the Gene Lab | Tree access persists; resetting the allocation costs a flat Research Data fee | The active configuration applies to every population of that species, including when it is not player-controlled |
 
 ### Experimental coupled responses
 
@@ -47,13 +54,14 @@ The effective rules used in a Biome Simulation are:
 Natural species rules + active Genome
 ```
 
-Scientific data connects expedition performance to permanent Genome progress.
-For the bounded S3-04 bridge, Mutation choices are free and Skip has no reward.
-Whether a later version introduces an in-expedition Mutation cost or Skip
-bonus, and the permanent Genome economy, remain separate open decisions in
+Scientific Data is intended to connect expedition performance to Genome
+progress. For the bounded S3-04 bridge, Mutation choices are free and Skip has
+no reward. The Rabbit tree-license and resettable-allocation model is approved;
+how expeditions award and spend data, exact upgrade prices and reset fee, and
+any later Mutation cost or Skip reward remain open in
 [`SCIENTIFIC_DATA_ECONOMY.md`](SCIENTIFIC_DATA_ECONOMY.md).
 
-## Current decision boundary (updated 2026-09-18)
+## Current decision boundary (updated 2026-10-01)
 
 - S3-04 uses the five existing experimental Hare Mutations as a bounded bridge
   pool. Each boundary shows three distinct free choices and Skip. A selected
@@ -75,6 +83,14 @@ bonus, and the permanent Genome economy, remain separate open decisions in
   node-reveal relationship to Genome remains open.
 - Provisional scientific-data settlement remains open pending feature-owner
   approval.
+- The first Hare Genome contract is approved: Fertile Droppings pairs grass
+  renewal with predator-trackable scent. Rabbit Data buys the permanent tree
+  license and active upgrades. Resetting refunds the active allocation and
+  charges a flat Research Data fee. Gene Lab access begins after three
+  completed runs (wins and losses count); the first Rabbit Genome selection
+  teaches the available paths. The tree tile grants access only. Stat rewards
+  stack by default unless a node says otherwise. Numeric prices and effect
+  values remain unapproved pending economy tuning and matched evidence.
 
 ### Implemented Genome contract boundary
 
@@ -104,16 +120,25 @@ data-bound branch segments. The desktop test fixture includes separate Hare and
 Fox maps and a debug-only selector that swaps species through the same catalog
 binding. It does not mutate a simulation snapshot or apply effects.
 
-## Permanent unlocks and the active Genome
+## Permanent tree access and active Genome upgrades
 
-Each species has its own Genome tree. Purchasing a node unlocks that option
-permanently; it does not require the node to remain active forever. Between
-simulations, the player can turn unlocked nodes on or off and create an active
-Genome for that species.
+Each species has its own Genome tree. For the Rabbit tree, Rabbit Data buys
+permanent access to the full tree. The tree tile has no gameplay effect of its
+own. Individual upgrades are purchased into a resettable active allocation;
+they are not permanent node unlocks. Rabbit Data spent on the active allocation
+is returned when it is reset, and the reset costs a flat Research Data fee.
+Other species' wallet mapping remains to be defined when their trees are
+designed.
+
+The Gene Lab becomes available after three completed runs, whether the player
+wins or loses. The first time the player selects Rabbit Genome, a brief tutorial
+explains that the tree offers paths with different playstyles and benefits.
+Player-facing node copy should be concise, practical, and qualitative. Stat
+rewards stack by default unless the node explicitly says otherwise.
 
 The active Genome applies wherever that species appears. Playing Hare does not
-silently turn off the active Fox or Fern Genomes. Turning a node off does not
-remove the permanent unlock or undo primary progress.
+silently turn off the active Fox or Fern Genomes. A reset clears the species'
+active allocation but does not remove permanent tree access.
 
 Genome improvements may change stats, unlock behaviours, improve efficiency,
 or change how a species fills its ecological role. “Better” does not always
@@ -123,15 +148,15 @@ to scarcity.
 
 Genome purchases and configuration occur in the Gene Lab and take effect on the
 next simulation. They do not rewrite a simulation already in progress. The
-profile must store permanently unlocked node IDs separately from each species'
-active configuration. A simulation receives an immutable active Genome snapshot
-for every participating species at launch.
+profile must store permanent species-tree access, the resettable active
+allocation, and its wallet transactions. A simulation receives an immutable
+active Genome snapshot for every participating species at launch.
 
-Each species has an **8-point active Genome capacity**. Unlocked nodes can be
-reallocated freely between simulations, but the active configuration is frozen
-from launch until that run ends. Whether every node costs one point or nodes
-have different authored costs remains open; implementation must not infer that
-rule from Mutation prices or the Gene Lab mock.
+Each species has an **8-point active Genome capacity**. The active configuration
+is frozen from launch until that run ends. Node prices and how node levels use
+capacity remain balance decisions; implementation must not infer those rules
+from Mutation prices or the Gene Lab mock. Reset refunds the active allocation
+and costs the approved flat Research Data fee.
 
 Capacity cost should represent the size and flexibility of the species-level
 change, not whether the node is “good” for a biome. Biome impact is reported

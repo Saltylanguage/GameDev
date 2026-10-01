@@ -56,18 +56,6 @@ documentation gaps. Closed history stays in Git and task handoffs.
   verify process cleanup there.
 - **Owner:** Simulation/tooling owner. **Confidence:** High.
 
-### P1-029 — Production Genome decisions and behavior remain open
-
-- **Status:** Identity, profile, immutable snapshot, catalog, and generic Gene
-  Lab foundations exist. No production Genome node or executable effect is
-  approved.
-- **Evidence:** [SpeciesGenomeContract.cs](../Assets/Scripts/Game/Species/SpeciesGenomeContract.cs),
-  profile/launch/run snapshot contracts, and the [Genome reconciliation handoff](handoffs/2026-09-17-codex-genome-fixture-and-doc-reconciliation.md).
-- **Next action:** Before implementation, approve one small Hare node's effect,
-  wording, cost, prerequisite, activation rule, evidence plan, and persistence
-  owner.
-- **Owner:** Josh with design/simulation owners. **Confidence:** High.
-
 ### P1-032 — Desktop route drops profile and launch context
 
 - **Status:** Scheduled as the first item in the next post-S3 work block,
@@ -177,3 +165,10 @@ and sequencing remain in [Project Hygiene Ticket Summaries](PROJECT_HYGIENE_TICK
 - The prior `ProjectMain` staged-bundle snapshot was superseded by the active
   `Balance/ForestEdge` branch and commits `5e0e28c2`/`0ba7a9cd`; its branch and
   validation follow-ups are no longer current.
+
+- **P1-029 — First production Genome node contract:** Josh approved the Fertile
+  Droppings direction and progression rules, including the three-run Gene Lab
+  gate, Rabbit Data purchases, reset refunds for a flat Research Data fee,
+  eight-point capacity, default stacking, concise copy, and predator counterplay.
+  This closes the design-contract gap only; implementation and balance evidence
+  remain follow-up work. See the [accepted contract](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).

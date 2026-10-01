@@ -18,7 +18,8 @@ special case.
 This guideline defines the balance language, evidence, and review gates for:
 
 - a species' natural starting rules;
-- its permanently unlocked and selectively active **Genome**;
+- permanent access to its **Genome** tree and a selectively active, resettable
+  upgrade allocation;
 - the temporary per-run **Mutations** chosen during an expedition (five choice moments under the current six-round contract);
 - stat changes, one-time effects, and ability unlocks;
 - species matchups, environmental conditions, and whole ecosystems.
@@ -33,7 +34,7 @@ improve another.
 | System | Meaning | Lifetime | Who receives it |
 | --- | --- | --- | --- |
 | **Mutation** | An acute adaptation to the current environment | Current expedition only | The selected species for that expedition |
-| **Genome** | A permanently unlocked species option that the player can turn on or off between simulations | The unlock persists; the active configuration is frozen for one simulation | Every population of that species, including when it is not player-controlled |
+| **Genome** | Permanent access to a species tree with a resettable active upgrade allocation | Tree access persists; the active configuration is frozen for one simulation | Every population of that species, including when it is not player-controlled |
 
 A species' effective rules in a Species Simulation are:
 
@@ -53,10 +54,13 @@ order and acquisition phase remain part of the run record. Starting or ending
 an expedition does not remove a Genome unlock. Mutations never transfer into a
 Biome Simulation.
 
-The permanent collection of unlocked nodes and the active Genome are different
-things. Turning a node off does not refund or remove the unlock. The exact
-active-node budget and reallocation cost remain product decisions. Whatever
-model is chosen, the active Genome must be fixed when a simulation launches.
+Permanent tree access and the active Genome allocation are different things.
+For the approved Rabbit contract, Rabbit Data buys permanent access to the
+whole tree and funds active upgrades. Resetting clears that allocation,
+returns its Rabbit Data spend, and charges a flat Research Data fee. Exact
+prices, the active-node budget, and currency mappings for other species remain
+product decisions. Whatever the species' authored allocation rules, its
+active Genome must be fixed when a simulation launches.
 
 If non-player species gain temporary adaptations in a future mode, that is a
 separate feature decision. It must not be inferred from the Genome rule above.
@@ -75,10 +79,9 @@ problem only when it is treated as the sole measure of Genome or Biome health.
 A Genome option may help its species in one mode and destabilize a biome in the
 other. That can be an intentional and interesting tradeoff.
 
-Primary progress is the permanent set of Genome options the player has
-unlocked, not whether every active configuration succeeds. A poor configuration
-should produce useful feedback and invite reallocation; it should not erase the
-player's unlocks.
+Primary progress is permanent access to species Genome trees, not whether every
+active configuration succeeds. A poor configuration should produce useful
+feedback and invite a reset or reallocation; it should not erase tree access.
 
 ## 3. Define a balanced ecosystem correctly
 
@@ -399,9 +402,8 @@ Add tools only after the related manual analysis is understood.
 
 Recommended order:
 
-1. Add the simulation mode, permanently unlocked Genome nodes, active
-   per-species Genome configurations, and allowed Mutation loadout to run
-   provenance.
+1. Add the simulation mode, permanent Genome tree access, active per-species
+   upgrade configurations, and allowed Mutation loadout to run provenance.
 2. Add a versioned capability and AV reference table outside runtime rules.
 3. Produce a scenario/species matchup table from existing reports.
 4. Add parameter sweeps that measure value at several starting levels.
@@ -444,8 +446,8 @@ Genome stages, or player evidence can trigger a new review.
   balance authority.
 - Use one stable registry for supported stats and one explicit runtime mapping
   for each executable effect.
-- Store permanently unlocked Genome nodes separately from each species' active
-  configuration.
+- Store permanent species-tree access separately from each species' resettable
+  active upgrade allocation.
 - Freeze active Genome configurations for every participating species by stable
   species ID before either simulation mode starts.
 - Record simulation mode, base species data, unlocked and active Genome state,
@@ -480,5 +482,6 @@ and testable.
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 1.2 | 2026-10-01 | Clarified permanent tree access and resettable active allocations; recorded the approved Rabbit Data / Research Data reset model. |
 | 1.1 | 2026-09-06 | Separated Species and Biome Simulation goals; made Genome unlocks permanent but activation configurable; excluded Mutations from Biome Simulations. |
 | 1.0 | 2026-09-06 | Established Mutation / Genome balance language, Adaptation Value boundaries, ecosystem and matchup review, and staged automation guidance. |

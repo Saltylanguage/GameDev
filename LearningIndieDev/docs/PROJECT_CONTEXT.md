@@ -133,9 +133,17 @@ uncertainty or regression risk.
   and population limits allow. The S3 behavior is a V1; further Mutation and
   interface iteration remains future work. A broader Mutation economy or
   future Skip bonus remains deferred.
-- The player can turn unlocked Genome nodes on or off between simulations. The
-  active Genome is frozen at launch and applies to every population of its
-  species, including when that species is not controlled by the player.
+- Current Genome progression direction (2026-10-01): the player permanently
+  unlocks a species' full Genome tree, then configures resettable upgrades. The
+  Gene Lab opens after three completed runs (wins and losses count); the first
+  Rabbit Genome selection teaches the different playstyle paths. Rabbit Data
+  buys the tree and active upgrades. Resetting refunds the active allocation
+  and costs a flat Research Data fee; the fee amount and node prices remain
+  balance values. Stat rewards stack unless a node says otherwise. Active
+  Genome configuration remains frozen at launch and applies to every population
+  of its species, including when that species is not controlled by the player.
+  See the [P1-029 design
+  handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
   Species-Simulation rules combine natural rules, the active Genome, and the
   selected species' ordered Mutations. Biome-Simulation rules combine natural
   rules and each participating species' active Genome only.
@@ -158,14 +166,16 @@ uncertainty or regression risk.
   definition of a healthy, collapse-resistant environment remain open. The
   current [product brief](PRODUCT_BRIEF.md) still defines the bounded vertical
   slice and should not be silently treated as replaced by this concept.
-- Current progression boundary (2026-09-12): the first Genome
-  identity/profile/launch/run snapshot contract and data-driven authoring
-  skeleton are implemented, including per-species profile persistence,
-  immutable run provenance, ScriptableObject node/map assets, an asset-free
-  catalog snapshot, and generic Gene Lab bindings. Genome effect catalog
-  design, authored cost validation, economy, profile actions, and applying
-  effects to simulation rules remain deferred. Named Genome
-  loadouts are deferred and non-blocking, and Species Mastery is deferred and
+- Implemented Genome boundary (2026-09-12): the identity/profile/launch/run
+  snapshot contract and data-driven authoring skeleton exist, including
+  per-species profile persistence, immutable run provenance, ScriptableObject
+  node/map assets, an asset-free catalog snapshot, and generic Gene Lab
+  bindings. The implementation still stores permanent node IDs separately
+  from active IDs; it must be reconciled with the 2026-10-01 tree-license and
+  resettable-upgrade direction before production persistence is implemented.
+  Production effects, profile migration to tree-level unlocks and resettable
+  allocations, authored price validation, and applying effects to simulation
+  rules remain deferred. Named Genome loadouts and Species Mastery remain
   non-gating. Provisional scientific-data settlement remains open pending
   feature-owner approval.
 - Upgrade and species work follows
