@@ -30,6 +30,53 @@ separate 200-seed confirmation, slash-line evidence, and in-game acceptance.
 Josh's confirmation and the P1-032 estimate/feature-capacity trade are still
 required. S4 remains Proposed; this review does not schedule kickoff.
 
+**Josh's S4 comparison input decision, 2026-09-30:** Use 400 Plants / 25 Hares /
+15 Foxes for the S4 strategy comparisons. This is an explicit experiment
+variant: the checked-in production `ForestEdge.asset` still starts 400 / 55 /
+35 with a 0.2-second step. The proposed comparison uses a 0.1-second step.
+Create or select a separately identified 25/15 scenario input and record its
+source revision/fingerprint before any screening run; do not label the variant
+as the current production asset or silently change the player baseline. The
+in-game review must use the same inputs as the evidence it judges, or name and
+test the transfer to the production route separately.
+
+### S4 source-to-player preflight — 2026-09-30
+
+This is a source inspection at `a1bd51ae` for planning, not implementation
+acceptance. The phase-boundary player offer currently comes from
+`SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer`; runtime
+tests exist for several effects, but no S4 strategy comparison has run.
+
+| Basic Hare skill | Current source path | Gap before S4 evidence can support player meaning |
+| --- | --- | --- |
+| General movement (`faster-movement`) | Catalog creates a +0.5 MovementSpeed upgrade; movement resolution and focused runtime tests exist. | Not in the phase Herbivore offer pool. Confirm the intended offer values/cap and prove it is selectable in the actual player route. |
+| Threat Exposure | In the phase pool; +0.75 flee speed per level and cumulative avoidance are implemented and tested. | Confirm the selected level and coupled-response mode in each run; inspect escapes and food access in game rather than inferring them from eAVI alone. |
+| Tough Hide | In the phase pool; +2 BlockAmount and focused block tests exist. | Verify the intended protection and cost in the approved configuration; inspect blocked contacts and visible survival, not only final population. |
+| Crowding Tolerance | In the phase pool; +1 tolerance and level-bound tests exist. | The crowding effect is energy pressure, so cAVI alone cannot prove it. Review local density, starvation, births, and player-visible behavior together. |
+| Efficient Digestion | In the phase pool; +0.1 DigestionEnergyBonus and deterministic feeding tests exist. | Check food consumed, energy/starvation, and the visible result; a survival difference alone is not attributable evidence. |
+| Seed Dispersal | `SeedDropChance` exists in the attribute registry and resolver; a runtime test proves fed Hares can drop seeds. Production Hare chance is zero. | No catalog ID or phase offer is present. Add an approved chance/cap and direct successful seed-drop plus stored-food-cost attribution before claiming Gardeners renew plants. |
+
+**Early effort checkpoint:** Before the 13-arm × 20-seed screen, complete one
+control and one candidate through the intended variant input, schedule,
+fingerprint, validation, comparison, and in-game observation. Record the actual
+setup, run, analysis, and review time. Re-estimate S4-02/03 against Sim's
+starting 8h/4h estimates and make a feature-capacity trade if needed; protect
+the 8h integration/review reserve. Freeze seed IDs, thresholds, response mode,
+skill values/levels, and full confirmation paths before the separate 200-seed
+panel. The comparison and player observation should answer whether someone can
+see and explain each strategy's strength and tradeoff, not just whether APS
+changes.
+
+**Player observation contract for that pilot:** Launch the same scenario
+variant, seed, step, and skill schedule used by the paired report through the
+available player route; record the route used and whether P1-032 has connected
+the canonical Desktop launch. Capture the offer, a relevant board moment, and
+the following phase/result summary at 1280×720. Ask a reviewer who has not
+seen the raw report what changed, what caused it, and what tradeoff they expect.
+Record their answer, confusing cues, and Josh's accept/revise/defer decision
+beside the paired report reference. A developer-only route may diagnose the
+presentation but must be labeled as such.
+
 The candidate packages and sequence below preserve the September 29 proposal
 for comparison; use the linked Sim review for his accepted refinements.
 

@@ -41,6 +41,17 @@ After 10–20 representative tasks, the team should be able to answer:
 7. Setup, training, and ledger-maintenance work may be recorded but should use
    `included_in_sample: false` unless the human explicitly wants it analyzed.
 
+## Compact Codex task note
+
+For a material sampled task, Codex should start with the decision or outcome
+being sought, the current source revision, the controlling files, and the
+smallest check that could disprove its assumption. At handoff, report only the
+change, checks actually run, unresolved facts, and the next owner decision;
+link the existing evidence rather than copying its history into another note.
+Record elapsed time, correction/rework, and human review in the ledger when
+observed; use `null` for unavailable values. This is an operating habit for the
+existing ledger, not a new report or approval stage.
+
 ## Version 1 record
 
 Each JSON object contains:

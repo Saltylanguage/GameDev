@@ -13,7 +13,10 @@ slash-line interpretation, diagnostic evidence, and in-game review. Original
 task hours are starting estimates with an early checkpoint. Josh must still
 confirm his responsibilities and estimate P1-032; name its feature-capacity
 trade while protecting the team's 8h reserve before a separate kickoff. S4
-remains Proposed. See the [accepted Sim review](handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md).
+remains Proposed. Josh selected 400/25/15 for the S4 comparison, as an explicit
+variant of the 400/55/35 production Forest Edge asset; the variant input has
+not yet been created or run. See the [S4 control record](Sprints/S4-control-record.md)
+and [accepted Sim review](handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md).
 
 **S4 planning draft: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
 cap-aware offer fix are recorded in pushed commits `25642440` and `974827f2`.
