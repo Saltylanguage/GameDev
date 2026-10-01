@@ -19,6 +19,20 @@ changing the deterministic run contract.
 
 ## Candidate work packages — not yet committed
 
+**Sim review completed 2026-09-30:** Sim accepts 20h availability (17h feature
+work plus 3h protected reserve), leads shared basic-skill integration and
+matched evidence, and reviews profile launch inputs. The original per-card
+hours remain starting estimates, with an early implementation/evidence
+checkpoint and explicit feature trades before overruns. See the [accepted Sim
+review](../handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md)
+for six basic skills, the three strategy pairs, the 20-seed ordered screen,
+separate 200-seed confirmation, slash-line evidence, and in-game acceptance.
+Josh's confirmation and the P1-032 estimate/feature-capacity trade are still
+required. S4 remains Proposed; this review does not schedule kickoff.
+
+The candidate packages and sequence below preserve the September 29 proposal
+for comparison; use the linked Sim review for his accepted refinements.
+
 | Work package | Roadmap links | Readiness / open decision |
 | --- | --- | --- |
 | Co-design the selected builds, species identities, and Forest Edge pressures | F03, F07, F11 | Define what Trailblazer, Warren, and Gardeners represent and what evidence makes their strategies meaningfully distinct. |
@@ -30,8 +44,9 @@ changing the deterministic run contract.
 
 This section records a proposal for the owner discussion. Draft cards are now
 staged in `🎯 Upcoming Work` so they can be reviewed with Sim. The assignments
-and estimates below are not approved by Sim; staging these cards does not
-finalize scope or start S4.
+and estimates below are the original discussion draft. Sim's response is
+recorded above; staging cards and completing this review do not finalize team
+scope or start S4.
 
 See the [Sim kickoff handoff](../handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md)
 for the requested capacity, feasibility, evidence, scope, and profile-boundary
@@ -65,7 +80,8 @@ Forest Edge starting contract and balance (`7e6ed38c`, `f4fa9bf8`).
    needed; the contract and player save/restore flow should remain Josh-led.
 
 This draft allocates Sim 17h of feature work and 3h of the protected reserve.
-Ask him to confirm both the sequence and actual availability. This proposal
+Sim has now confirmed availability and his contribution in the linked review.
+Josh and the team must still confirm the final scope and capacity. This proposal
 builds on his recent simulation, Mutation, and evidence work without assuming
 he owns product decisions or profile persistence.
 

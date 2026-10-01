@@ -5,6 +5,16 @@ become a master changelog.
 
 ## Current focus
 
+**S4 Sim review: 2026-09-30, ready for Josh's review.** Sim accepts
+20h (17h feature + 3h protected reserve). The agreed direction combines six
+shared basic Hare skills into Trailblazer, Warren, and Gardeners, with ordered
+20-seed screening, a separate 200-seed confirmation panel, full DARWIN OR DIE
+slash-line interpretation, diagnostic evidence, and in-game review. Original
+task hours are starting estimates with an early checkpoint. Josh must still
+confirm his responsibilities and estimate P1-032; name its feature-capacity
+trade while protecting the team's 8h reserve before a separate kickoff. S4
+remains Proposed. See the [accepted Sim review](handoffs/2026-09-30-2018-codex-s4-sim-review-and-stat-sheet-strategy-plan.md).
+
 **S4 planning draft: 2026-09-29.** M1 and S3 are closed. The M1 evidence and
 cap-aware offer fix are recorded in pushed commits `25642440` and `974827f2`.
 The S4 control record proposes Sim's next contribution as bounded build
