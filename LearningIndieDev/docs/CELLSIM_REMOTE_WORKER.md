@@ -69,7 +69,9 @@ report hash.
 ## Limits
 
 The bridge is intentionally one-way and pull-based. It does not expose a remote
-shell, accept arbitrary commands, or run while Unity is open. The worker refuses
+shell, accept arbitrary commands, or run while Unity is open. A project
+lockfile now stops the batch preflight; inspect it manually instead of deleting it
+automatically. The worker refuses
 to process jobs when its checkout starts dirty, keeps the tracked Pending job in
 place while Unity runs, records pre-run and post-cleanup tree state, restores
 only known Unity-generated paths, and packages the report/manifest beside the
