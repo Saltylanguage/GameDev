@@ -5,6 +5,19 @@ become a master changelog.
 
 ## Current focus
 
+**Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
+sprites now supply the standardized 32/64/128 icons and retained compatibility
+exports. Existing asset names and GUIDs remain stable, covering the animal atlas,
+Species Catalog and Noesis icon consumers. Both simulation scenes use the Chrono
+fox/rabbit board sprites. Rebuild from the originals with **Salty Game > Art >
+Rebuild Chrono Species Icons**. Export validation and two focused PlayMode checks
+passed; Field Notes and simulation screenshots were inspected. Bevin visually
+accepted the integration and authorized pushing it with additive Trello updates.
+Separate local prototype population and fox species edits are excluded from the
+art checkpoint. See
+[art ownership and export instructions](Species%20Design/CHRONO_SPECIES_ART.md)
+and the [validation handoff](handoffs/2026-10-02-chrono-species-art-standardization.md).
+
 **S4-01 Hare strategy workbook: 2026-10-01, ready for Salty review.** Bevin
 approved starting values, costs and example paths for Trailblazer, Warren
 and Gardeners. The workbook is now a repository review artifact; team review,
