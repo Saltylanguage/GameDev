@@ -515,7 +515,7 @@ namespace SaltyGame
             ResolveMovement(source, next, rules, random, metrics);
             ResolveMetabolism(next, rules);
             ResolveTerrainRegrowth(next, terrainDefinitions);
-            ResolveCrowdingMetabolism(next, rules);
+            ResolveCrowdingMetabolism(next, rules, metrics);
             ResolveStarvation(next, rules, metrics);
             ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics);
             ResolveWilt(next, rules, random, metrics);
@@ -2189,6 +2189,8 @@ namespace SaltyGame
                 cell.FoodReserve,
                 cell.IsAlpha,
                 entityId: cell.EntityId,
+                energyRemainder: cell.EnergyRemainder,
+                crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
                 reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining);
             if (cell.TrackingTargetEntityId > 0 && cell.TrackingTicksRemaining > 0)
             {
@@ -2318,6 +2320,8 @@ namespace SaltyGame
                     cell.FoodReserve,
                     cell.IsAlpha,
                     entityId: cell.EntityId,
+                    energyRemainder: cell.EnergyRemainder,
+                    crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
                     reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
                     .WithForageReservePhase(cell.ForagePhase)
                     .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
@@ -2538,11 +2542,12 @@ namespace SaltyGame
             }
         }
 
-        // Add the crowding portion before the ordinary metabolism pass so any lethal
-        // energy loss is recorded by ResolveStarvation rather than as a crowding death.
+        // Crowding adds only the surcharge; ordinary metabolism has already run.
+        // ResolveStarvation records lethal energy loss as starvation.
         static void ResolveCrowdingMetabolism(
             Grid<SpeciesCell> next,
-            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            SpeciesSimulationMetrics metrics)
         {
             for (var y = 0; y < next.Height; y++)
             {
@@ -2566,7 +2571,16 @@ namespace SaltyGame
 
                     var extraMetabolism = (long)speciesRules.Metabolism
                         * (speciesRules.CrowdingMetabolismMultiplier - 1);
-                    var remainingEnergy = (int)Math.Max(0L, cell.Energy - extraMetabolism);
+                    // Decimal arithmetic keeps tenths exact across repeated eligible ticks.
+                    // Feeding gains and crowding losses accumulate independently.
+                    var accumulatedLoss = (decimal)extraMetabolism
+                        * (1m - (decimal)speciesRules.CrowdingEnergyReduction)
+                        + cell.CrowdingEnergyRemainder;
+                    var wholeLoss = (long)Math.Floor(accumulatedLoss);
+                    var remainingEnergy = (int)Math.Max(0L, cell.Energy - wholeLoss);
+                    var remainder = accumulatedLoss - wholeLoss;
+                    metrics?.Record(cell.SpeciesId, crowdingMetabolismTicks: 1,
+                        crowdingEnergyLost: cell.Energy - remainingEnergy);
                     next.SetCell(x, y, cell.WithEntity(
                         cell.SpeciesId,
                         cell.Health,
@@ -2574,7 +2588,8 @@ namespace SaltyGame
                         cell.Age,
                         cell.FoodEaten,
                         cell.FoodReserve,
-                        cell.IsAlpha));
+                        cell.IsAlpha,
+                        crowdingEnergyRemainder: remainder));
                 }
             }
         }
@@ -2630,11 +2645,24 @@ namespace SaltyGame
                         || !rules.TryGetValue(cell.SpeciesId, out var speciesRules)
                         || speciesRules.SeedDropChance <= 0f
                         || cell.FoodReserve < 1f
-                        || random.NextDouble() > speciesRules.SeedDropChance
                         || speciesRules.MovementPattern.Count == 0)
                     {
                         continue;
                     }
+
+                    var hasSpace = false;
+                    foreach (var offset in speciesRules.MovementPattern.Offsets)
+                    {
+                        if (IsSeedDropLocationAvailable(next, x + offset.x, y + offset.y))
+                        {
+                            hasSpace = true;
+                            break;
+                        }
+                    }
+                    if (!hasSpace) continue;
+
+                    metrics?.Record(cell.SpeciesId, seedDropAttempts: 1);
+                    if (random.NextDouble() >= speciesRules.SeedDropChance) continue;
 
                     var startOffset = random.Next(speciesRules.MovementPattern.Count);
                     for (var offsetIndex = 0; offsetIndex < speciesRules.MovementPattern.Count; offsetIndex++)
@@ -2643,9 +2671,7 @@ namespace SaltyGame
                             (startOffset + offsetIndex) % speciesRules.MovementPattern.Count];
                         var seedX = x + offset.x;
                         var seedY = y + offset.y;
-                        if (!next.IsInBounds(seedX, seedY)
-                            || next.GetCell(seedX, seedY).IsCreature
-                            || next.GetCell(seedX, seedY).IsPlantResource)
+                        if (!IsSeedDropLocationAvailable(next, seedX, seedY))
                         {
                             continue;
                         }
@@ -2663,10 +2689,19 @@ namespace SaltyGame
                             cell.FoodReserve - 1f,
                             cell.IsAlpha));
                         metrics?.Record(plantSpecies, births: 1);
+                        metrics?.Record(cell.SpeciesId, seedDropSuccesses: 1,
+                            seedDropFoodCreated: plantRules.StartingFoodReserve, seedDropReserveSpent: 1);
                         break;
                     }
                 }
             }
+        }
+
+        static bool IsSeedDropLocationAvailable(Grid<SpeciesCell> grid, int x, int y)
+        {
+            if (!grid.IsInBounds(x, y)) return false;
+            var cell = grid.GetCell(x, y);
+            return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource;
         }
 
         static void ResolveReproduction(

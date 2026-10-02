@@ -35,6 +35,7 @@ namespace SaltyGame
         [SerializeField, FormerlySerializedAs("crowdingEnergyPenalty"), Min(1)]
         [Tooltip("Multiplier applied to normal metabolism while the local group is crowded. One means no extra cost.")]
         int crowdingMetabolismMultiplier = 2;
+        [SerializeField, Range(0f, 1f)] float crowdingEnergyReduction;
         [SerializeField, Min(0f)] float startingFoodReserve;
         [SerializeField, Range(0f, 1f)] float seedDropChance;
         [SerializeField, Min(0)] int energyValue;
@@ -92,7 +93,8 @@ namespace SaltyGame
                 forageThresholdFraction: forageThresholdFraction,
                 matingEnergyThresholdFraction: matingEnergyThresholdFraction,
                 matingEnergyCostFraction: matingEnergyCostFraction,
-                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring);
+                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
+                crowdingEnergyReduction: crowdingEnergyReduction);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

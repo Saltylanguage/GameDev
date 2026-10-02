@@ -659,6 +659,7 @@ namespace SaltyGame.EditorTools
             if (role != SpeciesRole.Plant)
             {
                 DrawProperty(Find(serializedObject, "crowdingMetabolismMultiplier"), "Crowding Metabolism Multiplier");
+                DrawProperty(Find(serializedObject, "crowdingEnergyReduction"), "Crowding Energy Reduction");
             }
             DrawProperty(Find(serializedObject, "startingFoodReserve"), "Starting Food Reserve");
             DrawProperty(Find(serializedObject, "wiltChance"), "Wilt Chance");

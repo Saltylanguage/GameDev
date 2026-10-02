@@ -11,7 +11,52 @@ and Gardeners. The workbook is now a repository review artifact; team review,
 implementation and balance evidence remain. Read the
 [workbook handoff](handoffs/2026-10-01-1711-codex-s4-01-hare-workbook-review.md)
 for the decisions and a review prompt for Salty and his agent. The intended
-400/25/15, 0.1-second test fixture differs from committed scenario defaults.
+400/20/10, 0.1-second manual S4 fixture differs from committed scenario defaults.
+
+**S4-02 first implementation slice: 2026-10-01, local and ready for review.**
+Bevin authorized reversible implementation without waiting for Salty's explicit
+approval; team review remains pending. General Movement and Threat Avoidance
+now support the Trailblazer path, and the preview Inspector has an in-memory
+S4 fixture and paused single-tick controls. Focused validation passed 180
+EditMode and two PlayMode tests. Bevin closed the first manual visual-testing
+pass on October 1 after checking the controls, Movement acquisition and results.
+The seed-5, 400/20/10 run ended in Hare extinction at tick 180; Threat Avoidance
+and the full five-pick path were not reached in that manual run. A clipped
+Movement card footer and stale Game-view setup display remain UI follow-ups.
+Bevin reports preferring 400 Plants / 20 Hares / 10 Foxes during population
+exploration. This is the next comparison candidate; the implemented S4 fixture
+and authored production defaults have not been changed. Seed Dispersal is now
+implemented locally with direct planting counters and a Gardeners offer path;
+automated and manual card/results acceptance are complete, while balance
+validation remains open. The `CellSim`
+wrapper's missing `Resolve-UnityExecutionLane` helper also needs repair before
+the larger experiment checkpoint. Read the
+[implementation handoff](handoffs/2026-10-01-2216-codex-s4-02-trailblazer-and-editor-manual-testing-first-slice.md)
+and the original [six-skill checklist](handoffs/2026-10-01-1947-codex-s4-02-implementation-checklist-and-editor-testing-preflight.md).
+
+**Player slashline display: 2026-10-02, local and ready for review.** The existing
+Field Notes button now opens cumulative species metrics without Developer Mode,
+and both completed and failed results show the same slashline. Existing domain
+calculations, ADD accounting and N/A/INVALID statuses are reused. Live Unity
+checks covered Hare/Fox, paused updates, decisions, reinforcement and results;
+rendered prototype panels were inspected. Bevin reported the new display looks
+good on October 2. The NUnit regression was updated but
+not executed, to preserve the open scene's unsaved edits. Read the
+[slashline handoff](handoffs/2026-10-01-2358-codex-player-slashline-field-notes-and-results.md).
+
+**Warren crowding energy reduction: 2026-10-02, local and ready for review.**
+Bevin selected this next slice. Crowding Tolerance now removes 10% of the
+original extra crowding cost per level (cap 10), with a separate fractional
+loss accumulator and unchanged ordinary metabolism/crowd eligibility. The
+Inspector and reports expose eligible animal-ticks and actual energy lost.
+25 focused assertion cases passed in place, compilation passed, and a live
+six-tick diagnostic completed the five Warren choices through normal offers;
+the offer card was rendered and inspected. This is mechanics/presentation
+evidence, not balance or a standard-suite result. The modified-scene dialog
+was closed by Bevin; the newly saved prototype scene diff is preserved for
+separate review. Read the
+[Warren handoff](handoffs/2026-10-02-0143-codex-s4-02-warren-crowding-energy-reduction.md).
+Read the [Seed Dispersal handoff](handoffs/2026-10-02-1319-codex-s4-02-seed-dispersal-and-gardeners.md).
 
 The September planning notes below are dated snapshots. Use the
 [S4 Trello control card](https://trello.com/c/Zn4UpBYc) for current scope,

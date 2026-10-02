@@ -40,13 +40,65 @@ flowchart LR
 
 ## Starting population overrides
 
+### S4 Editor manual testing (updated 2026-10-02)
+
+Select the `SpeciesSimulationPreview` component while in Play Mode. Its Inspector
+now has **Reset to Start**, **Apply S4 Fixture**, **Start**, **Pause**,
+**Advance One Simulation Tick**, and **Resume** controls. Reset an auto-started
+preview before applying the fixture. The fixture uses the production Forest
+Edge scenario already assigned to that preview, Hare, 36x20, 400/20/10,
+0.1-second steps, six 100-tick phases, no active Genome and coupled responses
+OFF. It changes in-memory setup, not the scenario asset or saved default preset.
+Verify the actual tick-zero counts and fingerprints shown in the Inspector.
+
+Single-tick advancement stays paused until a phase decision or completion.
+Choose a Mutation or Skip in the Game view at a decision; stepping never
+chooses for you. Seed 5 is a short-path observation example with General
+Movement initially offered. Initial offers still depend on the seed. Following
+a Movement/Avoidance pick, its uncapped Trailblazer partner stays available and
+the third skill rotates. These are mechanics checks, not balance evidence.
+
+General Movement now has a level-10 cap and is in both Hare offer pools. Threat
+Avoidance keeps the stable `threat-exposure` ID and `threat-response` alias,
+adds eight percentage points of pre-contact avoidance per level, and grants
+no flee speed. Snapshot contract v2 records the avoidance ability explicitly;
+prediction input v2 and the reports carry that effect. Fingerprints therefore
+change. Historical reports retain their original meanings.
+
+The preview Inspector also shows **Extra Crowding Cost Remaining** and
+**Crowded Animal-Ticks / Energy Lost** for the selected species. Crowding
+Tolerance L1/L5/L10 leave 90%/50%/0% of the original extra cost; ordinary
+metabolism continues. An animal-tick is one eligible crowded animal on a
+metabolism tick, including at L10. Energy lost counts the actual extra
+deduction, clipped at zero, and excludes ordinary metabolism. Reports expose
+the same values as `crowdingMetabolismTicks` and `crowdingEnergyLost` in total
+and phase activity. They support matched comparisons; they do not measure
+counterfactual savings. The slashline's cAVI counts crowding deaths; energy
+depletion remains a starvation death. After a Hide/Crowding pick, its uncapped
+Warren partner also stays available through phase offers.
+
+Seed Dispersal adds one percentage point of planting chance per level, capped at
+level 10. It checks for a nearby passable empty tile before rolling, creates a
+normal grass plant on success, and spends one stored food only after creation.
+The Inspector and reports expose `seedDropAttempts`, `seedDropSuccesses`,
+`seedDropFoodCreated`, and `seedDropReserveSpent`; ordinary plant births remain
+in the existing `Births` counter. Efficient Digestion and Seed Dispersal remain
+paired in the normal Hare offers for the Gardeners path.
+
+The current `CellSim Test` wrapper references a missing
+`Resolve-UnityExecutionLane` helper. The first implementation slice was verified
+with direct `unity test` calls; see the
+[implementation handoff](handoffs/2026-10-01-2216-codex-s4-02-trailblazer-and-editor-manual-testing-first-slice.md)
+for retained commands and results. Repair the wrapper before the larger S4
+experiment checkpoint.
+
 Use an explicit experiment input to compare starting populations without editing
 the production scenario. For example, the proposed S4 fixture can be launched as:
 
 ```powershell
 .\CellSim.ps1 -Command Run -Execution Auto -SeedStart 10100 -SeedCount 1 `
     -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
-    -StartingPopulations 'plant=400,hare=25,fox=15' `
+    -StartingPopulations 'plant=400,hare=20,fox=10' `
     -PlayerSpeciesId hare -RunTicks 600 -StepIntervalSeconds 0.1
 ```
 
@@ -80,7 +132,7 @@ actual tick-zero populations.
   scenario path, per-species activity, behavior-state ticks, tracked entity
   transitions, per-death cause events, and the ordered per-run upgrade contract
   snapshots (including modifier values and fingerprints); the Markdown is the
-  quick human/agent summary. Play Mode schema 9 and experiment schema 27 report
+  quick human/agent summary. Play Mode schema 10 and experiment schema 28 report
   eligible attempts separately from blocked gates. FSM mating ticks are
   pre-resolution decision intent; resolver outcomes are reported independently.
   Phase-aware reports also include phase windows, acquisition timing, and the
@@ -138,8 +190,8 @@ Run these from the Unity project root, `LearningIndieDev`:
 .\CellSim.cmd Run -RunDurationSeconds 60 -StepIntervalSeconds 0.1
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId tough-hide
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeSequence tough-hide,tough-hide
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -UpgradeValueOverride 0.75
-.\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -UpgradeValueOverride 0.75 -PreContactAvoidanceChance 0.10
+.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure
+.\CellSim.cmd Run -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -ExperimentalFeatures bev-experimental -CombatMode opposed-roll -UpgradeId threat-exposure -PreContactAvoidanceChance 0.10
 .\CellSim.cmd Run -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset -PlayerSpeciesId hare -PhaseLengthTicks 40 -PhaseUpgradeSchedule 'none;none;none'
 .\CellSim.cmd Report
 .\CellSim.cmd Baseline -SeedCount 20
@@ -407,10 +459,10 @@ transitions, plus per-death events with proximate cause, entity/resource
 identity, tick, age, and position. Schema 26 also records the selected combat
 resolution mode and, for opposed-roll runs, each d20 attack/block roll with
 its modifiers, totals, and outcome. Authored upgrade runs also record the
-catalog path used to resolve the immutable snapshots. Threat Exposure
-dose-response runs may use
-`-UpgradeValueOverride` to test a single flee-speed value without changing the
-production catalog. The companion CSV contains one row per seed with run metadata
+catalog path used to resolve the immutable snapshots. The historical
+`-UpgradeValueOverride` flee-speed diagnostic is retired and now fails with an
+explanation. Threat Avoidance diagnostics can use the explicitly recorded
+`-PreContactAvoidanceChance` input. The companion CSV contains one row per seed with run metadata
 and final population columns for every species, ready for Excel import. The generated Markdown report adds start/midpoint/end average
 populations, average activity, reproduction, and mortality tables, per-seed outcomes, and
 optional test-suite or comparison summaries. Continued runs additionally record

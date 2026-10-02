@@ -11,6 +11,33 @@ namespace SaltyGame.Tests
     {
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);
 
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        [TestCase(-0.1f)]
+        [TestCase(1.1f)]
+        public void AvoidanceSnapshotRejectsInvalidChanceBonuses(float value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpeciesUpgradeSnapshot(
+                "avoidance-test", "Avoidance", "Test avoidance", SpeciesIds.Herbivore, 0,
+                Array.Empty<SpeciesUpgradeModifier>(), preContactAvoidanceChanceBonus: value));
+        }
+
+        [Test]
+        public void AvoidanceSnapshotCarriesAnExplicitEffectWithoutChangingMovementRules()
+        {
+            var rules = CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null);
+            var snapshot = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(SpeciesIds.Herbivore);
+            var different = new SpeciesUpgradeSnapshot(snapshot.Id, snapshot.DisplayName, snapshot.Description,
+                snapshot.TargetSpecies, snapshot.Cost, snapshot.Modifiers, preContactAvoidanceChanceBonus: 0.16f);
+            Assert.That(different.Fingerprint, Is.Not.EqualTo(snapshot.Fingerprint));
+            Assert.That(snapshot.Apply(rules), Is.SameAs(rules));
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesIds.Herbivore, rules));
+            Assert.That(progression.TryApplyRunUpgrade(snapshot), Is.True);
+            Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(0.08f));
+            Assert.That(progression.CurrentRules, Is.SameAs(rules));
+            Assert.That(progression.AppliedRunUpgrades[0], Is.SameAs(snapshot));
+        }
+
         [Test]
         public void RegistryExposesStableDefinitionsForUpgradeTargets()
         {
@@ -72,7 +99,8 @@ namespace SaltyGame.Tests
                 foragesUntilFull: true,
                 matingEnergyThresholdFraction: 0.75f,
                 matingEnergyCostFraction: 0.5f,
-                distributeMatingEnergyToOffspring: true);
+                distributeMatingEnergyToOffspring: true,
+                crowdingEnergyReduction: 0.5f);
             var modifier = new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumEnergy, 4f);
 
             var upgraded = SpeciesAttributeRegistry.Apply(rules, modifier);
@@ -83,6 +111,7 @@ namespace SaltyGame.Tests
             Assert.That(upgraded.MatingEnergyThresholdFraction, Is.EqualTo(0.75f));
             Assert.That(upgraded.MatingEnergyCostFraction, Is.EqualTo(0.5f));
             Assert.That(upgraded.DistributeMatingEnergyToOffspring, Is.True);
+            Assert.That(upgraded.CrowdingEnergyReduction, Is.EqualTo(0.5f));
 
             var legacyUpgrade = new SpeciesUpgrade(
                 "hare-rule-preservation-test",
@@ -90,6 +119,30 @@ namespace SaltyGame.Tests
                 type: SpeciesUpgradeType.MovementSpeed,
                 value: 0.5f).Apply(rules);
             Assert.That(legacyUpgrade.DistributeMatingEnergyToOffspring, Is.True);
+            Assert.That(legacyUpgrade.CrowdingEnergyReduction, Is.EqualTo(0.5f));
+        }
+
+        [Test]
+        public void CrowdingSnapshotUsesEnergyReductionAndMatchesLegacyProgression()
+        {
+            var rules = CreateRules(1f, 1, null);
+            var upgrade = SpeciesUpgradeCatalog.Create("crowding-tolerance");
+            var snapshot = upgrade.CreateSnapshot(SpeciesIds.Herbivore);
+            Assert.That(snapshot.Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.CrowdingEnergyReduction));
+            Assert.That(snapshot.Modifiers[0].SignedValue, Is.EqualTo(0.1f));
+            var direct = rules;
+            var resolved = rules;
+            for (var level = 1; level <= 10; level++)
+            {
+                direct = upgrade.Apply(direct);
+                resolved = SpeciesAttributeRegistry.Apply(resolved, snapshot.Modifiers[0]);
+                Assert.That(resolved.CrowdingEnergyReduction, Is.EqualTo(direct.CrowdingEnergyReduction));
+                Assert.That(resolved.CrowdingEnergyReduction, Is.EqualTo(level * 0.1f).Within(0.00001f));
+                Assert.That(resolved.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance));
+            }
+            Assert.That(resolved.CrowdingEnergyReduction, Is.EqualTo(1f));
+            Assert.Throws<ArgumentOutOfRangeException>(() => SpeciesAttributeRegistry.Apply(rules,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.CrowdingEnergyReduction, -0.1f)));
         }
 
         [Test]

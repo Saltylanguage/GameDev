@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace SaltyGame
 {
@@ -20,6 +21,9 @@ namespace SaltyGame
         PopulationReinforcement,
         LitterMinimum,
         LitterMaximum,
+        PreContactAvoidanceChance,
+        CrowdingEnergyReduction,
+        SeedDropChance,
     }
 
     public sealed class SpeciesUpgrade
@@ -89,6 +93,12 @@ namespace SaltyGame
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.DigestionEnergyBonus, Value));
                     break;
+                case SpeciesUpgradeType.SeedDropChance:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.SeedDropChance, Value));
+                    break;
+                case SpeciesUpgradeType.CrowdingEnergyReduction:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.CrowdingEnergyReduction, Value));
+                    break;
                 case SpeciesUpgradeType.CrowdingTolerance:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.CrowdingTolerance, Value));
                     break;
@@ -105,6 +115,7 @@ namespace SaltyGame
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.TrackingPersistenceSteps, Value));
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
+                case SpeciesUpgradeType.PreContactAvoidanceChance:
                     break;
                 case SpeciesUpgradeType.LitterMinimum:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.LitterMinimum, Value));
@@ -119,7 +130,13 @@ namespace SaltyGame
             return new SpeciesUpgradeSnapshot(
                 Id,
                 SpeciesUpgradeCatalog.GetDisplayName(Id),
-                Type == SpeciesUpgradeType.PopulationReinforcement
+                Type == SpeciesUpgradeType.SeedDropChance
+                    ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of planting chance per eligible step. Spend one stored food only on success."
+                    : Type == SpeciesUpgradeType.CrowdingEnergyReduction
+                    ? $"Reduce the original extra crowding energy cost by {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points."
+                    : Type == SpeciesUpgradeType.PreContactAvoidanceChance
+                    ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of pre-contact attack avoidance."
+                    : Type == SpeciesUpgradeType.PopulationReinforcement
                     ? $"Add {(int)Value} {targetSpecies.Value} to the next phase."
                     : Type == SpeciesUpgradeType.LitterMinimum
                         ? $"Increase the minimum litter size by {(int)Value}."
@@ -129,7 +146,8 @@ namespace SaltyGame
                 targetSpecies,
                 Cost,
                 modifiers,
-                populationToAdd: Type == SpeciesUpgradeType.PopulationReinforcement ? (int)Value : 0);
+                populationToAdd: Type == SpeciesUpgradeType.PopulationReinforcement ? (int)Value : 0,
+                preContactAvoidanceChanceBonus: Type == SpeciesUpgradeType.PreContactAvoidanceChance ? Value : 0f);
         }
 
         public SpeciesRules Apply(SpeciesRules rules)
@@ -139,6 +157,12 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(rules));
             }
 
+            // Avoidance belongs to the run's experimental options, not movement rules.
+            if (Type == SpeciesUpgradeType.PreContactAvoidanceChance)
+            {
+                return rules;
+            }
+
             var movementSpeed = rules.MovementSpeed;
             var attackAmount = rules.AttackAmount;
             var attackModifier = rules.AttackModifier;
@@ -146,7 +170,9 @@ namespace SaltyGame
             var blockAmount = rules.BlockAmount;
             var reproductionChance = rules.ReproductionChance;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
+            var seedDropChance = rules.SeedDropChance;
             var crowdingTolerance = rules.CrowdingTolerance;
+            var crowdingEnergyReduction = rules.CrowdingEnergyReduction;
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
             var visionRange = rules.Awareness.VisionRange;
             var intelligence = rules.Awareness.Intelligence;
@@ -178,6 +204,12 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     digestionEnergyBonus += Value;
+                    break;
+                case SpeciesUpgradeType.SeedDropChance:
+                    seedDropChance = Math.Min(1f, seedDropChance + Value);
+                    break;
+                case SpeciesUpgradeType.CrowdingEnergyReduction:
+                    crowdingEnergyReduction = Math.Min(1f, crowdingEnergyReduction + Value);
                     break;
                 case SpeciesUpgradeType.CrowdingTolerance:
                     crowdingTolerance += (int)Value;
@@ -224,7 +256,7 @@ namespace SaltyGame
                 rules.WiltChance,
                 rules.CrowdingMetabolismMultiplier,
                 rules.StartingFoodReserve,
-                rules.SeedDropChance,
+                seedDropChance,
                 rules.EnergyValue,
                 rules.Metabolism,
                 awareness: new SpeciesAwarenessRules(visionRange, intelligence),
@@ -245,13 +277,15 @@ namespace SaltyGame
                 forageThresholdFraction: rules.ForageThresholdFraction,
                 matingEnergyThresholdFraction: rules.MatingEnergyThresholdFraction,
                 matingEnergyCostFraction: rules.MatingEnergyCostFraction,
-                distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring);
+                distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
+                crowdingEnergyReduction: crowdingEnergyReduction);
         }
     }
 
     public static class SpeciesUpgradeCatalog
     {
         public const string FasterMovementId = "faster-movement";
+        public const int FasterMovementMaxLevel = 10;
         public const string StrongerAttackId = "stronger-attack";
         public const string StrongerAttackModifierId = "stronger-attack-modifier";
         public const string StrongerDamageId = "stronger-damage";
@@ -262,9 +296,12 @@ namespace SaltyGame
         public const string EfficientDigestionId = "efficient-digestion";
         public const int EfficientDigestionMaxLevel = 10;
         public const float EfficientDigestionBonusPerLevel = 0.1f;
+        public const string SeedDispersalId = "seed-dispersal";
+        public const int SeedDispersalMaxLevel = 10;
+        public const float SeedDispersalChancePerLevel = 0.01f;
         public const string CrowdingToleranceId = "crowding-tolerance";
         public const int CrowdingToleranceMaxLevel = 10;
-        public const int CrowdingToleranceBonusPerLevel = 1;
+        public const float CrowdingToleranceBonusPerLevel = 0.1f;
         public const string ReproductiveDriveId = "reproductive-drive";
         public const int ReproductiveDriveMaxLevel = 10;
         public const float ReproductiveDriveChancePerLevel = 0.005f;
@@ -292,8 +329,10 @@ namespace SaltyGame
 
         public static int GetMaxLevel(string upgradeId)
         {
-            return upgradeId == ToughHideId ? ToughHideMaxLevel
+            return upgradeId == FasterMovementId ? FasterMovementMaxLevel
+                : upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
+                : upgradeId == SeedDispersalId ? SeedDispersalMaxLevel
                 : upgradeId == CrowdingToleranceId ? CrowdingToleranceMaxLevel
                 : upgradeId == ReproductiveDriveId ? ReproductiveDriveMaxLevel
                 : upgradeId == KeenSensesId ? KeenSensesMaxLevel
@@ -313,6 +352,7 @@ namespace SaltyGame
         public const string LegacyThreatResponseId = "threat-response";
         [Obsolete("Use ThreatExposureId.")]
         public const string ThreatResponseId = LegacyThreatResponseId;
+        // Historical API value only; current Threat Avoidance does not apply it.
         public const float ThreatExposureFleeSpeedBonus = 0.75f;
         public const float ThreatExposureAvoidanceChanceBonus = 0.08f;
         public const int ThreatExposureMaxLevel = 10;
@@ -330,6 +370,8 @@ namespace SaltyGame
             CrowdingToleranceId,
             ReproductiveDriveId,
             ThreatExposureId,
+            FasterMovementId,
+            SeedDispersalId,
         };
 
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
@@ -341,6 +383,8 @@ namespace SaltyGame
             ThreatExposureId,
             LargerMinimumLitterId,
             LargerMaximumLitterId,
+            FasterMovementId,
+            SeedDispersalId,
         };
 
         static readonly string[] ExperimentalPredatorUpgradeIds =
@@ -380,6 +424,12 @@ namespace SaltyGame
                 : (seededValue / PhaseHerbivoreUpgradeIds.Length)
                     % (PhaseHerbivoreUpgradeIds.Length - 1);
             var offer = new List<SpeciesUpgrade>(3);
+            var partnerId = continuingUpgradeId == FasterMovementId ? ThreatExposureId
+                : continuingUpgradeId == ThreatExposureId ? FasterMovementId
+                : continuingUpgradeId == ToughHideId ? CrowdingToleranceId
+                : continuingUpgradeId == CrowdingToleranceId ? ToughHideId
+                : continuingUpgradeId == EfficientDigestionId ? SeedDispersalId
+                : continuingUpgradeId == SeedDispersalId ? EfficientDigestionId : null;
             for (var index = 0; index < PhaseHerbivoreUpgradeIds.Length && offer.Count < 3; index++)
             {
                 var offset = index == 0
@@ -387,9 +437,15 @@ namespace SaltyGame
                     : 1 + ((alternativeRotation + index - 1) % (PhaseHerbivoreUpgradeIds.Length - 1));
                 var upgrade = Create(PhaseHerbivoreUpgradeIds[
                     (primaryIndex + offset) % PhaseHerbivoreUpgradeIds.Length]);
-                if (canOffer == null || canOffer(upgrade))
+                if (!offer.Exists(existing => existing.Id == upgrade.Id)
+                    && (canOffer == null || canOffer(upgrade)))
                 {
                     offer.Add(upgrade);
+                }
+                if (index == 0 && partnerId != null)
+                {
+                    var partner = Create(partnerId);
+                    if (canOffer == null || canOffer(partner)) offer.Add(partner);
                 }
             }
 
@@ -425,11 +481,13 @@ namespace SaltyGame
                         5,
                         SpeciesUpgradeType.DigestionEnergyBonus,
                         EfficientDigestionBonusPerLevel);
+                case SeedDispersalId:
+                    return new SpeciesUpgrade(SeedDispersalId, 5, SpeciesUpgradeType.SeedDropChance, SeedDispersalChancePerLevel);
                 case CrowdingToleranceId:
                     return new SpeciesUpgrade(
                         CrowdingToleranceId,
                         5,
-                        SpeciesUpgradeType.CrowdingTolerance,
+                        SpeciesUpgradeType.CrowdingEnergyReduction,
                         CrowdingToleranceBonusPerLevel);
                 case ReproductiveDriveId:
                     return new SpeciesUpgrade(
@@ -490,8 +548,8 @@ namespace SaltyGame
                     return new SpeciesUpgrade(
                         ThreatExposureId,
                         5,
-                        SpeciesUpgradeType.FleeMovementSpeedBonus,
-                        ThreatExposureFleeSpeedBonus);
+                        SpeciesUpgradeType.PreContactAvoidanceChance,
+                        ThreatExposureAvoidanceChanceBonus);
                 default:
                     const string blockSweepPrefix = "stronger-block-";
                     if (id.StartsWith(blockSweepPrefix, StringComparison.Ordinal)
@@ -522,7 +580,7 @@ namespace SaltyGame
                     $"Threat Exposure level must be between 1 and {ThreatExposureMaxLevel}.");
             }
 
-            return level == 1;
+            return false;
         }
 
         public static float GetThreatExposureAvoidanceChance(int level)
@@ -555,7 +613,7 @@ namespace SaltyGame
             switch (id)
             {
                 case FasterMovementId:
-                    return "FASTER";
+                    return "GENERAL MOVEMENT";
                 case StrongerAttackId:
                     return "ATTACK";
                 case StrongerBlockId:
@@ -564,6 +622,8 @@ namespace SaltyGame
                     return "TOUGH HIDE";
                 case EfficientDigestionId:
                     return "EFFICIENT DIGESTION";
+                case SeedDispersalId:
+                    return "SEED DISPERSAL";
                 case CrowdingToleranceId:
                     return "CROWDING TOLERANCE";
                 case ReproductiveDriveId:
@@ -586,7 +646,7 @@ namespace SaltyGame
                     return "LARGER MAXIMUM LITTER";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
-                    return "THREAT EXPOSURE";
+                    return "THREAT AVOIDANCE";
                 default:
                     return id?.ToUpperInvariant() ?? string.Empty;
             }

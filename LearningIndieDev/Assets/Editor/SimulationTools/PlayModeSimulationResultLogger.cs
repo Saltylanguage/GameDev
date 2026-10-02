@@ -13,7 +13,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 9;
+        const int ReportSchemaVersion = 12;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -111,7 +111,7 @@ namespace SaltyGame.EditorTools
             {
                 builder.AppendLine("## Upgrade loadout");
                 builder.AppendLine();
-                builder.AppendLine("| Order | Upgrade | Target | Modifiers | Snapshot fingerprint |");
+                builder.AppendLine("| Order | Upgrade | Target | Effects | Snapshot fingerprint |");
                 builder.AppendLine("|---:|---|---|---|---|");
                 for (var index = 0; index < report.upgradeLoadout.Length; index++)
                 {
@@ -127,6 +127,14 @@ namespace SaltyGame.EditorTools
                         var modifier = upgrade.modifiers[modifierIndex];
                         modifiers.Append(modifier.attributeId).Append(" ").Append(
                             modifier.signedValue.ToString("0.###", CultureInfo.InvariantCulture));
+                    }
+
+                    if (upgrade.preContactAvoidanceChanceBonus > 0f)
+                    {
+                        if (modifiers.Length > 0) modifiers.Append(", ");
+                        modifiers.Append("attack avoidance +").Append(
+                            (upgrade.preContactAvoidanceChanceBonus * 100f).ToString("0.###", CultureInfo.InvariantCulture))
+                            .Append(" percentage points");
                     }
 
                     builder.AppendLine($"| {upgrade.order} | {upgrade.upgradeId} | {upgrade.targetSpeciesId} | {modifiers} | `{upgrade.fingerprint}` |");

@@ -60,7 +60,7 @@ CellSim Visuals [-Execution Auto|Live|Clean] [-TestFilter SaltyGame.PlayModeTest
 CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-RunTicks 600] [-RunDurationSeconds 60] [-StepIntervalSeconds 0.1] [-ScenarioPath Assets/...]
              [-StartingPopulations 'plant=400,hare=25,fox=15']
-             [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide] [-UpgradeValueOverride 0.75]
+             [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide]
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
              [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]

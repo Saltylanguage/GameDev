@@ -151,6 +151,66 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PausedSingleTicksMatchNormalAdvancementAndDiscardFrameRemainder()
+        {
+            var initial = CreateContinuityFixture();
+            var normalRun = new SimulationRunState(initial.Copy(), SpeciesIds.Herbivore, 42, 1f);
+            var steppedRun = new SimulationRunState(initial.Copy(), SpeciesIds.Herbivore, 42, 1f);
+            var normal = new SimulationManager();
+            var stepped = new SimulationManager();
+            normal.SetRunner(new SpeciesSimulationRunner(normalRun, SpeciesRuleDefaults.Create(), 0.1f));
+            stepped.SetRunner(new SpeciesSimulationRunner(steppedRun, SpeciesRuleDefaults.Create(), 0.1f));
+            Assert.That(stepped.AdvanceOneTickWhilePaused(), Is.False);
+            normal.Start();
+            stepped.Start();
+            Assert.That(stepped.AdvanceOneTickWhilePaused(), Is.False);
+            stepped.Advance(0.09f);
+            stepped.Pause();
+            for (var tick = 1; tick <= 5; tick++)
+            {
+                normal.Advance(0.1f);
+                Assert.That(stepped.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(steppedRun.Tick, Is.EqualTo(tick));
+                Assert.That(steppedRun.Status, Is.EqualTo(SimulationRunStatus.Paused));
+                AssertGridEqual(normalRun.Cells, steppedRun.Cells);
+                AssertPopulationHistoryEqual(normalRun, steppedRun);
+                Assert.That(steppedRun.Metrics.GetActivity(SpeciesIds.Herbivore), Is.EqualTo(normalRun.Metrics.GetActivity(SpeciesIds.Herbivore)));
+                stepped.Advance(1f);
+                Assert.That(steppedRun.Tick, Is.EqualTo(tick));
+            }
+            stepped.Resume();
+            stepped.Advance(0.02f);
+            Assert.That(steppedRun.Tick, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void PausedSingleTickHonorsPhaseDecisionsAndRaisesCompletionOnce()
+        {
+            var run = new SimulationRunState(CreateContinuityFixture(), SpeciesIds.Herbivore, 42, 0.2f);
+            run.ConfigureContinuousPhases(1);
+            var manager = new SimulationManager();
+            manager.SetRunner(new SpeciesSimulationRunner(run, SpeciesRuleDefaults.Create(), 0.1f));
+            var boundaries = 0;
+            var completions = 0;
+            manager.PhaseBoundaryReached += _ => boundaries++;
+            manager.RunCompleted += _ => completions++;
+            manager.Start();
+            manager.Pause();
+            Assert.That(manager.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
+            Assert.That(boundaries, Is.EqualTo(1));
+            Assert.That(manager.AdvanceOneTickWhilePaused(), Is.False);
+            Assert.That(run.Tick, Is.EqualTo(1));
+            Assert.That(manager.ContinueWithoutUpgrade(), Is.True);
+            manager.Pause();
+            Assert.That(manager.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
+            Assert.That(completions, Is.EqualTo(1));
+            Assert.That(manager.AdvanceOneTickWhilePaused(), Is.False);
+            Assert.That(completions, Is.EqualTo(1));
+        }
+
+        [Test]
         public void EndCompletesPausedRun()
         {
             var manager = CreateManager(durationSeconds: 1f);

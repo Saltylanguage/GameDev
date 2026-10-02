@@ -547,6 +547,8 @@
                                 </StackPanel>
                             </Grid>
                             <Button Style="{StaticResource GalapagOS.Button.FieldNotes}"
+                                    Command="{Binding ShowFieldNotesCommand}"
+                                    Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
                                     Width="168"
                                     Height="38"
                                     Padding="7,4"
@@ -1552,7 +1554,7 @@
                            Margin="0,12,0,18"/>
                 <StackPanel Visibility="{Binding ExperimentalHerbivoreStatLineSummaryVisibility}"
                             Margin="0,0,0,18">
-                    <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                    <TextBlock Text="SPECIES SLASHLINE"
                                Foreground="{DynamicResource Chrono_Olive}"
                                FontSize="14"
                                FontWeight="Bold"
@@ -1744,7 +1746,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                             </Grid.ColumnDefinitions>
-                                            <TextBlock Text="BEV EXPERIMENTAL HERBIVORE STAT LINE"
+                                            <TextBlock Text="SPECIES SLASHLINE"
                                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                                        Foreground="{DynamicResource Chrono_Olive}"
                                                        FontSize="10"
@@ -1755,11 +1757,21 @@
                                                     Background="{DynamicResource Chrono_Sand}"
                                                     VerticalAlignment="Center" />
                                         </Grid>
+                                        <TextBlock Text="{Binding StatLineContextText}"
+                                                   Foreground="{DynamicResource Chrono_Olive}"
+                                                   FontSize="11"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,0,0,8" />
                                         <TextBlock Text="{Binding ExperimentalHerbivoreStatLineSummary}"
                                                    FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                                    Foreground="{DynamicResource Chrono_TreeBark}"
                                                    FontSize="11"
                                                    TextWrapping="Wrap" />
+                                        <TextBlock Text="{Binding StatLineGuide}"
+                                                   Foreground="{DynamicResource Chrono_Olive}"
+                                                   FontSize="11"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,10,0,0" />
                                     </StackPanel>
                                 </Border>
 
@@ -1804,6 +1816,49 @@
                 </Grid>
             </Border>
         </Grid>
+        <Border Visibility="{Binding FieldNotesVisibility}"
+                Background="{DynamicResource Chrono_TreeBark}" Opacity="0.48" d:IsHidden="True" />
+        <Border x:Name="FieldNotesPanel"
+                Visibility="{Binding FieldNotesVisibility}"
+                HorizontalAlignment="Center" VerticalAlignment="Center"
+                Width="820" MaxHeight="610" Padding="24"
+                Background="{DynamicResource Chrono_LightCream}"
+                BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="3"
+                CornerRadius="10" d:IsHidden="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <StackPanel Margin="0,0,0,14">
+                    <TextBlock Text="FIELD NOTES - SPECIES SLASHLINE"
+                               FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                               FontSize="22" FontWeight="Bold"
+                               Foreground="{DynamicResource Chrono_TreeBark}" />
+                    <TextBlock Text="{Binding StatLineContextText}" TextWrapping="Wrap"
+                               Foreground="{DynamicResource Chrono_Olive}" FontSize="13" Margin="0,8,0,0" />
+                    <TextBlock Text="Live totals update as the run advances. Use Pause to inspect a fixed tick."
+                               Foreground="{DynamicResource Chrono_Olive}" FontSize="12" TextWrapping="Wrap" Margin="0,5,0,0" />
+                </StackPanel>
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel>
+                        <Border Background="{DynamicResource Chrono_VanillaCream}" Padding="14" CornerRadius="6">
+                            <TextBlock x:Name="FieldNotesStatLine" Text="{Binding ExperimentalHerbivoreStatLineSummary}"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        </Border>
+                        <TextBlock Text="METRIC GUIDE" Foreground="{DynamicResource Chrono_Olive}"
+                                   FontSize="13" FontWeight="Bold" Margin="0,14,0,6" />
+                        <TextBlock Text="{Binding StatLineGuide}" Foreground="{DynamicResource Chrono_TreeBark}"
+                                   FontSize="12" TextWrapping="Wrap" />
+                    </StackPanel>
+                </ScrollViewer>
+                <Button Grid.Row="2" Content="CLOSE FIELD NOTES" Command="{Binding CloseFieldNotesCommand}"
+                        Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                        HorizontalAlignment="Right" Height="40" Padding="18,4" Margin="0,16,0,0" />
+            </Grid>
+        </Border>
         <Border Visibility="{Binding EndConfirmationVisibility}"
                 Background="{DynamicResource Chrono_TreeBark}"
                 Opacity="0.48" d:IsHidden="True"/>

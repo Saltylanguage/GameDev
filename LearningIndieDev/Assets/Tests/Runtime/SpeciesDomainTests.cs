@@ -355,13 +355,14 @@ namespace SaltyGame.Tests
                 digestion.DigestionEnergyBonus,
                 Is.EqualTo(rules.DigestionEnergyBonus + SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel).Within(0.0001f));
             Assert.That(digestion.Metabolism, Is.EqualTo(rules.Metabolism));
-            Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + 1));
+            Assert.That(crowding.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance));
+            Assert.That(crowding.CrowdingEnergyReduction, Is.EqualTo(0.1f));
             Assert.That(crowding.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
             Assert.That(
                 reproductiveDrive.ReproductionChance,
                 Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel).Within(0.0001f));
             Assert.That(reproductiveDrive.BlockAmount, Is.EqualTo(rules.BlockAmount));
-            Assert.That(threatExposure.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
+            Assert.That(threatExposure.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus));
             Assert.That(threatExposure.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
         }
 
@@ -442,7 +443,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ThreatExposureProgressionGrantsSpeedAndCumulativeAvoidanceThroughLevelTen()
+        public void ThreatAvoidanceProgressionLeavesSpeedUnchangedThroughLevelTen()
         {
             var rules = CreateRules();
             var progression = new SpeciesProgression(
@@ -457,7 +458,7 @@ namespace SaltyGame.Tests
 
                 Assert.That(
                     progression.CurrentRules.FleeMovementSpeedBonus,
-                    Is.EqualTo(rules.FleeMovementSpeedBonus + SpeciesUpgradeCatalog.ThreatExposureFleeSpeedBonus).Within(0.0001f));
+                    Is.EqualTo(rules.FleeMovementSpeedBonus).Within(0.0001f));
                 Assert.That(
                     progression.PreContactAvoidanceChance,
                     Is.EqualTo(level * SpeciesUpgradeCatalog.ThreatExposureAvoidanceChanceBonus).Within(0.0001f));
@@ -474,6 +475,142 @@ namespace SaltyGame.Tests
             Assert.That(legacyUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ThreatExposureId));
             Assert.That(progression.GetUpgradeLevel(SpeciesUpgradeCatalog.LegacyThreatResponseId), Is.EqualTo(10));
             Assert.That(progression.TryPurchase(legacyUpgrade), Is.False);
+        }
+
+        [Test]
+        public void TrailblazerSkillsMixWithoutAddingFleeSpeedAndStopAtTen()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var movement = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
+            var avoidance = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId);
+            for (var level = 1; level <= 10; level++)
+            {
+                Assert.That(progression.TryApplyFreeUpgrade(movement), Is.True);
+                Assert.That(progression.TryApplyFreeUpgrade(avoidance), Is.True);
+                Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(rules.MovementSpeed + 0.5f * level));
+                Assert.That(progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus));
+                Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(0.08f * level).Within(0.00001f));
+            }
+            var cappedRules = progression.CurrentRules;
+            var count = progression.PurchasedUpgradeCount;
+            Assert.That(progression.TryApplyFreeUpgrade(movement), Is.False);
+            Assert.That(progression.TryApplyFreeUpgrade(avoidance), Is.False);
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(count));
+            var snapshot = avoidance.CreateSnapshot(SpeciesIds.Herbivore);
+            Assert.That(snapshot.Modifiers, Is.Empty);
+            Assert.That(snapshot.PreContactAvoidanceChanceBonus, Is.EqualTo(0.08f));
+            Assert.That(snapshot.DisplayName, Is.EqualTo("THREAT AVOIDANCE"));
+            Assert.That(SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(1), Is.False);
+            Assert.That(SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(10), Is.False);
+        }
+
+        [Test]
+        public void MovementAppearsInBothHareOffersAndIsFilteredAtItsCap()
+        {
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, CreateRules()));
+            var movement = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
+            Assert.That(SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(movement.Id, 0, 42)[0].Id, Is.EqualTo(movement.Id));
+            Assert.That(SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(movement.Id, 0, 42)[0].Id, Is.EqualTo(movement.Id));
+            for (var level = 0; level < 10; level++) Assert.That(progression.TryApplyFreeUpgrade(movement), Is.True);
+            var filtered = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(movement.Id, 0, 42, progression.CanApplyFreeUpgrade);
+            foreach (var upgrade in filtered) Assert.That(upgrade.Id, Is.Not.EqualTo(movement.Id));
+            Assert.That(filtered, Has.Length.EqualTo(3));
+            progression.AddCurrency(5);
+            Assert.That(progression.TryPurchase(movement), Is.False);
+            Assert.That(progression.Currency, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void TrailblazerPhaseOffersKeepThePartnerWhileOtherSkillsRotate()
+        {
+            var alternatives = new HashSet<string>();
+            for (var rotation = 0; rotation < 5; rotation++)
+            {
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer("faster-movement", rotation, 42);
+                Assert.That(offer, Has.Length.EqualTo(3));
+                Assert.That(offer[0].Id, Is.EqualTo("faster-movement"));
+                Assert.That(offer[1].Id, Is.EqualTo("threat-exposure"));
+                alternatives.Add(offer[2].Id);
+            }
+            Assert.That(alternatives, Has.Count.EqualTo(5));
+            var capped = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer("threat-exposure", 0, 42,
+                upgrade => upgrade.Id != "faster-movement");
+            Assert.That(capped, Has.Length.EqualTo(3));
+            foreach (var upgrade in capped) Assert.That(upgrade.Id, Is.Not.EqualTo("faster-movement"));
+        }
+
+        [Test]
+        public void WarrenPhaseOffersKeepBothSkillsAndRespectCaps()
+        {
+            foreach (var id in new[] { "tough-hide", "crowding-tolerance" })
+            {
+                var partner = id == "tough-hide" ? "crowding-tolerance" : "tough-hide";
+                for (var rotation = 0; rotation < 5; rotation++)
+                {
+                    var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(id, rotation, 0);
+                    Assert.That(offer[0].Id, Is.EqualTo(id));
+                    Assert.That(offer[1].Id, Is.EqualTo(partner));
+                    Assert.That(offer, Has.Length.EqualTo(3));
+                    var capped = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(id, rotation, 0,
+                        upgrade => upgrade.Id != partner);
+                    foreach (var upgrade in capped) Assert.That(upgrade.Id, Is.Not.EqualTo(partner));
+                    Assert.That(capped, Has.Length.EqualTo(3));
+                }
+            }
+        }
+
+        [Test]
+        public void SeedDispersalStacksToTenWithSnapshotParityAndCapFiltering()
+        {
+            var rules = CreateRules();
+            var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId);
+            var snapshot = upgrade.CreateSnapshot(SpeciesIds.Herbivore);
+            Assert.That(snapshot.DisplayName, Is.EqualTo("SEED DISPERSAL"));
+            Assert.That(snapshot.Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.SeedDropChance));
+            for (var level = 1; level <= 10; level++)
+            {
+                Assert.That(progression.TryApplyFreeUpgrade(upgrade), Is.True);
+                rules = SpeciesAttributeRegistry.Apply(rules, snapshot.Modifiers[0]);
+                Assert.That(progression.CurrentRules.SeedDropChance, Is.EqualTo(level * 0.01f).Within(0.000001f));
+                Assert.That(rules.SeedDropChance, Is.EqualTo(progression.CurrentRules.SeedDropChance));
+            }
+            var cappedRules = progression.CurrentRules;
+            progression.AddCurrency(5);
+            Assert.That(progression.TryPurchase(upgrade), Is.False);
+            Assert.That(progression.TryApplyFreeUpgrade(upgrade), Is.False);
+            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(10));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+            Assert.That(progression.AppliedRunUpgrades, Has.Count.EqualTo(10));
+            foreach (var offer in new[] {
+                SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(upgrade.Id, 0, 1, progression.CanApplyFreeUpgrade),
+                SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(upgrade.Id, 0, 1, progression.CanApplyFreeUpgrade) })
+                foreach (var choice in offer) Assert.That(choice.Id, Is.Not.EqualTo(upgrade.Id));
+            var highBase = new SpeciesUpgrade("base-chance", 0, SpeciesUpgradeType.SeedDropChance, 0.995f).Apply(CreateRules());
+            Assert.That(upgrade.Apply(highBase).SeedDropChance, Is.EqualTo(1f));
+            Assert.That(SpeciesAttributeRegistry.Apply(highBase, snapshot.Modifiers[0]).SeedDropChance, Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void GardenersOffersKeepBothSkillsWhileOtherSkillsRotate()
+        {
+            foreach (var id in new[] { "efficient-digestion", "seed-dispersal" })
+            {
+                var partner = id == "efficient-digestion" ? "seed-dispersal" : "efficient-digestion";
+                for (var rotation = 0; rotation < 6; rotation++)
+                {
+                    var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(id, rotation, 1);
+                    Assert.That(offer[0].Id, Is.EqualTo(id));
+                    Assert.That(offer[1].Id, Is.EqualTo(partner));
+                    Assert.That(offer[2].Id, Is.Not.EqualTo(id).And.Not.EqualTo(partner));
+                }
+            }
+            Assert.That(SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer("seed-dispersal", 0, 1)[0].Id,
+                Is.EqualTo("seed-dispersal"));
         }
 
         [TestCase(float.NaN)]
@@ -522,12 +659,13 @@ namespace SaltyGame.Tests
                 {
                     Assert.That(progression.TryPurchase(SpeciesUpgradeCatalog.Create(id)), Is.True);
                 }
-                Assert.That(progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus + 0.75f));
+                Assert.That(progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus));
                 Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f).Within(0.00001f));
                 Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
                 Assert.That(progression.CurrentRules.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 0.1f * level).Within(0.00001f));
                 Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(rules.ReproductionChance + 0.005f * level).Within(0.00001f));
-                Assert.That(progression.CurrentRules.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance + level));
+                Assert.That(progression.CurrentRules.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance));
+                Assert.That(progression.CurrentRules.CrowdingEnergyReduction, Is.EqualTo(level * 0.1f).Within(0.00001f));
                 Assert.That(progression.CurrentRules.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
                 Assert.That(progression.CurrentRules.MaximumEnergy, Is.EqualTo(rules.MaximumEnergy));
                 Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
@@ -655,8 +793,8 @@ namespace SaltyGame.Tests
                 Assert.That(progression.CanPurchase(upgrade), Is.True);
                 Assert.That(progression.TryPurchase(upgrade), Is.True);
                 Assert.That(
-                    progression.CurrentRules.CrowdingTolerance,
-                    Is.EqualTo(rules.CrowdingTolerance + level * SpeciesUpgradeCatalog.CrowdingToleranceBonusPerLevel));
+                    progression.CurrentRules.CrowdingEnergyReduction,
+                    Is.EqualTo(level * SpeciesUpgradeCatalog.CrowdingToleranceBonusPerLevel).Within(0.00001f));
                 Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
             }
 
@@ -769,7 +907,7 @@ namespace SaltyGame.Tests
                 Is.EqualTo(SpeciesUpgradeCatalog.PopulationReinforcementMaxLevel));
 
             var alternatives = new HashSet<string>();
-            for (var rotation = 0; rotation < 6; rotation++)
+            for (var rotation = 0; rotation < 8; rotation++)
             {
                 var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                     SpeciesUpgradeCatalog.ToughHideId,
@@ -780,7 +918,7 @@ namespace SaltyGame.Tests
                 alternatives.Add(offer[1].Id);
             }
 
-            Assert.That(alternatives, Has.Count.EqualTo(6));
+            Assert.That(alternatives, Has.Count.EqualTo(8));
 
             var legacyOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                 SpeciesUpgradeCatalog.LegacyThreatResponseId,
@@ -800,6 +938,8 @@ namespace SaltyGame.Tests
                 SpeciesUpgradeCatalog.CrowdingToleranceId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId,
                 SpeciesUpgradeCatalog.ThreatExposureId,
+                SpeciesUpgradeCatalog.FasterMovementId,
+                SpeciesUpgradeCatalog.SeedDispersalId,
             };
             for (var rotation = 0; rotation < 4; rotation++)
             {
@@ -2669,10 +2809,10 @@ namespace SaltyGame.Tests
             Assert.That(hunted.GetCell(1, 0).SpeciesId, Is.EqualTo(fox));
             Assert.That(hunted.GetCell(2, 0).SpeciesId, Is.EqualTo(hare));
 
-            var threatExposureUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId);
-            var threatExposureRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            var movementUpgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
+            var fasterRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
             {
-                [hare] = threatExposureUpgrade.Apply(threatExposureUpgrade.Apply(rules[hare])),
+                [hare] = movementUpgrade.Apply(movementUpgrade.Apply(rules[hare])),
             };
             var fasterThreatened = new Grid<SpeciesCell>(5, 1);
             var fasterFox = new SpeciesCell(fox, energy: 8);
@@ -2699,7 +2839,7 @@ namespace SaltyGame.Tests
 
             var escapedTwice = SpeciesSimulation.Step(
                 fasterThreatened,
-                threatExposureRules,
+                fasterRules,
                 seed: 11,
                 previousSource: previousFasterThreatened);
 
@@ -3377,11 +3517,105 @@ namespace SaltyGame.Tests
                 [SpeciesArchetype.Herbivore] = herbivoreRules,
             };
 
-            var next = SpeciesSimulation.Step(source, rules, seed: 42);
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
 
             Assert.That(next.GetCell(1, 0).IsGrass, Is.True);
             Assert.That(next.GetCell(1, 0).TerrainEnergy, Is.EqualTo(3.25f).Within(0.001f));
             Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(0f));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).SeedDropAttempts, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).SeedDropSuccesses, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).SeedDropFoodCreated, Is.EqualTo(3.25f));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).SeedDropReserveSpent, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Plant).Births, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Plant).SeedDropSuccesses, Is.Zero);
+        }
+
+        [TestCase("success", 1, 1)]
+        [TestCase("chance-failed", 1, 0)]
+        [TestCase("no-reserve", 0, 0)]
+        [TestCase("disabled", 0, 0)]
+        [TestCase("no-pattern", 0, 0)]
+        [TestCase("out-of-bounds", 0, 0)]
+        [TestCase("blocked", 0, 0)]
+        [TestCase("occupied", 0, 0)]
+        [TestCase("existing-plant", 0, 0)]
+        [TestCase("no-plant-food", 0, 0)]
+        [TestCase("depleted-plant", 1, 1)]
+        public void SeedDispersalChecksEligibilityBeforeRollingAndSpendsOnlyOnSuccess(string situation, int attempts, int successes)
+        {
+            var grid = new Grid<SpeciesCell>(2, 1);
+            var reserve = situation == "no-reserve" ? 0.75f : 2.5f;
+            grid.SetCell(0, 0, new SpeciesCell(SpeciesIds.Herbivore, foodReserve: reserve)
+                .WithEntity(SpeciesIds.Herbivore, 1, 10, 0, 0, reserve, energyRemainder: 0.3f, crowdingEnergyRemainder: 0.4m));
+            var original = grid.GetCell(0, 0);
+            if (situation == "blocked") grid.SetCell(1, 0, SpeciesCell.FromTerrain(
+                new TerrainDefinition(new TerrainId("rock"), false, 1f, false, Color.gray), 0f));
+            if (situation == "occupied") grid.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore));
+            if (situation == "existing-plant" || situation == "depleted-plant")
+                grid.SetCell(1, 0, SpeciesCell.Grass(situation == "existing-plant" ? 3f : 0f));
+            var pattern = situation == "no-pattern" ? EmptyPattern : new GridPattern(new[] {
+                situation == "out-of-bounds" ? Vector2Int.left : Vector2Int.right });
+            var chance = situation == "disabled" ? 0f : situation == "chance-failed" ? 0.01f : 1f;
+            var hare = new SpeciesRules(0f, pattern, EmptyPattern, 0, EmptyPattern, 0, EmptyPattern,
+                (SpeciesId?)null, EmptyPattern, 0, seedDropChance: chance, metabolism: 0);
+            var rules = new Dictionary<SpeciesId, SpeciesRules> {
+                [SpeciesIds.Herbivore] = hare,
+                [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant,
+                    startingFoodReserve: situation == "no-plant-food" ? 0f : 3.25f) };
+            var metrics = new SpeciesSimulationMetrics();
+            var baseline = typeof(SpeciesSimulationMetrics).GetMethod("CreateSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, null);
+            var random = new SeedRollRandom();
+            var resolve = typeof(SpeciesSimulation).GetMethod("ResolveSeedDrops", BindingFlags.Static | BindingFlags.NonPublic);
+            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics });
+            var activity = metrics.GetActivity(SpeciesIds.Herbivore);
+            Assert.That(random.ChanceRolls, Is.EqualTo(attempts));
+            Assert.That(random.LocationRolls, Is.EqualTo(successes));
+            Assert.That(activity.SeedDropAttempts, Is.EqualTo(attempts));
+            Assert.That(activity.SeedDropSuccesses, Is.EqualTo(successes));
+            Assert.That(activity.SeedDropFoodCreated, Is.EqualTo(successes * 3.25f));
+            Assert.That(activity.SeedDropReserveSpent, Is.EqualTo(successes));
+            Assert.That(grid.GetCell(0, 0).FoodReserve, Is.EqualTo(reserve - successes));
+            Assert.That(grid.GetCell(0, 0).EntityId, Is.EqualTo(original.EntityId));
+            Assert.That(grid.GetCell(0, 0).EnergyRemainder, Is.EqualTo(0.3f));
+            Assert.That(grid.GetCell(0, 0).CrowdingEnergyRemainder, Is.EqualTo(0.4m));
+            if (successes == 1) Assert.That(grid.GetCell(1, 0).TerrainEnergy, Is.EqualTo(3.25f));
+            if (situation == "blocked") Assert.That(grid.GetCell(1, 0).IsPassable, Is.False);
+            var window = (ISpeciesSimulationMetricsView)typeof(SpeciesSimulationMetrics)
+                .GetMethod("CreateWindow", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, new[] { baseline, (object)0, 1 });
+            Assert.That(window.GetActivity(SpeciesIds.Herbivore).SeedDropSuccesses, Is.EqualTo(successes));
+            var afterFirst = typeof(SpeciesSimulationMetrics).GetMethod("CreateSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, null);
+            if (successes == 1) grid.SetCell(1, 0, SpeciesCell.Empty);
+            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics });
+            window = (ISpeciesSimulationMetricsView)typeof(SpeciesSimulationMetrics)
+                .GetMethod("CreateWindow", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, new[] { afterFirst, (object)1, 2 });
+            Assert.That(window.GetActivity(SpeciesIds.Herbivore).SeedDropAttempts, Is.EqualTo(attempts));
+            Assert.That(window.GetActivity(SpeciesIds.Herbivore).SeedDropSuccesses, Is.EqualTo(successes));
+            Assert.That(window.GetActivity(SpeciesIds.Herbivore).SeedDropFoodCreated, Is.EqualTo(successes * 3.25f));
+            Assert.That(window.GetActivity(SpeciesIds.Herbivore).SeedDropReserveSpent, Is.EqualTo(successes));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).SeedDropSuccesses, Is.EqualTo(successes * 2));
+        }
+
+        sealed class SeedRollRandom : System.Random
+        {
+            public int ChanceRolls;
+            public int LocationRolls;
+            public override double NextDouble() { ChanceRolls++; return 0.5; }
+            public override int Next(int maxValue) { LocationRolls++; return 0; }
+        }
+
+        [TestCase(float.NaN)]
+        [TestCase(float.PositiveInfinity)]
+        [TestCase(float.NegativeInfinity)]
+        public void PlantingRulesRejectNonFiniteChanceAndFood(float value)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0,
+                EmptyPattern, 0, EmptyPattern, (SpeciesId?)null, EmptyPattern, 0, seedDropChance: value));
+            Assert.Throws<ArgumentOutOfRangeException>(() => CreateRules(startingFoodReserve: value));
         }
 
         [Test]
@@ -3534,6 +3768,9 @@ namespace SaltyGame.Tests
 
             Assert.That(first.Fingerprint, Is.EqualTo(reordered.Fingerprint));
             Assert.That(first.Fingerprint, Has.Length.EqualTo(64));
+            Assert.That(first.WithSpeciesRules(SpeciesIds.Herbivore,
+                SpeciesUpgradeCatalog.Create("crowding-tolerance").Apply(first.SpeciesRules[SpeciesIds.Herbivore])).Fingerprint,
+                Is.Not.EqualTo(first.Fingerprint));
             Assert.That(first.WithStartingProbability(SpeciesIds.Plant, 0.5f).Fingerprint,
                 Is.Not.EqualTo(first.Fingerprint));
             Assert.That(first.WithSpeciesRules(
@@ -5001,6 +5238,9 @@ namespace SaltyGame.Tests
 
             Assert.That(survivingHares, Is.EqualTo(4));
             Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(1));
+            SpeciesSimulation.Step(next, rules, seed: 7, metrics: metrics);
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).StarvationDeaths, Is.EqualTo(4));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.Zero);
 
             var tolerantRules = new Dictionary<SpeciesId, SpeciesRules>
             {
@@ -5021,6 +5261,92 @@ namespace SaltyGame.Tests
             }
             Assert.That(tolerantSurvivors, Is.EqualTo(4));
             Assert.That(tolerantNext.GetCell(0, 0).Energy, Is.EqualTo(2));
+            Assert.That(tolerantNext.GetCell(0, 0).CrowdingEnergyRemainder, Is.EqualTo(0.9m));
+        }
+
+        [TestCase(0, 1, 40)]
+        [TestCase(1, 1, 36)]
+        [TestCase(5, 1, 20)]
+        [TestCase(10, 1, 0)]
+        [TestCase(1, 2, 18)]
+        public void CrowdingReductionScalesOriginalSurchargeAndAccumulatesAcrossTicks(int level, int interval, int extraLoss)
+        {
+            var neighborhood = new GridPattern(new[] {
+                Vector2Int.left, Vector2Int.right, Vector2Int.up, Vector2Int.down,
+                new Vector2Int(-1, -1), new Vector2Int(-1, 1),
+                new Vector2Int(1, -1), new Vector2Int(1, 1) });
+            var baseline = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0,
+                EmptyPattern, 0, EmptyPattern, null, neighborhood, 0,
+                reproductionChance: 0f, maxReproductionGroupSize: 3,
+                crowdingMetabolismMultiplier: 3, metabolism: 2,
+                energyLossIntervalTicks: interval);
+            var upgraded = baseline;
+            for (var i = 0; i < level; i++)
+                upgraded = SpeciesUpgradeCatalog.Create("crowding-tolerance").Apply(upgraded);
+            var rules = new Dictionary<SpeciesId, SpeciesRules> { [SpeciesIds.Herbivore] = upgraded };
+            var cells = new Grid<SpeciesCell>(2, 2);
+            for (var y = 0; y < 2; y++)
+                for (var x = 0; x < 2; x++)
+                    cells.SetCell(x, y, new SpeciesCell(SpeciesIds.Herbivore, energy: 200)
+                        .WithEntity(SpeciesIds.Herbivore, 1, 200, 0, 0, 0f, energyRemainder: 0.3f));
+            var metrics = new SpeciesSimulationMetrics();
+            for (var tick = 0; tick < 5; tick++)
+                cells = SpeciesSimulation.Step(cells, rules, seed: tick, metrics: metrics);
+            var midpoint = typeof(SpeciesSimulationMetrics).GetMethod("CreateSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, null);
+            var energyAtMidpoint = metrics.GetActivity(SpeciesIds.Herbivore).CrowdingEnergyLost;
+            var ticksAtMidpoint = metrics.GetActivity(SpeciesIds.Herbivore).CrowdingMetabolismTicks;
+            for (var tick = 5; tick < 10; tick++)
+                cells = SpeciesSimulation.Step(cells, rules, seed: tick, metrics: metrics);
+            var window = (SpeciesSimulationMetricsWindow)typeof(SpeciesSimulationMetrics)
+                .GetMethod("CreateWindow", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, new object[] { midpoint, 5, 10 });
+            var lastHalf = window.GetActivity(SpeciesIds.Herbivore);
+            Assert.That(lastHalf.CrowdingEnergyLost + energyAtMidpoint,
+                Is.EqualTo(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingEnergyLost));
+            Assert.That(lastHalf.CrowdingMetabolismTicks + ticksAtMidpoint,
+                Is.EqualTo(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingMetabolismTicks));
+            var ordinaryLoss = 2 * (10 / interval);
+            Assert.That(cells.GetCell(0, 0).Energy, Is.EqualTo(200 - ordinaryLoss - extraLoss));
+            Assert.That(cells.GetCell(0, 0).CrowdingEnergyRemainder, Is.Zero);
+            Assert.That(cells.GetCell(0, 0).EnergyRemainder, Is.EqualTo(0.3f));
+            Assert.That(upgraded.CrowdingTolerance, Is.EqualTo(baseline.CrowdingTolerance));
+            Assert.That(upgraded.Metabolism, Is.EqualTo(baseline.Metabolism));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingMetabolismTicks, Is.EqualTo(4 * (10 / interval)));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingEnergyLost, Is.EqualTo(4 * extraLoss));
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).CrowdingDeaths, Is.Zero);
+            // Below the threshold, neither new crowding loss nor fractional debt advances.
+            var lone = new Grid<SpeciesCell>(2, 2);
+            lone.SetCell(0, 0, cells.GetCell(0, 0).WithEntity(SpeciesIds.Herbivore, 1, 200, 0, 0, 0f,
+                crowdingEnergyRemainder: 0.4m));
+            var loneNext = SpeciesSimulation.Step(lone, rules, seed: 0);
+            Assert.That(loneNext.GetCell(0, 0).Energy, Is.EqualTo(interval == 1 ? 198 : 200));
+            Assert.That(loneNext.GetCell(0, 0).CrowdingEnergyRemainder, Is.EqualTo(0.4m));
+        }
+
+        [Test]
+        public void FractionalEnergyFollowsMovementAndResetsForNewAnimals()
+        {
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules> {
+                [SpeciesIds.Herbivore] = new SpeciesRules(1f, right, EmptyPattern, 0,
+                    EmptyPattern, 0, EmptyPattern, null, EmptyPattern, 0,
+                    reproductionChance: 0f, metabolism: 0) };
+            var cell = new SpeciesCell(SpeciesIds.Herbivore, energy: 20);
+            cell = cell.WithEntity(cell.SpeciesId, 1, 20, 0, 0, 0f,
+                energyRemainder: 0.3f, crowdingEnergyRemainder: 0.9m)
+                .WithAttackCooldown(0).WithReproductionCooldown(0).WithBehaviorState(SpeciesBehaviorState.Wandering);
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, cell);
+            var next = SpeciesSimulation.Step(source, rules, seed: 7);
+            var moved = next.GetCell(1, 0);
+            Assert.That(moved.EntityId, Is.EqualTo(cell.EntityId));
+            Assert.That(moved.EnergyRemainder, Is.EqualTo(0.3f));
+            Assert.That(moved.CrowdingEnergyRemainder, Is.EqualTo(0.9m));
+            var replacement = moved.WithoutEntity().WithEntity(cell.SpeciesId, 1, 20, 0, 0, 0f);
+            Assert.That(replacement.CrowdingEnergyRemainder, Is.Zero);
+            Assert.Throws<ArgumentOutOfRangeException>(() => moved.WithEntity(cell.SpeciesId, 1, 20, 0, 0, 0f,
+                crowdingEnergyRemainder: 1m));
         }
 
         [Test]

@@ -39,7 +39,7 @@ namespace SaltyGame
 
     public sealed class SpeciesUpgradeSnapshot
     {
-        public const string ContractVersion = "species-upgrade-v1";
+        public const string ContractVersion = "species-upgrade-v2";
 
         readonly IReadOnlyList<SpeciesUpgradeModifier> modifiers;
         readonly IReadOnlyList<string> prerequisiteUpgradeIds;
@@ -54,7 +54,8 @@ namespace SaltyGame
             IEnumerable<SpeciesUpgradeModifier> modifiers,
             IEnumerable<string> prerequisiteUpgradeIds = null,
             IEnumerable<string> excludedUpgradeIds = null,
-            int populationToAdd = 0)
+            int populationToAdd = 0,
+            float preContactAvoidanceChanceBonus = 0f)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -89,6 +90,14 @@ namespace SaltyGame
                     "Population added by an upgrade cannot be negative.");
             }
 
+            if (float.IsNaN(preContactAvoidanceChanceBonus)
+                || float.IsInfinity(preContactAvoidanceChanceBonus)
+                || preContactAvoidanceChanceBonus < 0f
+                || preContactAvoidanceChanceBonus > 1f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(preContactAvoidanceChanceBonus));
+            }
+
             if (modifiers == null)
             {
                 throw new ArgumentNullException(nameof(modifiers));
@@ -110,9 +119,9 @@ namespace SaltyGame
                 copiedModifiers.Add(modifier);
             }
 
-            if (copiedModifiers.Count == 0 && populationToAdd == 0)
+            if (copiedModifiers.Count == 0 && populationToAdd == 0 && preContactAvoidanceChanceBonus == 0f)
             {
-                throw new ArgumentException("An upgrade must contain at least one modifier.", nameof(modifiers));
+                throw new ArgumentException("An upgrade must contain a modifier, population addition or avoidance effect.", nameof(modifiers));
             }
 
             Id = id.Trim();
@@ -121,6 +130,7 @@ namespace SaltyGame
             TargetSpecies = targetSpecies;
             Cost = cost;
             PopulationToAdd = populationToAdd;
+            PreContactAvoidanceChanceBonus = preContactAvoidanceChanceBonus;
             Scope = SpeciesUpgradeScope.PerRun;
             this.modifiers = new ReadOnlyCollection<SpeciesUpgradeModifier>(copiedModifiers);
             this.prerequisiteUpgradeIds = CopyIds(prerequisiteUpgradeIds, nameof(prerequisiteUpgradeIds));
@@ -135,6 +145,7 @@ namespace SaltyGame
         public SpeciesId TargetSpecies { get; }
         public int Cost { get; }
         public int PopulationToAdd { get; }
+        public float PreContactAvoidanceChanceBonus { get; }
         public SpeciesUpgradeScope Scope { get; }
         public IReadOnlyList<SpeciesUpgradeModifier> Modifiers => modifiers;
         public IReadOnlyList<string> PrerequisiteUpgradeIds => prerequisiteUpgradeIds;
@@ -199,6 +210,12 @@ namespace SaltyGame
             {
                 Append(canonical, "population-to-add");
                 Append(canonical, PopulationToAdd);
+            }
+
+            if (PreContactAvoidanceChanceBonus > 0f)
+            {
+                Append(canonical, "pre-contact-avoidance-chance-bonus");
+                Append(canonical, PreContactAvoidanceChanceBonus);
             }
 
             foreach (var prerequisiteId in prerequisiteUpgradeIds)

@@ -89,7 +89,8 @@ namespace SaltyGame
             float forageThresholdFraction = 0f,
             float matingEnergyThresholdFraction = 0f,
             float matingEnergyCostFraction = 0f,
-            bool distributeMatingEnergyToOffspring = false)
+            bool distributeMatingEnergyToOffspring = false,
+            float crowdingEnergyReduction = 0f)
         {
             if (movementSpeed < 0f)
             {
@@ -142,6 +143,7 @@ namespace SaltyGame
                     "Energy loss interval must be at least one tick.");
             }
 
+            ValidateEnergyFraction(crowdingEnergyReduction, nameof(crowdingEnergyReduction));
             ValidateEnergyFraction(forageThresholdFraction, nameof(forageThresholdFraction));
             ValidateEnergyFraction(matingEnergyThresholdFraction, nameof(matingEnergyThresholdFraction));
             ValidateEnergyFraction(matingEnergyCostFraction, nameof(matingEnergyCostFraction));
@@ -246,12 +248,12 @@ namespace SaltyGame
                     "Crowding metabolism multiplier must be at least one.");
             }
 
-            if (startingFoodReserve < 0f)
+            if (float.IsNaN(startingFoodReserve) || float.IsInfinity(startingFoodReserve) || startingFoodReserve < 0f)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingFoodReserve), startingFoodReserve, "Starting food reserve cannot be negative.");
             }
 
-            if (seedDropChance < 0f || seedDropChance > 1f)
+            if (float.IsNaN(seedDropChance) || float.IsInfinity(seedDropChance) || seedDropChance < 0f || seedDropChance > 1f)
             {
                 throw new ArgumentOutOfRangeException(nameof(seedDropChance), seedDropChance, "Seed drop chance must be between zero and one.");
             }
@@ -291,6 +293,7 @@ namespace SaltyGame
             LitterMaximum = litterMaximum;
             DigestionEnergyBonus = digestionEnergyBonus;
             CrowdingTolerance = crowdingTolerance;
+            CrowdingEnergyReduction = crowdingEnergyReduction;
             FleeMovementSpeedBonus = fleeMovementSpeedBonus;
             TrackingPersistenceSteps = trackingPersistenceSteps;
             ForagesUntilFull = foragesUntilFull;
@@ -386,6 +389,7 @@ namespace SaltyGame
         public int LitterMaximum { get; }
         public float DigestionEnergyBonus { get; }
         public int CrowdingTolerance { get; }
+        public float CrowdingEnergyReduction { get; }
         public float FleeMovementSpeedBonus { get; }
         public int TrackingPersistenceSteps { get; }
         public IReadOnlyList<SpeciesBehaviorStateRule> BehaviorStateRules => behaviorStateRules;

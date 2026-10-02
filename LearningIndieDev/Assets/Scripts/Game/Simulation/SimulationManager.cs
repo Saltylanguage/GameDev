@@ -62,6 +62,30 @@ namespace SaltyGame
             return true;
         }
 
+        public bool AdvanceOneTickWhilePaused()
+        {
+            if (runner == null || runner.Run.Status != SimulationRunStatus.Paused)
+            {
+                return false;
+            }
+
+            accumulatedSeconds = 0f;
+            runner.Resume();
+            try
+            {
+                return runner.AdvanceOneTick();
+            }
+            finally
+            {
+                if (runner.Run.Status == SimulationRunStatus.Running)
+                {
+                    runner.Pause();
+                }
+
+                RaiseRunEvents();
+            }
+        }
+
         public bool Restart()
         {
             if (runner == null
@@ -165,6 +189,11 @@ namespace SaltyGame
                 runner.AdvanceOneTick();
             }
 
+            RaiseRunEvents();
+        }
+
+        void RaiseRunEvents()
+        {
             if (runner.Run.Status == SimulationRunStatus.AwaitingDecision)
             {
                 accumulatedSeconds = 0f;

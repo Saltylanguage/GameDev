@@ -17,7 +17,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 27;
+        const int ReportSchemaVersion = 30;
         const string MetricDictionaryId = "cellsim-experiment-metrics";
         const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;
@@ -936,10 +936,6 @@ namespace SaltyGame.EditorTools
                     if (SpeciesUpgradeCatalog.IsThreatExposureId(upgradeId))
                     {
                         threatExposureLevel++;
-                        if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(threatExposureLevel))
-                        {
-                            rules = upgrade.Apply(rules);
-                        }
                     }
                     else
                     {
@@ -1082,6 +1078,7 @@ namespace SaltyGame.EditorTools
                 return snapshots;
             }
 
+            var levels = new Dictionary<string, int>(StringComparer.Ordinal);
             for (var index = 0; index < upgradeIds.Count; index++)
             {
                 var upgrade = upgradeValueOverride > 0f
@@ -1089,6 +1086,12 @@ namespace SaltyGame.EditorTools
                     : GetOptionalUpgrade(upgradeIds[index]);
                 if (upgrade != null)
                 {
+                    levels.TryGetValue(upgrade.Id, out var level);
+                    if (level >= SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id))
+                    {
+                        throw new ArgumentException($"Upgrade '{upgrade.Id}' exceeds its maximum level.", nameof(upgradeIds));
+                    }
+                    levels[upgrade.Id] = level + 1;
                     snapshots.Add(upgrade.CreateSnapshot(playerSpecies));
                 }
             }
@@ -1221,14 +1224,9 @@ namespace SaltyGame.EditorTools
                 return upgrade;
             }
 
-            if (upgrade.Type != SpeciesUpgradeType.FleeMovementSpeedBonus)
-            {
-                throw new ArgumentException(
-                    $"'{UpgradeValueOverrideArgument}' is only supported for Threat Exposure.",
-                    UpgradeValueOverrideArgument);
-            }
-
-            return new SpeciesUpgrade(upgrade.Id, upgrade.Cost, upgrade.Type, upgradeValueOverride);
+            throw new ArgumentException(
+                $"'{UpgradeValueOverrideArgument}' was a legacy flee-speed override. Threat Avoidance no longer grants speed; use '{PreContactAvoidanceChanceArgument}' for an explicit avoidance diagnostic.",
+                UpgradeValueOverrideArgument);
         }
 
         static string[] GetProvenanceLoadout(CommandLineOptions options)

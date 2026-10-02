@@ -322,7 +322,13 @@ namespace SaltyGame
             int starvationDeaths,
             int crowdingDeaths,
             int wiltDeaths,
-            int populationLimitRemovals)
+            int populationLimitRemovals,
+            int crowdingMetabolismTicks = 0,
+            int crowdingEnergyLost = 0,
+            int seedDropAttempts = 0,
+            int seedDropSuccesses = 0,
+            float seedDropFoodCreated = 0f,
+            int seedDropReserveSpent = 0)
         {
             Births = births;
             FoodConsumed = foodConsumed;
@@ -344,6 +350,12 @@ namespace SaltyGame
             CrowdingDeaths = crowdingDeaths;
             WiltDeaths = wiltDeaths;
             PopulationLimitRemovals = populationLimitRemovals;
+            CrowdingMetabolismTicks = crowdingMetabolismTicks;
+            CrowdingEnergyLost = crowdingEnergyLost;
+            SeedDropAttempts = seedDropAttempts;
+            SeedDropSuccesses = seedDropSuccesses;
+            SeedDropFoodCreated = seedDropFoodCreated;
+            SeedDropReserveSpent = seedDropReserveSpent;
         }
 
         public int Births { get; }
@@ -366,6 +378,12 @@ namespace SaltyGame
         public int CrowdingDeaths { get; }
         public int WiltDeaths { get; }
         public int PopulationLimitRemovals { get; }
+        public int CrowdingMetabolismTicks { get; }
+        public int CrowdingEnergyLost { get; }
+        public int SeedDropAttempts { get; }
+        public int SeedDropSuccesses { get; }
+        public float SeedDropFoodCreated { get; }
+        public int SeedDropReserveSpent { get; }
 
         internal SpeciesSimulationActivity Add(
             int births = 0,
@@ -387,7 +405,13 @@ namespace SaltyGame
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
             int wiltDeaths = 0,
-            int populationLimitRemovals = 0)
+            int populationLimitRemovals = 0,
+            int crowdingMetabolismTicks = 0,
+            int crowdingEnergyLost = 0,
+            int seedDropAttempts = 0,
+            int seedDropSuccesses = 0,
+            float seedDropFoodCreated = 0f,
+            int seedDropReserveSpent = 0)
         {
             return new SpeciesSimulationActivity(
                 Births + births,
@@ -409,7 +433,13 @@ namespace SaltyGame
                 StarvationDeaths + starvationDeaths,
                 CrowdingDeaths + crowdingDeaths,
                 WiltDeaths + wiltDeaths,
-                PopulationLimitRemovals + populationLimitRemovals);
+                PopulationLimitRemovals + populationLimitRemovals,
+                CrowdingMetabolismTicks + crowdingMetabolismTicks,
+                CrowdingEnergyLost + crowdingEnergyLost,
+                SeedDropAttempts + seedDropAttempts,
+                SeedDropSuccesses + seedDropSuccesses,
+                SeedDropFoodCreated + seedDropFoodCreated,
+                SeedDropReserveSpent + seedDropReserveSpent);
         }
 
         internal SpeciesSimulationActivity Subtract(SpeciesSimulationActivity baseline)
@@ -434,7 +464,13 @@ namespace SaltyGame
                 StarvationDeaths - baseline.StarvationDeaths,
                 CrowdingDeaths - baseline.CrowdingDeaths,
                 WiltDeaths - baseline.WiltDeaths,
-                PopulationLimitRemovals - baseline.PopulationLimitRemovals);
+                PopulationLimitRemovals - baseline.PopulationLimitRemovals,
+                CrowdingMetabolismTicks - baseline.CrowdingMetabolismTicks,
+                CrowdingEnergyLost - baseline.CrowdingEnergyLost,
+                SeedDropAttempts - baseline.SeedDropAttempts,
+                SeedDropSuccesses - baseline.SeedDropSuccesses,
+                SeedDropFoodCreated - baseline.SeedDropFoodCreated,
+                SeedDropReserveSpent - baseline.SeedDropReserveSpent);
         }
     }
 
@@ -1322,7 +1358,13 @@ namespace SaltyGame
             int starvationDeaths = 0,
             int crowdingDeaths = 0,
             int wiltDeaths = 0,
-            int populationLimitRemovals = 0)
+            int populationLimitRemovals = 0,
+            int crowdingMetabolismTicks = 0,
+            int crowdingEnergyLost = 0,
+            int seedDropAttempts = 0,
+            int seedDropSuccesses = 0,
+            float seedDropFoodCreated = 0f,
+            int seedDropReserveSpent = 0)
         {
             if (!species.IsValid)
             {
@@ -1349,7 +1391,13 @@ namespace SaltyGame
                 starvationDeaths,
                 crowdingDeaths,
                 wiltDeaths,
-                populationLimitRemovals);
+                populationLimitRemovals,
+                crowdingMetabolismTicks,
+                crowdingEnergyLost,
+                seedDropAttempts,
+                seedDropSuccesses,
+                seedDropFoodCreated,
+                seedDropReserveSpent);
         }
 
         internal void RecordFoodAction(

@@ -35,6 +35,12 @@ namespace SaltyGame.EditorTools
                     deaths = source.Deaths,
                     starvationDeaths = source.StarvationDeaths,
                     crowdingDeaths = source.CrowdingDeaths,
+                    crowdingMetabolismTicks = source.CrowdingMetabolismTicks,
+                    crowdingEnergyLost = source.CrowdingEnergyLost,
+                    seedDropAttempts = source.SeedDropAttempts,
+                    seedDropSuccesses = source.SeedDropSuccesses,
+                    seedDropFoodCreated = source.SeedDropFoodCreated,
+                    seedDropReserveSpent = source.SeedDropReserveSpent,
                     wiltDeaths = source.WiltDeaths,
                     populationLimitRemovals = source.PopulationLimitRemovals,
                     stateTransitions = metrics.GetStateTransitions(species[index]),
@@ -172,6 +178,7 @@ namespace SaltyGame.EditorTools
                     registryFingerprint = upgrade.RegistryFingerprint,
                     fingerprint = upgrade.Fingerprint,
                     modifiers = CreateUpgradeModifiers(upgrade.Modifiers),
+                    preContactAvoidanceChanceBonus = upgrade.PreContactAvoidanceChanceBonus,
                 };
             }
 
@@ -535,6 +542,12 @@ namespace SaltyGame.EditorTools
         public int deaths;
         public int starvationDeaths;
         public int crowdingDeaths;
+        public int crowdingMetabolismTicks;
+        public int crowdingEnergyLost;
+        public int seedDropAttempts;
+        public int seedDropSuccesses;
+        public float seedDropFoodCreated;
+        public int seedDropReserveSpent;
         public int wiltDeaths;
         public int populationLimitRemovals;
         public int stateTransitions;
@@ -608,6 +621,7 @@ namespace SaltyGame.EditorTools
         public string registryFingerprint;
         public string fingerprint;
         public SimulationUpgradeModifierRecord[] modifiers;
+        public float preContactAvoidanceChanceBonus;
     }
 
     [System.Serializable]

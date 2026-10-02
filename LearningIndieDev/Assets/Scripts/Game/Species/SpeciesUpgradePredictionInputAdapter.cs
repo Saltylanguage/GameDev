@@ -17,7 +17,7 @@ namespace SaltyGame.EditorTools
     public static class SpeciesUpgradePredictionInputAdapter
     {
         public const string ProductionCatalogPath = "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production";
-        public const string SchemaVersion = "species-upgrade-prediction-input-v1";
+        public const string SchemaVersion = "species-upgrade-prediction-input-v2";
 
         public static SpeciesUpgradeSnapshot[] Resolve(IReadOnlyList<string> orderedUpgradeIds)
         {
@@ -174,6 +174,7 @@ namespace SaltyGame.EditorTools
                     fingerprint = snapshot.Fingerprint,
                     prerequisiteUpgradeIds = snapshot.PrerequisiteUpgradeIds.ToArray(),
                     excludedUpgradeIds = snapshot.ExcludedUpgradeIds.ToArray(),
+                    preContactAvoidanceChanceBonus = snapshot.PreContactAvoidanceChanceBonus,
                     modifiers = snapshot.Modifiers
                         .Select(modifier => new SpeciesUpgradePredictionModifierRecord
                         {
@@ -320,6 +321,7 @@ namespace SaltyGame.EditorTools
         public string[] prerequisiteUpgradeIds;
         public string[] excludedUpgradeIds;
         public SpeciesUpgradePredictionModifierRecord[] modifiers;
+        public float preContactAvoidanceChanceBonus;
     }
 
     [Serializable]

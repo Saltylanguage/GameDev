@@ -157,7 +157,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator ExperimentalDiagnosticsStayHiddenUntilDeveloperModeEnabled()
+        public IEnumerator SlashlineIsAvailableWithoutDeveloperModeWhileUpgradeDiagnosticsStayHidden()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -218,7 +218,19 @@ namespace SaltyGame.PlayModeTests
                 .GetProperty("ExperimentalHerbivoreStatLineSummaryVisibility")
                 ?.GetValue(viewModel)
                 ?.ToString();
-            Assert.That(summaryVisibility, Is.EqualTo("Collapsed"));
+            Assert.That(summaryVisibility, Is.EqualTo("Visible"));
+            StringAssert.Contains("ADD:", summary);
+            StringAssert.Contains("FPO:", summary);
+            Assert.That(viewModel.GetType().GetProperty("ExperimentalUpgradeCountVisibility")
+                ?.GetValue(viewModel)?.ToString(), Is.EqualTo("Collapsed"));
+            var showNotesCommand = viewModel.GetType().GetProperty("ShowFieldNotesCommand")?.GetValue(viewModel);
+            showNotesCommand?.GetType().GetMethod("Execute")?.Invoke(showNotesCommand, new object[] { null });
+            Assert.That(viewModel.GetType().GetProperty("FieldNotesVisibility")
+                ?.GetValue(viewModel)?.ToString(), Is.EqualTo("Visible"));
+            var closeNotesCommand = viewModel.GetType().GetProperty("CloseFieldNotesCommand")?.GetValue(viewModel);
+            closeNotesCommand?.GetType().GetMethod("Execute")?.Invoke(closeNotesCommand, new object[] { null });
+            Assert.That(viewModel.GetType().GetProperty("FieldNotesVisibility")
+                ?.GetValue(viewModel)?.ToString(), Is.EqualTo("Collapsed"));
 
             viewModel.GetType().GetProperty("DeveloperMode")?.SetValue(viewModel, true);
             summary = viewModel.GetType()
@@ -284,6 +296,51 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openingPopulation.GetCount(SpeciesIds.Plant), Is.EqualTo(3));
             Assert.That(openingPopulation.GetCount(FindSpeciesId(preview, SpeciesRole.Herbivore)), Is.EqualTo(2));
             Assert.That(openingPopulation.GetCount(FindSpeciesId(preview, SpeciesRole.Carnivore)), Is.EqualTo(1));
+        }
+
+        [UnityTest]
+        public IEnumerator GardenersPathCanBeChosenAcrossFivePhaseDecisions()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            preview.ResetToStart();
+            Assert.That(preview.TrySetPlayerSpecies("hare", out var message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations("36", "20", "1", "720", "0", "6", "0.1",
+                "0", "0", "0", false, "400", "25", "15", out message), Is.True, message);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, false, "0", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            preview.StartSimulation();
+            preview.PauseSimulation();
+            var baseline = preview.ActiveSpeciesRules[preview.PlayerSpecies];
+            var path = new[] { "efficient-digestion", "seed-dispersal", "efficient-digestion", "seed-dispersal", "efficient-digestion" };
+            foreach (var desired in path)
+            {
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                var index = -1;
+                for (var option = 0; option < preview.RewardOptionCount; option++)
+                    if (preview.GetRewardOptionId(option) == desired) index = option;
+                Assert.That(index, Is.GreaterThanOrEqualTo(0), desired);
+                var tick = preview.Run.Tick;
+                var currency = preview.Progression.Currency;
+                Assert.That(preview.PurchaseReward(index), Is.True);
+                Assert.That(preview.Run.Tick, Is.EqualTo(tick));
+                Assert.That(preview.Progression.Currency, Is.EqualTo(currency));
+                preview.PauseSimulation();
+            }
+            Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(preview.ActiveSpeciesRules[preview.PlayerSpecies].SeedDropChance,
+                Is.EqualTo(baseline.SeedDropChance + 0.02f).Within(0.000001f));
+            Assert.That(preview.ActiveSpeciesRules[preview.PlayerSpecies].DigestionEnergyBonus,
+                Is.EqualTo(baseline.DigestionEnergyBonus + 0.3f).Within(0.000001f));
+            Assert.That(preview.Run.UpgradeAcquisitionTimeline.Count, Is.EqualTo(5));
+            var phasePlants = 0;
+            foreach (var phase in preview.Run.PhaseResults)
+                phasePlants += phase.Metrics.GetActivity(preview.PlayerSpecies).SeedDropSuccesses;
+            Assert.That(phasePlants, Is.EqualTo(preview.Run.Metrics.GetActivity(preview.PlayerSpecies).SeedDropSuccesses));
         }
 
         [UnityTest]
@@ -881,6 +938,48 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TrailblazerFivePickPathWorksThroughNormalPhaseOffersAndPausedSteps()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "5", "720", "0", "6", "0.1", "0", "0", "0", false,
+                "400", "25", "15", out var message), Is.True, message);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, false, "0", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            preview.StartSimulation();
+            var run = preview.Run;
+            var originalRules = preview.Progression.CurrentRules;
+            var picks = new[] { "faster-movement", "threat-exposure", "faster-movement", "threat-exposure", "faster-movement" };
+            for (var phase = 0; phase < picks.Length; phase++)
+            {
+                preview.PauseSimulation();
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.False);
+                var option = Enumerable.Range(0, preview.RewardOptionCount)
+                    .First(index => preview.GetRewardOptionId(index) == picks[phase]);
+                var currency = preview.Progression.Currency;
+                Assert.That(preview.PurchaseReward(option), Is.True);
+                Assert.That(preview.Progression.Currency, Is.EqualTo(currency));
+                Assert.That(preview.Run, Is.SameAs(run));
+                Assert.That(run.UpgradeAcquisitionTimeline[phase].EffectiveTick, Is.EqualTo(phase + 1));
+            }
+            Assert.That(preview.Progression.CurrentRules.MovementSpeed, Is.EqualTo(originalRules.MovementSpeed + 1.5f));
+            Assert.That(preview.Progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(originalRules.FleeMovementSpeedBonus));
+            Assert.That(preview.Progression.PreContactAvoidanceChance, Is.EqualTo(0.16f).Within(0.00001f));
+            Assert.That(run.UpgradeLoadout[1].PreContactAvoidanceChanceBonus, Is.EqualTo(0.08f));
+            Assert.That(run.UpgradeLoadout[1].Modifiers, Is.Empty);
+            preview.PauseSimulation();
+            Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(run.Tick, Is.EqualTo(6));
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(6));
+        }
+
+        [UnityTest]
         public IEnumerator ApplicableHerbivoreSkillsRetainLevelsAndAcquisitionsAcrossDecisionBoundaries()
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
@@ -921,7 +1020,7 @@ namespace SaltyGame.PlayModeTests
                         .Select(preview.GetRewardOptionId)
                         .ToArray();
                     Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
-                    Assert.That(offeredIds.All(id => ids.Contains(id)), Is.True);
+                    Assert.That(offeredIds.All(id => ids.Contains(id) || id == SpeciesUpgradeCatalog.FasterMovementId), Is.True);
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Contain($"LV {phase + 1}"));
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("COST"));
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("DATA"));
@@ -951,7 +1050,7 @@ namespace SaltyGame.PlayModeTests
                     if (upgrade.Id == "threat-exposure")
                     {
                         Assert.That(preview.Progression.CurrentRules.FleeMovementSpeedBonus,
-                            Is.EqualTo(originalRules.FleeMovementSpeedBonus + 0.75f));
+                            Is.EqualTo(originalRules.FleeMovementSpeedBonus));
                         Assert.That(preview.Progression.PreContactAvoidanceChance,
                             Is.EqualTo((phase + 1) * 0.08f).Within(0.00001f));
                     }

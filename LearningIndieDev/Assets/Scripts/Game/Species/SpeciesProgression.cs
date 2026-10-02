@@ -118,11 +118,6 @@ namespace SaltyGame
             var nextAvoidanceChance = PreContactAvoidanceChance;
             if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
             {
-                if (SpeciesUpgradeCatalog.IsThreatExposureFleeLevel(nextLevel))
-                {
-                    nextRules = upgrade.Apply(CurrentRules);
-                }
-
                 nextAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
             }
             else
@@ -175,8 +170,15 @@ namespace SaltyGame
                 }
             }
 
+            var nextAvoidanceChance = PreContactAvoidanceChance + upgrade.PreContactAvoidanceChanceBonus;
+            if (nextAvoidanceChance > 1f)
+            {
+                return false;
+            }
+
             var nextRules = upgrade.Apply(CurrentRules);
             CurrentRules = nextRules;
+            PreContactAvoidanceChance = nextAvoidanceChance;
             purchasedUpgradeLevels[upgrade.Id] = currentLevel + 1;
             orderedUpgradeIds.Add(upgrade.Id);
             appliedRunUpgrades.Add(upgrade);

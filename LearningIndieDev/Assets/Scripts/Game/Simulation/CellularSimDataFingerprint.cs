@@ -8,7 +8,7 @@ namespace SaltyGame
 {
     public static class CellularSimDataFingerprint
     {
-        public const string Version = "cellular-sim-data-v9";
+        public const string Version = "cellular-sim-data-v10";
         public const string RunVersion = "cellular-sim-run-v3";
 
         public static string Create(CellularSimData data)
@@ -140,6 +140,7 @@ namespace SaltyGame
             Append(builder, rules.Awareness.Intelligence);
             Append(builder, rules.DigestionEnergyBonus);
             Append(builder, rules.CrowdingTolerance);
+            Append(builder, rules.CrowdingEnergyReduction);
             Append(builder, rules.FleeMovementSpeedBonus);
             Append(builder, rules.TrackingPersistenceSteps);
             builder.Append("stateRules[");

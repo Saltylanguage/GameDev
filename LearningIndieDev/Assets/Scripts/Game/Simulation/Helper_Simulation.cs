@@ -58,6 +58,11 @@ namespace SaltyGame
             return simulationManager.Resume();
         }
 
+        public bool AdvanceOneTickWhilePaused()
+        {
+            return simulationManager.AdvanceOneTickWhilePaused();
+        }
+
         public bool RestartRun()
         {
             return simulationManager.Restart();

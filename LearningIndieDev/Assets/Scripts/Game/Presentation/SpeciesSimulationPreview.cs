@@ -99,6 +99,7 @@ namespace SaltyGame
                 WiltChance = rules.WiltChance;
                 WiltChanceText = FormatFloat(rules.WiltChance);
                 WiltEnabled = rules.WiltChance > 0f;
+                CrowdingEnergyReduction = rules.CrowdingEnergyReduction;
                 CrowdingMetabolismMultiplier = rules.CrowdingMetabolismMultiplier;
                 CrowdingMetabolismMultiplierText = rules.CrowdingMetabolismMultiplier.ToString(CultureInfo.InvariantCulture);
                 StartingFoodReserve = rules.StartingFoodReserve;
@@ -162,6 +163,7 @@ namespace SaltyGame
             public bool WiltEnabled;
             public float WiltChance;
             public string WiltChanceText;
+            public float CrowdingEnergyReduction;
             public int CrowdingMetabolismMultiplier = 2;
             public string CrowdingMetabolismMultiplierText = "2";
             public float StartingFoodReserve;
@@ -359,6 +361,8 @@ namespace SaltyGame
             var legacySnapshot = legacyUpgrade.CreateSnapshot(playerSpecies);
             var effectSummary = legacySnapshot.PopulationToAdd > 0
                 ? $"+{legacySnapshot.PopulationToAdd} {playerSpecies.Value.ToUpperInvariant()}"
+                : legacySnapshot.PreContactAvoidanceChanceBonus > 0f
+                    ? $"+{legacySnapshot.PreContactAvoidanceChanceBonus:P0} attack avoidance"
                 : string.Join(", ", legacySnapshot.Modifiers.Select(FormatModifierForDisplay));
             var display = string.Format(
                 CultureInfo.InvariantCulture,
@@ -1240,7 +1244,7 @@ namespace SaltyGame
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
             rewardOptions = LegacyRewardOptions;
-            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, five-skill upgrade path, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
+            settingsMessage = $"Bev features enabled: opposed-roll combat, species stat lines, shared Hare skills, fox cooldown {foxAttackCooldownTicks} ticks, coupled responses {(coupledSpeciesResponsesEnabled ? "on" : "off")}.";
             // StartSimulation prepares the pending run after all setup fields are applied.
             validationMessage = settingsMessage;
             return true;
@@ -1411,6 +1415,13 @@ namespace SaltyGame
             {
                 previewState = SpeciesPreviewState.Running;
             }
+        }
+
+        public bool AdvanceOneTickWhilePaused()
+        {
+            return simulationHelper != null
+                ? simulationHelper.AdvanceOneTickWhilePaused()
+                : simulationManager != null && simulationManager.AdvanceOneTickWhilePaused();
         }
 
         public void RestartSimulation()
@@ -2184,12 +2195,16 @@ namespace SaltyGame
         {
             switch (upgradeId)
             {
+                case SpeciesUpgradeCatalog.FasterMovementId:
+                    return "Move faster to escape predators and reach fresh food.";
                 case SpeciesUpgradeCatalog.ToughHideId:
                     return "Block more incoming attacks.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
                     return "Gain more energy from food.";
+                case SpeciesUpgradeCatalog.SeedDispersalId:
+                    return "Plant food; spend 1 stored food on success.";
                 case SpeciesUpgradeCatalog.CrowdingToleranceId:
-                    return "Lose less energy when crowded.";
+                    return "Cut extra crowding cost by 10%.";
                 case SpeciesUpgradeCatalog.ReproductiveDriveId:
                     return "Make successful reproduction more likely.";
                 case SpeciesUpgradeCatalog.ThreatExposureId:
@@ -2440,7 +2455,8 @@ namespace SaltyGame
                     forageThresholdFraction: draft.ForageThresholdFraction,
                     matingEnergyThresholdFraction: draft.MatingEnergyThresholdFraction,
                     matingEnergyCostFraction: draft.MatingEnergyCostFraction,
-                    distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring);
+                    distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring,
+                    crowdingEnergyReduction: draft.CrowdingEnergyReduction);
             }
 
             return result;

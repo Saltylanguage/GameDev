@@ -227,8 +227,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4b5c6d7e8f90112233445566778899aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.SpeciesSimulationPreview
-  simulationHelper: {fileID: 100004}
+  width: 32
+  height: 20
+  seed: 12345
+  randomizeSeedOnStart: 1
   playerSpeciesKey: hare
+  plantProbability: 0.4
+  herbivoreProbability: 0.02
+  carnivoreProbability: 0.004
+  plantStartingPopulation: 0
+  herbivoreStartingPopulation: 0
+  carnivoreStartingPopulation: 0
+  maxPopulation: 0
+  minPopulation: 0
+  scenarioOptions: []
+  selectedScenarioIndex: -1
   authoredUpgradeCatalog:
   - {fileID: 11400000, guid: 124ea44a7bfb43f38937e725db8b8ce6, type: 2}
   - {fileID: 11400000, guid: 6ca04dd13bf0bd54198e6dff91d3609e, type: 2}
@@ -237,34 +250,15 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c3d4e5f6071849ab8cdef0123456789a, type: 2}
   - {fileID: 11400000, guid: d4e5f60718294abc9def0123456789ab, type: 2}
   - {fileID: 11400000, guid: e5f60718293a4bcd9ef0123456789abc, type: 2}
---- !u!114 &100016
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a10, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_ProfileSession
---- !u!114 &100017
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 100000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7f6e5d4c3b2a1908f7e6d5c4b3a29180, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
-  labSceneName: Lab
-  desktopSceneName: GalapagOSDesktopTest
-  mainMenuSceneName: MainMenu
-  simulationSceneName: CellularAutomataPrototype
+  runDurationSeconds: 20
+  stepInterval: 0.1
+  runTicks: 0
+  continuousPhasesEnabled: 1
+  phaseLengthTicks: 100
+  bevExperimentalFeaturesEnabled: 1
+  foxAttackCooldownTicks: 0
+  coupledSpeciesResponsesEnabled: 0
+  simulationHelper: {fileID: 100004}
 --- !u!1 &100010
 GameObject:
   m_ObjectHideFlags: 0
@@ -347,6 +341,7 @@ Camera:
   m_HDR: 1
   m_AllowMSAA: 1
   m_AllowDynamicResolution: 0
+  m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
   m_StereoSeparation: 0.022
@@ -407,6 +402,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2e3f4a5b6c74899a0b1c2d3e4f56789, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_SimulationBoard
+--- !u!114 &100016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_ProfileSession
+--- !u!114 &100017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6e5d4c3b2a1908f7e6d5c4b3a29180, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
+  labSceneName: Lab
+  desktopSceneName: GalapagOSDesktopTest
+  mainMenuSceneName: MainMenu
+  simulationSceneName: CellularAutomataPrototype
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

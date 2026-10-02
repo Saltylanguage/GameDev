@@ -85,6 +85,8 @@ namespace SaltyGame
         string runStatusText;
         string runDetailsText;
         string experimentalHerbivoreStatLineSummary;
+        string statLineContextText;
+        string statLineGuide;
         string experimentalUpgradeCountText;
         string currencyText;
         string phaseCurrencyText;
@@ -176,6 +178,7 @@ namespace SaltyGame
         Visibility eventReactionRabbitVisibility = Visibility.Collapsed;
         Visibility eventReactionFoxVisibility = Visibility.Collapsed;
         Visibility endConfirmationVisibility = Visibility.Collapsed;
+        Visibility fieldNotesVisibility = Visibility.Collapsed;
         bool resumeAfterEndCancellation;
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -201,11 +204,15 @@ namespace SaltyGame
         public DelegateCommand ApplySpeciesRulesCommand { get; private set; }
         public DelegateCommand ReturnToLabCommand { get; private set; }
         public DelegateCommand CloseWindowCommand { get; private set; }
+        public DelegateCommand ShowFieldNotesCommand { get; private set; }
+        public DelegateCommand CloseFieldNotesCommand { get; private set; }
 
         public string StateTitle => stateTitle;
         public string RunStatusText => runStatusText;
         public string RunDetailsText => runDetailsText;
         public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
+        public string StatLineContextText => statLineContextText;
+        public string StatLineGuide => statLineGuide;
         public string ExperimentalUpgradeCountText => experimentalUpgradeCountText;
         public string CurrencyText => currencyText;
         public string PhaseCurrencyText => phaseCurrencyText;
@@ -498,6 +505,7 @@ namespace SaltyGame
         public Visibility RewardOption3Visibility => rewardOption3Visibility;
         public Visibility BoardVisibility => boardVisibility;
         public Visibility EndConfirmationVisibility => endConfirmationVisibility;
+        public Visibility FieldNotesVisibility => fieldNotesVisibility;
         internal CroppedBitmap[] AnimalSprites => animalSprites;
         internal CroppedBitmap[] GrassTerrainTiles => grassTerrainTiles;
         internal CroppedBitmap[] DesertTerrainTiles => desertTerrainTiles;
@@ -913,6 +921,14 @@ namespace SaltyGame
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
             ReturnToLabCommand = new DelegateCommand(ReturnToLab, () => CanReturnToLab);
             CloseWindowCommand = new DelegateCommand(CloseWindow, () => CanCloseWindow);
+            ShowFieldNotesCommand = new DelegateCommand(() =>
+            {
+                Refresh(true);
+                if (experimentalHerbivoreStatLineSummaryVisibility == Visibility.Visible)
+                    Set(ref fieldNotesVisibility, Visibility.Visible, nameof(FieldNotesVisibility));
+            });
+            CloseFieldNotesCommand = new DelegateCommand(() =>
+                Set(ref fieldNotesVisibility, Visibility.Collapsed, nameof(FieldNotesVisibility)));
         }
 
         internal void SetBoardZoom(float value)
@@ -1035,9 +1051,7 @@ namespace SaltyGame
                 && playerRules.Role == SpeciesRole.Herbivore;
             var isCarnivorePlayer = playerRules != null && playerRules.Role == SpeciesRole.Carnivore;
             var showExperimentalHerbivoreStatLine =
-                developerMode
-                && (state == SpeciesPreviewState.Rewards || state == SpeciesPreviewState.Results)
-                && preview.BevExperimentalFeaturesEnabled
+                run != null && run.PopulationHistory.Count > 0
                 && (isHerbivorePlayer || isCarnivorePlayer);
             var showExperimentalUpgradeCount =
                 developerMode
@@ -1048,6 +1062,9 @@ namespace SaltyGame
             {
                 return;
             }
+
+            if (!showExperimentalHerbivoreStatLine || tick < lastTick)
+                Set(ref fieldNotesVisibility, Visibility.Collapsed, nameof(FieldNotesVisibility));
 
             SyncSpeciesTabs();
 
@@ -1070,6 +1087,22 @@ namespace SaltyGame
                         : GetExperimentalPredatorStatLineSummary(run, preview.PlayerSpecies)
                     : string.Empty,
                 nameof(ExperimentalHerbivoreStatLineSummary));
+            Set(ref statLineContextText,
+                showExperimentalHerbivoreStatLine
+                    ? $"{preview.PlayerSpecies.Value.ToUpperInvariant()} | Seed {run.Seed} | Tick {tick} | Whole expedition | {(state == SpeciesPreviewState.Results || state == SpeciesPreviewState.Rewards ? "FINAL" : "LIVE") }"
+                    : string.Empty,
+                nameof(StatLineContextText));
+            Set(ref statLineGuide,
+                "SPO starting population; ADD reinforcements; FPO current/final population.\n"
+                + "STRV starvation deaths; CRWD crowding deaths; MAT mating candidates; BIR births.\n"
+                + (isHerbivorePlayer
+                    ? "PREY predation deaths; HPS predator-active herbivore steps; EHS encountered herbivore steps; ECN encounters.\n"
+                        + "pAVI encounter survival; eAVI encounter avoidance; predAVG combined predation avoidance; APS actual prey score.\n"
+                    : "PPS prey-active predator steps; EPS encountered predator steps; ECN encounters; HAT hunt attempts; KIL kills.\n"
+                        + "hAVG hunt success; aAVG prey access; huntAVG combined hunting average; AHS actual hunt score.\n")
+                + "sAVI starvation survival; cAVI crowding survival; bAVG births per mating candidate; RFS replication fitness.\n"
+                + "N/A means no applicable denominator yet. INVALID flags inconsistent counts. Higher cAVI describes fewer crowding deaths, not energy saved.",
+                nameof(StatLineGuide));
             Set(
                 ref experimentalUpgradeCountText,
                 showExperimentalUpgradeCount

@@ -76,7 +76,8 @@ namespace SaltyGame
             int trackingTicksRemaining = 0,
             int reproductionCooldownTicksRemaining = 0,
             ForageReservePhase forageReservePhase = ForageReservePhase.Idle,
-            int terrainResourceGrowthElapsedTicks = 0)
+            int terrainResourceGrowthElapsedTicks = 0,
+            decimal crowdingEnergyRemainder = 0m)
         {
             if (health < 0)
             {
@@ -91,6 +92,11 @@ namespace SaltyGame
             if (energyRemainder < 0f || energyRemainder >= 1f || float.IsNaN(energyRemainder) || float.IsInfinity(energyRemainder))
             {
                 throw new ArgumentOutOfRangeException(nameof(energyRemainder), energyRemainder, "Energy remainder must be between zero and one.");
+            }
+
+            if (crowdingEnergyRemainder < 0m || crowdingEnergyRemainder >= 1m)
+            {
+                throw new ArgumentOutOfRangeException(nameof(crowdingEnergyRemainder), crowdingEnergyRemainder, "Crowding energy remainder must be finite and between zero and one.");
             }
 
             if (age < 0)
@@ -171,6 +177,7 @@ namespace SaltyGame
             Health = health;
             Energy = energy;
             EnergyRemainder = energyRemainder;
+            CrowdingEnergyRemainder = crowdingEnergyRemainder;
             Age = age;
             FoodEaten = foodEaten;
             FoodReserve = foodReserve;
@@ -292,6 +299,7 @@ namespace SaltyGame
         public int Health { get; }
         public int Energy { get; }
         public float EnergyRemainder { get; }
+        public decimal CrowdingEnergyRemainder { get; }
         public int Age { get; }
         public int FoodEaten { get; }
         public float FoodReserve { get; }
@@ -317,7 +325,8 @@ namespace SaltyGame
             bool isAlpha = false,
             long entityId = 0,
             float? energyRemainder = null,
-            int? reproductionCooldownTicksRemaining = null)
+            int? reproductionCooldownTicksRemaining = null,
+            decimal? crowdingEnergyRemainder = null)
         {
             var resolvedEntityId = entityId > 0
                 ? entityId
@@ -353,6 +362,7 @@ namespace SaltyGame
                 entityId: resolvedEntityId,
                 attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
                 energyRemainder: resolvedEnergyRemainder,
+                crowdingEnergyRemainder: crowdingEnergyRemainder ?? (preserveTracking ? CrowdingEnergyRemainder : 0m),
                 trackingTargetEntityId: preserveTracking ? TrackingTargetEntityId : 0L,
                 trackingTargetX: preserveTracking ? TrackingTargetX : 0,
                 trackingTargetY: preserveTracking ? TrackingTargetY : 0,
@@ -398,7 +408,8 @@ namespace SaltyGame
                 TrackingTicksRemaining,
                 ReproductionCooldownTicksRemaining,
                 ForagePhase,
-                TerrainResourceGrowthElapsedTicks);
+                TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder);
         }
 
         public SpeciesCell WithAttackCooldown(int ticks)
@@ -440,7 +451,8 @@ namespace SaltyGame
                 TrackingTicksRemaining,
                 ReproductionCooldownTicksRemaining,
                 ForagePhase,
-                TerrainResourceGrowthElapsedTicks);
+                TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder);
         }
 
         public SpeciesCell WithTrackingTarget(long entityId, int x, int y, int ticksRemaining)
@@ -485,7 +497,8 @@ namespace SaltyGame
                 ticksRemaining,
                 ReproductionCooldownTicksRemaining,
                 ForagePhase,
-                TerrainResourceGrowthElapsedTicks);
+                TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder);
         }
 
         public SpeciesCell WithoutEntity()
@@ -542,6 +555,7 @@ namespace SaltyGame
                     entityId: EntityId,
                     attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
                     energyRemainder: EnergyRemainder,
+                    crowdingEnergyRemainder: CrowdingEnergyRemainder,
                     trackingTargetEntityId: TrackingTargetEntityId,
                     trackingTargetX: TrackingTargetX,
                     trackingTargetY: TrackingTargetY,
@@ -597,6 +611,7 @@ namespace SaltyGame
                 entityId: EntityId,
                 attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
                 energyRemainder: EnergyRemainder,
+                crowdingEnergyRemainder: CrowdingEnergyRemainder,
                 trackingTargetEntityId: TrackingTargetEntityId,
                 trackingTargetX: TrackingTargetX,
                 trackingTargetY: TrackingTargetY,
@@ -641,6 +656,7 @@ namespace SaltyGame
                 entityId: EntityId,
                 attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
                 energyRemainder: EnergyRemainder,
+                crowdingEnergyRemainder: CrowdingEnergyRemainder,
                 trackingTargetEntityId: TrackingTargetEntityId,
                 trackingTargetX: TrackingTargetX,
                 trackingTargetY: TrackingTargetY,
@@ -689,7 +705,8 @@ namespace SaltyGame
                 TrackingTicksRemaining,
                 ticks,
                 ForagePhase,
-                TerrainResourceGrowthElapsedTicks);
+                TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder);
         }
 
         internal SpeciesCell WithForageReservePhase(ForageReservePhase phase)
@@ -726,7 +743,8 @@ namespace SaltyGame
                 TrackingTicksRemaining,
                 ReproductionCooldownTicksRemaining,
                 phase,
-                TerrainResourceGrowthElapsedTicks);
+                TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder);
         }
     }
 }
