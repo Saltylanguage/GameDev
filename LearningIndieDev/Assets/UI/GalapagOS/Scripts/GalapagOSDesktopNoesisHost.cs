@@ -127,21 +127,30 @@ namespace SaltyGame
             simulationBoardViewModel.PropertyChanged += HandleBoardPropertyChanged;
             ApplyBoardSnapshot();
 
-            // The GalapagOS desktop icon is the prepared expedition entry point.
-            // The standalone simulation route keeps its Ready/setup surface, but
-            // opening this desktop-hosted view should take the player directly to
-            // the live board instead of presenting expedition setup again.
+            // The journey map is the entry point for Forest Edge/Hare. Other
+            // scenarios keep the prepared live-board launch behavior.
             if (simulationPreview.State == SpeciesPreviewState.Results)
             {
-                // A new expedition gets a fresh run-scoped Mutation state.
-                simulationPreview.PlayNextSimulation();
+                simulationPreview.PlayNextSimulation(
+                    startImmediately: !simulationPreview.JourneyActive);
                 simulationBoardViewModel.Initialize(simulationPreview);
                 ApplyBoardSnapshot();
+                if (simulationPreview.JourneyActive)
+                {
+                    simulationViewModel.OpenJourneyMapCommand.Execute(null);
+                }
             }
             else if (simulationPreview.State == SpeciesPreviewState.Ready
                 && simulationViewModel.CanStart)
             {
-                simulationViewModel.StartCommand.Execute(null);
+                if (simulationPreview.JourneyActive)
+                {
+                    simulationViewModel.OpenJourneyMapCommand.Execute(null);
+                }
+                else
+                {
+                    simulationViewModel.StartCommand.Execute(null);
+                }
                 ApplyBoardSnapshot();
             }
         }

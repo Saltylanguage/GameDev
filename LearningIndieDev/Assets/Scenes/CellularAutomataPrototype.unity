@@ -242,6 +242,7 @@ MonoBehaviour:
   minPopulation: 0
   scenarioOptions: []
   selectedScenarioIndex: -1
+  journeyMap: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118e001, type: 2}
   authoredUpgradeCatalog:
   - {fileID: 11400000, guid: 124ea44a7bfb43f38937e725db8b8ce6, type: 2}
   - {fileID: 11400000, guid: 6ca04dd13bf0bd54198e6dff91d3609e, type: 2}

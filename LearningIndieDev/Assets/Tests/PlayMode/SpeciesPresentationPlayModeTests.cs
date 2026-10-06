@@ -46,6 +46,81 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator DesktopJourneyLaunchShowsMapBeforeFirstSimulation()
+        {
+            var transitionObject = new GameObject("Journey launch test transition");
+            var transition = transitionObject.AddComponent<Helper_SceneTransition>();
+            var startingUpgrade = new SpeciesUpgradeSnapshot(
+                "journey-test-starting-block",
+                "Starting Block",
+                "A frozen launch upgrade for the journey test.",
+                new SpeciesId("hare"),
+                0,
+                new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, 1f) });
+            var launch = new SimulationLaunchRequest(
+                "journey-test", "ForestEdge", "hare", 10100,
+                orderedUpgradeSnapshots: new[] { startingUpgrade });
+            Assert.That(transition.LoadSimulation(launch), Is.True);
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>()?.SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera")?.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(viewModel, Is.Not.Null);
+            Assert.That(preview.JourneyActive, Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(viewModel.GetType().GetProperty("JourneyMapVisibility")
+                ?.GetValue(viewModel)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+            Assert.That(preview.Run.UpgradeLoadout.Any(
+                upgrade => upgrade.Id == startingUpgrade.Id), Is.True);
+        }
+
+        [UnityTest]
+        public IEnumerator DesktopSimulationIconOpensTheJourneyMap()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var desktopViewModel = GameObject.Find("GalapagOS Desktop Test Camera")
+                ?.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            var preview = UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            var simulationViewModel = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(
+                    FindObjectsSortMode.None)
+                .FirstOrDefault(component => component.GetType().FullName == "SaltyGame.VM_SimulationShell");
+            Assert.That(desktopViewModel, Is.Not.Null);
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(simulationViewModel, Is.Not.Null);
+            Assert.That(preview.JourneyActive, Is.True);
+
+            var open = desktopViewModel.GetType().GetProperty("OpenDesktopIconCommand")
+                ?.GetValue(desktopViewModel);
+            Assert.That(open, Is.Not.Null);
+            open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Simulation" });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(simulationViewModel.GetType().GetProperty("JourneyMapVisibility")
+                ?.GetValue(simulationViewModel)?.ToString(), Is.EqualTo("Visible"));
+            var back = simulationViewModel.GetType().GetProperty("CloseJourneyMapCommand")
+                ?.GetValue(simulationViewModel);
+            back?.GetType().GetMethod("Execute")?.Invoke(back, new object[] { null });
+            Assert.That(GameObject.Find("GalapagOS Desktop Test Camera")?.GetComponent<Camera>()?.enabled,
+                Is.True);
+            open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Simulation" });
+            Assert.That(simulationViewModel.GetType().GetProperty("JourneyMapVisibility")
+                ?.GetValue(simulationViewModel)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+        }
+
+        [UnityTest]
         public IEnumerator SimulationZoomCommandsChangeTheLiveBoardScale()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -306,6 +381,7 @@ namespace SaltyGame.PlayModeTests
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
             preview.StopSimulation();
             preview.ResetToStart();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             Assert.That(preview.TrySetPlayerSpecies("hare", out var message), Is.True, message);
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations("36", "20", "1", "720", "0", "6", "0.1",
                 "0", "0", "0", false, "400", "25", "15", out message), Is.True, message);
@@ -421,6 +497,7 @@ namespace SaltyGame.PlayModeTests
 
             var preview = runtime.SpeciesPreview;
             preview.StopSimulation();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             var viewModel = GameObject.Find("Prototype Camera")
                 ?.GetComponent("SaltyGame.VM_SimulationShell");
             Assert.That(viewModel, Is.Not.Null);
@@ -474,19 +551,11 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
             Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
-            var mutationIds = new HashSet<string>
-            {
-                SpeciesUpgradeCatalog.ToughHideId,
-                SpeciesUpgradeCatalog.EfficientDigestionId,
-                SpeciesUpgradeCatalog.CrowdingToleranceId,
-                SpeciesUpgradeCatalog.ReproductiveDriveId,
-                SpeciesUpgradeCatalog.ThreatExposureId,
-            };
             var offeredIds = Enumerable.Range(0, preview.RewardOptionCount)
                 .Select(preview.GetRewardOptionId)
                 .ToArray();
             Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
-            Assert.That(offeredIds.All(mutationIds.Contains), Is.True);
+            Assert.That(offeredIds.All(SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId), Is.True);
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Tick, Is.EqualTo(2));
             Assert.That(run.TargetTicks, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
@@ -553,6 +622,119 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator JourneyNodeRewardsAndSimulationsContinueTheSameBiome()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            var viewModel = GameObject.Find("Prototype Camera").GetComponent("SaltyGame.VM_SimulationShell");
+            preview.StopSimulation();
+            Assert.That(preview.TryApplyContinuousPhases(true, "2", out var message), Is.True, message);
+            Assert.That(preview.JourneyActive, Is.True);
+            Assert.That(preview.CanChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.CanChooseJourneyNode("first-cycle"), Is.False);
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
+            Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(1));
+            Assert.That(preview.HasVisitedJourneyNode(preview.JourneyMap.StartNode), Is.True);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            var run = preview.Run;
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(run.TargetTicks, Is.EqualTo(24));
+            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "tough-hide"), Is.True);
+
+            for (var phase = 1; phase <= 5; phase++)
+            {
+                var timeout = Time.realtimeSinceStartup + 5f;
+                while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+                {
+                    yield return null;
+                }
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                if (phase == 1)
+                {
+                    Assert.That(preview.PurchaseReward(0), Is.True);
+                }
+                else
+                {
+                    preview.ContinueWithoutUpgrade();
+                }
+            }
+
+            var boundary = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.JourneyDecision && Time.realtimeSinceStartup < boundary)
+            {
+                yield return null;
+            }
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyDecision));
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(6));
+            Assert.That(run.Tick, Is.EqualTo(12));
+            var mutationCount = preview.PurchasedUpgradeCount;
+            Assert.That(mutationCount, Is.GreaterThanOrEqualTo(2));
+            Assert.That(viewModel.GetType().GetProperty("ResultsVisibility")?.GetValue(viewModel)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(viewModel.GetType().GetProperty("JourneyMapVisibility")?.GetValue(viewModel)?.ToString(),
+                Is.EqualTo("Collapsed"));
+            Assert.That(preview.ChooseJourneyNode("burrow-study"), Is.False);
+
+            var cells = run.Cells;
+            var historyCount = run.PopulationHistory.Count;
+            var seedDropBefore = preview.ActiveSpeciesRules[new SpeciesId("plant")].SeedDropChance;
+            Assert.That(preview.ChooseJourneyNode("seedfall"), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
+            Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(1));
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyDecision));
+            Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(mutationCount));
+            Assert.That(preview.ActiveSpeciesRules[new SpeciesId("plant")].SeedDropChance,
+                Is.EqualTo(seedDropBefore + 0.1f).Within(0.0001f));
+            Assert.That(preview.ChooseJourneyNode("burrow-study"), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(run.Cells, Is.SameAs(cells));
+            Assert.That(run.PopulationHistory.Count, Is.EqualTo(historyCount));
+            Assert.That(run.PhaseIndex, Is.EqualTo(7));
+            Assert.That(run.UpgradeLoadout.Count(upgrade => upgrade.TargetSpecies == preview.PlayerSpecies),
+                Is.GreaterThanOrEqualTo(mutationCount));
+            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "journey.seedfall"), Is.True);
+
+            for (var phase = 7; phase <= 11; phase++)
+            {
+                var timeout = Time.realtimeSinceStartup + 5f;
+                while (preview.State != SpeciesPreviewState.PhaseDecision && Time.realtimeSinceStartup < timeout)
+                {
+                    yield return null;
+                }
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                preview.ContinueWithoutUpgrade();
+            }
+            var finish = Time.realtimeSinceStartup + 5f;
+            while (preview.State != SpeciesPreviewState.Results && Time.realtimeSinceStartup < finish)
+            {
+                yield return null;
+            }
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(run.Tick, Is.EqualTo(24));
+            Assert.That(run.PhaseResults, Has.Count.EqualTo(12));
+            Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(mutationCount));
+            Assert.That(preview.HasVisitedJourneyNode(preview.JourneyCurrentNode), Is.True);
+
+            var next = viewModel.GetType().GetProperty("PlayNextSimulationCommand")?.GetValue(viewModel);
+            next?.GetType().GetMethod("Execute")?.Invoke(next, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(viewModel.GetType().GetProperty("JourneyMapVisibility")?.GetValue(viewModel)?.ToString(),
+                Is.EqualTo("Visible"));
+            var fresh = viewModel.GetType().GetProperty("StartNewJourneyCommand")?.GetValue(viewModel);
+            fresh?.GetType().GetMethod("Execute")?.Invoke(fresh, new object[] { null });
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(preview.PurchasedUpgradeCount, Is.Zero);
+        }
+
+        [UnityTest]
         public IEnumerator ResultsActionsStartTheNextExpedition()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -567,6 +749,7 @@ namespace SaltyGame.PlayModeTests
             // The scene host auto-starts on load; reset to the editable Ready
             // state before configuring this focused action test.
             preview.ResetToStart();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "8",
@@ -756,6 +939,7 @@ namespace SaltyGame.PlayModeTests
 
             var preview = runtime.SpeciesPreview;
             preview.StopSimulation();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicks(
                 "36",
@@ -944,6 +1128,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
             preview.StopSimulation();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "36", "20", "5", "720", "0", "6", "0.1", "0", "0", "0", false,
                 "400", "25", "15", out var message), Is.True, message);
@@ -990,6 +1175,7 @@ namespace SaltyGame.PlayModeTests
                 yield return null;
                 var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
                 preview.StopSimulation();
+                Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
                 Assert.That(preview.TryApplyExperimentalFeatures(true, "0", out var message), Is.True, message);
                 Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
                 // The seed selects the first experimental offer deterministically.
@@ -1020,7 +1206,7 @@ namespace SaltyGame.PlayModeTests
                         .Select(preview.GetRewardOptionId)
                         .ToArray();
                     Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
-                    Assert.That(offeredIds.All(id => ids.Contains(id) || id == SpeciesUpgradeCatalog.FasterMovementId), Is.True);
+                    Assert.That(offeredIds.All(SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId), Is.True);
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Contain($"LV {phase + 1}"));
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("COST"));
                     Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("DATA"));

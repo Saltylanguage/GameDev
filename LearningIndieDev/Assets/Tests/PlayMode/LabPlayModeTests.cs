@@ -164,6 +164,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(runtime, Is.Not.Null);
             var preview = runtime.SpeciesPreview;
             preview.StopSimulation();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var phaseMessage), Is.True, phaseMessage);
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "8",

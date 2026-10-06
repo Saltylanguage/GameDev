@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
+  m_Name: EcologyReview
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
+  nodeId: ecology-review
+  displayName: ECOLOGY REVIEW
+  description: Read the full story written by this ecosystem.
+  kind: 4
+  row: 11
+  column: 0
+  playableInPrototype: 0
+  conditionUpgrade: {fileID: 0}
+  rewardMutationIds: []
+  dataReward: 0
+  nextNodes: []

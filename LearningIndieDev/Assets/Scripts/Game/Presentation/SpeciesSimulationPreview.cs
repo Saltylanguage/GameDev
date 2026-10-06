@@ -12,6 +12,8 @@ namespace SaltyGame
         Running,
         Paused,
         PhaseDecision,
+        JourneyDecision,
+        JourneyNodeReward,
         Rewards,
         Results,
     }
@@ -19,9 +21,26 @@ namespace SaltyGame
     public sealed class SpeciesSimulationPreview : MonoBehaviour
     {
         public const int ContinuousExpeditionPhaseCount = 6;
+        public const int JourneyPrototypeCycleCount = 2;
         public const int HareCost = 10;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
+
+        readonly struct JourneyConditionOption
+        {
+            public JourneyConditionOption(JourneyNodeAsset node, SpeciesUpgradeSnapshot condition)
+            {
+                Condition = condition;
+                DisplayName = node.DisplayName;
+                Description = node.Description;
+                DataReward = node.DataReward;
+            }
+
+            public SpeciesUpgradeSnapshot Condition { get; }
+            public string DisplayName { get; }
+            public string Description { get; }
+            public int DataReward { get; }
+        }
 
         enum PatternPreset
         {
@@ -224,6 +243,10 @@ namespace SaltyGame
         [Header("Authored Run Upgrades")]
         [SerializeField] List<SpeciesUpgradeAsset> authoredUpgradeCatalog = new List<SpeciesUpgradeAsset>();
 
+        [Header("Journey")]
+        [SerializeField] JourneyMapAsset journeyMap;
+        [SerializeField] bool journeyPrototypeEnabled = true;
+
         [Header("Run")]
         [SerializeField, Min(1f)] float runDurationSeconds = 20f;
         [SerializeField, Min(0.01f)] float stepInterval = 0.1f;
@@ -261,6 +284,17 @@ namespace SaltyGame
         SpeciesProgression progression;
         SpeciesProgression coupledResponseProgression;
         readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades = new List<SpeciesUpgradeSnapshot>();
+        readonly List<SpeciesUpgradeSnapshot> journeyStartingUpgrades = new List<SpeciesUpgradeSnapshot>();
+        readonly Dictionary<string, JourneyConditionOption> journeyConditionOptions =
+            new Dictionary<string, JourneyConditionOption>(StringComparer.Ordinal);
+        readonly HashSet<string> journeyVisitedNodeIds = new HashSet<string>(StringComparer.Ordinal);
+        SpeciesUpgrade[] journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
+        JourneyNodeAsset journeyCurrentNode;
+        JourneyNodeAsset journeyPendingNode;
+        SpeciesUpgradeSnapshot activeJourneyCondition;
+        JourneyNodeAsset chosenJourneyNode;
+        string chosenJourneyNodeDisplayName;
+        bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
@@ -429,6 +463,20 @@ namespace SaltyGame
         public bool ContinuousPhasesEnabled => continuousPhasesEnabled;
         public int PhaseLengthTicks => phaseLengthTicks;
         public int ContinuousPhaseCount => ContinuousExpeditionPhaseCount;
+        public bool JourneyActive => journeyActive;
+        public JourneyMapAsset JourneyMap => journeyMap;
+        public JourneyNodeAsset JourneyCurrentNode => journeyCurrentNode;
+        public JourneyNodeAsset JourneyPendingNode => journeyPendingNode;
+        public int JourneyRewardOptionCount => journeyPendingNode?.Kind == JourneyNodeKind.Reward
+            ? journeyRewardOptions.Length
+            : journeyPendingNode?.Kind == JourneyNodeKind.Condition ? 1 : 0;
+        public JourneyNodeAsset ChosenJourneyNode => chosenJourneyNode;
+        public string ChosenJourneyNodeDisplayName => chosenJourneyNodeDisplayName;
+        public SpeciesUpgradeSnapshot ActiveJourneyCondition => activeJourneyCondition;
+        public int JourneyCycleIndex => !journeyActive || Run == null
+            ? 1
+            : Mathf.Clamp((Run.PhaseIndex - 1) / ContinuousExpeditionPhaseCount + 1,
+                1, JourneyPrototypeCycleCount);
         public float PlantProbability => plantProbability;
         public float HerbivoreProbability => herbivoreProbability;
         public float CarnivoreProbability => carnivoreProbability;
@@ -450,6 +498,18 @@ namespace SaltyGame
         public string PhaseRewardMessage => phaseRewardMessage ?? string.Empty;
         public GenomeSimulationSnapshot ActiveGenomeSnapshot => activeGenomeSnapshot;
         public bool SettingsEditable => previewState == SpeciesPreviewState.Ready && !sessionStarted;
+
+        public bool TrySetJourneyPrototypeEnabled(bool enabled)
+        {
+            if (!SettingsEditable)
+            {
+                return false;
+            }
+
+            journeyPrototypeEnabled = enabled;
+            PrepareNextRun();
+            return true;
+        }
 
         public bool TryApplyLaunchRequest(SimulationLaunchRequest launch, out string validationMessage)
         {
@@ -658,9 +718,11 @@ namespace SaltyGame
             if (previewState == SpeciesPreviewState.Ready && !sessionStarted)
             {
                 ApplySelectedScenario();
+                UseJourneyCadenceForMappedScenario();
                 if (wasUnconfigured && savedSettingsLoaded)
                 {
                     LoadSavedSettings();
+                    UseJourneyCadenceForMappedScenario();
                 }
                 ResetToStart();
             }
@@ -685,6 +747,7 @@ namespace SaltyGame
 
             selectedScenarioIndex = scenarioIndex;
             ApplySelectedScenario();
+            UseJourneyCadenceForMappedScenario();
             ResetToStart();
             settingsMessage = SelectedScenario == null
                 ? "Legacy defaults selected."
@@ -727,6 +790,7 @@ namespace SaltyGame
 
             playerSpecies = selectedSpecies;
             playerSpeciesKey = selectedSpecies.Value;
+            UseJourneyCadenceForMappedScenario();
             ResetExpeditionProgression(selectedRules);
             activeGenomeSnapshot = (requestedGenomeSnapshot ?? GenomeSimulationSnapshot.Empty)
                 .IncludeSpecies(rules.Keys);
@@ -758,8 +822,19 @@ namespace SaltyGame
             bevExperimentalFeaturesEnabled = true;
             ApplySelectedScenario();
             LoadSavedSettings();
+            UseJourneyCadenceForMappedScenario();
             savedSettingsLoaded = true;
             ResetToStart();
+        }
+
+        void UseJourneyCadenceForMappedScenario()
+        {
+            if (journeyPrototypeEnabled
+                && journeyMap != null
+                && journeyMap.AppliesTo(SelectedScenario, playerSpecies))
+            {
+                continuousPhasesEnabled = true;
+            }
         }
 
         void Update()
@@ -805,6 +880,12 @@ namespace SaltyGame
                 lastSettledPhaseIndex = run.PhaseIndex;
                 phaseDecisionCommitted = false;
                 phaseRewardMessage = FormatPhaseDecisionSummary(run, phaseResult.CurrencyEarned);
+                if (journeyActive && run.PhaseIndex == ContinuousExpeditionPhaseCount)
+                {
+                    previewState = SpeciesPreviewState.JourneyDecision;
+                    return;
+                }
+
                 PrepareRewardOptions();
                 previewState = SpeciesPreviewState.PhaseDecision;
             }
@@ -861,14 +942,38 @@ namespace SaltyGame
         {
             if (Run != null && Run.Status == SimulationRunStatus.Ready)
             {
-                if (!sessionStarted)
+                if (!sessionStarted
+                    && !(journeyActive && journeyCurrentNode?.Kind == JourneyNodeKind.Simulation
+                        && journeyCurrentNode.Row == 1))
                 {
                     if (SelectedScenario == null)
                     {
                         rules = CreateRulesFromDrafts();
                     }
 
-                    ResetExpeditionProgression(rules[playerSpecies]);
+                    var startingUpgrades = progression?.AppliedRunUpgrades.ToArray()
+                        ?? Array.Empty<SpeciesUpgradeSnapshot>();
+                    var startingRules = startingUpgrades.Length > 0
+                        ? progression.Definition.Rules
+                        : rules[playerSpecies];
+                    ResetExpeditionProgression(startingRules);
+                    journeyStartingUpgrades.Clear();
+                    foreach (var upgrade in startingUpgrades)
+                    {
+                        if (!progression.TryApplyRunUpgrade(upgrade))
+                        {
+                            throw new InvalidOperationException(
+                                $"Starting upgrade '{upgrade.Id}' could not be restored for the journey.");
+                        }
+
+                        journeyStartingUpgrades.Add(upgrade);
+                        appliedRunUpgrades.Add(upgrade);
+                    }
+
+                    rules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+                    {
+                        [playerSpecies] = progression.CurrentRules,
+                    };
                     runNumber = 0;
                     PrepareNextRun();
                 }
@@ -1184,16 +1289,20 @@ namespace SaltyGame
                 return false;
             }
 
-            if (parsedPhaseLength > int.MaxValue / ContinuousExpeditionPhaseCount)
+            var phaseLimit = ContinuousExpeditionPhaseCount
+                * (journeyPrototypeEnabled
+                    && journeyMap != null && journeyMap.AppliesTo(SelectedScenario, playerSpecies)
+                    ? JourneyPrototypeCycleCount : 1);
+            if (parsedPhaseLength > int.MaxValue / phaseLimit)
             {
-                validationMessage = "Phase length is too large for a six-phase expedition.";
+                validationMessage = "Phase length is too large for this expedition.";
                 settingsMessage = validationMessage;
                 return false;
             }
 
             continuousPhasesEnabled = true;
             phaseLengthTicks = parsedPhaseLength;
-            settingsMessage = $"Continuous phases enabled: {ContinuousExpeditionPhaseCount} phases, decision every {phaseLengthTicks} ticks.";
+            settingsMessage = $"Continuous phases enabled: {phaseLimit} phases, decision every {phaseLengthTicks} ticks.";
             validationMessage = settingsMessage;
             return true;
         }
@@ -1808,6 +1917,249 @@ namespace SaltyGame
             }
         }
 
+        public bool HasVisitedJourneyNode(JourneyNodeAsset node)
+        {
+            return node != null && journeyVisitedNodeIds.Contains(node.NodeId);
+        }
+
+        public bool CanChooseJourneyNode(string nodeId)
+        {
+            var node = journeyMap?.GetNode(nodeId);
+            var run = Run;
+            if (!journeyActive || node == null || !node.PlayableInPrototype
+                || journeyPendingNode != null || run == null)
+            {
+                return false;
+            }
+
+            if (journeyCurrentNode == null)
+            {
+                return node == journeyMap.StartNode
+                    && node.Kind == JourneyNodeKind.Reward
+                    && previewState == SpeciesPreviewState.Ready
+                    && run.Status == SimulationRunStatus.Ready;
+            }
+
+            if (!journeyMap.CanChooseAfter(journeyCurrentNode, node))
+            {
+                return false;
+            }
+
+            if (node.Kind == JourneyNodeKind.Simulation && node.Row == 1)
+            {
+                return previewState == SpeciesPreviewState.Ready
+                    && run.Status == SimulationRunStatus.Ready;
+            }
+
+            if (node.Kind == JourneyNodeKind.Condition && node.Row == 2)
+            {
+                return previewState == SpeciesPreviewState.JourneyDecision
+                    && run.Status == SimulationRunStatus.AwaitingDecision
+                    && run.PhaseIndex == ContinuousExpeditionPhaseCount
+                    && !phaseDecisionCommitted
+                    && journeyConditionOptions.ContainsKey(nodeId);
+            }
+
+            return node.Kind == JourneyNodeKind.Simulation
+                && node.Row == 3
+                && previewState == SpeciesPreviewState.JourneyDecision
+                && run.Status == SimulationRunStatus.AwaitingDecision
+                && run.PhaseIndex == ContinuousExpeditionPhaseCount
+                && !phaseDecisionCommitted
+                && activeJourneyCondition != null;
+        }
+
+        public bool ChooseJourneyNode(string nodeId)
+        {
+            if (!CanChooseJourneyNode(nodeId))
+            {
+                return false;
+            }
+
+            var node = journeyMap.GetNode(nodeId);
+            if (node.Kind == JourneyNodeKind.Simulation)
+            {
+                if (node.Row == 1)
+                {
+                    var previous = journeyCurrentNode;
+                    journeyCurrentNode = node;
+                    StartSimulation();
+                    if (previewState != SpeciesPreviewState.Running)
+                    {
+                        journeyCurrentNode = previous;
+                        return false;
+                    }
+                }
+                else
+                {
+                    var nextRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+                    {
+                        [playerSpecies] = progression.CurrentRules,
+                    };
+                    var continued = simulationHelper != null
+                        ? simulationHelper.ContinueWithBoundaryState(
+                            nextRules, CreateExperimentalOptions(),
+                            GetAppliedRunUpgrades(), activeJourneyCondition)
+                        : simulationManager != null
+                            && simulationManager.ContinueWithBoundaryState(
+                                nextRules, CreateExperimentalOptions(),
+                                GetAppliedRunUpgrades(), activeJourneyCondition);
+                    if (!continued)
+                    {
+                        return false;
+                    }
+
+                    rules = nextRules;
+                    phaseDecisionCommitted = true;
+                    previewState = SpeciesPreviewState.Running;
+                    journeyCurrentNode = node;
+                }
+
+                journeyVisitedNodeIds.Add(node.NodeId);
+                return true;
+            }
+
+            if (node.Kind == JourneyNodeKind.Reward)
+            {
+                var offers = new List<SpeciesUpgrade>();
+                foreach (var mutationId in node.RewardMutationIds)
+                {
+                    if (!SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId(mutationId))
+                    {
+                        Debug.LogError($"Journey reward '{node.NodeId}' has unknown Mutation '{mutationId}'.");
+                        return false;
+                    }
+
+                    var upgrade = SpeciesUpgradeCatalog.Create(mutationId);
+                    if (progression.CanApplyFreeUpgrade(CreateFreeBoundaryMutation(upgrade)))
+                    {
+                        offers.Add(upgrade);
+                    }
+                }
+
+                if (offers.Count == 0)
+                {
+                    return false;
+                }
+
+                journeyRewardOptions = offers.ToArray();
+            }
+            else if (node.Kind != JourneyNodeKind.Condition)
+            {
+                return false;
+            }
+
+            journeyPendingNode = node;
+            previewState = SpeciesPreviewState.JourneyNodeReward;
+            return true;
+        }
+
+        public string GetJourneyRewardOptionDisplayName(int index)
+        {
+            if (journeyPendingNode?.Kind == JourneyNodeKind.Reward
+                && index >= 0 && index < journeyRewardOptions.Length)
+            {
+                var upgrade = journeyRewardOptions[index];
+                return $"{SpeciesUpgradeCatalog.GetDisplayName(upgrade.Id)}  |  Lv {progression.GetUpgradeLevel(upgrade.Id) + 1}\n{GetHerbivoreMutationDescription(upgrade.Id)}";
+            }
+
+            if (journeyPendingNode?.Kind == JourneyNodeKind.Condition
+                && index == 0
+                && journeyConditionOptions.TryGetValue(journeyPendingNode.NodeId, out var option))
+            {
+                return option.DataReward > 0
+                    ? $"ACCEPT {option.DisplayName}\n+{option.DataReward} FIELD DATA"
+                    : $"ACCEPT {option.DisplayName}\nNO IMMEDIATE FIELD DATA";
+            }
+
+            return string.Empty;
+        }
+
+        public bool ClaimJourneyNodeReward(int index)
+        {
+            var node = journeyPendingNode;
+            if (previewState != SpeciesPreviewState.JourneyNodeReward || node == null
+                || index < 0 || index >= JourneyRewardOptionCount)
+            {
+                return false;
+            }
+
+            if (node.Kind == JourneyNodeKind.Reward)
+            {
+                var upgrade = journeyRewardOptions[index];
+                if (!progression.TryApplyFreeUpgrade(CreateFreeBoundaryMutation(upgrade)))
+                {
+                    return false;
+                }
+
+                lastExperimentalUpgradeId = upgrade.Id;
+                rules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+                {
+                    [playerSpecies] = progression.CurrentRules,
+                };
+                SynchronizePlayerUpgradeSnapshots();
+                PrepareNextRun();
+                journeyCurrentNode = journeyMap.StartNode;
+                journeyVisitedNodeIds.Add(node.NodeId);
+                journeyPendingNode = null;
+                journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
+                phaseRewardMessage = $"First discovery: {SpeciesUpgradeCatalog.GetDisplayName(upgrade.Id)}.";
+                return true;
+            }
+
+            if (!journeyConditionOptions.TryGetValue(node.NodeId, out var option)
+                || option.Condition == null
+                || !rules.TryGetValue(option.Condition.TargetSpecies, out var conditionRules))
+            {
+                return false;
+            }
+
+            SpeciesRules affectedRules;
+            try
+            {
+                affectedRules = option.Condition.Apply(conditionRules);
+            }
+            catch (Exception exception) when (
+                exception is ArgumentException
+                || exception is InvalidOperationException
+                || exception is OverflowException)
+            {
+                Debug.LogError($"Journey node '{node.NodeId}' is invalid: {exception.Message}");
+                return false;
+            }
+
+            rules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            {
+                [option.Condition.TargetSpecies] = affectedRules,
+            };
+            progression.AddCurrency(option.DataReward);
+            activeJourneyCondition = option.Condition;
+            appliedRunUpgrades.Add(option.Condition);
+            chosenJourneyNode = node;
+            chosenJourneyNodeDisplayName = option.DisplayName;
+            journeyCurrentNode = node;
+            journeyVisitedNodeIds.Add(node.NodeId);
+            journeyPendingNode = null;
+            journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
+            previewState = SpeciesPreviewState.JourneyDecision;
+            phaseRewardMessage = $"{option.DisplayName}: {option.Description}";
+            return true;
+        }
+
+        public void CancelJourneyNodeReward()
+        {
+            if (previewState != SpeciesPreviewState.JourneyNodeReward)
+            {
+                return;
+            }
+
+            previewState = journeyCurrentNode == null
+                ? SpeciesPreviewState.Ready
+                : SpeciesPreviewState.JourneyDecision;
+            journeyPendingNode = null;
+            journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
+        }
+
         public void EndSimulation()
         {
             if (Run == null
@@ -1841,7 +2193,7 @@ namespace SaltyGame
             }
         }
 
-        public void PlayNextSimulation()
+        public void PlayNextSimulation(bool startImmediately = true)
         {
             if (previewState == SpeciesPreviewState.Results)
             {
@@ -1850,8 +2202,12 @@ namespace SaltyGame
                 rules = CreateRulesFromDrafts().ToDictionary(entry => entry.Key, entry => entry.Value);
                 ResetExpeditionProgression(rules[playerSpecies]);
                 progression.AddCurrency(carriedCurrency);
+                journeyStartingUpgrades.Clear();
                 PrepareNextRun();
-                StartSimulation();
+                if (startImmediately)
+                {
+                    StartSimulation();
+                }
             }
         }
 
@@ -1875,6 +2231,7 @@ namespace SaltyGame
             }
             SyncRosterSpecies();
             ResetExpeditionProgression(rules[playerSpecies]);
+            journeyStartingUpgrades.Clear();
             runNumber = 0;
             lastExperimentalUpgradeId = null;
             experimentalOfferRotation = 0;
@@ -2053,17 +2410,25 @@ namespace SaltyGame
             }
             rules = currentRules;
             var simulationData = CreateSimulationData();
+            journeyActive = journeyPrototypeEnabled
+                && continuousPhasesEnabled
+                && journeyMap != null
+                && journeyMap.AppliesTo(SelectedScenario, playerSpecies);
+            SnapshotJourneyConditions();
+            var phaseCount = ContinuousExpeditionPhaseCount
+                * (journeyActive ? JourneyPrototypeCycleCount : 1);
             var continuousRun = continuousPhasesEnabled
                 && phaseLengthTicks > 0
-                && phaseLengthTicks <= int.MaxValue / ContinuousExpeditionPhaseCount;
+                && phaseLengthTicks <= int.MaxValue / phaseCount;
             if (continuousPhasesEnabled && !continuousRun)
             {
                 continuousPhasesEnabled = false;
-                settingsMessage = "Continuous phases disabled because the phase length is invalid for a six-phase expedition.";
+                settingsMessage = "Continuous phases disabled because the phase length is invalid for this expedition.";
+                journeyActive = false;
             }
 
             var targetTicks = continuousRun
-                ? phaseLengthTicks * ContinuousExpeditionPhaseCount
+                ? phaseLengthTicks * phaseCount
                 : simulationData.RunTicks;
             var durationSeconds = continuousRun
                 ? (float)(targetTicks * (double)simulationData.StepInterval)
@@ -2107,8 +2472,73 @@ namespace SaltyGame
             phaseRewardMessage = string.Empty;
             phaseDecisionCommitted = false;
             lastSettledPhaseIndex = -1;
+            journeyVisitedNodeIds.Clear();
+            journeyCurrentNode = null;
+            journeyPendingNode = null;
+            journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
+            activeJourneyCondition = null;
+            chosenJourneyNode = null;
+            chosenJourneyNodeDisplayName = null;
             previewState = SpeciesPreviewState.Ready;
             runNumber++;
+        }
+
+        void SnapshotJourneyConditions()
+        {
+            journeyConditionOptions.Clear();
+            if (!journeyActive)
+            {
+                return;
+            }
+
+            var start = journeyMap.StartNode;
+            if (start == null || start.Kind != JourneyNodeKind.Reward
+                || start.RewardMutationIds.Count == 0 || start.NextNodes.Count != 1)
+            {
+                throw new InvalidOperationException("The Forest Edge journey needs an opening reward and simulation.");
+            }
+
+            var firstSimulation = start.NextNodes[0];
+            if (firstSimulation == null || firstSimulation.Kind != JourneyNodeKind.Simulation
+                || firstSimulation.Row != 1 || firstSimulation.NextNodes.Count != 2)
+            {
+                throw new InvalidOperationException("The Forest Edge journey needs two branches after its first simulation.");
+            }
+
+            foreach (var mutationId in start.RewardMutationIds)
+            {
+                if (!SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId(mutationId))
+                {
+                    throw new InvalidOperationException($"Unknown starting Mutation '{mutationId}'.");
+                }
+            }
+
+            foreach (var node in firstSimulation.NextNodes)
+            {
+                if (node == null || node.Kind != JourneyNodeKind.Condition || node.Row != 2
+                    || node.NextNodes.Count == 0)
+                {
+                    throw new InvalidOperationException("The Forest Edge journey has an invalid condition node.");
+                }
+
+                foreach (var next in node.NextNodes)
+                {
+                    if (next == null || next.Kind != JourneyNodeKind.Simulation || next.Row != 3)
+                    {
+                        throw new InvalidOperationException("Each habitat condition needs a connected simulation.");
+                    }
+                }
+
+                if (!node.TryCreateCondition(out var condition, out var error)
+                    || condition.TargetSpecies == playerSpecies
+                    || !rules.ContainsKey(condition.TargetSpecies))
+                {
+                    throw new InvalidOperationException(
+                        $"Journey condition '{node.name}' is invalid: {error}");
+                }
+
+                journeyConditionOptions.Add(node.NodeId, new JourneyConditionOption(node, condition));
+            }
         }
 
         void PrepareRewardOptions()
@@ -2185,7 +2615,7 @@ namespace SaltyGame
         {
             return string.Format(
                 CultureInfo.InvariantCulture,
-                "{0}  ·  LV {1}\n{2}\nFREE",
+                "{0}  |  LV {1}\n{2}\nFREE",
                 SpeciesUpgradeCatalog.GetDisplayName(upgradeId),
                 level,
                 GetHerbivoreMutationDescription(upgradeId));

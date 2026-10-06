@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
+  m_Name: RidgeTrail
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
+  nodeId: ridge-trail
+  displayName: RIDGE TRAIL
+  description: The experiment moves through a higher stretch of woodland.
+  kind: 0
+  row: 9
+  column: 0
+  playableInPrototype: 0
+  conditionUpgrade: {fileID: 0}
+  rewardMutationIds: []
+  dataReward: 0
+  nextNodes:
+  - {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}
+  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}
