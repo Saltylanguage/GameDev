@@ -23,7 +23,8 @@ namespace SaltyGame
             int minPopulation = 0,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
-            IReadOnlyDictionary<SpeciesId, int> startingPopulations = null)
+            IReadOnlyDictionary<SpeciesId, int> startingPopulations = null,
+            bool wrapEdges = false)
         {
             if (width <= 0)
             {
@@ -216,6 +217,7 @@ namespace SaltyGame
 
             Width = width;
             Height = height;
+            WrapEdges = wrapEdges;
             this.startingProbabilities = new ReadOnlyDictionary<SpeciesId, float>(copiedProbabilities);
             this.speciesRules = new ReadOnlyDictionary<SpeciesId, SpeciesRules>(copiedRules);
             this.startingPopulations = new ReadOnlyDictionary<SpeciesId, int>(copiedStartingPopulations);
@@ -278,6 +280,7 @@ namespace SaltyGame
 
         public int Width { get; }
         public int Height { get; }
+        public bool WrapEdges { get; }
         public float RunDurationSeconds { get; }
         public float StepInterval { get; }
         public int RunTicks => CalculateRunTicks(RunDurationSeconds, StepInterval);
@@ -403,7 +406,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                startingPopulations);
+                startingPopulations, WrapEdges);
         }
 
         public CellularSimData WithRunTicks(int runTicks, float stepInterval)
@@ -444,6 +447,13 @@ namespace SaltyGame
                 : Math.Max(1, (int)calculatedTicks);
         }
 
+        public CellularSimData WithWrapEdges(bool wrapEdges)
+        {
+            return new CellularSimData(Width, Height, startingProbabilities, speciesRules,
+                RunDurationSeconds, StepInterval, MaxPopulation, MinPopulation,
+                terrainDefinitions, alphaOffspringRules, startingPopulations, wrapEdges);
+        }
+
         public CellularSimData WithGridSize(int width, int height)
         {
             return new CellularSimData(
@@ -457,7 +467,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                startingPopulations);
+                startingPopulations, WrapEdges);
         }
 
         public CellularSimData WithGridSizeAndStartingPopulations(
@@ -476,7 +486,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                populations);
+                populations, WrapEdges);
         }
 
         CellularSimData CreateUpdated(
@@ -496,7 +506,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 updatedAlphaOffspringRules,
-                updatedStartingPopulations);
+                updatedStartingPopulations, WrapEdges);
         }
 
         static Dictionary<SpeciesId, TValue> Copy<TValue>(

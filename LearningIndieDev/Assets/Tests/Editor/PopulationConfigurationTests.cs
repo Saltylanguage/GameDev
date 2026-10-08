@@ -28,6 +28,34 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void WrappingOverridesSurviveDataCopiesAndCheckpointsWithMatchedInitialCells()
+        {
+            var bounded = ApplyOverrides("-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
+                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
+            var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
+                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
+            Assert.That(bounded.WrapEdges, Is.False);
+            Assert.That(wrapped.WrapEdges, Is.True);
+            Assert.That(wrapped.Fingerprint, Is.Not.EqualTo(bounded.Fingerprint));
+            Assert.That(wrapped.Copy().WithRunTicks(600, 0.1f).WithGridSize(36, 20)
+                .WithSpeciesRules(new SpeciesId("hare"), wrapped.SpeciesRules[new SpeciesId("hare")]).WrapEdges, Is.True);
+            var initial = SpeciesInitialGridFactory.Create(wrapped, 10100);
+            var original = SpeciesInitialGridFactory.Create(bounded, 10100);
+            for (var y = 0; y < initial.Height; y++)
+                for (var x = 0; x < initial.Width; x++)
+                {
+                    Assert.That(initial.GetCell(x, y).SpeciesId, Is.EqualTo(original.GetCell(x, y).SpeciesId));
+                    Assert.That(initial.GetCell(x, y).TerrainId, Is.EqualTo(original.GetCell(x, y).TerrainId));
+                }
+            var run = new SimulationRunState(initial, new SpeciesId("hare"), 10100, wrapped.RunDurationSeconds);
+            var runner = new SpeciesSimulationRunner(run, wrapped);
+            run.ConfigureContinuousPhases(1);
+            runner.Start();
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(SpeciesSimulationRunner.RestoreCheckpoint(runner.CreateCheckpoint(), wrapped).Run.Cells.WrapEdges, Is.True);
+        }
+
+        [Test]
         public void S4EditorFixtureIsTransientAndSupportsPausedSingleTicks()
         {
             var prefsKeys = new[] { "v3", "v4", "v5" }
@@ -49,6 +77,9 @@ namespace SaltyGame.EditorTests
                 var arguments = new object[] { preview, 10100, null };
                 Assert.That(apply.Invoke(null, arguments), Is.True, (string)arguments[2]);
                 Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("hare"));
+                Assert.That(preview.WrapEdges, Is.False);
+                Assert.That(preview.TryApplyWrapEdges(true, out _), Is.True);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.True);
                 Assert.That(preview.BaseSeed, Is.EqualTo(10100));
                 Assert.That(preview.StepInterval, Is.EqualTo(0.1f));
                 Assert.That(preview.RunTicks, Is.EqualTo(600));
@@ -66,6 +97,8 @@ namespace SaltyGame.EditorTests
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
                 Assert.That(apply.Invoke(null, arguments), Is.False);
+                Assert.That(preview.TryApplyWrapEdges(false, out _), Is.False);
+                Assert.That(preview.WrapEdges, Is.True);
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 foreach (var key in prefsKeys)
                     Assert.That(PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null, Is.EqualTo(prefsBefore[key]));
@@ -74,6 +107,27 @@ namespace SaltyGame.EditorTests
             finally
             {
                 Object.DestroyImmediate(previewObject);
+            }
+        }
+
+        [Test]
+        public void ScheduledAvoidanceOptionsFollowTheActiveSnapshots()
+        {
+            var runner = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("SaltyGame.EditorTools.CellularSimulationExperimentRunner"))
+                .First(type => type != null);
+            var resolve = runner.GetMethod("GetScheduledExperimentalOptions", BindingFlags.Static | BindingFlags.NonPublic);
+            var options = new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId, 3, 0f, true);
+            var hare = new SpeciesId("hare");
+            var avoidance = SpeciesUpgradeCatalog.Create("threat-exposure").CreateSnapshot(hare);
+            foreach (var level in new[] { 0, 1, 2, 0 })
+            {
+                var snapshots = Enumerable.Repeat(avoidance, level).ToArray();
+                var actual = (SpeciesExperimentalOptions)resolve.Invoke(null, new object[] { options, snapshots, hare });
+                Assert.That(actual.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f));
+                Assert.That(actual.FeatureId, Is.EqualTo(options.FeatureId));
+                Assert.That(actual.FoxAttackCooldownTicks, Is.EqualTo(3));
+                Assert.That(actual.CoupledSpeciesResponsesEnabled, Is.True);
             }
         }
 

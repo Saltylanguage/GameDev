@@ -5,6 +5,7 @@ namespace SaltyGame
 {
     public static class SpeciesInitialGridFactory
     {
+        static readonly GridPattern NearbyPattern = GridPatternTemplates.CreateMooreRange(1);
         public static Grid<SpeciesCell> Create(CellularSimData data, int runSeed)
         {
             if (data == null)
@@ -13,7 +14,7 @@ namespace SaltyGame
             }
 
             var random = new Random(runSeed);
-            var grid = new Grid<SpeciesCell>(data.Width, data.Height);
+            var grid = new Grid<SpeciesCell>(data.Width, data.Height, data.WrapEdges);
             var startingSpecies = GetSortedSpecies(data.StartingProbabilities);
             var fallbackSpecies = GetSortedSpecies(data.SpeciesRules);
             var populationCount = 0;
@@ -301,21 +302,13 @@ namespace SaltyGame
         static int CountNearbySpecies(Grid<SpeciesCell> grid, int x, int y, SpeciesId species)
         {
             var count = 0;
-            for (var offsetY = -1; offsetY <= 1; offsetY++)
+            foreach (var offset in grid.GetPattern(NearbyPattern).Offsets)
             {
-                for (var offsetX = -1; offsetX <= 1; offsetX++)
+                if (grid.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
+                    && ((neighbor.IsPlantResource || neighbor.IsCreature)
+                        && neighbor.SpeciesId == species))
                 {
-                    if (offsetX == 0 && offsetY == 0)
-                    {
-                        continue;
-                    }
-
-                    if (grid.TryGetCell(x + offsetX, y + offsetY, out var neighbor)
-                        && ((neighbor.IsPlantResource || neighbor.IsCreature)
-                            && neighbor.SpeciesId == species))
-                    {
-                        count++;
-                    }
+                    count++;
                 }
             }
 

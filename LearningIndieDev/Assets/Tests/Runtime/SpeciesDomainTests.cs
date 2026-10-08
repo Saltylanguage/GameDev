@@ -14,6 +14,89 @@ namespace SaltyGame.Tests
         static readonly GridPattern EmptyPattern = new GridPattern(new Vector2Int[0]);
 
         [Test]
+        public void WrappingMovementPerceptionCombatFoodAndReproductionUseConnectedEdges()
+        {
+            SpeciesRules Rules(GridPattern movement, SpeciesRole role = SpeciesRole.Herbivore,
+                SpeciesId? diet = null, int attack = 0, int vision = 0) => new SpeciesRules(
+                    movementSpeed: 1f, movementPattern: movement, attackPattern: movement,
+                    attackAmount: attack, blockPattern: EmptyPattern, blockAmount: 0,
+                    dietPattern: movement, dietTarget: diet, reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0, reproductionChance: 0f, metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(vision), role: role, forageBelowEnergy: 100);
+
+            foreach (var direction in new[] { Vector2Int.left, Vector2Int.right, Vector2Int.up, Vector2Int.down, new Vector2Int(-1, -1) })
+            {
+                var pattern = new GridPattern(new[] { direction });
+                var rules = new Dictionary<SpeciesId, SpeciesRules> { [SpeciesIds.Herbivore] = Rules(pattern) };
+                var startX = direction.x > 0 ? 4 : 0;
+                var startY = direction.y > 0 ? 4 : 0;
+                var source = new Grid<SpeciesCell>(5, 5, true);
+                source.SetCell(startX, startY, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+                var targetX = startX + direction.x;
+                var targetY = startY + direction.y;
+                source.TryResolveCoordinates(ref targetX, ref targetY);
+                var next = SpeciesSimulation.Step(source, rules, 42);
+                Assert.That(next.WrapEdges, Is.True);
+                Assert.That(next.GetCell(targetX, targetY).IsCreature, Is.True, direction.ToString());
+                source.SetCell(targetX, targetY, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+                next = SpeciesSimulation.Step(source, rules, 42);
+                Assert.That(next.GetCell(startX, startY).IsCreature, Is.True, "Occupied destination remains blocked.");
+            }
+
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var foxRules = Rules(left, SpeciesRole.Carnivore, SpeciesIds.Herbivore, attack: 5, vision: 1);
+            var hareRules = Rules(left, vision: 1);
+            var combatRules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = foxRules, [SpeciesIds.Herbivore] = hareRules,
+            };
+            var combat = new Grid<SpeciesCell>(5, 3, true);
+            combat.SetCell(0, 1, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            combat.SetCell(4, 1, new SpeciesCell(SpeciesIds.Herbivore, health: 1, energy: 10));
+            Assert.That(SpeciesPerception.TryFindThreatTarget(combat, 4, 1, SpeciesIds.Herbivore, combatRules, new System.Random(42), out var threat), Is.True);
+            Assert.That(threat.Location, Is.EqualTo(new Vector2Int(0, 1)));
+            Assert.That(SpeciesPerception.IsSafeFromThreats(combat, 4, 1, SpeciesIds.Herbivore, combatRules), Is.False);
+            Assert.That(SpeciesSimulation.Step(combat, combatRules, 42).GetCell(4, 1).SpeciesId, Is.Not.EqualTo(SpeciesIds.Herbivore));
+
+            // A threat on the right leaves only the seam as an escape route.
+            var flee = new Grid<SpeciesCell>(5, 3, true);
+            flee.SetCell(0, 1, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+            flee.SetCell(1, 1, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            combatRules[SpeciesIds.Carnivore] = Rules(EmptyPattern, SpeciesRole.Carnivore, SpeciesIds.Herbivore);
+            Assert.That(SpeciesSimulation.Step(flee, combatRules, 42).GetCell(4, 1).SpeciesId, Is.EqualTo(SpeciesIds.Herbivore));
+
+            var food = new Grid<SpeciesCell>(5, 3, true);
+            food.SetCell(0, 1, new SpeciesCell(SpeciesIds.Herbivore, energy: 1));
+            food.SetCell(4, 1, SpeciesCell.Grass(10));
+            var foodRules = Rules(left, diet: SpeciesIds.Plant, vision: 1);
+            Assert.That(SpeciesPerception.TryFindFoodTarget(food, 0, 1, foodRules, new System.Random(42), out var found), Is.True);
+            Assert.That(found.Location, Is.EqualTo(new Vector2Int(4, 1)));
+            var route = new Grid<SpeciesCell>(6, 3, true);
+            Assert.That(SpeciesNavigation.TryFindNextStep(route, new Vector2Int(0, 1), new Vector2Int(4, 1),
+                GridPatternTemplates.CreateMooreRange(1), GridPatternTemplates.CreateMooreRange(1),
+                new System.Random(42), out var nextStep), Is.True);
+            Assert.That(nextStep.x, Is.EqualTo(5), "Use the shorter route across the seam.");
+            var metrics = new SpeciesSimulationMetrics();
+            SpeciesSimulation.Step(food, new Dictionary<SpeciesId, SpeciesRules> { [SpeciesIds.Herbivore] = foodRules }, 42, metrics: metrics);
+            Assert.That(metrics.GetActivity(SpeciesIds.Herbivore).FoodConsumed, Is.GreaterThan(0));
+
+            var mating = new Grid<SpeciesCell>(5, 1, true);
+            mating.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            mating.SetCell(4, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            Assert.That(StepWithReproductionMetrics(mating, CreateReproductionRules(reproductionNeighborCount: 1), 42).GetActivity(SpeciesIds.Carnivore).Births, Is.GreaterThan(0));
+            var alone = new Grid<SpeciesCell>(1, 1, true);
+            alone.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            Assert.That(StepWithReproductionMetrics(alone, CreateReproductionRules(reproductionNeighborCount: 1), 42).GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+            var tiny = new Grid<SpeciesCell>(2, 1, true);
+            tiny.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, energy: 10));
+            var countNeighbors = typeof(SpeciesSimulation).GetMethod("CountPatternSpeciesNeighbors", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.That(countNeighbors.Invoke(null, new object[] { tiny, 0, 0, SpeciesIds.Herbivore,
+                GridPatternTemplates.CreateMooreRange(12), -1, -1 }), Is.EqualTo(1));
+            Assert.That(countNeighbors.Invoke(null, new object[] { tiny, 0, 0, SpeciesIds.Herbivore,
+                GridPatternTemplates.CreateMooreRange(12), 1, 0 }), Is.Zero);
+        }
+
+        [Test]
         public void EmptySpeciesCellHasNoOccupant()
         {
             var cell = SpeciesCell.Empty;
@@ -1367,6 +1450,50 @@ namespace SaltyGame.Tests
             Assert.That(replayRoll.AttackRoll, Is.EqualTo(roll.AttackRoll));
             Assert.That(replayRoll.BlockRoll, Is.EqualTo(roll.BlockRoll));
             Assert.That(replayRoll.Hit, Is.EqualTo(roll.Hit));
+        }
+
+        [Test]
+        public void PreContactAvoidanceWorksWithoutFleeSpeedAndReplaysAcrossFreshEntityIds()
+        {
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    0f, EmptyPattern, right, 1, EmptyPattern, 0, right, SpeciesIds.Herbivore,
+                    EmptyPattern, 0, reproductionChance: 0f, metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    role: SpeciesRole.Carnivore, forageBelowEnergy: 5, attackModifier: 20, damageAmount: 1),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0, EmptyPattern, null,
+                    EmptyPattern, 0, reproductionChance: 0f, metabolism: 0),
+            };
+            Grid<SpeciesCell> FreshGrid()
+            {
+                var grid = new Grid<SpeciesCell>(2, 1);
+                grid.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+                grid.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+                return grid;
+            }
+
+            var avoided = 0;
+            foreach (var chance in new[] { 0f, 0.08f, 1f })
+            {
+                var options = new SpeciesExperimentalOptions(
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId, preContactAvoidanceChance: chance);
+                for (var seed = 0; seed < 128; seed++)
+                {
+                    var first = new SpeciesSimulationMetrics();
+                    var replay = new SpeciesSimulationMetrics();
+                    var next = SpeciesSimulation.Step(FreshGrid(), rules, seed, metrics: first, experimentalOptions: options);
+                    var repeated = SpeciesSimulation.Step(FreshGrid(), rules, seed, metrics: replay, experimentalOptions: options);
+                    Assert.That(replay.CombatRollEvents.Count, Is.EqualTo(first.CombatRollEvents.Count));
+                    Assert.That(repeated.GetCell(1, 0).Health, Is.EqualTo(next.GetCell(1, 0).Health));
+                    if (chance == 0f) Assert.That(first.CombatRollEvents.Count, Is.EqualTo(1));
+                    if (chance == 1f) Assert.That(first.CombatRollEvents, Is.Empty);
+                    if (chance == 0.08f && first.CombatRollEvents.Count == 0) avoided++;
+                }
+            }
+            Assert.That(avoided, Is.InRange(1, 127));
         }
 
         [Test]

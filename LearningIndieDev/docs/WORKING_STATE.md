@@ -1,9 +1,62 @@
 # Working state
 
+
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
 ## Current focus
+
+**October 7 publication checkpoint:** Bevin authorized committing and pushing the accumulated wrapping, deterministic avoidance, population-override, experiment-policy, and S4 research work to BevBranch before integrating Salty's latest ProjectMain. The seven research packages below retain their original experiment dates and frozen-source provenance; older statements about local/uncommitted status describe those historical runs. See the [publication handoff](handoffs/2026-10-07-2049-codex-s4-balance-publication.md). No new gameplay tuning is approved by this checkpoint.
+
+**S4-03 Trailblazer early-choice timing diagnostic: 2026-10-07, complete locally; human balance review pending.** Moving the first of five Trailblazer choices from tick 100 to tick 0 did not improve the matched all-species clear rate: 28/200 (14%) versus 30/200 (15%) on the same seeds, with a paired risk difference of -1 percentage point (95% CI -7.3 to +5.3; exact McNemar p=.878). The first-phase median Hare population ended higher (26 vs. 21), while median combat deaths changed only from 39 to 37.5; fewer candidate runs reached tick 600 (102 vs. 121). No gameplay values, defaults, or player-facing UX changed. See [protocol](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md). Raw run artifacts and validated summary remain under the ignored `artifacts/` directory.
+
+**S4-03 offer-aware strategy policy screen at 600/40/25: 2026-10-06, complete locally; balance review pending.** Four arms ran on 200 fresh common seeds (14200–14399) each. All-species clear rates were 16.0% skip-all, 15.0% Trailblazer, 17.0% Warren, and 25.5% Gardeners. Gardeners improved over skip-all on matched seeds (+9.5 percentage points, 95% CI +3.2 to +15.8); none reached the rough 40–50% target. Median Fox starvation deaths were 47–48 and energy-blocked reproduction candidates about 6,700–7,700 per run, flagging Fox persistence for diagnosis rather than immediate tuning. No gameplay values or defaults changed. See [protocol](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-06-2326-codex-s4-03-strategy-choice-policy-screen.md). Raw artifacts remain under the ignored `artifacts/` path.
+
+**S4-03 all-species threshold confirmation at 600/40/25: 2026-10-06, complete locally; human balance decision pending.** On 200 fresh common seeds per arm (14000-14199), the strict node-clear rate was 25/200 skip-all control, 58/200 Seed Dispersal, 50/200 Gardeners Digestion-first, and 57/200 Gardeners Dispersal-first. Each strategy cleared on more matched seeds than control alone; the two Gardeners orders did not differ decisively. Many horizon-reaching intervention failures miss the minimum-Fox threshold. No skill values, scenario defaults, or authored population settings were changed. See the [confirmation package](Research/Experiments/S4-03-Hare-Paired-Seed-Confirmation-600-40-25/README.md) and [handoff](handoffs/2026-10-06-1432-codex-s4-03-200-seed-threshold-confirmation.md). Full reports are local under the ignored experiment-artifact root.
+
+**S4-03 Hare paired-seed screen at 600/40/25: 2026-10-05, complete locally; human review pending.** Bevin selected 100 fresh common seeds per arm. The corrected 13-arm strategy matrix was run with 600 Plants / 40 Hares / 25 Foxes, wrapping on, 36x20, six 100-tick phases, 0.1-second steps, coupled responses off, and no reinforcements or added Genomes. Seeds 13000-13099 produced 1,300 runs and 7,219 observed phase windows; all run and slashline accounting checks passed. Seed Dispersal and both Gardeners orders retained all three species at tick 600 in 43/100 each, versus 19/100 control, while Hare survival was 60-61/100 versus 56/100. Both Trailblazer orders survived less often (42/100 and 46/100). These are contextual screening observations; medians remained low, means were skewed, and no tuning or balance decision is approved. See the [screen package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen-600-40-25/README.md) and [handoff](handoffs/2026-10-05-2348-codex-s4-600-40-25-paired-seed-screen.md). Raw evidence and exact dirty-source hashes are local under the ignored artifact root. No source or authored simulation asset was changed during the batch.
+
+
+**Wrapping population search: 2026-10-04, complete locally; visual candidate selection pending.**
+Bevin prefers wrapping and authorized a broad starting-population sweep with fixed
+species/skill values. The 336-combination, five-seed screen and seven-preset,
+20-fresh-seed recheck completed 1,820 main runs plus eight pilots. All inputs,
+7,310 phase windows, FPO accounting, slashline arithmetic and source hashes pass.
+600/40/25 survives in 10/20 and retains all three species in 2/20; 600/5/10
+survives in 13/20 but often narrowly after a huge boom; 400/20/10 survives in 1/20.
+Recommend Bevin visually compare 600/40/25 seeds 12000, 12011 and 12003 first.
+No source or authored defaults changed; existing local wrapping/avoidance work
+remains uncommitted. Read the [experiment package](Research/Experiments/S4-03-Wrapped-Population-Sweep/README.md)
+and [handoff](handoffs/2026-10-04-0127-codex-s4-wrapped-population-sweep.md).
+
+**Optional wrapping-grid experiment: 2026-10-04, complete locally; Bevin prefers the visual feel.**
+Bevin authorized connecting top/bottom and left/right edges with an Inspector
+toggle. `Species Simulation Preview > Wrap Edges` applies to both species and
+their movement, perception, interactions and neighbor counts; bounded remains
+the default. During Play, use Reset to Start before changing the toggle under
+Manual Simulation Testing. Six focused live assertion checks, matched initial
+layouts, and 80 matched 400/20/10 runs pass verification. Wrapping survives in
+0/20 control and 0/20 Movement-first Trailblazer runs versus 7/20 and 2/20
+bounded; this does not establish a balanced or more survivable default. Bevin visually
+preferred wrapping despite the failures and authorized a broad starting-population
+sweep with wrapping on. The authored default remains bounded. Earlier bounded results
+replay unchanged. Read the [wrapping handoff](handoffs/2026-10-04-0022-codex-s4-wrapping-grid-experiment.md)
+and [experiment package](Research/Experiments/S4-03-Wrapping-Grid-Screen/README.md).
+Source changes remain local and uncommitted with the prior paired-screen work.
+
+**S4-03 paired-seed screen: 2026-10-03, complete locally; human decision pending.** Bevin selected
+400 Plants / 20 Hares / 10 Foxes for the 13-arm, 20-seed comparison of six
+single Hare skills and both acquisition orders of the three core pairs. The
+first screen exposed scheduled Threat Avoidance not reaching experimental
+options; follow-up exposed an obsolete flee-speed gate and process-wide entity
+IDs in avoidance hashing. Local fixes and three focused assertion checks pass. The corrected 260-run
+screen and avoidance replay validate: control survives in 7/20, Crowding
+Tolerance alone in 9/20, and pairs in 2/20 to 5/20; all median final Hare
+populations are zero. No skill values or production assets were tuned.
+Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-development-screen.md)
+and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
+Results and fixes are not committed or pushed. The S4 Inspector fixture already
+uses 400/20/10; authored scenario defaults remain separate.
 
 **Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
 sprites now supply the standardized 32/64/128 icons and retained compatibility

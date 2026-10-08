@@ -17,7 +17,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 30;
+        const int ReportSchemaVersion = 34;
         const string MetricDictionaryId = "cellsim-experiment-metrics";
         const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;
@@ -33,6 +33,7 @@ namespace SaltyGame.EditorTools
         const string UpgradeAssetCatalogPathArgument = "-upgradeAssetCatalogPath";
         const string UpgradeValueOverrideArgument = "-upgradeValueOverride";
         const string DefaultUpgradeId = "none";
+        const string WrapEdgesArgument = "-wrapEdges";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string StartingPopulationsArgument = "-startingPopulations";
@@ -40,6 +41,8 @@ namespace SaltyGame.EditorTools
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
         const string PhaseUpgradeScheduleArgument = "-phaseUpgradeSchedule";
         const string PhaseUpgradeAssetScheduleArgument = "-phaseUpgradeAssetSchedule";
+        const string MutationPolicyArgument = "-mutationPolicy";
+        const string MutationPolicyEarlyFirstChoiceArgument = "-mutationPolicyEarlyFirstChoice";
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
@@ -212,7 +215,9 @@ namespace SaltyGame.EditorTools
             }
 
             var phaseSchedule = options.PhaseUpgradeSchedule;
+            var hasMutationPolicy = !string.IsNullOrWhiteSpace(options.MutationPolicyId);
             var hasPhaseSchedule = phaseSchedule != null || authoredPhaseUpgradeSnapshots != null;
+            var hasPhaseFlow = hasPhaseSchedule || hasMutationPolicy;
             var scheduledInitialSnapshots = phaseSchedule != null
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], options.PlayerSpeciesId)
                 : authoredPhaseUpgradeSnapshots == null
@@ -221,7 +226,7 @@ namespace SaltyGame.EditorTools
             scheduledInitialSnapshots = CreateCoupledResponseSnapshots(
                 scheduledInitialSnapshots,
                 experimentalOptions);
-            var legacyLoadoutSnapshots = authoredUpgradeSnapshots == null && !hasPhaseSchedule
+            var legacyLoadoutSnapshots = authoredUpgradeSnapshots == null && !hasPhaseFlow
                 ? CreateCoupledResponseSnapshots(
                     CreateLegacyUpgradeSnapshots(
                         options.UpgradeLoadout,
@@ -229,7 +234,7 @@ namespace SaltyGame.EditorTools
                         options.UpgradeValueOverride),
                     experimentalOptions)
                 : null;
-            var loadedData = hasPhaseSchedule
+            var loadedData = hasPhaseFlow
                 ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, scheduledInitialSnapshots)
                 : authoredUpgradeSnapshots == null
                     ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, legacyLoadoutSnapshots)
@@ -251,6 +256,15 @@ namespace SaltyGame.EditorTools
             {
                 provenanceLoadout = GetSnapshotProvenanceLoadout(authoredUpgradeSnapshots);
             }
+            if (hasMutationPolicy)
+            {
+                var policyProvenance = new List<string>(provenanceLoadout)
+                {
+                    string.Concat("mutation-policy=", options.MutationPolicyId),
+                    string.Concat("mutation-policy-early-first-choice=", options.MutationPolicyEarlyFirstChoice),
+                };
+                provenanceLoadout = policyProvenance.ToArray();
+            }
             var selectedUpgrade = phaseSchedule == null && orderedLoadout.Length == 1
                 ? authoredUpgradeSnapshots == null
                     ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
@@ -270,7 +284,9 @@ namespace SaltyGame.EditorTools
                     authoredUpgradeSnapshots ?? legacyLoadoutSnapshots,
                     phaseSchedule,
                     authoredPhaseUpgradeSnapshots,
-                    options.PhaseLengthTicks);
+                    options.PhaseLengthTicks,
+                    options.MutationPolicyId,
+                    options.MutationPolicyEarlyFirstChoice);
             }
 
             return new ExperimentReport
@@ -290,7 +306,11 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     provenanceLoadout),
                 playerSpeciesId = playerSpecies.Value,
-                upgradeId = hasPhaseSchedule
+                mutationPolicyId = options.MutationPolicyId ?? string.Empty,
+                mutationPolicyEarlyFirstChoice = options.MutationPolicyEarlyFirstChoice,
+                upgradeId = hasMutationPolicy
+                    ? "mutation-policy"
+                    : hasPhaseSchedule
                     ? "scheduled"
                     : orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
                 upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
@@ -324,27 +344,22 @@ namespace SaltyGame.EditorTools
                 coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
+                wrapEdges = loadedData.WrapEdges,
                 gridWidth = loadedData.Width,
                 gridHeight = loadedData.Height,
-                runTicks = hasPhaseSchedule
-                    ? checked(options.PhaseLengthTicks * (phaseSchedule == null
-                        ? authoredPhaseUpgradeSnapshots.Count
-                        : phaseSchedule.Length))
+                runTicks = hasPhaseFlow
+                    ? checked(options.PhaseLengthTicks * GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots))
                     : loadedData.RunTicks,
                 phaseLengthTicks = options.PhaseLengthTicks,
-                phaseCount = hasPhaseSchedule
-                    ? phaseSchedule == null
-                        ? authoredPhaseUpgradeSnapshots.Count
-                        : phaseSchedule.Length
+                phaseCount = hasPhaseFlow
+                    ? GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                     : 0,
                 phaseUpgradeSchedule = phaseSchedule != null
                     ? SerializePhaseSchedule(phaseSchedule)
                     : SerializePhaseSnapshotSchedule(authoredPhaseUpgradeSnapshots),
-                runDurationSeconds = hasPhaseSchedule
+                runDurationSeconds = hasPhaseFlow
                     ? options.PhaseLengthTicks
-                        * (phaseSchedule == null
-                            ? authoredPhaseUpgradeSnapshots.Count
-                            : phaseSchedule.Length)
+                        * GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                         * loadedData.StepInterval
                     : loadedData.RunDurationSeconds,
                 stepIntervalSeconds = loadedData.StepInterval,
@@ -364,8 +379,25 @@ namespace SaltyGame.EditorTools
             IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout,
             string[][] phaseSchedule,
             IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
-            int phaseLengthTicks)
+            int phaseLengthTicks,
+            string mutationPolicyId,
+            bool earlyFirstChoice)
         {
+            if (!string.IsNullOrWhiteSpace(mutationPolicyId))
+            {
+                return RunMutationPolicySimulation(
+                    data,
+                    playerSpecies,
+                    seed,
+                    species,
+                    combatResolutionMode,
+                    attackOpportunityMode,
+                    experimentalOptions,
+                    phaseLengthTicks,
+                    mutationPolicyId,
+                    earlyFirstChoice);
+            }
+
             if (phaseSchedule != null || authoredPhaseUpgradeSnapshots != null)
             {
                 return RunScheduledSimulation(
@@ -411,6 +443,233 @@ namespace SaltyGame.EditorTools
                     && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
         }
 
+        static int GetPhaseCount(
+            CommandLineOptions options,
+            string[][] phaseSchedule,
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots)
+        {
+            return !string.IsNullOrWhiteSpace(options.MutationPolicyId)
+                ? 6
+                : phaseSchedule == null
+                    ? authoredPhaseUpgradeSnapshots.Count
+                    : phaseSchedule.Length;
+        }
+
+        static ExperimentRun RunMutationPolicySimulation(
+            CellularSimData data,
+            SpeciesId playerSpecies,
+            int seed,
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions,
+            int phaseLengthTicks,
+            string mutationPolicyId,
+            bool earlyFirstChoice)
+        {
+            const int phaseCount = 6;
+            if (phaseLengthTicks <= 0 || playerSpecies.Value != "hare"
+                || !data.SpeciesRules.TryGetValue(playerSpecies, out var baseRules)
+                || baseRules.Role != SpeciesRole.Herbivore)
+            {
+                throw new ArgumentException("Mutation policies require a Hare player and a positive phase length.");
+            }
+
+            var totalTicks = checked(phaseLengthTicks * phaseCount);
+            var scheduledData = data.WithRunTicks(totalTicks, data.StepInterval);
+            var progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, baseRules));
+            var acquiredUpgradeIds = new List<string>();
+            var choiceAudit = new List<MutationChoiceAudit>(phaseCount - 1);
+            var lastSelectedUpgradeId = (string)null;
+            var offerRotation = 0;
+            IReadOnlyList<SpeciesUpgradeSnapshot> activeSnapshots = Array.Empty<SpeciesUpgradeSnapshot>();
+            var activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
+            var policySkillIds = GetPolicySkillIds(mutationPolicyId);
+            if (earlyFirstChoice)
+            {
+                var offers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    lastSelectedUpgradeId,
+                    offerRotation,
+                    seed,
+                    progression.CanApplyFreeUpgrade);
+                var selected = SelectPolicyUpgrade(mutationPolicyId, offers, progression);
+                offerRotation++;
+                var audit = new MutationChoiceAudit
+                {
+                    phase = 0,
+                    decisionIndex = 1,
+                    decisionTick = 0,
+                    offeredUpgradeIds = GetOfferIds(offers),
+                    chosenUpgradeId = selected == null ? string.Empty : selected.Id,
+                    decision = selected == null ? "skip-no-path-skill-offered" : "selected-lower-level-path-skill",
+                    firstSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[0]),
+                    secondSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[1]),
+                };
+                if (selected != null)
+                {
+                    if (!progression.TryApplyFreeUpgrade(selected))
+                    {
+                        throw new InvalidOperationException(
+                            $"Policy '{mutationPolicyId}' selected an unavailable Mutation '{selected.Id}' on seed {seed}.");
+                    }
+
+                    lastSelectedUpgradeId = selected.Id;
+                    acquiredUpgradeIds.Add(selected.Id);
+                }
+
+                audit.firstSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[0]);
+                audit.secondSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[1]);
+                choiceAudit.Add(audit);
+                activeSnapshots = CreateLegacyUpgradeSnapshots(acquiredUpgradeIds, playerSpecies.Value);
+                scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(
+                    experimentalOptions,
+                    activeSnapshots,
+                    playerSpecies);
+            }
+
+            var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
+            var run = new SimulationRunState(initialGrid, playerSpecies, seed, scheduledData.RunDurationSeconds, totalTicks);
+            run.ConfigureContinuousPhases(phaseLengthTicks);
+            var runner = new SpeciesSimulationRunner(
+                run,
+                scheduledData,
+                combatResolutionMode,
+                attackOpportunityMode,
+                activeExperimentalOptions,
+                upgradeLoadout: activeSnapshots);
+
+            while (runner.AdvanceOneTick())
+            {
+                if (run.Status != SimulationRunStatus.AwaitingDecision)
+                {
+                    continue;
+                }
+
+                if (earlyFirstChoice && choiceAudit.Count >= phaseCount - 1)
+                {
+                    if (!run.ContinueWithoutUpgrade())
+                    {
+                        throw new InvalidOperationException(
+                            $"Could not continue '{mutationPolicyId}' policy without an upgrade at tick {run.Tick} on seed {seed}.");
+                    }
+
+                    continue;
+                }
+
+                var offers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    lastSelectedUpgradeId,
+                    offerRotation,
+                    seed,
+                    progression.CanApplyFreeUpgrade);
+                var selected = SelectPolicyUpgrade(mutationPolicyId, offers, progression);
+                offerRotation++;
+
+                var audit = new MutationChoiceAudit
+                {
+                    phase = run.PhaseIndex,
+                    decisionIndex = choiceAudit.Count + 1,
+                    decisionTick = run.Tick,
+                    offeredUpgradeIds = GetOfferIds(offers),
+                    chosenUpgradeId = selected == null ? string.Empty : selected.Id,
+                    decision = selected == null ? "skip-no-path-skill-offered" : "selected-lower-level-path-skill",
+                    firstSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[0]),
+                    secondSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[1]),
+                };
+
+                if (selected != null)
+                {
+                    if (!progression.TryApplyFreeUpgrade(selected))
+                    {
+                        throw new InvalidOperationException(
+                            $"Policy '{mutationPolicyId}' selected an unavailable Mutation '{selected.Id}' on seed {seed}.");
+                    }
+
+                    lastSelectedUpgradeId = selected.Id;
+                    acquiredUpgradeIds.Add(selected.Id);
+                }
+
+                audit.firstSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[0]);
+                audit.secondSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[1]);
+                choiceAudit.Add(audit);
+
+                activeSnapshots = CreateLegacyUpgradeSnapshots(acquiredUpgradeIds, playerSpecies.Value);
+                var nextData = ApplySnapshotLoadout(
+                    data.WithRunTicks(totalTicks, data.StepInterval),
+                    playerSpecies.Value,
+                    activeSnapshots);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(
+                    experimentalOptions,
+                    activeSnapshots,
+                    playerSpecies);
+                if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
+                    || !run.ContinueWithoutUpgrade())
+                {
+                    throw new InvalidOperationException(
+                        $"Could not continue '{mutationPolicyId}' policy at phase {run.PhaseIndex} on seed {seed}.");
+                }
+            }
+
+            var result = CreateExperimentRun(
+                run,
+                species,
+                new ExperimentOpportunityControl
+                {
+                    scheduled = run.Metrics.ControlledOpportunityScheduled,
+                    eligible = run.Metrics.ControlledOpportunityEligible,
+                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
+                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
+                },
+                playerSpecies,
+                experimentalOptions.UsesHerbivoreStatLine,
+                experimentalOptions.UsesPredatorStatLine);
+            result.mutationChoices = choiceAudit.ToArray();
+            return result;
+        }
+
+        static SpeciesUpgrade SelectPolicyUpgrade(
+            string mutationPolicyId,
+            IReadOnlyList<SpeciesUpgrade> offers,
+            SpeciesProgression progression)
+        {
+            var ids = GetPolicySkillIds(mutationPolicyId);
+            SpeciesUpgrade first = null;
+            SpeciesUpgrade second = null;
+            for (var index = 0; index < offers.Count; index++)
+            {
+                if (offers[index].Id == ids[0]) first = offers[index];
+                else if (offers[index].Id == ids[1]) second = offers[index];
+            }
+
+            if (first == null) return second;
+            if (second == null) return first;
+            return progression.GetUpgradeLevel(ids[0]) <= progression.GetUpgradeLevel(ids[1])
+                ? first
+                : second;
+        }
+
+        static string[] GetPolicySkillIds(string mutationPolicyId)
+        {
+            switch (mutationPolicyId)
+            {
+                case "trailblazer":
+                    return new[] { SpeciesUpgradeCatalog.FasterMovementId, SpeciesUpgradeCatalog.ThreatExposureId };
+                case "warren":
+                    return new[] { SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.CrowdingToleranceId };
+                case "gardeners":
+                    return new[] { SpeciesUpgradeCatalog.EfficientDigestionId, SpeciesUpgradeCatalog.SeedDispersalId };
+                default:
+                    throw new ArgumentException($"Unknown mutation policy '{mutationPolicyId}'.", nameof(mutationPolicyId));
+            }
+        }
+
+        static string[] GetOfferIds(IReadOnlyList<SpeciesUpgrade> offers)
+        {
+            var ids = new string[offers.Count];
+            for (var index = 0; index < ids.Length; index++) ids[index] = offers[index].Id;
+            return ids;
+        }
+
         static ExperimentRun RunScheduledSimulation(
             CellularSimData data,
             SpeciesId playerSpecies,
@@ -437,6 +696,7 @@ namespace SaltyGame.EditorTools
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value)
                 : authoredPhaseUpgradeSnapshots[0];
             activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+            var activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
             scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
             var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
             var run = new SimulationRunState(
@@ -451,7 +711,7 @@ namespace SaltyGame.EditorTools
                 scheduledData,
                 combatResolutionMode,
                 attackOpportunityMode,
-                experimentalOptions,
+                activeExperimentalOptions,
                 upgradeLoadout: activeSnapshots);
 
             while (runner.AdvanceOneTick())
@@ -474,11 +734,12 @@ namespace SaltyGame.EditorTools
                         playerSpecies.Value)
                     : authoredPhaseUpgradeSnapshots[nextPhaseIndex];
                 activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
                 var nextData = ApplySnapshotLoadout(
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
                     activeSnapshots);
-                if (!runner.InstallBoundaryState(nextData.SpeciesRules, experimentalOptions, activeSnapshots)
+                if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
                     || !run.ContinueWithoutUpgrade())
                 {
                     throw new InvalidOperationException(
@@ -501,6 +762,25 @@ namespace SaltyGame.EditorTools
                     && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
                 experimentalOptions.UsesPredatorStatLine
                     && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
+        }
+
+        static SpeciesExperimentalOptions GetScheduledExperimentalOptions(
+            SpeciesExperimentalOptions options,
+            IEnumerable<SpeciesUpgradeSnapshot> snapshots,
+            SpeciesId playerSpecies)
+        {
+            var avoidanceChance = 0f;
+            foreach (var snapshot in snapshots)
+            {
+                if (snapshot.TargetSpecies == playerSpecies)
+                {
+                    avoidanceChance += snapshot.PreContactAvoidanceChanceBonus;
+                }
+            }
+
+            return new SpeciesExperimentalOptions(
+                options.FeatureId, options.FoxAttackCooldownTicks, avoidanceChance,
+                options.CoupledSpeciesResponsesEnabled);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -589,6 +869,7 @@ namespace SaltyGame.EditorTools
                 coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
+                wrapEdges = selectedData.WrapEdges,
                 gridWidth = selectedData.Width,
                 gridHeight = selectedData.Height,
                 runTicks = selectedData.RunTicks,
@@ -765,15 +1046,15 @@ namespace SaltyGame.EditorTools
             var hasWindowOverride = options.RunTicks > 0
                 || options.RunDurationSeconds > 0f
                 || options.StepIntervalSeconds > 0f;
-            var updatedData = data;
+            var updatedData = data.WithWrapEdges(options.WrapEdges);
             if (hasWindowOverride)
             {
                 var stepInterval = options.StepIntervalSeconds == 0f
                     ? data.StepInterval
                     : options.StepIntervalSeconds;
                 updatedData = options.RunTicks > 0
-                    ? data.WithRunTicks(options.RunTicks, stepInterval)
-                    : data.WithRunWindow(
+                    ? updatedData.WithRunTicks(options.RunTicks, stepInterval)
+                    : updatedData.WithRunWindow(
                         options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
                         stepInterval);
             }
@@ -1261,6 +1542,7 @@ namespace SaltyGame.EditorTools
             AppendCsvField(csv, "seed", ref first);
             AppendCsvField(csv, "gridWidth", ref first);
             AppendCsvField(csv, "gridHeight", ref first);
+            AppendCsvField(csv, "wrapEdges", ref first);
             AppendCsvField(csv, "ticks", ref first);
             AppendCsvField(csv, "durationSeconds", ref first);
             AppendCsvField(csv, "playerPopulation", ref first);
@@ -1282,6 +1564,7 @@ namespace SaltyGame.EditorTools
                 AppendCsvField(csv, run.seed, ref first);
                 AppendCsvField(csv, report.gridWidth, ref first);
                 AppendCsvField(csv, report.gridHeight, ref first);
+                AppendCsvField(csv, report.wrapEdges ? "true" : "false", ref first);
                 AppendCsvField(csv, run.ticks, ref first);
                 AppendCsvField(csv, run.durationSeconds, ref first);
                 AppendCsvField(csv, run.playerPopulation, ref first);
@@ -1520,11 +1803,14 @@ namespace SaltyGame.EditorTools
             public int FoxAttackCooldownTicks { get; private set; }
             public float PreContactAvoidanceChance { get; private set; }
             public bool CoupledSpeciesResponses { get; private set; }
+            public bool WrapEdges { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public string StartingPopulations { get; private set; }
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
+            public string MutationPolicyId { get; private set; }
+            public bool MutationPolicyEarlyFirstChoice { get; private set; }
             public string[][] PhaseUpgradeSchedule { get; private set; }
             public string[][] PhaseAuthoredUpgradeSchedule { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -1570,6 +1856,8 @@ namespace SaltyGame.EditorTools
 
                 var runTicks = GetIntValue(arguments, RunTicksArgument, 0, allowZero: true);
                 var phaseLengthTicks = GetIntValue(arguments, PhaseLengthTicksArgument, 0, allowZero: true);
+                var mutationPolicyId = GetOptionalValue(arguments, MutationPolicyArgument);
+                var mutationPolicyEarlyFirstChoice = GetBooleanValue(arguments, MutationPolicyEarlyFirstChoiceArgument);
                 var phaseUpgradeSchedule = ParsePhaseUpgradeSchedule(arguments);
                 if (phaseUpgradeSchedule != null && phaseAuthoredUpgradeSchedule != null)
                 {
@@ -1577,7 +1865,43 @@ namespace SaltyGame.EditorTools
                         $"Use either '{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}', not both.",
                         PhaseUpgradeAssetScheduleArgument);
                 }
-                if (phaseLengthTicks > 0 && phaseUpgradeSchedule == null)
+                if (!string.IsNullOrWhiteSpace(mutationPolicyId)
+                    && mutationPolicyId != "trailblazer"
+                    && mutationPolicyId != "warren"
+                    && mutationPolicyId != "gardeners")
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyArgument}' must be trailblazer, warren, or gardeners.",
+                        MutationPolicyArgument);
+                }
+
+                if (mutationPolicyEarlyFirstChoice && string.IsNullOrWhiteSpace(mutationPolicyId))
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyEarlyFirstChoiceArgument}' requires '{MutationPolicyArgument}'.",
+                        MutationPolicyEarlyFirstChoiceArgument);
+                }
+
+                if (!string.IsNullOrWhiteSpace(mutationPolicyId)
+                    && (phaseLengthTicks <= 0
+                        || phaseUpgradeSchedule != null
+                        || phaseAuthoredUpgradeSchedule != null
+                        || runTicks > 0
+                        || GetFloatValue(arguments, RunDurationArgument) > 0f
+                        || upgradeLoadout.Length > 0
+                        || authoredUpgradeLoadout != null
+                        || upgradeValueOverride > 0f
+                        || !string.Equals(
+                            GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
+                            "hare",
+                            StringComparison.Ordinal)))
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyArgument}' requires the Hare player and '{PhaseLengthTicksArgument}' only; do not combine it with schedules, run length, or launch upgrades.",
+                        MutationPolicyArgument);
+                }
+
+                if (phaseLengthTicks > 0 && phaseUpgradeSchedule == null && string.IsNullOrWhiteSpace(mutationPolicyId))
                 {
                     if (phaseAuthoredUpgradeSchedule == null)
                     {
@@ -1634,11 +1958,14 @@ namespace SaltyGame.EditorTools
                         allowZero: true),
                     PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
                     CoupledSpeciesResponses = GetBooleanValue(arguments, CoupledSpeciesResponsesArgument),
+                    WrapEdges = GetBooleanValue(arguments, WrapEdgesArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     StartingPopulations = GetOptionalValue(arguments, StartingPopulationsArgument),
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
+                    MutationPolicyId = mutationPolicyId,
+                    MutationPolicyEarlyFirstChoice = mutationPolicyEarlyFirstChoice,
                     PhaseUpgradeSchedule = phaseUpgradeSchedule,
                     PhaseAuthoredUpgradeSchedule = phaseAuthoredUpgradeSchedule,
                     RunDurationSeconds = runDurationSeconds,
@@ -2008,6 +2335,7 @@ namespace SaltyGame.EditorTools
             public string runProvenanceFingerprint;
             public string playerSpeciesId;
             public string upgradeId;
+            public bool mutationPolicyEarlyFirstChoice;
             public string upgradeType;
             public float upgradeValue;
             public string[] orderedLoadout;
@@ -2024,12 +2352,14 @@ namespace SaltyGame.EditorTools
             public bool coupledSpeciesResponses;
             public int seedStart;
             public int seedCount;
+            public bool wrapEdges;
             public int gridWidth;
             public int gridHeight;
             public int runTicks;
             public int phaseLengthTicks;
             public int phaseCount;
             public string[] phaseUpgradeSchedule;
+            public string mutationPolicyId;
             public float runDurationSeconds;
             public float stepIntervalSeconds;
             public ExperimentRun[] runs;
@@ -2058,6 +2388,22 @@ namespace SaltyGame.EditorTools
             public SimulationHerbivoreStatLineRecord herbivoreStatLine;
             public SimulationPredatorStatLineRecord predatorStatLine;
             public ExperimentOpportunityControl opportunityControl;
+            public MutationChoiceAudit[] mutationChoices;
+        }
+
+        [Serializable]
+        sealed class MutationChoiceAudit
+        {
+            public int phase;
+            public int decisionIndex;
+            public int decisionTick;
+            public string[] offeredUpgradeIds;
+            public string chosenUpgradeId;
+            public string decision;
+            public int firstSkillLevelBefore;
+            public int firstSkillLevelAfter;
+            public int secondSkillLevelBefore;
+            public int secondSkillLevelAfter;
         }
 
         static string SerializeReport(

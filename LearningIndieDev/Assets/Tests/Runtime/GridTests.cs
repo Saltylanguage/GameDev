@@ -1,5 +1,6 @@
 using System;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace SaltyGame.Tests
 {
@@ -7,6 +8,28 @@ namespace SaltyGame.Tests
     [Category("Core")]
     public sealed class GridTests
     {
+        [Test]
+        public void WrappingConnectsAllEdgesAndCopiesWithoutAliasingNeighbors()
+        {
+            var grid = new Grid<int>(3, 2, (x, y) => x + y * 3, wrapEdges: true);
+            Assert.That(grid.GetCell(-1, 0), Is.EqualTo(2));
+            Assert.That(grid.GetCell(3, 0), Is.Zero);
+            Assert.That(grid.GetCell(0, -1), Is.EqualTo(3));
+            Assert.That(grid.GetCell(0, 2), Is.Zero);
+            Assert.That(grid.GetCell(-1, -1), Is.EqualTo(5));
+            Assert.That(grid.GetDistance(0, 0, 2, 1), Is.EqualTo(1));
+            var pattern = grid.GetPattern(GridPatternTemplates.CreateMooreRange(12));
+            Assert.That(pattern.Count, Is.EqualTo(5));
+            CollectionAssert.DoesNotContain(pattern.Offsets, Vector2Int.zero);
+            var copy = grid.Copy();
+            copy.SetCell(-1, -1, 99);
+            Assert.That(copy.GetCell(2, 1), Is.EqualTo(99));
+            Assert.That(grid.GetCell(2, 1), Is.EqualTo(5));
+            Assert.That(grid.Copy(value => value).WrapEdges, Is.True);
+            Assert.That(GridSimulation.Step(grid, (cells, x, y) => cells.GetCell(x, y)).WrapEdges, Is.True);
+            Assert.That(new Grid<int>(1, 1, true).GetPattern(GridPatternTemplates.CreateMooreRange(1)).Count, Is.Zero);
+        }
+
         [Test]
         public void ConstructorCreatesGridWithExpectedDimensionsAndDefaults()
         {
