@@ -281,6 +281,35 @@
                 <Setter Property="Template" Value="{StaticResource GalapagOS_PaperButtonTemplate}" />
             </Style>
 
+            <Style x:Key="GalapagOS.Button.JourneyNode"
+                   TargetType="Button"
+                   BasedOn="{StaticResource GalapagOS.Button.SecondaryPaper}">
+                <Setter Property="Background" Value="{DynamicResource Chrono_LightCream}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
+                <Setter Property="BorderThickness" Value="1.5" />
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding Status}" Value="CURRENT">
+                        <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
+                        <Setter Property="BorderThickness" Value="2" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status}" Value="COMPLETE">
+                        <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status}" Value="CHOSEN">
+                        <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
+                        <Setter Property="BorderThickness" Value="2" />
+                    </DataTrigger>
+                    <DataTrigger Binding="{Binding Status}" Value="AVAILABLE">
+                        <Setter Property="Background" Value="{DynamicResource Chrono_GoldenPollen}" />
+                        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_TreeBark}" />
+                        <Setter Property="BorderThickness" Value="2" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+
             <Style x:Key="GalapagOS.Button.RewardCard"
                    TargetType="Button"
                    BasedOn="{StaticResource GalapagOS.Button.SecondaryPaper}">

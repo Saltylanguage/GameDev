@@ -6,6 +6,9 @@
 > Any ten-phase/200-tick values below belong to explicitly historical EX-010
 > evidence or implementation fixtures. Whole-session performance measurement
 > is optional stretch work.
+> The [Forest Edge journey prototype](JOURNEY_PROTOTYPE.md) extends this
+> six-phase cycle into two connected cycles on the same world. It is an active
+> prototype, not a replacement for the accepted six-phase research contract.
 
 **Status:** CF-0 through CF-5 are implemented and verified. The controlled
 preview path, phase telemetry, checkpoint seam, direct Stat-Line output and

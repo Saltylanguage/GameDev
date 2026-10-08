@@ -27,8 +27,105 @@ namespace SaltyGame
         public Visibility DottedConnectorVisibility { get; }
     }
 
+    public sealed class JourneyMapNodeItem : INotifyPropertyChanged
+    {
+        Visibility labelVisibility = Visibility.Collapsed;
+
+        public JourneyMapNodeItem(JourneyNodeAsset node, Vector2 normalizedCenter,
+            string status, bool canChoose, bool selected, Action choose, Action hover)
+        {
+            NodeId = node.NodeId;
+            Title = node.DisplayName;
+            Description = node.Description;
+            Status = status;
+            Slot = node.Kind == JourneyNodeKind.Simulation ? "I"
+                : node.Kind == JourneyNodeKind.Finale ? "V"
+                : node.Column == 0 ? "A" : "B";
+            Kind = node.Kind.ToString().ToUpperInvariant();
+            CanChoose = canChoose;
+            SelectedVisibility = selected ? Visibility.Visible : Visibility.Collapsed;
+            ChooseCommand = new DelegateCommand(choose);
+            HoverCommand = new DelegateCommand(() =>
+            {
+                LabelVisibility = Visibility.Visible;
+                hover();
+            });
+            LeaveCommand = new DelegateCommand(() => LabelVisibility = Visibility.Collapsed);
+            X = normalizedCenter.x * VM_SimulationShell.JourneyOverlayWidth - 41f;
+            Y = normalizedCenter.y * VM_SimulationShell.JourneyOverlayHeight - 22f;
+            SimulationIconVisibility = node.Kind == JourneyNodeKind.Simulation ? Visibility.Visible : Visibility.Collapsed;
+            ConditionIconVisibility = node.Kind == JourneyNodeKind.Condition ? Visibility.Visible : Visibility.Collapsed;
+            UpgradeIconVisibility = node.Kind == JourneyNodeKind.Upgrade ? Visibility.Visible : Visibility.Collapsed;
+            EventIconVisibility = node.Kind == JourneyNodeKind.Event ? Visibility.Visible : Visibility.Collapsed;
+            FinaleIconVisibility = node.Kind == JourneyNodeKind.Finale ? Visibility.Visible : Visibility.Collapsed;
+            RewardIconVisibility = node.Kind == JourneyNodeKind.Reward ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public string NodeId { get; }
+        public string Title { get; }
+        public string Description { get; }
+        public string Status { get; }
+        public string Slot { get; }
+        public string Kind { get; }
+        public bool CanChoose { get; }
+        public Visibility SelectedVisibility { get; }
+        public DelegateCommand ChooseCommand { get; }
+        public DelegateCommand HoverCommand { get; }
+        public DelegateCommand LeaveCommand { get; }
+        public Visibility LabelVisibility
+        {
+            get => labelVisibility;
+            private set
+            {
+                if (labelVisibility == value) return;
+                labelVisibility = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelVisibility)));
+            }
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        public float X { get; }
+        public float Y { get; }
+        public Visibility SimulationIconVisibility { get; }
+        public Visibility ConditionIconVisibility { get; }
+        public Visibility UpgradeIconVisibility { get; }
+        public Visibility EventIconVisibility { get; }
+        public Visibility FinaleIconVisibility { get; }
+        public Visibility RewardIconVisibility { get; }
+    }
+
+    public sealed class JourneyMapRowItem
+    {
+        public JourneyMapRowItem(int stage, string heading, JourneyMapNodeItem[] nodes)
+        {
+            Stage = stage.ToString("00", CultureInfo.InvariantCulture);
+            Heading = heading;
+            Nodes = nodes;
+        }
+
+        public string Stage { get; }
+        public string Heading { get; }
+        public JourneyMapNodeItem[] Nodes { get; }
+    }
+
+    public sealed class JourneyRewardChoiceItem
+    {
+        public JourneyRewardChoiceItem(string label, Action choose)
+        {
+            var lineBreak = label.IndexOf('\n');
+            Title = lineBreak < 0 ? label : label.Substring(0, lineBreak);
+            Description = lineBreak < 0 ? string.Empty : label.Substring(lineBreak + 1);
+            ChooseCommand = new DelegateCommand(choose);
+        }
+
+        public string Title { get; }
+        public string Description { get; }
+        public DelegateCommand ChooseCommand { get; }
+    }
+
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
+        internal const float JourneyOverlayWidth = 926f;
+        internal const float JourneyOverlayHeight = 520f;
         const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
         const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;
         const float BoardZoomStep = 0.25f;
@@ -145,6 +242,31 @@ namespace SaltyGame
         string playerSpeciesText;
         string rosterText;
         string phaseText;
+        string journeyMapSummary;
+        string journeyRewardTitle;
+        string journeyRewardDescription;
+        string journeyResultSummaryText;
+        JourneyMapRowItem[] journeyMapRows = Array.Empty<JourneyMapRowItem>();
+        JourneyMapNodeItem[] journeyMapNodes = Array.Empty<JourneyMapNodeItem>();
+        JourneyMapAsset journeyGeometryMap;
+        JourneyNodeAsset journeyFocusedNode;
+        Geometry journeyMapRouteGeometry;
+        Geometry journeyMapFocusGeometry;
+        string journeyDetailTitle = "FOREST EDGE";
+        string journeyDetailKind = "SIMULATION";
+        string journeyDetailStatus = "CURRENT";
+        string journeyDetailDescription = "The first six phases of one continuous ecological experiment.";
+        string journeyDetailReward = "The same biome continues into every cycle.";
+        Visibility journeyDetailSimulationIconVisibility = Visibility.Visible;
+        Visibility journeyDetailConditionIconVisibility = Visibility.Collapsed;
+        Visibility journeyDetailUpgradeIconVisibility = Visibility.Collapsed;
+        Visibility journeyDetailEventIconVisibility = Visibility.Collapsed;
+        Visibility journeyDetailFinaleIconVisibility = Visibility.Collapsed;
+        Visibility journeyDetailRewardIconVisibility = Visibility.Collapsed;
+        JourneyRewardChoiceItem[] journeyRewardItems = Array.Empty<JourneyRewardChoiceItem>();
+        bool journeyMapPreviewOpen;
+        bool resumeAfterJourneyMap;
+        bool showSummerJourneyBackdrop;
         int herbivorePopulation;
         int carnivorePopulation;
         int herbivorePopulationMaximum;
@@ -167,6 +289,13 @@ namespace SaltyGame
         Visibility runningVisibility;
         Visibility pausedVisibility;
         Visibility phaseDecisionVisibility;
+        Visibility journeyMapVisibility;
+        Visibility journeyMapPreviewButtonVisibility;
+        Visibility journeyMapHudButtonVisibility;
+        Visibility journeyNodePopupVisibility;
+        Visibility journeyNewRunVisibility;
+        Visibility journeyMapCloseVisibility;
+        Visibility journeyResultsVisibility;
         Visibility harePurchaseVisibility;
         Visibility rewardsVisibility;
         Visibility resultsVisibility;
@@ -199,6 +328,11 @@ namespace SaltyGame
         public DelegateCommand BuyHareCommand { get; private set; }
         public DelegateCommand ContinueWithoutUpgradeCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
+        public DelegateCommand OpenJourneyMapCommand { get; private set; }
+        public DelegateCommand CloseJourneyMapCommand { get; private set; }
+        public DelegateCommand StartNewJourneyCommand { get; private set; }
+        public DelegateCommand CancelJourneyRewardCommand { get; private set; }
+        public DelegateCommand ToggleJourneyBackdropCommand { get; private set; }
         public DelegateCommand ApplySettingsCommand { get; private set; }
         public DelegateCommand SaveSettingsCommand { get; private set; }
         public DelegateCommand ApplySpeciesRulesCommand { get; private set; }
@@ -223,6 +357,31 @@ namespace SaltyGame
         public string PlayerSpeciesText => playerSpeciesText;
         public string RosterText => rosterText;
         public string PhaseText => phaseText;
+        public string JourneyMapSummary => journeyMapSummary;
+        public string JourneyRewardTitle => journeyRewardTitle;
+        public string JourneyRewardDescription => journeyRewardDescription;
+        public string JourneyResultSummaryText => journeyResultSummaryText;
+        public JourneyMapRowItem[] JourneyMapRows => journeyMapRows;
+        public JourneyMapNodeItem[] JourneyMapNodes => journeyMapNodes;
+        public float JourneyMapOverlayWidth => JourneyOverlayWidth;
+        public float JourneyMapOverlayHeight => JourneyOverlayHeight;
+        public Geometry JourneyMapRouteGeometry => journeyMapRouteGeometry;
+        public Geometry JourneyMapFocusGeometry => journeyMapFocusGeometry;
+        public Visibility JourneySeasonalBackdropVisibility => showSummerJourneyBackdrop ? Visibility.Collapsed : Visibility.Visible;
+        public Visibility JourneySummerBackdropVisibility => showSummerJourneyBackdrop ? Visibility.Visible : Visibility.Collapsed;
+        public string JourneyBackdropLabel => showSummerJourneyBackdrop ? "SUMMER TRAILS" : "FOUR SEASONS";
+        public string JourneyDetailTitle => journeyDetailTitle;
+        public string JourneyDetailKind => journeyDetailKind;
+        public string JourneyDetailStatus => journeyDetailStatus;
+        public string JourneyDetailDescription => journeyDetailDescription;
+        public string JourneyDetailReward => journeyDetailReward;
+        public Visibility JourneyDetailSimulationIconVisibility => journeyDetailSimulationIconVisibility;
+        public Visibility JourneyDetailConditionIconVisibility => journeyDetailConditionIconVisibility;
+        public Visibility JourneyDetailUpgradeIconVisibility => journeyDetailUpgradeIconVisibility;
+        public Visibility JourneyDetailEventIconVisibility => journeyDetailEventIconVisibility;
+        public Visibility JourneyDetailFinaleIconVisibility => journeyDetailFinaleIconVisibility;
+        public Visibility JourneyDetailRewardIconVisibility => journeyDetailRewardIconVisibility;
+        public JourneyRewardChoiceItem[] JourneyRewardItems => journeyRewardItems;
         public int HerbivorePopulation => herbivorePopulation;
         public int CarnivorePopulation => carnivorePopulation;
         public int HerbivorePopulationMaximum => herbivorePopulationMaximum;
@@ -497,6 +656,14 @@ namespace SaltyGame
         public Visibility RunningVisibility => runningVisibility;
         public Visibility PausedVisibility => pausedVisibility;
         public Visibility PhaseDecisionVisibility => phaseDecisionVisibility;
+        public Visibility JourneyMapVisibility => journeyMapVisibility;
+        public Visibility JourneyMapPreviewButtonVisibility => journeyMapPreviewButtonVisibility;
+        public Visibility JourneyMapHudButtonVisibility => journeyMapHudButtonVisibility;
+        public Visibility JourneyNodePopupVisibility => journeyNodePopupVisibility;
+        public Visibility JourneyNewRunVisibility => journeyNewRunVisibility;
+        public Visibility JourneyMapCloseVisibility => journeyMapCloseVisibility;
+
+        public Visibility JourneyResultsVisibility => journeyResultsVisibility;
         public Visibility HarePurchaseVisibility => harePurchaseVisibility;
         public Visibility RewardsVisibility => rewardsVisibility;
         public Visibility ResultsVisibility => resultsVisibility;
@@ -904,9 +1071,18 @@ namespace SaltyGame
                 preview?.ResetToStart();
                 preview?.StartSimulation();
             });
-            PurchaseRewardOption1Command = new DelegateCommand(() => preview?.PurchaseReward(0));
-            PurchaseRewardOption2Command = new DelegateCommand(() => preview?.PurchaseReward(1));
-            PurchaseRewardOption3Command = new DelegateCommand(() => preview?.PurchaseReward(2));
+            PurchaseRewardOption1Command = new DelegateCommand(() =>
+            {
+                if (preview?.PurchaseReward(0) == true) Refresh(true);
+            });
+            PurchaseRewardOption2Command = new DelegateCommand(() =>
+            {
+                if (preview?.PurchaseReward(1) == true) Refresh(true);
+            });
+            PurchaseRewardOption3Command = new DelegateCommand(() =>
+            {
+                if (preview?.PurchaseReward(2) == true) Refresh(true);
+            });
             BuyHareCommand = new DelegateCommand(() =>
             {
                 if (preview?.BuyHare() == true)
@@ -914,8 +1090,84 @@ namespace SaltyGame
                     Refresh(true);
                 }
             });
-            ContinueWithoutUpgradeCommand = new DelegateCommand(() => preview?.ContinueWithoutUpgrade());
-            PlayNextSimulationCommand = new DelegateCommand(() => preview?.PlayNextSimulation());
+            ContinueWithoutUpgradeCommand = new DelegateCommand(() =>
+            {
+                preview?.ContinueWithoutUpgrade();
+                Refresh(true);
+            });
+            PlayNextSimulationCommand = new DelegateCommand(() =>
+            {
+                if (preview == null)
+                {
+                    return;
+                }
+
+                if (preview.JourneyActive)
+                {
+                    journeyMapPreviewOpen = true;
+                    Refresh(true);
+                }
+                else
+                {
+                    preview.PlayNextSimulation();
+                }
+            });
+            OpenJourneyMapCommand = new DelegateCommand(() =>
+            {
+                if (preview?.JourneyActive == true
+                    && (preview.State == SpeciesPreviewState.Ready
+                        || preview.State == SpeciesPreviewState.Running
+                        || preview.State == SpeciesPreviewState.Paused
+                        || preview.State == SpeciesPreviewState.PhaseDecision
+                        || preview.State == SpeciesPreviewState.JourneyDecision
+                        || preview.State == SpeciesPreviewState.Results))
+                {
+                    resumeAfterJourneyMap = preview.State == SpeciesPreviewState.Running;
+                    if (resumeAfterJourneyMap)
+                    {
+                        preview.PauseSimulation();
+                    }
+
+                    journeyMapPreviewOpen = true;
+                    Refresh(true);
+                }
+            });
+            CloseJourneyMapCommand = new DelegateCommand(() =>
+            {
+                journeyMapPreviewOpen = false;
+                if (preview?.State == SpeciesPreviewState.Ready && desktopClose != null)
+                {
+                    desktopClose();
+                    return;
+                }
+                if (resumeAfterJourneyMap && preview?.State == SpeciesPreviewState.Paused)
+                {
+                    preview.ResumeSimulation();
+                }
+
+                resumeAfterJourneyMap = false;
+                Refresh(true);
+            });
+            StartNewJourneyCommand = new DelegateCommand(() =>
+            {
+                if (journeyMapPreviewOpen && preview?.State == SpeciesPreviewState.Results)
+                {
+                    preview.PlayNextSimulation(startImmediately: false);
+                    Refresh(true);
+                }
+            });
+            CancelJourneyRewardCommand = new DelegateCommand(() =>
+            {
+                preview?.CancelJourneyNodeReward();
+                Refresh(true);
+            });
+            ToggleJourneyBackdropCommand = new DelegateCommand(() =>
+            {
+                showSummerJourneyBackdrop = !showSummerJourneyBackdrop;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JourneySeasonalBackdropVisibility)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JourneySummerBackdropVisibility)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JourneyBackdropLabel)));
+            });
             ApplySettingsCommand = new DelegateCommand(ApplySettings);
             SaveSettingsCommand = new DelegateCommand(SaveSettings);
             ApplySpeciesRulesCommand = new DelegateCommand(ApplySpeciesRules);
@@ -1036,11 +1288,24 @@ namespace SaltyGame
             }
 
             var state = preview.State;
+            if (state == SpeciesPreviewState.JourneyDecision
+                && lastState != SpeciesPreviewState.JourneyDecision
+                && lastState != SpeciesPreviewState.JourneyNodeReward)
+            {
+                journeyMapPreviewOpen = false;
+                resumeAfterJourneyMap = false;
+            }
+            if (state == SpeciesPreviewState.Results && lastState != SpeciesPreviewState.Results)
+            {
+                journeyMapPreviewOpen = false;
+                resumeAfterJourneyMap = false;
+            }
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
             if (endConfirmationVisibility == Visibility.Visible
                 && state != SpeciesPreviewState.Paused
-                && state != SpeciesPreviewState.PhaseDecision)
+                && state != SpeciesPreviewState.PhaseDecision
+                && state != SpeciesPreviewState.JourneyDecision)
             {
                 Set(ref endConfirmationVisibility, Visibility.Collapsed, nameof(EndConfirmationVisibility));
             }
@@ -1130,11 +1395,14 @@ namespace SaltyGame
                         : $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA",
                 nameof(HarePurchaseText));
             Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
+            SyncJourneyPresentation(state);
             var isContinuousRun = preview.ContinuousPhasesEnabled
                 && run?.SupportsContinuation == true;
             Set(
                 ref resultsTitleText,
-                isContinuousRun
+                preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
+                    ? "Cycle complete"
+                    : isContinuousRun
                     ? preview.LastExpeditionFailed
                         ? "Expedition failed"
                         : preview.LastRunEndedEarly
@@ -1144,7 +1412,9 @@ namespace SaltyGame
                 nameof(ResultsTitleText));
             Set(
                 ref resultsMessageText,
-                isContinuousRun && preview.LastExpeditionFailed
+                preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
+                    ? "The biome continues. Return to the map to choose the next habitat and simulation."
+                    : isContinuousRun && preview.LastExpeditionFailed
                     ? "The player species went extinct. This expedition ended without rewards."
                     : preview.LastRunEndedEarly
                         ? isContinuousRun
@@ -1154,9 +1424,14 @@ namespace SaltyGame
                             ? "The expedition is complete. Start a new expedition when ready."
                             : "The player update is applied. Continue into the next run when ready.",
                 nameof(ResultsMessageText));
+            Set(ref journeyResultSummaryText,
+                preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
+                    ? BuildJourneyResultSummary(run)
+                    : string.Empty,
+                nameof(JourneyResultSummaryText));
             Set(
                 ref playNextSimulationText,
-                isContinuousRun ? "START NEW EXPEDITION" : "PLAY NEXT SIMULATION",
+                preview.JourneyActive ? "RETURN TO JOURNEY MAP" : isContinuousRun ? "START NEW EXPEDITION" : "PLAY NEXT SIMULATION",
                 nameof(PlayNextSimulationText));
             SyncScenarioPresentation(run);
             SyncSimulationDashboard(run);
@@ -1184,12 +1459,18 @@ namespace SaltyGame
             Set(ref rewardOption1Text, preview.GetRewardOptionDisplayName(0), nameof(RewardOption1Text));
             Set(ref rewardOption2Text, preview.GetRewardOptionDisplayName(1), nameof(RewardOption2Text));
             Set(ref rewardOption3Text, preview.GetRewardOptionDisplayName(2), nameof(RewardOption3Text));
-            Set(ref selectedUpgradeSummaryText, preview.GetSelectedUpgradeSummary(), nameof(SelectedUpgradeSummaryText));
+            Set(ref selectedUpgradeSummaryText,
+                preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
+                    ? BuildJourneyUpgradeSummary()
+                    : preview.GetSelectedUpgradeSummary(),
+                nameof(SelectedUpgradeSummaryText));
             Set(ref canPurchaseRewardOption1, preview.CanPurchaseReward(0), nameof(CanPurchaseRewardOption1));
             Set(ref canPurchaseRewardOption2, preview.CanPurchaseReward(1), nameof(CanPurchaseRewardOption2));
             Set(ref canPurchaseRewardOption3, preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));
             Set(ref canBuyHare, preview.CanBuyHare, nameof(CanBuyHare));
-            Set(ref canPlayNextSimulation, state == SpeciesPreviewState.Results, nameof(CanPlayNextSimulation));
+            Set(ref canPlayNextSimulation,
+                state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision,
+                nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
                 state == SpeciesPreviewState.Ready
@@ -1199,13 +1480,47 @@ namespace SaltyGame
             Set(ref runningVisibility, state == SpeciesPreviewState.Running ? Visibility.Visible : Visibility.Collapsed, nameof(RunningVisibility));
             Set(ref pausedVisibility, state == SpeciesPreviewState.Paused ? Visibility.Visible : Visibility.Collapsed, nameof(PausedVisibility));
             Set(ref phaseDecisionVisibility, state == SpeciesPreviewState.PhaseDecision ? Visibility.Visible : Visibility.Collapsed, nameof(PhaseDecisionVisibility));
+            Set(ref journeyMapVisibility,
+                journeyMapPreviewOpen || state == SpeciesPreviewState.JourneyNodeReward
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyMapVisibility));
+            Set(ref journeyMapPreviewButtonVisibility,
+                state == SpeciesPreviewState.Ready && preview.JourneyActive
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyMapPreviewButtonVisibility));
+            Set(ref journeyMapHudButtonVisibility,
+                preview.JourneyActive
+                    && (state == SpeciesPreviewState.Running
+                        || state == SpeciesPreviewState.Paused
+                        || state == SpeciesPreviewState.PhaseDecision
+                        || state == SpeciesPreviewState.JourneyDecision)
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyMapHudButtonVisibility));
+            Set(ref journeyNodePopupVisibility,
+                state == SpeciesPreviewState.JourneyNodeReward
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyNodePopupVisibility));
+            Set(ref journeyNewRunVisibility,
+                journeyMapPreviewOpen && state == SpeciesPreviewState.Results
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyNewRunVisibility));
+            Set(ref journeyMapCloseVisibility,
+                journeyMapPreviewOpen && state != SpeciesPreviewState.JourneyNodeReward
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyMapCloseVisibility));
             Set(ref harePurchaseVisibility,
                 state == SpeciesPreviewState.PhaseDecision
                     && preview.PlayerSpecies.Value == "hare"
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(HarePurchaseVisibility));
             Set(ref rewardsVisibility, state == SpeciesPreviewState.Rewards ? Visibility.Visible : Visibility.Collapsed, nameof(RewardsVisibility));
-            Set(ref resultsVisibility, state == SpeciesPreviewState.Results ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
+            Set(ref resultsVisibility,
+                state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
+                    ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
+            Set(ref journeyResultsVisibility,
+                preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
+                    ? Visibility.Visible : Visibility.Collapsed,
+                nameof(JourneyResultsVisibility));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
             ReturnToLabCommand?.RaiseCanExecuteChanged();
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanCloseWindow)));
@@ -1577,6 +1892,266 @@ namespace SaltyGame
             Set(ref rosterText, BuildRosterText(run), nameof(RosterText));
         }
 
+        void SyncJourneyPresentation(SpeciesPreviewState state)
+        {
+            var map = preview.JourneyMap;
+            if (!preview.JourneyActive || map == null)
+            {
+                Set(ref journeyMapRows, Array.Empty<JourneyMapRowItem>(), nameof(JourneyMapRows));
+                Set(ref journeyMapNodes, Array.Empty<JourneyMapNodeItem>(), nameof(JourneyMapNodes));
+                Set(ref journeyMapRouteGeometry, null, nameof(JourneyMapRouteGeometry));
+                Set(ref journeyMapFocusGeometry, null, nameof(JourneyMapFocusGeometry));
+                Set(ref journeyRewardItems, Array.Empty<JourneyRewardChoiceItem>(), nameof(JourneyRewardItems));
+                journeyGeometryMap = null;
+                journeyFocusedNode = null;
+                return;
+            }
+
+            if (journeyGeometryMap != map)
+            {
+                journeyGeometryMap = map;
+                journeyFocusedNode = null;
+                if (!map.ValidateOverlayLayout(out var layoutError))
+                {
+                    Debug.LogWarning($"Journey map '{map.name}' has an incomplete overlay: {layoutError}");
+                }
+                Set(ref journeyMapRouteGeometry,
+                    BuildJourneyRouteGeometry(map, null), nameof(JourneyMapRouteGeometry));
+            }
+
+            Set(ref journeyMapSummary,
+                state == SpeciesPreviewState.Ready
+                    ? "Choose your first discovery, then follow the trail into the living biome."
+                    : state == SpeciesPreviewState.JourneyDecision
+                        ? preview.ChosenJourneyNode != null
+                            ? "Habitat condition recorded. Choose a connected simulation node to continue."
+                            : "The first cycle is recorded. Choose a habitat condition, then begin the next simulation."
+                        : state == SpeciesPreviewState.Results
+                            ? "This expedition is complete. Begin another journey to explore a different path."
+                            : "One ecosystem, a longer trail. Your Mutations and field data travel with you.",
+                nameof(JourneyMapSummary));
+
+            var pending = preview.JourneyPendingNode;
+            Set(ref journeyRewardTitle, pending?.DisplayName ?? string.Empty, nameof(JourneyRewardTitle));
+            Set(ref journeyRewardDescription, pending?.Description ?? string.Empty, nameof(JourneyRewardDescription));
+            var rewardItems = new List<JourneyRewardChoiceItem>();
+            for (var optionIndex = 0; optionIndex < preview.JourneyRewardOptionCount; optionIndex++)
+            {
+                var capturedIndex = optionIndex;
+                rewardItems.Add(new JourneyRewardChoiceItem(
+                    preview.GetJourneyRewardOptionDisplayName(capturedIndex),
+                    () =>
+                    {
+                        if (preview.ClaimJourneyNodeReward(capturedIndex))
+                        {
+                            journeyMapPreviewOpen = true;
+                            Refresh(true);
+                        }
+                    }));
+            }
+            Set(ref journeyRewardItems, rewardItems.ToArray(), nameof(JourneyRewardItems));
+
+            var rows = new List<JourneyMapRowItem>();
+            var flatNodes = new List<JourneyMapNodeItem>();
+            var lastRow = 0;
+            foreach (var node in map.Nodes)
+            {
+                if (node != null) lastRow = Mathf.Max(lastRow, node.Row);
+            }
+
+            for (var row = 0; row <= lastRow; row++)
+            {
+                var nodeItems = new List<JourneyMapNodeItem>();
+                foreach (var node in map.Nodes)
+                {
+                    if (node == null || node.Row != row
+                        || !map.TryGetNormalizedCenter(node, out var normalizedCenter))
+                    {
+                        continue;
+                    }
+
+                    var canChoose = preview.CanChooseJourneyNode(node.NodeId);
+                    var selected = node == pending || node == preview.JourneyCurrentNode;
+                    var status = node == pending ? "SELECTED"
+                        : node == preview.JourneyCurrentNode ? "CURRENT"
+                        : preview.HasVisitedJourneyNode(node) ? "COMPLETE"
+                        : canChoose ? "AVAILABLE" : "UNCHARTED";
+                    var capturedNode = node;
+                    var item = new JourneyMapNodeItem(node, normalizedCenter, status, canChoose,
+                        selected,
+                        () =>
+                        {
+                            if (preview.ChooseJourneyNode(capturedNode.NodeId))
+                            {
+                                journeyMapPreviewOpen = capturedNode.Kind != JourneyNodeKind.Simulation;
+                                Refresh(true);
+                            }
+                        },
+                        () => SetJourneyDetail(capturedNode, status));
+                    nodeItems.Add(item);
+                    flatNodes.Add(item);
+                }
+
+                if (nodeItems.Count > 0)
+                {
+                    rows.Add(new JourneyMapRowItem(row + 1, GetJourneyRowHeading(row), nodeItems.ToArray()));
+                }
+            }
+            Set(ref journeyMapRows, rows.ToArray(), nameof(JourneyMapRows));
+            Set(ref journeyMapNodes, flatNodes.ToArray(), nameof(JourneyMapNodes));
+
+            var defaultNode = pending ?? preview.JourneyCurrentNode ?? map.StartNode;
+            if (defaultNode != null)
+            {
+                var status = pending == defaultNode ? "SELECTED"
+                    : preview.JourneyCurrentNode == defaultNode ? "CURRENT"
+                    : preview.CanChooseJourneyNode(defaultNode.NodeId) ? "AVAILABLE" : "UNCHARTED";
+                SetJourneyDetail(defaultNode, status);
+            }
+        }
+
+        void SetJourneyDetail(JourneyNodeAsset node, string status)
+        {
+            if (journeyFocusedNode != node)
+            {
+                journeyFocusedNode = node;
+                Set(ref journeyMapFocusGeometry,
+                    BuildJourneyRouteGeometry(journeyGeometryMap, node),
+                    nameof(JourneyMapFocusGeometry));
+            }
+            Set(ref journeyDetailTitle, node.DisplayName, nameof(JourneyDetailTitle));
+            Set(ref journeyDetailKind, node.Kind.ToString().ToUpperInvariant(), nameof(JourneyDetailKind));
+            Set(ref journeyDetailStatus, status, nameof(JourneyDetailStatus));
+            Set(ref journeyDetailDescription, node.Description, nameof(JourneyDetailDescription));
+            Set(ref journeyDetailReward,
+                !node.PlayableInPrototype
+                    ? "A future chapter in this living woodland."
+                    : node.Kind == JourneyNodeKind.Reward
+                        ? $"Choose one of {node.RewardMutationIds.Count} Mutations for this expedition."
+                        : node.Kind == JourneyNodeKind.Condition
+                            ? node.DataReward > 0
+                                ? $"{node.Description}  Gain {node.DataReward} field data."
+                                : node.Description
+                            : node.Kind == JourneyNodeKind.Simulation
+                                ? $"Run six phases in the same biome with {preview.PurchasedUpgradeCount} accumulated Mutations."
+                                : node.DataReward > 0
+                                    ? $"Gain {node.DataReward} field data."
+                                    : node.Description,
+                nameof(JourneyDetailReward));
+            Set(ref journeyDetailSimulationIconVisibility, node.Kind == JourneyNodeKind.Simulation ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailSimulationIconVisibility));
+            Set(ref journeyDetailConditionIconVisibility, node.Kind == JourneyNodeKind.Condition ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailConditionIconVisibility));
+            Set(ref journeyDetailUpgradeIconVisibility, node.Kind == JourneyNodeKind.Upgrade ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailUpgradeIconVisibility));
+            Set(ref journeyDetailEventIconVisibility, node.Kind == JourneyNodeKind.Event ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailEventIconVisibility));
+            Set(ref journeyDetailFinaleIconVisibility, node.Kind == JourneyNodeKind.Finale ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailFinaleIconVisibility));
+            Set(ref journeyDetailRewardIconVisibility, node.Kind == JourneyNodeKind.Reward ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailRewardIconVisibility));
+        }
+
+        static Geometry BuildJourneyRouteGeometry(JourneyMapAsset map, JourneyNodeAsset focus)
+        {
+            if (map == null)
+            {
+                return null;
+            }
+
+            var path = new StringBuilder();
+            foreach (var source in map.Nodes)
+            {
+                if (source == null || !map.TryGetNormalizedCenter(source, out var from))
+                {
+                    continue;
+                }
+
+                foreach (var destination in source.NextNodes ?? Array.Empty<JourneyNodeAsset>())
+                {
+                    if (destination == null || map.GetNode(destination.NodeId) != destination
+                        || (focus != null && source != focus && destination != focus)
+                        || !map.TryGetNormalizedCenter(destination, out var to))
+                    {
+                        continue;
+                    }
+
+                    var x1 = from.x * JourneyOverlayWidth;
+                    var y1 = from.y * JourneyOverlayHeight;
+                    var x2 = to.x * JourneyOverlayWidth;
+                    var y2 = to.y * JourneyOverlayHeight;
+                    var handle = Mathf.Max(34f, Mathf.Abs(x2 - x1) * 0.42f);
+                    var direction = x2 >= x1 ? 1f : -1f;
+                    path.AppendFormat(CultureInfo.InvariantCulture,
+                        "M {0:0.###},{1:0.###} C {2:0.###},{1:0.###} {3:0.###},{4:0.###} {5:0.###},{4:0.###} ",
+                        x1, y1, x1 + handle * direction, x2 - handle * direction, y2, x2);
+                }
+            }
+
+            return path.Length == 0 ? null : Geometry.Parse(path.ToString());
+        }
+
+        static string GetJourneyRowHeading(int row)
+        {
+            switch (row)
+            {
+                case 0: return "CYCLE 1  /  THE LIVING BIOME";
+                case 1: return "CYCLE 2  /  A CHANGING HABITAT";
+                case 2: return "UPGRADES & REWARDS  /  UNCHARTED";
+                case 3: return "EVENTS  /  UNCHARTED";
+                case 4: return "FINALE  /  UNCHARTED";
+                default: return $"CHAPTER {row + 1}  /  UNCHARTED";
+            }
+        }
+
+        string BuildJourneyResultSummary(SimulationRunState run)
+        {
+            if (run == null || run.PhaseResults.Count == 0)
+            {
+                return "No phase observations were recorded.";
+            }
+
+            var last = run.PhaseResults[run.PhaseResults.Count - 1];
+            var summary = new StringBuilder();
+            summary.Append("Observed through phase ").Append(run.PhaseIndex)
+                .Append(" at tick ").Append(last.WindowEndTickInclusive)
+                .Append("  |  Mutations: ").Append(preview.PurchasedUpgradeCount);
+            if (preview.ChosenJourneyNode != null)
+            {
+                summary.Append("\nHabitat condition: ").Append(preview.ChosenJourneyNodeDisplayName);
+            }
+            foreach (var species in preview.RosterSpecies)
+            {
+                summary.Append("\n").Append(FormatSpeciesName(species)).Append(": ")
+                    .Append(last.ClosingPopulation.GetCount(species));
+            }
+            return summary.ToString();
+        }
+
+        string BuildJourneyUpgradeSummary()
+        {
+            var applied = preview.Progression?.AppliedRunUpgrades;
+            if (applied == null || applied.Count == 0)
+            {
+                return "No Mutations selected this expedition.";
+            }
+
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            var summary = new StringBuilder("Mutations carried this expedition:");
+            foreach (var upgrade in applied)
+            {
+                if (upgrade == null
+                    || !SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId(upgrade.Id)
+                    || !seen.Add(upgrade.Id))
+                {
+                    continue;
+                }
+
+                summary.Append("\n")
+                    .Append(SpeciesUpgradeCatalog.GetDisplayName(upgrade.Id))
+                    .Append(" Lv ")
+                    .Append(preview.GetUpgradeLevel(upgrade.Id));
+            }
+
+            return seen.Count == 0
+                ? "No Mutations selected this expedition."
+                : summary.ToString();
+        }
+
         void SyncSimulationDashboard(SimulationRunState run)
         {
             var population = run != null && run.PopulationHistory.Count > 0
@@ -1601,7 +2176,9 @@ namespace SaltyGame
                 nameof(CarnivorePopulationText));
 
             var phaseCount = Mathf.Max(1, preview.ContinuousPhaseCount);
-            var currentPhase = run?.PhaseIndex ?? 1;
+            var currentPhase = run == null
+                ? 1
+                : (run.PhaseIndex - 1) % phaseCount + 1;
             if (run?.Status == SimulationRunStatus.AwaitingDecision)
             {
                 currentPhase++;
@@ -1613,8 +2190,13 @@ namespace SaltyGame
             }
 
             currentPhase = Mathf.Clamp(currentPhase, 1, phaseCount);
-            Set(ref phaseText, $"PHASE {currentPhase:00}", nameof(PhaseText));
-            var timelineComplete = run?.Status == SimulationRunStatus.Complete;
+            Set(ref phaseText,
+                preview.JourneyActive
+                    ? $"CYCLE {preview.JourneyCycleIndex}  ·  PHASE {currentPhase:00}"
+                    : $"PHASE {currentPhase:00}",
+                nameof(PhaseText));
+            var timelineComplete = run?.Status == SimulationRunStatus.Complete
+                || preview.State == SpeciesPreviewState.JourneyDecision;
             if (phaseTimelineCachedCount != phaseCount
                 || phaseTimelineCachedPhase != currentPhase
                 || phaseTimelineCachedComplete != timelineComplete)
@@ -1755,6 +2337,10 @@ namespace SaltyGame
                     return "SIMULATION PAUSED";
                 case SpeciesPreviewState.PhaseDecision:
                     return "PHASE COMPLETE — DECISION REQUIRED";
+                case SpeciesPreviewState.JourneyDecision:
+                    return "CYCLE COMPLETE — CHOOSE THE NEXT ROUTE";
+                case SpeciesPreviewState.JourneyNodeReward:
+                    return "JOURNEY ENCOUNTER — CHOOSE A REWARD";
                 case SpeciesPreviewState.Rewards:
                     return "CHOOSE YOUR REWARD";
                 case SpeciesPreviewState.Results:
@@ -1803,7 +2389,7 @@ namespace SaltyGame
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "PHASE {0:00} COMPLETE",
-                Mathf.Max(1, run.PhaseIndex));
+                Mathf.Max(1, (run.PhaseIndex - 1) % SpeciesSimulationPreview.ContinuousExpeditionPhaseCount + 1));
         }
 
         static string GetExperimentalHerbivoreStatLineSummary(SimulationRunState run, SpeciesId species)

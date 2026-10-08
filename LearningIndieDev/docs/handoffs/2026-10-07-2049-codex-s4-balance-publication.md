@@ -1,6 +1,6 @@
 # S4 balance publication checkpoint
 
-[Working state](../WORKING_STATE.md) | Status: ready-for-review
+[Working state](../WORKING_STATE.md) | Status: shared
 
 - Handoff schema: 1
 - Handoff ID: 2026-10-07-2049-codex-s4-balance-publication
@@ -38,3 +38,15 @@ The new Desktop journey has separate runtime cadence and choices; six-phase find
 ## Next useful step
 
 Merge the latest ProjectMain, inspect the preview/data seam, run focused integration checks, and review journey upgrade persistence, ecological clear criteria, and the next matched failure diagnostic at the meeting. Salty owns journey planning; Bevin's work remains ecology and strategy balance.
+
+## October 7 journey integration
+
+- Checkpoint `64a8e3b5` was pushed before merging Salty's `origin/ProjectMain` commit `fea55926` (`feat: integrate Forest Edge journey into Desktop flow`).
+- `SpeciesSimulationPreview.cs` merged automatically. The wrapping flag remains applied when creating simulation data, and existing data-copy methods retain it. The only textual conflict was `WORKING_STATE.md`; both sides' entries were preserved.
+- The existing PlayMode same-biome journey test now enables wrapping and checks that wrapped cells survive the condition/cycle boundary. It also verifies the same run, cells, history, retained Mutations, and final reset.
+- Fresh Unity 6000.4.6f1 compilation and focused EditMode checks: 158 passed, 0 failed, 0 skipped (`JourneyMapAssetTests`, `PopulationConfigurationTests`, `GridTests`, `SpeciesDomainTests`). Focused PlayMode: 1 passed, 0 failed, 0 skipped (`JourneyNodeRewardsAndSimulationsContinueTheSameBiome`). Results/logs: local ignored `artifacts/integration-20261007-journey-merge/`.
+- All five changed XAML files parsed as XML. Both changed PowerShell scripts parsed successfully, and Git whitespace/conflict checks passed. No production species/scenario tuning was introduced.
+- The project Doctor wrapper falsely treated two Unity CLI MCP processes as Editors. CLI status showed no connected Editor, no project lock existed, and the focused checks used the installed Unity CLI with the explicit Editor path. No existing process or lock was removed.
+- No fresh visual review, full test suite, player build, or twelve-phase balance study was performed. The new prototype's opening choice and persistent loadout differ from the frozen six-phase research contract.
+
+Next: agree the ecological gate, node versus whole-journey difficulty, upgrade persistence, and one matched failure-diagnostic protocol at the team meeting before approving more tuning.

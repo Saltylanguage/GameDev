@@ -6,7 +6,7 @@ become a master changelog.
 
 ## Current focus
 
-**October 7 publication checkpoint:** Bevin authorized committing and pushing the accumulated wrapping, deterministic avoidance, population-override, experiment-policy, and S4 research work to BevBranch before integrating Salty's latest ProjectMain. The seven research packages below retain their original experiment dates and frozen-source provenance; older statements about local/uncommitted status describe those historical runs. See the [publication handoff](handoffs/2026-10-07-2049-codex-s4-balance-publication.md). No new gameplay tuning is approved by this checkpoint.
+**October 7 publication and journey integration:** S4 checkpoint `64a8e3b5` is pushed to BevBranch, and Salty's ProjectMain `fea55926` is integrated. The only content conflict was this document; both research and journey entries were retained. Fresh merged-revision checks passed 158 focused EditMode tests and one PlayMode journey continuity test with wrapping enabled. No fresh graphics review, full suite, build, or journey balance batch was run. The seven research packages below retain their original experiment dates and frozen-source provenance; older statements about local/uncommitted status describe those historical runs. See the [publication and integration handoff](handoffs/2026-10-07-2049-codex-s4-balance-publication.md). No new gameplay tuning is approved by this checkpoint.
 
 **S4-03 Trailblazer early-choice timing diagnostic: 2026-10-07, complete locally; human balance review pending.** Moving the first of five Trailblazer choices from tick 100 to tick 0 did not improve the matched all-species clear rate: 28/200 (14%) versus 30/200 (15%) on the same seeds, with a paired risk difference of -1 percentage point (95% CI -7.3 to +5.3; exact McNemar p=.878). The first-phase median Hare population ended higher (26 vs. 21), while median combat deaths changed only from 39 to 37.5; fewer candidate runs reached tick 600 (102 vs. 121). No gameplay values, defaults, or player-facing UX changed. See [protocol](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md). Raw run artifacts and validated summary remain under the ignored `artifacts/` directory.
 
@@ -57,6 +57,19 @@ Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-developm
 and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
 Results and fixes are not committed or pushed. The S4 Inspector fixture already
 uses 400/20/10; authored scenario defaults remain separate.
+**Forest Edge journey prototype: integrated 2026-10-06.** The canonical
+Desktop Simulation icon opens the full-screen journey map. The first unbranched
+reward node offers a Hare Mutation in a popup, then the first simulation node
+runs six phases. Its report returns the player to the map, where an authored
+habitat condition popup leads to a connected second simulation. The same run,
+ecosystem, history, and all accumulated Mutations continue through phase 12;
+the final report returns to the map. This persistence is a temporary prototype
+rule while the within-run upgrade term and boundary reset rule are designed.
+The map has 18 ScriptableObject nodes across 12 stages, with only the first
+six nodes playable. The seasonal and continuous-summer landscapes remain
+reusable behind XAML icons, route lines, hover labels, a field journal, and a
+selected-node pulse. See [the prototype contract](JOURNEY_PROTOTYPE.md) for
+current effects, evidence, and remaining balance and terminology decisions.
 
 **Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
 sprites now supply the standardized 32/64/128 icons and retained compatibility

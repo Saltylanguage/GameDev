@@ -62,7 +62,8 @@ namespace SaltyGame
 
             view.Content.DataContext = viewModel;
 
-            if (Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch))
+            var hasLaunchRequest = Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch);
+            if (hasLaunchRequest)
             {
                 if (!preview.TryApplyLaunchRequest(launch, out var validationMessage))
                 {
@@ -91,15 +92,26 @@ namespace SaltyGame
             viewModel.PropertyChanged += HandleViewModelPropertyChanged;
             ApplyBoardSnapshot();
 
-            // The Lab is the setup entry point; the simulation scene should open live.
+            // Journey launch requests begin on the map; direct test scenes still open live.
             if (preview.State == SpeciesPreviewState.Results)
             {
-                preview.PlayNextSimulation();
+                preview.PlayNextSimulation(startImmediately: !preview.JourneyActive);
                 boardViewModel.Initialize(preview);
+                if (preview.JourneyActive)
+                {
+                    viewModel.OpenJourneyMapCommand.Execute(null);
+                }
             }
             else if (preview.State == SpeciesPreviewState.Ready && viewModel.CanStart)
             {
-                viewModel.StartCommand.Execute(null);
+                if (hasLaunchRequest && preview.JourneyActive)
+                {
+                    viewModel.OpenJourneyMapCommand.Execute(null);
+                }
+                else
+                {
+                    viewModel.StartCommand.Execute(null);
+                }
             }
 
             ApplyBoardSnapshot();

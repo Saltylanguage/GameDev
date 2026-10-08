@@ -18,17 +18,9 @@
 
   <Viewbox Stretch="Uniform">
   <Grid Width="1920" Height="1080" Background="{DynamicResource Chrono_AzureSky}">
-    <!-- Minimal desktop ground: enough atmosphere to read as a desktop without competing with the lab window. -->
-    <Canvas IsHitTestVisible="False">
-      <Ellipse Width="420" Height="420" Canvas.Left="80" Canvas.Top="-220"
-               Fill="#22FFFFFF" />
-      <Ellipse Width="520" Height="520" Canvas.Right="70" Canvas.Top="-280"
-               Fill="#18FCEEC0" />
-      <Path Data="M 0,940 L 280,780 L 520,900 L 770,730 L 1080,900 L 1360,760 L 1660,890 L 1920,760 L 1920,1080 L 0,1080 Z"
-            Fill="#FFC5D370" />
-      <Path Data="M 0,1010 L 300,900 L 600,980 L 930,860 L 1260,980 L 1580,870 L 1920,960 L 1920,1080 L 0,1080 Z"
-            Fill="#FF84A340" Opacity="0.46" />
-    </Canvas>
+    <Image Source="{StaticResource GalapagOS.Image.Background.WoodlandSummer}"
+           Stretch="UniformToFill" IsHitTestVisible="False" />
+    <Rectangle Fill="#2315291D" IsHitTestVisible="False" />
 
     <Canvas Margin="0,0,0,76">
       <Button Canvas.Left="32"

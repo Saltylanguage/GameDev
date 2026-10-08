@@ -232,8 +232,8 @@
 
   <ControlTemplate x:Key="GalapagOS_DesktopIconTemplate" TargetType="Button">
     <Border x:Name="IconSelectionSurface"
-            Background="Transparent"
-            BorderBrush="Transparent"
+            Background="#E8FFF5DA"
+            BorderBrush="#A24C6943"
             BorderThickness="1"
             CornerRadius="6"
             Padding="{TemplateBinding Padding}">
@@ -264,11 +264,11 @@
         <Setter TargetName="DesktopIconImage" Property="Visibility" Value="Collapsed"/>
       </DataTrigger>
       <Trigger Property="IsMouseOver" Value="True">
-        <Setter TargetName="IconSelectionSurface" Property="Background" Value="#26FFFFFF"/>
+        <Setter TargetName="IconSelectionSurface" Property="Background" Value="#FFFFF9E7"/>
         <Setter TargetName="IconSelectionSurface" Property="BorderBrush" Value="{DynamicResource Chrono_Olive}"/>
       </Trigger>
       <Trigger Property="IsPressed" Value="True">
-        <Setter TargetName="IconSelectionSurface" Property="Background" Value="#4CFFFFFF"/>
+        <Setter TargetName="IconSelectionSurface" Property="Background" Value="#FFFFE8B1"/>
       </Trigger>
       <Trigger Property="IsEnabled" Value="False">
         <Setter TargetName="IconSelectionSurface" Property="Opacity" Value="0.45"/>

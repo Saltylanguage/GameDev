@@ -1,0 +1,73 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c002, type: 3}
+  m_Name: ForestEdgeJourney
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyMapAsset
+  scenarioId: ForestEdge
+  playerSpeciesId: hare
+  startNode: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d001, type: 2}
+  nodes:
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d001, type: 2}
+  - {fileID: 11400000, guid: 353519f5b00c4f14bc857415f02dd8c3, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d002, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d003, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d004, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d005, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d006, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d007, type: 2}
+  - {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}
+  - {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}
+  - {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}
+  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}
+  - {fileID: 11400000, guid: 16c431e8db9a4926814300dea4560fda, type: 2}
+  - {fileID: 11400000, guid: a37abab3a4fd4d9b85a0892d5a4c6abe, type: 2}
+  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
+  - {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}
+  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+  nodePlacements:
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d001, type: 2}
+    normalizedCenter: {x: 0.060, y: 0.700}
+  - node: {fileID: 11400000, guid: 353519f5b00c4f14bc857415f02dd8c3, type: 2}
+    normalizedCenter: {x: 0.140, y: 0.500}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d002, type: 2}
+    normalizedCenter: {x: 0.210, y: 0.230}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d003, type: 2}
+    normalizedCenter: {x: 0.230, y: 0.800}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d004, type: 2}
+    normalizedCenter: {x: 0.290, y: 0.420}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d005, type: 2}
+    normalizedCenter: {x: 0.310, y: 0.770}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d006, type: 2}
+    normalizedCenter: {x: 0.370, y: 0.200}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d007, type: 2}
+    normalizedCenter: {x: 0.390, y: 0.800}
+  - node: {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}
+    normalizedCenter: {x: 0.460, y: 0.500}
+  - node: {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}
+    normalizedCenter: {x: 0.530, y: 0.220}
+  - node: {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}
+    normalizedCenter: {x: 0.550, y: 0.800}
+  - node: {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}
+    normalizedCenter: {x: 0.620, y: 0.500}
+  - node: {fileID: 11400000, guid: 16c431e8db9a4926814300dea4560fda, type: 2}
+    normalizedCenter: {x: 0.690, y: 0.220}
+  - node: {fileID: 11400000, guid: a37abab3a4fd4d9b85a0892d5a4c6abe, type: 2}
+    normalizedCenter: {x: 0.710, y: 0.800}
+  - node: {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
+    normalizedCenter: {x: 0.780, y: 0.550}
+  - node: {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}
+    normalizedCenter: {x: 0.850, y: 0.220}
+  - node: {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}
+    normalizedCenter: {x: 0.870, y: 0.800}
+  - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+    normalizedCenter: {x: 0.940, y: 0.620}
