@@ -5,6 +5,8 @@ namespace SaltyGame
 {
     public sealed class SpeciesProgression
     {
+        public const int HarePurchaseCost = 10;
+
         readonly Dictionary<string, int> purchasedUpgradeLevels =
             new Dictionary<string, int>(StringComparer.Ordinal);
         readonly List<string> orderedUpgradeIds = new List<string>();

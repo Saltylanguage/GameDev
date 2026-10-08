@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "snapshot.json",
+  "seedStart": 60000,
+  "seedCount": 1000,
+  "workers": 16,
+  "chunkSize": 50,
+  "timeoutSeconds": 3600,
+  "maxRuns": 96000,
+  "horizonTicks": 600,
+  "baseArguments": [
+    "-phaseLengthTicks",
+    "100"
+  ],
+  "axes": [
+    {
+      "id": "candidate",
+      "values": [
+        {
+          "id": "D4-S19",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-speciesStats",
+            "fox:energy.starting=120,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        {
+          "id": "D4-S14",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        {
+          "id": "C2-S14",
+          "arguments": [
+            "-gridHeight",
+            "20",
+            "-gridWidth",
+            "36",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=10,hare=20,plant=250"
+          ]
+        },
+        {
+          "id": "D5-S25",
+          "arguments": [
+            "-gridHeight",
+            "32",
+            "-gridWidth",
+            "54",
+            "-speciesStats",
+            "fox:energy.starting=160,hare:awareness.vision-range=9",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "purchase",
+      "values": [
+        {
+          "id": "none",
+          "arguments": [
+            "-harePurchasePolicy",
+            "none"
+          ]
+        },
+        {
+          "id": "late-five",
+          "arguments": [
+            "-harePurchasePolicy",
+            "late-five"
+          ]
+        },
+        {
+          "id": "each-one",
+          "arguments": [
+            "-harePurchasePolicy",
+            "each-one"
+          ]
+        },
+        {
+          "id": "each-three",
+          "arguments": [
+            "-harePurchasePolicy",
+            "each-three"
+          ]
+        },
+        {
+          "id": "each-five",
+          "arguments": [
+            "-harePurchasePolicy",
+            "each-five"
+          ]
+        },
+        {
+          "id": "restore-toward-start",
+          "arguments": [
+            "-harePurchasePolicy",
+            "restore-toward-start"
+          ]
+        }
+      ]
+    }
+  ],
+  "paths": [
+    {
+      "id": "skip-all",
+      "arguments": [
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none"
+      ]
+    },
+    {
+      "id": "trailblazer",
+      "arguments": [
+        "-mutationPolicy",
+        "trailblazer"
+      ]
+    },
+    {
+      "id": "warren",
+      "arguments": [
+        "-mutationPolicy",
+        "warren"
+      ]
+    },
+    {
+      "arguments": [
+        "-mutationPolicy",
+        "gardeners"
+      ],
+      "id": "gardeners"
+    }
+  ],
+  "referencePath": "skip-all",
+  "metrics": [
+    "outcome.playerAliveAtHorizon",
+    "outcome.allSpeciesAliveAtHorizon",
+    "population.hare.final",
+    "population.hare.min",
+    "population.hare.max",
+    "population.hare.mean",
+    "population.fox.final",
+    "population.fox.min",
+    "population.fox.mean",
+    "herbivore.hare.PREY",
+    "herbivore.hare.STRV",
+    "herbivore.hare.CRWD",
+    "herbivore.hare.BIR",
+    "herbivore.hare.pAVI",
+    "herbivore.hare.sAVI",
+    "herbivore.hare.cAVI",
+    "herbivore.hare.RFS",
+    "herbivore.hare.APS",
+    "predator.fox.KIL",
+    "predator.fox.STRV",
+    "predator.fox.BIR",
+    "predator.fox.huntAVG",
+    "predator.fox.AHS",
+    "activity.fox.reproductionBlockedEnergy",
+    "activity.fox.births.per100Ticks",
+    "activity.hare.births.per100Ticks",
+    "herbivore.hare.ADD",
+    "population.plant.final",
+    "population.plant.min",
+    "population.plant.mean",
+    "purchase.requested",
+    "purchase.added",
+    "purchase.earned",
+    "purchase.spent",
+    "purchase.balance",
+    "purchase.windowsReached",
+    "purchase.windowsNotReached",
+    "purchase.stopped.insufficient-currency",
+    "purchase.stopped.placement-or-capacity",
+    "purchase.stopped.target-met"
+  ]
+}

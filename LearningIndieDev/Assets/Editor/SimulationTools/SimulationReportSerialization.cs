@@ -672,6 +672,8 @@ namespace SaltyGame.EditorTools
     [System.Serializable]
     sealed class SimulationPhaseResultRecord
     {
+        public SimulationHerbivoreStatLineRecord[] herbivoreStatLines;
+        public SimulationPredatorStatLineRecord[] predatorStatLines;
         public int contractVersion;
         public int phaseIndex;
         public int windowStartTickExclusive;

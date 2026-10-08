@@ -1,0 +1,2560 @@
+{
+  "schemaVersion": 1,
+  "specPath": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\cellsim-hare-confirmation-20261008-143725\\spec.json",
+  "specHash": "475b87777f176c68432bb2fd1c92eed32ed5c87b1c186715421b94aa21031c59",
+  "planHash": "78bb71bfb7d3407b28263f04d94f860dbb492dbb0755165fce8516fc9059e64f",
+  "snapshotHash": "38bda62130a25b257434c3f4e685ca22e745b5f967444137db9d2cd82d954b01",
+  "seedStart": 60000,
+  "seedCount": 1000,
+  "horizonTicks": 600,
+  "metrics": [
+    "outcome.playerAliveAtHorizon",
+    "outcome.allSpeciesAliveAtHorizon",
+    "population.hare.final",
+    "population.hare.min",
+    "population.hare.max",
+    "population.hare.mean",
+    "population.fox.final",
+    "population.fox.min",
+    "population.fox.mean",
+    "herbivore.hare.PREY",
+    "herbivore.hare.STRV",
+    "herbivore.hare.CRWD",
+    "herbivore.hare.BIR",
+    "herbivore.hare.pAVI",
+    "herbivore.hare.sAVI",
+    "herbivore.hare.cAVI",
+    "herbivore.hare.RFS",
+    "herbivore.hare.APS",
+    "predator.fox.KIL",
+    "predator.fox.STRV",
+    "predator.fox.BIR",
+    "predator.fox.huntAVG",
+    "predator.fox.AHS",
+    "activity.fox.reproductionBlockedEnergy",
+    "activity.fox.births.per100Ticks",
+    "activity.hare.births.per100Ticks",
+    "herbivore.hare.ADD",
+    "population.plant.final",
+    "population.plant.min",
+    "population.plant.mean",
+    "purchase.requested",
+    "purchase.added",
+    "purchase.earned",
+    "purchase.spent",
+    "purchase.balance",
+    "purchase.windowsReached",
+    "purchase.windowsNotReached",
+    "purchase.stopped.insufficient-currency",
+    "purchase.stopped.placement-or-capacity",
+    "purchase.stopped.target-met"
+  ],
+  "cartesianContexts": 24,
+  "selectedContexts": 24,
+  "conditions": 96,
+  "runs": 96000,
+  "globalReference": "ca568146e01a3cd6d-skip-all",
+  "cases": [
+    {
+      "id": "ca568146e01a3cd6d-skip-all",
+      "context": "a568146e01a3cd6d",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "none"
+      },
+      "path": "skip-all",
+      "reference": "ca568146e01a3cd6d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ca568146e01a3cd6d-trailblazer",
+      "context": "a568146e01a3cd6d",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "none"
+      },
+      "path": "trailblazer",
+      "reference": "ca568146e01a3cd6d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ca568146e01a3cd6d-warren",
+      "context": "a568146e01a3cd6d",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "none"
+      },
+      "path": "warren",
+      "reference": "ca568146e01a3cd6d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ca568146e01a3cd6d-gardeners",
+      "context": "a568146e01a3cd6d",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "none"
+      },
+      "path": "gardeners",
+      "reference": "ca568146e01a3cd6d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c497d4f3f2fd36175-skip-all",
+      "context": "497d4f3f2fd36175",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "late-five"
+      },
+      "path": "skip-all",
+      "reference": "c497d4f3f2fd36175-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c497d4f3f2fd36175-trailblazer",
+      "context": "497d4f3f2fd36175",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "late-five"
+      },
+      "path": "trailblazer",
+      "reference": "c497d4f3f2fd36175-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c497d4f3f2fd36175-warren",
+      "context": "497d4f3f2fd36175",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "late-five"
+      },
+      "path": "warren",
+      "reference": "c497d4f3f2fd36175-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c497d4f3f2fd36175-gardeners",
+      "context": "497d4f3f2fd36175",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "late-five"
+      },
+      "path": "gardeners",
+      "reference": "c497d4f3f2fd36175-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ce6eeb73de9f3e130-skip-all",
+      "context": "e6eeb73de9f3e130",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-one"
+      },
+      "path": "skip-all",
+      "reference": "ce6eeb73de9f3e130-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ce6eeb73de9f3e130-trailblazer",
+      "context": "e6eeb73de9f3e130",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-one"
+      },
+      "path": "trailblazer",
+      "reference": "ce6eeb73de9f3e130-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ce6eeb73de9f3e130-warren",
+      "context": "e6eeb73de9f3e130",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-one"
+      },
+      "path": "warren",
+      "reference": "ce6eeb73de9f3e130-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "ce6eeb73de9f3e130-gardeners",
+      "context": "e6eeb73de9f3e130",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-one"
+      },
+      "path": "gardeners",
+      "reference": "ce6eeb73de9f3e130-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd683803ceee6b556-skip-all",
+      "context": "d683803ceee6b556",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-three"
+      },
+      "path": "skip-all",
+      "reference": "cd683803ceee6b556-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd683803ceee6b556-trailblazer",
+      "context": "d683803ceee6b556",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-three"
+      },
+      "path": "trailblazer",
+      "reference": "cd683803ceee6b556-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd683803ceee6b556-warren",
+      "context": "d683803ceee6b556",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-three"
+      },
+      "path": "warren",
+      "reference": "cd683803ceee6b556-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd683803ceee6b556-gardeners",
+      "context": "d683803ceee6b556",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-three"
+      },
+      "path": "gardeners",
+      "reference": "cd683803ceee6b556-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c9ee0ef3069d47651-skip-all",
+      "context": "9ee0ef3069d47651",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-five"
+      },
+      "path": "skip-all",
+      "reference": "c9ee0ef3069d47651-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c9ee0ef3069d47651-trailblazer",
+      "context": "9ee0ef3069d47651",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-five"
+      },
+      "path": "trailblazer",
+      "reference": "c9ee0ef3069d47651-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c9ee0ef3069d47651-warren",
+      "context": "9ee0ef3069d47651",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-five"
+      },
+      "path": "warren",
+      "reference": "c9ee0ef3069d47651-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c9ee0ef3069d47651-gardeners",
+      "context": "9ee0ef3069d47651",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "each-five"
+      },
+      "path": "gardeners",
+      "reference": "c9ee0ef3069d47651-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c461598dcce4d2e0f-skip-all",
+      "context": "461598dcce4d2e0f",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "restore-toward-start"
+      },
+      "path": "skip-all",
+      "reference": "c461598dcce4d2e0f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c461598dcce4d2e0f-trailblazer",
+      "context": "461598dcce4d2e0f",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "restore-toward-start"
+      },
+      "path": "trailblazer",
+      "reference": "c461598dcce4d2e0f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c461598dcce4d2e0f-warren",
+      "context": "461598dcce4d2e0f",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "restore-toward-start"
+      },
+      "path": "warren",
+      "reference": "c461598dcce4d2e0f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c461598dcce4d2e0f-gardeners",
+      "context": "461598dcce4d2e0f",
+      "axes": {
+        "candidate": "D4-S19",
+        "purchase": "restore-toward-start"
+      },
+      "path": "gardeners",
+      "reference": "c461598dcce4d2e0f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=120,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "caff204181348dbfd-skip-all",
+      "context": "aff204181348dbfd",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "none"
+      },
+      "path": "skip-all",
+      "reference": "caff204181348dbfd-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "caff204181348dbfd-trailblazer",
+      "context": "aff204181348dbfd",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "none"
+      },
+      "path": "trailblazer",
+      "reference": "caff204181348dbfd-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "caff204181348dbfd-warren",
+      "context": "aff204181348dbfd",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "none"
+      },
+      "path": "warren",
+      "reference": "caff204181348dbfd-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "caff204181348dbfd-gardeners",
+      "context": "aff204181348dbfd",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "none"
+      },
+      "path": "gardeners",
+      "reference": "caff204181348dbfd-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c869b7e02a142abc7-skip-all",
+      "context": "869b7e02a142abc7",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "late-five"
+      },
+      "path": "skip-all",
+      "reference": "c869b7e02a142abc7-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c869b7e02a142abc7-trailblazer",
+      "context": "869b7e02a142abc7",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "late-five"
+      },
+      "path": "trailblazer",
+      "reference": "c869b7e02a142abc7-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c869b7e02a142abc7-warren",
+      "context": "869b7e02a142abc7",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "late-five"
+      },
+      "path": "warren",
+      "reference": "c869b7e02a142abc7-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c869b7e02a142abc7-gardeners",
+      "context": "869b7e02a142abc7",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "late-five"
+      },
+      "path": "gardeners",
+      "reference": "c869b7e02a142abc7-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c327b186673db2f1b-skip-all",
+      "context": "327b186673db2f1b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-one"
+      },
+      "path": "skip-all",
+      "reference": "c327b186673db2f1b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c327b186673db2f1b-trailblazer",
+      "context": "327b186673db2f1b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-one"
+      },
+      "path": "trailblazer",
+      "reference": "c327b186673db2f1b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c327b186673db2f1b-warren",
+      "context": "327b186673db2f1b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-one"
+      },
+      "path": "warren",
+      "reference": "c327b186673db2f1b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c327b186673db2f1b-gardeners",
+      "context": "327b186673db2f1b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-one"
+      },
+      "path": "gardeners",
+      "reference": "c327b186673db2f1b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c71175b186ca3a5d8-skip-all",
+      "context": "71175b186ca3a5d8",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-three"
+      },
+      "path": "skip-all",
+      "reference": "c71175b186ca3a5d8-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c71175b186ca3a5d8-trailblazer",
+      "context": "71175b186ca3a5d8",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-three"
+      },
+      "path": "trailblazer",
+      "reference": "c71175b186ca3a5d8-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c71175b186ca3a5d8-warren",
+      "context": "71175b186ca3a5d8",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-three"
+      },
+      "path": "warren",
+      "reference": "c71175b186ca3a5d8-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c71175b186ca3a5d8-gardeners",
+      "context": "71175b186ca3a5d8",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-three"
+      },
+      "path": "gardeners",
+      "reference": "c71175b186ca3a5d8-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd76f999e528f0dab-skip-all",
+      "context": "d76f999e528f0dab",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-five"
+      },
+      "path": "skip-all",
+      "reference": "cd76f999e528f0dab-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd76f999e528f0dab-trailblazer",
+      "context": "d76f999e528f0dab",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-five"
+      },
+      "path": "trailblazer",
+      "reference": "cd76f999e528f0dab-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd76f999e528f0dab-warren",
+      "context": "d76f999e528f0dab",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-five"
+      },
+      "path": "warren",
+      "reference": "cd76f999e528f0dab-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cd76f999e528f0dab-gardeners",
+      "context": "d76f999e528f0dab",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "each-five"
+      },
+      "path": "gardeners",
+      "reference": "cd76f999e528f0dab-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cfd51e918b29ec97b-skip-all",
+      "context": "fd51e918b29ec97b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "skip-all",
+      "reference": "cfd51e918b29ec97b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cfd51e918b29ec97b-trailblazer",
+      "context": "fd51e918b29ec97b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "trailblazer",
+      "reference": "cfd51e918b29ec97b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cfd51e918b29ec97b-warren",
+      "context": "fd51e918b29ec97b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "warren",
+      "reference": "cfd51e918b29ec97b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cfd51e918b29ec97b-gardeners",
+      "context": "fd51e918b29ec97b",
+      "axes": {
+        "candidate": "D4-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "gardeners",
+      "reference": "cfd51e918b29ec97b-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "28",
+        "-gridWidth",
+        "48",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c54425612ce85f0ae-skip-all",
+      "context": "54425612ce85f0ae",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "none"
+      },
+      "path": "skip-all",
+      "reference": "c54425612ce85f0ae-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "none",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c54425612ce85f0ae-trailblazer",
+      "context": "54425612ce85f0ae",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "none"
+      },
+      "path": "trailblazer",
+      "reference": "c54425612ce85f0ae-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c54425612ce85f0ae-warren",
+      "context": "54425612ce85f0ae",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "none"
+      },
+      "path": "warren",
+      "reference": "c54425612ce85f0ae-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c54425612ce85f0ae-gardeners",
+      "context": "54425612ce85f0ae",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "none"
+      },
+      "path": "gardeners",
+      "reference": "c54425612ce85f0ae-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c29772fdbcf016982-skip-all",
+      "context": "29772fdbcf016982",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "late-five"
+      },
+      "path": "skip-all",
+      "reference": "c29772fdbcf016982-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "late-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c29772fdbcf016982-trailblazer",
+      "context": "29772fdbcf016982",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "late-five"
+      },
+      "path": "trailblazer",
+      "reference": "c29772fdbcf016982-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c29772fdbcf016982-warren",
+      "context": "29772fdbcf016982",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "late-five"
+      },
+      "path": "warren",
+      "reference": "c29772fdbcf016982-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c29772fdbcf016982-gardeners",
+      "context": "29772fdbcf016982",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "late-five"
+      },
+      "path": "gardeners",
+      "reference": "c29772fdbcf016982-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c00058d7423a98b93-skip-all",
+      "context": "00058d7423a98b93",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-one"
+      },
+      "path": "skip-all",
+      "reference": "c00058d7423a98b93-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-one",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c00058d7423a98b93-trailblazer",
+      "context": "00058d7423a98b93",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-one"
+      },
+      "path": "trailblazer",
+      "reference": "c00058d7423a98b93-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c00058d7423a98b93-warren",
+      "context": "00058d7423a98b93",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-one"
+      },
+      "path": "warren",
+      "reference": "c00058d7423a98b93-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c00058d7423a98b93-gardeners",
+      "context": "00058d7423a98b93",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-one"
+      },
+      "path": "gardeners",
+      "reference": "c00058d7423a98b93-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c511b5aab7651781f-skip-all",
+      "context": "511b5aab7651781f",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-three"
+      },
+      "path": "skip-all",
+      "reference": "c511b5aab7651781f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-three",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c511b5aab7651781f-trailblazer",
+      "context": "511b5aab7651781f",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-three"
+      },
+      "path": "trailblazer",
+      "reference": "c511b5aab7651781f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c511b5aab7651781f-warren",
+      "context": "511b5aab7651781f",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-three"
+      },
+      "path": "warren",
+      "reference": "c511b5aab7651781f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c511b5aab7651781f-gardeners",
+      "context": "511b5aab7651781f",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-three"
+      },
+      "path": "gardeners",
+      "reference": "c511b5aab7651781f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cea90377f5fba40ef-skip-all",
+      "context": "ea90377f5fba40ef",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-five"
+      },
+      "path": "skip-all",
+      "reference": "cea90377f5fba40ef-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cea90377f5fba40ef-trailblazer",
+      "context": "ea90377f5fba40ef",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-five"
+      },
+      "path": "trailblazer",
+      "reference": "cea90377f5fba40ef-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cea90377f5fba40ef-warren",
+      "context": "ea90377f5fba40ef",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-five"
+      },
+      "path": "warren",
+      "reference": "cea90377f5fba40ef-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cea90377f5fba40ef-gardeners",
+      "context": "ea90377f5fba40ef",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "each-five"
+      },
+      "path": "gardeners",
+      "reference": "cea90377f5fba40ef-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cc8fc7c7af7060fc2-skip-all",
+      "context": "c8fc7c7af7060fc2",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "skip-all",
+      "reference": "cc8fc7c7af7060fc2-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cc8fc7c7af7060fc2-trailblazer",
+      "context": "c8fc7c7af7060fc2",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "trailblazer",
+      "reference": "cc8fc7c7af7060fc2-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cc8fc7c7af7060fc2-warren",
+      "context": "c8fc7c7af7060fc2",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "warren",
+      "reference": "cc8fc7c7af7060fc2-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "cc8fc7c7af7060fc2-gardeners",
+      "context": "c8fc7c7af7060fc2",
+      "axes": {
+        "candidate": "C2-S14",
+        "purchase": "restore-toward-start"
+      },
+      "path": "gardeners",
+      "reference": "cc8fc7c7af7060fc2-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "20",
+        "-gridWidth",
+        "36",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=80,hare:awareness.vision-range=8",
+        "-startingPopulations",
+        "fox=10,hare=20,plant=250"
+      ]
+    },
+    {
+      "id": "c2736e2202df69371-skip-all",
+      "context": "2736e2202df69371",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "none"
+      },
+      "path": "skip-all",
+      "reference": "c2736e2202df69371-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "none",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c2736e2202df69371-trailblazer",
+      "context": "2736e2202df69371",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "none"
+      },
+      "path": "trailblazer",
+      "reference": "c2736e2202df69371-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c2736e2202df69371-warren",
+      "context": "2736e2202df69371",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "none"
+      },
+      "path": "warren",
+      "reference": "c2736e2202df69371-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c2736e2202df69371-gardeners",
+      "context": "2736e2202df69371",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "none"
+      },
+      "path": "gardeners",
+      "reference": "c2736e2202df69371-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "none",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6e7257f161cf612d-skip-all",
+      "context": "6e7257f161cf612d",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "late-five"
+      },
+      "path": "skip-all",
+      "reference": "c6e7257f161cf612d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "late-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6e7257f161cf612d-trailblazer",
+      "context": "6e7257f161cf612d",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "late-five"
+      },
+      "path": "trailblazer",
+      "reference": "c6e7257f161cf612d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6e7257f161cf612d-warren",
+      "context": "6e7257f161cf612d",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "late-five"
+      },
+      "path": "warren",
+      "reference": "c6e7257f161cf612d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6e7257f161cf612d-gardeners",
+      "context": "6e7257f161cf612d",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "late-five"
+      },
+      "path": "gardeners",
+      "reference": "c6e7257f161cf612d-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "late-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c45d9160fd7ab0393-skip-all",
+      "context": "45d9160fd7ab0393",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-one"
+      },
+      "path": "skip-all",
+      "reference": "c45d9160fd7ab0393-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-one",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c45d9160fd7ab0393-trailblazer",
+      "context": "45d9160fd7ab0393",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-one"
+      },
+      "path": "trailblazer",
+      "reference": "c45d9160fd7ab0393-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c45d9160fd7ab0393-warren",
+      "context": "45d9160fd7ab0393",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-one"
+      },
+      "path": "warren",
+      "reference": "c45d9160fd7ab0393-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c45d9160fd7ab0393-gardeners",
+      "context": "45d9160fd7ab0393",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-one"
+      },
+      "path": "gardeners",
+      "reference": "c45d9160fd7ab0393-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-one",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cf5d2564cf666b62f-skip-all",
+      "context": "f5d2564cf666b62f",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-three"
+      },
+      "path": "skip-all",
+      "reference": "cf5d2564cf666b62f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-three",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cf5d2564cf666b62f-trailblazer",
+      "context": "f5d2564cf666b62f",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-three"
+      },
+      "path": "trailblazer",
+      "reference": "cf5d2564cf666b62f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cf5d2564cf666b62f-warren",
+      "context": "f5d2564cf666b62f",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-three"
+      },
+      "path": "warren",
+      "reference": "cf5d2564cf666b62f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "cf5d2564cf666b62f-gardeners",
+      "context": "f5d2564cf666b62f",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-three"
+      },
+      "path": "gardeners",
+      "reference": "cf5d2564cf666b62f-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-three",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c0ae9766fc4c9e073-skip-all",
+      "context": "0ae9766fc4c9e073",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-five"
+      },
+      "path": "skip-all",
+      "reference": "c0ae9766fc4c9e073-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-five",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c0ae9766fc4c9e073-trailblazer",
+      "context": "0ae9766fc4c9e073",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-five"
+      },
+      "path": "trailblazer",
+      "reference": "c0ae9766fc4c9e073-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c0ae9766fc4c9e073-warren",
+      "context": "0ae9766fc4c9e073",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-five"
+      },
+      "path": "warren",
+      "reference": "c0ae9766fc4c9e073-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c0ae9766fc4c9e073-gardeners",
+      "context": "0ae9766fc4c9e073",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "each-five"
+      },
+      "path": "gardeners",
+      "reference": "c0ae9766fc4c9e073-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "each-five",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6a2a2955776df733-skip-all",
+      "context": "6a2a2955776df733",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "restore-toward-start"
+      },
+      "path": "skip-all",
+      "reference": "c6a2a2955776df733-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-phaseLengthTicks",
+        "100",
+        "-phaseUpgradeSchedule",
+        "none;none;none;none;none;none",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6a2a2955776df733-trailblazer",
+      "context": "6a2a2955776df733",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "restore-toward-start"
+      },
+      "path": "trailblazer",
+      "reference": "c6a2a2955776df733-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "trailblazer",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6a2a2955776df733-warren",
+      "context": "6a2a2955776df733",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "restore-toward-start"
+      },
+      "path": "warren",
+      "reference": "c6a2a2955776df733-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "warren",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    },
+    {
+      "id": "c6a2a2955776df733-gardeners",
+      "context": "6a2a2955776df733",
+      "axes": {
+        "candidate": "D5-S25",
+        "purchase": "restore-toward-start"
+      },
+      "path": "gardeners",
+      "reference": "c6a2a2955776df733-skip-all",
+      "arguments": [
+        "-gridHeight",
+        "32",
+        "-gridWidth",
+        "54",
+        "-harePurchasePolicy",
+        "restore-toward-start",
+        "-mutationPolicy",
+        "gardeners",
+        "-phaseLengthTicks",
+        "100",
+        "-speciesStats",
+        "fox:energy.starting=160,hare:awareness.vision-range=9",
+        "-startingPopulations",
+        "fox=15,hare=30,plant=325"
+      ]
+    }
+  ],
+  "axisReferences": {
+    "candidate": "D4-S19",
+    "purchase": "none"
+  },
+  "note": "Screening configuration; candidate identification requires fresh-seed confirmation and gameplay review."
+}

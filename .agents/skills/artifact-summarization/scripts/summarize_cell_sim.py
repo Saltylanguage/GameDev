@@ -9,6 +9,7 @@ dependency just to avoid a measured problem.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -53,6 +54,7 @@ CORE_REPORT_FIELDS = {
     "runDurationSeconds",
     "stepIntervalSeconds",
     "runs",
+    "portableCohort",
 }
 
 RUN_FIELDS = {
@@ -74,6 +76,11 @@ RUN_FIELDS = {
     "upgradeAcquisitionTimeline",
     "herbivoreStatLine",
     "opportunityControl",
+    "populationTrajectory",
+    "finalStateDigest",
+    "herbivoreStatLines",
+    "predatorStatLines",
+    "mutationChoices",
 }
 
 
@@ -212,7 +219,18 @@ def combat_totals(entries: Any) -> dict[str, dict[str, Any]]:
     return result
 
 
-def population_stats(history: Any) -> dict[str, dict[str, Any]]:
+def population_stats(history: Any, trajectory: Any = None) -> dict[str, dict[str, Any]]:
+    if isinstance(trajectory, list) and trajectory:
+        # Compact workers preserve every tick's aggregate before discarding
+        # history. Endpoint-only samples cannot reconstruct exposure or peaks.
+        return {row["speciesId"]: {
+            "samples": row["observedTicks"] + 1, "first": row["first"], "last": row["last"],
+            "min": row["min"], "max": row["max"],
+            "mean": round_number((row["first"] + row["populationTickIntegral"]) / (row["observedTicks"] + 1)),
+            "populationSampleIntegral": row["first"] + row["populationTickIntegral"],
+            "populationTickIntegral": row["populationTickIntegral"], "positiveTicks": row["positiveTicks"],
+            "firstZeroTick": row["firstZeroTick"], "source": "Full per-tick portable trajectory; includes initial sample in mean"}
+            for row in trajectory}
     samples: dict[str, list[float]] = defaultdict(list)
     if not isinstance(history, list):
         return {}
@@ -297,6 +315,10 @@ def phase_summary(phase: dict[str, Any]) -> dict[str, Any]:
         "combat": combat_totals(phase.get("combatRolls")),
         "combatCooldownSuppressions": len(phase.get("combatCooldownSuppressions", []) or []),
         "herbivoreStatLine": phase.get("herbivoreStatLine"),
+        "herbivoreStatLines": phase.get("herbivoreStatLines"),
+        "predatorStatLines": phase.get("predatorStatLines"),
+        "unavailableDetailFields": [key for key in ("behaviorTransitions", "trackedBehavior", "deathEvents", "combatRolls", "combatCooldownSuppressions")
+            if phase.get(key) is None],
     }
 
 
@@ -325,7 +347,7 @@ def run_summary(run: dict[str, Any]) -> dict[str, Any]:
         "durationSeconds": run.get("durationSeconds"),
         "playerPopulation": run.get("playerPopulation"),
         "currencyEarned": run.get("currencyEarned"),
-        "populationStats": population_stats(run.get("populationHistory")),
+        "populationStats": population_stats(run.get("populationHistory"), run.get("populationTrajectory")),
         "finalPopulation": copy_population(run.get("populationHistory", [])[-1:] if run.get("populationHistory") else []),
         "activity": activity_by_species(run.get("activity")),
         "behaviorTicks": behavior_totals(run.get("behavior")),
@@ -336,6 +358,12 @@ def run_summary(run: dict[str, Any]) -> dict[str, Any]:
         "trackedBehavior": tracked,
         "upgradeAcquisitionTimeline": acquisition_timeline(run.get("upgradeAcquisitionTimeline")),
         "herbivoreStatLine": run.get("herbivoreStatLine"),
+        "herbivoreStatLines": run.get("herbivoreStatLines"),
+        "predatorStatLines": run.get("predatorStatLines"),
+        "finalStateDigest": run.get("finalStateDigest"),
+        "mutationChoices": run.get("mutationChoices"),
+        "unavailableDetailFields": [key for key in ("behaviorTransitions", "trackedBehavior", "deathEvents", "combatRolls", "combatCooldownSuppressions")
+            if run.get(key) is None],
         "opportunityControl": opportunity_summary,
         "phases": [phase_summary(phase) for phase in run.get("phaseResults", []) if isinstance(phase, dict)],
     }
@@ -344,13 +372,17 @@ def run_summary(run: dict[str, Any]) -> dict[str, Any]:
 def core_summary(report: dict[str, Any], source: Path, parse_warnings: list[str] | None = None) -> dict[str, Any]:
     manifest_path = source.with_name("manifest.json")
     manifest = load_json(manifest_path) if manifest_path.exists() else {}
+    with source.open("rb") as stream:
+        report_hash = hashlib.file_digest(stream, "sha256").hexdigest()
+    portable = report.get("portableCohort") or {}
     summary = {
         "summarySchemaVersion": 1,
         "source": {
             "reportPath": str(source),
             "manifestPath": str(manifest_path) if manifest_path.exists() else "",
-            "reportSha256": manifest.get("reportSha256", ""),
-            "sourceCommit": manifest.get("sourceCommit", ""),
+            "reportSha256": report_hash,
+            "sourceCommit": portable.get("sourceCommit", manifest.get("sourceCommit", "")),
+            "portableCohort": report.get("portableCohort"),
             "sourceTreeDirtyBeforeRun": manifest.get("sourceTreeDirtyBeforeRun"),
             "sourceTreeDirtyAfterRun": manifest.get("sourceTreeDirtyAfterRun"),
             "scenarioAssetGuid": manifest.get("scenarioAssetGuid", ""),
@@ -422,6 +454,7 @@ def core_summary(report: dict[str, Any], source: Path, parse_warnings: list[str]
                 "combat attempts, hits, misses, and roll distributions",
                 "phase opening/closing populations and effective loadouts",
             ],
+            "inputLimitations": portable.get("detail", ""),
         },
     }
     return summary
@@ -626,6 +659,7 @@ def markdown(summary: dict[str, Any]) -> str:
         "",
         "- Retained: provenance, catalog/snapshot identity, seed-level outcomes, phase windows, populations, activity counters, stat lines, behavior totals, transitions, deaths, combat distributions, and opportunity counts.",
         "- Omitted raw arrays: `populationHistory`, `behaviorTransitions`, `deathEvents`, `combatRolls`, and `opportunityAudit`.",
+        f"- Input detail limitations: {summary.get('compression', {}).get('inputLimitations') or 'See unavailableDetailFields per run and phase.'}",
         f"- Unrecognized report fields: `{summary.get('unrecognizedReportFields')}`; unrecognized run fields: `{summary.get('unrecognizedRunFields')}`.",
         "- A summary is not causal proof and must not replace a declared experiment method or human balance decision.",
     ])

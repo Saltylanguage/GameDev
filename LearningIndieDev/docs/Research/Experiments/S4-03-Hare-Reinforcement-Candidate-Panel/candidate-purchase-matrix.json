@@ -1,0 +1,1247 @@
+{
+  "schemaVersion": 1,
+  "recordedDate": "2026-10-08",
+  "owner": "Bevin / SimMasterBev",
+  "candidateSelection": "Approved by user; candidates for development, not production defaults",
+  "purchaseProtocol": "Approved by Bevin on 2026-10-08: yes run it",
+  "executionReady": true,
+  "executionLimitation": "Use a fresh export and frozen build after purchase self-checks, Unity parity, historical control parity and the 128-arm smoke pass",
+  "source": {
+    "run": "cellsim-250k-sweep-20261008-030316",
+    "specHash": "f60b091c6bf4dc12f25835b8f26985dd97ca04582c53df1e9420a1052151c5f2",
+    "sourceHash": "89c3792a277ff216d0e109ce3b784e3bc4c69de954c77b11b04b336a40bb55a9",
+    "batchIdentity": "ea092fa4ac396e4bf93b567e8aa7b1de886f5ef2303c3cb7d70b54aa509af12c",
+    "rawHash": "aed27d0b76deaa39c61e944e478407003786b16322ba5187c96bb909934e5edf",
+    "survivalAndStatlineAnalysis": "artifacts/cellsim-250k-sweep-20261008-030316/all-path-benefit/results-with-statlines.json"
+  },
+  "candidates": [
+    {
+      "id": "D4/S19",
+      "context": "01fd61e2e8019729",
+      "axes": {
+        "populations": "325-30-15",
+        "grid": "48x28",
+        "fox-energy": "120",
+        "hare-vision": "8"
+      },
+      "basePathCases": {
+        "skip-all": {
+          "originalCondition": "c01fd61e2e8019729-skip-all",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-phaseLengthTicks",
+            "100",
+            "-phaseUpgradeSchedule",
+            "none;none;none;none;none;none",
+            "-speciesStats",
+            "fox:energy.starting=120,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "trailblazer": {
+          "originalCondition": "c01fd61e2e8019729-trailblazer",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "trailblazer",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=120,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "warren": {
+          "originalCondition": "c01fd61e2e8019729-warren",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "warren",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=120,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "gardeners": {
+          "originalCondition": "c01fd61e2e8019729-gardeners",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "gardeners",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=120,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D4/S14",
+      "context": "75ef8305cd12923b",
+      "axes": {
+        "populations": "325-30-15",
+        "grid": "48x28",
+        "fox-energy": "80",
+        "hare-vision": "8"
+      },
+      "basePathCases": {
+        "skip-all": {
+          "originalCondition": "c75ef8305cd12923b-skip-all",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-phaseLengthTicks",
+            "100",
+            "-phaseUpgradeSchedule",
+            "none;none;none;none;none;none",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "trailblazer": {
+          "originalCondition": "c75ef8305cd12923b-trailblazer",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "trailblazer",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "warren": {
+          "originalCondition": "c75ef8305cd12923b-warren",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "warren",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "gardeners": {
+          "originalCondition": "c75ef8305cd12923b-gardeners",
+          "arguments": [
+            "-gridHeight",
+            "28",
+            "-gridWidth",
+            "48",
+            "-mutationPolicy",
+            "gardeners",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        }
+      }
+    },
+    {
+      "id": "C2/S14",
+      "context": "7fb6f2866db003c2",
+      "axes": {
+        "populations": "250-20-10",
+        "grid": "36x20",
+        "fox-energy": "80",
+        "hare-vision": "8"
+      },
+      "basePathCases": {
+        "skip-all": {
+          "originalCondition": "c7fb6f2866db003c2-skip-all",
+          "arguments": [
+            "-gridHeight",
+            "20",
+            "-gridWidth",
+            "36",
+            "-phaseLengthTicks",
+            "100",
+            "-phaseUpgradeSchedule",
+            "none;none;none;none;none;none",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=10,hare=20,plant=250"
+          ]
+        },
+        "trailblazer": {
+          "originalCondition": "c7fb6f2866db003c2-trailblazer",
+          "arguments": [
+            "-gridHeight",
+            "20",
+            "-gridWidth",
+            "36",
+            "-mutationPolicy",
+            "trailblazer",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=10,hare=20,plant=250"
+          ]
+        },
+        "warren": {
+          "originalCondition": "c7fb6f2866db003c2-warren",
+          "arguments": [
+            "-gridHeight",
+            "20",
+            "-gridWidth",
+            "36",
+            "-mutationPolicy",
+            "warren",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=10,hare=20,plant=250"
+          ]
+        },
+        "gardeners": {
+          "originalCondition": "c7fb6f2866db003c2-gardeners",
+          "arguments": [
+            "-gridHeight",
+            "20",
+            "-gridWidth",
+            "36",
+            "-mutationPolicy",
+            "gardeners",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=80,hare:awareness.vision-range=8",
+            "-startingPopulations",
+            "fox=10,hare=20,plant=250"
+          ]
+        }
+      }
+    },
+    {
+      "id": "D5/S25",
+      "context": "b68ed2e2dc629fb9",
+      "axes": {
+        "populations": "325-30-15",
+        "grid": "54x32",
+        "fox-energy": "160",
+        "hare-vision": "9"
+      },
+      "basePathCases": {
+        "skip-all": {
+          "originalCondition": "cb68ed2e2dc629fb9-skip-all",
+          "arguments": [
+            "-gridHeight",
+            "32",
+            "-gridWidth",
+            "54",
+            "-phaseLengthTicks",
+            "100",
+            "-phaseUpgradeSchedule",
+            "none;none;none;none;none;none",
+            "-speciesStats",
+            "fox:energy.starting=160,hare:awareness.vision-range=9",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "trailblazer": {
+          "originalCondition": "cb68ed2e2dc629fb9-trailblazer",
+          "arguments": [
+            "-gridHeight",
+            "32",
+            "-gridWidth",
+            "54",
+            "-mutationPolicy",
+            "trailblazer",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=160,hare:awareness.vision-range=9",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "warren": {
+          "originalCondition": "cb68ed2e2dc629fb9-warren",
+          "arguments": [
+            "-gridHeight",
+            "32",
+            "-gridWidth",
+            "54",
+            "-mutationPolicy",
+            "warren",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=160,hare:awareness.vision-range=9",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        },
+        "gardeners": {
+          "originalCondition": "cb68ed2e2dc629fb9-gardeners",
+          "arguments": [
+            "-gridHeight",
+            "32",
+            "-gridWidth",
+            "54",
+            "-mutationPolicy",
+            "gardeners",
+            "-phaseLengthTicks",
+            "100",
+            "-speciesStats",
+            "fox:energy.starting=160,hare:awareness.vision-range=9",
+            "-startingPopulations",
+            "fox=15,hare=30,plant=325"
+          ]
+        }
+      }
+    }
+  ],
+  "paths": [
+    "skip-all",
+    "trailblazer",
+    "warren",
+    "gardeners"
+  ],
+  "purchasePolicies": [
+    {
+      "id": "none",
+      "caps": [
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "early-five",
+      "caps": [
+        5,
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "middle-five",
+      "caps": [
+        0,
+        0,
+        5,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "late-five",
+      "caps": [
+        0,
+        0,
+        0,
+        0,
+        5
+      ]
+    },
+    {
+      "id": "each-one",
+      "caps": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "each-three",
+      "caps": [
+        3,
+        3,
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "each-five",
+      "caps": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ]
+    },
+    {
+      "id": "restore-toward-start",
+      "caps": [
+        5,
+        5,
+        5,
+        5,
+        5
+      ],
+      "target": "initialHarePopulation",
+      "onlyBelowTarget": true
+    }
+  ],
+  "conditions": [
+    {
+      "id": "D4-S19-skip-all-none",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S19-skip-all-early-five",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S19-skip-all-middle-five",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S19-skip-all-late-five",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S19-skip-all-each-one",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S19-skip-all-each-three",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S19-skip-all-each-five",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S19-skip-all-restore-toward-start",
+      "candidate": "D4/S19",
+      "path": "skip-all",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S19-trailblazer-none",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S19-trailblazer-early-five",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S19-trailblazer-middle-five",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S19-trailblazer-late-five",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S19-trailblazer-each-one",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S19-trailblazer-each-three",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S19-trailblazer-each-five",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S19-trailblazer-restore-toward-start",
+      "candidate": "D4/S19",
+      "path": "trailblazer",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S19-warren-none",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S19-warren-early-five",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S19-warren-middle-five",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S19-warren-late-five",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S19-warren-each-one",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S19-warren-each-three",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S19-warren-each-five",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S19-warren-restore-toward-start",
+      "candidate": "D4/S19",
+      "path": "warren",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S19-gardeners-none",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S19-gardeners-early-five",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S19-gardeners-middle-five",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S19-gardeners-late-five",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S19-gardeners-each-one",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S19-gardeners-each-three",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S19-gardeners-each-five",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S19-gardeners-restore-toward-start",
+      "candidate": "D4/S19",
+      "path": "gardeners",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S14-skip-all-none",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S14-skip-all-early-five",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S14-skip-all-middle-five",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S14-skip-all-late-five",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S14-skip-all-each-one",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S14-skip-all-each-three",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S14-skip-all-each-five",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S14-skip-all-restore-toward-start",
+      "candidate": "D4/S14",
+      "path": "skip-all",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S14-trailblazer-none",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S14-trailblazer-early-five",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S14-trailblazer-middle-five",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S14-trailblazer-late-five",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S14-trailblazer-each-one",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S14-trailblazer-each-three",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S14-trailblazer-each-five",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S14-trailblazer-restore-toward-start",
+      "candidate": "D4/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S14-warren-none",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S14-warren-early-five",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S14-warren-middle-five",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S14-warren-late-five",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S14-warren-each-one",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S14-warren-each-three",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S14-warren-each-five",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S14-warren-restore-toward-start",
+      "candidate": "D4/S14",
+      "path": "warren",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D4-S14-gardeners-none",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D4-S14-gardeners-early-five",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D4-S14-gardeners-middle-five",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D4-S14-gardeners-late-five",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D4-S14-gardeners-each-one",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D4-S14-gardeners-each-three",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D4-S14-gardeners-each-five",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D4-S14-gardeners-restore-toward-start",
+      "candidate": "D4/S14",
+      "path": "gardeners",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "C2-S14-skip-all-none",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "C2-S14-skip-all-early-five",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "C2-S14-skip-all-middle-five",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "C2-S14-skip-all-late-five",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "C2-S14-skip-all-each-one",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "C2-S14-skip-all-each-three",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "C2-S14-skip-all-each-five",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "C2-S14-skip-all-restore-toward-start",
+      "candidate": "C2/S14",
+      "path": "skip-all",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "C2-S14-trailblazer-none",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "C2-S14-trailblazer-early-five",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "C2-S14-trailblazer-middle-five",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "C2-S14-trailblazer-late-five",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "C2-S14-trailblazer-each-one",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "C2-S14-trailblazer-each-three",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "C2-S14-trailblazer-each-five",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "C2-S14-trailblazer-restore-toward-start",
+      "candidate": "C2/S14",
+      "path": "trailblazer",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "C2-S14-warren-none",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "C2-S14-warren-early-five",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "C2-S14-warren-middle-five",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "C2-S14-warren-late-five",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "C2-S14-warren-each-one",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "C2-S14-warren-each-three",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "C2-S14-warren-each-five",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "C2-S14-warren-restore-toward-start",
+      "candidate": "C2/S14",
+      "path": "warren",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "C2-S14-gardeners-none",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "C2-S14-gardeners-early-five",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "C2-S14-gardeners-middle-five",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "C2-S14-gardeners-late-five",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "C2-S14-gardeners-each-one",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "C2-S14-gardeners-each-three",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "C2-S14-gardeners-each-five",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "C2-S14-gardeners-restore-toward-start",
+      "candidate": "C2/S14",
+      "path": "gardeners",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D5-S25-skip-all-none",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D5-S25-skip-all-early-five",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D5-S25-skip-all-middle-five",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D5-S25-skip-all-late-five",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D5-S25-skip-all-each-one",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D5-S25-skip-all-each-three",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D5-S25-skip-all-each-five",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D5-S25-skip-all-restore-toward-start",
+      "candidate": "D5/S25",
+      "path": "skip-all",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D5-S25-trailblazer-none",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D5-S25-trailblazer-early-five",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D5-S25-trailblazer-middle-five",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D5-S25-trailblazer-late-five",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D5-S25-trailblazer-each-one",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D5-S25-trailblazer-each-three",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D5-S25-trailblazer-each-five",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D5-S25-trailblazer-restore-toward-start",
+      "candidate": "D5/S25",
+      "path": "trailblazer",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D5-S25-warren-none",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D5-S25-warren-early-five",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D5-S25-warren-middle-five",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D5-S25-warren-late-five",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D5-S25-warren-each-one",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D5-S25-warren-each-three",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D5-S25-warren-each-five",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D5-S25-warren-restore-toward-start",
+      "candidate": "D5/S25",
+      "path": "warren",
+      "purchasePolicy": "restore-toward-start"
+    },
+    {
+      "id": "D5-S25-gardeners-none",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "none"
+    },
+    {
+      "id": "D5-S25-gardeners-early-five",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "early-five"
+    },
+    {
+      "id": "D5-S25-gardeners-middle-five",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "middle-five"
+    },
+    {
+      "id": "D5-S25-gardeners-late-five",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "late-five"
+    },
+    {
+      "id": "D5-S25-gardeners-each-one",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "each-one"
+    },
+    {
+      "id": "D5-S25-gardeners-each-three",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "each-three"
+    },
+    {
+      "id": "D5-S25-gardeners-each-five",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "each-five"
+    },
+    {
+      "id": "D5-S25-gardeners-restore-toward-start",
+      "candidate": "D5/S25",
+      "path": "gardeners",
+      "purchasePolicy": "restore-toward-start"
+    }
+  ],
+  "plannedScreen": {
+    "seedStart": 50000,
+    "seedCount": 100,
+    "conditionCount": 128,
+    "runs": 12800,
+    "workers": 16,
+    "phaseLengthTicks": 100,
+    "horizonTicks": 600,
+    "decisionTicks": [
+      100,
+      200,
+      300,
+      400,
+      500
+    ]
+  },
+  "purchaseContract": {
+    "fieldDataPerHare": 10,
+    "haresPerSuccessfulClick": 1,
+    "initialFieldData": 0,
+    "reward": "Living Hare count credited once at each reached upgrade window",
+    "repeatUntil": "Policy cap, target, insufficient currency or placement/capacity failure",
+    "mutationChoice": "Separate; preserve original reachable offer-aware path choices",
+    "placement": "Production TryAddBoundaryPopulation on current and restart grids",
+    "recordUnreachedWindows": true,
+    "allowTerminalResurrection": false,
+    "fieldDataPriceSource": "Assets/Scripts/Game/Presentation/SpeciesSimulationPreview.cs:HareCost",
+    "legacyCatalogPriceExcluded": 5
+  },
+  "reportContract": {
+    "primary": [
+      "Hare survival at600",
+      "All-species survival at600"
+    ],
+    "supporting": [
+      "Mean Hare APS with Valid n",
+      "Mean Fox AHS with Valid n",
+      "Matched deltas",
+      "Observed windows and phase slashlines",
+      "Successful ADD and spend",
+      "Earned and unspent Field Data",
+      "Reached/unreached windows and failed-buy reasons",
+      "Recovery, populations, birth and death cause rates"
+    ],
+    "purchaseReference": "Same candidate, same Mutation path, no purchases, same seed",
+    "mutationReference": "Same candidate, Skip all, same purchase policy, same seed",
+    "acceptance": "Exploratory candidates; fresh-seed and human gameplay review, no automatic production gate"
+  }
+}

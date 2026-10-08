@@ -1,0 +1,16 @@
+{
+  "state": "Passed",
+  "checks": [
+    "compound stat axes and conflict rejection",
+    "sampling reproducibility",
+    "budget before expansion",
+    "hand-calculated distributions and McNemar",
+    "matched seed deltas",
+    "one-axis held-context comparisons",
+    "SQL coverage and metric mapping",
+    "population trajectory",
+    "N/A and Invalid stay unavailable",
+    "portable cohort summary and legacy behavior",
+    "hash and duplicate seed rejection"
+  ]
+}

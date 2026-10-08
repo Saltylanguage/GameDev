@@ -22,7 +22,7 @@ namespace SaltyGame
     {
         public const int ContinuousExpeditionPhaseCount = 6;
         public const int JourneyPrototypeCycleCount = 2;
-        public const int HareCost = 10;
+        public const int HareCost = SpeciesProgression.HarePurchaseCost;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 

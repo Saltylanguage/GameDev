@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "../../artifacts/cellsim-input.json",
+  "output": "../../artifacts/cellsim-million",
+  "seedStart": 100000,
+  "seedCount": 1000000,
+  "chunkSize": 1000,
+  "workers": 8,
+  "timeoutSeconds": 3600,
+  "conditions": [
+    { "id": "control", "arguments": [] }
+  ]
+}

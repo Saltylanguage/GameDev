@@ -1,0 +1,30 @@
+{
+  "state": "Passed",
+  "runs": 96000,
+  "conditions": 96,
+  "seedStart": 60000,
+  "seedCount": 1000,
+  "workers": 16,
+  "sourceScreen": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\cellsim-hare-purchase-20261008-132317",
+  "sourceBatchIdentity": "7fc4666c6ad2459af4c6917e32ca21987d8399a0417f2cfaf6c8a1767899fafa",
+  "reusedValidation": "Eight Unity references, sixteen historical controls, 128-arm smoke and two EditMode tests are retained evidence for the identical frozen simulation build, not rerun tests.",
+  "hashes": {
+    "snapshot.json": "38bda62130a25b257434c3f4e685ca22e745b5f967444137db9d2cd82d954b01",
+    "spec.json": "475b87777f176c68432bb2fd1c92eed32ed5c87b1c186715421b94aa21031c59",
+    "sweep\\plan.json": "78bb71bfb7d3407b28263f04d94f860dbb492dbb0755165fce8516fc9059e64f",
+    "sweep\\sweep.json": "12af59b9e5db04ef5f30863810a975a77ad6122952c29faa6946f83147cf9df5",
+    "tool\\sweep.py": "4b33c2398ffa9d7c2ff6ed259de2400c244cf1715f87903a78e6c6445e745df5",
+    "tool\\purchase_report.py": "ccf8457369b3999954c723dd43a55b061e16d69759b962223804c8ef3cf1ec8d",
+    "tool\\bin\\Release\\net8.0\\CellSim.Batch.deps.json": "3c86c320b2426baeda2c4d47235d82ad0c9fdd5578d4d1b472574febe4e715c8",
+    "tool\\bin\\Release\\net8.0\\CellSim.Batch.dll": "50178631910b6d85d1705aed7b648f548f61395bec5c0582f4797c210159cb3f",
+    "tool\\bin\\Release\\net8.0\\CellSim.Batch.exe": "063553210a1b31983f907593ea764766ef69917d2109417ad30eacb62238a6c7",
+    "tool\\bin\\Release\\net8.0\\CellSim.Batch.pdb": "d8f4665c39f8f5b8fde8641be05d6fa04ee3e8d3328e5d7097478d1ebdbd2cb5",
+    "tool\\bin\\Release\\net8.0\\CellSim.Batch.runtimeconfig.json": "28329cf08f6505e73806b17558b187c02f0c1c516fe47ebfb7a013d082aaa306"
+  },
+  "evidence": [
+    "96,000 runs; 1920 chunks; 16 workers; identity 036565a25ed21c1853ad35fec8b3ee8c2474b8dc2114c21b0e29d65e3f067087\nCompiled 24 contexts x 4 paths x 1000 matched seeds\n",
+    "PASS: snapshot round-trip; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.\n",
+    "96,000 runs; 1920 chunks; 16 workers; identity 036565a25ed21c1853ad35fec8b3ee8c2474b8dc2114c21b0e29d65e3f067087\n",
+    "All 96 case arguments match the screen; snapshot and all runner files are byte-identical."
+  ]
+}

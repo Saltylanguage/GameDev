@@ -1,0 +1,612 @@
+{
+    "schemaVersion": 1,
+    "sourceHash": "8e61009504e4610c77a37132f47f8ef75da15333dd678a029b1bacc0310fe3b1",
+    "sourceCommit": "e7a6c6022ffbc5c72a7269e4428a36a8d340b869",
+    "scenarioPath": "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset",
+    "fingerprint": "aaed06740f3bdc189cfc4c4a6945d7318fd741d91f63db4a31a362eec846b5ab",
+    "catalogPath": "Assets/Data/ProductionData/CellularSimulation/Upgrades/Production",
+    "arguments": [
+        "-playerSpeciesId",
+        "hare",
+        "-combatMode",
+        "opposed-roll",
+        "-experimentalFeatures",
+        "bev-experimental",
+        "-wrapEdges",
+        "true",
+        "-stepIntervalSeconds",
+        "0.1"
+    ],
+    "width": 36,
+    "height": 20,
+    "maxPopulation": 0,
+    "minPopulation": 0,
+    "wrapEdges": false,
+    "runDurationSeconds": 20.0,
+    "stepInterval": 0.20000000298023225,
+    "species": [
+        {
+            "id": "fox",
+            "probability": 0.0,
+            "population": 35,
+            "hasProbability": true,
+            "hasPopulation": true,
+            "rules": {
+                "movementSpeed": 1.0,
+                "movementPattern": [
+                    {
+                        "x": -1,
+                        "y": 1
+                    },
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": -1,
+                        "y": -1
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": 1,
+                        "y": -1
+                    }
+                ],
+                "attackPattern": [
+                    {
+                        "x": -1,
+                        "y": 1
+                    },
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": -1,
+                        "y": -1
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": 1,
+                        "y": -1
+                    }
+                ],
+                "attackAmount": 2,
+                "blockPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "blockAmount": 0,
+                "dietPattern": [
+                    {
+                        "x": -1,
+                        "y": 1
+                    },
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": -1,
+                        "y": -1
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": 1,
+                        "y": -1
+                    }
+                ],
+                "dietTarget": "hare",
+                "reproductionPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "reproductionNeighborCount": 1,
+                "reproductionChance": 0.44999998807907107,
+                "reproductionFoodRequired": 48,
+                "maxReproductionGroupSize": 3,
+                "startingEnergy": 120,
+                "wiltChance": 0.0,
+                "crowdingMetabolismMultiplier": 2,
+                "startingFoodReserve": 0.0,
+                "seedDropChance": 0.0,
+                "energyValue": 100,
+                "metabolism": 1,
+                "visionRange": 12,
+                "intelligence": 1,
+                "role": 2,
+                "forageBelowEnergy": 120,
+                "maximumEnergy": 240,
+                "litterMinimum": 1,
+                "litterMaximum": 1,
+                "attackModifier": 2,
+                "damageAmount": 2,
+                "digestionEnergyBonus": 0.0,
+                "crowdingTolerance": 0,
+                "fleeMovementSpeedBonus": 0.0,
+                "trackingPersistenceSteps": 0,
+                "behaviorStateRules": [
+                    {
+                        "state": 3,
+                        "minimumDurationTicks": 3,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 4,
+                        "minimumDurationTicks": 8,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 5,
+                        "minimumDurationTicks": 0,
+                        "stopsMovement": true
+                    }
+                ],
+                "foragesUntilFull": false,
+                "energyLossIntervalTicks": 1,
+                "forageThresholdFraction": 0.75,
+                "matingEnergyThresholdFraction": 0.25,
+                "matingEnergyCostFraction": 0.15000000596046449,
+                "distributeMatingEnergyToOffspring": false,
+                "crowdingEnergyReduction": 0.0
+            }
+        },
+        {
+            "id": "hare",
+            "probability": 0.0,
+            "population": 55,
+            "hasProbability": true,
+            "hasPopulation": true,
+            "rules": {
+                "movementSpeed": 2.200000047683716,
+                "movementPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "attackPattern": [],
+                "attackAmount": 1,
+                "blockPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "blockAmount": 0,
+                "dietPattern": [
+                    {
+                        "x": -1,
+                        "y": 1
+                    },
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": -1,
+                        "y": -1
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": 1,
+                        "y": -1
+                    }
+                ],
+                "dietTarget": "plant",
+                "reproductionPattern": [
+                    {
+                        "x": -1,
+                        "y": 1
+                    },
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": -1,
+                        "y": -1
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": 1,
+                        "y": -1
+                    }
+                ],
+                "reproductionNeighborCount": 1,
+                "reproductionChance": 1.0,
+                "reproductionFoodRequired": 16,
+                "maxReproductionGroupSize": 7,
+                "startingEnergy": 12,
+                "wiltChance": 0.0,
+                "crowdingMetabolismMultiplier": 2,
+                "startingFoodReserve": 0.0,
+                "seedDropChance": 0.0,
+                "energyValue": 96,
+                "metabolism": 1,
+                "visionRange": 5,
+                "intelligence": 1,
+                "role": 1,
+                "forageBelowEnergy": 6,
+                "maximumEnergy": 48,
+                "litterMinimum": 2,
+                "litterMaximum": 5,
+                "attackModifier": 1,
+                "damageAmount": 1,
+                "digestionEnergyBonus": 0.0,
+                "crowdingTolerance": 0,
+                "fleeMovementSpeedBonus": 0.0,
+                "trackingPersistenceSteps": 0,
+                "behaviorStateRules": [
+                    {
+                        "state": 3,
+                        "minimumDurationTicks": 3,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 4,
+                        "minimumDurationTicks": 8,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 5,
+                        "minimumDurationTicks": 0,
+                        "stopsMovement": true
+                    }
+                ],
+                "foragesUntilFull": true,
+                "energyLossIntervalTicks": 8,
+                "forageThresholdFraction": 0.0,
+                "matingEnergyThresholdFraction": 0.5,
+                "matingEnergyCostFraction": 0.5,
+                "distributeMatingEnergyToOffspring": true,
+                "crowdingEnergyReduction": 0.0
+            }
+        },
+        {
+            "id": "plant",
+            "probability": 0.0,
+            "population": 400,
+            "hasProbability": true,
+            "hasPopulation": true,
+            "rules": {
+                "movementSpeed": 0.0,
+                "movementPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "attackPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "attackAmount": 0,
+                "blockPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "blockAmount": 0,
+                "dietPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "dietTarget": "",
+                "reproductionPattern": [
+                    {
+                        "x": 0,
+                        "y": 1
+                    },
+                    {
+                        "x": 1,
+                        "y": 0
+                    },
+                    {
+                        "x": 0,
+                        "y": -1
+                    },
+                    {
+                        "x": -1,
+                        "y": 0
+                    }
+                ],
+                "reproductionNeighborCount": 0,
+                "reproductionChance": 0.0,
+                "reproductionFoodRequired": 1,
+                "maxReproductionGroupSize": 0,
+                "startingEnergy": 0,
+                "wiltChance": 0.003000000026077032,
+                "crowdingMetabolismMultiplier": 1,
+                "startingFoodReserve": 10.0,
+                "seedDropChance": 0.0,
+                "energyValue": 5,
+                "metabolism": 0,
+                "visionRange": 0,
+                "intelligence": 0,
+                "role": 0,
+                "forageBelowEnergy": 0,
+                "maximumEnergy": 0,
+                "litterMinimum": 1,
+                "litterMaximum": 1,
+                "attackModifier": 0,
+                "damageAmount": 0,
+                "digestionEnergyBonus": 0.0,
+                "crowdingTolerance": 0,
+                "fleeMovementSpeedBonus": 0.0,
+                "trackingPersistenceSteps": 0,
+                "behaviorStateRules": [
+                    {
+                        "state": 3,
+                        "minimumDurationTicks": 3,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 4,
+                        "minimumDurationTicks": 8,
+                        "stopsMovement": true
+                    },
+                    {
+                        "state": 5,
+                        "minimumDurationTicks": 0,
+                        "stopsMovement": true
+                    }
+                ],
+                "foragesUntilFull": false,
+                "energyLossIntervalTicks": 1,
+                "forageThresholdFraction": 0.0,
+                "matingEnergyThresholdFraction": 0.0,
+                "matingEnergyCostFraction": 0.0,
+                "distributeMatingEnergyToOffspring": false,
+                "crowdingEnergyReduction": 0.0
+            }
+        }
+    ],
+    "terrain": [
+        {
+            "id": "bare",
+            "isPassable": true,
+            "providesResource": false,
+            "movementCost": 1.0,
+            "regrowthPerTick": 0.0,
+            "growthIntervalSeconds": 0.0,
+            "color": {
+                "r": 0.3499999940395355,
+                "g": 0.20000000298023225,
+                "b": 0.10000000149011612,
+                "a": 1.0
+            }
+        },
+        {
+            "id": "grass",
+            "isPassable": true,
+            "providesResource": true,
+            "movementCost": 1.0,
+            "regrowthPerTick": 0.0,
+            "growthIntervalSeconds": 17.399999618530275,
+            "color": {
+                "r": 0.20000000298023225,
+                "g": 0.75,
+                "b": 0.25,
+                "a": 1.0
+            }
+        }
+    ],
+    "alpha": [],
+    "upgrades": [
+        {
+            "id": "larger-maximum-litter",
+            "displayName": "Hare: Larger Maximum Litter",
+            "description": "Increase the maximum number of offspring in each litter by one.",
+            "targetSpecies": "hare",
+            "cost": 5,
+            "populationToAdd": 0,
+            "avoidanceBonus": 0.0,
+            "prerequisites": [],
+            "exclusions": [],
+            "modifiers": [
+                {
+                    "id": "reproduction.litter-maximum",
+                    "value": 1.0
+                }
+            ]
+        },
+        {
+            "id": "larger-minimum-litter",
+            "displayName": "Hare: Larger Minimum Litter",
+            "description": "Increase the minimum number of offspring in each litter by one.",
+            "targetSpecies": "hare",
+            "cost": 5,
+            "populationToAdd": 0,
+            "avoidanceBonus": 0.0,
+            "prerequisites": [],
+            "exclusions": [],
+            "modifiers": [
+                {
+                    "id": "reproduction.litter-minimum",
+                    "value": 1.0
+                }
+            ]
+        }
+    ]
+}
