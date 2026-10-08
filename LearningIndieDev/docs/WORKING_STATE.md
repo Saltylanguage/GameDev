@@ -14,8 +14,12 @@ dashboard fixtures passed. The rebuilt DLL is byte-identical to the live run's
 copy; all frozen input/tool hashes remain unchanged. Completed evidence and
 immutable confirmation inputs are packaged in
 [the shared research bundle](Research/Results/2026-10-08-CellSim-Sweeps/README.md).
-Raw/active output remains local. Git publication status will be recorded in the
-publication handoff; simulation completion must still be checked separately.
+Raw/active output remains local. Main commit `bada43ad` was pushed to
+`origin/BevBranch`; local and remote SHAs were verified equal. The active batch
+continued to 30,000 validated runs with 16 workers and all pinned hashes intact.
+Read the [publication handoff](handoffs/2026-10-08-codex-cellsim-publication.md).
+Trello synchronization remains outstanding; simulation completion must still
+be checked separately.
 
 **October 8 Hare-purchase confirmation running:** Bevin accepted the recommended
 first step with "okay lets begin step by step". The approved follow-up runs the
