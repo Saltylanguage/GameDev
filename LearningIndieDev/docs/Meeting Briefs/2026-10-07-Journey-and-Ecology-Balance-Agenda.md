@@ -2,6 +2,21 @@
 
 Prepared by Codex for Bevin before the team meeting. These are discussion notes; unchecked decisions and proposed assignments are not team approval.
 
+**Meeting completed:** Bevin supplied the decisions below on October 7. They supersede the agenda's proposals where they differ. The original agenda and experiment results are retained as historical context.
+
+## Meeting decisions
+
+1. **Success:** survive to tick 600 with an ecology viable enough to survive to tick 700. The exact meaning of viability remains to be defined; no new population threshold, prediction formula, or runtime gate is approved yet.
+2. **Upgrade continuity:** upgrades acquired during a run persist into the next simulation run in the journey. This approves carryover between successive journey simulations. It does not decide persistence into a newly started journey or permanent account progression.
+3. **Population and event pacing:** retain 600 Plants / 40 Hares / 25 Foxes as the historical research fixture. Discover a new starting population that makes kills, births, and other events happen at a more personal pace. No replacement population is selected yet; the old fixture's outcomes are not validation of the new pacing goal.
+4. **Ownership:** leave the next ecology balance and population-search work to SimMasterBev.
+5. **Deferred:** do not pursue the DNA reward economy / secondary long-running simulator at this point.
+6. **Shared context:** add meeting updates to Trello comments, preserving existing card descriptions and historical evidence.
+
+The next definition needed is the tick-700 viability criterion: which species must remain viable, what floors or recovery behavior count, whether it is measured by an actual 100-tick continuation or estimated at tick 600, and what interventions or next-node conditions apply during that window. These are open questions, not adopted mechanics. The earlier Plants > 0 / Hares >= 5 / Foxes >= 5 rule remains the label for historical six-phase reports, not a complete definition of this new goal.
+
+See the [meeting handoff](../handoffs/2026-10-07-2239-codex-journey-meeting-decisions-and-population-pacing.md) for ownership and the next work boundary.
+
 ## Opening statement
 
 "I've pushed our accumulated S4 implementation and balance research to BevBranch, merged your latest journey work, and pushed that too. The focused integration checks passed. The map gives us the longer-run structure we wanted; the ecology still needs work. I'd like us to agree what counts as clearing a node and which upgrades persist, then choose one controlled balance experiment."

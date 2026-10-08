@@ -63,6 +63,8 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **Journey meeting direction (2026-10-07):** success should mean surviving to tick 600 with an ecology viable through tick 700. The viability test is still undefined. Upgrades acquired in one journey simulation carry into the next journey simulation; persistence into a freshly started journey or permanent progression remains a separate decision. This journey carryover decision supersedes the earlier simulation-boundary reset assumption for that flow. Preserve 600/40/25 as historical research; SimMasterBev owns discovering a new starting population with a more personal pace of kills, births, and other events. DNA/secondary long-running simulator work is deferred for now. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
+
 - The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)
   and [`TDD_TEMPLATE.md`](TDD_TEMPLATE.md). Use them to capture player-facing
   decisions separately from implementation contracts; completed sections should
@@ -108,7 +110,7 @@ uncertainty or regression risk.
   changing the global simulation cadence.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
-- Every species has two distinct upgrade systems. **Mutations** are acute
+- The earlier standalone six-round contract has two distinct upgrade systems; the journey carryover decision above changes its simulation-boundary reset assumption for the journey flow. **Mutations** are acute
   adaptations offered at five decision points during one six-round Species
   Simulation and reset when it ends. They are offered after rounds 1–5; at each
   point, the player chooses one of three Mutations or Skip. Skip currently has

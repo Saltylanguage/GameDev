@@ -2,6 +2,8 @@
 
 **Status (2026-10-06):** Integrated into the canonical Desktop player flow for the first two ecological cycles. The later map nodes are ScriptableObject placeholders. This implementation does not settle the final journey length, upgrade vocabulary, balance, or reward economy.
 
+**Design update (2026-10-07):** the team meeting approved upgrade carryover into the next simulation in the journey, retained 600/40/25 as historical research, and assigned the search for more personal event pacing to SimMasterBev. Success is intended to combine reaching tick 600 with viability through tick 700; that criterion remains undefined and is not implemented by this documentation update. DNA/secondary simulator work is deferred. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
+
 ## Player flow
 
 1. Opening Simulation from the Desktop shows the full-screen Forest Edge journey map. The Back button returns to the Desktop. The map can also be reopened during a simulation; doing so pauses a running clock until the player closes it.
@@ -11,7 +13,7 @@
 5. Choosing the second simulation resumes the *same* `SimulationRunState` at phase 7. Cells, population history, seed, clock, and the accumulated Mutation loadout persist. The selected habitat condition changes the relevant species rules for the next tick. Phase Mutations or Skip appear after phases 7–11.
 6. Phase 12 shows the final report. **Return to Journey Map** shows the completed route; **Start a New Journey** prepares a fresh expedition at the opening reward node.
 
-**Temporary Mutation rule:** For this prototype, the opening node reward and all phase choices use the existing Mutation system. Mutations last until the expedition ends, including across simulation nodes. This differs from the intended glossary in which phase Mutations reset after a simulation and Genome upgrades persist between runs. The durable *within-run* upgrade category and its inheritance rules still need a separate design decision.
+**Approved continuity, provisional vocabulary (2026-10-07):** upgrades acquired during a journey simulation persist into its next simulation. The prototype uses the existing Mutation system for the opening reward and phase choices, and already retains them across nodes until the expedition ends. The meeting approves that inter-simulation carryover; the category name and any persistence into a newly started journey or permanent progression remain separate decisions. The earlier simulation-boundary reset assumption does not apply to this journey flow.
 
 ## Authored map and UI
 
@@ -34,7 +36,7 @@ The focused Unity Editor asset test validates the graph, placement, reward start
 
 ## Next content decisions
 
-- Name and implement the within-run upgrade category, then decide whether and how phase Mutations reset at each simulation boundary.
+- Name the upgrade category that carries between journey simulations. Preserve the approved carryover; separately decide any reset at a newly started journey or permanent progression boundary.
 - Replace the later placeholder nodes with real effects, costs, events, and rewards; extend the runtime node handler beyond the first two cycles.
 - Review map readability, choice pacing, and survival across matched seeds before setting a production run length.
 - Add explicit transition provenance to exported reports before interpreting changes across cycles as effects of one decision.
