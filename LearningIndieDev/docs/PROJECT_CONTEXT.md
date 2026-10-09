@@ -63,6 +63,34 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **Simulation tooling direction (2026-10-09):** Bevin wants the readable,
+  per-run Excel format from the manual playtest to be an automated output,
+  keeping choices, populations and short explanations together. The end goal
+  is setting up, running and reviewing simulations without prompting an AI.
+  The first slice exports existing reports; generated observations and actual
+  player feedback remain distinct. A local Windows CellSim Workbench now wraps
+  setup, saved presets, run-count preview, validation, deliberate Run, progress,
+  safe stop/resume and exports around the existing compiler/executor. The current
+  setup covers neutral Plant/Hare/Fox frozen inputs and the six-round flow;
+  it pins each experiment's exact inputs and runner, preserving historical work.
+  Readability, ease of use/understanding and modularity are the priorities for
+  iteration. Exports now open on a context-rich summary with survival rates;
+  per-run observations are concise by default with detailed output optional.
+  A third Run data sheet splits the same review examples into typed columns
+  for user-built pivots/charts, including whole-run and round slash-line metrics.
+  Bevin explicitly chose the same 200 examples, rather than all 4,800 batch runs;
+  full matching-run rates remain on Batch summary. Missing/invalid numeric rates
+  stay blank with separate source statuses so pivot averages retain meaning.
+  The setup UI now keeps a live strategy/purchase matrix visible while options
+  change, with a clickable condition preview, descriptions and thirty supported
+  population/map/stat comparison controls. Presets retain comparison lists;
+  the existing compiler and pinned runner remain the execution authority.
+  Keep evidence/calculations, workbook presentation and UI/process adapters
+  separate so improvements reuse the same scientific facts.
+  Creating snapshots in the app and independent distribution remain future work.
+  See [Workbench](CELLSIM_WORKBENCH.md) and
+  [worksheet export](CELLSIM_EXCEL_EXPORT.md).
+
 - **Journey meeting direction (2026-10-07):** success should mean surviving to tick 600 with an ecology viable through tick 700. The viability test is still undefined. Upgrades acquired in one journey simulation carry into the next journey simulation; persistence into a freshly started journey or permanent progression remains a separate decision. This journey carryover decision supersedes the earlier simulation-boundary reset assumption for that flow. Preserve 600/40/25 as historical research; SimMasterBev owns discovering a new starting population with a more personal pace of kills, births, and other events. DNA/secondary long-running simulator work is deferred for now. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
 
 - The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)

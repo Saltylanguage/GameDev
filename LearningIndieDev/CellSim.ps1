@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-[ValidateSet('Help', 'Doctor', 'Run', 'Test', 'Visuals', 'Report', 'Compare', 'Baseline', 'Validate')]
+[ValidateSet('Help', 'Doctor', 'Run', 'Test', 'Visuals', 'Report', 'Excel', 'Compare', 'Baseline', 'Validate')]
     [string]$Command = 'Help',
     [ValidateSet('EditMode', 'PlayMode', 'All')]
     [string]$Mode = 'All',
@@ -51,7 +51,13 @@ param(
     [string]$ReplayReportPath,
     [int]$ReplaySeed = -1,
     [string]$ProjectPath,
-    [string]$UnityPath
+    [string]$UnityPath,
+    [ValidateRange(1, 1000)][int]$MaxRuns = 200,
+    [int[]]$Checkpoints = @(400, 500),
+    [string]$Match = '',
+    [int[]]$Seeds = @(),
+    [switch]$DetailedObservations,
+    [switch]$Open
 )
 
 function Show-Usage {
@@ -69,6 +75,9 @@ CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWi
              [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
              [-MutationPolicy trailblazer|warren|gardeners] [-WrapEdges]
 CellSim Report [-ReportPath artifacts/.../report.json]
+CellSim Excel [-ReportPath artifacts/.../report.json OR completed-sweep-folder] [-BaselinePath other/report.json]
+              [-OutputPath review.xlsx] [-Match 'D5-S25 gardeners'] [-Seeds 60000,60001] [-MaxRuns 200] [-DetailedObservations] [-Open]
+              Without ReportPath, opens a report picker. Does not run simulations or overwrite workbooks.
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]
 CellSim Validate -ReportPath artifacts/.../report.json
@@ -96,6 +105,12 @@ switch ($Command) {
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath
+    }
+    'Excel' {
+        $inputs = @()
+        if ($ReportPath) { $inputs += $ReportPath }
+        if ($BaselinePath) { $inputs += $BaselinePath }
+        & (Join-Path $PSScriptRoot 'tools/Export-CellSimWorksheet.ps1') -ReportPath $inputs -OutputPath $OutputPath -MaxRuns $MaxRuns -Checkpoints $Checkpoints -Match $Match -Seeds $Seeds -DetailedObservations:$DetailedObservations -Open:$Open -ProjectPath $ProjectPath
     }
     'Compare' {
         if ([string]::IsNullOrWhiteSpace($BaselinePath) -or [string]::IsNullOrWhiteSpace($ReportPath)) {

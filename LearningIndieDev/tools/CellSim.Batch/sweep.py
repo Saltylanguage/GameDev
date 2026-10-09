@@ -41,8 +41,8 @@ def digest(path):
         return hashlib.file_digest(stream, "sha256").hexdigest()
 
 
-def invoke(*args):
-    result = subprocess.run(["dotnet", str(RUNNER), *map(str, args)], capture_output=True, text=True)
+def invoke(*args, runner=None):
+    result = subprocess.run(["dotnet", str(runner or RUNNER), *map(str, args)], capture_output=True, text=True)
     if result.returncode:
         fail(result.stdout + result.stderr)
     return result.stdout
@@ -94,7 +94,7 @@ def planned_ticks(options):
     return int(options["-runTicks"])
 
 
-def compile_sweep(spec_path, destination, contexts=None, seed_start=None, seed_count=None):
+def compile_sweep(spec_path, destination, contexts=None, seed_start=None, seed_count=None, runner=None):
     spec_path, destination = Path(spec_path).resolve(), Path(destination).resolve()
     spec = load(spec_path)
     strict(spec, ["schemaVersion", "snapshot", "seedStart", "seedCount", "workers", "chunkSize", "timeoutSeconds",
@@ -205,7 +205,7 @@ def compile_sweep(spec_path, destination, contexts=None, seed_start=None, seed_c
     plan_path = destination / "plan.json"
     write(plan_path, plan)
     try:
-        preflight = invoke("batch", plan_path, "--dry-run")
+        preflight = invoke("batch", plan_path, "--dry-run", runner=runner)
     except ValueError:
         # Retain the invalid plan for a concrete, reviewable diagnostic.
         raise
@@ -494,6 +494,7 @@ def main():
     compile_parser.add_argument("--contexts")
     compile_parser.add_argument("--seed-start", type=int)
     compile_parser.add_argument("--seed-count", type=int)
+    compile_parser.add_argument("--runner", type=Path, help="Explicit standalone runner DLL for preflight; defaults to the existing Release runner")
     analyzer = commands.add_parser("analyze")
     analyzer.add_argument("sweep")
     analyzer.add_argument("output")
@@ -507,7 +508,7 @@ def main():
     exporter.add_argument("--max-runs", type=int, default=100)
     args = parser.parse_args()
     if args.command == "compile":
-        compile_sweep(args.spec, args.output, args.contexts, args.seed_start, args.seed_count)
+        compile_sweep(args.spec, args.output, args.contexts, args.seed_start, args.seed_count, args.runner)
     elif args.command == "analyze":
         analyze(args.sweep, args.output, args.rank, args.direction, args.top)
     else:

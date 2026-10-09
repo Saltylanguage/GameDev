@@ -6,6 +6,125 @@ become a master changelog.
 
 ## Current focus
 
+**October 9 publication package:** Bevin authorized committing and pushing this
+session's D5 inspection setup, live Plant count, Excel exporter and interactive
+Workbench to `origin/BevBranch`. The publication commit includes the source,
+launchers, focused checks and guides; generated applications, workbooks and run
+evidence remain local ignored artifacts. The earlier "local/uncommitted" entries
+below describe their original handoff state. See the
+[publication handoff](handoffs/2026-10-09-1600-codex-cellsim-workbench-publication.md)
+and Git history for the shared revision. Human UI acceptance remains pending.
+
+**October 9 interactive Workbench setup added locally:** Setup now has Scenario,
+Choices, Compare values and Run settings sections beside a live strategy ×
+purchase matrix. Cell counts include every setting variant and matched seed;
+click a cell to inspect its combinations. Thirty described controls expose
+runner-supported population/map/stat overrides, with loaded snapshot values,
+editable comparison lists and saved presets. The existing sweep compiler and
+pinned runner validate every condition; safe run/stop/resume remains in place.
+New input settings also export as separate numeric Run data fields. Final
+validation:13 setup/run check groups (42 fixture rows), all30 controls preflight,
+13 GUI/export checks,21 worksheet tests and clean Release builds. All four
+sections and compact/default layouts rendered/inspected. Older windows closed
+with Bevin's permission after preset saving; canonical EXE updated. No research
+batch, production data or Unity changes this turn. See
+[guide](CELLSIM_WORKBENCH.md) and
+[handoff](handoffs/2026-10-09-1454-codex-workbench-live-test-matrix.md).
+Local/uncommitted/unpushed on BevBranch; earlier work preserved.
+
+**October 9 pivot-ready worksheet iteration added locally:** A third **Run data**
+sheet automatically exports the same selected examples as Run review, with one
+run per row in the named RunData Excel table. Separate typed columns cover
+populations, whole-run/per-round slash-line metrics and statuses, decisions,
+purchases and loadout counts. Bevin explicitly chose the same 200 examples;
+Batch summary still covers all 4,800 matching runs. The fresh workbook preserves
+the existing review content and summary results; 110,108 values independently
+reconcile with raw evidence, including 77,172 slash-line fields. Twenty Python
+checks, twelve published-GUI checks and a zero-warning build passed. Saved
+workbook sheets and native export form rendered/inspected. No new simulations.
+See [guide](CELLSIM_EXCEL_EXPORT.md) and
+[handoff](handoffs/2026-10-09-1432-codex-workbench-pivot-run-data.md).
+Local/uncommitted/unpushed on BevBranch; prior work and workbooks preserved.
+
+**October 9 Workbench readability iteration added locally:** New exports open
+on Batch summary, showing experiment context and actual settings, Hare and
+all-three-species survival counts/percentages, and explicit missing data.
+Run review keeps its familiar layout with concise observations; detailed
+purchase-change narratives are optional in the GUI/CLI. The versioned report
+projection owns scientific interpretation/calculations; Excel layout and
+Windows process/UI remain separate. Bevin's first 4,800-run workbook was
+re-exported to a fresh readable file without new simulations or original edits.
+All 24 summaries and 200 examples/native links independently checked; average
+example row height fell from 182.79 to 90 points. Fifteen Python checks,
+twelve published-GUI checks and zero-warning Release publish passed. See
+[worksheet guide](CELLSIM_EXCEL_EXPORT.md) and
+[handoff](handoffs/2026-10-09-1400-codex-workbench-readable-reports.md).
+Local/uncommitted/unpushed on BevBranch; earlier work is preserved.
+
+**October 9 Workbench setup/run controls added locally:** **Set up & run** now
+provides readable experiment settings/notes, saved presets, a run-count preview,
+validation and a deliberate Run button. Validation freezes a fresh experiment
+and pinned runner without workers; progress, safe stop, resume/recheck and
+Open saved run connect to the existing executor. Completed chunks survive stop;
+changed/moved frozen evidence is refused. Export this run completes the
+setup → run → review → export workflow. Load D5 example proposes 24 runs and
+starts nothing. Scope is the neutral Plant/Hare/Fox six-round flow, not arbitrary
+scenario authoring or a definition of human Gardeners play. Nine setup/run check
+groups (26 final fixture rows), twelve portable runner checks and native
+review/export regressions passed. Historical confirmation runner hash remains
+unchanged; no Unity/domain/tuning changes or large research batch this turn.
+See the [Workbench guide](CELLSIM_WORKBENCH.md) and
+[setup/run handoff](handoffs/2026-10-09-0201-codex-workbench-setup-run-stop-resume.md).
+Local/uncommitted/unpushed on BevBranch; prior work is preserved.
+
+**October 9 local CellSim Workbench added:** `Open-CellSim-Workbench.cmd`
+opens a native Windows GUI for the existing worksheet exporter and saved batch
+progress. The built EXE is under `artifacts/cellsim-workbench/`; basic export
+uses defaults, with optional filters/checkpoints, a visible background log and
+safe new-file output. Batch monitoring reads small status/summary metadata,
+flags stale Running state and checks summary identity. This first slice does
+not start simulations; the setup/run entry above supersedes that original
+limitation. Release publish and focused validation, including real
+existing-evidence export and native rendering, passed. See the
+[Workbench guide](CELLSIM_WORKBENCH.md) and
+[handoff](handoffs/2026-10-09-0141-codex-cellsim-local-workbench.md).
+Local/uncommitted/unpushed on BevBranch; earlier work is preserved.
+
+**October 9 readable simulation worksheet exporter added locally:** Bevin's
+manual Excel layout is now a reusable export format. Double-click
+`Export-Simulation-Worksheet.cmd` or run `CellSim.ps1 Excel` to select existing
+reports/completed sweeps, generate a fresh workbook and optionally open it.
+Run rows show pre-purchase checkpoints, endpoints, choices, purchase limits,
+factual recovery/death summaries, blank human notes and evidence links. Large
+exports bound displayed rows and retain all-matching condition totals. The
+goal is human-operated setup/run/review without AI prompts; this slice adds
+export only. The existing 96,000-run batch was read/validated, not rerun, to
+produce a 24-row example and independent 6,000-run summary cross-check.
+Twelve focused checks passed. Runtime dependencies and untested native picker/
+Excel interaction remain explicit. Read the [worksheet guide](CELLSIM_EXCEL_EXPORT.md)
+and [handoff](handoffs/2026-10-09-0104-codex-human-readable-excel-exporter.md).
+This work and the preceding inspection/display changes remain local and uncommitted.
+
+**October 8 live Plant-total display added:** The Field Ledger now shows
+`PLANTS: current total` beside Population, using the latest simulation snapshot.
+Unity recompile and live binding checks passed at initial/decision/terminal
+states; screenshots confirm visibility beside the Mutation/purchase overlay.
+Play Mode is stopped after checks. Source/docs remain local and uncommitted.
+Read the [display handoff](handoffs/2026-10-08-2242-codex-live-plant-population-display.md).
+
+**October 8 D5 visual review setup prepared locally:** Copied inspection scene
+`ForestEdge_D5_VisualReview` and scenario/Hare/Fox assets configure wrapped 54x32,
+325/30/15, Hare vision 9, Fox energy 160 and six 100-tick phases with Journey off.
+All eight supplied seed/purchase-policy examples reproduced their stated Unity
+preview outcomes; the inspection-only runtime Inspector reset control passed
+all four first-boundary seed checks, Unity recompile and the existing S4 fixture
+regression. The legacy Game-view setup panel is hidden, so the Inspector handles
+seed/reset/start and Game view handles purchases/Mutations. Human visual/player
+review and tick-700 viability remain pending; production defaults are unchanged.
+Read the [inspection handoff](handoffs/2026-10-08-2157-codex-d5-visual-inspection-setup.md)
+and [run guide](Research/Experiments/S4-04-Hare-Purchase-Confirmation/VISUAL_REVIEW.md).
+This work is local, uncommitted and unpushed.
+
 **October 8 Hare-purchase confirmation complete:** All 96,000 runs, paired
 analysis and purchase reports finished at 19:37:50 EDT. The 96 arms each have
 1,000 fresh matched seeds 60000-60999; all 1,920 chunks passed. Completion review

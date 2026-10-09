@@ -10,6 +10,32 @@ and to produce a small reference batch. Keep consecutive ticks and phases of one
 simulation in one worker. This tool does not change gameplay tuning or approve
 the October 7 meeting's still-undefined tick-700 ecology viability criterion.
 
+## Readable Excel worksheets
+
+For the local Windows GUI, double-click `Open-CellSim-Workbench.cmd`. The
+[Workbench](CELLSIM_WORKBENCH.md) now supports readable setup, saved presets,
+run-count preview, validation, deliberate Run, progress, safe stop/resume and
+Excel export. Setup is currently the neutral Plant/Hare/Fox six-round flow;
+validation freezes a fresh experiment and exact runner without starting workers.
+
+The Workbench launcher builds its runner into `artifacts/cellsim-workbench/runner`
+and pins a copy per experiment, preserving historical Release binaries. Its
+coordinator accepts `batch <plan> [--resume] [--stop-file <path>]`: creating that
+invocation's unique stop file requests cancellation and owned-worker cleanup.
+Completed chunks remain available for normal resume; unfinished chunks may run
+again. This extends the existing Ctrl+C behavior without changing simulation
+rules. The GUI waits for its coordinator to exit before closing. Resume after
+restart uses **Open saved run...** and refuses changed/moved frozen evidence.
+
+Double-click `Export-Simulation-Worksheet.cmd`, select saved `report.json` files
+or a completed sweep's `sweep.json`, and the new workbook opens automatically.
+From PowerShell, use `CellSim.ps1 Excel -ReportPath <report-or-sweep-folder> -Open`.
+The exporter reads existing evidence, reports choices/populations/recovery in
+Bevin's worksheet format, and leaves human notes blank. It runs no simulations
+and never overwrites an existing workbook. See the
+[worksheet guide](CELLSIM_EXCEL_EXPORT.md) for filters, bounded cohorts and runtime
+requirements.
+
 ## Live progress dashboard
 
 For a candidate/purchase sweep, start the read-only dashboard from LearningIndieDev:

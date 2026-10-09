@@ -378,11 +378,25 @@
                                        Stroke="{DynamicResource Chrono_Sand}"
                                        StrokeDashArray="7,4"
                                        StrokeThickness="2" />
-                            <TextBlock Text="POPULATION"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="10"
-                                       FontWeight="Bold"
-                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="POPULATION"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_TreeBark}" />
+                                <TextBlock x:Name="PlantPopulationCount"
+                                           Grid.Column="1"
+                                           Text="{Binding PlantPopulationText}"
+                                           Margin="4,0,0,0"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="{DynamicResource Chrono_TreeBark}" />
+                            </Grid>
                             <Grid Margin="0,6,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="29" />

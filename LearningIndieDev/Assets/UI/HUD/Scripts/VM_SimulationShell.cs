@@ -273,6 +273,7 @@ namespace SaltyGame
         int carnivorePopulationMaximum;
         string herbivorePopulationText;
         string carnivorePopulationText;
+        string plantPopulationText;
         string eventReactionTitleText;
         string eventReactionMessageText;
         float eventReactionRemainingSeconds;
@@ -388,6 +389,7 @@ namespace SaltyGame
         public int CarnivorePopulationMaximum => carnivorePopulationMaximum;
         public string HerbivorePopulationText => herbivorePopulationText;
         public string CarnivorePopulationText => carnivorePopulationText;
+        public string PlantPopulationText => plantPopulationText;
         public string EventReactionTitleText => eventReactionTitleText;
         public string EventReactionMessageText => eventReactionMessageText;
         public Visibility EventReactionVisibility => eventReactionVisibility;
@@ -2159,6 +2161,9 @@ namespace SaltyGame
                 : default;
             var herbivoreCount = GetRolePopulationCount(population, SpeciesRole.Herbivore);
             var carnivoreCount = GetRolePopulationCount(population, SpeciesRole.Carnivore);
+            Set(ref plantPopulationText,
+                $"PLANTS: {GetRolePopulationCount(population, SpeciesRole.Plant).ToString(CultureInfo.InvariantCulture)}",
+                nameof(PlantPopulationText));
             var configuredMaximum = preview.MaximumPopulation;
             var herbivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, herbivoreCount, 25);
             var carnivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, carnivoreCount, 15);

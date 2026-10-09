@@ -10,6 +10,7 @@ namespace SaltyGame.EditorTools
         SerializedProperty scenarioOptions;
         SerializedProperty selectedScenarioIndex;
         int fixtureSeed = 10100;
+        int visualReviewSeed = 60000;
         string runtimeMessage;
 
         void OnEnable()
@@ -57,6 +58,15 @@ namespace SaltyGame.EditorTools
         void DrawRuntimeControls(SpeciesSimulationPreview preview)
         {
             EditorGUILayout.LabelField("Manual Simulation Testing", EditorStyles.boldLabel);
+            if (preview.gameObject.scene.path == "Assets/Scenes/ForestEdge_D5_VisualReview.unity")
+            {
+                EditorGUILayout.HelpBox("D5 visual review: 54x32, 325/30/15, Hare vision 9, Fox energy 160. Reset prepares a fresh six-phase expedition and clears previous purchases and Mutations.", MessageType.Info);
+                visualReviewSeed = EditorGUILayout.IntField("Visual Review Seed", visualReviewSeed);
+                if (GUILayout.Button("Reset D5 Review to Seed"))
+                {
+                    TryResetD5VisualReview(preview, visualReviewSeed, out runtimeMessage);
+                }
+            }
             EditorGUILayout.HelpBox("S4 developer fixture: Forest Edge, Hare, 36x20, 400/20/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!preview.SettingsEditable))
             {
@@ -118,6 +128,35 @@ namespace SaltyGame.EditorTools
             if (!string.IsNullOrEmpty(runtimeMessage))
                 EditorGUILayout.HelpBox(runtimeMessage, MessageType.Info);
             Repaint();
+        }
+
+        public static bool TryResetD5VisualReview(SpeciesSimulationPreview preview, int seed, out string message)
+        {
+            message = "Register the copied D5 visual review scenario before resetting.";
+            if (preview == null) return false;
+            var scenarioIndex = -1;
+            for (var index = 0; index < preview.ScenarioOptions.Count; index++)
+            {
+                if (AssetDatabase.GetAssetPath(preview.ScenarioOptions[index]) == "Assets/Data/Inspection/ForestEdgeD5VisualReview/ForestEdge_D5_VisualReview.asset")
+                {
+                    scenarioIndex = index;
+                    break;
+                }
+            }
+            if (scenarioIndex < 0) return false;
+            preview.ResetToStart();
+            if (!preview.TrySetJourneyPrototypeEnabled(false)
+                || !preview.TrySelectScenario(scenarioIndex, out message)
+                || !preview.TrySetPlayerSpecies("hare", out message)
+                || !preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                    "54", "32", seed.ToString(CultureInfo.InvariantCulture), "0", "0", "600", "0.1",
+                    "0", "0", "0", false, "325", "30", "15", out message)
+                || !preview.TryApplyExperimentalFeatures(true, false, "0", out message)
+                || !preview.TryApplyContinuousPhases(true, "100", out message)
+                || !preview.TryApplyWrapEdges(true, out message)) return false;
+            preview.ResetToStart();
+            message = $"D5 visual review ready at seed {seed}. Verify 325 / 30 / 15, then press Start.";
+            return true;
         }
 
         public static bool TryApplyS4Fixture(SpeciesSimulationPreview preview, int seed, out string message)

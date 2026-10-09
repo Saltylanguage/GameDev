@@ -1,4 +1,4 @@
-"""Bounded integration check. Usage: python check.py <export.json> <NEW-artifact-dir>."""
+"""Bounded integration check. Usage: python check.py <export.json> <NEW-artifact-dir> [runner.dll]."""
 import json
 import subprocess
 import sys
@@ -7,10 +7,12 @@ from pathlib import Path
 
 
 def main():
-    snapshot, root = map(lambda p: Path(p).resolve(), sys.argv[1:])
+    if len(sys.argv) not in (3, 4):
+        raise ValueError(__doc__)
+    snapshot, root = map(lambda p: Path(p).resolve(), sys.argv[1:3])
     assert snapshot.is_file() and not root.exists(), "Use an existing export and NEW output directory"
     root.mkdir(parents=True)
-    dll = Path(__file__).parent / "bin/Release/net8.0/CellSim.Batch.dll"
+    dll = Path(sys.argv[3]) if len(sys.argv) == 4 else Path(__file__).parent / "bin/Release/net8.0/CellSim.Batch.dll"
     command = ["dotnet", str(dll.resolve())]
 
     def invoke(*args, success=True):

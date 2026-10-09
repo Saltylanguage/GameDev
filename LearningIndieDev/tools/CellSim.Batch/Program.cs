@@ -25,6 +25,12 @@ internal static class Program
     static readonly HashSet<string> DerivedMetrics = new HashSet<string>
     { "pAVI", "eAVI", "predAVG", "sAVI", "cAVI", "bAVG", "RFS", "APS", "hAVG", "aAVG", "huntAVG", "AHS" };
     static volatile bool cancelled;
+    static string stopFile;
+    static void CheckCancelled()
+    {
+        if (stopFile != null && File.Exists(stopFile)) cancelled = true;
+        if (cancelled) throw new OperationCanceledException("Stopped. Validated completed chunks are retained for --resume.");
+    }
 
     static int Main(string[] args)
     {
@@ -35,7 +41,7 @@ internal static class Program
         {
             if (args.Length == 0 || args[0] == "help")
             {
-                Console.WriteLine("CellSim.Batch batch <plan.json> [--dry-run] [--resume]\n"
+                Console.WriteLine("CellSim.Batch batch <plan.json> [--dry-run] [--resume] [--stop-file <path>]\n"
                     + "CellSim.Batch verify <reference.jsonl> <runs.jsonl>\n"
                     + "CellSim.Batch replay <snapshot.json> <seed> <new-output.json>\n"
                     + "CellSim.Batch replay-batch <batch-directory> <condition> <seed> <new-output.json>\n"
@@ -45,7 +51,7 @@ internal static class Program
             }
             switch (args[0])
             {
-                case "batch": Require(args, 2, 4); Batch(args[1], args.Skip(2).ToArray()); break;
+                case "batch": Require(args, 2, 6); Batch(args[1], args.Skip(2).ToArray()); break;
                 case "worker": Require(args, 3, 3); Worker(args[1], args[2]); break;
                 case "verify": Require(args, 3, 3); Verify(args[1], args[2]); break;
                 case "replay":
@@ -133,6 +139,13 @@ internal static class Program
 
     static void Batch(string planPath, string[] flags)
     {
+        var stopIndex = Array.IndexOf(flags, "--stop-file");
+        if (stopIndex >= 0)
+        {
+            if (stopIndex + 1 >= flags.Length || flags[stopIndex + 1].StartsWith("--")) throw new ArgumentException("--stop-file requires a path.");
+            stopFile = Path.GetFullPath(flags[stopIndex + 1]);
+            flags = flags.Where((_, index) => index != stopIndex && index != stopIndex + 1).ToArray();
+        }
         if (flags.Any(flag => flag != "--dry-run" && flag != "--resume") || flags.Distinct().Count() != flags.Length)
             throw new ArgumentException("Unknown/repeated batch flag.");
         var plan = Read<Plan>(planPath); var basePath = Path.GetDirectoryName(Path.GetFullPath(planPath));
@@ -185,7 +198,7 @@ internal static class Program
         {
             while (completed.Count != jobs.Count)
             {
-                if (cancelled) throw new OperationCanceledException("Cancelled. Completed chunks are retained for --resume.");
+                CheckCancelled();
                 foreach (var process in active.Keys.ToArray())
                 {
                     var attempt = active[process];
@@ -207,6 +220,7 @@ internal static class Program
                 }
                 foreach (var job in jobs)
                 {
+                    CheckCancelled();
                     if (completed.Contains(job.directory)) continue;
                     if (occupied >= plan.workers) break;
                     if (active.Values.Any(a => a.job.directory == job.directory)) continue;
@@ -361,10 +375,12 @@ internal static class Program
         using (var writer = new StreamWriter(new FileStream(staging, FileMode.Create, FileAccess.Write), new UTF8Encoding(false)))
             foreach (var job in jobs)
             {
+                CheckCancelled();
                 if (!TryCompleted(job, out var done)) throw new InvalidDataException("Missing chunk.");
                 peak = Math.Max(peak, done.peakWorkingSetBytes);
                 foreach (var line in File.ReadLines(done.output))
                 {
+                    if (rows % 256 == 0) CheckCancelled();
                     writer.WriteLine(line); rows++; counts.TryGetValue(job.condition, out var n); counts[job.condition] = n + 1;
                     if (!diagnostics.TryGetValue(job.condition, out var stats)) diagnostics[job.condition] = stats = new Diagnostics();
                     using var document = JsonDocument.Parse(line); var run = document.RootElement.GetProperty("run");

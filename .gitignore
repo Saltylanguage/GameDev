@@ -31,6 +31,7 @@ crashlytics-build.properties
 .plastic/
 *.csproj
 !LearningIndieDev/tools/CellSim.Batch/CellSim.Batch.csproj
+!LearningIndieDev/tools/CellSim.Workbench/CellSim.Workbench.csproj
 *.sln
 *.slnx
 *.suo
@@ -43,6 +44,7 @@ crashlytics-build.properties
 
 # Build-system caches
 LearningIndieDev/tools/CellSim.Batch/bin/
+LearningIndieDev/tools/CellSim.Workbench/bin/
 **/__pycache__/
 .gradle/
 [Ee]xported[Oo]bj/
