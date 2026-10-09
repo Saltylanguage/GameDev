@@ -6,7 +6,27 @@ become a master changelog.
 
 ## Current focus
 
-**October 8 publication requested:** Bevin requested committing and pushing the
+**October 8 Hare-purchase confirmation complete:** All 96,000 runs, paired
+analysis and purchase reports finished at 19:37:50 EDT. The 96 arms each have
+1,000 fresh matched seeds 60000-60999; all 1,920 chunks passed. Completion review
+verified frozen input/tool hashes, the 4.84 GB raw aggregate and analysis hashes,
+exact seed coverage, Valid APS/AHS n=1,000 in every arm, and all 480,000 assigned
+purchase windows with reconciled reached-window ledgers. Simulation took 4h 50m
+34s at 16 workers. The live dashboard now reports Completed / 96,000 / zero workers.
+Restoration and late-five improve Hare and all-species survival versus same-path
+no-buy controls on all twelve skill arms. Restoration also beats same-policy
+Skip all on both observed endpoints in all twelve arms. D5/S25 Gardeners
+restoration leads this panel at 52.2% all-species survival versus 35.8% no-buy,
+with mean APS -0.654, AHS -0.102 and spend 63.16 Field Data. The earlier C2/S14
+Gardeners restoration decline did not reproduce; the each-five 59% screen
+maximum did not repeat. Read the
+[completion/results handoff](handoffs/2026-10-08-codex-hare-confirmation-results.md)
+and [focused review](../artifacts/cellsim-hare-confirmation-20261008-143725/purchase-analysis/focused-review.md).
+Keep all four candidates; prioritize reviewing restoration and late-five.
+New thresholds/caps, tick-700 validation and production changes remain proposals.
+This completion review is local; the preceding publication is already pushed.
+
+**October 8 publication completed before confirmation finished:** Bevin requested committing and pushing the
 completed standalone tooling, purchase experiment work, progress dashboard and
 research without disturbing the running confirmation. Fresh isolated Release
 build (zero warnings/errors), portable self-test, sweep-analysis regression and
@@ -18,10 +38,11 @@ Raw/active output remains local. Main commit `bada43ad` was pushed to
 `origin/BevBranch`; local and remote SHAs were verified equal. The active batch
 continued to 30,000 validated runs with 16 workers and all pinned hashes intact.
 Read the [publication handoff](handoffs/2026-10-08-codex-cellsim-publication.md).
-Trello synchronization remains outstanding; simulation completion must still
-be checked separately.
+Trello synchronization remains outstanding. The completion review above supersedes
+the running status at this publication checkpoint. The final handoff commit
+`e250d32f` was also pushed and verified against the remote.
 
-**October 8 Hare-purchase confirmation running:** Bevin accepted the recommended
+**October 8 Hare-purchase confirmation launch checkpoint (now complete):** Bevin accepted the recommended
 first step with "okay lets begin step by step". The approved follow-up runs the
 same four candidates and four paths with six purchase policies (none, late-five,
 each-one, each-three, each-five, restore-toward-start), 1,000 fresh matched seeds
@@ -87,8 +108,9 @@ Current-source Unity checks pass 259 focused EditMode tests and four reference
 seeds, including changed grid/populations/stats plus Trailblazer choices.
 The million-run plan passed dry-run validation; execution at that scale remains
 unmeasured. Read the [standalone runbook](CELLSIM_STANDALONE_RUNBOOK.md) for the
-commands, measured throughput and exact validation limits. Changes are local on
-BevBranch and have not been committed or pushed. This is shared-core diagnostic
+commands, measured throughput and exact validation limits. These changes were
+subsequently published on BevBranch in the October 8 publication checkpoint above.
+This is shared-core diagnostic
 tooling; the short fixtures and illustrative ranking do not approve balance.
 The meeting's population and gameplay decisions still need balance work.
 
