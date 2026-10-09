@@ -4,7 +4,6 @@
     "jobName":  "p3-ex007-baseline-heldout",
     "createdUtc":  "2026-09-03T07:32:40.1775422Z",
     "requestedBy":  "codex",
-    "status":  "pending",
     "parameters":  {
                        "ScenarioPath":  "Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset",
                        "SeedStart":  101,
@@ -18,5 +17,13 @@
                        "ExperimentalFeatures":  "bev-experimental",
                        "FoxAttackCooldownTicks":  0,
                        "PreContactAvoidanceChance":  0
-                   }
+                   },
+    "status":  "failed",
+    "startedUtc":  "2026-10-09T00:03:44.6811435Z",
+    "worker":  "BEVBOT001",
+    "sourceCommit":  "0adb76cb85754d7707d923a16f4dcfaab357fc8b",
+    "sourceTreeCleanBeforeRun":  true,
+    "sourceTreeCleanAfterCleanup":  true,
+    "completedUtc":  "2026-10-09T00:04:14.1025281Z",
+    "error":  "Unity preflight failed: Unity batch command failed with exit code 198. See the command\u0027s log file for details. Log: \u0027C:\\Users\\bevadmin\\GameDev-CellSimWorker\\LearningIndieDev\\artifacts\\unity-preflight-20261008-200345\\license-probe.log\u0027."
 }
