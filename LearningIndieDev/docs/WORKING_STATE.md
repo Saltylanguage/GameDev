@@ -6,6 +6,28 @@ become a master changelog.
 
 ## Current focus
 
+**October 10 comparison-preview hang investigated locally:** Windows logged an
+Application Hang for the canonical Workbench. Bevin reported Hare/Fox vision
+1-15, twelve seeds and all strategies/policies; adding Plant energy1,2,3 crosses
+the inherited10,000-condition limit. Automated checks reproduce the warning but
+did not reproduce the original hang. Preview row updates now batch layout and
+avoid the redundant resize callback; invalid previews clear rows and columns,
+with explicit requested condition/run counts. Fourteen GUI check groups pass,
+including sequential Add/edit/remove recovery at three window widths. See
+[handoff](handoffs/2026-10-10-0014-codex-workbench-comparison-preview-hang.md).
+Local/uncommitted; original hang cause and human retry remain open. Budget
+configuration is a proposed follow-up, not an implemented change.
+
+**October 9 dropdown readability fix added locally:** The Compare values picker
+and value entry now fill the available column instead of collapsing under the
+auto-sized layout. The open list measures every label with the current font and
+uses a twelve-entry scrollable height. Read-only setting cells no longer show
+misleading dropdown arrows and allow wrapping. Thirteen native GUI checks pass,
+including a regression that fails on the previous picker and checks all thirty
+labels at default/compact sizes and larger text. Open lists rendered/inspected
+at 144 DPI. See [handoff](handoffs/2026-10-09-2356-codex-workbench-readable-dropdowns.md).
+Local/uncommitted on BevBranch; no simulation rules or evidence changed.
+
 **October 9 publication package:** Bevin authorized committing and pushing this
 session's D5 inspection setup, live Plant count, Excel exporter and interactive
 Workbench to `origin/BevBranch`. The publication commit includes the source,

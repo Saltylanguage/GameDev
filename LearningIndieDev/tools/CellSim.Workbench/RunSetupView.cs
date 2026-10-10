@@ -13,7 +13,7 @@ internal sealed partial class RunPage
     readonly Label matrixCaption = TextLabel("");
     readonly Label conditionCaption = TextLabel("");
     readonly Label parameterHelp = TextLabel("Choose a setting to see its description and frozen snapshot value.");
-    readonly ComboBox parameter = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 285, AccessibleName = "Comparison setting" };
+    readonly ComboBox parameter = new() { DropDownStyle = ComboBoxStyle.DropDownList, Dock = DockStyle.Top, MinimumSize = new(285, 0), IntegralHeight = false, MaxDropDownItems = 12, AccessibleName = "Comparison setting" };
     readonly TextBox values = Input("Comparison value list", "");
     readonly TabControl setupTabs = new() { Dock = DockStyle.Fill, AccessibleName = "Setup sections", Padding = new(9, 7) };
     readonly Label snapshotDetails = TextLabel("Choose a frozen scenario to see its starting rules.");
@@ -113,7 +113,14 @@ internal sealed partial class RunPage
         choices.Controls.Add(Description("Purchases are limited by the recorded wallet, price and placement capacity. Requests are not guaranteed additions."));
         var comparisons = Section("Compare values", "Add one value to override a setting, or several to compare. All values are crossed with each other, every strategy, every purchase policy and the same seeds.");
         parameter.Items.AddRange(SetupParameters.All); parameter.SelectedIndexChanged += (_, _) => DescribeParameter(); parameter.SelectedIndex = 0;
-        values.Width = 250; values.PlaceholderText = "Example: 20, 30, 40";
+        parameter.DropDown += (_, _) =>
+        {
+            parameter.DropDownWidth = Math.Max(parameter.Width,
+                parameter.Items.Cast<object>().Max(item => TextRenderer.MeasureText(parameter.GetItemText(item), parameter.Font).Width)
+                + SystemInformation.VerticalScrollBarWidth + (int)(12 * parameter.DeviceDpi / 96f));
+            parameter.DropDownHeight = parameter.ItemHeight * parameter.MaxDropDownItems + 2;
+        };
+        values.Dock = DockStyle.Top; values.MinimumSize = new(250, 0); values.PlaceholderText = "Example: 20, 30, 40";
         Explain(values, "Enter 1–20 distinct values separated by commas. Use a decimal point, e.g. 0.25, 0.5. Up to eight different settings.");
         comparisons.Controls.Add(parameter); comparisons.Controls.Add(parameterHelp); comparisons.Controls.Add(values);
         var add = Button("Add comparison"); var remove = Button("Remove selected");
@@ -131,7 +138,8 @@ internal sealed partial class RunPage
         remove.Click += (_, _) => { if (comparisonGrid.CurrentRow != null) { comparisonGrid.Rows.Remove(comparisonGrid.CurrentRow); Changed(); } };
         comparisons.Controls.Add(Flow(add, remove));
         comparisonGrid.ReadOnly = false; comparisonGrid.Height = 180; comparisonGrid.Dock = DockStyle.Top;
-        comparisonGrid.Columns.Add(new DataGridViewComboBoxColumn { Name = "Setting", HeaderText = "Setting", DataSource = SetupParameters.All, DisplayMember = "Label", ValueMember = "Key", ReadOnly = true, FillWeight = 58 });
+        comparisonGrid.Columns.Add(new DataGridViewComboBoxColumn { Name = "Setting", HeaderText = "Setting", DataSource = SetupParameters.All, DisplayMember = "Label", ValueMember = "Key", ReadOnly = true, FillWeight = 58,
+            DisplayStyle = DataGridViewComboBoxDisplayStyle.Nothing, DefaultCellStyle = new() { WrapMode = DataGridViewTriState.True } });
         comparisonGrid.Columns.Add("Values", "Values (comma separated)"); comparisonGrid.Columns[1].FillWeight = 42;
         comparisonGrid.CellValueChanged += (_, _) => Changed(); comparisonGrid.RowsRemoved += (_, _) => Changed();
         comparisons.Controls.Add(comparisonGrid);
@@ -161,7 +169,6 @@ internal sealed partial class RunPage
         var showAll = Button("Show all combinations"); showAll.Click += (_, _) => { selectedStrategy = selectedPurchase = null; if (matrixValid) RefreshConditions(Options()); };
         right.Controls.Add(Flow(showAll), 0, 4); right.Controls.Add(conditionCaption, 0, 5); right.Controls.Add(conditionGrid, 0, 6);
         conditionGrid.DefaultCellStyle.WrapMode = DataGridViewTriState.True;
-        conditionGrid.SizeChanged += (_, _) => { if (conditionGrid.Columns.Count > 0) conditionGrid.AutoResizeRows(); };
         matrix.CellClick += (_, e) =>
         {
             if (e.RowIndex < 0 || e.ColumnIndex < 1 || !matrixValid) return;
@@ -207,12 +214,12 @@ internal sealed partial class RunPage
     }
     void RefreshMatrix(SetupOptions options)
     {
-        matrixValid = false; matrix.Rows.Clear(); matrix.Columns.Clear(); conditionGrid.Rows.Clear();
+        matrixValid = false; matrix.Rows.Clear(); matrix.Columns.Clear();
         try
         {
             var variants = RunTools.VariantCount(options); var count = RunTools.RunCount(options);
             var conditions = variants * options.Strategies.Length * options.Purchases.Length;
-            if (conditions > 10000 || count > 1000000) throw new ArgumentException("Reduce the matrix to at most 10,000 conditions and 1,000,000 runs.");
+            if (conditions > 10000 || count > 1000000) throw new ArgumentException($"This setup requests {conditions:N0} conditions and {count:N0} runs. Reduce the matrix to at most 10,000 conditions and 1,000,000 runs.");
             total.Text = $"{count:N0} runs";
             matrixCaption.Text = $"{conditions:N0} conditions × {options.SeedCount:N0} matched seeds\n{variants:N0} variants per pairing · up to {6L * options.PhaseTicks:N0} ticks\nClick a cell to filter the list below.";
             preview.Text = $"{options.Strategies.Length} strategies × {options.Purchases.Length} purchase policies × {variants:N0} setting variants × {options.SeedCount:N0} seeds = {count:N0} runs";
@@ -236,31 +243,42 @@ internal sealed partial class RunPage
         }
         catch (Exception error) when (error is ArgumentException or OverflowException)
         {
+            conditionGrid.Rows.Clear(); conditionGrid.Columns.Clear();
             total.Text = "Check values"; matrixCaption.Text = error.Message; preview.Text = "Comparison values need attention."; conditionCaption.Text = "No valid preview until these values are fixed.";
         }
         vision.Enabled = energy.Enabled = options.OverrideStats;
     }
     void RefreshConditions(SetupOptions options)
     {
-        conditionGrid.Rows.Clear(); conditionGrid.Columns.Clear();
-        conditionGrid.Columns.Add("Strategy", "Strategy"); conditionGrid.Columns.Add("Purchase", "Purchase");
-        foreach (var axis in options.Comparisons) conditionGrid.Columns.Add(axis.Key, SetupParameters.Find(axis.Key).Label);
-        if (options.Comparisons.Length == 0) conditionGrid.Columns.Add("Values", "Scenario settings");
-        foreach (DataGridViewColumn column in conditionGrid.Columns) column.MinimumWidth = (int)(95 * DeviceDpi / 96f);
-        var paths = options.Strategies.Where(s => selectedStrategy == null || s == selectedStrategy).ToArray();
-        var policies = options.Purchases.Where(s => selectedPurchase == null || s == selectedPurchase).ToArray();
-        var count = RunTools.VariantCount(options) * paths.Length * policies.Length;
-        IEnumerable<string[]> Combinations(int index, string[] prior)
+        // Size rows once after the batch; resizing while rebuilding can re-enter layout through scrollbars.
+        conditionGrid.SuspendLayout();
+        conditionGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None;
+        try
         {
-            if (index == options.Comparisons.Length) { yield return prior; yield break; }
-            var axis = options.Comparisons[index];
-            foreach (var value in SetupParameters.Parse(axis))
-                foreach (var combination in Combinations(index + 1, prior.Append(SetupParameters.Value(value)).ToArray())) yield return combination;
+            conditionGrid.Rows.Clear(); conditionGrid.Columns.Clear();
+            conditionGrid.Columns.Add("Strategy", "Strategy"); conditionGrid.Columns.Add("Purchase", "Purchase");
+            foreach (var axis in options.Comparisons) conditionGrid.Columns.Add(axis.Key, SetupParameters.Find(axis.Key).Label);
+            if (options.Comparisons.Length == 0) conditionGrid.Columns.Add("Values", "Scenario settings");
+            foreach (DataGridViewColumn column in conditionGrid.Columns) column.MinimumWidth = (int)(95 * DeviceDpi / 96f);
+            var paths = options.Strategies.Where(s => selectedStrategy == null || s == selectedStrategy).ToArray();
+            var policies = options.Purchases.Where(s => selectedPurchase == null || s == selectedPurchase).ToArray();
+            var count = RunTools.VariantCount(options) * paths.Length * policies.Length;
+            IEnumerable<string[]> Combinations(int index, string[] prior)
+            {
+                if (index == options.Comparisons.Length) { yield return prior; yield break; }
+                var axis = options.Comparisons[index];
+                foreach (var value in SetupParameters.Parse(axis))
+                    foreach (var combination in Combinations(index + 1, prior.Append(SetupParameters.Value(value)).ToArray())) yield return combination;
+            }
+            var combinations = from policy in policies from combination in Combinations(0, []) from strategy in paths select (strategy, policy, combination);
+            foreach (var (strategy, policy, combination) in combinations.Take(200))
+                conditionGrid.Rows.Add(new[] { ChoiceLabel(strategy), ChoiceLabel(policy) }.Concat(combination.Length == 0 ? ["Single scenario settings"] : combination).Cast<object>().ToArray());
+            conditionCaption.Text = $"{(selectedStrategy == null && selectedPurchase == null ? "All combinations" : "Selected pairing")} · {Math.Min(200, count):N0} of {count:N0} conditions shown\nEach uses seeds {options.SeedStart:N0}–{(long)options.SeedStart + options.SeedCount - 1:N0}.";
         }
-        var combinations = from policy in policies from combination in Combinations(0, []) from strategy in paths select (strategy, policy, combination);
-        foreach (var (strategy, policy, combination) in combinations.Take(200))
-            conditionGrid.Rows.Add(new[] { ChoiceLabel(strategy), ChoiceLabel(policy) }.Concat(combination.Length == 0 ? ["Single scenario settings"] : combination).Cast<object>().ToArray());
-        conditionGrid.AutoResizeRows();
-        conditionCaption.Text = $"{(selectedStrategy == null && selectedPurchase == null ? "All combinations" : "Selected pairing")} · {Math.Min(200, count):N0} of {count:N0} conditions shown\nEach uses seeds {options.SeedStart:N0}–{(long)options.SeedStart + options.SeedCount - 1:N0}.";
+        finally
+        {
+            conditionGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            conditionGrid.ResumeLayout();
+        }
     }
 }

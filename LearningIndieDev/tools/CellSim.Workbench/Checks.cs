@@ -16,7 +16,7 @@ internal static class Checks
         var root = Path.Combine(Path.GetTempPath(), "cellsim-workbench-check-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
         void Check(string name, Action check) { check(); passed.Add(name); }
-        void Require(bool value) { if (!value) throw new Exception("Self-check failed."); }
+        void Require(bool value, string message = "Self-check failed.") { if (!value) throw new Exception(message); }
         void Reject(Action action)
         {
             try { action(); }
@@ -186,6 +186,95 @@ internal static class Checks
                 sections.SelectedIndex = 2; PumpUi();
                 using var compact = new Bitmap(form.Width, form.Height); form.DrawToBitmap(compact, new Rectangle(Point.Empty, form.Size));
                 compact.Save(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(resultPath))!, "workbench-matrix-compact.png"));
+            });
+            Check("Third comparison can exceed limits and recover without freezing", () =>
+            {
+                var trace = resultPath + ".preview-trace";
+                File.WriteAllText(trace, "");
+                void Mark(string text) => File.AppendAllText(trace, text + Environment.NewLine);
+                var actualProject = Tools.FindProject(AppContext.BaseDirectory)!;
+                using var form = new WorkbenchForm(actualProject) { ShowInTaskbar = false };
+                form.Show(); PumpUi();
+                form.MinimumSize = new(1000, 800); form.Size = new(1280, 900); PumpUi();
+                var page = Find<RunPage>(form).Single();
+                Find<TabControl>(page).Single(t => t.AccessibleName == "Setup sections").SelectedIndex = 2;
+                foreach (var windowWidth in new[] { 1280, 1500, 1920 })
+                foreach (var entries in new[] { 10, 15 })
+                {
+                    form.Size = new(windowWidth, 900); PumpUi(); Mark($"Window {windowWidth}, entries {entries}");
+                    var range = string.Join(",", Enumerable.Range(1, entries));
+                    page.Apply(new SetupOptions { SeedCount = 12, Strategies = RunTools.StrategyIds, Purchases = RunTools.PurchaseIds });
+                    var picker = Find<ComboBox>(page).Single();
+                    var values = Find<TextBox>(page).Single(t => t.AccessibleName == "Comparison value list");
+                    var add = Find<Button>(page).Single(b => b.Text == "Add comparison");
+                    foreach (var key in new[] { "hare:awareness.vision-range", "fox:awareness.vision-range" })
+                    {
+                        picker.SelectedItem = SetupParameters.Find(key); values.Text = range; add.PerformClick(); PumpUi();
+                    }
+                    Mark("Two comparisons added through UI");
+                    picker.SelectedItem = SetupParameters.Find("plant:energy.value"); values.Text = "1, 2, 3";
+                    var elapsed = System.Diagnostics.Stopwatch.StartNew();
+                    add.PerformClick(); PumpUi();
+                    Mark($"Third comparison updated in {elapsed.ElapsedMilliseconds}ms");
+                    var conditions = Find<DataGridView>(page).Single(g => g.AccessibleName == "Condition preview");
+                    Require(elapsed.Elapsed < TimeSpan.FromSeconds(3));
+                    if (entries >= 15) Require(Find<Label>(page).Any(l => l.Text.Contains("16,200 conditions and 194,400 runs")) && conditions.RowCount == 0 && conditions.ColumnCount == 0);
+                    else Require(conditions.RowCount == 200);
+                    if (windowWidth == 1280 && entries == 15)
+                    {
+                        using var image = new Bitmap(form.Width, form.Height); form.DrawToBitmap(image, new Rectangle(Point.Empty, form.Size));
+                        image.Save(Path.ChangeExtension(resultPath, ".limit-warning.png"));
+                    }
+                    Require(!Find<Button>(page).Single(b => b.Text == "Run").Enabled);
+                    Find<Button>(page).Single(b => b.Text == "Show all combinations").PerformClick(); PumpUi();
+                    var comparisons = Find<DataGridView>(page).Single(g => g.AccessibleName == "Comparison values");
+                    comparisons[1, 2].Value = "1"; PumpUi();
+                    Require(conditions.RowCount == 200 && Find<Label>(page).Any(l => l.Text == $"{entries * entries * 24 * 12:N0} runs"));
+                    comparisons[1, 2].Value = "1, 2, 3"; PumpUi();
+                    comparisons.CurrentCell = comparisons[1, 2];
+                    Find<Button>(page).Single(b => b.Text == "Remove selected").PerformClick(); PumpUi();
+                    Require(conditions.RowCount == 200 && Find<Label>(page).Any(l => l.Text == $"{entries * entries * 24 * 12:N0} runs"));
+                    Mark("Edited, re-added, removed third comparison and recovered");
+                }
+            });
+            Check("Dropdown labels fit at default and compact window sizes", () =>
+            {
+                var actualProject = Tools.FindProject(AppContext.BaseDirectory)!;
+                using var form = new WorkbenchForm(actualProject) { ShowInTaskbar = false };
+                form.Show(); PumpUi();
+                var sections = Find<TabControl>(form).Single(t => t.AccessibleName == "Setup sections");
+                sections.SelectedIndex = 2; PumpUi();
+                var defaultSize = form.Size; var minimumSize = form.MinimumSize;
+                foreach (var textScale in new[] { 1f, 1.5f })
+                {
+                    form.Font = new Font("Segoe UI", 10 * textScale);
+                    foreach (var size in new[] { defaultSize, minimumSize })
+                    {
+                        form.Size = new((int)(size.Width * textScale), (int)(size.Height * textScale)); PumpUi();
+                        foreach (var picker in Find<ComboBox>(form))
+                        {
+                            var longest = picker.Items.Cast<object>().Max(item => TextRenderer.MeasureText(picker.GetItemText(item), picker.Font).Width);
+                            Require(picker.ClientSize.Width >= longest + SystemInformation.VerticalScrollBarWidth, $"Selected label width {picker.ClientSize.Width} < {longest + SystemInformation.VerticalScrollBarWidth}");
+                            form.Activate(); picker.Focus(); picker.SelectedIndex = 0;
+                            picker.DroppedDown = true;
+                            Require(picker.DropDownWidth >= longest + SystemInformation.VerticalScrollBarWidth, "Dropdown is too narrow");
+                            Require(picker.MaxDropDownItems <= 12 && picker.DropDownHeight == picker.ItemHeight * 12 + 2, "Dropdown height does not match visible entry count");
+                            PumpUi();
+                            // Another foreground window can close the popup; sizing checks do not require focus.
+                            if (picker.DroppedDown)
+                            {
+                                using var image = new Bitmap(form.Width, form.Height);
+                                using (var graphics = Graphics.FromImage(image)) graphics.CopyFromScreen(form.Location, Point.Empty, image.Size);
+                                image.Save(Path.Combine(Path.GetDirectoryName(Path.GetFullPath(resultPath))!, $"workbench-dropdown-{textScale}-{size.Width}.png"));
+                            }
+                            picker.DroppedDown = false;
+                            foreach (var index in Enumerable.Range(0, picker.Items.Count)) picker.SelectedIndex = index;
+                        }
+                        Require(Find<TextBox>(form).Single(t => t.AccessibleName == "Comparison value list").Width >= 250);
+                        var table = Find<DataGridView>(form).Single(g => g.AccessibleName == "Comparison values");
+                        Require(((DataGridViewComboBoxColumn)table.Columns[0]).DisplayStyle == DataGridViewComboBoxDisplayStyle.Nothing);
+                    }
+                }
             });
             File.WriteAllText(resultPath, JsonSerializer.Serialize(new { status = "Passed", checks = passed }, new JsonSerializerOptions { WriteIndented = true }));
         }
