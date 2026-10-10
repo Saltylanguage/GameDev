@@ -14,6 +14,13 @@ Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
 balance and team review remain open. See the
 [checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
 
+**S4-03 exploratory pilot: 2026-10-10, fixture decision pending.** A
+five-seed matched control/Gardeners pilot after gestation found poor
+choice reach at 400/25/15 and more observable seed renewal at the existing
+400/20/10 manual fixture. Both fixtures still had frequent Hare extinction;
+the result is exploratory and the main screen has not run. See the
+[pilot handoff](handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
+
 **Forest Edge journey prototype: integrated 2026-10-06.** The canonical
 Desktop Simulation icon opens the full-screen journey map. The first unbranched
 reward node offers a Hare Mutation in a popup, then the first simulation node

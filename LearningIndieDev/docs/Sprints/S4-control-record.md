@@ -116,6 +116,15 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   licensing/global-mutex and Package Manager IPC failed before simulation.
   No experiment report or S4-02/03 re-estimate exists. The failure is not game
   or balance evidence.
+- **2026-10-10 gestation-baseline pilot:** Direct Unity execution produced a
+  five-seed no-skill control and Gardeners pair on each of two fixtures.
+  At 400/25/15, four of five controls lost Hares by tick 234 and Gardeners
+  made one successful seed drop total. At 400/20/10, all five reached the
+  tick-200 choice; Gardeners made 34 successful drops with 34 stored-food
+  units spent and reached tick 600 in two seeds. This is exploratory
+  choice-reach evidence, not balance acceptance. The main screening fixture
+  remains a pending Josh decision. See the
+  [pilot handoff](../handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
 - Scheduled allocation: Josh 14h feature + 5h reserve; Sim 14h feature +
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.
