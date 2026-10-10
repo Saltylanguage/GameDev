@@ -69,7 +69,8 @@ namespace SaltyGame
                     role: SpeciesRole.Herbivore,
                     maximumEnergy: 24,
                     litterMinimum: 1,
-                    litterMaximum: 2),
+                    litterMaximum: 2,
+                    gestationTicks: 48),
                 [SpeciesIds.Carnivore] = new SpeciesRules(
                     movementSpeed: 1.5f,
                     movementPattern: MoorePattern,
@@ -93,7 +94,8 @@ namespace SaltyGame
                     role: SpeciesRole.Carnivore,
                     maximumEnergy: 96,
                     litterMinimum: 1,
-                    litterMaximum: 1),
+                    litterMaximum: 1,
+                    gestationTicks: 48),
             };
         }
 

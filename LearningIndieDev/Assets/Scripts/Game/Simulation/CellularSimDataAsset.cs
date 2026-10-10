@@ -122,6 +122,7 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int maximumEnergy;
             [SerializeField, Min(1)] internal int litterMinimum = 1;
             [SerializeField, Min(1)] internal int litterMaximum = 1;
+            [SerializeField, Min(0)] internal int gestationTicks = 48;
             [SerializeField]
             [Tooltip("Optional per-state duration and movement overrides. Built-in state rules can be overridden here.")]
             internal SpeciesBehaviorStateRule[] behaviorStateRules;
@@ -167,7 +168,8 @@ namespace SaltyGame
                     matingEnergyThresholdFraction: matingEnergyThresholdFraction,
                     matingEnergyCostFraction: matingEnergyCostFraction,
                     distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
-                    crowdingEnergyReduction: crowdingEnergyReduction);
+                    crowdingEnergyReduction: crowdingEnergyReduction,
+                    gestationTicks: role == SpeciesRole.Plant ? 0 : gestationTicks);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -209,6 +211,7 @@ namespace SaltyGame
                     maximumEnergy = rules.MaximumEnergy,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,
+                    gestationTicks = rules.GestationTicks,
                     behaviorStateRules = Copy(rules.BehaviorStateRules),
                     role = rules.Role,
                 };

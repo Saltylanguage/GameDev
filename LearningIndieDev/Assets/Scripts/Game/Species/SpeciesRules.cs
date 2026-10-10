@@ -90,7 +90,8 @@ namespace SaltyGame
             float matingEnergyThresholdFraction = 0f,
             float matingEnergyCostFraction = 0f,
             bool distributeMatingEnergyToOffspring = false,
-            float crowdingEnergyReduction = 0f)
+            float crowdingEnergyReduction = 0f,
+            int gestationTicks = 0)
         {
             if (movementSpeed < 0f)
             {
@@ -227,6 +228,11 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(litterMaximum), litterMaximum, "Maximum litter size cannot be less than the minimum.");
             }
 
+            if (gestationTicks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(gestationTicks), gestationTicks, "Gestation ticks cannot be negative.");
+            }
+
             if (distributeMatingEnergyToOffspring
                 && (maximumEnergy <= 0 || matingEnergyCostFraction <= 0f))
             {
@@ -291,6 +297,7 @@ namespace SaltyGame
             MaximumEnergy = maximumEnergy;
             LitterMinimum = litterMinimum;
             LitterMaximum = litterMaximum;
+            GestationTicks = gestationTicks;
             DigestionEnergyBonus = digestionEnergyBonus;
             CrowdingTolerance = crowdingTolerance;
             CrowdingEnergyReduction = crowdingEnergyReduction;
@@ -387,6 +394,7 @@ namespace SaltyGame
         public int MaximumEnergy { get; }
         public int LitterMinimum { get; }
         public int LitterMaximum { get; }
+        public int GestationTicks { get; }
         public float DigestionEnergyBonus { get; }
         public int CrowdingTolerance { get; }
         public float CrowdingEnergyReduction { get; }

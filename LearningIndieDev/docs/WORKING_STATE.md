@@ -5,6 +5,15 @@ become a master changelog.
 
 ## Current focus
 
+**S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
+Hare and Fox now use a provisional 48-tick gestation period, with pending litters
+preserved through movement and whole-litter births waiting for space. Full
+isolated-worktree Unity suites passed (317 EditMode and 42 PlayMode). The S4
+record also captures Trailblazer, Warren, and Gardeners identities and
+Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
+balance and team review remain open. See the
+[checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
+
 **Forest Edge journey prototype: integrated 2026-10-06.** The canonical
 Desktop Simulation icon opens the full-screen journey map. The first unbranched
 reward node offers a Hare Mutation in a popup, then the first simulation node

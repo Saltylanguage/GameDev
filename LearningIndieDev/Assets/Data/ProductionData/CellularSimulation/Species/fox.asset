@@ -76,6 +76,7 @@ MonoBehaviour:
   maximumEnergy: 240
   litterMinimum: 1
   litterMaximum: 1
+  gestationTicks: 48
   behaviorStateRules: []
   alphaChance: 0
   alphaHealthBonus: 0

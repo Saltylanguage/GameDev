@@ -278,7 +278,8 @@ namespace SaltyGame
                 matingEnergyThresholdFraction: rules.MatingEnergyThresholdFraction,
                 matingEnergyCostFraction: rules.MatingEnergyCostFraction,
                 distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
-                crowdingEnergyReduction: crowdingEnergyReduction);
+                crowdingEnergyReduction: crowdingEnergyReduction,
+                gestationTicks: rules.GestationTicks);
         }
     }
 
