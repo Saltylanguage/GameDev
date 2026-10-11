@@ -420,6 +420,54 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TrailblazerPairCanBeChosenThroughPhaseOffers()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            preview.ResetToStart();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
+            Assert.That(preview.TrySetPlayerSpecies("hare", out var message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "11100", "720", "0", "6", "0.1",
+                "0", "0", "0", false, "400", "20", "10", out message), Is.True, message);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, false, "0", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            preview.StartSimulation();
+            preview.PauseSimulation();
+
+            var choices = new[]
+            {
+                SpeciesUpgradeCatalog.FasterMovementId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            var expectedDescriptions = new[]
+            {
+                "Move faster to escape predators and reach fresh food.",
+                "Evade predator attacks more often.",
+            };
+            for (var choice = 0; choice < choices.Length; choice++)
+            {
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                var index = -1;
+                for (var option = 0; option < preview.RewardOptionCount; option++)
+                    if (preview.GetRewardOptionId(option) == choices[choice]) index = option;
+                Assert.That(index, Is.GreaterThanOrEqualTo(0), choices[choice]);
+                StringAssert.Contains(expectedDescriptions[choice], preview.GetRewardOptionDisplayName(index));
+                var tick = preview.Run.Tick;
+                Assert.That(preview.PurchaseReward(index), Is.True);
+                Assert.That(preview.Run.Tick, Is.EqualTo(tick));
+                preview.PauseSimulation();
+            }
+
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.FasterMovementId), Is.EqualTo(1));
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ThreatExposureId), Is.EqualTo(1));
+            Assert.That(preview.Run.UpgradeAcquisitionTimeline.Count, Is.EqualTo(2));
+        }
+
+        [UnityTest]
         public IEnumerator DeveloperSettingsRejectingPopulationCapPreservesInputAndRunSeed()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
