@@ -125,6 +125,12 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   choice-reach evidence, not balance acceptance. The main screening fixture
   remains a pending Josh decision. See the
   [pilot handoff](../handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
+- **2026-10-11 S4 screening fixture decision:** Josh selected 400 Plants /
+  20 Hares / 10 Foxes for the main matched-seed screen, retaining 400 / 25 /
+  15 as a separate stress comparison. The production asset stays unchanged.
+  The fresh 11100-11119 seed panel, 13 arms, cumulative acquisition schedules,
+  fixed response mode, and analysis limits are frozen in the
+  [screen plan](S4-03-screen-plan-20261011.md) before execution.
 - Scheduled allocation: Josh 14h feature + 5h reserve; Sim 14h feature +
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.

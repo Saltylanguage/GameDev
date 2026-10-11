@@ -14,11 +14,13 @@ Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
 balance and team review remain open. See the
 [checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
 
-**S4-03 exploratory pilot: 2026-10-10, fixture decision pending.** A
+**S4-03 exploratory pilot: 2026-10-10; main fixture selected 2026-10-11.** A
 five-seed matched control/Gardeners pilot after gestation found poor
 choice reach at 400/25/15 and more observable seed renewal at the existing
-400/20/10 manual fixture. Both fixtures still had frequent Hare extinction;
-the result is exploratory and the main screen has not run. See the
+400/20/10 manual fixture. Both fixtures still had frequent Hare extinction.
+Josh selected 400/20/10 for the main screen, with 400/25/15 retained as a
+stress comparison. The inputs are frozen in the
+[screen plan](Sprints/S4-03-screen-plan-20261011.md). See the
 [pilot handoff](handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
 
 **Forest Edge journey prototype: integrated 2026-10-06.** The canonical
