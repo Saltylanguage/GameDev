@@ -170,13 +170,70 @@ new hare counterplay rather than simply raising kill rate.
 - New decision: defend a home range or abandon it when fox pressure rises.
 - Fox interaction: gives the fox a meaningful target while giving the hare a reason to tolerate pressure.
 - Tradeoff: reduced value outside the established area.
+- **1.0 identity decision (Josh, 2026-10-07):** Warren is the settled,
+  stationary, territorial opposite of Trailblazer. Smaller litters and safer
+  reproduction through burrows should make one home range reliable. Burrows is
+  intended as one of the defining, high-impact upgrades in the later half of
+  the Rabbit Genome tree, not an innate species rule. Crowding Tolerance may
+  support this playstyle but is not its pillar. A working Burrows node is
+  required for 1.0, not for the bounded S4 comparison. The node couples safer
+  reproduction with smaller litters as its explicit tradeoff.
+
+#### Burrows working behavior for 1.0
+
+- When two Rabbits are ready to mate and find each other, they dig a burrow and
+  stay inside through the birth. Foxes cannot hunt them while they are inside.
+- After that birth, only the founding pair and their offspring can use that
+  burrow to hide when hunted by Foxes. Other Rabbits cannot use empty slots.
+- The burrow's maximum capacity is the litter size N from its first mating plus
+  two parent slots (N+2 total). A later mating inside the same burrow resets
+  capacity to that mating's litter size plus two.
+- **Provisional litter tradeoff (Josh, 2026-10-08):** Burrows changes the
+  Rabbit litter range from the current 2–5 kits to 1–3 kits. This is a 1.0
+  design target pending balance evidence, not a change to the current Rabbit
+  species asset.
+- **Shelter energy (Josh, 2026-10-08):** Rabbits continue to pay their base
+  energy cost while inside a burrow and must emerge to forage. The intended
+  base cost is species-specific, alongside separate movement, mating, and
+  crowding costs. Josh chose to preserve the current Hare effective rate of
+  0.125 energy per tick, charged as 1 energy every 8 ticks. Burrow shelter is
+  still a 1.0 design target, so this decision does not change the current
+  species asset or introduce shelter behavior now.
+- **Movement energy (Josh, 2026-10-08):** A completed move should carry a flat,
+  species-configurable energy charge independent of terrain. Terrain or another
+  feature may add a separate energy modifier later. The provisional Hare rate
+  is 0.125 energy per completed move, accumulating as 1 energy after eight moves
+  by that Hare. The provisional Fox rate is 0.5 energy per completed move, or
+  1 energy after two moves by that Fox. Other species' movement rates remain
+  open. The current terrain movement cost only affects travel speed; these
+  energy charges are not yet in the simulation. Josh chose a separate measured
+  balance pass after S4 before they are considered for production (2026-10-10).
+- **Gestation baseline (Josh, 2026-10-07):** Animal reproduction now uses a
+  provisional 48-tick interval between mating and birth in the game. A pending
+  litter follows its parent and is lost if that parent dies before birth.
+  Josh confirmed that the whole conceived litter waits together if too few
+  birth cells are open at delivery. The parent retries each tick and retains
+  the litter while it survives (2026-10-07). The current implementation caps
+  the conceived litter by open birth cells at mating.
+  Burrows will later shelter the founding pair during this interval; the
+  shelter and family access rules are not part of this gestation change.
+- Still to define: how a Fox can pressure a settled burrow. The provisional
+  litter range and 48-tick interval remain open to balance tuning.
 
 ### Hare: Gardeners
 
-- Effect direction: hare activity improves grass recovery or preserves a small resource patch.
-- New decision: cultivate a stable ecosystem or exploit abundance and move on.
+- **S4 identity decision (Josh, 2026-10-10):** Gardeners maintain several
+  nearby renewable food patches and move among them as those patches recover.
+  Their range remains local, with more movement between resources than Warren's
+  settled burrow and less map coverage than Trailblazer.
+- Effect direction: feeding efficiency and seed dispersal renew a local network
+  of food patches.
+- New decision: invest in local food renewal or exploit abundance and move on.
 - Fox interaction: creates attractive high-value hare areas that the fox can contest.
-- Tradeoff: slower immediate mobility or population growth.
+- **S4 immediate tradeoff (Josh, 2026-10-10):** Keep the current cost of one
+  stored food reserve for each successful seed drop. Future food is gained by
+  spending food held now; concentrated Hare activity around those patches also
+  gives Foxes a place to hunt. The reserve cost is the first comparison input.
 
 ### Fox: Tracker
 

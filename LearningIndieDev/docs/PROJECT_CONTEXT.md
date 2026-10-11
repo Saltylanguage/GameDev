@@ -128,6 +128,18 @@ uncertainty or regression risk.
   player species, fern as support, fox as opposition, and Trailblazer, Warren,
   and Gardeners as the three intended builds. The rationale and validation gaps
   are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
+- **Energy budget direction (Josh, 2026-10-08):** Each species should have a
+  species-specific base energy cost per tick, including while sheltered.
+  Movement, mating, and crowding costs are additional. Josh chose to retain
+  the current effective animal rates: Hare 0.125 energy per tick (charged as
+  1 every 8 ticks) and Fox 1 per tick. Terrain movement cost affects travel
+  speed rather than energy. Josh chose a flat, species-configurable energy
+  charge for each completed move, independent of terrain, with a provisional
+  Hare rate of 0.125 energy per move and Fox rate of 0.5 energy per move. The
+  movement charges are not implemented and are deferred to a separate post-S4
+  balance pass; other species' rates and plant energy semantics remain open.
+  See the
+  [S4 control record](Sprints/S4-control-record.md).
 - **Tree direction (2026-09-28):** Trees are intended as living ecosystem content
   even if they never become a player-selectable species. They should visibly
   grow over simulation time and provide meaningful benefits to animals, making

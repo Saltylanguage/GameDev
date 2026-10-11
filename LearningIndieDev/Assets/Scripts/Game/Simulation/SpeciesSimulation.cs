@@ -482,6 +482,7 @@ namespace SaltyGame
             ResolveResourceGrowthTimers(next, rules, terrainDefinitions);
             ResolveAttackCooldowns(next, experimentalOptions);
             ResolveReproductionCooldowns(next);
+            ResolveGestationTimers(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
         }
 
@@ -520,6 +521,7 @@ namespace SaltyGame
             ResolveStarvation(next, rules, metrics);
             ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics);
             ResolveWilt(next, rules, random, metrics);
+            ResolveGestationBirths(next, rules, alphaOffspringRules, random, metrics);
             ResolveReproduction(
                 next,
                 rules,
@@ -1517,7 +1519,8 @@ namespace SaltyGame
                     var candidate = cells.GetCell(targetX, targetY);
                     if (!candidate.IsCreature
                         || candidate.SpeciesId != species
-                        || candidate.ReproductionCooldownTicksRemaining > 0)
+                        || candidate.ReproductionCooldownTicksRemaining > 0
+                        || candidate.PendingLitterSize > 0)
                     {
                         continue;
                     }
@@ -2188,7 +2191,8 @@ namespace SaltyGame
                 entityId: cell.EntityId,
                 energyRemainder: cell.EnergyRemainder,
                 crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
-                reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining);
+                reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
+                .WithGestation(cell.Gestation);
             if (cell.TrackingTargetEntityId > 0 && cell.TrackingTicksRemaining > 0)
             {
                 movedCell = movedCell.WithTrackingTarget(
@@ -2321,6 +2325,7 @@ namespace SaltyGame
                     energyRemainder: cell.EnergyRemainder,
                     crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
                     reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
+                    .WithGestation(cell.Gestation)
                     .WithForageReservePhase(cell.ForagePhase)
                     .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
                 moved[GetIndex(source, x, y)] = true;
@@ -2369,6 +2374,21 @@ namespace SaltyGame
                     {
                         next.SetCell(x, y, cell.WithReproductionCooldown(
                             cell.ReproductionCooldownTicksRemaining - 1));
+                    }
+                }
+            }
+        }
+
+        static void ResolveGestationTimers(Grid<SpeciesCell> next)
+        {
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature && cell.GestationTicksRemaining > 0)
+                    {
+                        next.SetCell(x, y, cell.WithGestation(cell.Gestation.Advance()));
                     }
                 }
             }
@@ -2703,6 +2723,259 @@ namespace SaltyGame
             return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource;
         }
 
+        static void ResolveGestationBirths(
+            Grid<SpeciesCell> next,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
+            System.Random random,
+            SpeciesSimulationMetrics metrics)
+        {
+            // Newborns have no pending litter, and occupied cells cannot be birth sites.
+            // This pass can read and write the same grid without copying it.
+            var source = next;
+            for (var y = 0; y < source.Height; y++)
+            {
+                for (var x = 0; x < source.Width; x++)
+                {
+                    var parent = source.GetCell(x, y);
+                    if (!parent.IsCreature
+                        || parent.PendingLitterSize == 0
+                        || parent.GestationTicksRemaining > 0
+                        || !rules.TryGetValue(parent.SpeciesId, out var speciesRules))
+                    {
+                        continue;
+                    }
+
+                    var currentParent = next.GetCell(x, y);
+                    if (!currentParent.IsCreature || currentParent.EntityId != parent.EntityId)
+                    {
+                        continue;
+                    }
+
+                    var pattern = speciesRules.ReproductionPattern;
+                    if (pattern.Count == 0)
+                    {
+                        continue;
+                    }
+
+                    var availableBirthCells = new HashSet<int>();
+                    foreach (var offset in pattern.Offsets)
+                    {
+                        var childX = x + offset.x;
+                        var childY = y + offset.y;
+                        if (next.IsInBounds(childX, childY)
+                            && !next.GetCell(childX, childY).IsOccupied)
+                        {
+                            availableBirthCells.Add(GetIndex(next, childX, childY));
+                        }
+                    }
+
+                    if (availableBirthCells.Count < parent.PendingLitterSize)
+                    {
+                        continue;
+                    }
+
+                    var mateX = -1;
+                    var mateY = -1;
+                    if (parent.Gestation.MateEntityId > 0)
+                    {
+                        for (var searchY = 0; searchY < source.Height; searchY++)
+                        {
+                            for (var searchX = 0; searchX < source.Width; searchX++)
+                            {
+                                if (source.GetCell(searchX, searchY).EntityId == parent.Gestation.MateEntityId)
+                                {
+                                    mateX = searchX;
+                                    mateY = searchY;
+                                    break;
+                                }
+                            }
+
+                            if (mateX >= 0)
+                            {
+                                break;
+                            }
+                        }
+                    }
+
+                    var offspringLocations = parent.Gestation.OffspringEnergyPool > 0
+                        ? new List<Vector2Int>(parent.PendingLitterSize)
+                        : null;
+                    var startOffset = random.Next(pattern.Count);
+                    var births = 0;
+                    for (var offsetIndex = 0;
+                         offsetIndex < pattern.Count && births < parent.PendingLitterSize;
+                         offsetIndex++)
+                    {
+                        var offset = pattern.Offsets[(startOffset + offsetIndex) % pattern.Count];
+                        var childX = x + offset.x;
+                        var childY = y + offset.y;
+                        if (!next.IsInBounds(childX, childY))
+                        {
+                            continue;
+                        }
+
+                        var childCell = next.GetCell(childX, childY);
+                        if (childCell.IsOccupied)
+                        {
+                            continue;
+                        }
+
+                        var offspring = childCell.WithEntity(
+                            parent.SpeciesId,
+                            health: 1,
+                            energy: offspringLocations != null ? 0 : speciesRules.ReproductionFoodRequired,
+                            age: 0,
+                            foodEaten: 0,
+                            foodReserve: 0f);
+                        if (alphaOffspringRules != null
+                            && alphaOffspringRules.TryGetValue(parent.SpeciesId, out var alphaRule))
+                        {
+                            offspring = alphaRule.Apply(offspring, random);
+                        }
+
+                        next.SetCell(childX, childY, offspring);
+                        offspringLocations?.Add(new Vector2Int(childX, childY));
+                        births++;
+                        metrics?.Record(parent.SpeciesId, births: 1);
+                        metrics?.RecordBirth(
+                            parent.SpeciesId,
+                            parent.EntityId,
+                            x,
+                            y,
+                            mateX,
+                            mateY,
+                            offspring.EntityId,
+                            childX,
+                            childY);
+                    }
+
+                    if (births == 0)
+                    {
+                        continue;
+                    }
+
+                    if (offspringLocations != null)
+                    {
+                        var energyPerOffspring = parent.Gestation.OffspringEnergyPool / births;
+                        var remainder = parent.Gestation.OffspringEnergyPool % births;
+                        for (var index = 0; index < offspringLocations.Count; index++)
+                        {
+                            var location = offspringLocations[index];
+                            var offspring = next.GetCell(location.x, location.y);
+                            next.SetCell(location.x, location.y, WithCreatureEnergy(
+                                offspring,
+                                offspring.Energy + energyPerOffspring + (index < remainder ? 1 : 0)));
+                        }
+                    }
+
+                    var completedParent = next.GetCell(x, y).WithGestation(default);
+                    next.SetCell(x, y, completedParent.WithReproductionCooldown(
+                        Math.Max(completedParent.ReproductionCooldownTicksRemaining,
+                            ReproductionCooldownTicks)));
+                    if (mateX >= 0)
+                    {
+                        var mate = next.GetCell(mateX, mateY);
+                        if (mate.EntityId == parent.Gestation.MateEntityId)
+                        {
+                            next.SetCell(mateX, mateY, mate.WithReproductionCooldown(
+                                Math.Max(mate.ReproductionCooldownTicksRemaining,
+                                    ReproductionCooldownTicks)));
+                        }
+                    }
+                }
+            }
+        }
+
+        static void StartGestation(
+            Grid<SpeciesCell> next,
+            Grid<SpeciesCell> source,
+            int x,
+            int y,
+            int mateX,
+            int mateY,
+            SpeciesId species,
+            SpeciesRules speciesRules,
+            int requestedLitter,
+            SpeciesSimulationMetrics metrics)
+        {
+            var parent = next.GetCell(x, y);
+            var hasMate = mateX >= 0;
+            var mate = hasMate ? next.GetCell(mateX, mateY) : default;
+            var energyCost = speciesRules.MatingEnergyCost;
+            var affordableLitter = requestedLitter;
+            if (energyCost > 0)
+            {
+                affordableLitter = speciesRules.MatingEnergyCostFraction > 0f
+                    ? parent.Energy >= energyCost && (!hasMate || mate.Energy >= energyCost)
+                        ? requestedLitter
+                        : 0
+                    : Math.Min(requestedLitter, parent.Energy / energyCost);
+            }
+
+            if (affordableLitter == 0)
+            {
+                metrics?.RecordReproductionOutcome(species, SpeciesReproductionOutcome.BlockedEnergy);
+                return;
+            }
+
+            var availableBirthCells = new HashSet<int>();
+            foreach (var offset in speciesRules.ReproductionPattern.Offsets)
+            {
+                var childX = x + offset.x;
+                var childY = y + offset.y;
+                if (!source.IsInBounds(childX, childY))
+                {
+                    continue;
+                }
+
+                var child = next.GetCell(childX, childY);
+                if (!child.IsOccupied)
+                {
+                    availableBirthCells.Add(GetIndex(next, childX, childY));
+                }
+            }
+
+            if (availableBirthCells.Count == 0)
+            {
+                metrics?.RecordReproductionOutcome(species, SpeciesReproductionOutcome.BlockedNoBirthLocation);
+                return;
+            }
+
+            var conceivedLitter = Math.Min(affordableLitter, availableBirthCells.Count);
+
+            var totalCost = speciesRules.MatingEnergyCostFraction > 0f
+                ? energyCost
+                : energyCost * conceivedLitter;
+            var offspringEnergyPool = speciesRules.DistributeMatingEnergyToOffspring
+                ? energyCost * (hasMate ? 2 : 1)
+                : 0;
+            var cooldown = (int)Math.Min(int.MaxValue,
+                (long)speciesRules.GestationTicks + ReproductionCooldownTicks);
+            var gestation = new SpeciesGestation(
+                speciesRules.GestationTicks,
+                conceivedLitter,
+                hasMate ? mate.EntityId : 0,
+                offspringEnergyPool);
+            next.SetCell(x, y, ConsumeReproductionEnergy(parent, totalCost)
+                .WithGestation(gestation)
+                .WithReproductionCooldown(cooldown));
+            if (hasMate)
+            {
+                var updatedMate = mate;
+                if (speciesRules.MatingEnergyCostFraction > 0f)
+                {
+                    updatedMate = ConsumeReproductionEnergy(updatedMate, energyCost);
+                }
+
+                next.SetCell(mateX, mateY, updatedMate.WithReproductionCooldown(cooldown));
+            }
+
+            // The reproduction funnel classifies the mating attempt here;
+            // births and birth events are recorded when gestation completes.
+            metrics?.RecordReproductionOutcome(species, SpeciesReproductionOutcome.SuccessfulAttempt);
+        }
+
         static void ResolveReproduction(
             Grid<SpeciesCell> next,
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
@@ -2740,6 +3013,7 @@ namespace SaltyGame
                     }
 
                     if (parent.ReproductionCooldownTicksRemaining > 0
+                        || parent.PendingLitterSize > 0
                         || (currentParent.ReproductionCooldownTicksRemaining > 0
                             && currentParent.BehaviorState == SpeciesBehaviorState.Mating))
                     {
@@ -2777,7 +3051,11 @@ namespace SaltyGame
                                 && IsSameSpecies(neighbor, parent.SpeciesId))
                             {
                                 sameSpeciesNeighbors++;
-                                if (mateX < 0)
+                                if (mateX < 0
+                                    && (speciesRules.GestationTicks == 0
+                                        || (neighbor.PendingLitterSize == 0
+                                            && next.GetCell(x + offset.x, y + offset.y)
+                                                .ReproductionCooldownTicksRemaining == 0)))
                                 {
                                     mateX = x + offset.x;
                                     mateY = y + offset.y;
@@ -2788,6 +3066,16 @@ namespace SaltyGame
                     }
 
                     if (sameSpeciesNeighbors < speciesRules.ReproductionNeighborCount)
+                    {
+                        metrics?.RecordReproductionOutcome(
+                            parent.SpeciesId,
+                            SpeciesReproductionOutcome.BlockedMateRequirement);
+                        continue;
+                    }
+
+                    if (speciesRules.GestationTicks > 0
+                        && speciesRules.ReproductionNeighborCount > 0
+                        && mateX < 0)
                     {
                         metrics?.RecordReproductionOutcome(
                             parent.SpeciesId,
@@ -2850,6 +3138,21 @@ namespace SaltyGame
                     var requestedLitter = speciesRules.IsPlant
                         ? 1
                         : random.Next(speciesRules.LitterMinimum, speciesRules.LitterMaximum + 1);
+                    if (!speciesRules.IsPlant && speciesRules.GestationTicks > 0)
+                    {
+                        StartGestation(
+                            next,
+                            source,
+                            x,
+                            y,
+                            mateX,
+                            mateY,
+                            parent.SpeciesId,
+                            speciesRules,
+                            requestedLitter,
+                            metrics);
+                        continue;
+                    }
                     var distributedOffspringLocations = speciesRules.DistributeMatingEnergyToOffspring
                         ? new List<Vector2Int>(requestedLitter)
                         : null;
@@ -2998,7 +3301,8 @@ namespace SaltyGame
             var parent = next.GetCell(x, y);
             if (parent.IsCreature && parent.SpeciesId == species)
             {
-                next.SetCell(x, y, parent.WithReproductionCooldown(ReproductionCooldownTicks));
+                next.SetCell(x, y, parent.WithReproductionCooldown(
+                    Math.Max(parent.ReproductionCooldownTicksRemaining, ReproductionCooldownTicks)));
             }
 
             foreach (var offset in next.GetPattern(reproductionPattern).Offsets)
@@ -3015,7 +3319,8 @@ namespace SaltyGame
                 next.SetCell(
                     neighborX,
                     neighborY,
-                    neighbor.WithReproductionCooldown(ReproductionCooldownTicks));
+                    neighbor.WithReproductionCooldown(
+                        Math.Max(neighbor.ReproductionCooldownTicksRemaining, ReproductionCooldownTicks)));
             }
         }
 
@@ -3247,6 +3552,7 @@ namespace SaltyGame
                 && rules.ReproductionChance > 0f
                 && rules.ReproductionNeighborCount > 0
                 && cell.ReproductionCooldownTicksRemaining <= 0
+                && cell.PendingLitterSize == 0
                 && HasReproductionEnergy(cell, rules);
         }
 

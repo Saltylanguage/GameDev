@@ -6,6 +6,23 @@ become a master changelog.
 
 ## Current focus
 
+**S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
+Hare and Fox now use a provisional 48-tick gestation period, with pending litters
+preserved through movement and whole-litter births waiting for space. Full
+isolated-worktree Unity suites passed (317 EditMode and 42 PlayMode). The S4
+record also captures Trailblazer, Warren, and Gardeners identities and
+Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
+balance and team review remain open. See the
+[checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
+
+**S4-03 exploratory pilot: 2026-10-10, fixture decision pending.** A
+five-seed matched control/Gardeners pilot after gestation found poor
+choice reach at 400/25/15 and more observable seed renewal at the existing
+400/20/10 manual fixture. Both fixtures still had frequent Hare extinction;
+the result is exploratory and the main screen has not run. See the
+[pilot handoff](handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
+
+
 **October 10 comparison-preview hang investigated locally:** Windows logged an
 Application Hang for the canonical Workbench. Bevin reported Hare/Fox vision
 1-15, twelve seeds and all strategies/policies; adding Plant energy1,2,3 crosses

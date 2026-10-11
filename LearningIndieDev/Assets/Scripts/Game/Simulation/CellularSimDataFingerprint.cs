@@ -129,6 +129,7 @@ namespace SaltyGame
             Append(builder, rules.MaximumEnergy);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
+            Append(builder, rules.GestationTicks);
             Append(builder, rules.WiltChance);
             Append(builder, rules.CrowdingMetabolismMultiplier);
             Append(builder, rules.StartingFoodReserve);
