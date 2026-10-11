@@ -5,12 +5,24 @@ become a master changelog.
 
 ## Current focus
 
+**S4-03 Trailblazer diagnostic: 2026-10-11, needs design review.** A
+five-arm replay of the existing 20 matched seeds added Hare spatial observations
+without changing any of the 100 archived run outcomes. Both Trailblazer orders
+increase post-choice movement, but population-wide map coverage gains are small
+and inconsistent. The current crowding rule only triggers at seven Hare
+neighbors; Josh's approved four-neighbor density surcharge is still pending,
+so the replay cannot judge intended crowding pressure. The first rotating
+three-card offer nominally contains a Trailblazer starter in 12/20 seeds;
+the partner is offered next when eligible. See the
+[factual report](Sprints/S4-03-trailblazer-spatial-20261011/report.md) and
+[analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md).
+
 **S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
 predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled
 Threat Avoidance bug and a stale combat gate were fixed and the affected arms
 replayed on the same seeds; 319 EditMode and 42 PlayMode tests passed. Movement
-activity and seed-drop accounting are observable, but map coverage, patch
-revisits, and Warren crowding pressure remain insufficient for strategy
+activity and seed-drop accounting are observable, but patch revisits and
+Warren crowding pressure remain insufficient for strategy
 acceptance. See the [screen report](Sprints/S4-03-screen-20261011/report.md) and
 its [analysis](Sprints/S4-03-screen-20261011/ai-analysis-v1.md). Josh and Sim's
 player-flow review and accept/revise decision remain open.
