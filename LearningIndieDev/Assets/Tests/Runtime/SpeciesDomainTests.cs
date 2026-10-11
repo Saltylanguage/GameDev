@@ -1370,6 +1370,64 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void PreContactAvoidanceWorksWithoutFleeSpeedBonus()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0,
+                    role: SpeciesRole.Carnivore,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0,
+                    role: SpeciesRole.Herbivore),
+            };
+            Assert.That(rules[SpeciesIds.Herbivore].FleeMovementSpeedBonus, Is.Zero);
+            var controlMetrics = new SpeciesSimulationMetrics();
+            var avoidanceMetrics = new SpeciesSimulationMetrics();
+            SpeciesSimulation.Step(source, rules, seed: 42, metrics: controlMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId));
+            var avoided = SpeciesSimulation.Step(source, rules, seed: 42, metrics: avoidanceMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: new SpeciesExperimentalOptions(
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    preContactAvoidanceChance: 1f));
+
+            Assert.That(controlMetrics.CombatRollEvents, Has.Count.EqualTo(1));
+            Assert.That(avoidanceMetrics.CombatRollEvents, Is.Empty);
+            Assert.That(avoided.GetCell(1, 0).Health, Is.EqualTo(3));
+        }
+
+        [Test]
         public void BevExperimentalOpposedRollSeparatesAttackModifierFromDamage()
         {
             var source = new Grid<SpeciesCell>(2, 1);

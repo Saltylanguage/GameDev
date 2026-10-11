@@ -807,7 +807,6 @@ namespace SaltyGame
                         if (isCarnivoreHerbivoreInteraction
                             && experimentalOptions != null
                             && experimentalOptions.HasPreContactAvoidance
-                            && targetRules.FleeMovementSpeedBonus > 0f
                             && ShouldAvoidPreContact(
                                 experimentalOptions.PreContactAvoidanceChance,
                                 seed,

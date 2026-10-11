@@ -437,6 +437,7 @@ namespace SaltyGame.EditorTools
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value)
                 : authoredPhaseUpgradeSnapshots[0];
             activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+            var phaseExperimentalOptions = WithScheduledAvoidance(experimentalOptions, activeSnapshots);
             scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
             var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
             var run = new SimulationRunState(
@@ -451,7 +452,7 @@ namespace SaltyGame.EditorTools
                 scheduledData,
                 combatResolutionMode,
                 attackOpportunityMode,
-                experimentalOptions,
+                phaseExperimentalOptions,
                 upgradeLoadout: activeSnapshots);
 
             while (runner.AdvanceOneTick())
@@ -474,11 +475,12 @@ namespace SaltyGame.EditorTools
                         playerSpecies.Value)
                     : authoredPhaseUpgradeSnapshots[nextPhaseIndex];
                 activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+                phaseExperimentalOptions = WithScheduledAvoidance(experimentalOptions, activeSnapshots);
                 var nextData = ApplySnapshotLoadout(
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
                     activeSnapshots);
-                if (!runner.InstallBoundaryState(nextData.SpeciesRules, experimentalOptions, activeSnapshots)
+                if (!runner.InstallBoundaryState(nextData.SpeciesRules, phaseExperimentalOptions, activeSnapshots)
                     || !run.ContinueWithoutUpgrade())
                 {
                     throw new InvalidOperationException(
@@ -814,6 +816,22 @@ namespace SaltyGame.EditorTools
                 options.GridWidth == 0 ? updatedData.Width : options.GridWidth,
                 options.GridHeight == 0 ? updatedData.Height : options.GridHeight,
                 populations);
+        }
+
+        static SpeciesExperimentalOptions WithScheduledAvoidance(
+            SpeciesExperimentalOptions baseOptions,
+            IEnumerable<SpeciesUpgradeSnapshot> activeSnapshots)
+        {
+            var avoidanceChance = baseOptions.PreContactAvoidanceChance;
+            foreach (var snapshot in activeSnapshots)
+            {
+                avoidanceChance += snapshot.PreContactAvoidanceChanceBonus;
+            }
+            return new SpeciesExperimentalOptions(
+                baseOptions.FeatureId,
+                baseOptions.FoxAttackCooldownTicks,
+                avoidanceChance,
+                baseOptions.CoupledSpeciesResponsesEnabled);
         }
 
         static SpeciesExperimentalOptions GetExperimentalOptions(CommandLineOptions options)

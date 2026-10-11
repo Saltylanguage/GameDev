@@ -117,6 +117,25 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void ScheduledAvoidanceOptionsFollowEachPhaseLoadout()
+        {
+            var runner = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("SaltyGame.EditorTools.CellularSimulationExperimentRunner"))
+                .First(type => type != null);
+            var create = runner.GetMethod("WithScheduledAvoidance", BindingFlags.Static | BindingFlags.NonPublic);
+            var baseOptions = new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId);
+            var avoidance = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId)
+                .CreateSnapshot(new SpeciesId("hare"));
+            SpeciesExperimentalOptions Resolve(params SpeciesUpgradeSnapshot[] loadout) =>
+                (SpeciesExperimentalOptions)create.Invoke(null, new object[] { baseOptions, loadout });
+
+            Assert.That(Resolve().PreContactAvoidanceChance, Is.Zero);
+            Assert.That(Resolve(avoidance).PreContactAvoidanceChance, Is.EqualTo(0.08f).Within(0.00001f));
+            Assert.That(Resolve(avoidance, avoidance).PreContactAvoidanceChance, Is.EqualTo(0.16f).Within(0.00001f));
+            Assert.That(Resolve().PreContactAvoidanceChance, Is.Zero);
+        }
+
+        [Test]
         public void WarrenBatchSnapshotsAndAuthoringCopiesPreserveCrowdingReduction()
         {
             var data = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
