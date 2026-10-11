@@ -6,6 +6,15 @@ become a master changelog.
 
 ## Current focus
 
+**October 10 BevBranch gestation integration:** Our Workbench readability and
+comparison-preview fixes were pushed as `a82d1cd4`. Salty's gestation checkpoint
+(`65e47386`) is merged as `10c13f4`, preserving both contributors' working-state
+entries. Portable snapshots now preserve gestation, and parity checks include
+pending-litter state with normalized mate identity. Production Hare/Fox use a
+provisional 48-tick delay; earlier frozen batches retain their original model.
+See the [integration and testing-impact handoff](handoffs/2026-10-10-2004-codex-bevbranch-salty-gestation-integration-and-testing-impact.md)
+for current validation, new-snapshot requirements, and proposed comparison controls.
+
 **S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
 Hare and Fox now use a provisional 48-tick gestation period, with pending litters
 preserved through movement and whole-litter births waiting for space. Full
@@ -32,7 +41,7 @@ avoid the redundant resize callback; invalid previews clear rows and columns,
 with explicit requested condition/run counts. Fourteen GUI check groups pass,
 including sequential Add/edit/remove recovery at three window widths. See
 [handoff](handoffs/2026-10-10-0014-codex-workbench-comparison-preview-hang.md).
-Local/uncommitted; original hang cause and human retry remain open. Budget
+Shared in `a82d1cd4`; original hang cause and human retry remain open. Budget
 configuration is a proposed follow-up, not an implemented change.
 
 **October 9 dropdown readability fix added locally:** The Compare values picker
@@ -43,7 +52,7 @@ misleading dropdown arrows and allow wrapping. Thirteen native GUI checks pass,
 including a regression that fails on the previous picker and checks all thirty
 labels at default/compact sizes and larger text. Open lists rendered/inspected
 at 144 DPI. See [handoff](handoffs/2026-10-09-2356-codex-workbench-readable-dropdowns.md).
-Local/uncommitted on BevBranch; no simulation rules or evidence changed.
+Shared in `a82d1cd4`; this UI fix changes no simulation rules or evidence.
 
 **October 9 publication package:** Bevin authorized committing and pushing this
 session's D5 inspection setup, live Plant count, Excel exporter and interactive
