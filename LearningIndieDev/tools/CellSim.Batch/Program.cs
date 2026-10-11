@@ -470,6 +470,21 @@ internal static class Program
     }
     static void SelfTest()
     {
+        var gestationPattern = new GridPattern(new[] { UnityEngine.Vector2Int.left, UnityEngine.Vector2Int.right });
+        var gestationRules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
+        gestationRules[SpeciesIds.Carnivore] = new SpeciesRules(
+            movementSpeed: 0f, movementPattern: gestationPattern, attackPattern: gestationPattern,
+            attackAmount: 0, blockPattern: gestationPattern, blockAmount: 0,
+            dietPattern: gestationPattern, dietTarget: null, reproductionPattern: gestationPattern,
+            reproductionNeighborCount: 0, reproductionChance: 1f, metabolism: 0, gestationTicks: 48);
+        var gestationData = new CellularSimData(8, 8, new Dictionary<SpeciesId, float>(), gestationRules, 6f, .1f);
+        var gestationSnapshot = UnityEngine.JsonUtility.FromJson<PortableSnapshot>(
+            UnityEngine.JsonUtility.ToJson(PortableSnapshot.Create(gestationData)));
+        if (gestationSnapshot.Restore().SpeciesRules[SpeciesIds.Carnivore].GestationTicks != 48)
+            throw new Exception("Gestation snapshot round-trip failed.");
+        if (ApplyPortableStats(gestationData, new[] { "-speciesStats", "carnivore:awareness.vision-range=9" })
+            .SpeciesRules[SpeciesIds.Carnivore].GestationTicks != 48)
+            throw new Exception("Stat override discarded gestation.");
         var data = new CellularSimData(8, 8, new Dictionary<SpeciesId, float>
         { [SpeciesIds.Plant] = .3f, [SpeciesIds.Herbivore] = .1f, [SpeciesIds.Carnivore] = .03f }, SpeciesRuleDefaults.Create(), 4f, .1f);
         var snapshot = PortableSnapshot.Create(data);
@@ -557,7 +572,7 @@ internal static class Program
         restored.width++; rejected = false;
         try { restored.Restore(); } catch (InvalidOperationException) { rejected = true; }
         if (!rejected) throw new Exception("Corrupt snapshot accepted.");
-        Console.WriteLine("PASS: snapshot round-trip; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
+        Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
     }
     public sealed class Plan
     {

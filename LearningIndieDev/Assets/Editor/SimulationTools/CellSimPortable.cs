@@ -548,6 +548,7 @@ namespace SaltyGame.EditorTools
             public float matingEnergyCostFraction;
             public bool distributeMatingEnergyToOffspring;
             public float crowdingEnergyReduction;
+            public int gestationTicks;
             public static RuleData Create(SpeciesRules value)
             {
                 return new RuleData
@@ -593,6 +594,7 @@ namespace SaltyGame.EditorTools
                     matingEnergyCostFraction = value.MatingEnergyCostFraction,
                     distributeMatingEnergyToOffspring = value.DistributeMatingEnergyToOffspring,
                     crowdingEnergyReduction = value.CrowdingEnergyReduction,
+                    gestationTicks = value.GestationTicks,
                 };
             }
             public SpeciesRules Restore() => new SpeciesRules(
@@ -635,7 +637,8 @@ namespace SaltyGame.EditorTools
                 matingEnergyThresholdFraction: matingEnergyThresholdFraction,
                 matingEnergyCostFraction: matingEnergyCostFraction,
                 distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
-                crowdingEnergyReduction: crowdingEnergyReduction);
+                crowdingEnergyReduction: crowdingEnergyReduction,
+                gestationTicks: gestationTicks);
         }
 
     }
