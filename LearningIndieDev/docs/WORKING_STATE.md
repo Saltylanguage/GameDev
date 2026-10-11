@@ -5,6 +5,16 @@ become a master changelog.
 
 ## Current focus
 
+**S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
+predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled
+Threat Avoidance bug and a stale combat gate were fixed and the affected arms
+replayed on the same seeds; 319 EditMode and 42 PlayMode tests passed. Movement
+activity and seed-drop accounting are observable, but map coverage, patch
+revisits, and Warren crowding pressure remain insufficient for strategy
+acceptance. See the [screen report](Sprints/S4-03-screen-20261011/report.md) and
+its [analysis](Sprints/S4-03-screen-20261011/ai-analysis-v1.md). Josh and Sim's
+player-flow review and accept/revise decision remain open.
+
 **S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
 Hare and Fox now use a provisional 48-tick gestation period, with pending litters
 preserved through movement and whole-litter births waiting for space. Full

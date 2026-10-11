@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "S4-03-HARE-STRATEGY-SCREEN-20261011",
+  "reportId": "S4-03-SCREEN-20261011",
+  "status": "Needs Review",
+  "reportGeneratedUtc": "2026-10-11T14:14:46Z",
+  "branch": "codex/s4-gestation-checkpoint-20261010",
+  "initialSourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+  "correctedSourceCommit": "a7667e77c68607fc832bc6412ba03c36eccc887c",
+  "unityEditorVersion": "6000.4.6f1",
+  "scenarioAssetPath": "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset",
+  "startingPopulations": "plant=400,hare=20,fox=10",
+  "grid": [
+    36,
+    20
+  ],
+  "seedStart": 11100,
+  "seedCountPerArm": 20,
+  "arms": 13,
+  "runs": 260,
+  "phaseLengthTicks": 100,
+  "phaseCount": 6,
+  "stepIntervalSeconds": 0.1,
+  "combatMode": "opposed-roll",
+  "attackOpportunityMode": "natural",
+  "experimentalFeatures": "bev-experimental",
+  "coupledSpeciesResponses": false,
+  "rawReportsTrackedByGit": false,
+  "rawReports": [
+    {
+      "arm": "control",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/control.json",
+      "sha256": "D753EF366BAFB5E3B6897F312946ACD5D514CBA6B375912534BCA178BF876C25",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "e69a9c927fab5595a76b5952209f8449ec6f43c3b3efc1acea819a23e2d82f72"
+    },
+    {
+      "arm": "movement",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/movement.json",
+      "sha256": "94E62E45BA7CC9A50A18BC855F1DEB5577FD412143E9EB132F5D9294A3A267B1",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "669be0f47a0a4cdf729cf8ec68d179a02eb981a54df49d588d1701b7a31af149"
+    },
+    {
+      "arm": "avoidance",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/avoidance.json",
+      "sha256": "D69E027A36739B1874F31F720D99E71B2AC698D0253832F805340D2477F85175",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "bdc0262dcb7395880038795793178b2b81bd61f28aae3c082abe67c3b5c98ff6"
+    },
+    {
+      "arm": "hide",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/hide.json",
+      "sha256": "2F1305BE3CD21C6D44E50095EC92D6994399B12B73468813863557F0DBC3CE6F",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "135de90ae8b206468e9a21f0536456bb5b19dd15f6aeacf7d6e89526f9a2440c"
+    },
+    {
+      "arm": "crowding",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/crowding.json",
+      "sha256": "7CB00CCFD0FCE90017482CAFB8F0E4E910038CC8900E4AC6EBDE853807294DE2",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "902e8c44099bd07bcd1405f55976119aee4e077a0c19ad1346579e768665adbf"
+    },
+    {
+      "arm": "digestion",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/digestion.json",
+      "sha256": "58064C9057A668E16D34BBA4DBE81F2755521DC2E301E1D717B28A4C544959B7",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "3e1db4f7fbb52ddda5f116256cb31f235e4d65e08818222bd98e035edcfeb400"
+    },
+    {
+      "arm": "dispersal",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/dispersal.json",
+      "sha256": "A6983D99AF031AD9C6B44C4BAF93D02C879B58AF5785293F4F3E796B775CE6EC",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "7dba89c5475ef76cc694900a985cb35d551e6bd70d26c5644bdda7472766a231"
+    },
+    {
+      "arm": "trailblazer-movement-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/trailblazer-movement-first.json",
+      "sha256": "EFA1A09C25FB37EDDBF8939429AA363604C98FD674C919E327EC28996A4CC3B2",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "e6567a853c2b894485882c987c362f2aedffe77f819901c9969c96c0ddf67eb5"
+    },
+    {
+      "arm": "trailblazer-avoidance-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/trailblazer-avoidance-first.json",
+      "sha256": "CEDBE988B1054B10334F5ADBC8D80F7BF902C986C7674B1971286421756B6615",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "393db4ca69fa72b8621595254426294e56018d66b8598606927d28877fae5072"
+    },
+    {
+      "arm": "warren-hide-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/warren-hide-first.json",
+      "sha256": "22A349C4348054B855ADF6816AD36FC9F7A93F089E7E52704BE2B7D5FA855E74",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "c342345a90c939a865f4178ceaba88bb29c5b970e391e02128db3d47a002128e"
+    },
+    {
+      "arm": "warren-crowding-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/warren-crowding-first.json",
+      "sha256": "6B9C8CEEF32550F5F17C865D9FF497F9D71A735A5EB55E3B17E7C6FFE7337AAA",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "176fc83f73315c71c83324654a476ef53a46aeed0ac62d72c1e01c7b6bff9f1a"
+    },
+    {
+      "arm": "gardeners-digestion-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/gardeners-digestion-first.json",
+      "sha256": "C8C8116C4961ABF794079CFA9DA137ED1DEDE2B578D3A8977D4FD3F6C46454BD",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "06212d88555a61f4cfd8410855ee5617e0fb9c0f96e1ffbca2c4bb96cc1bc7b7"
+    },
+    {
+      "arm": "gardeners-dispersal-first",
+      "revision": "original",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "rawPath": "artifacts/s4-screen-20261011/gardeners-dispersal-first.json",
+      "sha256": "74216A66246E84369C21C950B48A91A682540F65EC0438C239D81124D09F3769",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "53a3a48d378272ad7643d6ccfcb4fae1a4115577af94a0ff522b75bbe4144b67"
+    },
+    {
+      "arm": "control",
+      "revision": "corrected",
+      "sourceCommit": "a7667e77c68607fc832bc6412ba03c36eccc887c",
+      "rawPath": "artifacts/s4-screen-20261011/corrected-control.json",
+      "sha256": "FCE9BA4FCACDDDFB64DA50B8424A34591594C51F56FAFB2FCB98DBB3AEE261B8",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "e69a9c927fab5595a76b5952209f8449ec6f43c3b3efc1acea819a23e2d82f72"
+    },
+    {
+      "arm": "avoidance",
+      "revision": "corrected",
+      "sourceCommit": "a7667e77c68607fc832bc6412ba03c36eccc887c",
+      "rawPath": "artifacts/s4-screen-20261011/corrected-avoidance.json",
+      "sha256": "50715EF3D7B6CD5FB18912BE3A31935352A3DD12E428C6FA364FE64680C1D16B",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "bdc0262dcb7395880038795793178b2b81bd61f28aae3c082abe67c3b5c98ff6"
+    },
+    {
+      "arm": "trailblazer-movement-first",
+      "revision": "corrected",
+      "sourceCommit": "a7667e77c68607fc832bc6412ba03c36eccc887c",
+      "rawPath": "artifacts/s4-screen-20261011/corrected-trailblazer-movement-first.json",
+      "sha256": "EEC53216496ACED4CDA2761254834E5FA2BB89547D8C04DF4CFA9F58B08CAA1F",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "e6567a853c2b894485882c987c362f2aedffe77f819901c9969c96c0ddf67eb5"
+    },
+    {
+      "arm": "trailblazer-avoidance-first",
+      "revision": "corrected",
+      "sourceCommit": "a7667e77c68607fc832bc6412ba03c36eccc887c",
+      "rawPath": "artifacts/s4-screen-20261011/corrected-trailblazer-avoidance-first.json",
+      "sha256": "45F02B1797FD874417DB4E32B5418289F08B13AD6C949CB993CFF0CB460EDF29",
+      "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+      "runProvenanceFingerprint": "393db4ca69fa72b8621595254426294e56018d66b8598606927d28877fae5072"
+    }
+  ],
+  "regeneratedOriginalRawReports": [
+    {
+      "id": "control",
+      "originalReportSha256": "01B6E7D64986BCCB84AF3DF7EFE322972D68D4400DFE6F04D823BE519E6559EC",
+      "restoredReportSha256": "D753EF366BAFB5E3B6897F312946ACD5D514CBA6B375912534BCA178BF876C25",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "archivedRunSummaryIdentical": true
+    },
+    {
+      "id": "avoidance",
+      "originalReportSha256": "8CEE682E8CC38E46445F8A9AFB07D81D7DBBF5C375CC64FE625F807DDCCEA0D2",
+      "restoredReportSha256": "D69E027A36739B1874F31F720D99E71B2AC698D0253832F805340D2477F85175",
+      "sourceCommit": "83e1fbea8b429ba6826bf6fad2c1957efb7bd2e6",
+      "archivedRunSummaryIdentical": true
+    }
+  ],
+  "controlSummaryIdenticalAcrossSourceCommits": true,
+  "aggregation": "Original nine unaffected arms plus corrected control and three Threat Avoidance arms; source revision per report is listed above."
+}

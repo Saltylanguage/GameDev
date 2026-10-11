@@ -131,14 +131,15 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   The fresh 11100-11119 seed panel, 13 arms, cumulative acquisition schedules,
   fixed response mode, and analysis limits are frozen in the
   [screen plan](S4-03-screen-plan-20261011.md) before execution.
+- **2026-10-11 S4-03 exploratory screen:** The predeclared 13-arm, 20-seed run is complete on 400/20/10. It found two Threat Avoidance faults: the scheduled runner did not update the phase avoidance chance, and combat still required a flee-speed bonus that the current upgrade does not grant. Both are fixed at `a7667e77`; 319 EditMode and 42 PlayMode tests passed. The affected arms and matched control were replayed with unchanged inputs. General Movement increased movement activity; Seed Dispersal produced successful food drops at one reserve unit each; the fixture supplied too little crowding pressure to judge Warren, and none of the aggregate counters establish map coverage or local food-patch revisits. Survival at tick 600 was 6/20 in control and 4–7/20 among the named candidate arms, with mixed paired gains and losses. See the [factual report and separate analysis](S4-03-screen-20261011/report.md). S4-03 remains open for spatial/in-game review, Josh and Sim's accept/revise decision, separate stress comparison, and a later frozen confirmation panel.
 - Scheduled allocation: Josh 14h feature + 5h reserve; Sim 14h feature +
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.
 
-**Kickoff status:** S4 is Active. The pilot is an early effort checkpoint
-before the full 13-arm × 20-seed screen. If measured effort materially changes
-the work or estimate, review the capacity trade while preserving the 8h
-reserve.
+**Kickoff status:** S4 is Active. The 13-arm × 20-seed screen is complete,
+with corrected Threat Avoidance evidence retained. S4-03 still requires
+spatial behavior evidence, the in-game review, and a human accept/revise
+decision. Review any material capacity change while preserving the 8h reserve.
 
 ## Selected work packages
 
