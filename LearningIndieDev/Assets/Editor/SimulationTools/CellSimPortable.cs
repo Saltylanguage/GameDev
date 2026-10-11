@@ -118,11 +118,15 @@ namespace SaltyGame.EditorTools
                             var id = (long)value;
                             value = id == 0 ? 0 : positions.TryGetValue(id, out var position) ? position : -1;
                         }
-                        if (value is SpeciesGestation gestation)
+                        if (field.Name == "<Gestation>k__BackingField")
                         {
-                            var mate = gestation.MateEntityId == 0 ? 0
-                                : positions.TryGetValue(gestation.MateEntityId, out var position) ? position : -1;
-                            value = FormattableString.Invariant($"{gestation.TicksRemaining},{gestation.LitterSize},{mate},{gestation.OffspringEnergyPool}");
+                            // Gestation is internal to the runtime assembly, like the private cell fields above.
+                            var gestationType = value.GetType();
+                            var mateId = (long)gestationType.GetProperty("MateEntityId").GetValue(value);
+                            var mate = mateId == 0 ? 0
+                                : positions.TryGetValue(mateId, out var position) ? position : -1;
+                            var energy = (int)gestationType.GetProperty("OffspringEnergyPool").GetValue(value);
+                            value = FormattableString.Invariant($"{cell.GestationTicksRemaining},{cell.PendingLitterSize},{mate},{energy}");
                         }
                         var text = value is float number
                             ? BitConverter.ToInt32(BitConverter.GetBytes(number), 0).ToString(CultureInfo.InvariantCulture)
