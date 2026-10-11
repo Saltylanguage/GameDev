@@ -485,6 +485,27 @@ internal static class Program
         if (ApplyPortableStats(gestationData, new[] { "-speciesStats", "carnivore:awareness.vision-range=9" })
             .SpeciesRules[SpeciesIds.Carnivore].GestationTicks != 48)
             throw new Exception("Stat override discarded gestation.");
+        var stateDigest = (Func<Grid<SpeciesCell>, string>)typeof(SaltyGame.EditorTools.CellularSimulationExperimentRunner)
+            .GetMethod("PortableStateDigest", BindingFlags.Static | BindingFlags.NonPublic)
+            .CreateDelegate(typeof(Func<Grid<SpeciesCell>, string>));
+        var gestationCells = new Grid<SpeciesCell>(2, 1);
+        var mate = new SpeciesCell(SpeciesIds.Carnivore, energy: 10);
+        var parent = new SpeciesCell(SpeciesIds.Carnivore, energy: 10)
+            .WithGestation(new SpeciesGestation(48, 2, mate.EntityId, 30));
+        gestationCells.SetCell(0, 0, parent); gestationCells.SetCell(1, 0, mate);
+        var expectedDigest = stateDigest(gestationCells);
+        foreach (var changed in new[] { new SpeciesGestation(47, 2, mate.EntityId, 30),
+            new SpeciesGestation(48, 3, mate.EntityId, 30), new SpeciesGestation(48, 2, 0, 30),
+            new SpeciesGestation(48, 2, mate.EntityId, 31) })
+        {
+            gestationCells.SetCell(0, 0, parent.WithGestation(changed));
+            if (stateDigest(gestationCells) == expectedDigest) throw new Exception("State digest ignored gestation state.");
+        }
+        mate = new SpeciesCell(SpeciesIds.Carnivore, energy: 10);
+        gestationCells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10)
+            .WithGestation(new SpeciesGestation(48, 2, mate.EntityId, 30)));
+        gestationCells.SetCell(1, 0, mate);
+        if (stateDigest(gestationCells) != expectedDigest) throw new Exception("Gestation digest depends on process-wide entity labels.");
         var data = new CellularSimData(8, 8, new Dictionary<SpeciesId, float>
         { [SpeciesIds.Plant] = .3f, [SpeciesIds.Herbivore] = .1f, [SpeciesIds.Carnivore] = .03f }, SpeciesRuleDefaults.Create(), 4f, .1f);
         var snapshot = PortableSnapshot.Create(data);
@@ -572,7 +593,7 @@ internal static class Program
         restored.width++; rejected = false;
         try { restored.Restore(); } catch (InvalidOperationException) { rejected = true; }
         if (!rejected) throw new Exception("Corrupt snapshot accepted.");
-        Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
+        Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; gestation state digest and entity normalization; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
     }
     public sealed class Plan
     {

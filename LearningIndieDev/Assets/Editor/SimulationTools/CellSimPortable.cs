@@ -118,6 +118,12 @@ namespace SaltyGame.EditorTools
                             var id = (long)value;
                             value = id == 0 ? 0 : positions.TryGetValue(id, out var position) ? position : -1;
                         }
+                        if (value is SpeciesGestation gestation)
+                        {
+                            var mate = gestation.MateEntityId == 0 ? 0
+                                : positions.TryGetValue(gestation.MateEntityId, out var position) ? position : -1;
+                            value = FormattableString.Invariant($"{gestation.TicksRemaining},{gestation.LitterSize},{mate},{gestation.OffspringEnergyPool}");
+                        }
                         var text = value is float number
                             ? BitConverter.ToInt32(BitConverter.GetBytes(number), 0).ToString(CultureInfo.InvariantCulture)
                             : Convert.ToString(value, CultureInfo.InvariantCulture) ?? string.Empty;
