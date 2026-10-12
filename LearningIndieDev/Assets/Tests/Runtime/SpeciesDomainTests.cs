@@ -2745,6 +2745,23 @@ namespace SaltyGame.Tests
             Assert.That(reproduction.IsReconciled, Is.True);
         }
 
+        [TestCase(0)]
+        [TestCase(12)]
+        [TestCase(96)]
+        public void GestationAttributeChangesOnlyTheBirthDelay(int ticks)
+        {
+            var rules = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
+            var changed = SpeciesAttributeRegistry.Apply(rules,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.GestationTicks, ticks - rules.GestationTicks));
+            Assert.That(changed.GestationTicks, Is.EqualTo(ticks));
+            Assert.That(changed.MatingEnergyCost, Is.EqualTo(rules.MatingEnergyCost));
+            Assert.That(changed.LitterMaximum, Is.EqualTo(rules.LitterMaximum));
+            Assert.Throws<ArgumentException>(() => SpeciesAttributeRegistry.Apply(rules,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.GestationTicks, 0.5f)));
+            Assert.Throws<ArgumentOutOfRangeException>(() => SpeciesAttributeRegistry.Apply(rules,
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.GestationTicks, -rules.GestationTicks - 1)));
+        }
+
         [Test]
         public void CreatureGestationDelaysBirthForFortyEightTicks()
         {

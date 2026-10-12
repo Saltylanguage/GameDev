@@ -82,13 +82,22 @@ matched seeds, that requests **4 × 6 × 4 × 4 = 384 runs**. Each condition use
 the same consecutive seed range. Changing a value immediately rebuilds the
 preview and invalidates any previous validation.
 
-Thirty runner-supported controls are available: starting populations, map
+Thirty-two runner-supported controls are available: starting populations, map
 width/height, Hare/Fox vision, starting/maximum energy, metabolism, movement
-speed, reproduction chance/food requirement/litter limits, attack modifier and
+speed, reproduction chance/food requirement/litter limits/gestation ticks, attack modifier and
 defense, Plant wilt/food energy, and Hare seed-drop chance. These are absolute
 stat overrides; they are separate from Mutation choices or Genome allocations.
 The pinned runner checks the resolved rules before Run, including combinations
 whose energy/litter values would otherwise be normalized.
+
+To compare gestation, select **Hare gestation ticks** and enter `0, 12, 24, 48`,
+then add **Fox gestation ticks** with `48` to hold Fox timing fixed. One value
+overrides a setting; multiple values compare it. Zero means immediate births.
+Positive values delay birth after conception; the carrying parent must survive
+and delivery waits for enough free cells for the whole litter. The frozen
+snapshot's value appears below the picker. Gestation overrides export as readable
+summary settings and separate numeric Run data columns. Production assets and
+previously frozen runs keep their existing values.
 
 Use a decimal point for fractions (`0.25, 0.5`). Values must be distinct and
 within the setting's integer/probability limits. Up to eight settings with
@@ -97,6 +106,14 @@ within the setting's integer/probability limits. Up to eight settings with
 Malformed comparisons keep Validate disabled; other input problems appear
 during Validate. Presets include the comparison lists; earlier presets and
 frozen saved runs remain readable by the updated application.
+
+Saved plans and completed batch manifests/summaries can grow with the number
+of conditions. The Workbench accepts these files up to 64 MB; compact status,
+snapshot and Workbench manifest files retain their 4 MB safety limit. This does
+not change the 10,000-condition or 1,000,000-run budgets. Frozen input hashes are
+still verified before Run or Resume. A previously validated setup that hit the
+old 4 MB plan limit can be reopened with **Open saved run…** after updating;
+there is no need to rebuild its experiment or change its settings.
 
 ## Stop and resume
 
@@ -132,7 +149,10 @@ and diagnostics for inspection; no automatic deletion of saved runs occurs.
 1. On **Excel worksheets**, use **Add reports...** for one or more `report.json`
    files or a completed sweep's `sweep.json`. **Add sweep folder...** accepts a
    completed sweep or its experiment folder. Remove selected items if needed.
-2. Optionally enable **Customize examples, filters and checkpoint ticks**.
+2. Choose **Promising seeds** (default) or **Lowest seeds (legacy)** for review.
+   Set the final-horizon success floors: default **5 Hares / 5 Foxes / 100 Plants**.
+   These are editable export criteria, not simulation changes. Optionally enable
+   **Customize examples, filters and checkpoint ticks**.
    Condition words filter readable condition names; seeds accept comma- or
    space-separated nonnegative numbers. Default: 200 examples, ticks 400/500.
    Summary totals cover every matching run, even when examples are limited.
@@ -143,15 +163,26 @@ and diagnostics for inspection; no automatic deletion of saved runs occurs.
    in `artifacts/worksheets/`. Existing workbooks are refused to protect notes.
 4. Click **Create Excel worksheet**. The activity log stays visible while the
    exporter works. Large sweeps can take several minutes to verify and stream.
+   Table-building and Excel-file preparation stages also appear in the log.
+   Large exports can use several GB of memory; the renderer has an 8 GB heap cap.
 5. The workbook opens automatically unless unchecked. **Open workbook** and
    **Open output folder** refer to the last successful export in this session.
 
 The GUI uses the existing [worksheet exporter](CELLSIM_EXCEL_EXPORT.md); it does
 not recalculate ecology results or use AI to invent explanations. Zero, missing
 data and unreached checkpoints remain distinct, and human notes stay blank.
-The workbook opens on **Batch summary**, with experiment context, counts and
-percentages for Hare and all-three-species survival across all matching runs.
-**Run review** keeps the familiar per-run layout with shorter observations.
+The workbook opens on **Batch summary**, with experiment context, full matching
+run counts, goal/Hare-survival rates and 95% uncertainty ranges, median endpoint,
+mean endpoint populations, Hare births, purchases and decision-window access.
+Its **BatchSummary** table can drive condition-level pivots. A two-seed screen
+has wide uncertainty; confirm promising conditions on new seeds before tuning.
+**Choice impact** pairs the same seeds against matching Skip all Mutation and
+No purchases controls, holding other settings fixed. Missing controls stay
+visible. No-purchase/unassisted success and decision access support ecology and
+choice-impact review; automatic policies do not establish human enjoyment.
+**Run review** keeps the familiar per-run layout and now ranks promising seeds
+by goal success, no-purchase success, endpoint and final populations. Each row
+states whether it met the floors. Lowest-seed selection remains available.
 **Run data** automatically splits those same examples into individual numeric
 and category columns, including whole-run/per-round slash-line metrics,
 population checkpoints, mutations and purchases. Its named **RunData** Excel

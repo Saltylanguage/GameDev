@@ -193,7 +193,7 @@ internal static class RunTools
         foreach (var (name, hash) in files)
             if (Hash(Path.Combine(root, name)) != hash) throw new InvalidDataException("Frozen run input changed: " + name + ". Resume is refused; prepare a new run.");
         var settings = LoadPreset(Path.Combine(root, "experiment.json"));
-        using var plan = Tools.ReadSmall(Path.Combine(root, "sweep", "plan.json"));
+        using var plan = Tools.ReadSmall(Path.Combine(root, "sweep", "plan.json"), Tools.ConditionMetadataLimit);
         if (!string.Equals(settings.Snapshot, Path.Combine(root, "snapshot.json"), StringComparison.OrdinalIgnoreCase) ||
             !string.Equals(plan.RootElement.GetProperty("snapshot").GetString(), settings.Snapshot, StringComparison.OrdinalIgnoreCase) ||
             plan.RootElement.GetProperty("output").GetString() != "batch")

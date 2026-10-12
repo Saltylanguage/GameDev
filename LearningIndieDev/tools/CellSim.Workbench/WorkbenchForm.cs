@@ -9,6 +9,10 @@ internal sealed class WorkbenchForm : Form
     readonly NumericUpDown rows = Number(200, 1, 1000, "Maximum example rows");
     readonly NumericUpDown first = Number(400, 0, int.MaxValue, "First checkpoint tick");
     readonly NumericUpDown second = Number(500, 0, int.MaxValue, "Second checkpoint tick");
+    readonly ComboBox reviewSelection = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 250, DropDownWidth = 300, IntegralHeight = false, MaxDropDownItems = 2, AccessibleName = "Review selection" };
+    readonly NumericUpDown hareFloor = Number(5, 1, int.MaxValue, "Success floor Hares");
+    readonly NumericUpDown foxFloor = Number(5, 1, int.MaxValue, "Success floor Foxes");
+    readonly NumericUpDown plantFloor = Number(100, 1, int.MaxValue, "Success floor Plants");
     readonly CheckBox detailedObservations = new() { Text = "Include detailed purchase-by-purchase observations", AutoSize = true, AccessibleName = "Detailed observations" };
     readonly TextBox output = new() { Dock = DockStyle.Fill, ReadOnly = true, AccessibleName = "New workbook output path" };
     readonly TextBox log = new() { Dock = DockStyle.Fill, Height = 105, Multiline = true, ScrollBars = ScrollBars.Vertical, ReadOnly = true, BackColor = Color.FromArgb(247, 249, 247), BorderStyle = BorderStyle.FixedSingle, AccessibleName = "Export activity log" };
@@ -133,6 +137,20 @@ internal sealed class WorkbenchForm : Form
         };
         remove.Click += (_, _) => { foreach (var item in reports.SelectedItems.Cast<string>().ToArray()) reports.Items.Remove(item); };
         content.Controls.Add(Flow(add, addFolder, remove));
+        reviewSelection.Items.AddRange(["Promising seeds", "Lowest seeds (legacy)"]);
+        reviewSelection.SelectedIndex = 0;
+        void SizeReviewSelection()
+        {
+            var longest = reviewSelection.Items.Cast<object>().Max(item => TextRenderer.MeasureText(reviewSelection.GetItemText(item), reviewSelection.Font).Width);
+            reviewSelection.Width = reviewSelection.DropDownWidth = Math.Max(250, longest + SystemInformation.VerticalScrollBarWidth + 4);
+            reviewSelection.DropDownHeight = reviewSelection.ItemHeight * reviewSelection.MaxDropDownItems + 2;
+        }
+        reviewSelection.FontChanged += (_, _) => SizeReviewSelection();
+        reviewSelection.DpiChangedAfterParent += (_, _) => SizeReviewSelection();
+        reviewSelection.DropDown += (_, _) => SizeReviewSelection();
+        SizeReviewSelection();
+        content.Controls.Add(Flow(TextLabel("Review selection"), reviewSelection));
+        content.Controls.Add(Flow(TextLabel("Success at final horizon: Hares ≥"), hareFloor, TextLabel("Foxes ≥"), foxFloor, TextLabel("Plants ≥"), plantFloor));
         var customize = new CheckBox { Text = "Customize examples, filters and checkpoint ticks", AutoSize = true, Margin = new(3, 6, 3, 6) };
         content.Controls.Add(customize);
         var fields = new TableLayoutPanel { Dock = DockStyle.Top, AutoSize = true, ColumnCount = 2 };
@@ -146,7 +164,7 @@ internal sealed class WorkbenchForm : Form
         content.Controls.Add(fields);
         fields.Visible = false;
         customize.CheckedChanged += (_, _) => fields.Visible = customize.Checked;
-        var hint = TextLabel("The workbook opens on Batch summary: experiment settings, survival counts and percentages for all matching runs.\nRun review shows up to 200 examples. Run data splits those same runs into columns for pivots and charts.\nExamples use the lowest seeds across conditions; they are not a statistical sample.");
+        var hint = TextLabel("Batch summary uses every matching run: success rates, 95% uncertainty ranges, endpoint populations and decision access.\nChoice impact compares the same seeds against matching Mutation/purchase controls.\nRun review finds promising seeds; Run data contains those same rows for pivots. Use Batch summary for full-batch rates.\nSuccess floors are export criteria. They do not change simulation settings.");
         hint.ForeColor = Color.DimGray;
         content.Controls.Add(hint);
         content.Controls.Add(TextLabel("2. Save a new workbook (automatic timestamped filename, or choose Save as...)"));
@@ -232,7 +250,8 @@ internal sealed class WorkbenchForm : Form
         if (busy) return;
         if (runPage.IsBusy) { ShowError("Wait for the current setup/run operation to finish or stop before exporting."); return; }
         var destination = string.IsNullOrWhiteSpace(output.Text) ? Path.Combine(project, "artifacts", "worksheets", "Simulation review-" + DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + ".xlsx") : output.Text;
-        var options = new ExportOptions(reports.Items.Cast<string>().ToArray(), destination, match.Text, seeds.Text, (int)rows.Value, (int)first.Value, (int)second.Value, detailedObservations.Checked);
+        var options = new ExportOptions(reports.Items.Cast<string>().ToArray(), destination, match.Text, seeds.Text, (int)rows.Value, (int)first.Value, (int)second.Value, detailedObservations.Checked,
+            reviewSelection.SelectedIndex == 0 ? "promising" : "lowest-seeds", (int)hareFloor.Value, (int)foxFloor.Value, (int)plantFloor.Value);
         try { Tools.ValidateExport(options); }
         catch (Exception error) { ShowError(error.Message); return; }
         busy = true;

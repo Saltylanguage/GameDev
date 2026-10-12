@@ -32,6 +32,7 @@ internal static class SetupParameters
             Stat("reproduction.food-required", "reproduction food requirement", "reproductionFoodRequired", "Food requirement used by the reproduction rules; energy and partner requirements still apply.");
             Stat("reproduction.litter-minimum", "minimum litter size", "litterMinimum", "Smallest litter. It must be at least 1 and no larger than the maximum litter size.", true, 1);
             Stat("reproduction.litter-maximum", "maximum litter size", "litterMaximum", "Largest litter. It must be at least the minimum litter size.", true, 1);
+            Stat("reproduction.gestation-ticks", "gestation ticks", "gestationTicks", "Simulation ticks between conception and birth. Use 0 for immediate births. The carrying parent must survive; delivery waits for room for the whole litter. One value overrides this species; several compare durations.");
             Stat("combat.attack-modifier", "attack modifier", "attackModifier", "Modifier used by the opposed combat roll. It does not guarantee a hit.", true, int.MinValue);
             Stat("combat.block", "defense", "blockAmount", "Defensive block value used by the combat rules.");
         }

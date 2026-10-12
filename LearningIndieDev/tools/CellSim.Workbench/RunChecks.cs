@@ -65,6 +65,28 @@ internal static class RunChecks
             Require(JsonSerializer.Serialize(RunTools.LoadPreset(path)) == JsonSerializer.Serialize(comparisonOptions));
         });
         var compared = Prepare(comparisonOptions);
+        Check("Independent gestation comparisons preserve zero and compile matched conditions", () =>
+        {
+            var setup = options with { Name = "Gestation comparison check", SeedCount = 1,
+                Strategies = ["skip-all"], Purchases = ["none"],
+                Comparisons = [new("hare:reproduction.gestation-ticks", "0,48"), new("fox:reproduction.gestation-ticks", "0,48")] };
+            Require(RunTools.RunCount(setup) == 4);
+            Reject(() => RunTools.Validate(setup with { Comparisons = [new("hare:reproduction.gestation-ticks", "1.5")] }));
+            Reject(() => RunTools.Validate(setup with { Comparisons = [new("fox:reproduction.gestation-ticks", "-1")] }));
+            var preset = Path.Combine(Path.GetDirectoryName(resultPath)!, "gestation-preset-check.json");
+            RunTools.SavePreset(preset, setup);
+            Require(RunTools.LoadPreset(preset).Comparisons.SequenceEqual(setup.Comparisons));
+            var preparedGestation = Prepare(setup);
+            using var plan = Tools.ReadSmall(preparedGestation.Plan);
+            var values = plan.RootElement.GetProperty("conditions").EnumerateArray().Select(c =>
+            {
+                var args = c.GetProperty("arguments").EnumerateArray().Select(a => a.GetString()!).ToArray();
+                return args[Array.IndexOf(args, "-speciesStats") + 1];
+            }).ToHashSet();
+            Require(values.Count == 4 && values.Any(v => v.Contains("hare:reproduction.gestation-ticks=0") && v.Contains("fox:reproduction.gestation-ticks=48")));
+            Require(Execute(preparedGestation, false) == 0);
+            Require(File.ReadLines(Path.Combine(preparedGestation.Batch, "runs.jsonl")).Count() == 4);
+        });
         Check("Every offered comparison control passes pinned-runner preflight", () =>
         {
             using var source = Tools.ReadSmall(options.Snapshot);
@@ -114,6 +136,24 @@ internal static class RunChecks
             Require(RunTools.LoadRun(prepared.Root).Files.Count == 8);
             using var sweep = Tools.ReadSmall(Path.Combine(prepared.Root, "sweep", "sweep.json"));
             Require(sweep.RootElement.GetProperty("runs").GetInt32() == 8 && sweep.RootElement.GetProperty("conditions").GetInt32() == 4);
+        });
+        Check("Plans above four MB reopen and run without weakening frozen input checks", () =>
+        {
+            var large = Prepare(options with { Name = "Workbench large plan check", SeedCount = 1, Strategies = ["skip-all"], Purchases = ["none"] });
+            File.AppendAllText(large.Plan, new string(' ', 5 * 1024 * 1024));
+            var sweepPath = Path.Combine(large.Root, "sweep", "sweep.json");
+            var sweep = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(sweepPath))!;
+            sweep["planHash"] = RunTools.Hash(large.Plan);
+            File.WriteAllText(sweepPath, sweep.ToJsonString());
+            var manifestPath = Path.Combine(large.Root, "workbench-run.json");
+            var manifest = System.Text.Json.Nodes.JsonNode.Parse(File.ReadAllText(manifestPath))!;
+            manifest["files"]!["sweep/plan.json"] = RunTools.Hash(large.Plan);
+            manifest["files"]!["sweep/sweep.json"] = RunTools.Hash(sweepPath);
+            File.WriteAllText(manifestPath, manifest.ToJsonString());
+            large = RunTools.LoadRun(large.Root);
+            Require(Execute(large, false) == 0 && File.ReadLines(Path.Combine(large.Batch, "runs.jsonl")).Count() == 1);
+            File.AppendAllText(large.Plan, " ");
+            Reject(() => RunTools.LoadRun(large.Root));
         });
         Check("Pinned runner produces exact condition and seed coverage", () =>
         {
@@ -184,6 +224,19 @@ internal static class RunChecks
                 using var picture = new Bitmap(form.Width, form.Height); form.DrawToBitmap(picture, new Rectangle(Point.Empty, form.Size));
                 picture.Save(Path.Combine(Path.GetDirectoryName(resultPath)!, $"workbench-matrix-section-{section}.png"));
             }
+            sections.SelectedIndex = 2;
+            page.Apply(options with { SeedCount = 1, Strategies = ["skip-all"], Purchases = ["none"],
+                Comparisons = [new("hare:reproduction.gestation-ticks", "0,12,24,48"), new("fox:reproduction.gestation-ticks", "48")] });
+            Find<ComboBox>(page).Single().SelectedItem = SetupParameters.Find("hare:reproduction.gestation-ticks");
+            Checks.PumpUi();
+            Require(Find<Label>(page).Any(l => l.Text.Contains("Frozen snapshot value: 48.")));
+            Require(Find<DataGridView>(page).Single(g => g.AccessibleName == "Condition preview").RowCount == 4);
+            using (var picture = new Bitmap(form.Width, form.Height))
+            {
+                form.DrawToBitmap(picture, new Rectangle(Point.Empty, form.Size));
+                picture.Save(Path.Combine(Path.GetDirectoryName(resultPath)!, "workbench-gestation-controls.png"));
+            }
+            page.Apply(comparisonOptions);
             var comparisonGrid = Find<DataGridView>(page).Single(g => g.AccessibleName == "Comparison values");
             comparisonGrid[1,0].Value = "bad value";
             Require(!Find<Button>(page).Single(b => b.Text == "Validate setup").Enabled);
@@ -217,7 +270,7 @@ internal static class RunChecks
             image.Save(Path.Combine(Path.GetDirectoryName(resultPath)!, "workbench-setup.png"));
         });
         Require(snapshotHash == RunTools.Hash(options.Snapshot));
-        File.WriteAllText(resultPath, JsonSerializer.Serialize(new { status = "Passed", checks, fixtureRuns = 42, experimentFolders = roots, sourceSnapshotUnchanged = true }, new JsonSerializerOptions { WriteIndented = true }));
+        File.WriteAllText(resultPath, JsonSerializer.Serialize(new { status = "Passed", checks, fixtureRuns = 47, experimentFolders = roots, sourceSnapshotUnchanged = true }, new JsonSerializerOptions { WriteIndented = true }));
     }
     static void WaitPage(RunPage page)
     {

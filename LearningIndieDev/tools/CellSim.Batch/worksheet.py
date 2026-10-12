@@ -3,6 +3,7 @@ import argparse
 import collections
 import datetime as dt
 import hashlib
+import heapq
 import json
 import math
 import sys
@@ -12,8 +13,10 @@ import tempfile
 import xml.etree.ElementTree as ET
 import zipfile
 from pathlib import Path
+from sqlite3 import Error as SqliteError
 
 from sweep import completed, load, planned_ticks, tokens
+from worksheet_stats import EvidenceStats, facts, wilson
 
 
 SPECIES = ("hare", "fox", "plant")
@@ -155,9 +158,7 @@ def story(run, history, final, horizon, detailed=False):
     return "\n".join(lines)
 
 
-def review_row(run, context, checkpoints, detailed=False):
-    final = endpoint(run)
-    history = snapshots(run)
+def validate_purchases(run):
     windows = run.get("purchaseWindows")
     for audit in windows or []:
         fields = ('decisionTick', 'populationBefore', 'populationAfter', 'requested', 'added', 'spent')
@@ -167,6 +168,13 @@ def review_row(run, context, checkpoints, detailed=False):
             raise ValueError(f"Purchase population ledger does not reconcile on seed {run['seed']}")
         if 'price' in audit and audit['spent'] != audit['price'] * audit['added']:
             raise ValueError(f"Purchase spending does not reconcile on seed {run['seed']}")
+
+
+def review_row(run, context, checkpoints, detailed=False):
+    final = endpoint(run)
+    history = snapshots(run)
+    validate_purchases(run)
+    windows = run.get("purchaseWindows")
     if windows is None:
         limits = "Purchase ledger not recorded"
     elif not windows:
@@ -337,6 +345,17 @@ def data_table(records):
     return dict(headers=headers, rows=rows, formats=formats)
 
 
+def annotated_run_data(run, context, checkpoints, goals, rank=None):
+    data = run_data(run, context, checkpoints)
+    met, added, decisions, chosen, no_purchase = facts(run, context, endpoint(run), goals)
+    data.update({'Export goal met (0/1)': met, 'Goal met without purchased Hares (0/1)': no_purchase,
+                 'Total purchased Hares': added, 'Recorded decision windows': decisions,
+                 'Non-skip Mutation choices': chosen})
+    if rank is not None:
+        data['Shortlist rank'] = rank
+    return data
+
+
 def resolve_input(path):
     path = Path(path).resolve()
     if path.is_dir():
@@ -403,7 +422,8 @@ def settings(arguments):
     grid = f"{arguments.get('-gridWidth', 'Not recorded')} × {arguments.get('-gridHeight', 'Not recorded')}"
     wrap = arguments.get('-wrapEdges')
     grid += ' (wrapped)' if wrap == 'true' else ' (closed edges)' if wrap == 'false' else ' (wrapping not recorded)'
-    names = {'fox:energy.starting': 'Fox starting energy', 'hare:awareness.vision-range': 'Hare vision'}
+    names = {'fox:energy.starting': 'Fox starting energy', 'hare:awareness.vision-range': 'Hare vision',
+             'hare:reproduction.gestation-ticks': 'Hare gestation ticks', 'fox:reproduction.gestation-ticks': 'Fox gestation ticks'}
     overrides = [f"{names.get(key, key)} {value}" for key, value in
                  (item.split('=') for item in arguments.get('-speciesStats', '').split(',') if item)]
     return dict(populations=initial, map=grid,
@@ -460,14 +480,24 @@ def summary_rows(groups):
     return rows
 
 
-def prepare(inputs, checkpoints=(400, 500), max_runs=200, match="", seeds=(), detailed=False):
+def prepare(inputs, checkpoints=(400, 500), max_runs=200, match="", seeds=(), detailed=False,
+            selection='promising', goals=(5, 5, 100)):
+    with EvidenceStats(goals) as evidence:
+        return prepare_rows(inputs, checkpoints, max_runs, match, seeds, detailed, selection, evidence)
+
+
+def prepare_rows(inputs, checkpoints, max_runs, match, seeds, detailed, selection, evidence):
     if not 1 <= max_runs <= 1000 or len(checkpoints) != 2 or any(type(t) is not int or t < 0 for t in checkpoints):
         raise ValueError("Use a row limit of 1..1000 and exactly two nonnegative checkpoint ticks")
+    if selection not in ('promising', 'lowest-seeds'):
+        raise ValueError('Choose promising or lowest-seeds review selection')
     paths = list(dict.fromkeys(resolve_input(p) for p in inputs))
     groups, sources, candidate_rows, experiments = [], [], [], []
+    best, active_ids = [], []
     for path in paths:
         print(f"Reading {path} ...", file=sys.stderr, flush=True)
         contexts, runs, expected_count, seed_start = contexts_and_runs(path)
+        case_ids = evidence.register(contexts)
         for context in contexts.values():
             context['setup'] = settings(context.get('arguments', {}))
         selected = {key: c for key, c in contexts.items()
@@ -486,6 +516,10 @@ def prepare(inputs, checkpoints=(400, 500), max_runs=200, match="", seeds=(), de
             if seed in seen[key]:
                 raise ValueError(f"Duplicate seed {seed} in {path}, condition {key}")
             seen[key].add(seed)
+            observed = None
+            if not seeds or seed in seeds:
+                validate_purchases(run)
+                observed = evidence.add(case_ids[key], run, final)
             if key not in selected or (seeds and seed not in seeds):
                 continue
             context = selected[key]
@@ -500,11 +534,20 @@ def prepare(inputs, checkpoints=(400, 500), max_runs=200, match="", seeds=(), de
             total['allSpeciesAliveAtHorizon'] += known and run['ticks'] >= context['horizon'] and all(v is not None and v > 0 for v in final)
             total['missingHareEndpoint'] += final[0] is None
             total['missingEndpoint'] += any(v is None for v in final)
-            sample = samples[key]
-            if len(sample) < capacity or seed < max(sample):
-                sample[seed] = (review_row(run, context, checkpoints, detailed), str(Path(context['source']).parent), run_data(run, context, checkpoints))
-                if len(sample) > capacity:
-                    del sample[max(sample)]
+            if selection == 'lowest-seeds':
+                sample = samples[key]
+                if len(sample) < capacity or seed < max(sample):
+                    sample[seed] = (review_row(run, context, checkpoints, detailed), str(Path(context['source']).parent), annotated_run_data(run, context, checkpoints, evidence.goals))
+                    if len(sample) > capacity:
+                        del sample[max(sample)]
+            else:
+                met, _, _, _, no_purchase = observed
+                score = (met if met is not None else -1, int(no_purchase == 1), run['ticks'], *(v if v is not None else -1 for v in final), -seed)
+                item = (score, str(path), key, seed, run, context)
+                if len(best) < max_runs:
+                    heapq.heappush(best, item)
+                elif item[:4] > best[0][:4]:
+                    heapq.heapreplace(best, item)
         if expected_count is not None:
             expected_seeds = set(range(seed_start, seed_start + expected_count))
             if any(found != expected_seeds for found in seen.values()):
@@ -516,27 +559,55 @@ def prepare(inputs, checkpoints=(400, 500), max_runs=200, match="", seeds=(), de
             if not totals[key]['runs']:
                 continue
             groups.append(dict(context=context, totals=dict(totals[key])))
+            groups[-1]['statistics'] = evidence.summary(case_ids[key])
+            active_ids.append(case_ids[key])
             sources.append(dict(input=str(path), **context))
             for rank, seed in enumerate(sorted(samples[key])):
                 row, folder, numeric = samples[key][seed]
                 candidate_rows.append((rank, seed, context['label'], row, folder, numeric))
     if not groups:
         raise ValueError("No runs matched. Check the input, text filter and selected seeds.")
-    # Lowest seeds across conditions: transparent sampling, never a claim of typicality.
-    candidate_rows.sort(key=lambda r: (r[0], r[1], r[2]))
+    if selection == 'promising':
+        for rank, item in enumerate(sorted(best, key=lambda item: item[:4], reverse=True), 1):
+            _, _, _, seed, run, context = item
+            numeric = annotated_run_data(run, context, checkpoints, evidence.goals, rank)
+            candidate_rows.append((rank, seed, context['label'], review_row(run, context, checkpoints, detailed), str(Path(context['source']).parent), numeric))
+    else:
+        candidate_rows.sort(key=lambda r: (r[0], r[1], r[2]))
     selected_rows = candidate_rows[:max_runs]
     total_runs = sum(g['totals']['runs'] for g in groups)
-    selection = ("All matching runs" if total_runs <= max_runs else
-                 f"Lowest seeds, round-robin across {len(groups)} conditions; examples, not a statistical sample")
-    selected_rows.sort(key=lambda r: (r[1], r[2]))
+    selection_note = ("All matching runs" if total_runs <= max_runs else
+        'Outcome-ranked seed shortlist; full-batch rates are on Batch summary' if selection == 'promising' else
+        f"Lowest seeds, round-robin across {len(groups)} conditions; full-batch rates are on Batch summary")
+    if selection == 'lowest-seeds':
+        selected_rows.sort(key=lambda r: (r[1], r[2]))
+    for row in selected_rows:
+        met = row[5]['Export goal met (0/1)']
+        row[3][0] += '\nGoal: ' + ('met' if met == 1 else 'below floors' if met == 0 else 'not recorded')
     numeric = data_table([dict(r[5], **{'Run review row': index}) for index, r in enumerate(selected_rows, 6)])
-    return dict(schemaVersion=3, generatedUtc=dt.datetime.now(dt.timezone.utc).isoformat(),
+    summary = summary_rows(groups)
+    statistical_records = []
+    for group, row in zip(groups, summary):
+        t, s = group['totals'], group['statistics']
+        lower, upper = wilson(row[3], t['runs']) if isinstance(row[3], int) else (None, None)
+        number = lambda value: value if isinstance(value, (int, float)) else None
+        record = {'Condition': row[0], 'Runs': row[1], 'Horizon tick': number(row[2]), **s,
+                  'Hares alive': number(row[3]), 'Hare survival rate': number(row[4]), 'Hare 95% lower': lower, 'Hare 95% upper': upper,
+                  'All three alive': number(row[5]), 'All-three survival rate': number(row[6]), 'Reached horizon': number(row[7]),
+                  'Hare extinction endpoints': row[8], 'Missing endpoint data': row[9],
+                  'Starting Hares / Foxes / Plants': row[10], 'Map': row[11], 'Stat overrides': row[12],
+                  'Condition ID': row[13], 'Source report': row[14], 'Batch identity': row[15]}
+        statistical_records.append(record)
+    statistical_records.sort(key=lambda r: (-(r['Goal 95% lower'] if r['Goal 95% lower'] is not None else -1), -r['Runs'], r['Condition'], r['Source report']))
+    return dict(schemaVersion=4, generatedUtc=dt.datetime.now(dt.timezone.utc).isoformat(),
         headers=["Seed / choices / purchase policy", *(f"Tick {t}\nHares / Foxes / Plants\nbefore purchases" for t in checkpoints),
                  "Endpoint tick\nHares / Foxes / Plants", "Choices and purchases", "Purchase limits and reasons",
                  "What happened? (recorded observations)", "Your playtest notes (optional)", "Source evidence"],
         rows=[r[3] for r in selected_rows], evidenceFolders=[r[4] for r in selected_rows],
-        totalRuns=total_runs, exportedRows=len(selected_rows), selection=selection, groups=groups, sources=sources,
-        experiments=experiments, summaryRows=summary_rows(groups), detailedObservations=detailed, runData=numeric)
+        totalRuns=total_runs, exportedRows=len(selected_rows), selection=selection_note, selectionMode=selection,
+        goals=list(evidence.goals), groups=groups, sources=sources, experiments=experiments, summaryRows=summary,
+        summaryTable=data_table(statistical_records), choiceImpact=data_table(evidence.comparisons(active_ids)),
+        detailedObservations=detailed, runData=numeric)
 
 
 def link_evidence(workbook_path, folders):
@@ -600,17 +671,19 @@ def main():
     parser.add_argument("--match", default="", help="Words matched against readable condition names")
     parser.add_argument("--seeds", nargs="*", type=int, default=[])
     parser.add_argument("--detailed-observations", action="store_true", help="Include purchase-by-purchase population changes")
+    parser.add_argument('--selection', choices=('promising', 'lowest-seeds'), default='promising')
+    parser.add_argument('--success-floors', nargs=3, type=int, default=[5, 5, 100], metavar=('HARES', 'FOXES', 'PLANTS'))
     parser.add_argument("--link-evidence", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     try:
         if args.link_evidence:
             link_evidence(args.output, load(args.inputs[0])['evidenceFolders'])
             return
-        result = prepare(args.inputs, args.checkpoints, args.max_runs, args.match, args.seeds, args.detailed_observations)
+        result = prepare(args.inputs, args.checkpoints, args.max_runs, args.match, args.seeds, args.detailed_observations, args.selection, args.success_floors)
         with Path(args.output).open("x", encoding="utf-8") as stream:
             json.dump(result, stream, ensure_ascii=False, allow_nan=False)
         print(f"Prepared {result['exportedRows']} worksheet rows from {result['totalRuns']:,} matching runs.")
-    except (ValueError, OSError, KeyError, TypeError) as error:
+    except (ValueError, OSError, KeyError, TypeError, SqliteError) as error:
         parser.exit(1, f"Worksheet export stopped: {error}\n")
 
 

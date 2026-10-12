@@ -7,6 +7,8 @@ param(
     [string]$Match = '',
     [int[]]$Seeds = @(),
     [switch]$DetailedObservations,
+    [ValidateSet('promising', 'lowest-seeds')][string]$ReviewSelection = 'promising',
+    [int[]]$SuccessFloors = @(5, 5, 100),
     [switch]$Open,
     [string]$ProjectPath,
     [string]$PreviewPath
@@ -15,7 +17,7 @@ param(
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 trap {
-    Write-Host ('Export stopped: ' + $_.Exception.Message) -ForegroundColor Red
+    Write-Output ('Export stopped: ' + $_.Exception.Message)
     exit 1
 }
 $projectRoot = if ($ProjectPath) { [IO.Path]::GetFullPath($ProjectPath) } else { Split-Path $PSScriptRoot }
@@ -74,9 +76,12 @@ try {
     if ($Match) { $arguments += @('--match', $Match) }
     if ($Seeds) { $arguments += @('--seeds') + @($Seeds | ForEach-Object { "$_" }) }
     if ($DetailedObservations) { $arguments += '--detailed-observations' }
+    if ($SuccessFloors.Count -ne 3 -or @($SuccessFloors | Where-Object { $_ -lt 1 }).Count -gt 0) { throw 'SuccessFloors needs three positive whole numbers: Hares, Foxes, Plants.' }
+    $arguments += @('--selection', $ReviewSelection, '--success-floors') + @($SuccessFloors | ForEach-Object { "$_" })
     & $pythonPath @arguments
     if ($LASTEXITCODE -ne 0) { throw 'Could not prepare worksheet rows. See the explanation above.' }
-    $renderArguments = @((Join-Path $PSScriptRoot 'CellSim.Batch/worksheet.mjs'), $projectionPath, $OutputPath, $modules)
+    # Large summary/comparison tables plus 1,000 wide review rows exceed Node's default 4 GB heap.
+    $renderArguments = @('--max-old-space-size=8192', (Join-Path $PSScriptRoot 'CellSim.Batch/worksheet.mjs'), $projectionPath, $OutputPath, $modules)
     if ($PreviewPath) { $renderArguments += [IO.Path]::GetFullPath($PreviewPath) }
     & $nodePath @renderArguments
     if ($LASTEXITCODE -ne 0) { throw 'Could not create the Excel workbook. Source reports were not changed.' }

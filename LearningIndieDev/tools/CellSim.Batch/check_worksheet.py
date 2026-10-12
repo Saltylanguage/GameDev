@@ -119,7 +119,7 @@ class WorksheetChecks(unittest.TestCase):
             runs = [fixture(seed=i, final=0 if i % 2 else 12) for i in [5, 1, 4, 2, 3]]
             report = dict(runs=runs, runTicks=600, mutationPolicyId='gardeners')
             path.write_text(json.dumps(report))
-            result = w.prepare([path], max_runs=2)
+            result = w.prepare([path], max_runs=2, selection='lowest-seeds')
             self.assertEqual(result['totalRuns'], 5)
             self.assertEqual(result['exportedRows'], 2)
             self.assertEqual([r[0].splitlines()[0] for r in result['rows']], ['1', '2'])
@@ -127,7 +127,7 @@ class WorksheetChecks(unittest.TestCase):
             self.assertEqual(result['summaryRows'][0][3:7], [2, .4, 2, .4])
             report['runs'].reverse()
             path.write_text(json.dumps(report))
-            self.assertEqual(w.prepare([path], max_runs=2)['rows'], result['rows'])
+            self.assertEqual(w.prepare([path], max_runs=2, selection='lowest-seeds')['rows'], result['rows'])
             selected = w.prepare([path], seeds=[4], match='gardeners')
             self.assertEqual(selected['totalRuns'], 1)
             self.assertEqual(selected['rows'][0][0].splitlines()[0], '4')
@@ -221,13 +221,17 @@ class WorksheetChecks(unittest.TestCase):
 
     def test_run_data_separates_executed_map_and_stat_overrides(self):
         context = dict(self.context, arguments={'-gridWidth':'54', '-gridHeight':'32', '-wrapEdges':'true',
-            '-speciesStats':'fox:energy.starting=160,hare:movement.speed=2.2'})
+            '-speciesStats':'fox:energy.starting=160,hare:movement.speed=2.2,hare:reproduction.gestation-ticks=0,fox:reproduction.gestation-ticks=48'})
         data = w.run_data(fixture(), context, [400,500])
         self.assertEqual(data['Map width'],54)
         self.assertEqual(data['Map height'],32)
         self.assertEqual(data['Wrap map edges (0/1)'],1)
         self.assertEqual(data['Stat override Fox energy.starting'],160)
         self.assertEqual(data['Stat override Hare movement.speed'],2.2)
+        self.assertEqual(data['Stat override Hare reproduction.gestation-ticks'],0)
+        self.assertEqual(data['Stat override Fox reproduction.gestation-ticks'],48)
+        self.assertIn('Hare gestation ticks 0', w.settings(context['arguments'])['overrides'])
+        self.assertIn('Fox gestation ticks 48', w.settings(context['arguments'])['overrides'])
         self.assertNotIn('Stat override Hare energy.starting',data)
 
     def test_run_data_fallback_and_known_empty_loadout_are_distinct(self):

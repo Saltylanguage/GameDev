@@ -5,11 +5,12 @@ using System.Text.Json;
 
 namespace CellSim.Workbench;
 
-internal sealed record ExportOptions(string[] Reports, string Output, string Match, string Seeds, int Rows, int FirstTick, int SecondTick, bool DetailedObservations = false);
+internal sealed record ExportOptions(string[] Reports, string Output, string Match, string Seeds, int Rows, int FirstTick, int SecondTick, bool DetailedObservations = false, string ReviewSelection = "promising", int HareFloor = 5, int FoxFloor = 5, int PlantFloor = 100);
 internal sealed record BatchProgress(string Folder, string State, int CompletedChunks, int TotalChunks, string Workers, string Runs, DateTime UpdatedUtc, bool Stale);
 
 internal static class Tools
 {
+    internal const int ConditionMetadataLimit = 64 * 1024 * 1024;
     internal static string? FindProject(string start)
     {
         for (var folder = new DirectoryInfo(start); folder != null; folder = folder.Parent)
@@ -35,6 +36,8 @@ internal static class Tools
             throw new FileNotFoundException("A selected source no longer exists. Remove it and choose its current location.");
         if (options.Rows is < 1 or > 1000 || options.FirstTick < 0 || options.SecondTick <= options.FirstTick)
             throw new ArgumentException("Choose 1–1,000 example rows and two increasing checkpoint ticks.");
+        if (options.ReviewSelection is not ("promising" or "lowest-seeds") || options.HareFloor < 1 || options.FoxFloor < 1 || options.PlantFloor < 1)
+            throw new ArgumentException("Choose a supported review selection and positive Hare/Fox/Plant success floors.");
         ParseSeeds(options.Seeds);
         if (!Path.IsPathFullyQualified(options.Output) || !options.Output.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Choose a full output filename ending in .xlsx.");
@@ -53,6 +56,7 @@ internal static class Tools
             " -ProjectPath " + Quote(project) + " -ReportPath @(" + string.Join(",", options.Reports.Select(Quote)) + ")" +
             " -OutputPath " + Quote(options.Output) + " -MaxRuns " + options.Rows +
             " -Checkpoints " + options.FirstTick + "," + options.SecondTick + " -Match " + Quote(options.Match) +
+            " -ReviewSelection " + Quote(options.ReviewSelection) + " -SuccessFloors " + options.HareFloor + "," + options.FoxFloor + "," + options.PlantFloor +
             (seeds.Length == 0 ? "" : " -Seeds " + string.Join(",", seeds)) +
             (options.DetailedObservations ? " -DetailedObservations" : "") + "; exit $LASTEXITCODE";
     }
@@ -88,10 +92,10 @@ internal static class Tools
         throw new InvalidDataException("Choose a batch folder containing status.json and batch.json, or its parent experiment folder.");
     }
 
-    internal static JsonDocument ReadSmall(string path)
+    internal static JsonDocument ReadSmall(string path, int maxBytes = 4 * 1024 * 1024)
     {
-        if (new FileInfo(path).Length > 4 * 1024 * 1024) throw new InvalidDataException("Progress metadata is unexpectedly large: " + path);
         using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        if (stream.Length > maxBytes) throw new InvalidDataException($"Saved metadata exceeds the {maxBytes / (1024 * 1024):N0} MB safety limit: {path}");
         return JsonDocument.Parse(stream);
     }
 
@@ -111,8 +115,8 @@ internal static class Tools
         var summaryPath = Path.Combine(folder, "summary.json");
         if (state == "Completed" && File.Exists(summaryPath))
         {
-            using var summary = ReadSmall(summaryPath);
-            using var batch = ReadSmall(Path.Combine(folder, "batch.json"));
+            using var summary = ReadSmall(summaryPath, ConditionMetadataLimit);
+            using var batch = ReadSmall(Path.Combine(folder, "batch.json"), ConditionMetadataLimit);
             if (summary.RootElement.GetProperty("identity").GetString() != batch.RootElement.GetProperty("identity").GetString())
                 throw new InvalidDataException("Summary identity differs from this batch. Check its source files.");
             runs = summary.RootElement.GetProperty("runs").GetInt64().ToString("N0");

@@ -6,6 +6,82 @@ become a master changelog.
 
 ## Current focus
 
+**October 12 fresh-seed confirmation reviewed locally:** Bevin completed the
+five presets and supplied cumulative exports ending at 8,000 runs/80 conditions.
+The best observed condition is preset 04 (64x48 H4/F16), Gardeners + Restore:
+10/100 ecology goals; no reliable baseline is established. Overall 261 goals,
+2,167 Hare survivors and 1,438 all-three survivors. Matched choices show useful
+effects; 60 no-purchase goals include 15 fully unassisted successes. All five
+completed raw hashes, 40 frozen files and 7,720 workbook metrics verify.
+Analysis: `artifacts/confirmation-review-20261012/ai-analysis-v1.md`.
+No source/runtime changes or additional workloads; recommendations need review.
+See the [confirmation results handoff](handoffs/2026-10-12-1609-codex-forest-edge-fresh-seed-confirmation-results-review.md).
+
+**October 12 confirmation presets prepared locally:** The reviewed gestation/map
+screen now has five focused fresh-seed presets (10001-10100; 1,600 runs each,
+8,000 total) and six original-seed comparison presets (24 runs total). All eleven
+are also frozen as saved Workbench runs; application loading/preparation/reload
+and pinned-runner preflight pass. All 104 resolved conditions match the discovery
+settings, with byte-identical snapshot/runner and original inputs preserved.
+No simulations started. The guide is
+`artifacts/workbench-presets/Forest Edge confirmation 2026-10-12/README.md`.
+No app rebuild or production tuning; local/uncommitted. See the
+[preset pack handoff](handoffs/2026-10-12-1447-codex-forest-edge-confirmation-and-replay-preset-pack.md).
+
+**October 10 large Excel export fixed locally:** Bevin's completed Forest Edge
+batch has 24,192 runs, 8,064 conditions and 12,768 matched comparisons. Exporting
+1,000 review rows exceeded Node's default 4 GB heap during XLSX creation.
+The exporter now has a bounded 8 GB child heap allowance, batches layout sizing
+and logs table/file preparation stages. The full export succeeds; 1,240,658
+saved cells, four native tables, 1,000 evidence links and frozen source/raw hashes
+verify. 31 worksheet and 17 native GUI/export checks pass. No simulation reran;
+the open Workbench uses the updated scripts without an EXE replacement.
+Local/uncommitted; see the
+[large export handoff](handoffs/2026-10-10-2209-codex-workbench-large-excel-export-memory-fix.md).
+
+**October 10 statistical worksheets and promising seeds, local:** The exporter
+now uses all matching runs for goal/Hare-survival rates with 95% Wilson bounds,
+endpoint/birth/purchase/decision-access statistics, and matched Mutation/purchase
+controls on a new Choice impact sheet. Review defaults to promising seeds;
+Lowest seeds remains available, and Run data still matches the selected rows.
+Editable export floors default to 5 Hares / 5 Foxes / 100 Plants, inferred from
+Bevin's latest experiment notes rather than approved as production tuning.
+31 worksheet checks, 16 GUI groups and 15 setup/run groups (47 fixture runs) pass;
+raw-count/Wilson and saved-workbook readbacks reconcile. Re-exporting the existing
+1,000-run baseline yields 0 goal successes; it cannot show choice effects because
+it has only Skip all / No purchases. Canonical EXE rebuilt with fresh save/close
+authorization and reopened; the installed EXE's 17 checks pass, including a real
+native-button export. No research
+batch started; local/uncommitted. See the
+[statistical export handoff](handoffs/2026-10-10-2106-codex-workbench-statistical-results-and-promising-seed-review.md).
+
+**October 10 large saved-plan metadata fix, local:** Bevin's validated 9,216-
+condition / 18,432-run setup compiled successfully but Run refused its 5,017,684-
+byte plan through the unrelated 4 MB progress-file reader. Condition-sized
+plans and completed batch manifests/summaries now have a bounded 64 MB allowance;
+status/snapshot/small-manifest limits, input hashes and run budgets remain in
+place. The exact saved setup reopens, verifies all eight hashes and passes a
+read-only pinned-runner preflight without creating a batch folder. Fifteen GUI
+and fifteen setup/run check groups (47 fixture runs) pass, including large-file
+regressions and changed-input rejection. Canonical EXE rebuilt/reopened with
+Bevin's save-and-close permission. Research batch remains unstarted; source
+local/uncommitted. See the [metadata fix handoff](handoffs/2026-10-10-2051-codex-workbench-large-saved-plan-metadata-fix.md).
+
+**October 10 Workbench gestation controls and baseline review, local:** Bevin's
+1,000-run Gestation Baseline had 53 Hares-surviving runs at tick 600 (5.3%);
+836 runs recorded no Hare births. All conditions used Hare/Fox gestation 48,
+so this is a poor baseline, not an isolated test of gestation's effect.
+Compare values now offers independent Hare/Fox gestation ticks, including zero
+for immediate births, with readable help, frozen values, presets and numeric
+Excel exports. Production defaults remain 48. A prepared, unstarted preset
+compares Hare 0/12/24/48 with Fox fixed at 48 across the original 1,000 seeds.
+All 326 EditMode tests, 21 worksheet checks, 14 GUI checks and 14 setup/run
+groups (46 fixture runs) pass. The canonical executable was rebuilt and
+reopened after Bevin saved and authorized closing the previous window.
+See the [baseline and controls handoff](handoffs/2026-10-10-2035-codex-workbench-gestation-controls-and-baseline-review.md).
+This supersedes the earlier proposal to add gestation comparison controls;
+the 4,000-run comparison and any production tuning remain open.
+
 **October 10 BevBranch gestation integration:** Our Workbench readability and
 comparison-preview fixes were pushed as `a82d1cd4`. Salty's gestation checkpoint
 (`65e47386`) is merged as `10c13f4`, preserving both contributors' working-state

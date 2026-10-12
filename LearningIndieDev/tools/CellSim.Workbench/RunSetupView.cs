@@ -181,7 +181,7 @@ internal sealed partial class RunPage
         log.BackColor = Color.FromArgb(244, 248, 245); log.BorderStyle = BorderStyle.FixedSingle;
         Explain(validate, "Check every condition with the existing compiler and pinned runner, then freeze the exact inputs. No simulation workers run yet.");
         Explain(run, "Execute the validated experiment. Editing any setting requires validation again."); Explain(stop, "Stop only this Workbench's coordinator and workers, retaining completed chunks.");
-        Explain(resume, "Continue/recheck the same frozen saved experiment. Changed inputs are refused."); Explain(export, "Create the standard three-sheet workbook from this completed run's saved evidence.");
+        Explain(resume, "Continue/recheck the same frozen saved experiment. Changed inputs are refused."); Explain(export, "Create a workbook with full-batch statistics, matched choice comparisons and a promising-seed review from this completed run's saved evidence.");
     }
     ComparisonAxis[] ReadComparisons() => comparisonGrid.Rows.Cast<DataGridViewRow>().Select(row => new ComparisonAxis(Convert.ToString(row.Cells[0].Value) ?? "", Convert.ToString(row.Cells[1].Value) ?? "")).ToArray();
     void RefreshSnapshotDetails()

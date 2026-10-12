@@ -485,6 +485,15 @@ internal static class Program
         if (ApplyPortableStats(gestationData, new[] { "-speciesStats", "carnivore:awareness.vision-range=9" })
             .SpeciesRules[SpeciesIds.Carnivore].GestationTicks != 48)
             throw new Exception("Stat override discarded gestation.");
+        foreach (var ticks in new[] { 0, 12, 48 })
+        {
+            var changed = ApplyPortableStats(gestationData, new[] { "-speciesStats",
+                $"carnivore:reproduction.gestation-ticks={ticks},herbivore:reproduction.gestation-ticks=24" });
+            if (changed.SpeciesRules[SpeciesIds.Carnivore].GestationTicks != ticks
+                || changed.SpeciesRules[SpeciesIds.Herbivore].GestationTicks != 24
+                || gestationData.SpeciesRules[SpeciesIds.Carnivore].GestationTicks != 48)
+                throw new Exception("Independent absolute gestation overrides failed.");
+        }
         var stateDigest = (Func<Grid<SpeciesCell>, string>)typeof(SaltyGame.EditorTools.CellularSimulationExperimentRunner)
             .GetMethod("PortableStateDigest", BindingFlags.Static | BindingFlags.NonPublic)
             .CreateDelegate(typeof(Func<Grid<SpeciesCell>, string>));
@@ -522,6 +531,7 @@ internal static class Program
         if (statData.SpeciesRules[SpeciesIds.Herbivore].Awareness.VisionRange != 9
             || statData.Fingerprint == data.Fingerprint) throw new Exception("Absolute stat override failed.");
         foreach (var invalid in new[] { "herbivore:typo=1", "herbivore:energy.starting=9.5", "herbivore:resource.seed-drop-chance=2",
+            "herbivore:reproduction.gestation-ticks=-1", "herbivore:reproduction.gestation-ticks=1.5",
             "herbivore:awareness.vision-range=9,herbivore:awareness.vision-range=10" })
         {
             rejected = false;

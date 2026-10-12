@@ -57,6 +57,8 @@ param(
     [string]$Match = '',
     [int[]]$Seeds = @(),
     [switch]$DetailedObservations,
+    [ValidateSet('promising', 'lowest-seeds')][string]$ReviewSelection = 'promising',
+    [int[]]$SuccessFloors = @(5, 5, 100),
     [switch]$Open
 )
 
@@ -76,7 +78,8 @@ CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWi
              [-MutationPolicy trailblazer|warren|gardeners] [-WrapEdges]
 CellSim Report [-ReportPath artifacts/.../report.json]
 CellSim Excel [-ReportPath artifacts/.../report.json OR completed-sweep-folder] [-BaselinePath other/report.json]
-              [-OutputPath review.xlsx] [-Match 'D5-S25 gardeners'] [-Seeds 60000,60001] [-MaxRuns 200] [-DetailedObservations] [-Open]
+              [-OutputPath review.xlsx] [-Match 'D5-S25 gardeners'] [-Seeds 60000,60001] [-MaxRuns 200] [-DetailedObservations]
+              [-ReviewSelection promising|lowest-seeds] [-SuccessFloors 5,5,100] [-Open]
               Without ReportPath, opens a report picker. Does not run simulations or overwrite workbooks.
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]
@@ -110,7 +113,7 @@ switch ($Command) {
         $inputs = @()
         if ($ReportPath) { $inputs += $ReportPath }
         if ($BaselinePath) { $inputs += $BaselinePath }
-        & (Join-Path $PSScriptRoot 'tools/Export-CellSimWorksheet.ps1') -ReportPath $inputs -OutputPath $OutputPath -MaxRuns $MaxRuns -Checkpoints $Checkpoints -Match $Match -Seeds $Seeds -DetailedObservations:$DetailedObservations -Open:$Open -ProjectPath $ProjectPath
+        & (Join-Path $PSScriptRoot 'tools/Export-CellSimWorksheet.ps1') -ReportPath $inputs -OutputPath $OutputPath -MaxRuns $MaxRuns -Checkpoints $Checkpoints -Match $Match -Seeds $Seeds -DetailedObservations:$DetailedObservations -ReviewSelection $ReviewSelection -SuccessFloors $SuccessFloors -Open:$Open -ProjectPath $ProjectPath
     }
     'Compare' {
         if ([string]::IsNullOrWhiteSpace($BaselinePath) -or [string]::IsNullOrWhiteSpace($ReportPath)) {

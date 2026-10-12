@@ -28,7 +28,7 @@ internal static class Checks
             var project = Path.Combine(root, "Project O'Brien $value `tick");
             Directory.CreateDirectory(Path.Combine(project, "tools"));
             var script = Path.Combine(project, "tools", "Export-CellSimWorksheet.ps1");
-            File.WriteAllText(script, "param([string[]]$ReportPath,[string]$OutputPath,[string]$ProjectPath,[int]$MaxRuns,[int[]]$Checkpoints,[string]$Match,[int[]]$Seeds,[switch]$DetailedObservations)\n[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)\n@{reports=$ReportPath;match=$Match;seeds=$Seeds;ticks=$Checkpoints;rows=$MaxRuns;detailed=[bool]$DetailedObservations}|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $OutputPath -Encoding UTF8\nWrite-Output 'Readable progress: Hares / Foxes / Plants'\nexit 0\n");
+            File.WriteAllText(script, "param([string[]]$ReportPath,[string]$OutputPath,[string]$ProjectPath,[int]$MaxRuns,[int[]]$Checkpoints,[string]$Match,[int[]]$Seeds,[switch]$DetailedObservations,[string]$ReviewSelection,[int[]]$SuccessFloors)\n[Console]::OutputEncoding=[Text.UTF8Encoding]::new($false)\n@{reports=$ReportPath;match=$Match;seeds=$Seeds;ticks=$Checkpoints;rows=$MaxRuns;detailed=[bool]$DetailedObservations;selection=$ReviewSelection;floors=$SuccessFloors}|ConvertTo-Json -Depth 5|Set-Content -LiteralPath $OutputPath -Encoding UTF8\nWrite-Output 'Readable progress: Hares / Foxes / Plants'\nexit 0\n");
             var report = Path.Combine(root, "report O'Brien $(throw 'unsafe') ` 日本語.json");
             File.WriteAllText(report, "{}");
             var options = new ExportOptions([report], Path.Combine(root, "new workbook.xlsx"), "D5 O'Brien $(throw 'unsafe') ` 日本語", "60000, 60001 60000", 24, 400, 500);
@@ -51,6 +51,8 @@ internal static class Checks
                 Reject(() => Tools.ValidateExport(options with { SecondTick = 400 }));
                 Reject(() => Tools.ValidateExport(options with { Output = Path.Combine(root, "wrong.csv") }));
                 Reject(() => Tools.ValidateExport(options with { Output = "relative.xlsx" }));
+                Reject(() => Tools.ValidateExport(options with { ReviewSelection = "made-up" }));
+                Reject(() => Tools.ValidateExport(options with { HareFloor = 0 }));
             });
             Check("Actual PowerShell process preserves arrays, quoting and progress", () =>
             {
@@ -71,6 +73,14 @@ internal static class Checks
                 Require(Tools.Export(project, detailed, _ => { }).GetAwaiter().GetResult() == 0);
                 using var captured = JsonDocument.Parse(File.ReadAllText(detailed.Output).TrimStart('\uFEFF'));
                 Require(captured.RootElement.GetProperty("detailed").GetBoolean());
+            });
+            Check("Statistical export selection and success floors reach the exporter", () =>
+            {
+                var custom = options with { Output = Path.Combine(root, "statistics.xlsx"), ReviewSelection = "lowest-seeds", HareFloor = 3, FoxFloor = 4, PlantFloor = 80 };
+                Require(Tools.Export(project, custom, _ => { }).GetAwaiter().GetResult() == 0);
+                using var captured = JsonDocument.Parse(File.ReadAllText(custom.Output).TrimStart('\uFEFF'));
+                Require(captured.RootElement.GetProperty("selection").GetString() == "lowest-seeds");
+                Require(captured.RootElement.GetProperty("floors").EnumerateArray().Select(v => v.GetInt32()).SequenceEqual([3,4,80]));
             });
             Check("Existing workbook protection", () => Reject(() => Tools.ValidateExport(options)));
             Check("Child failures and stderr stay visible", () =>
@@ -109,6 +119,24 @@ internal static class Checks
                 Write("status.json", new { state = "Running", completedChunks = 3, totalChunks = 2 });
                 Reject(() => Tools.ReadProgress(folder, DateTime.UtcNow));
             });
+            Check("Condition-sized progress metadata loads while small-file and safety limits remain enforced", () =>
+            {
+                Write("status.json", new { state = "Completed", completedChunks = 2, totalChunks = 2 });
+                Write("batch.json", new { identity = "test" });
+                Write("summary.json", new { identity = "test", runs = 18432 });
+                foreach (var name in new[] { "batch.json", "summary.json" })
+                    File.AppendAllText(Path.Combine(folder, name), new string(' ', 5 * 1024 * 1024));
+                Require(Tools.ReadProgress(folder, DateTime.UtcNow).Runs == "18,432");
+                Reject(() => Tools.ReadSmall(Path.Combine(folder, "batch.json")));
+                Write("summary.json", new { identity = "foreign", runs = 18432 });
+                Reject(() => Tools.ReadProgress(folder, DateTime.UtcNow));
+                File.AppendAllText(Path.Combine(folder, "status.json"), new string(' ', 5 * 1024 * 1024));
+                Reject(() => Tools.ReadProgress(folder, DateTime.UtcNow));
+                var oversized = Path.Combine(root, "oversized.json");
+                using (var stream = File.Create(oversized)) stream.SetLength(Tools.ConditionMetadataLimit + 1L);
+                Reject(() => Tools.ReadSmall(oversized, Tools.ConditionMetadataLimit));
+                Write("batch.json", new { identity = "test" });
+            });
             Check("Native form renders both tabs", () =>
             {
                 var actualProject = Tools.FindProject(AppContext.BaseDirectory) ?? throw new IOException("Run the check from the project build folder.");
@@ -123,6 +151,9 @@ internal static class Checks
                 var tabs = Find<TabControl>(form).Single(t => t.AccessibleName == "Workbench pages");
                 tabs.SelectedIndex = 1;
                 PumpUi();
+                var selection = Find<ComboBox>(form).Single(c => c.AccessibleName == "Review selection");
+                Require(selection.SelectedIndex == 0 && selection.Items.Count == 2 && selection.Width >= 240);
+                Require(Find<NumericUpDown>(form).Single(c => c.AccessibleName == "Success floor Hares").Value == 5);
                 if (actualReport != null) Check("Native export button, async completion and close guard with real evidence", () =>
                 {
                     var actualOutput = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(resultPath))!, "workbench-integration-" + DateTime.Now.ToString("yyyyMMdd-HHmmss-fff") + ".xlsx");
@@ -258,7 +289,7 @@ internal static class Checks
                             form.Activate(); picker.Focus(); picker.SelectedIndex = 0;
                             picker.DroppedDown = true;
                             Require(picker.DropDownWidth >= longest + SystemInformation.VerticalScrollBarWidth, "Dropdown is too narrow");
-                            Require(picker.MaxDropDownItems <= 12 && picker.DropDownHeight == picker.ItemHeight * 12 + 2, "Dropdown height does not match visible entry count");
+                            Require(picker.MaxDropDownItems <= 12 && picker.DropDownHeight == picker.ItemHeight * Math.Min(12, picker.Items.Count) + 2, "Dropdown height does not match visible entry count");
                             PumpUi();
                             // Another foreground window can close the popup; sizing checks do not require focus.
                             if (picker.DroppedDown)

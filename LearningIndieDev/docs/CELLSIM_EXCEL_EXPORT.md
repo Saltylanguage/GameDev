@@ -46,6 +46,13 @@ Run from `LearningIndieDev`:
 
 # Optional purchase-by-purchase population-change explanations.
 .\CellSim.ps1 Excel -ReportPath .\artifacts\my-run\report.json -DetailedObservations
+
+# Rank promising seeds against an explicit final-horizon goal (Hares, Foxes, Plants).
+.\CellSim.ps1 Excel -ReportPath .\artifacts\my-sweep `
+    -ReviewSelection promising -SuccessFloors 5,5,100
+
+# Retain the older lowest-seed review selection when needed.
+.\CellSim.ps1 Excel -ReportPath .\artifacts\my-sweep -ReviewSelection lowest-seeds
 ```
 
 `ReportPath` accepts a full report, its containing folder, a completed sweep
@@ -74,6 +81,44 @@ it is not converted to zero or dropped from the denominator. Reaching the
 horizon and remaining alive there differ when extinction happens on the final
 tick. Missing endpoint counts stay visible. A seed filter narrows this whole
 population, not just the example rows.
+
+The **BatchSummary** Excel table adds a final-horizon goal, success count/rate,
+95% uncertainty bounds, median endpoint tick, mean endpoint populations, Hare
+births, purchased Hares and access to recorded decision windows. The default
+goal is at least **5 Hares, 5 Foxes and 100 Plants** at the configured horizon.
+Change those three floors on the export screen or with `-SuccessFloors`.
+These are review criteria inferred from Bevin's latest experiment notes;
+they do not change simulation rules or approve a production balance target.
+Missing numeric results stay blank, with unknown-outcome counts visible.
+Endpoint averages include early extinctions at their actual final ticks.
+
+Goal and Hare-survival uncertainty use the two-sided 95% Wilson interval
+described by [NIST](https://www.itl.nist.gov/div898/handbook/prc/section2/prc241.htm).
+Each condition's seeds are treated as independent trials. Conditions that share
+seeds are paired observations, not extra independent trials to pool together.
+Two seeds per condition are useful for discovery but yield wide intervals:
+even two successes have a lower bound of about 34%. Conditions sort by the
+goal success lower bound, then run count. Searching many conditions selects
+lucky results too; confirm promising settings on new seeds before balance claims.
+
+**Choice impact** compares Mutation policies against **Skip all Mutations**
+at the same purchase policy, and purchase policies against **No purchases**
+at the same Mutation policy. The source batch, other executed settings, horizon
+and seed must match. Controls may be outside a condition text filter; a seed
+filter applies to both arms. The **ChoiceImpact** table reports paired wins,
+losses, ties, goal-rate change, endpoint/Hare-population differences, recorded
+non-skip choices and purchases. Missing or ambiguous controls and unknown
+outcomes remain explicit. These are descriptive comparisons, without a
+significance test or a claim that an automatic policy reproduces human play.
+
+For ecology autonomy, **Goal met with no purchased Hares** counts success with
+known zero additions; it may include Mutations. **Unassisted goal met** applies
+only to Skip all / No purchases with a known purchase ledger. Decision-window
+access and Hare births help distinguish a run that supports continued play
+from one ending before choices or reproduction occur. This is evidence for
+the recorded horizon; human enjoyment and longer-term stability require their
+own checks. A baseline with only Skip all / No purchases cannot establish the
+effect of choices, so its Choice impact sheet explains that no comparison exists.
 
 **Run review** preserves the familiar sequence: seed/choice/purchase condition,
 two pre-purchase population checkpoints, actual endpoint tick and populations,
@@ -149,12 +194,16 @@ open the evidence folder and identify the file, condition and seed. Screenshots
 are not generated or inferred; any existing captures can be linked in your notes.
 
 By default at most **200 rows** are shown (configurable from 1 to 1,000). The
-selection takes lowest seeds round-robin across matching conditions, retaining
-same-seed comparisons where the budget allows. It is explicitly labelled as
-examples, not a statistically representative sample. Use `Seeds` to choose your
-own review cohort. Batch totals are computed from all matching runs, not the
-displayed examples. A too-small row budget can omit conditions from Run review;
-Batch summary still includes them. Extreme/typical-case selection is future work.
+default **Promising seeds** selection ranks goal success first, then success
+without purchased Hares, actual endpoint tick, final Hares/Foxes/Plants and
+lowest seed. The first cell shows whether the goal was met or remained below
+the floors. Unknown goals rank below known outcomes. The ranking is an explicit
+review aid, not a claim that maximizing populations defines good balance.
+**Lowest seeds (legacy)** retains round-robin selection across conditions.
+Use `Seeds` to choose a particular review cohort. Both selections are examples;
+their pivot rates must not be presented as full-batch statistics. Batch summary
+and Choice impact use all matching runs independently of the review row budget.
+A small budget can omit conditions from Run review; Batch summary includes them.
 
 ## Runtime and extension points
 
@@ -166,6 +215,21 @@ the renderer cannot calculate `HYPERLINK`; no formula error is left in the file.
 `tools/Export-CellSimWorksheet.ps1` supplies the picker, runtime checks, fresh output
 path and optional open action. `CellSim Excel` and the double-click launcher use
 that same path.
+
+Large exports contain full condition summaries and matched comparisons in
+addition to the selected review runs. The Excel renderer runs with a bounded
+8 GB Node heap allowance: a 24,192-run batch with 8,064 conditions, 12,768
+comparisons and 1,000 wide review rows exceeded the default 4 GB during XLSX
+creation. This allowance applies only to that export child process, not global
+Node settings. Actual memory use grows with the workbook; large exports can
+use several GB. The activity log identifies the table-building and file-saving
+stages. Reducing the review limit reduces Run data size but does not remove
+full-cohort statistics. Source reports and old workbooks remain protected.
+
+Row heights are applied in adjacent equal-height groups, and column widths are
+set once per column. This preserves the readable layout without thousands of
+redundant formatting edits. Failure messages are plain log text, including when
+the Workbench launches Windows PowerShell; they do not use host-information XML.
 
 The launcher uses Python and Node.js on PATH, falling back to the installed Codex
 workspace runtime under `%USERPROFILE%/.cache/codex-runtimes/codex-primary-runtime/dependencies`.
@@ -180,7 +244,9 @@ Keep the existing boundaries when iterating:
 - `RunTools.cs` owns setup validation, frozen experiments and coordinator
   lifecycle; `RunPage.cs` presents those actions in the Windows app.
 - `worksheet.py` owns evidence interpretation, summary calculations and the
-  versioned JSON projection (currently schema 3). A new output/view should reuse
+  versioned JSON projection (currently schema 4). `worksheet_stats.py` stores
+  compact outcomes in a temporary standard-library SQLite database for bounded
+  memory, full-cohort statistics and order-independent seed pairing. A new view should reuse
   these facts rather than independently reinterpret simulation results.
 - `worksheet.mjs` owns Excel layout and formatting. It consumes prepared counts
   and numeric rates; scientific calculations do not belong in the renderer.
@@ -194,7 +260,9 @@ The [Workbench](CELLSIM_WORKBENCH.md) also provides setup/run/stop/resume.
 ## Focused verification
 
 ```powershell
-python .\tools\CellSim.Batch\check_worksheet.py
+Push-Location .\tools\CellSim.Batch
+python -m unittest check_worksheet check_worksheet_stats
+Pop-Location
 node --check .\tools\CellSim.Batch\worksheet.mjs
 ```
 
@@ -202,7 +270,10 @@ The fixture checks include pre/post-purchase timing, recovery excluding ADD,
 zero versus missing populations, early extinction, missing purchase ledgers,
 each stop reason, unknown horizons, selection independent of input order,
 filters, duplicate seeds, full matching totals and incomplete sweep coverage.
-Twenty checks pass, including flat numeric/status fields, whole-run/per-round
+Thirty-one checks pass, including full-cohort versus shortlist separation,
+Wilson bounds, missing goals/ledgers/births, deterministic ranking, matched
+controls outside filters, unknown/ambiguous controls and paired unknown outcomes.
+The retained checks include flat numeric/status fields, whole-run/per-round
 metrics, legacy role fallback, sampled-cohort correspondence, loadout omissions,
 duplicate/nested metric refusal, concise/detailed output, missing-data rate
 denominators, extinction exactly at the horizon, actual/frozen context and native

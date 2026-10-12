@@ -259,6 +259,7 @@ namespace SaltyGame.EditorTools
             { SpeciesAttributeIds.MaximumEnergy, nameof(RuleData.maximumEnergy) },
             { SpeciesAttributeIds.LitterMinimum, nameof(RuleData.litterMinimum) },
             { SpeciesAttributeIds.LitterMaximum, nameof(RuleData.litterMaximum) },
+            { SpeciesAttributeIds.GestationTicks, nameof(RuleData.gestationTicks) },
             { SpeciesAttributeIds.DigestionEnergyBonus, nameof(RuleData.digestionEnergyBonus) },
             { SpeciesAttributeIds.CrowdingTolerance, nameof(RuleData.crowdingTolerance) },
             { SpeciesAttributeIds.CrowdingEnergyReduction, nameof(RuleData.crowdingEnergyReduction) },
