@@ -12,10 +12,15 @@ increase post-choice movement, but population-wide map coverage gains are small
 and inconsistent. The current crowding rule only triggers at seven Hare
 neighbors; Josh's approved four-neighbor density surcharge is still pending,
 so the replay cannot judge intended crowding pressure. The first rotating
-three-card offer nominally contains a Trailblazer starter in 12/20 seeds;
-the partner is offered next when eligible. See the
+three-card offer nominally contained a Trailblazer starter in 12/20 seeds under
+the old rotation. On 2026-10-12 Josh approved guaranteed first-offer access to
+one starter from each path; the Forest Edge opening reward now uses Movement,
+Tough Hide, and Efficient Digestion, and later phase offers keep the selected
+starter's partner available. This changes player access, not the earlier
+balance evidence. See the
 [factual report](Sprints/S4-03-trailblazer-spatial-20261011/report.md) and
-[analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md).
+[analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md), plus
+the [offer-path handoff](handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
 
 **S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
 predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled

@@ -41,6 +41,14 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   skills. The workbook's named pick paths are examples and comparison inputs,
   not locked loadouts or separate species. Skill values, strategy trade-offs,
   and evidence still require S4-01 review.
+- **Hare opening offer access, 2026-10-12:** Josh approved putting one starter
+  from each of Trailblazer, Warren, and Gardeners in the first three-card
+  offer. The canonical Forest Edge opening uses Movement, Tough Hide, and
+  Efficient Digestion. Selecting a starter continues to offer its partner at
+  the next eligible phase boundary; subsequent offers keep their existing
+  rotation. This addresses path access, while the earlier 12/20 Trailblazer
+  access result remains historical evidence for the former rotating offer.
+  See the [implementation handoff](../handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
 - **Trailblazer player identity, 2026-10-07:** Josh wants the speedster Hare
   build: high mobility and threat avoidance, fast travel and broad map coverage,
   with a lower-crowding, dispersed population. Warren and Gardeners should feel
