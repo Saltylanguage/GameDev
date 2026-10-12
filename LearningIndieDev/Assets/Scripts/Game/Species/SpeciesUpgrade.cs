@@ -375,6 +375,13 @@ namespace SaltyGame
             SeedDispersalId,
         };
 
+        static readonly string[][] PhaseHerbivorePathStarterIds =
+        {
+            new[] { FasterMovementId, ThreatExposureId },
+            new[] { ToughHideId, CrowdingToleranceId },
+            new[] { EfficientDigestionId, SeedDispersalId },
+        };
+
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
         {
             ToughHideId,
@@ -424,6 +431,11 @@ namespace SaltyGame
                 ? rotation % (PhaseHerbivoreUpgradeIds.Length - 1)
                 : (seededValue / PhaseHerbivoreUpgradeIds.Length)
                     % (PhaseHerbivoreUpgradeIds.Length - 1);
+            if (!hasContinuingUpgrade && rotation == 0)
+            {
+                return CreatePhasePathStarterOffer(seededValue, canOffer);
+            }
+
             var offer = new List<SpeciesUpgrade>(3);
             var partnerId = continuingUpgradeId == FasterMovementId ? ThreatExposureId
                 : continuingUpgradeId == ThreatExposureId ? FasterMovementId
@@ -447,6 +459,52 @@ namespace SaltyGame
                 {
                     var partner = Create(partnerId);
                     if (canOffer == null || canOffer(partner)) offer.Add(partner);
+                }
+            }
+
+            return offer.ToArray();
+        }
+
+        static SpeciesUpgrade[] CreatePhasePathStarterOffer(
+            int seededValue,
+            Func<SpeciesUpgrade, bool> canOffer)
+        {
+            var offer = new List<SpeciesUpgrade>(3);
+            var firstPath = seededValue % PhaseHerbivorePathStarterIds.Length;
+            for (var pathOffset = 0; pathOffset < PhaseHerbivorePathStarterIds.Length; pathOffset++)
+            {
+                var pathIndex = (firstPath + pathOffset) % PhaseHerbivorePathStarterIds.Length;
+                var path = PhaseHerbivorePathStarterIds[pathIndex];
+                var preferred = (seededValue >> (pathIndex + 1)) & 1;
+                for (var alternative = 0; alternative < path.Length; alternative++)
+                {
+                    var upgrade = Create(path[(preferred + alternative) % path.Length]);
+                    if (canOffer != null && !canOffer(upgrade))
+                    {
+                        continue;
+                    }
+
+                    offer.Add(upgrade);
+                    break;
+                }
+            }
+
+            // If every path has an eligible starter, the three choices are one per path.
+            // Capped paths fall back to other eligible skills so the choice list remains useful.
+            if (offer.Count < 3)
+            {
+                foreach (var id in PhaseHerbivoreUpgradeIds)
+                {
+                    if (offer.Count == 3)
+                    {
+                        break;
+                    }
+
+                    var alreadyOffered = offer.Exists(existing => existing.Id == id);
+                    if (!alreadyOffered && (canOffer == null || canOffer(Create(id))))
+                    {
+                        offer.Add(Create(id));
+                    }
                 }
             }
 

@@ -1012,6 +1012,29 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void FirstPhaseMutationOfferIncludesEachHarePathAndRespectsCaps()
+        {
+            var paths = new[]
+            {
+                new[] { SpeciesUpgradeCatalog.FasterMovementId, SpeciesUpgradeCatalog.ThreatExposureId },
+                new[] { SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.CrowdingToleranceId },
+                new[] { SpeciesUpgradeCatalog.EfficientDigestionId, SpeciesUpgradeCatalog.SeedDispersalId },
+            };
+            foreach (var seed in new[] { int.MinValue, -1, 0, 1, 2, 42, 11100, int.MaxValue })
+            {
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed);
+                Assert.That(offer, Has.Length.EqualTo(3));
+                foreach (var path in paths)
+                    Assert.That(Array.FindAll(offer, upgrade => Array.IndexOf(path, upgrade.Id) >= 0), Has.Length.EqualTo(1));
+                var capped = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed,
+                    upgrade => Array.IndexOf(paths[0], upgrade.Id) < 0);
+                Assert.That(capped, Has.Length.EqualTo(3));
+                Assert.That(new HashSet<string>(Array.ConvertAll(capped, upgrade => upgrade.Id)), Has.Count.EqualTo(3));
+                Assert.That(Array.Exists(capped, upgrade => Array.IndexOf(paths[0], upgrade.Id) >= 0), Is.False);
+            }
+        }
+
+        [Test]
         public void PhaseMutationOffersShowThreeDistinctHerbivoreMutations()
         {
             var ids = new HashSet<string>
@@ -1494,6 +1517,64 @@ namespace SaltyGame.Tests
                 }
             }
             Assert.That(avoided, Is.InRange(1, 127));
+        }
+
+        [Test]
+        public void PreContactAvoidanceWorksWithoutFleeSpeedBonus()
+        {
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
+            source.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 3));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: right,
+                    attackAmount: 1,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: right,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 1,
+                    forageBelowEnergy: 5,
+                    metabolism: 0,
+                    role: SpeciesRole.Carnivore,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                [SpeciesIds.Herbivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    metabolism: 0,
+                    role: SpeciesRole.Herbivore),
+            };
+            Assert.That(rules[SpeciesIds.Herbivore].FleeMovementSpeedBonus, Is.Zero);
+            var controlMetrics = new SpeciesSimulationMetrics();
+            var avoidanceMetrics = new SpeciesSimulationMetrics();
+            SpeciesSimulation.Step(source, rules, seed: 42, metrics: controlMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId));
+            var avoided = SpeciesSimulation.Step(source, rules, seed: 42, metrics: avoidanceMetrics,
+                combatResolutionMode: SpeciesCombatResolutionMode.OpposedRoll,
+                experimentalOptions: new SpeciesExperimentalOptions(
+                    SpeciesExperimentalOptions.BevExperimentalFeaturesId,
+                    preContactAvoidanceChance: 1f));
+
+            Assert.That(controlMetrics.CombatRollEvents, Has.Count.EqualTo(1));
+            Assert.That(avoidanceMetrics.CombatRollEvents, Is.Empty);
+            Assert.That(avoided.GetCell(1, 0).Health, Is.EqualTo(3));
         }
 
         [Test]

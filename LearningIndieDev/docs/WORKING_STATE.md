@@ -6,6 +6,20 @@ become a master changelog.
 
 ## Current focus
 
+**October 12 tooling publication and Salty integration:** The Workbench/export
+work and compact confirmation review were pushed to BevBranch in `07d78de9`.
+Salty's checkpoint `876f3cf7` is integrated with Hare spatial telemetry and
+guaranteed first-offer access to all three paths; BevBranch's existing avoidance
+fix and portable records are retained. Merged checks pass: 160 focused EditMode,
+25 presentation PlayMode, 31 worksheet tests, runner self-test, 16 GUI groups,
+both Release builds and four-seed Unity/standalone parity including spatial
+records. The PlayMode check first caught four obsolete card-order
+assumptions; their coverage now selects the intended skill and checks the new
+authored opening rewards. The saved 8,000-run review remains historical to its
+frozen runner. See the [integration handoff](handoffs/2026-10-12-1622-codex-bevbranch-tooling-publication-and-salty-offer-spatial-integration.md)
+and [preserved results](Research/Results/2026-10-12-Forest-Edge-Confirmation/README.md).
+Earlier local/uncommitted statements below describe their original checkpoints.
+
 **October 12 fresh-seed confirmation reviewed locally:** Bevin completed the
 five presets and supplied cumulative exports ending at 8,000 runs/80 conditions.
 The best observed condition is preset 04 (64x48 H4/F16), Gardeners + Restore:
@@ -91,6 +105,33 @@ provisional 48-tick delay; earlier frozen batches retain their original model.
 See the [integration and testing-impact handoff](handoffs/2026-10-10-2004-codex-bevbranch-salty-gestation-integration-and-testing-impact.md)
 for current validation, new-snapshot requirements, and proposed comparison controls.
 
+**S4-03 Trailblazer diagnostic: 2026-10-11, needs design review.** A
+five-arm replay of the existing 20 matched seeds added Hare spatial observations
+without changing any of the 100 archived run outcomes. Both Trailblazer orders
+increase post-choice movement, but population-wide map coverage gains are small
+and inconsistent. The current crowding rule only triggers at seven Hare
+neighbors; Josh's approved four-neighbor density surcharge is still pending,
+so the replay cannot judge intended crowding pressure. The first rotating
+three-card offer nominally contained a Trailblazer starter in 12/20 seeds under
+the old rotation. On 2026-10-12 Josh approved guaranteed first-offer access to
+one starter from each path; the Forest Edge opening reward now uses Movement,
+Tough Hide, and Efficient Digestion, and later phase offers keep the selected
+starter's partner available. This changes player access, not the earlier
+balance evidence. See the
+[factual report](Sprints/S4-03-trailblazer-spatial-20261011/report.md) and
+[analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md), plus
+the [offer-path handoff](handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
+
+**S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
+predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled
+Threat Avoidance bug and a stale combat gate were fixed and the affected arms
+replayed on the same seeds; 319 EditMode and 42 PlayMode tests passed. Movement
+activity and seed-drop accounting are observable, but patch revisits and
+Warren crowding pressure remain insufficient for strategy
+acceptance. See the [screen report](Sprints/S4-03-screen-20261011/report.md) and
+its [analysis](Sprints/S4-03-screen-20261011/ai-analysis-v1.md). Josh and Sim's
+player-flow review and accept/revise decision remain open.
+
 **S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
 Hare and Fox now use a provisional 48-tick gestation period, with pending litters
 preserved through movement and whole-litter births waiting for space. Full
@@ -100,11 +141,13 @@ Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
 balance and team review remain open. See the
 [checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
 
-**S4-03 exploratory pilot: 2026-10-10, fixture decision pending.** A
+**S4-03 exploratory pilot: 2026-10-10; main fixture selected 2026-10-11.** A
 five-seed matched control/Gardeners pilot after gestation found poor
 choice reach at 400/25/15 and more observable seed renewal at the existing
-400/20/10 manual fixture. Both fixtures still had frequent Hare extinction;
-the result is exploratory and the main screen has not run. See the
+400/20/10 manual fixture. Both fixtures still had frequent Hare extinction.
+Josh selected 400/20/10 for the main screen, with 400/25/15 retained as a
+stress comparison. The inputs are frozen in the
+[screen plan](Sprints/S4-03-screen-plan-20261011.md). See the
 [pilot handoff](handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
 
 

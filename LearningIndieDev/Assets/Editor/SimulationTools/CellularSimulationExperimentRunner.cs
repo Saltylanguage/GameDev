@@ -19,7 +19,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static partial class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 35;
+        const int ReportSchemaVersion = 36;
         const string MetricDictionaryId = "cellsim-experiment-metrics";
         const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;
@@ -443,8 +443,12 @@ namespace SaltyGame.EditorTools
                 attackOpportunityMode,
                 experimentalOptions,
                 upgradeLoadout: upgradeLoadout);
+            var spatial = playerSpecies.Value == "hare"
+                ? new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"))
+                : null;
             while (runner.AdvanceOneTick())
             {
+                spatial?.Observe(run.Cells, data.SpeciesRules[playerSpecies], phaseIndex: 1);
             }
 
             return CreateExperimentRun(
@@ -462,7 +466,7 @@ namespace SaltyGame.EditorTools
                     && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
                 experimentalOptions.UsesPredatorStatLine
                     && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore,
-                includeFinalStateDigest, data.SpeciesRules);
+                includeFinalStateDigest, data.SpeciesRules, spatial?.CreateRecord());
         }
 
         static int GetPhaseCount(
@@ -565,9 +569,14 @@ namespace SaltyGame.EditorTools
                 attackOpportunityMode,
                 activeExperimentalOptions,
                 upgradeLoadout: activeSnapshots);
+            var spatial = new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"));
+            var activePlayerRules = scheduledData.SpeciesRules[playerSpecies];
 
-            while (runner.AdvanceOneTick())
+            while (true)
             {
+                var observedPhase = run.PhaseIndex;
+                if (!runner.AdvanceOneTick()) break;
+                spatial.Observe(run.Cells, activePlayerRules, observedPhase);
                 if (run.Status != SimulationRunStatus.AwaitingDecision)
                 {
                     continue;
@@ -638,6 +647,8 @@ namespace SaltyGame.EditorTools
                     throw new InvalidOperationException(
                         $"Could not continue '{mutationPolicyId}' policy at phase {run.PhaseIndex} on seed {seed}.");
                 }
+
+                activePlayerRules = nextData.SpeciesRules[playerSpecies];
             }
 
             var result = CreateExperimentRun(
@@ -653,7 +664,7 @@ namespace SaltyGame.EditorTools
                 playerSpecies,
                 experimentalOptions.UsesHerbivoreStatLine,
                 experimentalOptions.UsesPredatorStatLine,
-                includeFinalStateDigest, scheduledData.SpeciesRules);
+                includeFinalStateDigest, scheduledData.SpeciesRules, spatial.CreateRecord());
             result.mutationChoices = choiceAudit.ToArray();
             result.purchaseWindows = purchases == null ? null : purchases.ToArray();
             return result;
@@ -814,9 +825,20 @@ namespace SaltyGame.EditorTools
                 attackOpportunityMode,
                 activeExperimentalOptions,
                 upgradeLoadout: activeSnapshots);
+            var spatial = playerSpecies.Value == "hare"
+                ? new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"))
+                : null;
+            var activePlayerRules = scheduledData.SpeciesRules[playerSpecies];
 
-            while (runner.AdvanceOneTick())
+            while (true)
             {
+                var observedPhase = run.PhaseIndex;
+                if (!runner.AdvanceOneTick())
+                {
+                    break;
+                }
+
+                spatial?.Observe(run.Cells, activePlayerRules, observedPhase);
                 if (run.Status != SimulationRunStatus.AwaitingDecision)
                 {
                     continue;
@@ -849,6 +871,8 @@ namespace SaltyGame.EditorTools
                     throw new InvalidOperationException(
                         $"Could not install the scheduled loadout for phase {nextPhaseIndex + 1}.");
                 }
+
+                activePlayerRules = nextData.SpeciesRules[playerSpecies];
             }
 
             var result = CreateExperimentRun(
@@ -866,7 +890,7 @@ namespace SaltyGame.EditorTools
                     && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
                 experimentalOptions.UsesPredatorStatLine
                     && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore,
-                includeFinalStateDigest, scheduledData.SpeciesRules);
+                includeFinalStateDigest, scheduledData.SpeciesRules, spatial?.CreateRecord());
             result.purchaseWindows = purchases == null ? null : purchases.ToArray();
             return result;
         }
@@ -1064,7 +1088,8 @@ namespace SaltyGame.EditorTools
             bool includeHerbivoreStatLine,
             bool includePredatorStatLine,
             bool includeFinalStateDigest = false,
-            IReadOnlyDictionary<SpeciesId, SpeciesRules> portableRules = null)
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> portableRules = null,
+            SimulationSpatialRecord spatial = null)
         {
             var result = SimulationRunResults.Create(run);
             var report = new ExperimentRun
@@ -1099,6 +1124,7 @@ namespace SaltyGame.EditorTools
                     ? SimulationReportSerialization.CreatePredatorStatLine(run, statSpecies)
                     : null,
                 opportunityControl = opportunityControl,
+                spatial = spatial,
             };
             if (includeFinalStateDigest) AddPortableSpeciesStatLines(report, run, portableRules);
             return report;
@@ -2453,6 +2479,210 @@ namespace SaltyGame.EditorTools
             }
         }
 
+        // Editor-only observations. Reading the grid does not affect simulation decisions or RNG.
+        sealed class SpatialObserver
+        {
+            readonly SpeciesId playerSpecies;
+            readonly SpeciesId predatorSpecies;
+            readonly bool[] visited;
+            readonly Dictionary<long, HashSet<int>> visitedByHare = new Dictionary<long, HashSet<int>>();
+            readonly Dictionary<long, Vector2Int> lastPosition = new Dictionary<long, Vector2Int>();
+            readonly Dictionary<int, SpatialPhase> phases = new Dictionary<int, SpatialPhase>();
+            readonly int width;
+            int distinctCells;
+            int hareObservations;
+            int crowdedObservations;
+            int foxAdjacentObservations;
+            int distanceCells;
+
+            public SpatialObserver(Grid<SpeciesCell> initialGrid, SpeciesId playerSpecies, SpeciesId predatorSpecies)
+            {
+                this.playerSpecies = playerSpecies;
+                this.predatorSpecies = predatorSpecies;
+                width = initialGrid.Width;
+                visited = new bool[initialGrid.Count];
+                for (var y = 0; y < initialGrid.Height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        var cell = initialGrid.GetCell(x, y);
+                        if (cell.IsCreature && cell.SpeciesId == playerSpecies)
+                        {
+                            Track(cell.EntityId, x, y);
+                        }
+                    }
+                }
+            }
+
+            public void Observe(Grid<SpeciesCell> grid, SpeciesRules rules, int phaseIndex)
+            {
+                if (!phases.TryGetValue(phaseIndex, out var phase))
+                {
+                    phase = new SpatialPhase(phaseIndex, grid.Count);
+                    phases.Add(phaseIndex, phase);
+                }
+
+                for (var y = 0; y < grid.Height; y++)
+                {
+                    for (var x = 0; x < grid.Width; x++)
+                    {
+                        var cell = grid.GetCell(x, y);
+                        if (!cell.IsCreature || cell.SpeciesId != playerSpecies)
+                        {
+                            continue;
+                        }
+
+                        hareObservations++;
+                        phase.hareObservations++;
+                        var index = x + y * width;
+                        if (!phase.visited[index])
+                        {
+                            phase.visited[index] = true;
+                            phase.distinctCells++;
+                        }
+
+                        Track(cell.EntityId, x, y);
+                        var neighbors = 0;
+                        foreach (var offset in rules.ReproductionPattern.Offsets)
+                        {
+                            if (grid.TryGetCell(x + offset.x, y + offset.y, out var nearby)
+                                && nearby.IsCreature && nearby.SpeciesId == playerSpecies)
+                            {
+                                neighbors++;
+                            }
+                        }
+
+                        if (rules.MaxReproductionGroupSize > 0
+                            && neighbors + 1 > rules.MaxReproductionGroupSize + rules.CrowdingTolerance)
+                        {
+                            crowdedObservations++;
+                            phase.crowdedObservations++;
+                        }
+
+                        var foxAdjacent = false;
+                        for (var dy = -1; dy <= 1 && !foxAdjacent; dy++)
+                        {
+                            for (var dx = -1; dx <= 1; dx++)
+                            {
+                                if ((dx != 0 || dy != 0)
+                                    && grid.TryGetCell(x + dx, y + dy, out var nearby)
+                                    && nearby.IsCreature && nearby.SpeciesId == predatorSpecies)
+                                {
+                                    foxAdjacent = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (foxAdjacent)
+                        {
+                            foxAdjacentObservations++;
+                            phase.foxAdjacentObservations++;
+                        }
+                    }
+                }
+            }
+
+            void Track(long entityId, int x, int y)
+            {
+                var index = x + y * width;
+                if (!visited[index])
+                {
+                    visited[index] = true;
+                    distinctCells++;
+                }
+
+                if (!visitedByHare.TryGetValue(entityId, out var individualCells))
+                {
+                    individualCells = new HashSet<int>();
+                    visitedByHare.Add(entityId, individualCells);
+                }
+
+                individualCells.Add(index);
+                if (lastPosition.TryGetValue(entityId, out var previous))
+                {
+                    distanceCells += Math.Abs(x - previous.x) + Math.Abs(y - previous.y);
+                }
+
+                lastPosition[entityId] = new Vector2Int(x, y);
+            }
+
+            public SimulationSpatialRecord CreateRecord()
+            {
+                var windows = new List<SimulationSpatialPhaseRecord>();
+                foreach (var phase in phases.Values)
+                {
+                    windows.Add(new SimulationSpatialPhaseRecord
+                    {
+                        phaseIndex = phase.phaseIndex,
+                        distinctCells = phase.distinctCells,
+                        hareObservations = phase.hareObservations,
+                        crowdedObservations = phase.crowdedObservations,
+                        foxAdjacentObservations = phase.foxAdjacentObservations,
+                    });
+                }
+
+                windows.Sort((left, right) => left.phaseIndex.CompareTo(right.phaseIndex));
+                var sumIndividualCells = 0;
+                foreach (var individualCells in visitedByHare.Values)
+                {
+                    sumIndividualCells += individualCells.Count;
+                }
+
+                return new SimulationSpatialRecord
+                {
+                    distinctCells = distinctCells,
+                    hareObservations = hareObservations,
+                    crowdedObservations = crowdedObservations,
+                    foxAdjacentObservations = foxAdjacentObservations,
+                    distanceCells = distanceCells,
+                    individualHares = visitedByHare.Count,
+                    meanDistinctCellsPerHare = visitedByHare.Count == 0
+                        ? 0f : (float)sumIndividualCells / visitedByHare.Count,
+                    phaseWindows = windows.ToArray(),
+                };
+            }
+
+            sealed class SpatialPhase
+            {
+                public SpatialPhase(int phaseIndex, int gridSize)
+                {
+                    this.phaseIndex = phaseIndex;
+                    visited = new bool[gridSize];
+                }
+
+                public readonly int phaseIndex;
+                public readonly bool[] visited;
+                public int distinctCells;
+                public int hareObservations;
+                public int crowdedObservations;
+                public int foxAdjacentObservations;
+            }
+        }
+
+        [Serializable]
+        sealed class SimulationSpatialRecord
+        {
+            public int distinctCells;
+            public int hareObservations;
+            public int crowdedObservations;
+            public int foxAdjacentObservations;
+            public int distanceCells;
+            public int individualHares;
+            public float meanDistinctCellsPerHare;
+            public SimulationSpatialPhaseRecord[] phaseWindows;
+        }
+
+        [Serializable]
+        sealed class SimulationSpatialPhaseRecord
+        {
+            public int phaseIndex;
+            public int distinctCells;
+            public int hareObservations;
+            public int crowdedObservations;
+            public int foxAdjacentObservations;
+        }
+
         [Serializable]
         sealed class ExperimentReport
         {
@@ -2524,6 +2754,7 @@ namespace SaltyGame.EditorTools
             public SimulationHerbivoreStatLineRecord[] herbivoreStatLines;
             public SimulationPredatorStatLineRecord[] predatorStatLines;
             public ExperimentOpportunityControl opportunityControl;
+            public SimulationSpatialRecord spatial;
             public MutationChoiceAudit[] mutationChoices;
             public HarePurchaseWindow[] purchaseWindows;
         }

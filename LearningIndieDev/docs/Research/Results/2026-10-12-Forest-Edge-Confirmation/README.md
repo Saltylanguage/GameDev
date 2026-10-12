@@ -25,8 +25,8 @@ timestamp; this preservation step does not rerun or modify the experiments.
 
 These runs used source hash
 `62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d`,
-before merging Salty's checkpoint `876f3cf7`. That checkpoint changes scheduled
-Threat Avoidance behavior and the first Hare path offer, and adds spatial
-telemetry. Retain the original frozen runner when inspecting these results.
+before merging Salty's checkpoint `876f3cf7`. The merged opening Hare path offer
+changes and spatial telemetry are new to BevBranch; its existing scheduled
+Threat Avoidance fix is retained. Retain the original frozen runner when inspecting these results.
 Use a newly built runner and matched controls for claims about the merged code;
 do not relabel these results as validation of the new behavior.

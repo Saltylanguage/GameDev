@@ -551,6 +551,11 @@ internal static class Program
         using var policy = JsonDocument.Parse(RunPortableSeed(policySnapshot,
             new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, false));
         ValidateRun(policy.RootElement, 42, policySnapshot);
+        using var detailedPolicy = JsonDocument.Parse(RunPortableSeed(policySnapshot,
+            new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "3", "-mutationPolicy", "trailblazer", "-experimentalFeatures", "bev-experimental" }, 42, true));
+        Compare(policy.RootElement, detailedPolicy.RootElement, "mutation-policy", "42");
+        if (policy.RootElement.GetProperty("spatial").GetProperty("hareObservations").GetInt32() <= 0)
+            throw new Exception("Mutation-policy spatial observations missing.");
         var starting = new Dictionary<SpeciesId, int> { [hare] = 30, [SpeciesIds.Plant] = 0,
             [SpeciesIds.Herbivore] = 0, [SpeciesIds.Carnivore] = 0 };
         var purchaseData = new CellularSimData(16, 16, policyData.StartingProbabilities, rules, 4f, .1f,

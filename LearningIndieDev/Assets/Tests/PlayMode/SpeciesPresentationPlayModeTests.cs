@@ -420,6 +420,54 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TrailblazerPairCanBeChosenThroughPhaseOffers()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            preview.ResetToStart();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
+            Assert.That(preview.TrySetPlayerSpecies("hare", out var message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "11100", "720", "0", "6", "0.1",
+                "0", "0", "0", false, "400", "20", "10", out message), Is.True, message);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, false, "0", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            preview.StartSimulation();
+            preview.PauseSimulation();
+
+            var choices = new[]
+            {
+                SpeciesUpgradeCatalog.FasterMovementId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            var expectedDescriptions = new[]
+            {
+                "Move faster to escape predators and reach fresh food.",
+                "Evade predator attacks more often.",
+            };
+            for (var choice = 0; choice < choices.Length; choice++)
+            {
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                var index = -1;
+                for (var option = 0; option < preview.RewardOptionCount; option++)
+                    if (preview.GetRewardOptionId(option) == choices[choice]) index = option;
+                Assert.That(index, Is.GreaterThanOrEqualTo(0), choices[choice]);
+                StringAssert.Contains(expectedDescriptions[choice], preview.GetRewardOptionDisplayName(index));
+                var tick = preview.Run.Tick;
+                Assert.That(preview.PurchaseReward(index), Is.True);
+                Assert.That(preview.Run.Tick, Is.EqualTo(tick));
+                preview.PauseSimulation();
+            }
+
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.FasterMovementId), Is.EqualTo(1));
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ThreatExposureId), Is.EqualTo(1));
+            Assert.That(preview.Run.UpgradeAcquisitionTimeline.Count, Is.EqualTo(2));
+        }
+
+        [UnityTest]
         public IEnumerator DeveloperSettingsRejectingPopulationCapPreservesInputAndRunSeed()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -638,6 +686,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
             Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
+            CollectionAssert.AreEqual(new[] { "faster-movement", "tough-hide", "efficient-digestion" },
+                preview.JourneyMap.StartNode.RewardMutationIds);
             Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
             Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(1));
@@ -647,7 +697,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(run.Cells.WrapEdges, Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(run.TargetTicks, Is.EqualTo(24));
-            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "tough-hide"), Is.True);
+            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "faster-movement"), Is.True);
 
             for (var phase = 1; phase <= 5; phase++)
             {
@@ -968,19 +1018,21 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("tough-hide"));
-            StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(0));
-            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(0));
-            StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(0));
-            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(0));
-            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(0));
+            var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                .First(index => preview.GetRewardOptionId(index) == SpeciesUpgradeCatalog.ToughHideId);
+            Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo("tough-hide"));
+            StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(rewardIndex));
             Assert.That(preview.Progression.TrySpend(preview.Progression.Currency), Is.True);
             Assert.That(preview.Progression.Currency, Is.Zero);
-            Assert.That(preview.CanPurchaseReward(0), Is.True);
+            Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
             var blockBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount;
 
-            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Running));
@@ -993,7 +1045,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary));
 
             // A repeated click cannot purchase or apply the same boundary twice.
-            Assert.That(preview.PurchaseReward(0), Is.False);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.False);
             Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(1));
             Assert.That(run.UpgradeLoadout.Count, Is.EqualTo(1));
 
@@ -1023,7 +1075,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Tick, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
-            Assert.That(preview.CanPurchaseReward(0), Is.False);
+            Assert.That(preview.CanPurchaseReward(rewardIndex), Is.False);
 
             var earnedFieldData = preview.Progression.Currency;
             preview.PlayNextSimulation();
@@ -1068,8 +1120,10 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
-            StringAssert.Contains("Fox responds: PIERCING BITE", preview.GetRewardOptionDisplayName(0));
+            var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                .First(index => preview.GetRewardOptionId(index) == SpeciesUpgradeCatalog.ToughHideId);
+            Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+            StringAssert.Contains("Fox responds: PIERCING BITE", preview.GetRewardOptionDisplayName(rewardIndex));
             Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
                 preview.PlayerSpecies,
                 SpeciesUpgradeCatalog.ToughHideId,
@@ -1077,7 +1131,7 @@ namespace SaltyGame.PlayModeTests
                 out _), Is.True);
             var attackModifier = preview.ActiveSpeciesRules[carnivore].AttackModifier;
 
-            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
             Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(2));
             Assert.That(run.UpgradeLoadout[0].TargetSpecies, Is.EqualTo(preview.PlayerSpecies));
             Assert.That(run.UpgradeLoadout[1].TargetSpecies, Is.EqualTo(carnivore));
@@ -1172,6 +1226,7 @@ namespace SaltyGame.PlayModeTests
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
                 "threat-exposure" };
+            var firstOfferSeeds = new[] { 0, 1, 4, 3 };
             for (var skillIndex = 0; skillIndex < ids.Length; skillIndex++)
             {
                 yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -1183,7 +1238,7 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
                 // The seed selects the first experimental offer deterministically.
                 Assert.That(preview.TryApplyGlobalSettingsForTicks(
-                    "36", "20", skillIndex.ToString(CultureInfo.InvariantCulture),
+                    "36", "20", firstOfferSeeds[skillIndex].ToString(CultureInfo.InvariantCulture),
                     preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                     preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
                     "10", "0.01", "0", "1", "0", false, out message), Is.True, message);
@@ -1210,10 +1265,12 @@ namespace SaltyGame.PlayModeTests
                         .ToArray();
                     Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
                     Assert.That(offeredIds.All(SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId), Is.True);
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Contain($"LV {phase + 1}"));
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("COST"));
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("DATA"));
-                    Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(upgrade.Id));
+                    var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                        .First(index => preview.GetRewardOptionId(index) == upgrade.Id);
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Contain($"LV {phase + 1}"));
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Not.Contain("COST"));
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Not.Contain("DATA"));
+                    Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo(upgrade.Id));
                     if (upgrade.Id == SpeciesUpgradeCatalog.ToughHideId && phase > 1)
                     {
                         var completedPhase = run.PhaseResults[run.PhaseResults.Count - 1];
@@ -1223,9 +1280,9 @@ namespace SaltyGame.PlayModeTests
                             $"Incoming attacks blocked this phase: {blockedIncomingAttacks}",
                             preview.PhaseRewardMessage);
                     }
-                    Assert.That(preview.CanPurchaseReward(0), Is.True);
+                    Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);
                     var currency = preview.Progression.Currency;
-                    Assert.That(preview.PurchaseReward(0), Is.True);
+                    Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
                     Assert.That(preview.Run, Is.SameAs(run));
                     Assert.That(run.Tick, Is.EqualTo(phase));
                     Assert.That(preview.Progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(phase + 1));
@@ -1243,7 +1300,7 @@ namespace SaltyGame.PlayModeTests
                         Assert.That(preview.Progression.PreContactAvoidanceChance,
                             Is.EqualTo((phase + 1) * 0.08f).Within(0.00001f));
                     }
-                    Assert.That(preview.PurchaseReward(0), Is.False, "A repeated click must not charge again.");
+                    Assert.That(preview.PurchaseReward(rewardIndex), Is.False, "A repeated click must not charge again.");
                 }
                 var finalTimeout = Time.realtimeSinceStartup + 5f;
                 while (preview.State != SpeciesPreviewState.Results && Time.realtimeSinceStartup < finalTimeout)
