@@ -207,6 +207,7 @@ namespace SaltyGame
             }
 
             simulationBoard.SetSnapshot(simulationBoardViewModel.Snapshot);
+            simulationBoard.SetForestEdgeFlourishes(simulationViewModel.ForestEdgeFlourishes);
             simulationBoard.SetFoxHuntCue(
                 simulationBoardViewModel.FoxHuntCueX,
                 simulationBoardViewModel.FoxHuntCueY,

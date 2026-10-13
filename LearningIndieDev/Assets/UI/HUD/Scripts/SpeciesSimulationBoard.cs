@@ -110,6 +110,7 @@ namespace SaltyGame
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] grassTerrainTiles;
         CroppedBitmap[] desertTerrainTiles;
+        CroppedBitmap[] forestEdgeFlourishes;
         SpeciesId playerSpecies;
         float zoom = 1f;
         int foxHuntCueTick = -1;
@@ -135,6 +136,8 @@ namespace SaltyGame
         readonly MatrixTransform panZoomTransform;
         float panOffsetX;
         float panOffsetY;
+        Point renderedOrigin;
+        Point renderedUnit;
         Point lastPanPosition;
         bool isPanning;
         SolidColorBrush foxHuntShadowBrush;
@@ -169,6 +172,7 @@ namespace SaltyGame
             MouseWheel += OnZoom;
             LostMouseCapture += OnLostMouseCapture;
             Unloaded += OnBoardUnloaded;
+            LayoutUpdated += OnBoardLayoutUpdated;
         }
 
         /// <summary>Multiplier applied after fitting the grid to the board area.</summary>
@@ -355,6 +359,13 @@ namespace SaltyGame
             animalSprites = animals;
             grassTerrainTiles = grassTerrain;
             desertTerrainTiles = desertTerrain;
+            InvalidateVisual();
+        }
+
+        public void SetForestEdgeFlourishes(CroppedBitmap[] sprites)
+        {
+            if (ReferenceEquals(forestEdgeFlourishes, sprites)) return;
+            forestEdgeFlourishes = sprites;
             InvalidateVisual();
         }
 
@@ -550,6 +561,17 @@ namespace SaltyGame
         void ApplyPanZoomTransform()
         {
             panZoomTransform.Matrix = new Matrix(1f, 0f, 0f, 1f, panOffsetX, panOffsetY);
+            InvalidateVisual();
+        }
+
+        void OnBoardLayoutUpdated(object sender, Noesis.EventArgs args)
+        {
+            if (snapshot != null
+                && (!renderedOrigin.Equals(PointToScreen(new Point(0f, 0f)))
+                    || !renderedUnit.Equals(PointToScreen(new Point(1f, 1f)))))
+            {
+                InvalidateVisual();
+            }
         }
 
         public void SetPlayerSpecies(SpeciesId species)
@@ -579,24 +601,26 @@ namespace SaltyGame
             var boardHeight = cellSize * snapshot.Height;
             var left = (width - boardWidth) * 0.5f;
             var top = (height - boardHeight) * 0.5f;
-            // Blob sprites are transparent overlays that must touch across
-            // cell boundaries. Draw the diagnostic grid separately if needed;
-            // a per-cell gap hides edge and diagonal continuity.
-            const float gap = 0f;
-
+            renderedOrigin = PointToScreen(new Point(0f, 0f));
+            renderedUnit = PointToScreen(new Point(1f, 1f));
+            var columns = GetPixelAlignedEdges(left, cellSize, snapshot.Width, true);
+            var rows = GetPixelAlignedEdges(top, cellSize, snapshot.Height, false);
             for (var y = 0; y < snapshot.Height; y++)
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
                     var cell = snapshot.GetCell(x, y);
-                    var cellTop = (snapshot.Height - 1 - y) * cellSize;
-                    var cellRect = new NoesisRect(
-                        left + x * cellSize + gap,
-                        top + cellTop + gap,
-                        Math.Max(0f, cellSize - gap * 2f),
-                        Math.Max(0f, cellSize - gap * 2f));
+                    var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
 
                     DrawTerrain(context, cell, cellRect);
+                    var flourishIndex = forestEdgeFlourishes == null ? -1
+                        : ForestEdgeFlourishResolver.Resolve(cell, x, y);
+                    if (flourishIndex >= 0 && flourishIndex < forestEdgeFlourishes.Length)
+                    {
+                        var inset = cellSize * 0.2f;
+                        context.DrawImage(forestEdgeFlourishes[flourishIndex], new NoesisRect(
+                            cellRect.X + inset, cellRect.Y + inset, cellSize * 0.6f, cellSize * 0.6f));
+                    }
                 }
             }
 
@@ -607,11 +631,7 @@ namespace SaltyGame
                 for (var x = 0; x < snapshot.Width; x++)
                 {
                     var cell = snapshot.GetCell(x, y);
-                    var cellRect = new NoesisRect(
-                        left + x * cellSize,
-                        top + (snapshot.Height - 1 - y) * cellSize,
-                        cellSize,
-                        cellSize);
+                    var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
                     if (matingCueActive && IsBirthCueCell(x, y))
                     {
                         DrawBirthPoof(context, cellRect, cellSize);
@@ -626,6 +646,27 @@ namespace SaltyGame
 
             DrawFoxHuntCue(context, left, top, cellSize);
             DrawMatingCue(context, left, top, cellSize);
+        }
+
+        float[] GetPixelAlignedEdges(float start, float cellSize, int count, bool horizontal)
+        {
+            // Snap in screen space so Viewbox scaling and fractional panning cannot reopen tile seams.
+            var edges = new float[count + 1];
+            for (var i = 0; i <= count; i++)
+            {
+                var coordinate = start + i * cellSize;
+                var point = PointToScreen(horizontal ? new Point(coordinate, 0f) : new Point(0f, coordinate));
+                if (horizontal) point.X = (float)Math.Round(point.X);
+                else point.Y = (float)Math.Round(point.Y);
+                point = PointFromScreen(point);
+                edges[i] = horizontal ? point.X : point.Y;
+            }
+            return edges;
+        }
+
+        static NoesisRect GetCellRect(float[] columns, float[] rows, int x, int row)
+        {
+            return new NoesisRect(columns[x], rows[row], columns[x + 1] - columns[x], rows[row + 1] - rows[row]);
         }
 
         void DrawForestEdge(DrawingContext context, float left, float top, float cellSize)

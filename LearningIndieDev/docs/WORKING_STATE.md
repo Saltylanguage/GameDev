@@ -6,6 +6,25 @@ become a master changelog.
 
 ## Current focus
 
+**October 13 intermittent tile seams accepted:** The shared board now
+aligns tile boundaries in screen pixels and refreshes after pan/layout scale
+changes. 26 presentation PlayMode tests pass, including a rendered regression
+with a failing negative control; actual art inspected at three viewport sizes.
+No terrain art/atlas/scenario changes. Bevin confirmed the visual result and
+authorized publication with the Chrono artwork on October 13; see the
+[seam handoff](handoffs/2026-10-13-codex-terrain-seam-rendering-fix.md).
+
+**October 13 Chrono Forest Edge flourishes accepted:** Added the eight supplied
+mushroom/shrub/flower sprites to the existing terrain atlas and shared board.
+They decorate full grass beneath creatures without changing simulation state.
+Corrected their Noesis import labels so grass shows through transparent areas;
+desktop Play Mode visual check and focused tests pass. The original fox sprite's
+missing Noesis label is corrected too, with fresh Desktop Play Mode visual and
+GPU transparent-corner verification. Prototype final visual check/full suite/
+player build remain unverified. Bevin visually accepted the artwork and fixes
+and authorized publication on October 13; see the
+[flourish handoff](handoffs/2026-10-13-codex-forest-edge-chrono-flourishes.md).
+
 **October 12 tooling publication and Salty integration:** The Workbench/export
 work and compact confirmation review were pushed to BevBranch in `07d78de9`.
 Salty's checkpoint `876f3cf7` is integrated with Hare spatial telemetry and

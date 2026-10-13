@@ -48,6 +48,12 @@ The neighboring terrain and active simulation atlas define the art contract. A n
 
 ## Current example
 
+Forest Edge cosmetic decorations live in `Blob/64/ForestEdgeFlourishes/` and
+share the existing terrain atlas. They overlay full grass at 60% cell size;
+they are not a new 47-mask terrain family. Keep their `Noesis` texture label:
+the package importer premultiplies alpha for the custom board renderer, avoiding
+colored rectangles around otherwise transparent artwork. Preserve source PNGs.
+
 The Grass terrain family is authored as named 64x64 sprites and packed by
 `Terrain_01.spriteatlasv2`. `TerrainTileResolver` selects among the 47 normalized
 eight-neighbor masks. The Island Survivor jungle-gate example and its

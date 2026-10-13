@@ -23,6 +23,25 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void ForestEdgeFlourishesPreservePixelArtAndPackWithTerrain()
+        {
+            var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(AtlasPath);
+            Assert.That(atlas, Is.Not.Null);
+            foreach (var name in ForestEdgeFlourishResolver.SpriteNames)
+            {
+                var path = $"{TileRoot}/ForestEdgeFlourishes/{name}.png";
+                AssertTile(path);
+                var sprite = atlas.GetSprite(name);
+                Assert.That(sprite, Is.Not.Null, $"Missing packed flourish '{name}'.");
+                UnityEngine.Object.DestroyImmediate(sprite);
+                var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+                Assert.That(importer.alphaIsTransparency, Is.True);
+                Assert.That(AssetDatabase.GetLabels(importer), Does.Contain("Noesis"),
+                    $"'{path}' must use Noesis premultiplied alpha to avoid opaque color squares.");
+            }
+        }
+
+        [Test]
         public void TerrainAtlasPacksTheBlobTileRoot()
         {
             var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(AtlasPath);

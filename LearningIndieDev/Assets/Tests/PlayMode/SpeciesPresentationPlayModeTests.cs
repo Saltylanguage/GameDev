@@ -182,6 +182,113 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TerrainHasNoSeamsAtFractionalZoomPanAndUiScale()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                Assert.Ignore("Terrain seam regression requires a graphics device.");
+
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+            UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>().PauseSimulation();
+            var host = GameObject.Find("Cellular Automata Prototype")
+                .GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var board = (Noesis.FrameworkElement)host.GetType().GetField("simulationBoard", flags).GetValue(host);
+            var boardType = board.GetType();
+            var camera = GameObject.Find("Prototype Camera").GetComponent<Camera>();
+            var texture = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+            var target = new RenderTexture(Screen.width, Screen.height, 24);
+            var capture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var parent = (Noesis.FrameworkElement)board.Parent;
+            var previousTransform = parent.RenderTransform;
+            var previousSprites = new[] { "animalSprites", "grassTerrainTiles", "desertTerrainTiles" }
+                .Select(name => boardType.GetField(name, flags).GetValue(board)).ToArray();
+            var previousFlourishes = boardType.GetField("forestEdgeFlourishes", flags).GetValue(board);
+            try
+            {
+                texture.SetPixels32(Enumerable.Repeat(new Color32(64, 192, 64, 255), 4096).ToArray());
+                texture.Apply();
+                var tile = new Noesis.CroppedBitmap(new Noesis.TextureSource(texture), new Noesis.Int32Rect(0, 0, 64, 64));
+                var tiles = Enumerable.Repeat(tile, 256).ToArray();
+                boardType.GetMethod("SetSpriteVisuals").Invoke(board, new object[] { null, tiles, null });
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new object[] { null });
+                foreach (var zoom in new[] { 0.75f, 1.13704991f, 2f, 4f })
+                {
+                    boardType.GetProperty("Zoom").SetValue(board, zoom);
+                    boardType.GetField("panOffsetX", flags).SetValue(board, -3.25f);
+                    boardType.GetField("panOffsetY", flags).SetValue(board, 4.75f);
+                    boardType.GetMethod("ApplyPanZoomTransform", flags).Invoke(board, null);
+                    parent.RenderTransform = new Noesis.ScaleTransform(0.83f, 0.91f);
+                    yield return null;
+                    yield return null;
+                    yield return new WaitForEndOfFrame();
+
+                    camera.targetTexture = target;
+                    camera.Render();
+                    RenderTexture.active = target;
+                    capture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                    capture.Apply();
+                    var a = board.PointToScreen(new Noesis.Point(board.ActualWidth * 0.3f, board.ActualHeight * 0.3f));
+                    var b = board.PointToScreen(new Noesis.Point(board.ActualWidth * 0.7f, board.ActualHeight * 0.7f));
+                    var pixels = capture.GetPixels32();
+                    var snapshot = (SimulationBoardSnapshot)boardType.GetField("snapshot", flags).GetValue(board);
+                    var layout = new object[] { board.ActualWidth, board.ActualHeight, 0f, 0f, 0f };
+                    boardType.GetMethod("GetBoardLayout", flags).Invoke(board, layout);
+                    var edgeMethod = boardType.GetMethod("GetPixelAlignedEdges", flags);
+                    var columns = (float[])edgeMethod.Invoke(board, new object[] { layout[3], layout[2], snapshot.Width, true });
+                    var rows = (float[])edgeMethod.Invoke(board, new object[] { layout[4], layout[2], snapshot.Height, false });
+                    var edgeXs = new HashSet<int>();
+                    var edgeYs = new HashSet<int>();
+                    foreach (var edge in columns)
+                    {
+                        var screenX = board.PointToScreen(new Noesis.Point(edge, 0f)).X;
+                        edgeXs.Add((int)Math.Floor(screenX));
+                        edgeXs.Add((int)Math.Ceiling(screenX));
+                    }
+                    foreach (var edge in rows)
+                    {
+                        var screenY = board.PointToScreen(new Noesis.Point(0f, edge)).Y;
+                        edgeYs.Add((int)Math.Floor(screenY));
+                        edgeYs.Add((int)Math.Ceiling(screenY));
+                    }
+                    var corner = board.PointToScreen(new Noesis.Point(columns[snapshot.Width / 2], rows[snapshot.Height / 2]));
+                    var sample = pixels[(target.height - 1 - (int)corner.Y - 2) * target.width + (int)corner.X + 2];
+                    Assert.That(sample.g, Is.GreaterThan(sample.r + 20), "Probe must render opaque green terrain.");
+                    for (var y = (int)Math.Ceiling(a.Y); y < (int)b.Y; y++)
+                    for (var x = (int)Math.Ceiling(a.X); x < (int)b.X; x++)
+                    {
+                        // Meadow and pebble details occupy cell interiors; inspect the shared edges.
+                        if (!edgeXs.Contains(x) && !edgeYs.Contains(y)) continue;
+                        var pixel = pixels[(target.height - 1 - y) * target.width + x];
+                        if (Math.Abs(pixel.r - sample.r) + Math.Abs(pixel.g - sample.g) + Math.Abs(pixel.b - sample.b) > 6)
+                        {
+                            var evidence = System.IO.Path.Combine(Application.dataPath, "../artifacts/unity-tests/terrain-seams");
+                            System.IO.Directory.CreateDirectory(evidence);
+                            System.IO.File.WriteAllBytes(System.IO.Path.Combine(evidence, "regression-failure.png"), capture.EncodeToPNG());
+                        }
+                        Assert.That(Math.Abs(pixel.r - sample.r) + Math.Abs(pixel.g - sample.g) + Math.Abs(pixel.b - sample.b),
+                            Is.LessThanOrEqualTo(6), $"Terrain seam at ({x},{y}), zoom {zoom}.");
+                    }
+                    camera.targetTexture = previousTarget;
+                }
+            }
+            finally
+            {
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                parent.RenderTransform = previousTransform;
+                boardType.GetMethod("SetSpriteVisuals").Invoke(board, previousSprites);
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new[] { previousFlourishes });
+                UnityEngine.Object.DestroyImmediate(texture);
+                UnityEngine.Object.DestroyImmediate(target);
+                UnityEngine.Object.DestroyImmediate(capture);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator CellularPrototypeInitializesEveryAuthoredGrassTerrainSprite()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
