@@ -6,6 +6,15 @@ become a master changelog.
 
 ## Current focus
 
+**October 14 terrain selection correction accepted:** The board and paint preview
+now sample four cells around shared vertices instead of drawing center-excluding
+neighbor masks on each terrain cell. Existing artwork now forms one straight
+transition and preserves islands/holes. 18 focused EditMode checks, 27 presentation
+PlayMode tests and one Desktop visual capture pass; temporarily restoring the
+old drawing path fails the new rendered regression. Bevin tested the correction
+himself, confirmed the improvement and authorized publication. See the
+[shared-vertex handoff](handoffs/2026-10-14-codex-shared-vertex-terrain-fix.md).
+
 **October 14 Forest Edge flourish replacement accepted:** Replaced the eight old
 images with Bevin's ten supplied mushroom/shrub/flower PNGs, preserving existing
 asset identities. Noesis labels plus explicit uncompressed V2 atlas defaults

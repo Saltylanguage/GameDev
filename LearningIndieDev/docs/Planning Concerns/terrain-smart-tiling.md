@@ -13,13 +13,21 @@ terrain rules and a general Tilemap or RuleTile migration.
 ### TILE-C01 — Artist and resolver mask meanings differ
 
 - **Severity:** Mild
-- **Status:** Grass mapping reviewed; empty-cell renderer fix pending validation; recheck Desert when authored
+- **Status:** Grass shared-vertex sampling validated and visually accepted; recheck Desert when authored
 - **Trigger:** A terrain family is imported before its representative shapes and rotations are checked against the resolver's promoted-cardinal mask convention.
 - **Why it matters:** Isolated terrain can disappear into the base layer, or diagonal contacts can render bridges and edges that the artist did not intend.
 - **Evidence:** Josh reviewed the Forest representatives individually and in batches against the 47 resolver masks, correcting the rotated-image interpretation before confirming the mappings. He confirmed `000` is full dirt (grass vertices off) and `255` is full grass. The generated Grass set is loaded through the runtime atlas and passed focused asset and scene tests. Desert art has not been authored/validated.
 - **Smallest mitigation:** Repeat the representative-shape and rotation review for Desert before importing it. Keep each family's source mapping explicit and validate the resulting 47 named masks.
 - **Progress:** The Grass family is integrated at 64x64 / 64 PPU. The terrain atlas preserves its scene-referenced GUID and packs the new `Blob/64` folder. A follow-up fixed Bare cells so they receive neighbor-derived Grass masks; regression tests were added, but the Unity preflight refused to run while the editor was open, so post-fix validation remains pending.
 - **Owner:** Josh, with Chrono and the terrain integration owner
+- **October 14 follow-up:** The read-only audit reproduced duplicate edges and
+  disappearing islands/holes in the center-excluding drawing model. The local
+  correction samples four cells around shared vertices while retaining the
+  authored sprites. Actual-art checks cover all 128 compatible edge pairings;
+  the 27-test presentation suite and Desktop capture pass. Bevin tested the
+  correction himself, accepted the improvement and authorized publication on
+  October 14; Desert acceptance is unchanged. See
+  [the correction handoff](../handoffs/2026-10-14-codex-shared-vertex-terrain-fix.md).
 - **Recorded:** 2026-09-09, accepted by Josh in the planning conversation
 
 ### TILE-C02 — Desert is called integrated before it has a live biome owner

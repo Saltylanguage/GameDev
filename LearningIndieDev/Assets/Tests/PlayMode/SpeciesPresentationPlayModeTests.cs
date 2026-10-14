@@ -182,6 +182,75 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TerrainPreservesStraightBoundariesIslandsAndHoles()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                Assert.Ignore("Terrain topology regression requires a graphics device.");
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+            UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>().PauseSimulation();
+            var host = GameObject.Find("Cellular Automata Prototype").GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var board = (Noesis.FrameworkElement)host.GetType().GetField("simulationBoard", flags).GetValue(host);
+            var boardType = board.GetType();
+            var previousSnapshot = boardType.GetField("snapshot", flags).GetValue(board);
+            var previousFlourishes = boardType.GetField("forestEdgeFlourishes", flags).GetValue(board);
+            var camera = GameObject.Find("Prototype Camera").GetComponent<Camera>();
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var target = new RenderTexture(Screen.width, Screen.height, 24);
+            var capture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            try
+            {
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new object[] { null });
+                for (var pattern = 0; pattern < 3; pattern++)
+                {
+                    var grid = new Grid<SpeciesCell>(8, 8, (x, y) =>
+                    {
+                        var grass = pattern == 0 ? x < 4 : pattern == 1 ? x == 3 && y == 3 : x != 3 || y != 3;
+                        return grass ? SpeciesCell.Grass(1f) : SpeciesCell.Empty;
+                    });
+                    var run = new SimulationRunState(grid, SpeciesIds.Herbivore, seed: 17, durationSeconds: 1f);
+                    var snapshot = SimulationBoardSnapshot.Create(run, SpeciesRuleDefaults.Create(), SpeciesIds.Herbivore);
+                    boardType.GetMethod("SetSnapshot").Invoke(board, new object[] { snapshot });
+                    yield return null;
+                    yield return null;
+                    yield return new WaitForEndOfFrame();
+                    camera.targetTexture = target;
+                    camera.Render();
+                    RenderTexture.active = target;
+                    capture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                    capture.Apply();
+                    var evidence = System.IO.Path.Combine(Application.dataPath, "../artifacts/unity-tests/terrain-topology");
+                    System.IO.Directory.CreateDirectory(evidence);
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(evidence, $"pattern-{pattern}.png"), capture.EncodeToPNG());
+                    var layout = new object[] { board.ActualWidth, board.ActualHeight, 0f, 0f, 0f };
+                    boardType.GetMethod("GetBoardLayout", flags).Invoke(board, layout);
+                    for (var y = 2; y <= 5; y++)
+                    for (var x = 2; x <= 5; x++)
+                    {
+                        var point = board.PointToScreen(new Noesis.Point(
+                            (float)layout[3] + (x + 0.5f) * (float)layout[2],
+                            (float)layout[4] + (snapshot.Height - y - 0.5f) * (float)layout[2]));
+                        var color = capture.GetPixel((int)point.X, target.height - 1 - (int)point.Y);
+                        Assert.That(color.g > color.r + 5f / 255f, Is.EqualTo(grid.GetCell(x, y).TerrainId == TerrainIds.Grass),
+                            $"Terrain center ({x},{y}) must retain its terrain in pattern {pattern}.");
+                    }
+                }
+            }
+            finally
+            {
+                boardType.GetMethod("SetSnapshot").Invoke(board, new[] { previousSnapshot });
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new[] { previousFlourishes });
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                UnityEngine.Object.DestroyImmediate(capture);
+                UnityEngine.Object.DestroyImmediate(target);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator TerrainHasNoSeamsAtFractionalZoomPanAndUiScale()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
@@ -242,13 +311,29 @@ namespace SaltyGame.PlayModeTests
                     var rows = (float[])edgeMethod.Invoke(board, new object[] { layout[4], layout[2], snapshot.Height, false });
                     var edgeXs = new HashSet<int>();
                     var edgeYs = new HashSet<int>();
-                    foreach (var edge in columns)
+                    var detailAreas = new List<Noesis.Rect>();
+                    for (var cellY = 0; cellY < snapshot.Height; cellY++)
+                    for (var cellX = 0; cellX < snapshot.Width; cellX++)
+                    {
+                        var cell = snapshot.GetCell(cellX, cellY);
+                        var hash = unchecked((uint)cellX * 73856093u ^ (uint)cellY * 19349663u);
+                        if (!((cell.IsTerrainResource && hash % 19 == 0) || (!cell.IsTerrainResource && hash % 47 == 0))) continue;
+                        var centerX = (float)layout[3] + (cellX + 0.5f) * (float)layout[2];
+                        var centerY = (float)layout[4] + (snapshot.Height - cellY - 0.5f) * (float)layout[2];
+                        var radius = Math.Max(3f, (float)layout[2] * 0.45f);
+                        var p = board.PointToScreen(new Noesis.Point(centerX - radius, centerY - radius));
+                        var q = board.PointToScreen(new Noesis.Point(centerX + radius, centerY + radius));
+                        detailAreas.Add(new Noesis.Rect(p.X, p.Y, q.X - p.X, q.Y - p.Y));
+                    }
+                    var terrainColumns = (float[])edgeMethod.Invoke(board, new object[] { (float)layout[3] - (float)layout[2] * 0.5f, layout[2], snapshot.Width + 1, true });
+                    var terrainRows = (float[])edgeMethod.Invoke(board, new object[] { (float)layout[4] - (float)layout[2] * 0.5f, layout[2], snapshot.Height + 1, false });
+                    foreach (var edge in columns.Concat(terrainColumns))
                     {
                         var screenX = board.PointToScreen(new Noesis.Point(edge, 0f)).X;
                         edgeXs.Add((int)Math.Floor(screenX));
                         edgeXs.Add((int)Math.Ceiling(screenX));
                     }
-                    foreach (var edge in rows)
+                    foreach (var edge in rows.Concat(terrainRows))
                     {
                         var screenY = board.PointToScreen(new Noesis.Point(0f, edge)).Y;
                         edgeYs.Add((int)Math.Floor(screenY));
@@ -260,8 +345,9 @@ namespace SaltyGame.PlayModeTests
                     for (var y = (int)Math.Ceiling(a.Y); y < (int)b.Y; y++)
                     for (var x = (int)Math.Ceiling(a.X); x < (int)b.X; x++)
                     {
-                        // Meadow and pebble details occupy cell interiors; inspect the shared edges.
+                        // Ground details cross the shifted terrain edges; exclude their known occupied areas.
                         if (!edgeXs.Contains(x) && !edgeYs.Contains(y)) continue;
+                        if (detailAreas.Any(area => area.Contains(new Noesis.Point(x, y)))) continue;
                         var pixel = pixels[(target.height - 1 - y) * target.width + x];
                         if (Math.Abs(pixel.r - sample.r) + Math.Abs(pixel.g - sample.g) + Math.Abs(pixel.b - sample.b) > 6)
                         {

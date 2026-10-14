@@ -605,6 +605,7 @@ namespace SaltyGame
             renderedUnit = PointToScreen(new Point(1f, 1f));
             var columns = GetPixelAlignedEdges(left, cellSize, snapshot.Width, true);
             var rows = GetPixelAlignedEdges(top, cellSize, snapshot.Height, false);
+            DrawTerrain(context, columns, rows, left, top, cellSize);
             for (var y = 0; y < snapshot.Height; y++)
             {
                 for (var x = 0; x < snapshot.Width; x++)
@@ -612,7 +613,7 @@ namespace SaltyGame
                     var cell = snapshot.GetCell(x, y);
                     var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
 
-                    DrawTerrain(context, cell, cellRect);
+                    if (!cell.IsPassable) context.DrawRectangle(Brushes.Black, null, cellRect);
                     var flourishIndex = forestEdgeFlourishes == null ? -1
                         : ForestEdgeFlourishResolver.Resolve(cell, x, y);
                     if (flourishIndex >= 0 && flourishIndex < forestEdgeFlourishes.Length)
@@ -1080,21 +1081,30 @@ namespace SaltyGame
             return birthPoofFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 255, 246, 215));
         }
 
-        void DrawTerrain(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
+        void DrawTerrain(DrawingContext context, float[] columns, float[] rows, float left, float top, float cellSize)
         {
-            // Every passable tile samples its neighbors: Bare uses the Grass
-            // mask too, so Grass vertices can fill dirt tiles inside a field.
-            context.DrawRectangle(cell.IsPassable ? Brushes.SaddleBrown : Brushes.Black, null, cellRect);
-
-            if (TerrainVisualFamilies.TryGetTerrainTileFamily(cell.TerrainId, out var family))
+            var bounds = new NoesisRect(columns[0], rows[0], columns[snapshot.Width] - columns[0], rows[snapshot.Height] - rows[0]);
+            context.DrawRectangle(Brushes.SaddleBrown, null, bounds);
+            var terrainColumns = GetPixelAlignedEdges(left - cellSize * 0.5f, cellSize, snapshot.Width + 1, true);
+            var terrainRows = GetPixelAlignedEdges(top - cellSize * 0.5f, cellSize, snapshot.Height + 1, false);
+            context.PushClip(new RectangleGeometry(bounds));
+            try
             {
-                var tiles = family == TerrainVisualFamily.Grass
-                    ? grassTerrainTiles
-                    : desertTerrainTiles;
-                if (tiles != null)
-                {
-                    DrawTerrainSprite(context, tiles, cell.TerrainVariantMask, cellRect);
-                }
+                DrawTerrainFamily(context, grassTerrainTiles, TerrainVisualFamily.Grass, terrainColumns, terrainRows);
+                DrawTerrainFamily(context, desertTerrainTiles, TerrainVisualFamily.Desert, terrainColumns, terrainRows);
+            }
+            finally { context.Pop(); }
+        }
+
+        void DrawTerrainFamily(DrawingContext context, CroppedBitmap[] tiles, TerrainVisualFamily family, float[] columns, float[] rows)
+        {
+            if (tiles == null) return;
+            for (var y = 0; y <= snapshot.Height; y++)
+            for (var x = 0; x <= snapshot.Width; x++)
+            {
+                var mask = snapshot.GetTerrainVertexMask(x, y, family);
+                if (family == TerrainVisualFamily.Desert && mask == 0) continue;
+                DrawTerrainSprite(context, tiles, mask, GetCellRect(columns, rows, x, snapshot.Height - y));
             }
         }
 

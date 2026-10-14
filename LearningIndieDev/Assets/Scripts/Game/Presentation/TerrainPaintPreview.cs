@@ -107,40 +107,25 @@ namespace SaltyGame
             var cellWidth = boardRect.width / GridWidth;
             var cellHeight = boardRect.height / GridHeight;
 
-            for (var y = 0; y < GridHeight; y++)
-            {
-                for (var x = 0; x < GridWidth; x++)
-                {
-                    var cell = cells.GetCell(x, y);
-                    var rect = new Rect(
-                        boardRect.x + x * cellWidth,
-                        boardRect.y + (GridHeight - 1 - y) * cellHeight,
-                        cellWidth,
-                        cellHeight);
-                    DrawCell(cell, rect, x, y);
-                }
-            }
-        }
-
-        void DrawCell(SpeciesCell cell, Rect rect, int x, int y)
-        {
             var previousColor = GUI.color;
             GUI.color = UniversalBaseColor;
-            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.DrawTexture(boardRect, Texture2D.whiteTexture);
             GUI.color = previousColor;
+            GUI.BeginGroup(boardRect);
+            DrawFamily(grassTiles, TerrainVisualFamily.Grass, cellWidth, cellHeight);
+            DrawFamily(desertTiles, TerrainVisualFamily.Desert, cellWidth, cellHeight);
+            GUI.EndGroup();
+        }
 
-            if (TerrainVisualFamilies.TryGetTerrainTileFamily(cell.TerrainId, out var family))
+        void DrawFamily(Sprite[] tiles, TerrainVisualFamily family, float cellWidth, float cellHeight)
+        {
+            for (var y = 0; y <= GridHeight; y++)
+            for (var x = 0; x <= GridWidth; x++)
             {
-                var mask = TerrainTileResolver.ResolveTerrainMask(cells, x, y, family);
-                var tiles = family == TerrainVisualFamily.Grass ? grassTiles : desertTiles;
-                if (tiles[mask] != null)
-                {
-                    DrawSprite(tiles[mask], rect);
-                }
+                var mask = TerrainTileResolver.ResolveVertexMask(cells, x, y, family);
+                if (tiles[mask] == null || (family == TerrainVisualFamily.Desert && mask == 0)) continue;
+                DrawSprite(tiles[mask], new Rect((x - 0.5f) * cellWidth, (GridHeight - y - 0.5f) * cellHeight, cellWidth, cellHeight));
             }
-
-            // Do not draw a box per cell: the blob sprites must meet across
-            // boundaries, otherwise the diagnostic grid masks the transitions.
         }
 
         void HandlePainting(Rect boardRect, Event currentEvent)
