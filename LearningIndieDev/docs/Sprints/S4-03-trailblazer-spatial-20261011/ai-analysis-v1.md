@@ -1,0 +1,13 @@
+# S4-03 Trailblazer spatial diagnostic — AI analysis v1
+
+**Status:** Interpretation for Josh/Sim review, 2026-10-11. Factual values and replay limits are in the [report](report.md). No player choice or balance change is authorized by this analysis.
+
+Movement is visible in the simulation. After both scheduled choices, the Movement-first pair recorded 1.974 movement steps per Hare observation and the Avoidance-first pair 1.800, compared with 1.382 in control. Whole-run individual distance and distinct-cell travel also rose. The two orders do not behave identically, so order should remain visible in later review.
+
+Broader map coverage is less convincing. Population-wide mean distinct cells rose by only about 13–14 cells out of 720 for either pair, and Movement-first coverage lost to its matched control in 11 of 20 seeds. The union measure is near saturation and varies with survival and Hare population. These data support a faster build, but they do not yet establish the intended wide-ranging map control.
+
+Fox proximity was lower in both pair arms per Hare observation, especially Movement first. Threat Avoidance alone had *higher* proximity than control and lower final survival in this small screen. Proximity and survival cannot isolate the avoidance modifier: Fox attack opportunities, populations, and run lengths also changed. The earlier combat regression proves the modifier can trigger; its practical value remains a live balance question.
+
+Crowding exposure is too sparse to tell whether Trailblazer's lower-crowding playstyle is enforced. More fundamentally, this replay uses the currently implemented seven-neighbor threshold, while Josh already approved a provisional surcharge beginning at four neighbors and increasing with density. Control had about 1.26 observations per 1,000 above the *current* threshold, and both pairs had even less. Implement the approved rule in a separate change, then replay a matched control and Trailblazer probe before judging the playstyle; a 400/25/15 stress fixture can test whether the new pressure is visible. The existing 20-seed screen should remain labeled as evidence for the prior rule.
+
+There is also a player-flow decision. Only 12 of the 20 matched seeds would nominally show either Trailblazer starter in the first three-card offer. A selected starter leads to its partner at the next choice, and the Movement-first path passed a PlayMode flow test. If players should be able to deliberately pursue Trailblazer from the first phase, the first offer needs a path-access rule; if the rotating offer is intentional, the build should be presented as an opportunistic path. Josh should decide this before we change offer generation. Visual readability still needs a human pass in the running game.

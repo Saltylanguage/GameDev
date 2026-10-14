@@ -41,6 +41,14 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   skills. The workbook's named pick paths are examples and comparison inputs,
   not locked loadouts or separate species. Skill values, strategy trade-offs,
   and evidence still require S4-01 review.
+- **Hare opening offer access, 2026-10-12:** Josh approved putting one starter
+  from each of Trailblazer, Warren, and Gardeners in the first three-card
+  offer. The canonical Forest Edge opening uses Movement, Tough Hide, and
+  Efficient Digestion. Selecting a starter continues to offer its partner at
+  the next eligible phase boundary; subsequent offers keep their existing
+  rotation. This addresses path access, while the earlier 12/20 Trailblazer
+  access result remains historical evidence for the former rotating offer.
+  See the [implementation handoff](../handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
 - **Trailblazer player identity, 2026-10-07:** Josh wants the speedster Hare
   build: high mobility and threat avoidance, fast travel and broad map coverage,
   with a lower-crowding, dispersed population. Warren and Gardeners should feel
@@ -116,14 +124,31 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   licensing/global-mutex and Package Manager IPC failed before simulation.
   No experiment report or S4-02/03 re-estimate exists. The failure is not game
   or balance evidence.
+- **2026-10-10 gestation-baseline pilot:** Direct Unity execution produced a
+  five-seed no-skill control and Gardeners pair on each of two fixtures.
+  At 400/25/15, four of five controls lost Hares by tick 234 and Gardeners
+  made one successful seed drop total. At 400/20/10, all five reached the
+  tick-200 choice; Gardeners made 34 successful drops with 34 stored-food
+  units spent and reached tick 600 in two seeds. This is exploratory
+  choice-reach evidence, not balance acceptance. The main screening fixture
+  remains a pending Josh decision. See the
+  [pilot handoff](../handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
+- **2026-10-11 S4 screening fixture decision:** Josh selected 400 Plants /
+  20 Hares / 10 Foxes for the main matched-seed screen, retaining 400 / 25 /
+  15 as a separate stress comparison. The production asset stays unchanged.
+  The fresh 11100-11119 seed panel, 13 arms, cumulative acquisition schedules,
+  fixed response mode, and analysis limits are frozen in the
+  [screen plan](S4-03-screen-plan-20261011.md) before execution.
+- **2026-10-11 S4-03 exploratory screen:** The predeclared 13-arm, 20-seed run is complete on 400/20/10. It found two Threat Avoidance faults: the scheduled runner did not update the phase avoidance chance, and combat still required a flee-speed bonus that the current upgrade does not grant. Both are fixed at `a7667e77`; 319 EditMode and 42 PlayMode tests passed. The affected arms and matched control were replayed with unchanged inputs. General Movement increased movement activity; Seed Dispersal produced successful food drops at one reserve unit each; the fixture supplied too little crowding pressure to judge Warren, and none of the aggregate counters establish map coverage or local food-patch revisits. Survival at tick 600 was 6/20 in control and 4–7/20 among the named candidate arms, with mixed paired gains and losses. See the [factual report and separate analysis](S4-03-screen-20261011/report.md). S4-03 remains open for spatial/in-game review, Josh and Sim's accept/revise decision, separate stress comparison, and a later frozen confirmation panel.
+- **2026-10-11 Trailblazer spatial follow-up:** Five of the original S4-03 arms were replayed on the same 20 seeds with a read-only Hare location observer; all 100 prior run records reproduced exactly apart from the new spatial field. Both Trailblazer orders travel more per Hare observation, but total map coverage gains are modest and seed-dependent. The player offer code nominally includes a Trailblazer starter in 12/20 first offers and offers its partner after a starter is selected; one complete pair route passed a focused PlayMode test. The current crowding mechanic triggers at seven Hare neighbors, while Josh's approved provisional density surcharge starts at four and is not yet implemented. The spatial screen therefore does not judge the intended crowding tradeoff. See the [factual report](S4-03-trailblazer-spatial-20261011/report.md) and [analysis](S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md). S4-03 remains open for Josh/Sim's path-access and balance decisions, a human visual review, the separate stress fixture, and later confirmation.
 - Scheduled allocation: Josh 14h feature + 5h reserve; Sim 14h feature +
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.
 
-**Kickoff status:** S4 is Active. The pilot is an early effort checkpoint
-before the full 13-arm × 20-seed screen. If measured effort materially changes
-the work or estimate, review the capacity trade while preserving the 8h
-reserve.
+**Kickoff status:** S4 is Active. The 13-arm × 20-seed screen is complete,
+with corrected Threat Avoidance evidence retained. S4-03 still requires
+spatial behavior evidence, the in-game review, and a human accept/revise
+decision. Review any material capacity change while preserving the 8h reserve.
 
 ## Selected work packages
 

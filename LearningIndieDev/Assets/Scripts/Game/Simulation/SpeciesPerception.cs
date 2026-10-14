@@ -169,11 +169,12 @@ namespace SaltyGame
             var visionPattern = speciesRules.Awareness.VisionPattern;
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in visionPattern.Offsets)
+            foreach (var offset in cells.GetPattern(visionPattern).Offsets)
             {
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!cells.TryGetCell(targetX, targetY, out var candidate)
+                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                    || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || !candidate.IsCreature
                     || !rules.TryGetValue(candidate.SpeciesId, out var threatRules)
                     || threatRules.DietTargetId != species)
@@ -181,7 +182,7 @@ namespace SaltyGame
                     continue;
                 }
 
-                var distance = Math.Max(Math.Abs(offset.x), Math.Abs(offset.y));
+                var distance = cells.GetDistance(x, y, targetX, targetY);
                 if (distance < bestDistance || (distance == bestDistance && random.Next(2) == 0))
                 {
                     bestDistance = distance;
@@ -240,11 +241,12 @@ namespace SaltyGame
 
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in speciesRules.Awareness.VisionPattern.Offsets)
+            foreach (var offset in cells.GetPattern(speciesRules.Awareness.VisionPattern).Offsets)
             {
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!cells.TryGetCell(targetX, targetY, out var candidate)
+                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                    || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || !candidate.IsCreature
                     || !rules.TryGetValue(candidate.SpeciesId, out var threatRules)
                     || threatRules.DietTargetId != species
@@ -253,12 +255,8 @@ namespace SaltyGame
                     continue;
                 }
 
-                var currentDistance = Math.Max(
-                    Math.Abs(targetX - x),
-                    Math.Abs(targetY - y));
-                var previousDistance = Math.Max(
-                    Math.Abs(previousThreat.x - previousSubject.x),
-                    Math.Abs(previousThreat.y - previousSubject.y));
+                var currentDistance = cells.GetDistance(x, y, targetX, targetY);
+                var previousDistance = cells.GetDistance(previousSubject.x, previousSubject.y, previousThreat.x, previousThreat.y);
                 if (currentDistance >= previousDistance)
                 {
                     continue;
@@ -303,7 +301,7 @@ namespace SaltyGame
                     if (!threat.IsCreature
                         || !rules.TryGetValue(threat.SpeciesId, out var threatRules)
                         || threatRules.DietTargetId != species
-                        || !IsInAttackRange(threatX, threatY, x, y, threatRules.AttackPattern))
+                        || !IsInAttackRange(cells, threatX, threatY, x, y, threatRules.AttackPattern))
                     {
                         continue;
                     }
@@ -350,11 +348,12 @@ namespace SaltyGame
 
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in visionPattern.Offsets)
+            foreach (var offset in cells.GetPattern(visionPattern).Offsets)
             {
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!cells.TryGetCell(targetX, targetY, out var candidate)
+                if (!cells.TryResolveCoordinates(ref targetX, ref targetY)
+                    || !cells.TryGetCell(targetX, targetY, out var candidate)
                     || (requireCreature
                         ? !candidate.IsCreature || candidate.SpeciesId != targetSpecies
                         : !IsDietTarget(candidate, targetSpecies)))
@@ -362,7 +361,7 @@ namespace SaltyGame
                     continue;
                 }
 
-                var distance = Math.Max(Math.Abs(offset.x), Math.Abs(offset.y));
+                var distance = cells.GetDistance(x, y, targetX, targetY);
                 if (distance < bestDistance || (distance == bestDistance && random.Next(2) == 0))
                 {
                     bestDistance = distance;
@@ -374,16 +373,19 @@ namespace SaltyGame
         }
 
         static bool IsInAttackRange(
+            Grid<SpeciesCell> cells,
             int attackerX,
             int attackerY,
             int targetX,
             int targetY,
             GridPattern attackPattern)
         {
-            foreach (var offset in attackPattern.Offsets)
+            foreach (var offset in cells.GetPattern(attackPattern).Offsets)
             {
-                if (attackerX + offset.x == targetX
-                    && attackerY + offset.y == targetY)
+                var candidateX = attackerX + offset.x;
+                var candidateY = attackerY + offset.y;
+                if (cells.TryResolveCoordinates(ref candidateX, ref candidateY)
+                    && candidateX == targetX && candidateY == targetY)
                 {
                     return true;
                 }

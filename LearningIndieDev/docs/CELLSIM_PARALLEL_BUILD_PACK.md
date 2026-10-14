@@ -1,5 +1,11 @@
 # Parallel CellSim: agent build pack
 
+> **October 8, 2026 implementation update:** the user authorized a standalone
+> .NET batch runner that links production C# and exports Unity inputs once.
+> Follow [the standalone runbook](CELLSIM_STANDALONE_RUNBOOK.md) for the implemented
+> local workflow and validation. The Docker/player proposal below is historical;
+> Docker and a Linux player have not been provisioned or validated by this work.
+
 > **Research/tooling plan:** tick counts below describe standalone performance
 > and parity fixtures, not the player expedition cadence. The current player
 > contract is six 10-second simulation-time rounds; see

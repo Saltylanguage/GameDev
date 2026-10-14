@@ -46,6 +46,7 @@ namespace SaltyGame
             previous[startIndex] = startIndex;
             var queue = new Queue<int>();
             queue.Enqueue(startIndex);
+            movementPattern = cells.GetPattern(movementPattern);
             var offsetStart = movementPattern.Count == 0 ? 0 : random.Next(movementPattern.Count);
 
             while (queue.Count > 0)
@@ -54,7 +55,7 @@ namespace SaltyGame
                 var currentX = currentIndex % cells.Width;
                 var currentY = currentIndex / cells.Width;
                 if (currentIndex != startIndex
-                    && IsInInteractionRange(currentX, currentY, target, interactionPattern))
+                    && IsInInteractionRange(cells, currentX, currentY, target, interactionPattern))
                 {
                     nextStep = ReconstructFirstStep(previous, startIndex, currentIndex, cells.Width);
                     return true;
@@ -70,7 +71,7 @@ namespace SaltyGame
 
                     var nextX = currentX + offset.x;
                     var nextY = currentY + offset.y;
-                    if (!cells.IsInBounds(nextX, nextY))
+                    if (!cells.TryResolveCoordinates(ref nextX, ref nextY))
                     {
                         continue;
                     }
@@ -93,11 +94,14 @@ namespace SaltyGame
             return false;
         }
 
-        static bool IsInInteractionRange(int x, int y, Vector2Int target, GridPattern interactionPattern)
+        static bool IsInInteractionRange(Grid<SpeciesCell> cells, int x, int y, Vector2Int target, GridPattern interactionPattern)
         {
-            foreach (var offset in interactionPattern.Offsets)
+            foreach (var offset in cells.GetPattern(interactionPattern).Offsets)
             {
-                if (x + offset.x == target.x && y + offset.y == target.y)
+                var targetX = x + offset.x;
+                var targetY = y + offset.y;
+                if (cells.TryResolveCoordinates(ref targetX, ref targetY)
+                    && targetX == target.x && targetY == target.y)
                 {
                     return true;
                 }

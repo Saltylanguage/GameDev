@@ -1,0 +1,176 @@
+{
+  "date": "2026-10-08",
+  "state": "Passed",
+  "scope": "Local standalone implementation and bounded pilots",
+  "sourceCommit": "e7a6c6022ffbc5c72a7269e4428a36a8d340b869",
+  "sourceHash": "16c7d8ef1429fbb0a3638cd4148f328e2a58679678de003ba22efef87a775359",
+  "assemblyHash": "59321d354cd88f2aa2d0423f720c83b6e3cc43abefcd5a0888e8a0b304df1925",
+  "runtime": "8.0.29",
+  "unityEditMode": {
+    "passed": 259,
+    "failed": 0,
+    "scope": "focused"
+  },
+  "unityReferenceSeeds": 38,
+  "parity": "Exact state/counters/choices/timing; named derived report rates only: 1e-6 absolute/relative tolerance",
+  "integrationChecks": [
+    "compact/detailed determinism",
+    "strict input rejection",
+    "dry run",
+    "exact serial/parallel output",
+    "detailed condition replay",
+    "resume identity",
+    "controller exclusion",
+    "orphan worker recovery",
+    "aggregate recovery",
+    "corrupt chunk rejection",
+    "timeout refusal",
+    "parity mismatch refusal"
+  ],
+  "benchmarkSummaries": {
+    "benchmark-1-workers": {
+      "schemaVersion": 1,
+      "identity": "d45a3508fe25a3dc13170d0f868b66dd5d14bcb074b5bf2c26fe7df8be38f77b",
+      "state": "Completed",
+      "runs": 32,
+      "counts": {
+        "control": 32
+      },
+      "diagnostics": {
+        "control": {
+          "totalTicks": 22400,
+          "playerExtinctions": 31,
+          "allSpeciesPresentAtEnd": 0,
+          "totalFinalPopulation": {
+            "fox": 6,
+            "hare": 1,
+            "plant": 10649
+          }
+        }
+      },
+      "elapsedSeconds": 58.2783885,
+      "runsPerSecond": 0.5490886214192419,
+      "peakWorkerWorkingSetBytes": 71618560,
+      "outputBytes": 179997,
+      "outputHash": "0e1793a8a968065a312bc629a93566f88c59096542911be3b900a886d43760ac",
+      "note": "Elapsed covers this invocation; resume is not a fresh throughput benchmark."
+    },
+    "benchmark-4-workers": {
+      "schemaVersion": 1,
+      "identity": "d45a3508fe25a3dc13170d0f868b66dd5d14bcb074b5bf2c26fe7df8be38f77b",
+      "state": "Completed",
+      "runs": 32,
+      "counts": {
+        "control": 32
+      },
+      "diagnostics": {
+        "control": {
+          "totalTicks": 22400,
+          "playerExtinctions": 31,
+          "allSpeciesPresentAtEnd": 0,
+          "totalFinalPopulation": {
+            "fox": 6,
+            "hare": 1,
+            "plant": 10649
+          }
+        }
+      },
+      "elapsedSeconds": 15.0868545,
+      "runsPerSecond": 2.1210518070549433,
+      "peakWorkerWorkingSetBytes": 66961408,
+      "outputBytes": 179997,
+      "outputHash": "0e1793a8a968065a312bc629a93566f88c59096542911be3b900a886d43760ac",
+      "note": "Elapsed covers this invocation; resume is not a fresh throughput benchmark."
+    },
+    "benchmark-8-workers": {
+      "schemaVersion": 1,
+      "identity": "d45a3508fe25a3dc13170d0f868b66dd5d14bcb074b5bf2c26fe7df8be38f77b",
+      "state": "Completed",
+      "runs": 32,
+      "counts": {
+        "control": 32
+      },
+      "diagnostics": {
+        "control": {
+          "totalTicks": 22400,
+          "playerExtinctions": 31,
+          "allSpeciesPresentAtEnd": 0,
+          "totalFinalPopulation": {
+            "fox": 6,
+            "hare": 1,
+            "plant": 10649
+          }
+        }
+      },
+      "elapsedSeconds": 8.859532,
+      "runsPerSecond": 3.611928937104127,
+      "peakWorkerWorkingSetBytes": 68435968,
+      "outputBytes": 179997,
+      "outputHash": "0e1793a8a968065a312bc629a93566f88c59096542911be3b900a886d43760ac",
+      "note": "Elapsed covers this invocation; resume is not a fresh throughput benchmark."
+    },
+    "serial-32-one-chunk": {
+      "schemaVersion": 1,
+      "identity": "10393fd19817a29f53162b8c57858702291a4351197c7c1240ff73c5ea5e3a94",
+      "state": "Completed",
+      "runs": 32,
+      "counts": {
+        "control": 32
+      },
+      "diagnostics": {
+        "control": {
+          "totalTicks": 22400,
+          "playerExtinctions": 31,
+          "allSpeciesPresentAtEnd": 0,
+          "totalFinalPopulation": {
+            "fox": 6,
+            "hare": 1,
+            "plant": 10649
+          }
+        }
+      },
+      "elapsedSeconds": 54.1552794,
+      "runsPerSecond": 0.5908934522088349,
+      "peakWorkerWorkingSetBytes": 65630208,
+      "outputBytes": 179997,
+      "outputHash": "0e1793a8a968065a312bc629a93566f88c59096542911be3b900a886d43760ac",
+      "note": "Elapsed covers this invocation; resume is not a fresh throughput benchmark."
+    },
+    "parallel-128": {
+      "schemaVersion": 1,
+      "identity": "0a7bf33182048225857f6e40f866fdeced5572c574a172841e72fac4f79373b2",
+      "state": "Completed",
+      "runs": 128,
+      "counts": {
+        "control": 128
+      },
+      "diagnostics": {
+        "control": {
+          "totalTicks": 89600,
+          "playerExtinctions": 122,
+          "allSpeciesPresentAtEnd": 3,
+          "totalFinalPopulation": {
+            "fox": 121,
+            "hare": 345,
+            "plant": 41603
+          }
+        }
+      },
+      "elapsedSeconds": 34.3695056,
+      "runsPerSecond": 3.724231633986612,
+      "peakWorkerWorkingSetBytes": 69541888,
+      "outputBytes": 720288,
+      "outputHash": "22251d5844ed65cf1e51810f6b10dfb1deebeef4192a0b450aa63a522e4a9c36",
+      "note": "Elapsed covers this invocation; resume is not a fresh throughput benchmark."
+    }
+  },
+  "millionRunsExecuted": false,
+  "millionPlanDryRunPassed": true,
+  "limitations": [
+    "Windows local host only",
+    "No full PlayMode or graphics validation",
+    "Million scale and Linux parity unmeasured",
+    "No gameplay tuning approval",
+    "Local changes uncommitted and unpushed"
+  ]
+}

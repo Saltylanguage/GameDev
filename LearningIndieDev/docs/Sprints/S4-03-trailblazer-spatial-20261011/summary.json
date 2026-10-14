@@ -1,0 +1,112 @@
+{
+  "control": {
+    "alive600": 6,
+    "totalHareObservations": 69890,
+    "meanDistinctCells": 524.35,
+    "medianDistinctCells": 528.5,
+    "pairedDistinctCellsMeanDelta": 0,
+    "pairedDistinctCellsMedianDelta": 0.0,
+    "pairedDistinctCellsGainsLossesTies": [
+      0,
+      0,
+      20
+    ],
+    "distancePerHareObservation": 1.0549005580197452,
+    "crowdingPerThousandHareObservations": 1.2591214766060952,
+    "foxAdjacentPerThousandHareObservations": 59.078552010301905,
+    "postChoiceHareObservations": 26206,
+    "postChoiceCrowdingPerThousand": 3.0145768144699687,
+    "postChoiceFoxAdjacentPerThousand": 70.70899793940319,
+    "postChoiceMovementStepsPerHareObservation": 1.3819354346332902,
+    "postChoicePhaseDistinctCellsPerThousandObservations": 267.6867892848966,
+    "meanDistinctCellsPerIndividualHare": 33.13181915283203
+  },
+  "movement": {
+    "alive600": 7,
+    "totalHareObservations": 106343,
+    "meanDistinctCells": 541.25,
+    "medianDistinctCells": 508.0,
+    "pairedDistinctCellsMeanDelta": 16.9,
+    "pairedDistinctCellsMedianDelta": 2.0,
+    "pairedDistinctCellsGainsLossesTies": [
+      11,
+      9,
+      0
+    ],
+    "distancePerHareObservation": 1.168473712421128,
+    "crowdingPerThousandHareObservations": 2.9903237636703874,
+    "foxAdjacentPerThousandHareObservations": 51.09880293014115,
+    "postChoiceHareObservations": 63993,
+    "postChoiceCrowdingPerThousand": 4.750519588079946,
+    "postChoiceFoxAdjacentPerThousand": 48.786586032847346,
+    "postChoiceMovementStepsPerHareObservation": 1.851905677183442,
+    "postChoicePhaseDistinctCellsPerThousandObservations": 182.78561717687873,
+    "meanDistinctCellsPerIndividualHare": 36.02989130020141
+  },
+  "avoidance": {
+    "alive600": 4,
+    "totalHareObservations": 57528,
+    "meanDistinctCells": 503.95,
+    "medianDistinctCells": 488.0,
+    "pairedDistinctCellsMeanDelta": -20.4,
+    "pairedDistinctCellsMedianDelta": 0.0,
+    "pairedDistinctCellsGainsLossesTies": [
+      8,
+      6,
+      6
+    ],
+    "distancePerHareObservation": 1.0514879710749547,
+    "crowdingPerThousandHareObservations": 0.4867195104992352,
+    "foxAdjacentPerThousandHareObservations": 62.17841746627729,
+    "postChoiceHareObservations": 14536,
+    "postChoiceCrowdingPerThousand": 0.06879471656576774,
+    "postChoiceFoxAdjacentPerThousand": 87.57567418822235,
+    "postChoiceMovementStepsPerHareObservation": 1.3464501926252064,
+    "postChoicePhaseDistinctCellsPerThousandObservations": 280.7512383048982,
+    "meanDistinctCellsPerIndividualHare": 32.97605819702149
+  },
+  "trailblazer-movement-first": {
+    "alive600": 6,
+    "totalHareObservations": 95241,
+    "meanDistinctCells": 538.35,
+    "medianDistinctCells": 532.0,
+    "pairedDistinctCellsMeanDelta": 14,
+    "pairedDistinctCellsMedianDelta": -9.5,
+    "pairedDistinctCellsGainsLossesTies": [
+      9,
+      11,
+      0
+    ],
+    "distancePerHareObservation": 1.1857708339895634,
+    "crowdingPerThousandHareObservations": 1.1759641330939405,
+    "foxAdjacentPerThousandHareObservations": 40.16127508111003,
+    "postChoiceHareObservations": 52891,
+    "postChoiceCrowdingPerThousand": 1.8528672174850163,
+    "postChoiceFoxAdjacentPerThousand": 28.60600102096765,
+    "postChoiceMovementStepsPerHareObservation": 1.973757350021743,
+    "postChoicePhaseDistinctCellsPerThousandObservations": 180.08734945453858,
+    "meanDistinctCellsPerIndividualHare": 36.290155506134035
+  },
+  "trailblazer-avoidance-first": {
+    "alive600": 7,
+    "totalHareObservations": 76403,
+    "meanDistinctCells": 537.2,
+    "medianDistinctCells": 494.5,
+    "pairedDistinctCellsMeanDelta": 12.85,
+    "pairedDistinctCellsMedianDelta": 10.0,
+    "pairedDistinctCellsGainsLossesTies": [
+      14,
+      4,
+      2
+    ],
+    "distancePerHareObservation": 1.140046856798817,
+    "crowdingPerThousandHareObservations": 0.5235396515843619,
+    "foxAdjacentPerThousandHareObservations": 52.66808894938681,
+    "postChoiceHareObservations": 33537,
+    "postChoiceCrowdingPerThousand": 0.9243522080090646,
+    "postChoiceFoxAdjacentPerThousand": 56.9818409517846,
+    "postChoiceMovementStepsPerHareObservation": 1.7997435668068105,
+    "postChoicePhaseDistinctCellsPerThousandObservations": 275.66568267883235,
+    "meanDistinctCellsPerIndividualHare": 34.39274950027466
+  }
+}

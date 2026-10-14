@@ -7,6 +7,44 @@ namespace SaltyGame.Tests
     public sealed class TerrainTileResolverTests
     {
         [Test]
+        public void StraightBoundaryUsesOneTransitionAndKeepsBothSides()
+        {
+            var cells = new Grid<SpeciesCell>(6, 4, (x, _) => x < 3 ? SpeciesCell.Grass(1f) : SpeciesCell.Empty);
+            Assert.That(TerrainTileResolver.ResolveVertexMask(cells, 2, 2, TerrainVisualFamily.Grass), Is.EqualTo(255));
+            Assert.That(TerrainTileResolver.ResolveVertexMask(cells, 3, 2, TerrainVisualFamily.Grass), Is.EqualTo(241));
+            Assert.That(TerrainTileResolver.ResolveVertexMask(cells, 4, 2, TerrainVisualFamily.Grass), Is.Zero);
+        }
+
+        [Test]
+        public void IsolatedGrassAndBareHoleRetainTheirOwnTerrainAtTheCenter()
+        {
+            var island = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Empty);
+            island.SetCell(1, 1, SpeciesCell.Grass(1f));
+            var hole = new Grid<SpeciesCell>(3, 3, (_, _) => SpeciesCell.Grass(1f));
+            hole.SetCell(1, 1, SpeciesCell.Empty);
+            var vertices = new[] { (1, 1), (2, 1), (1, 2), (2, 2) };
+            var islandMasks = new[] { 7, 193, 28, 112 };
+            var holeMasks = new[] { 253, 127, 247, 223 };
+            for (var i = 0; i < vertices.Length; i++)
+            {
+                var (x, y) = vertices[i];
+                Assert.That(TerrainTileResolver.ResolveVertexMask(island, x, y, TerrainVisualFamily.Grass), Is.EqualTo(islandMasks[i]));
+                Assert.That(TerrainTileResolver.ResolveVertexMask(hole, x, y, TerrainVisualFamily.Grass), Is.EqualTo(holeMasks[i]));
+            }
+        }
+
+        [Test]
+        public void VertexSamplingExtendsNonWrappedEdgesAndHonorsWrappedEdges()
+        {
+            var clamped = new Grid<SpeciesCell>(2, 2, (x, _) => x == 0 ? SpeciesCell.Grass(1f) : SpeciesCell.Empty);
+            var wrapped = new Grid<SpeciesCell>(2, 2, (x, _) => x == 0 ? SpeciesCell.Grass(1f) : SpeciesCell.Empty, wrapEdges: true);
+            Assert.That(TerrainTileResolver.ResolveVertexMask(clamped, 0, 1, TerrainVisualFamily.Grass), Is.EqualTo(255));
+            Assert.That(TerrainTileResolver.ResolveVertexMask(clamped, 2, 1, TerrainVisualFamily.Grass), Is.Zero);
+            Assert.That(TerrainTileResolver.ResolveVertexMask(wrapped, 0, 1, TerrainVisualFamily.Grass), Is.EqualTo(31));
+            Assert.That(TerrainTileResolver.ResolveVertexMask(wrapped, 2, 1, TerrainVisualFamily.Grass), Is.EqualTo(31));
+        }
+
+        [Test]
         public void EveryRawMaskNormalizesToOneOf47BlobMasks()
         {
             var normalized = new System.Collections.Generic.HashSet<int>();

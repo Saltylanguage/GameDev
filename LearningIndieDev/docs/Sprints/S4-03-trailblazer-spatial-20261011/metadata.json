@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "S4-03-TRAILBLAZER-SPATIAL-20261011",
+  "sourceCommit": "a4bc09e08516c34e39ef54ad0ff5fd405b9838be",
+  "reportSchemaVersion": 31,
+  "metricDictionaryId": "cellsim-experiment-metrics",
+  "metricDictionaryVersion": 1,
+  "scenarioAssetPath": "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset",
+  "startingPopulations": "plant=400,hare=20,fox=10",
+  "gridWidth": 36,
+  "gridHeight": 20,
+  "seedStart": 11100,
+  "seedCount": 20,
+  "phaseLengthTicks": 100,
+  "phaseCount": 6,
+  "stepIntervalSeconds": 0.1,
+  "combatMode": "opposed-roll",
+  "attackOpportunityMode": "natural",
+  "experimentalFeatures": "bev-experimental",
+  "rulesetFingerprint": "dd8534498586eb7d034dd3e832325c1986e4545f14ea2936f2ac6b7aafa82f8d",
+  "rawArtifactDirectory": "LearningIndieDev/artifacts/s4-trailblazer-spatial-20261011",
+  "generationNote": "The 100 reports were generated before a Hare-only guard was added to the observer; the guard does not change this Hare path. A one-seed replay after the source commit exactly matched the earlier spatial record.",
+  "validation": {
+    "archivedRunRecordsExactMatchAfterRemovingSpatial": 100,
+    "archivedRunRecordsCompared": 100,
+    "postCommitSmokeExactMatch": true,
+    "focusedEditModePassed": 1,
+    "focusedPlayModePassed": 1
+  },
+  "arms": [
+    {
+      "id": "control",
+      "schedule": "none;none;none;none;none;none",
+      "reportFile": "spatial-control.json",
+      "reportSha256": "834b1b055ee8e4b45289cd7960441a723699f3bad23cd2b6f74122dbee33fe2a",
+      "runProvenanceFingerprint": "e69a9c927fab5595a76b5952209f8449ec6f43c3b3efc1acea819a23e2d82f72"
+    },
+    {
+      "id": "movement",
+      "schedule": "none;faster-movement;faster-movement;faster-movement;faster-movement;faster-movement",
+      "reportFile": "spatial-movement.json",
+      "reportSha256": "ebd2f6dbf6fc7562b4841704d394dc5f87a6a1585d76c9167e7cfa1ea2f7d1f3",
+      "runProvenanceFingerprint": "669be0f47a0a4cdf729cf8ec68d179a02eb981a54df49d588d1701b7a31af149"
+    },
+    {
+      "id": "avoidance",
+      "schedule": "none;threat-exposure;threat-exposure;threat-exposure;threat-exposure;threat-exposure",
+      "reportFile": "spatial-avoidance.json",
+      "reportSha256": "67c6aa329573edefd8702b8969e972217b753fd5d72e1775705ff6347bd6e616",
+      "runProvenanceFingerprint": "bdc0262dcb7395880038795793178b2b81bd61f28aae3c082abe67c3b5c98ff6"
+    },
+    {
+      "id": "trailblazer-movement-first",
+      "schedule": "none;faster-movement;faster-movement,threat-exposure;faster-movement,threat-exposure;faster-movement,threat-exposure;faster-movement,threat-exposure",
+      "reportFile": "spatial-trailblazer-movement-first.json",
+      "reportSha256": "3f0eaa8dc4d4675134a394b1c6adf87fe594ac6bdbe2649a41d909eb8cd5be88",
+      "runProvenanceFingerprint": "e6567a853c2b894485882c987c362f2aedffe77f819901c9969c96c0ddf67eb5"
+    },
+    {
+      "id": "trailblazer-avoidance-first",
+      "schedule": "none;threat-exposure;threat-exposure,faster-movement;threat-exposure,faster-movement;threat-exposure,faster-movement;threat-exposure,faster-movement",
+      "reportFile": "spatial-trailblazer-avoidance-first.json",
+      "reportSha256": "fae7bea400c30fb0e9220c3f1943ff8c5e8ba9b66e56264a67d9175279d922b5",
+      "runProvenanceFingerprint": "393db4ca69fa72b8621595254426294e56018d66b8598606927d28877fae5072"
+    }
+  ]
+}

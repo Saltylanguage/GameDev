@@ -169,11 +169,13 @@ namespace SaltyGame
         Sprite rabbitSpeciesSprite;
         TextureSource animalTextureSource;
         TextureSource terrainTextureSource;
+        TextureSource flourishTextureSource;
         TextureSource foxTextureSource;
         TextureSource rabbitTextureSource;
         CroppedBitmap[] animalSprites;
         CroppedBitmap[] grassTerrainTiles;
         CroppedBitmap[] desertTerrainTiles;
+        CroppedBitmap[] forestEdgeFlourishes;
         bool warnedMissingAtlases;
         SpeciesPreviewState lastState;
         SimulationRunStatus lastRunStatus;
@@ -273,6 +275,7 @@ namespace SaltyGame
         int carnivorePopulationMaximum;
         string herbivorePopulationText;
         string carnivorePopulationText;
+        string plantPopulationText;
         string eventReactionTitleText;
         string eventReactionMessageText;
         float eventReactionRemainingSeconds;
@@ -388,6 +391,7 @@ namespace SaltyGame
         public int CarnivorePopulationMaximum => carnivorePopulationMaximum;
         public string HerbivorePopulationText => herbivorePopulationText;
         public string CarnivorePopulationText => carnivorePopulationText;
+        public string PlantPopulationText => plantPopulationText;
         public string EventReactionTitleText => eventReactionTitleText;
         public string EventReactionMessageText => eventReactionMessageText;
         public Visibility EventReactionVisibility => eventReactionVisibility;
@@ -675,6 +679,8 @@ namespace SaltyGame
         public Visibility FieldNotesVisibility => fieldNotesVisibility;
         internal CroppedBitmap[] AnimalSprites => animalSprites;
         internal CroppedBitmap[] GrassTerrainTiles => grassTerrainTiles;
+        internal CroppedBitmap[] ForestEdgeFlourishes => preview?.SelectedScenario?.name == "ForestEdge"
+            ? forestEdgeFlourishes : null;
         internal CroppedBitmap[] DesertTerrainTiles => desertTerrainTiles;
 
         public void Initialize(
@@ -733,11 +739,13 @@ namespace SaltyGame
             rabbitSpeciesSprite = rabbit;
             animalTextureSource = null;
             terrainTextureSource = null;
+            flourishTextureSource = null;
             foxTextureSource = null;
             rabbitTextureSource = null;
             animalSprites = null;
             grassTerrainTiles = null;
             desertTerrainTiles = null;
+            forestEdgeFlourishes = null;
             warnedMissingAtlases = false;
             PrepareSpriteVisuals();
         }
@@ -758,6 +766,8 @@ namespace SaltyGame
             }
 
             animalSprites = CreateSpeciesSprites();
+            forestEdgeFlourishes = CreateNamedAtlasSprites(
+                terrainSpriteAtlas, ForestEdgeFlourishResolver.SpriteNames, out flourishTextureSource);
             var allTerrainTiles = CreateNamedAtlasSprites(
                 terrainSpriteAtlas,
                 TerrainSpriteNames,
@@ -839,7 +849,7 @@ namespace SaltyGame
 
         static CroppedBitmap[] CreateNamedAtlasSprites(
             SpriteAtlas atlas,
-            string[] spriteNames,
+            IReadOnlyList<string> spriteNames,
             out TextureSource textureSource,
             bool allowMissingSprites = false)
         {
@@ -856,16 +866,15 @@ namespace SaltyGame
             {
                 return null;
             }
-            var sprites = new CroppedBitmap[spriteNames.Length];
-            for (var index = 0; index < spriteNames.Length; index++)
+            var sprites = new CroppedBitmap[spriteNames.Count];
+            for (var index = 0; index < spriteNames.Count; index++)
             {
                 Sprite matchingSprite = null;
                 for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
                 {
                     if (packedSprites[spriteIndex] != null
-                        && packedSprites[spriteIndex].name.StartsWith(
-                        spriteNames[index],
-                        StringComparison.OrdinalIgnoreCase))
+                        && (string.Equals(packedSprites[spriteIndex].name, spriteNames[index], StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(packedSprites[spriteIndex].name, spriteNames[index] + "(Clone)", StringComparison.OrdinalIgnoreCase)))
                     {
                         matchingSprite = packedSprites[spriteIndex];
                         break;
@@ -2159,6 +2168,9 @@ namespace SaltyGame
                 : default;
             var herbivoreCount = GetRolePopulationCount(population, SpeciesRole.Herbivore);
             var carnivoreCount = GetRolePopulationCount(population, SpeciesRole.Carnivore);
+            Set(ref plantPopulationText,
+                $"PLANTS: {GetRolePopulationCount(population, SpeciesRole.Plant).ToString(CultureInfo.InvariantCulture)}",
+                nameof(PlantPopulationText));
             var configuredMaximum = preview.MaximumPopulation;
             var herbivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, herbivoreCount, 25);
             var carnivoreMaximum = GetPopulationMeterMaximum(configuredMaximum, carnivoreCount, 15);

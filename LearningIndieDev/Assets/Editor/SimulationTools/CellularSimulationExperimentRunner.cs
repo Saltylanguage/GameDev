@@ -5,8 +5,10 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Globalization;
 using SaltyGame;
+#if !CELLSIM_STANDALONE
 using Unity.Pipeline.Commands;
 using UnityEditor;
+#endif
 using UnityEngine;
 
 namespace SaltyGame.EditorTools
@@ -15,9 +17,9 @@ namespace SaltyGame.EditorTools
     /// Produces repeatable, machine-readable simulation runs from a scenario asset or the current defaults.
     /// Intended for Unity batch mode through tools/Run-CellularExperiment.ps1.
     /// </summary>
-    public static class CellularSimulationExperimentRunner
+    public static partial class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 30;
+        const int ReportSchemaVersion = 36;
         const string MetricDictionaryId = "cellsim-experiment-metrics";
         const int MetricDictionaryVersion = 1;
         const int DefaultSeedStart = 1;
@@ -33,6 +35,7 @@ namespace SaltyGame.EditorTools
         const string UpgradeAssetCatalogPathArgument = "-upgradeAssetCatalogPath";
         const string UpgradeValueOverrideArgument = "-upgradeValueOverride";
         const string DefaultUpgradeId = "none";
+        const string WrapEdgesArgument = "-wrapEdges";
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string StartingPopulationsArgument = "-startingPopulations";
@@ -40,6 +43,8 @@ namespace SaltyGame.EditorTools
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
         const string PhaseUpgradeScheduleArgument = "-phaseUpgradeSchedule";
         const string PhaseUpgradeAssetScheduleArgument = "-phaseUpgradeAssetSchedule";
+        const string MutationPolicyArgument = "-mutationPolicy";
+        const string MutationPolicyEarlyFirstChoiceArgument = "-mutationPolicyEarlyFirstChoice";
         const string RunDurationArgument = "-runDurationSeconds";
         const string StepIntervalArgument = "-stepIntervalSeconds";
         const string OutputPathArgument = "-outputPath";
@@ -52,6 +57,7 @@ namespace SaltyGame.EditorTools
         const string PreContactAvoidanceChanceArgument = "-preContactAvoidanceChance";
         const string CoupledSpeciesResponsesArgument = "-coupledSpeciesResponses";
 
+#if !CELLSIM_STANDALONE
         [MenuItem("Salty Game/Simulation/Run FSM Test Harness")]
         public static void RunFsmTestHarness()
         {
@@ -195,13 +201,15 @@ namespace SaltyGame.EditorTools
             }
         }
 
+#endif
         static ExperimentReport CreateReport(
             CellularSimData data,
             CommandLineOptions options,
             string outputPath,
             SpeciesExperimentalOptions experimentalOptions,
             IReadOnlyList<SpeciesUpgradeSnapshot> authoredUpgradeSnapshots,
-            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots)
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
+            bool headerOnly = false)
         {
             var playerSpecies = new SpeciesId(options.PlayerSpeciesId);
             if (!data.SpeciesRules.ContainsKey(playerSpecies))
@@ -212,7 +220,9 @@ namespace SaltyGame.EditorTools
             }
 
             var phaseSchedule = options.PhaseUpgradeSchedule;
+            var hasMutationPolicy = !string.IsNullOrWhiteSpace(options.MutationPolicyId);
             var hasPhaseSchedule = phaseSchedule != null || authoredPhaseUpgradeSnapshots != null;
+            var hasPhaseFlow = hasPhaseSchedule || hasMutationPolicy;
             var scheduledInitialSnapshots = phaseSchedule != null
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], options.PlayerSpeciesId)
                 : authoredPhaseUpgradeSnapshots == null
@@ -221,7 +231,7 @@ namespace SaltyGame.EditorTools
             scheduledInitialSnapshots = CreateCoupledResponseSnapshots(
                 scheduledInitialSnapshots,
                 experimentalOptions);
-            var legacyLoadoutSnapshots = authoredUpgradeSnapshots == null && !hasPhaseSchedule
+            var legacyLoadoutSnapshots = authoredUpgradeSnapshots == null && !hasPhaseFlow
                 ? CreateCoupledResponseSnapshots(
                     CreateLegacyUpgradeSnapshots(
                         options.UpgradeLoadout,
@@ -229,7 +239,7 @@ namespace SaltyGame.EditorTools
                         options.UpgradeValueOverride),
                     experimentalOptions)
                 : null;
-            var loadedData = hasPhaseSchedule
+            var loadedData = hasPhaseFlow
                 ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, scheduledInitialSnapshots)
                 : authoredUpgradeSnapshots == null
                     ? ApplySnapshotLoadout(data, options.PlayerSpeciesId, legacyLoadoutSnapshots)
@@ -251,13 +261,28 @@ namespace SaltyGame.EditorTools
             {
                 provenanceLoadout = GetSnapshotProvenanceLoadout(authoredUpgradeSnapshots);
             }
+            if (hasMutationPolicy)
+            {
+                var policyProvenance = new List<string>(provenanceLoadout)
+                {
+                    string.Concat("mutation-policy=", options.MutationPolicyId),
+                    string.Concat("mutation-policy-early-first-choice=", options.MutationPolicyEarlyFirstChoice),
+                };
+                provenanceLoadout = policyProvenance.ToArray();
+            }
+            if (options.HarePurchasePolicy != null)
+                provenanceLoadout = new List<string>(provenanceLoadout)
+                {
+                    "hare-purchase-policy=" + options.HarePurchasePolicy,
+                    "hare-purchase-cost=" + SpeciesProgression.HarePurchaseCost,
+                }.ToArray();
             var selectedUpgrade = phaseSchedule == null && orderedLoadout.Length == 1
                 ? authoredUpgradeSnapshots == null
                     ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
                     : null
                 : null;
-            var runs = new ExperimentRun[options.SeedCount];
-            for (var index = 0; index < options.SeedCount; index++)
+            var runs = new ExperimentRun[headerOnly ? 0 : options.SeedCount];
+            for (var index = 0; index < runs.Length; index++)
             {
                 runs[index] = RunSimulation(
                     loadedData,
@@ -270,7 +295,11 @@ namespace SaltyGame.EditorTools
                     authoredUpgradeSnapshots ?? legacyLoadoutSnapshots,
                     phaseSchedule,
                     authoredPhaseUpgradeSnapshots,
-                    options.PhaseLengthTicks);
+                    options.PhaseLengthTicks,
+                    options.MutationPolicyId,
+                    options.MutationPolicyEarlyFirstChoice,
+                    options.IncludeFinalStateDigest,
+                    options.CaptureDetailedEvents, options.HarePurchasePolicy);
             }
 
             return new ExperimentReport
@@ -290,7 +319,11 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     provenanceLoadout),
                 playerSpeciesId = playerSpecies.Value,
-                upgradeId = hasPhaseSchedule
+                mutationPolicyId = options.MutationPolicyId ?? string.Empty,
+                mutationPolicyEarlyFirstChoice = options.MutationPolicyEarlyFirstChoice,
+                upgradeId = hasMutationPolicy
+                    ? "mutation-policy"
+                    : hasPhaseSchedule
                     ? "scheduled"
                     : orderedLoadout.Length == 0 ? DefaultUpgradeId : string.Join(",", orderedLoadout),
                 upgradeType = selectedUpgrade == null ? string.Empty : selectedUpgrade.Type.ToString(),
@@ -324,27 +357,22 @@ namespace SaltyGame.EditorTools
                 coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
+                wrapEdges = loadedData.WrapEdges,
                 gridWidth = loadedData.Width,
                 gridHeight = loadedData.Height,
-                runTicks = hasPhaseSchedule
-                    ? checked(options.PhaseLengthTicks * (phaseSchedule == null
-                        ? authoredPhaseUpgradeSnapshots.Count
-                        : phaseSchedule.Length))
+                runTicks = hasPhaseFlow
+                    ? checked(options.PhaseLengthTicks * GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots))
                     : loadedData.RunTicks,
                 phaseLengthTicks = options.PhaseLengthTicks,
-                phaseCount = hasPhaseSchedule
-                    ? phaseSchedule == null
-                        ? authoredPhaseUpgradeSnapshots.Count
-                        : phaseSchedule.Length
+                phaseCount = hasPhaseFlow
+                    ? GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                     : 0,
                 phaseUpgradeSchedule = phaseSchedule != null
                     ? SerializePhaseSchedule(phaseSchedule)
                     : SerializePhaseSnapshotSchedule(authoredPhaseUpgradeSnapshots),
-                runDurationSeconds = hasPhaseSchedule
+                runDurationSeconds = hasPhaseFlow
                     ? options.PhaseLengthTicks
-                        * (phaseSchedule == null
-                            ? authoredPhaseUpgradeSnapshots.Count
-                            : phaseSchedule.Length)
+                        * GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                         * loadedData.StepInterval
                     : loadedData.RunDurationSeconds,
                 stepIntervalSeconds = loadedData.StepInterval,
@@ -364,8 +392,30 @@ namespace SaltyGame.EditorTools
             IReadOnlyList<SpeciesUpgradeSnapshot> upgradeLoadout,
             string[][] phaseSchedule,
             IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
-            int phaseLengthTicks)
+            int phaseLengthTicks,
+            string mutationPolicyId,
+            bool earlyFirstChoice,
+            bool includeFinalStateDigest = false,
+            bool captureDetailedEvents = true,
+            string harePurchasePolicy = null)
         {
+            if (!string.IsNullOrWhiteSpace(mutationPolicyId))
+            {
+                return RunMutationPolicySimulation(
+                    data,
+                    playerSpecies,
+                    seed,
+                    species,
+                    combatResolutionMode,
+                    attackOpportunityMode,
+                    experimentalOptions,
+                    phaseLengthTicks,
+                    mutationPolicyId,
+                    earlyFirstChoice,
+                    includeFinalStateDigest,
+                    captureDetailedEvents, harePurchasePolicy);
+            }
+
             if (phaseSchedule != null || authoredPhaseUpgradeSnapshots != null)
             {
                 return RunScheduledSimulation(
@@ -378,11 +428,14 @@ namespace SaltyGame.EditorTools
                     experimentalOptions,
                     phaseSchedule,
                     authoredPhaseUpgradeSnapshots,
-                    phaseLengthTicks);
+                    phaseLengthTicks,
+                    includeFinalStateDigest,
+                    captureDetailedEvents, harePurchasePolicy);
             }
 
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
             var run = new SimulationRunState(initialGrid, playerSpecies, seed, data.RunDurationSeconds);
+            run.Metrics.CaptureDetailedEvents = captureDetailedEvents;
             var runner = new SpeciesSimulationRunner(
                 run,
                 data,
@@ -390,8 +443,12 @@ namespace SaltyGame.EditorTools
                 attackOpportunityMode,
                 experimentalOptions,
                 upgradeLoadout: upgradeLoadout);
+            var spatial = playerSpecies.Value == "hare"
+                ? new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"))
+                : null;
             while (runner.AdvanceOneTick())
             {
+                spatial?.Observe(run.Cells, data.SpeciesRules[playerSpecies], phaseIndex: 1);
             }
 
             return CreateExperimentRun(
@@ -408,7 +465,314 @@ namespace SaltyGame.EditorTools
                 experimentalOptions.UsesHerbivoreStatLine
                     && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
                 experimentalOptions.UsesPredatorStatLine
-                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
+                    && data.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore,
+                includeFinalStateDigest, data.SpeciesRules, spatial?.CreateRecord());
+        }
+
+        static int GetPhaseCount(
+            CommandLineOptions options,
+            string[][] phaseSchedule,
+            IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots)
+        {
+            return !string.IsNullOrWhiteSpace(options.MutationPolicyId)
+                ? 6
+                : phaseSchedule == null
+                    ? authoredPhaseUpgradeSnapshots.Count
+                    : phaseSchedule.Length;
+        }
+
+        static ExperimentRun RunMutationPolicySimulation(
+            CellularSimData data,
+            SpeciesId playerSpecies,
+            int seed,
+            IReadOnlyList<SpeciesId> species,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions,
+            int phaseLengthTicks,
+            string mutationPolicyId,
+            bool earlyFirstChoice,
+            bool includeFinalStateDigest = false,
+            bool captureDetailedEvents = true,
+            string harePurchasePolicy = null)
+        {
+            const int phaseCount = 6;
+            if (phaseLengthTicks <= 0 || playerSpecies.Value != "hare"
+                || !data.SpeciesRules.TryGetValue(playerSpecies, out var baseRules)
+                || baseRules.Role != SpeciesRole.Herbivore)
+            {
+                throw new ArgumentException("Mutation policies require a Hare player and a positive phase length.");
+            }
+
+            var totalTicks = checked(phaseLengthTicks * phaseCount);
+            var scheduledData = data.WithRunTicks(totalTicks, data.StepInterval);
+            var progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, baseRules));
+            var acquiredUpgradeIds = new List<string>();
+            var choiceAudit = new List<MutationChoiceAudit>(phaseCount - 1);
+            var purchases = harePurchasePolicy == null ? null : new List<HarePurchaseWindow>();
+            var lastSelectedUpgradeId = (string)null;
+            var offerRotation = 0;
+            IReadOnlyList<SpeciesUpgradeSnapshot> activeSnapshots = Array.Empty<SpeciesUpgradeSnapshot>();
+            var activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
+            var policySkillIds = GetPolicySkillIds(mutationPolicyId);
+            if (earlyFirstChoice)
+            {
+                var offers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    lastSelectedUpgradeId,
+                    offerRotation,
+                    seed,
+                    progression.CanApplyFreeUpgrade);
+                var selected = SelectPolicyUpgrade(mutationPolicyId, offers, progression);
+                offerRotation++;
+                var audit = new MutationChoiceAudit
+                {
+                    phase = 0,
+                    decisionIndex = 1,
+                    decisionTick = 0,
+                    offeredUpgradeIds = GetOfferIds(offers),
+                    chosenUpgradeId = selected == null ? string.Empty : selected.Id,
+                    decision = selected == null ? "skip-no-path-skill-offered" : "selected-lower-level-path-skill",
+                    firstSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[0]),
+                    secondSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[1]),
+                };
+                if (selected != null)
+                {
+                    if (!progression.TryApplyFreeUpgrade(selected))
+                    {
+                        throw new InvalidOperationException(
+                            $"Policy '{mutationPolicyId}' selected an unavailable Mutation '{selected.Id}' on seed {seed}.");
+                    }
+
+                    lastSelectedUpgradeId = selected.Id;
+                    acquiredUpgradeIds.Add(selected.Id);
+                }
+
+                audit.firstSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[0]);
+                audit.secondSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[1]);
+                choiceAudit.Add(audit);
+                activeSnapshots = CreateLegacyUpgradeSnapshots(acquiredUpgradeIds, playerSpecies.Value);
+                scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(
+                    experimentalOptions,
+                    activeSnapshots,
+                    playerSpecies);
+            }
+
+            var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
+            var run = new SimulationRunState(initialGrid, playerSpecies, seed, scheduledData.RunDurationSeconds, totalTicks);
+            run.ConfigureContinuousPhases(phaseLengthTicks);
+            run.Metrics.CaptureDetailedEvents = captureDetailedEvents;
+            var runner = new SpeciesSimulationRunner(
+                run,
+                scheduledData,
+                combatResolutionMode,
+                attackOpportunityMode,
+                activeExperimentalOptions,
+                upgradeLoadout: activeSnapshots);
+            var spatial = new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"));
+            var activePlayerRules = scheduledData.SpeciesRules[playerSpecies];
+
+            while (true)
+            {
+                var observedPhase = run.PhaseIndex;
+                if (!runner.AdvanceOneTick()) break;
+                spatial.Observe(run.Cells, activePlayerRules, observedPhase);
+                if (run.Status != SimulationRunStatus.AwaitingDecision)
+                {
+                    continue;
+                }
+
+                if (purchases != null)
+                    purchases.Add(BuyPolicyHares(run, runner, progression, data, harePurchasePolicy));
+
+                if (earlyFirstChoice && choiceAudit.Count >= phaseCount - 1)
+                {
+                    if (!run.ContinueWithoutUpgrade())
+                    {
+                        throw new InvalidOperationException(
+                            $"Could not continue '{mutationPolicyId}' policy without an upgrade at tick {run.Tick} on seed {seed}.");
+                    }
+
+                    continue;
+                }
+
+                var offers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                    lastSelectedUpgradeId,
+                    offerRotation,
+                    seed,
+                    progression.CanApplyFreeUpgrade);
+                var selected = SelectPolicyUpgrade(mutationPolicyId, offers, progression);
+                offerRotation++;
+
+                var audit = new MutationChoiceAudit
+                {
+                    phase = run.PhaseIndex,
+                    decisionIndex = choiceAudit.Count + 1,
+                    decisionTick = run.Tick,
+                    offeredUpgradeIds = GetOfferIds(offers),
+                    chosenUpgradeId = selected == null ? string.Empty : selected.Id,
+                    decision = selected == null ? "skip-no-path-skill-offered" : "selected-lower-level-path-skill",
+                    firstSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[0]),
+                    secondSkillLevelBefore = progression.GetUpgradeLevel(policySkillIds[1]),
+                };
+
+                if (selected != null)
+                {
+                    if (!progression.TryApplyFreeUpgrade(selected))
+                    {
+                        throw new InvalidOperationException(
+                            $"Policy '{mutationPolicyId}' selected an unavailable Mutation '{selected.Id}' on seed {seed}.");
+                    }
+
+                    lastSelectedUpgradeId = selected.Id;
+                    acquiredUpgradeIds.Add(selected.Id);
+                }
+
+                audit.firstSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[0]);
+                audit.secondSkillLevelAfter = progression.GetUpgradeLevel(policySkillIds[1]);
+                choiceAudit.Add(audit);
+
+                activeSnapshots = CreateLegacyUpgradeSnapshots(acquiredUpgradeIds, playerSpecies.Value);
+                var nextData = ApplySnapshotLoadout(
+                    data.WithRunTicks(totalTicks, data.StepInterval),
+                    playerSpecies.Value,
+                    activeSnapshots);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(
+                    experimentalOptions,
+                    activeSnapshots,
+                    playerSpecies);
+                if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
+                    || !run.ContinueWithoutUpgrade())
+                {
+                    throw new InvalidOperationException(
+                        $"Could not continue '{mutationPolicyId}' policy at phase {run.PhaseIndex} on seed {seed}.");
+                }
+
+                activePlayerRules = nextData.SpeciesRules[playerSpecies];
+            }
+
+            var result = CreateExperimentRun(
+                run,
+                species,
+                new ExperimentOpportunityControl
+                {
+                    scheduled = run.Metrics.ControlledOpportunityScheduled,
+                    eligible = run.Metrics.ControlledOpportunityEligible,
+                    unfulfilledNoTarget = run.Metrics.ControlledOpportunityUnfulfilledNoTarget,
+                    unfulfilledInvalidated = run.Metrics.ControlledOpportunityUnfulfilledInvalidated,
+                },
+                playerSpecies,
+                experimentalOptions.UsesHerbivoreStatLine,
+                experimentalOptions.UsesPredatorStatLine,
+                includeFinalStateDigest, scheduledData.SpeciesRules, spatial.CreateRecord());
+            result.mutationChoices = choiceAudit.ToArray();
+            result.purchaseWindows = purchases == null ? null : purchases.ToArray();
+            return result;
+        }
+
+        static int HarePurchaseCap(string policy, int phase, int population, int initialPopulation)
+        {
+            switch (policy)
+            {
+                case "none": return 0;
+                case "early-five": return phase == 1 ? 5 : 0;
+                case "middle-five": return phase == 3 ? 5 : 0;
+                case "late-five": return phase == 5 ? 5 : 0;
+                case "each-one": return 1;
+                case "each-three": return 3;
+                case "each-five": return 5;
+                case "restore-toward-start": return Math.Min(5, Math.Max(0, initialPopulation - population));
+                default: throw new ArgumentException("Unknown Hare purchase policy: " + policy);
+            }
+        }
+
+        static HarePurchaseWindow BuyPolicyHares(SimulationRunState run, SpeciesSimulationRunner runner,
+            SpeciesProgression wallet, CellularSimData data, string policy)
+        {
+            if (run.Status != SimulationRunStatus.AwaitingDecision || run.PhaseIndex < 1 || run.PhaseIndex > 5)
+                throw new InvalidOperationException("Purchases require a reached upgrade window.");
+            var reward = SimulationRunResults.Create(run);
+            data.StartingPopulations.TryGetValue(run.PlayerSpeciesId, out var initialPopulation);
+            if (policy == "restore-toward-start" && !data.StartingPopulations.ContainsKey(run.PlayerSpeciesId))
+                throw new ArgumentException("Restore policy requires an explicit starting Hare population.");
+            var audit = new HarePurchaseWindow
+            {
+                policy = policy, phase = run.PhaseIndex, decisionTick = run.Tick,
+                price = SpeciesProgression.HarePurchaseCost, populationBefore = reward.PlayerPopulation,
+                balanceBefore = wallet.Currency, earned = reward.CurrencyEarned,
+                requested = HarePurchaseCap(policy, run.PhaseIndex, reward.PlayerPopulation, initialPopulation),
+                stopReason = policy == "restore-toward-start" && reward.PlayerPopulation >= initialPopulation
+                    ? "target-met" : "policy-cap",
+            };
+            wallet.AddCurrency(audit.earned);
+            while (audit.added < audit.requested)
+            {
+                if (wallet.Currency < audit.price) { audit.stopReason = "insufficient-currency"; break; }
+                if (!runner.TryAddBoundaryPopulation(run.PlayerSpeciesId, 1))
+                { audit.stopReason = "placement-or-capacity"; break; }
+                if (!wallet.TrySpend(audit.price))
+                    throw new InvalidOperationException("Validated Hare purchase could not be charged.");
+                audit.added++;
+                audit.spent += audit.price;
+            }
+            audit.balanceAfter = wallet.Currency;
+            audit.populationAfter = SimulationRunResults.Create(run).PlayerPopulation;
+            if (audit.balanceAfter != audit.balanceBefore + audit.earned - audit.spent
+                || audit.populationAfter != audit.populationBefore + audit.added)
+                throw new InvalidOperationException("Hare purchase ledger failed to reconcile.");
+            return audit;
+        }
+
+        [Serializable]
+        sealed class HarePurchaseWindow
+        {
+            public string policy;
+            public int phase, decisionTick, price, populationBefore, populationAfter;
+            public int requested, added, balanceBefore, earned, spent, balanceAfter;
+            public string stopReason;
+        }
+
+        static SpeciesUpgrade SelectPolicyUpgrade(
+            string mutationPolicyId,
+            IReadOnlyList<SpeciesUpgrade> offers,
+            SpeciesProgression progression)
+        {
+            var ids = GetPolicySkillIds(mutationPolicyId);
+            SpeciesUpgrade first = null;
+            SpeciesUpgrade second = null;
+            for (var index = 0; index < offers.Count; index++)
+            {
+                if (offers[index].Id == ids[0]) first = offers[index];
+                else if (offers[index].Id == ids[1]) second = offers[index];
+            }
+
+            if (first == null) return second;
+            if (second == null) return first;
+            return progression.GetUpgradeLevel(ids[0]) <= progression.GetUpgradeLevel(ids[1])
+                ? first
+                : second;
+        }
+
+        static string[] GetPolicySkillIds(string mutationPolicyId)
+        {
+            switch (mutationPolicyId)
+            {
+                case "trailblazer":
+                    return new[] { SpeciesUpgradeCatalog.FasterMovementId, SpeciesUpgradeCatalog.ThreatExposureId };
+                case "warren":
+                    return new[] { SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.CrowdingToleranceId };
+                case "gardeners":
+                    return new[] { SpeciesUpgradeCatalog.EfficientDigestionId, SpeciesUpgradeCatalog.SeedDispersalId };
+                default:
+                    throw new ArgumentException($"Unknown mutation policy '{mutationPolicyId}'.", nameof(mutationPolicyId));
+            }
+        }
+
+        static string[] GetOfferIds(IReadOnlyList<SpeciesUpgrade> offers)
+        {
+            var ids = new string[offers.Count];
+            for (var index = 0; index < ids.Length; index++) ids[index] = offers[index].Id;
+            return ids;
         }
 
         static ExperimentRun RunScheduledSimulation(
@@ -421,7 +785,10 @@ namespace SaltyGame.EditorTools
             SpeciesExperimentalOptions experimentalOptions,
             string[][] phaseSchedule,
             IReadOnlyList<SpeciesUpgradeSnapshot[]> authoredPhaseUpgradeSnapshots,
-            int phaseLengthTicks)
+            int phaseLengthTicks,
+            bool includeFinalStateDigest = false,
+            bool captureDetailedEvents = true,
+            string harePurchasePolicy = null)
         {
             var phaseCount = phaseSchedule == null
                 ? authoredPhaseUpgradeSnapshots == null ? 0 : authoredPhaseUpgradeSnapshots.Count
@@ -431,12 +798,16 @@ namespace SaltyGame.EditorTools
                 throw new ArgumentException("A scheduled run requires at least two phases and a positive phase length.");
             }
 
+            var purchases = harePurchasePolicy == null ? null : new List<HarePurchaseWindow>();
+            var wallet = purchases == null ? null : new SpeciesProgression(
+                new SpeciesDefinition(playerSpecies, data.SpeciesRules[playerSpecies]));
             var totalTicks = checked(phaseLengthTicks * phaseCount);
             var scheduledData = data.WithRunTicks(totalTicks, data.StepInterval);
             var activeSnapshots = phaseSchedule != null
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], playerSpecies.Value)
                 : authoredPhaseUpgradeSnapshots[0];
             activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+            var activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
             scheduledData = ApplySnapshotLoadout(scheduledData, playerSpecies.Value, activeSnapshots);
             var initialGrid = SpeciesInitialGridFactory.Create(scheduledData, seed);
             var run = new SimulationRunState(
@@ -446,20 +817,35 @@ namespace SaltyGame.EditorTools
                 scheduledData.RunDurationSeconds,
                 totalTicks);
             run.ConfigureContinuousPhases(phaseLengthTicks);
+            run.Metrics.CaptureDetailedEvents = captureDetailedEvents;
             var runner = new SpeciesSimulationRunner(
                 run,
                 scheduledData,
                 combatResolutionMode,
                 attackOpportunityMode,
-                experimentalOptions,
+                activeExperimentalOptions,
                 upgradeLoadout: activeSnapshots);
+            var spatial = playerSpecies.Value == "hare"
+                ? new SpatialObserver(initialGrid, playerSpecies, new SpeciesId("fox"))
+                : null;
+            var activePlayerRules = scheduledData.SpeciesRules[playerSpecies];
 
-            while (runner.AdvanceOneTick())
+            while (true)
             {
+                var observedPhase = run.PhaseIndex;
+                if (!runner.AdvanceOneTick())
+                {
+                    break;
+                }
+
+                spatial?.Observe(run.Cells, activePlayerRules, observedPhase);
                 if (run.Status != SimulationRunStatus.AwaitingDecision)
                 {
                     continue;
                 }
+
+                if (purchases != null)
+                    purchases.Add(BuyPolicyHares(run, runner, wallet, data, harePurchasePolicy));
 
                 var nextPhaseIndex = run.PhaseIndex;
                 if (nextPhaseIndex >= phaseCount)
@@ -474,19 +860,22 @@ namespace SaltyGame.EditorTools
                         playerSpecies.Value)
                     : authoredPhaseUpgradeSnapshots[nextPhaseIndex];
                 activeSnapshots = CreateCoupledResponseSnapshots(activeSnapshots, experimentalOptions);
+                activeExperimentalOptions = GetScheduledExperimentalOptions(experimentalOptions, activeSnapshots, playerSpecies);
                 var nextData = ApplySnapshotLoadout(
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
                     activeSnapshots);
-                if (!runner.InstallBoundaryState(nextData.SpeciesRules, experimentalOptions, activeSnapshots)
+                if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
                     || !run.ContinueWithoutUpgrade())
                 {
                     throw new InvalidOperationException(
                         $"Could not install the scheduled loadout for phase {nextPhaseIndex + 1}.");
                 }
+
+                activePlayerRules = nextData.SpeciesRules[playerSpecies];
             }
 
-            return CreateExperimentRun(
+            var result = CreateExperimentRun(
                 run,
                 species,
                 new ExperimentOpportunityControl
@@ -500,7 +889,29 @@ namespace SaltyGame.EditorTools
                 experimentalOptions.UsesHerbivoreStatLine
                     && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Herbivore,
                 experimentalOptions.UsesPredatorStatLine
-                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore);
+                    && scheduledData.SpeciesRules[playerSpecies].Role == SpeciesRole.Carnivore,
+                includeFinalStateDigest, scheduledData.SpeciesRules, spatial?.CreateRecord());
+            result.purchaseWindows = purchases == null ? null : purchases.ToArray();
+            return result;
+        }
+
+        static SpeciesExperimentalOptions GetScheduledExperimentalOptions(
+            SpeciesExperimentalOptions options,
+            IEnumerable<SpeciesUpgradeSnapshot> snapshots,
+            SpeciesId playerSpecies)
+        {
+            var avoidanceChance = 0f;
+            foreach (var snapshot in snapshots)
+            {
+                if (snapshot.TargetSpecies == playerSpecies)
+                {
+                    avoidanceChance += snapshot.PreContactAvoidanceChanceBonus;
+                }
+            }
+
+            return new SpeciesExperimentalOptions(
+                options.FeatureId, options.FoxAttackCooldownTicks, avoidanceChance,
+                options.CoupledSpeciesResponsesEnabled);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -589,6 +1000,7 @@ namespace SaltyGame.EditorTools
                 coupledSpeciesResponses = experimentalOptions.CoupledSpeciesResponsesEnabled,
                 seedStart = options.SeedStart,
                 seedCount = options.SeedCount,
+                wrapEdges = selectedData.WrapEdges,
                 gridWidth = selectedData.Width,
                 gridHeight = selectedData.Height,
                 runTicks = selectedData.RunTicks,
@@ -674,12 +1086,16 @@ namespace SaltyGame.EditorTools
             ExperimentOpportunityControl opportunityControl,
             SpeciesId statSpecies,
             bool includeHerbivoreStatLine,
-            bool includePredatorStatLine)
+            bool includePredatorStatLine,
+            bool includeFinalStateDigest = false,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> portableRules = null,
+            SimulationSpatialRecord spatial = null)
         {
             var result = SimulationRunResults.Create(run);
-            return new ExperimentRun
+            var report = new ExperimentRun
             {
                 seed = run.Seed,
+                finalStateDigest = includeFinalStateDigest ? PortableStateDigest(run.Cells) : null,
                 ticks = result.Ticks,
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
@@ -708,7 +1124,10 @@ namespace SaltyGame.EditorTools
                     ? SimulationReportSerialization.CreatePredatorStatLine(run, statSpecies)
                     : null,
                 opportunityControl = opportunityControl,
+                spatial = spatial,
             };
+            if (includeFinalStateDigest) AddPortableSpeciesStatLines(report, run, portableRules);
+            return report;
         }
 
         static ExperimentPopulationSummary[] CreateFinalPopulationSummary(
@@ -765,15 +1184,15 @@ namespace SaltyGame.EditorTools
             var hasWindowOverride = options.RunTicks > 0
                 || options.RunDurationSeconds > 0f
                 || options.StepIntervalSeconds > 0f;
-            var updatedData = data;
+            var updatedData = data.WithWrapEdges(options.WrapEdges);
             if (hasWindowOverride)
             {
                 var stepInterval = options.StepIntervalSeconds == 0f
                     ? data.StepInterval
                     : options.StepIntervalSeconds;
                 updatedData = options.RunTicks > 0
-                    ? data.WithRunTicks(options.RunTicks, stepInterval)
-                    : data.WithRunWindow(
+                    ? updatedData.WithRunTicks(options.RunTicks, stepInterval)
+                    : updatedData.WithRunWindow(
                         options.RunDurationSeconds == 0f ? data.RunDurationSeconds : options.RunDurationSeconds,
                         stepInterval);
             }
@@ -1000,13 +1419,15 @@ namespace SaltyGame.EditorTools
         static SpeciesUpgradeSnapshot[][] ResolveAuthoredPhaseSchedule(
             IReadOnlyList<string[]> phaseSchedule,
             string catalogPath,
-            string playerSpeciesId)
+            string playerSpeciesId,
+            Func<IReadOnlyList<string>, string, SpeciesUpgradeSnapshot[]> resolve = null)
         {
+            resolve = resolve ?? SpeciesUpgradePredictionInputAdapter.Resolve;
             var resolved = new SpeciesUpgradeSnapshot[phaseSchedule.Count][];
             var previous = Array.Empty<SpeciesUpgradeSnapshot>();
             for (var phaseIndex = 0; phaseIndex < phaseSchedule.Count; phaseIndex++)
             {
-                var current = SpeciesUpgradePredictionInputAdapter.Resolve(
+                var current = resolve(
                     phaseSchedule[phaseIndex],
                     catalogPath);
                 if (phaseIndex == 0 && current.Length > 0)
@@ -1261,6 +1682,7 @@ namespace SaltyGame.EditorTools
             AppendCsvField(csv, "seed", ref first);
             AppendCsvField(csv, "gridWidth", ref first);
             AppendCsvField(csv, "gridHeight", ref first);
+            AppendCsvField(csv, "wrapEdges", ref first);
             AppendCsvField(csv, "ticks", ref first);
             AppendCsvField(csv, "durationSeconds", ref first);
             AppendCsvField(csv, "playerPopulation", ref first);
@@ -1282,6 +1704,7 @@ namespace SaltyGame.EditorTools
                 AppendCsvField(csv, run.seed, ref first);
                 AppendCsvField(csv, report.gridWidth, ref first);
                 AppendCsvField(csv, report.gridHeight, ref first);
+                AppendCsvField(csv, report.wrapEdges ? "true" : "false", ref first);
                 AppendCsvField(csv, run.ticks, ref first);
                 AppendCsvField(csv, run.durationSeconds, ref first);
                 AppendCsvField(csv, run.playerPopulation, ref first);
@@ -1403,6 +1826,7 @@ namespace SaltyGame.EditorTools
             AppendCsvField(csv, value.ToString(CultureInfo.InvariantCulture), ref first);
         }
 
+#if !CELLSIM_STANDALONE
         static CellularSimData LoadSimulationData(string scenarioPath, out UnityEngine.Object temporaryAsset)
         {
             temporaryAsset = null;
@@ -1481,6 +1905,7 @@ namespace SaltyGame.EditorTools
             return normalizedRequestPath;
         }
 
+#endif
         static List<SpeciesId> GetSortedSpecies(IReadOnlyDictionary<SpeciesId, SpeciesRules> definitions)
         {
             var species = new List<SpeciesId>(definitions.Keys);
@@ -1505,6 +1930,8 @@ namespace SaltyGame.EditorTools
 
         sealed class CommandLineOptions
         {
+            public bool IncludeFinalStateDigest { get; set; }
+            public bool CaptureDetailedEvents { get; set; } = true;
             public string ScenarioPath { get; private set; }
             public int SeedStart { get; private set; }
             public int SeedCount { get; private set; }
@@ -1520,11 +1947,15 @@ namespace SaltyGame.EditorTools
             public int FoxAttackCooldownTicks { get; private set; }
             public float PreContactAvoidanceChance { get; private set; }
             public bool CoupledSpeciesResponses { get; private set; }
+            public bool WrapEdges { get; private set; }
             public int GridWidth { get; private set; }
             public int GridHeight { get; private set; }
             public string StartingPopulations { get; private set; }
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
+            public string MutationPolicyId { get; private set; }
+            public bool MutationPolicyEarlyFirstChoice { get; private set; }
+            public string HarePurchasePolicy { get; private set; }
             public string[][] PhaseUpgradeSchedule { get; private set; }
             public string[][] PhaseAuthoredUpgradeSchedule { get; private set; }
             public float RunDurationSeconds { get; private set; }
@@ -1570,6 +2001,8 @@ namespace SaltyGame.EditorTools
 
                 var runTicks = GetIntValue(arguments, RunTicksArgument, 0, allowZero: true);
                 var phaseLengthTicks = GetIntValue(arguments, PhaseLengthTicksArgument, 0, allowZero: true);
+                var mutationPolicyId = GetOptionalValue(arguments, MutationPolicyArgument);
+                var mutationPolicyEarlyFirstChoice = GetBooleanValue(arguments, MutationPolicyEarlyFirstChoiceArgument);
                 var phaseUpgradeSchedule = ParsePhaseUpgradeSchedule(arguments);
                 if (phaseUpgradeSchedule != null && phaseAuthoredUpgradeSchedule != null)
                 {
@@ -1577,7 +2010,43 @@ namespace SaltyGame.EditorTools
                         $"Use either '{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}', not both.",
                         PhaseUpgradeAssetScheduleArgument);
                 }
-                if (phaseLengthTicks > 0 && phaseUpgradeSchedule == null)
+                if (!string.IsNullOrWhiteSpace(mutationPolicyId)
+                    && mutationPolicyId != "trailblazer"
+                    && mutationPolicyId != "warren"
+                    && mutationPolicyId != "gardeners")
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyArgument}' must be trailblazer, warren, or gardeners.",
+                        MutationPolicyArgument);
+                }
+
+                if (mutationPolicyEarlyFirstChoice && string.IsNullOrWhiteSpace(mutationPolicyId))
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyEarlyFirstChoiceArgument}' requires '{MutationPolicyArgument}'.",
+                        MutationPolicyEarlyFirstChoiceArgument);
+                }
+
+                if (!string.IsNullOrWhiteSpace(mutationPolicyId)
+                    && (phaseLengthTicks <= 0
+                        || phaseUpgradeSchedule != null
+                        || phaseAuthoredUpgradeSchedule != null
+                        || runTicks > 0
+                        || GetFloatValue(arguments, RunDurationArgument) > 0f
+                        || upgradeLoadout.Length > 0
+                        || authoredUpgradeLoadout != null
+                        || upgradeValueOverride > 0f
+                        || !string.Equals(
+                            GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId,
+                            "hare",
+                            StringComparison.Ordinal)))
+                {
+                    throw new ArgumentException(
+                        $"'{MutationPolicyArgument}' requires the Hare player and '{PhaseLengthTicksArgument}' only; do not combine it with schedules, run length, or launch upgrades.",
+                        MutationPolicyArgument);
+                }
+
+                if (phaseLengthTicks > 0 && phaseUpgradeSchedule == null && string.IsNullOrWhiteSpace(mutationPolicyId))
                 {
                     if (phaseAuthoredUpgradeSchedule == null)
                     {
@@ -1601,6 +2070,18 @@ namespace SaltyGame.EditorTools
                     throw new ArgumentException(
                         $"'{PhaseUpgradeScheduleArgument}' and '{PhaseUpgradeAssetScheduleArgument}' define the launch and boundary loadouts; do not combine either with a launch upgrade.",
                         PhaseUpgradeScheduleArgument);
+                }
+
+                var harePurchasePolicy = GetOptionalValue(arguments, "-harePurchasePolicy");
+                if (harePurchasePolicy != null)
+                {
+                    HarePurchaseCap(harePurchasePolicy, 1, 0, 0);
+                    var phases = mutationPolicyId != null ? 6
+                        : phaseUpgradeSchedule != null ? phaseUpgradeSchedule.Length
+                        : phaseAuthoredUpgradeSchedule == null ? 0 : phaseAuthoredUpgradeSchedule.Length;
+                    if (phases != 6 || phaseLengthTicks <= 0 || mutationPolicyEarlyFirstChoice
+                        || (GetOptionalValue(arguments, PlayerSpeciesArgument) ?? DefaultPlayerSpeciesId) != "hare")
+                        throw new ArgumentException("Hare purchases require six continuous Hare phases with boundary choices.");
                 }
 
                 var runDurationSeconds = GetFloatValue(arguments, RunDurationArgument);
@@ -1634,11 +2115,15 @@ namespace SaltyGame.EditorTools
                         allowZero: true),
                     PreContactAvoidanceChance = GetFloatValue(arguments, PreContactAvoidanceChanceArgument),
                     CoupledSpeciesResponses = GetBooleanValue(arguments, CoupledSpeciesResponsesArgument),
+                    WrapEdges = GetBooleanValue(arguments, WrapEdgesArgument),
                     GridWidth = GetIntValue(arguments, GridWidthArgument, 0, allowZero: true),
                     GridHeight = GetIntValue(arguments, GridHeightArgument, 0, allowZero: true),
                     StartingPopulations = GetOptionalValue(arguments, StartingPopulationsArgument),
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
+                    MutationPolicyId = mutationPolicyId,
+                    HarePurchasePolicy = harePurchasePolicy,
+                    MutationPolicyEarlyFirstChoice = mutationPolicyEarlyFirstChoice,
                     PhaseUpgradeSchedule = phaseUpgradeSchedule,
                     PhaseAuthoredUpgradeSchedule = phaseAuthoredUpgradeSchedule,
                     RunDurationSeconds = runDurationSeconds,
@@ -1914,7 +2399,7 @@ namespace SaltyGame.EditorTools
                     AttackOpportunityModeArgument);
             }
 
-            static string GetOptionalValue(IReadOnlyList<string> arguments, string name)
+            internal static string GetOptionalValue(IReadOnlyList<string> arguments, string name)
             {
                 for (var index = 0; index < arguments.Count - 1; index++)
                 {
@@ -1994,6 +2479,210 @@ namespace SaltyGame.EditorTools
             }
         }
 
+        // Editor-only observations. Reading the grid does not affect simulation decisions or RNG.
+        sealed class SpatialObserver
+        {
+            readonly SpeciesId playerSpecies;
+            readonly SpeciesId predatorSpecies;
+            readonly bool[] visited;
+            readonly Dictionary<long, HashSet<int>> visitedByHare = new Dictionary<long, HashSet<int>>();
+            readonly Dictionary<long, Vector2Int> lastPosition = new Dictionary<long, Vector2Int>();
+            readonly Dictionary<int, SpatialPhase> phases = new Dictionary<int, SpatialPhase>();
+            readonly int width;
+            int distinctCells;
+            int hareObservations;
+            int crowdedObservations;
+            int foxAdjacentObservations;
+            int distanceCells;
+
+            public SpatialObserver(Grid<SpeciesCell> initialGrid, SpeciesId playerSpecies, SpeciesId predatorSpecies)
+            {
+                this.playerSpecies = playerSpecies;
+                this.predatorSpecies = predatorSpecies;
+                width = initialGrid.Width;
+                visited = new bool[initialGrid.Count];
+                for (var y = 0; y < initialGrid.Height; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        var cell = initialGrid.GetCell(x, y);
+                        if (cell.IsCreature && cell.SpeciesId == playerSpecies)
+                        {
+                            Track(cell.EntityId, x, y);
+                        }
+                    }
+                }
+            }
+
+            public void Observe(Grid<SpeciesCell> grid, SpeciesRules rules, int phaseIndex)
+            {
+                if (!phases.TryGetValue(phaseIndex, out var phase))
+                {
+                    phase = new SpatialPhase(phaseIndex, grid.Count);
+                    phases.Add(phaseIndex, phase);
+                }
+
+                for (var y = 0; y < grid.Height; y++)
+                {
+                    for (var x = 0; x < grid.Width; x++)
+                    {
+                        var cell = grid.GetCell(x, y);
+                        if (!cell.IsCreature || cell.SpeciesId != playerSpecies)
+                        {
+                            continue;
+                        }
+
+                        hareObservations++;
+                        phase.hareObservations++;
+                        var index = x + y * width;
+                        if (!phase.visited[index])
+                        {
+                            phase.visited[index] = true;
+                            phase.distinctCells++;
+                        }
+
+                        Track(cell.EntityId, x, y);
+                        var neighbors = 0;
+                        foreach (var offset in rules.ReproductionPattern.Offsets)
+                        {
+                            if (grid.TryGetCell(x + offset.x, y + offset.y, out var nearby)
+                                && nearby.IsCreature && nearby.SpeciesId == playerSpecies)
+                            {
+                                neighbors++;
+                            }
+                        }
+
+                        if (rules.MaxReproductionGroupSize > 0
+                            && neighbors + 1 > rules.MaxReproductionGroupSize + rules.CrowdingTolerance)
+                        {
+                            crowdedObservations++;
+                            phase.crowdedObservations++;
+                        }
+
+                        var foxAdjacent = false;
+                        for (var dy = -1; dy <= 1 && !foxAdjacent; dy++)
+                        {
+                            for (var dx = -1; dx <= 1; dx++)
+                            {
+                                if ((dx != 0 || dy != 0)
+                                    && grid.TryGetCell(x + dx, y + dy, out var nearby)
+                                    && nearby.IsCreature && nearby.SpeciesId == predatorSpecies)
+                                {
+                                    foxAdjacent = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (foxAdjacent)
+                        {
+                            foxAdjacentObservations++;
+                            phase.foxAdjacentObservations++;
+                        }
+                    }
+                }
+            }
+
+            void Track(long entityId, int x, int y)
+            {
+                var index = x + y * width;
+                if (!visited[index])
+                {
+                    visited[index] = true;
+                    distinctCells++;
+                }
+
+                if (!visitedByHare.TryGetValue(entityId, out var individualCells))
+                {
+                    individualCells = new HashSet<int>();
+                    visitedByHare.Add(entityId, individualCells);
+                }
+
+                individualCells.Add(index);
+                if (lastPosition.TryGetValue(entityId, out var previous))
+                {
+                    distanceCells += Math.Abs(x - previous.x) + Math.Abs(y - previous.y);
+                }
+
+                lastPosition[entityId] = new Vector2Int(x, y);
+            }
+
+            public SimulationSpatialRecord CreateRecord()
+            {
+                var windows = new List<SimulationSpatialPhaseRecord>();
+                foreach (var phase in phases.Values)
+                {
+                    windows.Add(new SimulationSpatialPhaseRecord
+                    {
+                        phaseIndex = phase.phaseIndex,
+                        distinctCells = phase.distinctCells,
+                        hareObservations = phase.hareObservations,
+                        crowdedObservations = phase.crowdedObservations,
+                        foxAdjacentObservations = phase.foxAdjacentObservations,
+                    });
+                }
+
+                windows.Sort((left, right) => left.phaseIndex.CompareTo(right.phaseIndex));
+                var sumIndividualCells = 0;
+                foreach (var individualCells in visitedByHare.Values)
+                {
+                    sumIndividualCells += individualCells.Count;
+                }
+
+                return new SimulationSpatialRecord
+                {
+                    distinctCells = distinctCells,
+                    hareObservations = hareObservations,
+                    crowdedObservations = crowdedObservations,
+                    foxAdjacentObservations = foxAdjacentObservations,
+                    distanceCells = distanceCells,
+                    individualHares = visitedByHare.Count,
+                    meanDistinctCellsPerHare = visitedByHare.Count == 0
+                        ? 0f : (float)sumIndividualCells / visitedByHare.Count,
+                    phaseWindows = windows.ToArray(),
+                };
+            }
+
+            sealed class SpatialPhase
+            {
+                public SpatialPhase(int phaseIndex, int gridSize)
+                {
+                    this.phaseIndex = phaseIndex;
+                    visited = new bool[gridSize];
+                }
+
+                public readonly int phaseIndex;
+                public readonly bool[] visited;
+                public int distinctCells;
+                public int hareObservations;
+                public int crowdedObservations;
+                public int foxAdjacentObservations;
+            }
+        }
+
+        [Serializable]
+        sealed class SimulationSpatialRecord
+        {
+            public int distinctCells;
+            public int hareObservations;
+            public int crowdedObservations;
+            public int foxAdjacentObservations;
+            public int distanceCells;
+            public int individualHares;
+            public float meanDistinctCellsPerHare;
+            public SimulationSpatialPhaseRecord[] phaseWindows;
+        }
+
+        [Serializable]
+        sealed class SimulationSpatialPhaseRecord
+        {
+            public int phaseIndex;
+            public int distinctCells;
+            public int hareObservations;
+            public int crowdedObservations;
+            public int foxAdjacentObservations;
+        }
+
         [Serializable]
         sealed class ExperimentReport
         {
@@ -2008,6 +2697,7 @@ namespace SaltyGame.EditorTools
             public string runProvenanceFingerprint;
             public string playerSpeciesId;
             public string upgradeId;
+            public bool mutationPolicyEarlyFirstChoice;
             public string upgradeType;
             public float upgradeValue;
             public string[] orderedLoadout;
@@ -2024,12 +2714,14 @@ namespace SaltyGame.EditorTools
             public bool coupledSpeciesResponses;
             public int seedStart;
             public int seedCount;
+            public bool wrapEdges;
             public int gridWidth;
             public int gridHeight;
             public int runTicks;
             public int phaseLengthTicks;
             public int phaseCount;
             public string[] phaseUpgradeSchedule;
+            public string mutationPolicyId;
             public float runDurationSeconds;
             public float stepIntervalSeconds;
             public ExperimentRun[] runs;
@@ -2039,6 +2731,8 @@ namespace SaltyGame.EditorTools
         [Serializable]
         sealed class ExperimentRun
         {
+            public string finalStateDigest;
+            public PopulationTrajectory[] populationTrajectory;
             public int seed;
             public int ticks;
             public float durationSeconds;
@@ -2057,7 +2751,27 @@ namespace SaltyGame.EditorTools
             public SimulationUpgradeAcquisitionRecord[] upgradeAcquisitionTimeline;
             public SimulationHerbivoreStatLineRecord herbivoreStatLine;
             public SimulationPredatorStatLineRecord predatorStatLine;
+            public SimulationHerbivoreStatLineRecord[] herbivoreStatLines;
+            public SimulationPredatorStatLineRecord[] predatorStatLines;
             public ExperimentOpportunityControl opportunityControl;
+            public SimulationSpatialRecord spatial;
+            public MutationChoiceAudit[] mutationChoices;
+            public HarePurchaseWindow[] purchaseWindows;
+        }
+
+        [Serializable]
+        sealed class MutationChoiceAudit
+        {
+            public int phase;
+            public int decisionIndex;
+            public int decisionTick;
+            public string[] offeredUpgradeIds;
+            public string chosenUpgradeId;
+            public string decision;
+            public int firstSkillLevelBefore;
+            public int firstSkillLevelAfter;
+            public int secondSkillLevelBefore;
+            public int secondSkillLevelAfter;
         }
 
         static string SerializeReport(

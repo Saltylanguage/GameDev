@@ -71,6 +71,7 @@ namespace SaltyGame
         FleeMovementSpeedBonus,
         TrackingPersistenceSteps,
         CrowdingEnergyReduction,
+        GestationTicks,
     }
 
     public static class SpeciesAttributeIds
@@ -97,6 +98,7 @@ namespace SaltyGame
         public const string MaximumEnergy = "energy.maximum";
         public const string LitterMinimum = "reproduction.litter-minimum";
         public const string LitterMaximum = "reproduction.litter-maximum";
+        public const string GestationTicks = "reproduction.gestation-ticks";
         public const string DigestionEnergyBonus = "digestion.energy-bonus";
         public const string CrowdingEnergyReduction = "crowding.energy-reduction";
         public const string CrowdingTolerance = "crowding.tolerance";
@@ -112,7 +114,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v5";
+        public const string Version = "species-attribute-registry-v6";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -183,6 +185,7 @@ namespace SaltyGame
             var maximumEnergy = rules.MaximumEnergy;
             var litterMinimum = rules.LitterMinimum;
             var litterMaximum = rules.LitterMaximum;
+            var gestationTicks = rules.GestationTicks;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var crowdingTolerance = rules.CrowdingTolerance;
             var crowdingEnergyReduction = rules.CrowdingEnergyReduction;
@@ -259,6 +262,9 @@ namespace SaltyGame
                 case SpeciesAttributeTarget.LitterMaximum:
                     litterMaximum += (int)value;
                     break;
+                case SpeciesAttributeTarget.GestationTicks:
+                    gestationTicks += (int)value;
+                    break;
                 case SpeciesAttributeTarget.DigestionEnergyBonus:
                     digestionEnergyBonus += value;
                     break;
@@ -320,7 +326,7 @@ namespace SaltyGame
                 rules.MatingEnergyCostFraction,
                 rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction,
-                rules.GestationTicks);
+                gestationTicks);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()
@@ -349,6 +355,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.MaximumEnergy, "Maximum Energy", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.MaximumEnergy),
                 Definition(SpeciesAttributeIds.LitterMinimum, "Minimum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMinimum),
                 Definition(SpeciesAttributeIds.LitterMaximum, "Maximum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMaximum),
+                Definition(SpeciesAttributeIds.GestationTicks, "Gestation Ticks", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.GestationTicks),
                 Definition(SpeciesAttributeIds.DigestionEnergyBonus, "Digestion Energy Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.DigestionEnergyBonus),
                 Definition(SpeciesAttributeIds.CrowdingEnergyReduction, "Crowding Energy Reduction", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.CrowdingEnergyReduction),
                 Definition(SpeciesAttributeIds.CrowdingTolerance, "Crowding Tolerance", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingTolerance),

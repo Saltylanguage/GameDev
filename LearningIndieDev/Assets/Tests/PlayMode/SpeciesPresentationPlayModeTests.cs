@@ -15,6 +15,26 @@ namespace SaltyGame.PlayModeTests
     [Category("Graphics")]
     public sealed class SpeciesPresentationPlayModeTests
     {
+        ProfilePlayerPrefsBackup journeyProfileSave;
+
+        [UnityTearDown]
+        public IEnumerator RestoreJourneyProfileSave()
+        {
+            if (journeyProfileSave == null)
+            {
+                yield break;
+            }
+
+            foreach (var session in UnityEngine.Object.FindObjectsByType<Helper_ProfileSession>(FindObjectsSortMode.None))
+            {
+                session.SetPlaytimeTracking(false);
+                session.enabled = false;
+            }
+
+            journeyProfileSave.Restore();
+            journeyProfileSave = null;
+        }
+
         [UnityTest]
         public IEnumerator CellularPrototypeUsesSerializedComposition()
         {
@@ -48,6 +68,15 @@ namespace SaltyGame.PlayModeTests
         [UnityTest]
         public IEnumerator DesktopJourneyLaunchShowsMapBeforeFirstSimulation()
         {
+            journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
+            var profileSession = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+            if (profileSession == null)
+            {
+                profileSession = new GameObject("Journey test profile").AddComponent<Helper_ProfileSession>();
+            }
+
+            var profileId = profileSession.CreateProfile("Journey test").ProfileId;
+
             var transitionObject = new GameObject("Journey launch test transition");
             var transition = transitionObject.AddComponent<Helper_SceneTransition>();
             var startingUpgrade = new SpeciesUpgradeSnapshot(
@@ -58,7 +87,7 @@ namespace SaltyGame.PlayModeTests
                 0,
                 new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, 1f) });
             var launch = new SimulationLaunchRequest(
-                "journey-test", "ForestEdge", "hare", 10100,
+                profileId, "ForestEdge", "hare", 10100,
                 orderedUpgradeSnapshots: new[] { startingUpgrade });
             Assert.That(transition.LoadSimulation(launch), Is.True);
             yield return null;
@@ -182,6 +211,199 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TerrainPreservesStraightBoundariesIslandsAndHoles()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                Assert.Ignore("Terrain topology regression requires a graphics device.");
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+            UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>().PauseSimulation();
+            var host = GameObject.Find("Cellular Automata Prototype").GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var board = (Noesis.FrameworkElement)host.GetType().GetField("simulationBoard", flags).GetValue(host);
+            var boardType = board.GetType();
+            var previousSnapshot = boardType.GetField("snapshot", flags).GetValue(board);
+            var previousFlourishes = boardType.GetField("forestEdgeFlourishes", flags).GetValue(board);
+            var camera = GameObject.Find("Prototype Camera").GetComponent<Camera>();
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var target = new RenderTexture(Screen.width, Screen.height, 24);
+            var capture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            try
+            {
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new object[] { null });
+                for (var pattern = 0; pattern < 3; pattern++)
+                {
+                    var grid = new Grid<SpeciesCell>(8, 8, (x, y) =>
+                    {
+                        var grass = pattern == 0 ? x < 4 : pattern == 1 ? x == 3 && y == 3 : x != 3 || y != 3;
+                        return grass ? SpeciesCell.Grass(1f) : SpeciesCell.Empty;
+                    });
+                    var run = new SimulationRunState(grid, SpeciesIds.Herbivore, seed: 17, durationSeconds: 1f);
+                    var snapshot = SimulationBoardSnapshot.Create(run, SpeciesRuleDefaults.Create(), SpeciesIds.Herbivore);
+                    boardType.GetMethod("SetSnapshot").Invoke(board, new object[] { snapshot });
+                    yield return null;
+                    yield return null;
+                    yield return new WaitForEndOfFrame();
+                    camera.targetTexture = target;
+                    camera.Render();
+                    RenderTexture.active = target;
+                    capture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                    capture.Apply();
+                    var evidence = System.IO.Path.Combine(Application.dataPath, "../artifacts/unity-tests/terrain-topology");
+                    System.IO.Directory.CreateDirectory(evidence);
+                    System.IO.File.WriteAllBytes(System.IO.Path.Combine(evidence, $"pattern-{pattern}.png"), capture.EncodeToPNG());
+                    var layout = new object[] { board.ActualWidth, board.ActualHeight, 0f, 0f, 0f };
+                    boardType.GetMethod("GetBoardLayout", flags).Invoke(board, layout);
+                    for (var y = 2; y <= 5; y++)
+                    for (var x = 2; x <= 5; x++)
+                    {
+                        var point = board.PointToScreen(new Noesis.Point(
+                            (float)layout[3] + (x + 0.5f) * (float)layout[2],
+                            (float)layout[4] + (snapshot.Height - y - 0.5f) * (float)layout[2]));
+                        var color = capture.GetPixel((int)point.X, target.height - 1 - (int)point.Y);
+                        Assert.That(color.g > color.r + 5f / 255f, Is.EqualTo(grid.GetCell(x, y).TerrainId == TerrainIds.Grass),
+                            $"Terrain center ({x},{y}) must retain its terrain in pattern {pattern}.");
+                    }
+                }
+            }
+            finally
+            {
+                boardType.GetMethod("SetSnapshot").Invoke(board, new[] { previousSnapshot });
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new[] { previousFlourishes });
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                UnityEngine.Object.DestroyImmediate(capture);
+                UnityEngine.Object.DestroyImmediate(target);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator TerrainHasNoSeamsAtFractionalZoomPanAndUiScale()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                Assert.Ignore("Terrain seam regression requires a graphics device.");
+
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+            UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>().PauseSimulation();
+            var host = GameObject.Find("Cellular Automata Prototype")
+                .GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var board = (Noesis.FrameworkElement)host.GetType().GetField("simulationBoard", flags).GetValue(host);
+            var boardType = board.GetType();
+            var camera = GameObject.Find("Prototype Camera").GetComponent<Camera>();
+            var texture = new Texture2D(64, 64, TextureFormat.RGBA32, false);
+            var target = new RenderTexture(Screen.width, Screen.height, 24);
+            var capture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var parent = (Noesis.FrameworkElement)board.Parent;
+            var previousTransform = parent.RenderTransform;
+            var previousSprites = new[] { "animalSprites", "grassTerrainTiles", "desertTerrainTiles" }
+                .Select(name => boardType.GetField(name, flags).GetValue(board)).ToArray();
+            var previousFlourishes = boardType.GetField("forestEdgeFlourishes", flags).GetValue(board);
+            try
+            {
+                texture.SetPixels32(Enumerable.Repeat(new Color32(64, 192, 64, 255), 4096).ToArray());
+                texture.Apply();
+                var tile = new Noesis.CroppedBitmap(new Noesis.TextureSource(texture), new Noesis.Int32Rect(0, 0, 64, 64));
+                var tiles = Enumerable.Repeat(tile, 256).ToArray();
+                boardType.GetMethod("SetSpriteVisuals").Invoke(board, new object[] { null, tiles, null });
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new object[] { null });
+                foreach (var zoom in new[] { 0.75f, 1.13704991f, 2f, 4f })
+                {
+                    boardType.GetProperty("Zoom").SetValue(board, zoom);
+                    boardType.GetField("panOffsetX", flags).SetValue(board, -3.25f);
+                    boardType.GetField("panOffsetY", flags).SetValue(board, 4.75f);
+                    boardType.GetMethod("ApplyPanZoomTransform", flags).Invoke(board, null);
+                    parent.RenderTransform = new Noesis.ScaleTransform(0.83f, 0.91f);
+                    yield return null;
+                    yield return null;
+                    yield return new WaitForEndOfFrame();
+
+                    camera.targetTexture = target;
+                    camera.Render();
+                    RenderTexture.active = target;
+                    capture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                    capture.Apply();
+                    var a = board.PointToScreen(new Noesis.Point(board.ActualWidth * 0.3f, board.ActualHeight * 0.3f));
+                    var b = board.PointToScreen(new Noesis.Point(board.ActualWidth * 0.7f, board.ActualHeight * 0.7f));
+                    var pixels = capture.GetPixels32();
+                    var snapshot = (SimulationBoardSnapshot)boardType.GetField("snapshot", flags).GetValue(board);
+                    var layout = new object[] { board.ActualWidth, board.ActualHeight, 0f, 0f, 0f };
+                    boardType.GetMethod("GetBoardLayout", flags).Invoke(board, layout);
+                    var edgeMethod = boardType.GetMethod("GetPixelAlignedEdges", flags);
+                    var columns = (float[])edgeMethod.Invoke(board, new object[] { layout[3], layout[2], snapshot.Width, true });
+                    var rows = (float[])edgeMethod.Invoke(board, new object[] { layout[4], layout[2], snapshot.Height, false });
+                    var edgeXs = new HashSet<int>();
+                    var edgeYs = new HashSet<int>();
+                    var detailAreas = new List<Noesis.Rect>();
+                    for (var cellY = 0; cellY < snapshot.Height; cellY++)
+                    for (var cellX = 0; cellX < snapshot.Width; cellX++)
+                    {
+                        var cell = snapshot.GetCell(cellX, cellY);
+                        var hash = unchecked((uint)cellX * 73856093u ^ (uint)cellY * 19349663u);
+                        if (!((cell.IsTerrainResource && hash % 19 == 0) || (!cell.IsTerrainResource && hash % 47 == 0))) continue;
+                        var centerX = (float)layout[3] + (cellX + 0.5f) * (float)layout[2];
+                        var centerY = (float)layout[4] + (snapshot.Height - cellY - 0.5f) * (float)layout[2];
+                        var radius = Math.Max(3f, (float)layout[2] * 0.45f);
+                        var p = board.PointToScreen(new Noesis.Point(centerX - radius, centerY - radius));
+                        var q = board.PointToScreen(new Noesis.Point(centerX + radius, centerY + radius));
+                        detailAreas.Add(new Noesis.Rect(p.X, p.Y, q.X - p.X, q.Y - p.Y));
+                    }
+                    var terrainColumns = (float[])edgeMethod.Invoke(board, new object[] { (float)layout[3] - (float)layout[2] * 0.5f, layout[2], snapshot.Width + 1, true });
+                    var terrainRows = (float[])edgeMethod.Invoke(board, new object[] { (float)layout[4] - (float)layout[2] * 0.5f, layout[2], snapshot.Height + 1, false });
+                    foreach (var edge in columns.Concat(terrainColumns))
+                    {
+                        var screenX = board.PointToScreen(new Noesis.Point(edge, 0f)).X;
+                        edgeXs.Add((int)Math.Floor(screenX));
+                        edgeXs.Add((int)Math.Ceiling(screenX));
+                    }
+                    foreach (var edge in rows.Concat(terrainRows))
+                    {
+                        var screenY = board.PointToScreen(new Noesis.Point(0f, edge)).Y;
+                        edgeYs.Add((int)Math.Floor(screenY));
+                        edgeYs.Add((int)Math.Ceiling(screenY));
+                    }
+                    var corner = board.PointToScreen(new Noesis.Point(columns[snapshot.Width / 2], rows[snapshot.Height / 2]));
+                    var sample = pixels[(target.height - 1 - (int)corner.Y - 2) * target.width + (int)corner.X + 2];
+                    Assert.That(sample.g, Is.GreaterThan(sample.r + 20), "Probe must render opaque green terrain.");
+                    for (var y = (int)Math.Ceiling(a.Y); y < (int)b.Y; y++)
+                    for (var x = (int)Math.Ceiling(a.X); x < (int)b.X; x++)
+                    {
+                        // Ground details cross the shifted terrain edges; exclude their known occupied areas.
+                        if (!edgeXs.Contains(x) && !edgeYs.Contains(y)) continue;
+                        if (detailAreas.Any(area => area.Contains(new Noesis.Point(x, y)))) continue;
+                        var pixel = pixels[(target.height - 1 - y) * target.width + x];
+                        if (Math.Abs(pixel.r - sample.r) + Math.Abs(pixel.g - sample.g) + Math.Abs(pixel.b - sample.b) > 6)
+                        {
+                            var evidence = System.IO.Path.Combine(Application.dataPath, "../artifacts/unity-tests/terrain-seams");
+                            System.IO.Directory.CreateDirectory(evidence);
+                            System.IO.File.WriteAllBytes(System.IO.Path.Combine(evidence, "regression-failure.png"), capture.EncodeToPNG());
+                        }
+                        Assert.That(Math.Abs(pixel.r - sample.r) + Math.Abs(pixel.g - sample.g) + Math.Abs(pixel.b - sample.b),
+                            Is.LessThanOrEqualTo(6), $"Terrain seam at ({x},{y}), zoom {zoom}.");
+                    }
+                    camera.targetTexture = previousTarget;
+                }
+            }
+            finally
+            {
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                parent.RenderTransform = previousTransform;
+                boardType.GetMethod("SetSpriteVisuals").Invoke(board, previousSprites);
+                boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new[] { previousFlourishes });
+                UnityEngine.Object.DestroyImmediate(texture);
+                UnityEngine.Object.DestroyImmediate(target);
+                UnityEngine.Object.DestroyImmediate(capture);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator CellularPrototypeInitializesEveryAuthoredGrassTerrainSprite()
         {
             if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
@@ -206,6 +428,20 @@ namespace SaltyGame.PlayModeTests
             foreach (var mask in TerrainTileResolver.AllValidMasks)
             {
                 Assert.That(grassTiles.GetValue(mask), Is.Not.Null, $"Grass mask {mask:D3} must be initialized.");
+            }
+
+            var flourishes = viewModel.GetType()
+                .GetField("forestEdgeFlourishes", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(viewModel) as Array;
+            Assert.That(flourishes, Is.Not.Null, "ForestEdge must initialize the authored flourish atlas crops.");
+            Assert.That(flourishes.Length, Is.EqualTo(ForestEdgeFlourishResolver.SpriteNames.Count));
+            var flourishRects = new HashSet<Noesis.Int32Rect>();
+            for (var index = 0; index < flourishes.Length; index++)
+            {
+                Assert.That(flourishes.GetValue(index), Is.Not.Null,
+                    $"Flourish '{ForestEdgeFlourishResolver.SpriteNames[index]}' must be initialized.");
+                Assert.That(flourishRects.Add(((Noesis.CroppedBitmap)flourishes.GetValue(index)).SourceRect), Is.True,
+                    $"Flourish '{ForestEdgeFlourishResolver.SpriteNames[index]}' must resolve its own atlas crop.");
             }
 
             var boardViewModel = camera.GetComponent("SaltyGame.VM_SimulationBoard");
@@ -420,6 +656,54 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator TrailblazerPairCanBeChosenThroughPhaseOffers()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            preview.StopSimulation();
+            preview.ResetToStart();
+            Assert.That(preview.TrySetJourneyPrototypeEnabled(false), Is.True);
+            Assert.That(preview.TrySetPlayerSpecies("hare", out var message), Is.True, message);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "11100", "720", "0", "6", "0.1",
+                "0", "0", "0", false, "400", "20", "10", out message), Is.True, message);
+            Assert.That(preview.TryApplyExperimentalFeatures(true, false, "0", out message), Is.True, message);
+            Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
+            preview.StartSimulation();
+            preview.PauseSimulation();
+
+            var choices = new[]
+            {
+                SpeciesUpgradeCatalog.FasterMovementId,
+                SpeciesUpgradeCatalog.ThreatExposureId,
+            };
+            var expectedDescriptions = new[]
+            {
+                "Move faster to escape predators and reach fresh food.",
+                "Evade predator attacks more often.",
+            };
+            for (var choice = 0; choice < choices.Length; choice++)
+            {
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
+                var index = -1;
+                for (var option = 0; option < preview.RewardOptionCount; option++)
+                    if (preview.GetRewardOptionId(option) == choices[choice]) index = option;
+                Assert.That(index, Is.GreaterThanOrEqualTo(0), choices[choice]);
+                StringAssert.Contains(expectedDescriptions[choice], preview.GetRewardOptionDisplayName(index));
+                var tick = preview.Run.Tick;
+                Assert.That(preview.PurchaseReward(index), Is.True);
+                Assert.That(preview.Run.Tick, Is.EqualTo(tick));
+                preview.PauseSimulation();
+            }
+
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.FasterMovementId), Is.EqualTo(1));
+            Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ThreatExposureId), Is.EqualTo(1));
+            Assert.That(preview.Run.UpgradeAcquisitionTimeline.Count, Is.EqualTo(2));
+        }
+
+        [UnityTest]
         public IEnumerator DeveloperSettingsRejectingPopulationCapPreservesInputAndRunSeed()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -630,6 +914,7 @@ namespace SaltyGame.PlayModeTests
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
             var viewModel = GameObject.Find("Prototype Camera").GetComponent("SaltyGame.VM_SimulationShell");
             preview.StopSimulation();
+            Assert.That(preview.TryApplyWrapEdges(true, out var wrapMessage), Is.True, wrapMessage);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var message), Is.True, message);
             Assert.That(preview.JourneyActive, Is.True);
             Assert.That(preview.CanChooseJourneyNode("forest-edge-start"), Is.True);
@@ -637,15 +922,18 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
             Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
+            CollectionAssert.AreEqual(new[] { "faster-movement", "tough-hide", "efficient-digestion" },
+                preview.JourneyMap.StartNode.RewardMutationIds);
             Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
             Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(1));
             Assert.That(preview.HasVisitedJourneyNode(preview.JourneyMap.StartNode), Is.True);
             Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
             var run = preview.Run;
+            Assert.That(run.Cells.WrapEdges, Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(run.TargetTicks, Is.EqualTo(24));
-            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "tough-hide"), Is.True);
+            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "faster-movement"), Is.True);
 
             for (var phase = 1; phase <= 5; phase++)
             {
@@ -696,6 +984,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Cells, Is.SameAs(cells));
+            Assert.That(run.Cells.WrapEdges, Is.True);
             Assert.That(run.PopulationHistory.Count, Is.EqualTo(historyCount));
             Assert.That(run.PhaseIndex, Is.EqualTo(7));
             Assert.That(run.UpgradeLoadout.Count(upgrade => upgrade.TargetSpecies == preview.PlayerSpecies),
@@ -965,19 +1254,21 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo("tough-hide"));
-            StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(0));
-            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(0));
-            StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(0));
-            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(0));
-            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(0));
+            var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                .First(index => preview.GetRewardOptionId(index) == SpeciesUpgradeCatalog.ToughHideId);
+            Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo("tough-hide"));
+            StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(rewardIndex));
             Assert.That(preview.Progression.TrySpend(preview.Progression.Currency), Is.True);
             Assert.That(preview.Progression.Currency, Is.Zero);
-            Assert.That(preview.CanPurchaseReward(0), Is.True);
+            Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
             var blockBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount;
 
-            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Running));
@@ -990,7 +1281,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary));
 
             // A repeated click cannot purchase or apply the same boundary twice.
-            Assert.That(preview.PurchaseReward(0), Is.False);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.False);
             Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(1));
             Assert.That(run.UpgradeLoadout.Count, Is.EqualTo(1));
 
@@ -1020,7 +1311,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Run, Is.SameAs(run));
             Assert.That(run.Tick, Is.EqualTo(2 * SpeciesSimulationPreview.ContinuousExpeditionPhaseCount));
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
-            Assert.That(preview.CanPurchaseReward(0), Is.False);
+            Assert.That(preview.CanPurchaseReward(rewardIndex), Is.False);
 
             var earnedFieldData = preview.Progression.Currency;
             preview.PlayNextSimulation();
@@ -1065,8 +1356,10 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
-            StringAssert.Contains("Fox responds: PIERCING BITE", preview.GetRewardOptionDisplayName(0));
+            var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                .First(index => preview.GetRewardOptionId(index) == SpeciesUpgradeCatalog.ToughHideId);
+            Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+            StringAssert.Contains("Fox responds: PIERCING BITE", preview.GetRewardOptionDisplayName(rewardIndex));
             Assert.That(SpeciesUpgradeCatalog.TryGetCoupledResponse(
                 preview.PlayerSpecies,
                 SpeciesUpgradeCatalog.ToughHideId,
@@ -1074,7 +1367,7 @@ namespace SaltyGame.PlayModeTests
                 out _), Is.True);
             var attackModifier = preview.ActiveSpeciesRules[carnivore].AttackModifier;
 
-            Assert.That(preview.PurchaseReward(0), Is.True);
+            Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
             Assert.That(run.UpgradeLoadout, Has.Count.EqualTo(2));
             Assert.That(run.UpgradeLoadout[0].TargetSpecies, Is.EqualTo(preview.PlayerSpecies));
             Assert.That(run.UpgradeLoadout[1].TargetSpecies, Is.EqualTo(carnivore));
@@ -1169,6 +1462,7 @@ namespace SaltyGame.PlayModeTests
         {
             var ids = new[] { "tough-hide", "efficient-digestion", "crowding-tolerance",
                 "threat-exposure" };
+            var firstOfferSeeds = new[] { 0, 1, 4, 3 };
             for (var skillIndex = 0; skillIndex < ids.Length; skillIndex++)
             {
                 yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
@@ -1180,7 +1474,7 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.TryApplyContinuousPhases(true, "1", out message), Is.True, message);
                 // The seed selects the first experimental offer deterministically.
                 Assert.That(preview.TryApplyGlobalSettingsForTicks(
-                    "36", "20", skillIndex.ToString(CultureInfo.InvariantCulture),
+                    "36", "20", firstOfferSeeds[skillIndex].ToString(CultureInfo.InvariantCulture),
                     preview.MaximumPopulation.ToString(CultureInfo.InvariantCulture),
                     preview.MinimumPopulation.ToString(CultureInfo.InvariantCulture),
                     "10", "0.01", "0", "1", "0", false, out message), Is.True, message);
@@ -1207,10 +1501,12 @@ namespace SaltyGame.PlayModeTests
                         .ToArray();
                     Assert.That(offeredIds.Distinct().Count(), Is.EqualTo(3));
                     Assert.That(offeredIds.All(SpeciesUpgradeCatalog.IsExperimentalHerbivoreMutationId), Is.True);
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Contain($"LV {phase + 1}"));
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("COST"));
-                    Assert.That(preview.GetRewardOptionDisplayName(0), Does.Not.Contain("DATA"));
-                    Assert.That(preview.GetRewardOptionId(0), Is.EqualTo(upgrade.Id));
+                    var rewardIndex = Enumerable.Range(0, preview.RewardOptionCount)
+                        .First(index => preview.GetRewardOptionId(index) == upgrade.Id);
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Contain($"LV {phase + 1}"));
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Not.Contain("COST"));
+                    Assert.That(preview.GetRewardOptionDisplayName(rewardIndex), Does.Not.Contain("DATA"));
+                    Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo(upgrade.Id));
                     if (upgrade.Id == SpeciesUpgradeCatalog.ToughHideId && phase > 1)
                     {
                         var completedPhase = run.PhaseResults[run.PhaseResults.Count - 1];
@@ -1220,9 +1516,9 @@ namespace SaltyGame.PlayModeTests
                             $"Incoming attacks blocked this phase: {blockedIncomingAttacks}",
                             preview.PhaseRewardMessage);
                     }
-                    Assert.That(preview.CanPurchaseReward(0), Is.True);
+                    Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);
                     var currency = preview.Progression.Currency;
-                    Assert.That(preview.PurchaseReward(0), Is.True);
+                    Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
                     Assert.That(preview.Run, Is.SameAs(run));
                     Assert.That(run.Tick, Is.EqualTo(phase));
                     Assert.That(preview.Progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(phase + 1));
@@ -1240,7 +1536,7 @@ namespace SaltyGame.PlayModeTests
                         Assert.That(preview.Progression.PreContactAvoidanceChance,
                             Is.EqualTo((phase + 1) * 0.08f).Within(0.00001f));
                     }
-                    Assert.That(preview.PurchaseReward(0), Is.False, "A repeated click must not charge again.");
+                    Assert.That(preview.PurchaseReward(rewardIndex), Is.False, "A repeated click must not charge again.");
                 }
                 var finalTimeout = Time.realtimeSinceStartup + 5f;
                 while (preview.State != SpeciesPreviewState.Results && Time.realtimeSinceStartup < finalTimeout)

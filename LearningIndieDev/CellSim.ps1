@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-[ValidateSet('Help', 'Doctor', 'Run', 'Test', 'Visuals', 'Report', 'Compare', 'Baseline', 'Validate')]
+[ValidateSet('Help', 'Doctor', 'Run', 'Test', 'Visuals', 'Report', 'Excel', 'Compare', 'Baseline', 'Validate')]
     [string]$Command = 'Help',
     [ValidateSet('EditMode', 'PlayMode', 'All')]
     [string]$Mode = 'All',
@@ -20,6 +20,9 @@ param(
     [ValidateRange(0, 1000000)]
     [int]$PhaseLengthTicks = 0,
     [string]$PhaseUpgradeSchedule = '',
+    [ValidateSet('', 'trailblazer', 'warren', 'gardeners')]
+    [string]$MutationPolicy = '',
+    [switch]$WrapEdges,
     [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
@@ -48,7 +51,15 @@ param(
     [string]$ReplayReportPath,
     [int]$ReplaySeed = -1,
     [string]$ProjectPath,
-    [string]$UnityPath
+    [string]$UnityPath,
+    [ValidateRange(1, 1000)][int]$MaxRuns = 200,
+    [int[]]$Checkpoints = @(400, 500),
+    [string]$Match = '',
+    [int[]]$Seeds = @(),
+    [switch]$DetailedObservations,
+    [ValidateSet('promising', 'lowest-seeds')][string]$ReviewSelection = 'promising',
+    [int[]]$SuccessFloors = @(5, 5, 100),
+    [switch]$Open
 )
 
 function Show-Usage {
@@ -64,7 +75,12 @@ CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWi
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
              [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
+             [-MutationPolicy trailblazer|warren|gardeners] [-WrapEdges]
 CellSim Report [-ReportPath artifacts/.../report.json]
+CellSim Excel [-ReportPath artifacts/.../report.json OR completed-sweep-folder] [-BaselinePath other/report.json]
+              [-OutputPath review.xlsx] [-Match 'D5-S25 gardeners'] [-Seeds 60000,60001] [-MaxRuns 200] [-DetailedObservations]
+              [-ReviewSelection promising|lowest-seeds] [-SuccessFloors 5,5,100] [-Open]
+              Without ReportPath, opens a report picker. Does not run simulations or overwrite workbooks.
 CellSim Compare -BaselinePath artifacts/.../report.json -ReportPath artifacts/.../report.json
 CellSim Baseline [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-ScenarioPath Assets/...]
 CellSim Validate -ReportPath artifacts/.../report.json
@@ -88,10 +104,16 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -Execution $Execution -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
-        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
+        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -MutationPolicy $MutationPolicy -WrapEdges $WrapEdges -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath
+    }
+    'Excel' {
+        $inputs = @()
+        if ($ReportPath) { $inputs += $ReportPath }
+        if ($BaselinePath) { $inputs += $BaselinePath }
+        & (Join-Path $PSScriptRoot 'tools/Export-CellSimWorksheet.ps1') -ReportPath $inputs -OutputPath $OutputPath -MaxRuns $MaxRuns -Checkpoints $Checkpoints -Match $Match -Seeds $Seeds -DetailedObservations:$DetailedObservations -ReviewSelection $ReviewSelection -SuccessFloors $SuccessFloors -Open:$Open -ProjectPath $ProjectPath
     }
     'Compare' {
         if ([string]::IsNullOrWhiteSpace($BaselinePath) -or [string]::IsNullOrWhiteSpace($ReportPath)) {

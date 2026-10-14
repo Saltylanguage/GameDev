@@ -22,7 +22,7 @@ namespace SaltyGame
     {
         public const int ContinuousExpeditionPhaseCount = 6;
         public const int JourneyPrototypeCycleCount = 2;
-        public const int HareCost = 10;
+        public const int HareCost = SpeciesProgression.HarePurchaseCost;
 
         public static event Action<SpeciesSimulationPreview, SimulationRunState> RunCompleted;
 
@@ -223,6 +223,7 @@ namespace SaltyGame
         }
 
         [Header("Grid")]
+        [SerializeField, Tooltip("Connect left/right and top/bottom edges for both species. Change before starting a session.")] bool wrapEdges;
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
         [SerializeField] int seed = 12345;
@@ -450,6 +451,7 @@ namespace SaltyGame
                 : $"{SpeciesUpgradeCatalog.GetDisplayName(selectedUpgrade.Id)} — legacy upgrade applied to the next run.";
         }
         public SpeciesPreviewState State => previewState;
+        public bool WrapEdges => wrapEdges;
         public int GridWidth => width;
         public int GridHeight => height;
         public int BaseSeed => seed;
@@ -1254,6 +1256,16 @@ namespace SaltyGame
                 : "Global settings applied to the next run.";
             PrepareNextRun();
             validationMessage = settingsMessage;
+            return true;
+        }
+
+        public bool TryApplyWrapEdges(bool enabled, out string validationMessage)
+        {
+            validationMessage = "Wrapping can only be changed before a session starts.";
+            if (!SettingsEditable) return false;
+            wrapEdges = enabled;
+            ResetToStart();
+            validationMessage = enabled ? "Grid edges connected." : "Grid edges bounded.";
             return true;
         }
 
@@ -3045,6 +3057,7 @@ namespace SaltyGame
                         ? scenarioData.WithGridSizeAndStartingPopulations(
                             width, height, CreateStartingPopulations())
                         : scenarioData.WithGridSize(width, height))
+                    .WithWrapEdges(wrapEdges)
                     .WithRunTicks(RunTicks, stepInterval)
                     .WithSpeciesRules(playerSpecies, rules[playerSpecies]);
                 return authoredData;
@@ -3068,7 +3081,8 @@ namespace SaltyGame
                 minPopulation,
                 startingPopulations: startingPopulationOverrideEnabled
                     ? CreateStartingPopulations()
-                    : null);
+                    : null,
+                wrapEdges: wrapEdges);
         }
 
         Dictionary<SpeciesId, int> CreateStartingPopulations()

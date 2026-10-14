@@ -9,6 +9,8 @@ namespace SaltyGame
     public sealed class SimulationBoardSnapshot
     {
         readonly SimulationCellSnapshot[] cells;
+        readonly int[] grassVertices;
+        readonly int[] desertVertices;
         readonly IReadOnlyDictionary<SpeciesId, SpeciesRole> speciesRoles;
 
         SimulationBoardSnapshot(
@@ -18,6 +20,8 @@ namespace SaltyGame
             SimulationRunStatus status,
             SpeciesId playerSpecies,
             SimulationCellSnapshot[] cells,
+            int[] grassVertices,
+            int[] desertVertices,
             IReadOnlyDictionary<SpeciesId, SpeciesRole> speciesRoles)
         {
             Width = width;
@@ -26,6 +30,8 @@ namespace SaltyGame
             Status = status;
             PlayerSpecies = playerSpecies;
             this.cells = cells;
+            this.grassVertices = grassVertices;
+            this.desertVertices = desertVertices;
             this.speciesRoles = speciesRoles;
         }
 
@@ -50,6 +56,17 @@ namespace SaltyGame
                 }
             }
 
+            var vertexWidth = run.Cells.Width + 1;
+            var grassVertices = new int[vertexWidth * (run.Cells.Height + 1)];
+            var desertVertices = new int[grassVertices.Length];
+            for (var y = 0; y <= run.Cells.Height; y++)
+            for (var x = 0; x <= run.Cells.Width; x++)
+            {
+                var index = x + y * vertexWidth;
+                grassVertices[index] = TerrainTileResolver.ResolveVertexMask(run.Cells, x, y, TerrainVisualFamily.Grass);
+                desertVertices[index] = TerrainTileResolver.ResolveVertexMask(run.Cells, x, y, TerrainVisualFamily.Desert);
+            }
+
             var speciesRoles = new Dictionary<SpeciesId, SpeciesRole>();
             if (rules != null)
             {
@@ -66,6 +83,8 @@ namespace SaltyGame
                 run.Status,
                 playerSpecies,
                 cells,
+                grassVertices,
+                desertVertices,
                 speciesRoles);
         }
 
@@ -77,6 +96,15 @@ namespace SaltyGame
         public SpeciesId PlayerSpecies { get; }
         public IReadOnlyList<SimulationCellSnapshot> Cells => cells;
         public IReadOnlyDictionary<SpeciesId, SpeciesRole> SpeciesRoles => speciesRoles;
+
+        public int GetTerrainVertexMask(int x, int y, TerrainVisualFamily family)
+        {
+            if (x < 0 || x > Width || y < 0 || y > Height)
+            {
+                throw new ArgumentOutOfRangeException(nameof(x), $"Vertex ({x}, {y}) is outside the board.");
+            }
+            return (family == TerrainVisualFamily.Grass ? grassVertices : desertVertices)[x + y * (Width + 1)];
+        }
 
         public SimulationCellSnapshot GetCell(int x, int y)
         {

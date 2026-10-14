@@ -1,0 +1,57 @@
+{
+  "status": "Passed",
+  "uniqueRuns": 8000,
+  "conditions": 80,
+  "batches": 5,
+  "metricsChecked": 7720,
+  "cumulativeWorkbookRuns": [
+    1600,
+    3200,
+    4800,
+    6400,
+    8000
+  ],
+  "originalWorkbooks": "Unchanged",
+  "provenance": [
+    {
+      "batch": "203b097f732ea641b02d713d394e004ee4c237a6947a93fd23a060e6a4f842eb",
+      "source": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\workbench-runs\\Confirmation-04---64x48-H4-F16---Purchase-leader-20261012-154706-6a96f3",
+      "sourceHash": "62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d",
+      "rawHash": "c2de9c0cfa77d6e0bebef783debb184be11fdd7ac350b99bf5be59e6e0938978",
+      "runnerHash": "5a58f19bf81b0f7fcee6229cc5f5a8078c7ee47d8470868786f7dcc396816fa9",
+      "snapshotHash": "76e8adcac0b3eaded6a884b5b139e1a9db9583c4c8dd0c05c6f65a6cd1d431f2"
+    },
+    {
+      "batch": "6d684e05b6028150f8844bf55a189a606e17d3d2281c23f9e06084a4c806dac9",
+      "source": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\workbench-runs\\Confirmation-05---64x48-H8-F24---Restoration-lea-20261012-155508-05da69",
+      "sourceHash": "62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d",
+      "rawHash": "a72354148453ec0e3a2d2a8bd45a6d046065b009c89e299f61091eca6f9c1907",
+      "runnerHash": "5a58f19bf81b0f7fcee6229cc5f5a8078c7ee47d8470868786f7dcc396816fa9",
+      "snapshotHash": "76e8adcac0b3eaded6a884b5b139e1a9db9583c4c8dd0c05c6f65a6cd1d431f2"
+    },
+    {
+      "batch": "3413654b0fd76f0fd1e6d09d7540e644530f6c986ec3f357c8510b19dd15c3a0",
+      "source": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\workbench-runs\\Confirmation-01---48x48-H4-F24---Mutation-rescue-20261012-151156-5c6070",
+      "sourceHash": "62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d",
+      "rawHash": "dcffa8e1568a03e2eb506288872490e8f399cbb38cd52ce9de4d75a532e2418c",
+      "runnerHash": "5a58f19bf81b0f7fcee6229cc5f5a8078c7ee47d8470868786f7dcc396816fa9",
+      "snapshotHash": "76e8adcac0b3eaded6a884b5b139e1a9db9583c4c8dd0c05c6f65a6cd1d431f2"
+    },
+    {
+      "batch": "76e01107ee48da244b27647b0ecc068acb2746e584a2a7fe8cce3824b9c62842",
+      "source": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\workbench-runs\\Confirmation-03---64x48-H24-F8---Unassisted-cand-20261012-154141-517ae0",
+      "sourceHash": "62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d",
+      "rawHash": "6fe5e188fc9e642cef2dba0fad7bb4373c42fd1286fa17a01f60a895d5a35c17",
+      "runnerHash": "5a58f19bf81b0f7fcee6229cc5f5a8078c7ee47d8470868786f7dcc396816fa9",
+      "snapshotHash": "76e8adcac0b3eaded6a884b5b139e1a9db9583c4c8dd0c05c6f65a6cd1d431f2"
+    },
+    {
+      "batch": "76e92e6ddd2b74d5e1dfab6313ba821817524467286777637038822ccd9d1802",
+      "source": "F:\\ForkBin\\GameDev\\LearningIndieDev\\artifacts\\workbench-runs\\Confirmation-02---48x48-H8-F32---Build-compariso-20261012-151744-433409",
+      "sourceHash": "62d30f34dc7c3b531a710f26234b8091c4d0bfbc858b8dcb7adfb3eead7ea08d",
+      "rawHash": "ce5e6934dfaa19ab75a5f9ba1d0e5bcb92260bd0d1a15f1bd585c3c9ca51bb29",
+      "runnerHash": "5a58f19bf81b0f7fcee6229cc5f5a8078c7ee47d8470868786f7dcc396816fa9",
+      "snapshotHash": "76e8adcac0b3eaded6a884b5b139e1a9db9583c4c8dd0c05c6f65a6cd1d431f2"
+    }
+  ]
+}

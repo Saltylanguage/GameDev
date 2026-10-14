@@ -1,7 +1,8 @@
 {
   "name": "SaltyGame.PlayMode.Tests",
   "references": [
-    "SaltyGame.Runtime"
+    "SaltyGame.Runtime",
+    "Noesis.NoesisGUI"
   ],
   "optionalUnityReferences": [
     "TestAssemblies"

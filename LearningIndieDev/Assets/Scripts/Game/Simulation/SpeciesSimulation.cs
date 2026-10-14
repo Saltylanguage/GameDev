@@ -21,6 +21,7 @@ namespace SaltyGame
     {
         public const int FixedRateDiagnosticPeriodTicks = 3;
         const int ReproductionCooldownTicks = 24;
+        static readonly GridPattern NearbyPattern = GridPatternTemplates.CreateMooreRange(1);
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
         static readonly SpeciesId HareSpeciesId = new SpeciesId("hare");
 
@@ -770,7 +771,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var attackPattern = attackerRules.AttackPattern;
+                    var attackPattern = source.GetPattern(attackerRules.AttackPattern);
                     var startOffset = controlled || paired || attackPattern.Count == 0
                         ? 0
                         : random.Next(attackPattern.Count);
@@ -779,6 +780,7 @@ namespace SaltyGame
                         var offset = attackPattern.Offsets[(startOffset + offsetIndex) % attackPattern.Count];
                         var targetX = x + offset.x;
                         var targetY = y + offset.y;
+                        if (!source.TryResolveCoordinates(ref targetX, ref targetY)) continue;
                         if ((controlled || paired)
                             && (targetX != controlledTargetX || targetY != controlledTargetY))
                         {
@@ -807,12 +809,9 @@ namespace SaltyGame
                         if (isCarnivoreHerbivoreInteraction
                             && experimentalOptions != null
                             && experimentalOptions.HasPreContactAvoidance
-                            && targetRules.FleeMovementSpeedBonus > 0f
                             && ShouldAvoidPreContact(
                                 experimentalOptions.PreContactAvoidanceChance,
                                 seed,
-                                attacker.EntityId,
-                                target.EntityId,
                                 x,
                                 y,
                                 targetX,
@@ -857,7 +856,7 @@ namespace SaltyGame
                             ? attackerRules.DamageAmount
                             : attackerRules.AttackAmount;
                         var hasDirectionalBlock = hasTargetRules
-                            && ContainsOffset(targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y));
+                            && ContainsOffset(source, targetRules.BlockPattern, new Vector2Int(-offset.x, -offset.y));
                         if (target.IsCreature && combatResolutionMode == SpeciesCombatResolutionMode.OpposedRoll)
                         {
                             // Opposed-roll combat is a universal creature-versus-creature
@@ -1009,8 +1008,6 @@ namespace SaltyGame
         static bool ShouldAvoidPreContact(
             float chance,
             int seed,
-            long attackerEntityId,
-            long targetEntityId,
             int attackerX,
             int attackerY,
             int targetX,
@@ -1023,9 +1020,8 @@ namespace SaltyGame
 
             unchecked
             {
+                // The step seed and encounter coordinates replay across runs; entity IDs are process-scoped.
                 var hash = (uint)seed;
-                hash = (hash ^ (uint)attackerEntityId) * 16777619u;
-                hash = (hash ^ (uint)targetEntityId) * 16777619u;
                 hash = (hash ^ (uint)attackerX) * 16777619u;
                 hash = (hash ^ (uint)attackerY) * 16777619u;
                 hash = (hash ^ (uint)targetX) * 16777619u;
@@ -1362,11 +1358,12 @@ namespace SaltyGame
                         continue;
                     }
 
-                    foreach (var offset in attackerRules.AttackPattern.Offsets)
+                    foreach (var offset in source.GetPattern(attackerRules.AttackPattern).Offsets)
                     {
                         var candidateX = x + offset.x;
                         var candidateY = y + offset.y;
-                        if (!source.TryGetCell(candidateX, candidateY, out var candidate)
+                        if (!source.TryResolveCoordinates(ref candidateX, ref candidateY)
+                            || !source.TryGetCell(candidateX, candidateY, out var candidate)
                             || !candidate.IsCreature
                             || !SpeciesPerception.IsDietTarget(
                                 candidate,
@@ -1415,11 +1412,13 @@ namespace SaltyGame
                 return false;
             }
 
-            foreach (var offset in attackerRules.AttackPattern.Offsets)
+            foreach (var offset in source.GetPattern(attackerRules.AttackPattern).Offsets)
             {
+                var candidateX = opportunity.AttackerX + offset.x;
+                var candidateY = opportunity.AttackerY + offset.y;
                 if (offset == opportunity.Offset
-                    && opportunity.AttackerX + offset.x == opportunity.TargetX
-                    && opportunity.AttackerY + offset.y == opportunity.TargetY)
+                    && source.TryResolveCoordinates(ref candidateX, ref candidateY)
+                    && candidateX == opportunity.TargetX && candidateY == opportunity.TargetY)
                 {
                     return true;
                 }
@@ -1526,7 +1525,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var distance = Math.Max(Math.Abs(targetX - x), Math.Abs(targetY - y));
+                    var distance = cells.GetDistance(x, y, targetX, targetY);
                     if (distance < bestDistance
                         || (distance == bestDistance && random.Next(2) == 0))
                     {
@@ -1719,6 +1718,7 @@ namespace SaltyGame
             SpeciesSimulationMetrics metrics,
             bool allowCrowdingDispersal = false)
         {
+            pattern = source.GetPattern(pattern);
             var bestX = -1;
             var bestY = -1;
             var bestCrowding = int.MaxValue;
@@ -1735,7 +1735,7 @@ namespace SaltyGame
                 var offset = pattern.Offsets[(startOffset + offsetIndex) % pattern.Count];
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!source.IsInBounds(targetX, targetY))
+                if (!source.TryResolveCoordinates(ref targetX, ref targetY))
                 {
                     continue;
                 }
@@ -2003,22 +2003,21 @@ namespace SaltyGame
             System.Random random,
             SpeciesSimulationMetrics metrics)
         {
-            var currentDistance = Math.Max(
-                Math.Abs(x - threat.Location.x),
-                Math.Abs(y - threat.Location.y));
+            var currentDistance = source.GetDistance(x, y, threat.Location.x, threat.Location.y);
             var bestDistance = currentDistance;
             var bestX = -1;
             var bestY = -1;
-            var startOffset = speciesRules.MovementPattern.Count == 0
+            var movementPattern = source.GetPattern(speciesRules.MovementPattern);
+            var startOffset = movementPattern.Count == 0
                 ? 0
-                : random.Next(speciesRules.MovementPattern.Count);
-            for (var offsetIndex = 0; offsetIndex < speciesRules.MovementPattern.Count; offsetIndex++)
+                : random.Next(movementPattern.Count);
+            for (var offsetIndex = 0; offsetIndex < movementPattern.Count; offsetIndex++)
             {
-                var offset = speciesRules.MovementPattern.Offsets[
-                    (startOffset + offsetIndex) % speciesRules.MovementPattern.Count];
+                var offset = movementPattern.Offsets[
+                    (startOffset + offsetIndex) % movementPattern.Count];
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!source.IsInBounds(targetX, targetY)
+                if (!source.TryResolveCoordinates(ref targetX, ref targetY)
                     || claimed[GetIndex(source, targetX, targetY)])
                 {
                     continue;
@@ -2030,9 +2029,7 @@ namespace SaltyGame
                     continue;
                 }
 
-                var distance = Math.Max(
-                    Math.Abs(targetX - threat.Location.x),
-                    Math.Abs(targetY - threat.Location.y));
+                var distance = source.GetDistance(targetX, targetY, threat.Location.x, threat.Location.y);
                 if (distance > bestDistance)
                 {
                     bestDistance = distance;
@@ -2129,7 +2126,7 @@ namespace SaltyGame
             bool feedOnDietTarget = true,
             bool allowOvercrowdedDestination = false)
         {
-            if (!source.IsInBounds(targetX, targetY))
+            if (!source.TryResolveCoordinates(ref targetX, ref targetY))
             {
                 return false;
             }
@@ -2238,14 +2235,14 @@ namespace SaltyGame
                 return false;
             }
 
-            var pattern = speciesRules.MovementPattern;
+            var pattern = source.GetPattern(speciesRules.MovementPattern);
             var startOffset = pattern.Count == 0 ? 0 : random.Next(pattern.Count);
             for (var offsetIndex = 0; offsetIndex < pattern.Count; offsetIndex++)
             {
                 var offset = pattern.Offsets[(startOffset + offsetIndex) % pattern.Count];
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;
-                if (!source.IsInBounds(targetX, targetY))
+                if (!source.TryResolveCoordinates(ref targetX, ref targetY))
                 {
                     continue;
                 }
@@ -2276,11 +2273,12 @@ namespace SaltyGame
                 }
 
                 var hasReadyMate = false;
-                foreach (var reproductionOffset in speciesRules.ReproductionPattern.Offsets)
+                foreach (var reproductionOffset in source.GetPattern(speciesRules.ReproductionPattern).Offsets)
                 {
                     var neighborX = targetX + reproductionOffset.x;
                     var neighborY = targetY + reproductionOffset.y;
-                    if (neighborX == x && neighborY == y)
+                    if (!source.TryResolveCoordinates(ref neighborX, ref neighborY)
+                        || (neighborX == x && neighborY == y))
                     {
                         continue;
                     }
@@ -2670,8 +2668,9 @@ namespace SaltyGame
                         continue;
                     }
 
+                    var movementPattern = next.GetPattern(speciesRules.MovementPattern);
                     var hasSpace = false;
-                    foreach (var offset in speciesRules.MovementPattern.Offsets)
+                    foreach (var offset in movementPattern.Offsets)
                     {
                         if (IsSeedDropLocationAvailable(next, x + offset.x, y + offset.y))
                         {
@@ -2684,11 +2683,11 @@ namespace SaltyGame
                     metrics?.Record(cell.SpeciesId, seedDropAttempts: 1);
                     if (random.NextDouble() >= speciesRules.SeedDropChance) continue;
 
-                    var startOffset = random.Next(speciesRules.MovementPattern.Count);
-                    for (var offsetIndex = 0; offsetIndex < speciesRules.MovementPattern.Count; offsetIndex++)
+                    var startOffset = random.Next(movementPattern.Count);
+                    for (var offsetIndex = 0; offsetIndex < movementPattern.Count; offsetIndex++)
                     {
-                        var offset = speciesRules.MovementPattern.Offsets[
-                            (startOffset + offsetIndex) % speciesRules.MovementPattern.Count];
+                        var offset = movementPattern.Offsets[
+                            (startOffset + offsetIndex) % movementPattern.Count];
                         var seedX = x + offset.x;
                         var seedY = y + offset.y;
                         if (!IsSeedDropLocationAvailable(next, seedX, seedY))
@@ -2719,7 +2718,7 @@ namespace SaltyGame
 
         static bool IsSeedDropLocationAvailable(Grid<SpeciesCell> grid, int x, int y)
         {
-            if (!grid.IsInBounds(x, y)) return false;
+            if (!grid.TryResolveCoordinates(ref x, ref y)) return false;
             var cell = grid.GetCell(x, y);
             return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource;
         }
@@ -3046,7 +3045,7 @@ namespace SaltyGame
                     if (speciesRules.ReproductionNeighborCount > 0
                         || speciesRules.MaxReproductionGroupSize > 0)
                     {
-                        foreach (var offset in speciesRules.ReproductionPattern.Offsets)
+                        foreach (var offset in source.GetPattern(speciesRules.ReproductionPattern).Offsets)
                         {
                             if (source.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
                                 && IsSameSpecies(neighbor, parent.SpeciesId))
@@ -3060,6 +3059,7 @@ namespace SaltyGame
                                 {
                                     mateX = x + offset.x;
                                     mateY = y + offset.y;
+                                    source.TryResolveCoordinates(ref mateX, ref mateY);
                                 }
                             }
                         }
@@ -3107,7 +3107,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var reproductionPattern = speciesRules.ReproductionPattern;
+                    var reproductionPattern = source.GetPattern(speciesRules.ReproductionPattern);
                     var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
                     var chanceRollSucceeded = random.NextDouble() <= speciesRules.ReproductionChance;
                     var growthIntervalTicks = usesTimedPlantGrowth
@@ -3174,7 +3174,7 @@ namespace SaltyGame
                         var offset = reproductionPattern.Offsets[(startOffset + offsetIndex) % reproductionPattern.Count];
                         var childX = x + offset.x;
                         var childY = y + offset.y;
-                        if (!source.IsInBounds(childX, childY))
+                        if (!source.TryResolveCoordinates(ref childX, ref childY))
                         {
                             continue;
                         }
@@ -3305,7 +3305,7 @@ namespace SaltyGame
                     Math.Max(parent.ReproductionCooldownTicksRemaining, ReproductionCooldownTicks)));
             }
 
-            foreach (var offset in reproductionPattern.Offsets)
+            foreach (var offset in next.GetPattern(reproductionPattern).Offsets)
             {
                 var neighborX = x + offset.x;
                 var neighborY = y + offset.y;
@@ -3324,11 +3324,17 @@ namespace SaltyGame
             }
         }
 
-        static bool ContainsOffset(GridPattern pattern, Vector2Int offset)
+        static bool ContainsOffset(Grid<SpeciesCell> grid, GridPattern pattern, Vector2Int offset)
         {
-            foreach (var candidate in pattern.Offsets)
+            var targetX = offset.x;
+            var targetY = offset.y;
+            grid.TryResolveCoordinates(ref targetX, ref targetY);
+            foreach (var candidate in grid.GetPattern(pattern).Offsets)
             {
-                if (candidate == offset)
+                var candidateX = candidate.x;
+                var candidateY = candidate.y;
+                grid.TryResolveCoordinates(ref candidateX, ref candidateY);
+                if (candidateX == targetX && candidateY == targetY)
                 {
                     return true;
                 }
@@ -3599,24 +3605,13 @@ namespace SaltyGame
             int excludeY)
         {
             var count = 0;
-            for (var offsetY = -1; offsetY <= 1; offsetY++)
+            foreach (var offset in grid.GetPattern(NearbyPattern).Offsets)
             {
-                for (var offsetX = -1; offsetX <= 1; offsetX++)
-                {
-                    var neighborX = x + offsetX;
-                    var neighborY = y + offsetY;
-                    if ((neighborX == x && neighborY == y)
-                        || (neighborX == excludeX && neighborY == excludeY))
-                    {
-                        continue;
-                    }
-
-                    if (grid.TryGetCell(neighborX, neighborY, out var neighbor)
-                        && IsSameSpecies(neighbor, species))
-                    {
-                        count++;
-                    }
-                }
+                var neighborX = x + offset.x;
+                var neighborY = y + offset.y;
+                if (!grid.TryResolveCoordinates(ref neighborX, ref neighborY)
+                    || (neighborX == excludeX && neighborY == excludeY)) continue;
+                if (IsSameSpecies(grid.GetCell(neighborX, neighborY), species)) count++;
             }
 
             return count;
@@ -3632,11 +3627,12 @@ namespace SaltyGame
             int excludeY)
         {
             var count = 0;
-            foreach (var offset in pattern.Offsets)
+            foreach (var offset in grid.GetPattern(pattern).Offsets)
             {
                 var neighborX = x + offset.x;
                 var neighborY = y + offset.y;
-                if (neighborX == excludeX && neighborY == excludeY)
+                if (!grid.TryResolveCoordinates(ref neighborX, ref neighborY)
+                    || (neighborX == excludeX && neighborY == excludeY))
                 {
                     continue;
                 }
@@ -3901,7 +3897,7 @@ namespace SaltyGame
                     random,
                     out var priorityFood))
                 {
-                    return IsAdjacent(x, y, priorityFood.Location)
+                    return IsAdjacent(cells, x, y, priorityFood.Location)
                         ? priorityFood.Cell.IsCreature
                             ? SpeciesBehaviorState.Attacking
                             : SpeciesBehaviorState.Eating
@@ -3946,7 +3942,7 @@ namespace SaltyGame
                     random,
                     out var food))
             {
-                return IsAdjacent(x, y, food.Location)
+                return IsAdjacent(cells, x, y, food.Location)
                     ? food.Cell.IsCreature
                         ? SpeciesBehaviorState.Attacking
                         : SpeciesBehaviorState.Eating
@@ -4016,7 +4012,7 @@ namespace SaltyGame
         {
             var requiredNeighbors = Math.Max(1, speciesRules.ReproductionNeighborCount);
             var neighbors = 0;
-            foreach (var offset in speciesRules.ReproductionPattern.Offsets)
+            foreach (var offset in cells.GetPattern(speciesRules.ReproductionPattern).Offsets)
             {
                 if (cells.TryGetCell(x + offset.x, y + offset.y, out var neighbor)
                     && neighbor.IsCreature
@@ -4031,9 +4027,9 @@ namespace SaltyGame
                     || neighbors + 1 < speciesRules.MaxReproductionGroupSize);
         }
 
-        static bool IsAdjacent(int x, int y, Vector2Int target)
+        static bool IsAdjacent(Grid<SpeciesCell> cells, int x, int y, Vector2Int target)
         {
-            return Math.Max(Math.Abs(target.x - x), Math.Abs(target.y - y)) <= 1;
+            return cells.GetDistance(x, y, target.x, target.y) <= 1;
         }
     }
 }

@@ -61,7 +61,7 @@ namespace SaltyGame
         }
     }
 
-    /// <summary>Resolves cell-centred eight-neighbor blob terrain masks.</summary>
+    /// <summary>Maps terrain occupancy to the authored blob sprite masks.</summary>
     public static class TerrainTileResolver
     {
         public const int North = 1;
@@ -86,6 +86,33 @@ namespace SaltyGame
         static readonly HashSet<int> ValidMaskSet = new HashSet<int>(ValidMasks);
 
         public static IReadOnlyList<int> AllValidMasks => ValidMasks;
+
+        public static int ResolveVertexMask(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)
+        {
+            if (x < 0 || x > cells.Width || y < 0 || y > cells.Height)
+            {
+                throw new ArgumentOutOfRangeException(nameof(x), $"Vertex ({x}, {y}) is outside the terrain grid.");
+            }
+
+            // A shared vertex uses the four cell centers surrounding it as its corners.
+            var mask = 0;
+            if (SampleFamily(cells, x - 1, y, family)) mask |= NorthWest;
+            if (SampleFamily(cells, x, y, family)) mask |= NorthEast;
+            if (SampleFamily(cells, x, y - 1, family)) mask |= SouthEast;
+            if (SampleFamily(cells, x - 1, y - 1, family)) mask |= SouthWest;
+            return NormalizeMask(mask);
+        }
+
+        static bool SampleFamily(Grid<SpeciesCell> cells, int x, int y, TerrainVisualFamily family)
+        {
+            // Extend the border's own terrain to the clip edge; wrapped boards sample the opposite side.
+            if (!cells.WrapEdges)
+            {
+                x = Math.Max(0, Math.Min(cells.Width - 1, x));
+                y = Math.Max(0, Math.Min(cells.Height - 1, y));
+            }
+            return IsFamily(cells, x, y, family);
+        }
 
         public static int ResolveTerrainMask(Grid<SpeciesCell> cells, int x, int y, TerrainId terrainId)
         {

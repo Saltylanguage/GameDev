@@ -16,7 +16,7 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(nextCell));
             }
 
-            return new Grid<T>(source.Width, source.Height, (x, y) => nextCell(source, x, y));
+            return new Grid<T>(source.Width, source.Height, (x, y) => nextCell(source, x, y), source.WrapEdges);
         }
     }
 }

@@ -5,6 +5,13 @@ become a master changelog.
 
 ## Current focus
 
+**October 14 ProjectMain and BevBranch integration:** Sim's terrain, artwork,
+simulation, and tooling commits are merged with the local S4/journey checkpoint
+and profile persistence. The merged Unity suites and Release tooling builds pass.
+See the [integration handoff](handoffs/2026-10-14-1707-codex-projectmain-bevbranch-integration.md)
+for validation, the standalone runner check limitation, and the visual review
+still useful before balance work.
+
 **Profile persistence foundation: 2026-10-14, ready for review.**
 Multiple profiles now keep separate currency, species/Genome unlock IDs,
 Genome node state, cumulative simulation ticks, and active playtime. The
@@ -13,6 +20,518 @@ focused EditMode and PlayMode checks passed. Run reward settlement and data
 categories remain design decisions. See the
 [profile persistence handoff](handoffs/2026-10-14-1424-codex-profile-persistence-foundation.md).
 
+**October 14 terrain selection correction accepted:** The board and paint preview
+now sample four cells around shared vertices instead of drawing center-excluding
+neighbor masks on each terrain cell. Existing artwork now forms one straight
+transition and preserves islands/holes. 18 focused EditMode checks, 27 presentation
+PlayMode tests and one Desktop visual capture pass; temporarily restoring the
+old drawing path fails the new rendered regression. Bevin tested the correction
+himself, confirmed the improvement and authorized publication. See the
+[shared-vertex handoff](handoffs/2026-10-14-codex-shared-vertex-terrain-fix.md).
+
+**October 14 Forest Edge flourish replacement accepted:** Replaced the eight old
+images with Bevin's ten supplied mushroom/shrub/flower PNGs, preserving existing
+asset identities. Noesis labels plus explicit uncompressed V2 atlas defaults
+preserve transparent edges; exact sprite-name matching keeps the three mushroom
+colors distinct. 12 distinct focused EditMode checks, 26 presentation PlayMode
+tests and one 1920x1080 Desktop visual capture pass. GPU alpha and source hashes
+verify. Bevin confirmed the rendered result and authorized publication. See
+the [replacement handoff](handoffs/2026-10-14-codex-forest-edge-flourish-replacement.md).
+
+**October 13 intermittent tile seams accepted:** The shared board now
+aligns tile boundaries in screen pixels and refreshes after pan/layout scale
+changes. 26 presentation PlayMode tests pass, including a rendered regression
+with a failing negative control; actual art inspected at three viewport sizes.
+No terrain art/atlas/scenario changes. Bevin confirmed the visual result and
+authorized publication with the Chrono artwork on October 13; see the
+[seam handoff](handoffs/2026-10-13-codex-terrain-seam-rendering-fix.md).
+
+**October 13 Chrono Forest Edge flourishes accepted:** Added the eight supplied
+mushroom/shrub/flower sprites to the existing terrain atlas and shared board.
+They decorate full grass beneath creatures without changing simulation state.
+Corrected their Noesis import labels so grass shows through transparent areas;
+desktop Play Mode visual check and focused tests pass. The original fox sprite's
+missing Noesis label is corrected too, with fresh Desktop Play Mode visual and
+GPU transparent-corner verification. Prototype final visual check/full suite/
+player build remain unverified. Bevin visually accepted the artwork and fixes
+and authorized publication on October 13; see the
+[flourish handoff](handoffs/2026-10-13-codex-forest-edge-chrono-flourishes.md).
+
+**October 12 tooling publication and Salty integration:** The Workbench/export
+work and compact confirmation review were pushed to BevBranch in `07d78de9`.
+Salty's checkpoint `876f3cf7` is integrated with Hare spatial telemetry and
+guaranteed first-offer access to all three paths; BevBranch's existing avoidance
+fix and portable records are retained. Merged checks pass: 160 focused EditMode,
+25 presentation PlayMode, 31 worksheet tests, runner self-test, 16 GUI groups,
+both Release builds and four-seed Unity/standalone parity including spatial
+records. The PlayMode check first caught four obsolete card-order
+assumptions; their coverage now selects the intended skill and checks the new
+authored opening rewards. The saved 8,000-run review remains historical to its
+frozen runner. See the [integration handoff](handoffs/2026-10-12-1622-codex-bevbranch-tooling-publication-and-salty-offer-spatial-integration.md)
+and [preserved results](Research/Results/2026-10-12-Forest-Edge-Confirmation/README.md).
+Earlier local/uncommitted statements below describe their original checkpoints.
+
+**October 12 fresh-seed confirmation reviewed locally:** Bevin completed the
+five presets and supplied cumulative exports ending at 8,000 runs/80 conditions.
+The best observed condition is preset 04 (64x48 H4/F16), Gardeners + Restore:
+10/100 ecology goals; no reliable baseline is established. Overall 261 goals,
+2,167 Hare survivors and 1,438 all-three survivors. Matched choices show useful
+effects; 60 no-purchase goals include 15 fully unassisted successes. All five
+completed raw hashes, 40 frozen files and 7,720 workbook metrics verify.
+Analysis: `artifacts/confirmation-review-20261012/ai-analysis-v1.md`.
+No source/runtime changes or additional workloads; recommendations need review.
+See the [confirmation results handoff](handoffs/2026-10-12-1609-codex-forest-edge-fresh-seed-confirmation-results-review.md).
+
+**October 12 confirmation presets prepared locally:** The reviewed gestation/map
+screen now has five focused fresh-seed presets (10001-10100; 1,600 runs each,
+8,000 total) and six original-seed comparison presets (24 runs total). All eleven
+are also frozen as saved Workbench runs; application loading/preparation/reload
+and pinned-runner preflight pass. All 104 resolved conditions match the discovery
+settings, with byte-identical snapshot/runner and original inputs preserved.
+No simulations started. The guide is
+`artifacts/workbench-presets/Forest Edge confirmation 2026-10-12/README.md`.
+No app rebuild or production tuning; local/uncommitted. See the
+[preset pack handoff](handoffs/2026-10-12-1447-codex-forest-edge-confirmation-and-replay-preset-pack.md).
+
+**October 10 large Excel export fixed locally:** Bevin's completed Forest Edge
+batch has 24,192 runs, 8,064 conditions and 12,768 matched comparisons. Exporting
+1,000 review rows exceeded Node's default 4 GB heap during XLSX creation.
+The exporter now has a bounded 8 GB child heap allowance, batches layout sizing
+and logs table/file preparation stages. The full export succeeds; 1,240,658
+saved cells, four native tables, 1,000 evidence links and frozen source/raw hashes
+verify. 31 worksheet and 17 native GUI/export checks pass. No simulation reran;
+the open Workbench uses the updated scripts without an EXE replacement.
+Local/uncommitted; see the
+[large export handoff](handoffs/2026-10-10-2209-codex-workbench-large-excel-export-memory-fix.md).
+
+**October 10 statistical worksheets and promising seeds, local:** The exporter
+now uses all matching runs for goal/Hare-survival rates with 95% Wilson bounds,
+endpoint/birth/purchase/decision-access statistics, and matched Mutation/purchase
+controls on a new Choice impact sheet. Review defaults to promising seeds;
+Lowest seeds remains available, and Run data still matches the selected rows.
+Editable export floors default to 5 Hares / 5 Foxes / 100 Plants, inferred from
+Bevin's latest experiment notes rather than approved as production tuning.
+31 worksheet checks, 16 GUI groups and 15 setup/run groups (47 fixture runs) pass;
+raw-count/Wilson and saved-workbook readbacks reconcile. Re-exporting the existing
+1,000-run baseline yields 0 goal successes; it cannot show choice effects because
+it has only Skip all / No purchases. Canonical EXE rebuilt with fresh save/close
+authorization and reopened; the installed EXE's 17 checks pass, including a real
+native-button export. No research
+batch started; local/uncommitted. See the
+[statistical export handoff](handoffs/2026-10-10-2106-codex-workbench-statistical-results-and-promising-seed-review.md).
+
+**October 10 large saved-plan metadata fix, local:** Bevin's validated 9,216-
+condition / 18,432-run setup compiled successfully but Run refused its 5,017,684-
+byte plan through the unrelated 4 MB progress-file reader. Condition-sized
+plans and completed batch manifests/summaries now have a bounded 64 MB allowance;
+status/snapshot/small-manifest limits, input hashes and run budgets remain in
+place. The exact saved setup reopens, verifies all eight hashes and passes a
+read-only pinned-runner preflight without creating a batch folder. Fifteen GUI
+and fifteen setup/run check groups (47 fixture runs) pass, including large-file
+regressions and changed-input rejection. Canonical EXE rebuilt/reopened with
+Bevin's save-and-close permission. Research batch remains unstarted; source
+local/uncommitted. See the [metadata fix handoff](handoffs/2026-10-10-2051-codex-workbench-large-saved-plan-metadata-fix.md).
+
+**October 10 Workbench gestation controls and baseline review, local:** Bevin's
+1,000-run Gestation Baseline had 53 Hares-surviving runs at tick 600 (5.3%);
+836 runs recorded no Hare births. All conditions used Hare/Fox gestation 48,
+so this is a poor baseline, not an isolated test of gestation's effect.
+Compare values now offers independent Hare/Fox gestation ticks, including zero
+for immediate births, with readable help, frozen values, presets and numeric
+Excel exports. Production defaults remain 48. A prepared, unstarted preset
+compares Hare 0/12/24/48 with Fox fixed at 48 across the original 1,000 seeds.
+All 326 EditMode tests, 21 worksheet checks, 14 GUI checks and 14 setup/run
+groups (46 fixture runs) pass. The canonical executable was rebuilt and
+reopened after Bevin saved and authorized closing the previous window.
+See the [baseline and controls handoff](handoffs/2026-10-10-2035-codex-workbench-gestation-controls-and-baseline-review.md).
+This supersedes the earlier proposal to add gestation comparison controls;
+the 4,000-run comparison and any production tuning remain open.
+
+**October 10 BevBranch gestation integration:** Our Workbench readability and
+comparison-preview fixes were pushed as `a82d1cd4`. Salty's gestation checkpoint
+(`65e47386`) is merged as `10c13f4`, preserving both contributors' working-state
+entries. Portable snapshots now preserve gestation, and parity checks include
+pending-litter state with normalized mate identity. Production Hare/Fox use a
+provisional 48-tick delay; earlier frozen batches retain their original model.
+See the [integration and testing-impact handoff](handoffs/2026-10-10-2004-codex-bevbranch-salty-gestation-integration-and-testing-impact.md)
+for current validation, new-snapshot requirements, and proposed comparison controls.
+
+**S4-03 Trailblazer diagnostic: 2026-10-11, needs design review.** A
+five-arm replay of the existing 20 matched seeds added Hare spatial observations
+without changing any of the 100 archived run outcomes. Both Trailblazer orders
+increase post-choice movement, but population-wide map coverage gains are small
+and inconsistent. The current crowding rule only triggers at seven Hare
+neighbors; Josh's approved four-neighbor density surcharge is still pending,
+so the replay cannot judge intended crowding pressure. The first rotating
+three-card offer nominally contained a Trailblazer starter in 12/20 seeds under
+the old rotation. On 2026-10-12 Josh approved guaranteed first-offer access to
+one starter from each path; the Forest Edge opening reward now uses Movement,
+Tough Hide, and Efficient Digestion, and later phase offers keep the selected
+starter's partner available. This changes player access, not the earlier
+balance evidence. See the
+[factual report](Sprints/S4-03-trailblazer-spatial-20261011/report.md) and
+[analysis](Sprints/S4-03-trailblazer-spatial-20261011/ai-analysis-v1.md), plus
+the [offer-path handoff](handoffs/2026-10-12-0132-codex-s4-hare-path-starter-offer.md).
+
+**S4-03 Hare strategy screen: 2026-10-11, needs in-game review.** The
+predeclared 13-arm × 20-seed screen on 400/20/10 is complete. A scheduled
+Threat Avoidance bug and a stale combat gate were fixed and the affected arms
+replayed on the same seeds; 319 EditMode and 42 PlayMode tests passed. Movement
+activity and seed-drop accounting are observable, but patch revisits and
+Warren crowding pressure remain insufficient for strategy
+acceptance. See the [screen report](Sprints/S4-03-screen-20261011/report.md) and
+its [analysis](Sprints/S4-03-screen-20261011/ai-analysis-v1.md). Josh and Sim's
+player-flow review and accept/revise decision remain open.
+
+**S4 gestation checkpoint: 2026-10-10, ready for review on codex/s4-gestation-checkpoint-20261010.**
+Hare and Fox now use a provisional 48-tick gestation period, with pending litters
+preserved through movement and whole-litter births waiting for space. Full
+isolated-worktree Unity suites passed (317 EditMode and 42 PlayMode). The S4
+record also captures Trailblazer, Warren, and Gardeners identities and
+Gardeners' one-unit reserve cost per successful seed drop. Matched-seed
+balance and team review remain open. See the
+[checkpoint handoff](handoffs/2026-10-10-1853-codex-s4-gestation-checkpoint.md).
+
+**S4-03 exploratory pilot: 2026-10-10; main fixture selected 2026-10-11.** A
+five-seed matched control/Gardeners pilot after gestation found poor
+choice reach at 400/25/15 and more observable seed renewal at the existing
+400/20/10 manual fixture. Both fixtures still had frequent Hare extinction.
+Josh selected 400/20/10 for the main screen, with 400/25/15 retained as a
+stress comparison. The inputs are frozen in the
+[screen plan](Sprints/S4-03-screen-plan-20261011.md). See the
+[pilot handoff](handoffs/2026-10-10-1902-codex-s4-03-gestation-baseline-pilot.md).
+
+
+**October 10 comparison-preview hang investigated locally:** Windows logged an
+Application Hang for the canonical Workbench. Bevin reported Hare/Fox vision
+1-15, twelve seeds and all strategies/policies; adding Plant energy1,2,3 crosses
+the inherited10,000-condition limit. Automated checks reproduce the warning but
+did not reproduce the original hang. Preview row updates now batch layout and
+avoid the redundant resize callback; invalid previews clear rows and columns,
+with explicit requested condition/run counts. Fourteen GUI check groups pass,
+including sequential Add/edit/remove recovery at three window widths. See
+[handoff](handoffs/2026-10-10-0014-codex-workbench-comparison-preview-hang.md).
+Shared in `a82d1cd4`; original hang cause and human retry remain open. Budget
+configuration is a proposed follow-up, not an implemented change.
+
+**October 9 dropdown readability fix added locally:** The Compare values picker
+and value entry now fill the available column instead of collapsing under the
+auto-sized layout. The open list measures every label with the current font and
+uses a twelve-entry scrollable height. Read-only setting cells no longer show
+misleading dropdown arrows and allow wrapping. Thirteen native GUI checks pass,
+including a regression that fails on the previous picker and checks all thirty
+labels at default/compact sizes and larger text. Open lists rendered/inspected
+at 144 DPI. See [handoff](handoffs/2026-10-09-2356-codex-workbench-readable-dropdowns.md).
+Shared in `a82d1cd4`; this UI fix changes no simulation rules or evidence.
+
+**October 9 publication package:** Bevin authorized committing and pushing this
+session's D5 inspection setup, live Plant count, Excel exporter and interactive
+Workbench to `origin/BevBranch`. The publication commit includes the source,
+launchers, focused checks and guides; generated applications, workbooks and run
+evidence remain local ignored artifacts. The earlier "local/uncommitted" entries
+below describe their original handoff state. See the
+[publication handoff](handoffs/2026-10-09-1600-codex-cellsim-workbench-publication.md)
+and Git history for the shared revision. Human UI acceptance remains pending.
+
+**October 9 interactive Workbench setup added locally:** Setup now has Scenario,
+Choices, Compare values and Run settings sections beside a live strategy ×
+purchase matrix. Cell counts include every setting variant and matched seed;
+click a cell to inspect its combinations. Thirty described controls expose
+runner-supported population/map/stat overrides, with loaded snapshot values,
+editable comparison lists and saved presets. The existing sweep compiler and
+pinned runner validate every condition; safe run/stop/resume remains in place.
+New input settings also export as separate numeric Run data fields. Final
+validation:13 setup/run check groups (42 fixture rows), all30 controls preflight,
+13 GUI/export checks,21 worksheet tests and clean Release builds. All four
+sections and compact/default layouts rendered/inspected. Older windows closed
+with Bevin's permission after preset saving; canonical EXE updated. No research
+batch, production data or Unity changes this turn. See
+[guide](CELLSIM_WORKBENCH.md) and
+[handoff](handoffs/2026-10-09-1454-codex-workbench-live-test-matrix.md).
+Local/uncommitted/unpushed on BevBranch; earlier work preserved.
+
+**October 9 pivot-ready worksheet iteration added locally:** A third **Run data**
+sheet automatically exports the same selected examples as Run review, with one
+run per row in the named RunData Excel table. Separate typed columns cover
+populations, whole-run/per-round slash-line metrics and statuses, decisions,
+purchases and loadout counts. Bevin explicitly chose the same 200 examples;
+Batch summary still covers all 4,800 matching runs. The fresh workbook preserves
+the existing review content and summary results; 110,108 values independently
+reconcile with raw evidence, including 77,172 slash-line fields. Twenty Python
+checks, twelve published-GUI checks and a zero-warning build passed. Saved
+workbook sheets and native export form rendered/inspected. No new simulations.
+See [guide](CELLSIM_EXCEL_EXPORT.md) and
+[handoff](handoffs/2026-10-09-1432-codex-workbench-pivot-run-data.md).
+Local/uncommitted/unpushed on BevBranch; prior work and workbooks preserved.
+
+**October 9 Workbench readability iteration added locally:** New exports open
+on Batch summary, showing experiment context and actual settings, Hare and
+all-three-species survival counts/percentages, and explicit missing data.
+Run review keeps its familiar layout with concise observations; detailed
+purchase-change narratives are optional in the GUI/CLI. The versioned report
+projection owns scientific interpretation/calculations; Excel layout and
+Windows process/UI remain separate. Bevin's first 4,800-run workbook was
+re-exported to a fresh readable file without new simulations or original edits.
+All 24 summaries and 200 examples/native links independently checked; average
+example row height fell from 182.79 to 90 points. Fifteen Python checks,
+twelve published-GUI checks and zero-warning Release publish passed. See
+[worksheet guide](CELLSIM_EXCEL_EXPORT.md) and
+[handoff](handoffs/2026-10-09-1400-codex-workbench-readable-reports.md).
+Local/uncommitted/unpushed on BevBranch; earlier work is preserved.
+
+**October 9 Workbench setup/run controls added locally:** **Set up & run** now
+provides readable experiment settings/notes, saved presets, a run-count preview,
+validation and a deliberate Run button. Validation freezes a fresh experiment
+and pinned runner without workers; progress, safe stop, resume/recheck and
+Open saved run connect to the existing executor. Completed chunks survive stop;
+changed/moved frozen evidence is refused. Export this run completes the
+setup → run → review → export workflow. Load D5 example proposes 24 runs and
+starts nothing. Scope is the neutral Plant/Hare/Fox six-round flow, not arbitrary
+scenario authoring or a definition of human Gardeners play. Nine setup/run check
+groups (26 final fixture rows), twelve portable runner checks and native
+review/export regressions passed. Historical confirmation runner hash remains
+unchanged; no Unity/domain/tuning changes or large research batch this turn.
+See the [Workbench guide](CELLSIM_WORKBENCH.md) and
+[setup/run handoff](handoffs/2026-10-09-0201-codex-workbench-setup-run-stop-resume.md).
+Local/uncommitted/unpushed on BevBranch; prior work is preserved.
+
+**October 9 local CellSim Workbench added:** `Open-CellSim-Workbench.cmd`
+opens a native Windows GUI for the existing worksheet exporter and saved batch
+progress. The built EXE is under `artifacts/cellsim-workbench/`; basic export
+uses defaults, with optional filters/checkpoints, a visible background log and
+safe new-file output. Batch monitoring reads small status/summary metadata,
+flags stale Running state and checks summary identity. This first slice does
+not start simulations; the setup/run entry above supersedes that original
+limitation. Release publish and focused validation, including real
+existing-evidence export and native rendering, passed. See the
+[Workbench guide](CELLSIM_WORKBENCH.md) and
+[handoff](handoffs/2026-10-09-0141-codex-cellsim-local-workbench.md).
+Local/uncommitted/unpushed on BevBranch; earlier work is preserved.
+
+**October 9 readable simulation worksheet exporter added locally:** Bevin's
+manual Excel layout is now a reusable export format. Double-click
+`Export-Simulation-Worksheet.cmd` or run `CellSim.ps1 Excel` to select existing
+reports/completed sweeps, generate a fresh workbook and optionally open it.
+Run rows show pre-purchase checkpoints, endpoints, choices, purchase limits,
+factual recovery/death summaries, blank human notes and evidence links. Large
+exports bound displayed rows and retain all-matching condition totals. The
+goal is human-operated setup/run/review without AI prompts; this slice adds
+export only. The existing 96,000-run batch was read/validated, not rerun, to
+produce a 24-row example and independent 6,000-run summary cross-check.
+Twelve focused checks passed. Runtime dependencies and untested native picker/
+Excel interaction remain explicit. Read the [worksheet guide](CELLSIM_EXCEL_EXPORT.md)
+and [handoff](handoffs/2026-10-09-0104-codex-human-readable-excel-exporter.md).
+This work and the preceding inspection/display changes remain local and uncommitted.
+
+**October 8 live Plant-total display added:** The Field Ledger now shows
+`PLANTS: current total` beside Population, using the latest simulation snapshot.
+Unity recompile and live binding checks passed at initial/decision/terminal
+states; screenshots confirm visibility beside the Mutation/purchase overlay.
+Play Mode is stopped after checks. Source/docs remain local and uncommitted.
+Read the [display handoff](handoffs/2026-10-08-2242-codex-live-plant-population-display.md).
+
+**October 8 D5 visual review setup prepared locally:** Copied inspection scene
+`ForestEdge_D5_VisualReview` and scenario/Hare/Fox assets configure wrapped 54x32,
+325/30/15, Hare vision 9, Fox energy 160 and six 100-tick phases with Journey off.
+All eight supplied seed/purchase-policy examples reproduced their stated Unity
+preview outcomes; the inspection-only runtime Inspector reset control passed
+all four first-boundary seed checks, Unity recompile and the existing S4 fixture
+regression. The legacy Game-view setup panel is hidden, so the Inspector handles
+seed/reset/start and Game view handles purchases/Mutations. Human visual/player
+review and tick-700 viability remain pending; production defaults are unchanged.
+Read the [inspection handoff](handoffs/2026-10-08-2157-codex-d5-visual-inspection-setup.md)
+and [run guide](Research/Experiments/S4-04-Hare-Purchase-Confirmation/VISUAL_REVIEW.md).
+This work is local, uncommitted and unpushed.
+
+**October 8 Hare-purchase confirmation complete:** All 96,000 runs, paired
+analysis and purchase reports finished at 19:37:50 EDT. The 96 arms each have
+1,000 fresh matched seeds 60000-60999; all 1,920 chunks passed. Completion review
+verified frozen input/tool hashes, the 4.84 GB raw aggregate and analysis hashes,
+exact seed coverage, Valid APS/AHS n=1,000 in every arm, and all 480,000 assigned
+purchase windows with reconciled reached-window ledgers. Simulation took 4h 50m
+34s at 16 workers. The live dashboard now reports Completed / 96,000 / zero workers.
+Restoration and late-five improve Hare and all-species survival versus same-path
+no-buy controls on all twelve skill arms. Restoration also beats same-policy
+Skip all on both observed endpoints in all twelve arms. D5/S25 Gardeners
+restoration leads this panel at 52.2% all-species survival versus 35.8% no-buy,
+with mean APS -0.654, AHS -0.102 and spend 63.16 Field Data. The earlier C2/S14
+Gardeners restoration decline did not reproduce; the each-five 59% screen
+maximum did not repeat. Read the
+[completion/results handoff](handoffs/2026-10-08-codex-hare-confirmation-results.md)
+and [focused review](../artifacts/cellsim-hare-confirmation-20261008-143725/purchase-analysis/focused-review.md).
+Keep all four candidates; prioritize reviewing restoration and late-five.
+New thresholds/caps, tick-700 validation and production changes remain proposals.
+This completion review is local; the preceding publication is already pushed.
+
+**October 8 publication completed before confirmation finished:** Bevin requested committing and pushing the
+completed standalone tooling, purchase experiment work, progress dashboard and
+research without disturbing the running confirmation. Fresh isolated Release
+build (zero warnings/errors), portable self-test, sweep-analysis regression and
+dashboard fixtures passed. The rebuilt DLL is byte-identical to the live run's
+copy; all frozen input/tool hashes remain unchanged. Completed evidence and
+immutable confirmation inputs are packaged in
+[the shared research bundle](Research/Results/2026-10-08-CellSim-Sweeps/README.md).
+Raw/active output remains local. Main commit `bada43ad` was pushed to
+`origin/BevBranch`; local and remote SHAs were verified equal. The active batch
+continued to 30,000 validated runs with 16 workers and all pinned hashes intact.
+Read the [publication handoff](handoffs/2026-10-08-codex-cellsim-publication.md).
+Trello synchronization remains outstanding. The completion review above supersedes
+the running status at this publication checkpoint. The final handoff commit
+`e250d32f` was also pushed and verified against the remote.
+
+**October 8 Hare-purchase confirmation launch checkpoint (now complete):** Bevin accepted the recommended
+first step with "okay lets begin step by step". The approved follow-up runs the
+same four candidates and four paths with six purchase policies (none, late-five,
+each-one, each-three, each-five, restore-toward-start), 1,000 fresh matched seeds
+60000-60999: 96,000 runs at 16 workers. It started at 14:37 EDT in
+`artifacts/cellsim-hare-confirmation-20261008-143725/`; all 96 scientific argument
+sets match the corresponding screen arms, and the runner and snapshot are
+byte-identical to the validated screen. Portable self-test and frozen input
+checks passed. Prior Unity/reference/smoke validation is retained evidence,
+not rerun validation. First 16 chunks / 800 runs validated with 16 workers active.
+Automatic paired analysis and purchase reports follow completion. Read the
+[confirmation protocol](Research/Experiments/S4-04-Hare-Purchase-Confirmation/PROTOCOL.md)
+and [launch handoff](handoffs/2026-10-08-codex-hare-confirmation-launch.md).
+Bounded earlier-screen diagnostics reconcile APS/AHS components on 800 whole-run
+Gardeners observations plus phases; different observed windows and conditional
+phase sample sizes remain explicit. These are screen findings, not confirmation
+results. Threshold/cap extensions, tick-700 tests and production tuning remain
+future proposed scope, pending review.
+
+Bevin subsequently requested a visual progress dashboard. A read-only localhost
+dashboard is running at `http://127.0.0.1:59057/`, opened in Codex's browser.
+It refreshes every five seconds and shows validated chunk/run totals, workers,
+elapsed/estimated remaining simulation time, 96 matrix cells and active chunks.
+`tools/CellSim.Batch/dashboard.py` / `dashboard.html` use existing status and
+completion metadata; no runner or frozen input changes. See the
+[dashboard handoff](handoffs/2026-10-08-codex-cellsim-progress-dashboard.md).
+
+**October 8 completed Hare-purchase panel:** Bevin retained
+D4/S19, D4/S14, C2/S14 and D5/S25 from the quarter-million grid as candidates to
+develop, then requested studying the upgrade-window Buy Hare choice. The current
+player purchase costs 10 Field Data per Hare, separate from the Mutation choice;
+the legacy catalog's five-Data reinforcement price must not be substituted.
+The [purchase protocol](Research/Experiments/S4-03-Hare-Reinforcement-Candidate-Panel/PROTOCOL.md)
+and verified machine-readable panel cover eight purchase policies across those
+four contexts and all four paths, with 100 fresh matched seeds 50000-50099 /
+12,800 runs at 16 workers. Bevin approved execution with "yes run it".
+The shared harness now handles wallet-aware purchases and window audits, validated
+against Unity and historical controls before launch. The batch started October 8
+at 13:34 EDT in `artifacts/cellsim-hare-purchase-20261008-132317/`, with automatic
+paired analysis and purchase reports. All 12,800 runs and analysis completed at
+14:15 EDT; simulation time was 39.35 minutes. Completion review verified frozen
+input/raw/analysis hashes, 100 seeds per arm, APS/AHS Valid n=100 throughout and
+64,000 assigned windows. Restoration improved both survival endpoints on all
+three paths in D4/S19, D4/S14 and D5/S25, but hurt C2/S14 Gardeners. Late-five
+had positive observed purchase effects across all twelve candidate/path arms.
+D5/S25 Gardeners each-five had the highest all-species survival, 59% versus 39%
+without purchases, with higher spending and lower APS. These are exploratory
+observations; production defaults and follow-up selection remain human decisions.
+Read the [results handoff](handoffs/2026-10-08-codex-hare-purchase-results.md) and
+the [focused review](../artifacts/cellsim-hare-purchase-20261008-132317/purchase-analysis/focused-review.md).
+
+**October 8 standalone CellSim tooling:** Bevin authorized the implementation of
+a .NET 8 batch runner linking the production simulation and original experiment
+harness, then clarified that the goal is sweeping populations, grids, starting
+stats and skill paths to find candidate scenarios/mechanics. Unity exports frozen
+authored inputs; bounded console workers execute Cartesian or reproducibly sampled
+conditions with matched seeds, recovery, provenance and detailed replay. The sweep
+compiler supports 27 registered starting-stat overrides; SQLite/CSV analysis retains
+all-species slash lines, trajectories, status-aware distributions, path/held-axis
+paired deltas and shortlist confirmation. A 192-run/48-condition tooling pilot and
+120-run fresh-seed shortlist fixture complete, with analysis/integrity regressions
+passing. Existing cohort summarization uses the exact retained trajectories.
+Current-source Unity checks pass 259 focused EditMode tests and four reference
+seeds, including changed grid/populations/stats plus Trailblazer choices.
+The million-run plan passed dry-run validation; execution at that scale remains
+unmeasured. Read the [standalone runbook](CELLSIM_STANDALONE_RUNBOOK.md) for the
+commands, measured throughput and exact validation limits. These changes were
+subsequently published on BevBranch in the October 8 publication checkpoint above.
+This is shared-core diagnostic
+tooling; the short fixtures and illustrative ranking do not approve balance.
+The meeting's population and gameplay decisions still need balance work.
+
+**October 8 quarter-million grid complete:** All 250,000 runs and automatic
+analysis completed at 10:09 EDT after 6h 56m, using 16 workers. Independent hashes,
+SQLite integrity and exact coverage of 2,500 arms x 100 fresh seeds passed.
+The 625-context panel retains all 81 previous contexts and adds 544, at the same
+planned 600-tick horizon. Raw/SQLite/CSV evidence and compact completion reviews
+are in `artifacts/cellsim-250k-sweep-20261008-030316`.
+The new selected top arm (325/30/15, 54x32, Fox energy 80, Hare vision 9,
+Gardeners) retained all species in 68/100 seeds versus 16/100 for skip-all.
+The earlier winning context replicated the Gardeners advantage (54/100 vs 18/100);
+its earlier vision-9 advantage did not clearly replicate (54 vs 51 at vision 5).
+All top ten arms use Gardeners. Selection/inference remain exploratory; tick-700
+ecology, acquired-choice mechanisms, event pace and gameplay review are pending.
+Read the [quarter-million handoff and completion](handoffs/2026-10-08-0303-codex-250k-grid-kickoff.md)
+for inputs, verification and evidence limits.
+
+**October 8 larger sweep complete:** All 32,400 runs and automatic analysis completed
+at 02:12 EDT: 81 population/grid/starting-stat contexts, four Hare path policies,
+100 matched seeds and six 100-tick phases. Execution began at eight workers and
+resumed at Bevin's requested 32; total launch-to-analysis time was 39.86 minutes.
+Independent checks confirm all 1,296 chunks, exact per-condition seed coverage,
+raw/CSV hashes and SQLite integrity. Outputs and compact completion review are in
+`artifacts/cellsim-large-sweep-20261008-012921`. The strongest screened arm
+(250/20/10, 42x24, Fox energy 80, Hare vision 9, Gardeners) retained all species at
+tick 600 in 60/100 seeds versus 19/100 for its matched skip-all control. This is an
+exploratory selected result; fresh-seed, tick-700 ecology and gameplay review remain
+pending. Read the [handoff and completion record](handoffs/2026-10-08-0135-codex-large-sweep-kickoff.md)
+for the frozen inputs, verified outputs and evidence limits.
+
+**October 7 meeting decisions:** success means reaching tick 600 with an ecology viable through tick 700; viability is still undefined. Upgrades carry into the next simulation in the journey. Keep 600/40/25 as historical research and seek a new starting population with a more personal pace of kills, births, and other events. SimMasterBev owns the next balance work; DNA/secondary simulator work is deferred. No new threshold, population, or gameplay tuning has been implemented. Read the [meeting outcomes](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions) and [handoff](handoffs/2026-10-07-2239-codex-journey-meeting-decisions-and-population-pacing.md).
+
+**October 7 publication and journey integration:** S4 checkpoint `64a8e3b5` is pushed to BevBranch, and Salty's ProjectMain `fea55926` is integrated. The only content conflict was this document; both research and journey entries were retained. Fresh merged-revision checks passed 158 focused EditMode tests and one PlayMode journey continuity test with wrapping enabled. No fresh graphics review, full suite, build, or journey balance batch was run. The seven research packages below retain their original experiment dates and frozen-source provenance; older statements about local/uncommitted status describe those historical runs. See the [publication and integration handoff](handoffs/2026-10-07-2049-codex-s4-balance-publication.md). No new gameplay tuning is approved by this checkpoint.
+
+**S4-03 Trailblazer early-choice timing diagnostic: 2026-10-07, complete locally; human balance review pending.** Moving the first of five Trailblazer choices from tick 100 to tick 0 did not improve the matched all-species clear rate: 28/200 (14%) versus 30/200 (15%) on the same seeds, with a paired risk difference of -1 percentage point (95% CI -7.3 to +5.3; exact McNemar p=.878). The first-phase median Hare population ended higher (26 vs. 21), while median combat deaths changed only from 39 to 37.5; fewer candidate runs reached tick 600 (102 vs. 121). No gameplay values, defaults, or player-facing UX changed. See [protocol](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md). Raw run artifacts and validated summary remain under the ignored `artifacts/` directory.
+
+**S4-03 offer-aware strategy policy screen at 600/40/25: 2026-10-06, complete locally; balance review pending.** Four arms ran on 200 fresh common seeds (14200–14399) each. All-species clear rates were 16.0% skip-all, 15.0% Trailblazer, 17.0% Warren, and 25.5% Gardeners. Gardeners improved over skip-all on matched seeds (+9.5 percentage points, 95% CI +3.2 to +15.8); none reached the rough 40–50% target. Median Fox starvation deaths were 47–48 and energy-blocked reproduction candidates about 6,700–7,700 per run, flagging Fox persistence for diagnosis rather than immediate tuning. No gameplay values or defaults changed. See [protocol](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/PROTOCOL.md), [report](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/REPORT.md), [interpretation](Research/Experiments/S4-03-Strategy-Choice-Policy-Screen-600-40-25/ANALYSIS.md), and [handoff](handoffs/2026-10-06-2326-codex-s4-03-strategy-choice-policy-screen.md). Raw artifacts remain under the ignored `artifacts/` path.
+
+**S4-03 all-species threshold confirmation at 600/40/25: 2026-10-06, complete locally; human balance decision pending.** On 200 fresh common seeds per arm (14000-14199), the strict node-clear rate was 25/200 skip-all control, 58/200 Seed Dispersal, 50/200 Gardeners Digestion-first, and 57/200 Gardeners Dispersal-first. Each strategy cleared on more matched seeds than control alone; the two Gardeners orders did not differ decisively. Many horizon-reaching intervention failures miss the minimum-Fox threshold. No skill values, scenario defaults, or authored population settings were changed. See the [confirmation package](Research/Experiments/S4-03-Hare-Paired-Seed-Confirmation-600-40-25/README.md) and [handoff](handoffs/2026-10-06-1432-codex-s4-03-200-seed-threshold-confirmation.md). Full reports are local under the ignored experiment-artifact root.
+
+**S4-03 Hare paired-seed screen at 600/40/25: 2026-10-05, complete locally; human review pending.** Bevin selected 100 fresh common seeds per arm. The corrected 13-arm strategy matrix was run with 600 Plants / 40 Hares / 25 Foxes, wrapping on, 36x20, six 100-tick phases, 0.1-second steps, coupled responses off, and no reinforcements or added Genomes. Seeds 13000-13099 produced 1,300 runs and 7,219 observed phase windows; all run and slashline accounting checks passed. Seed Dispersal and both Gardeners orders retained all three species at tick 600 in 43/100 each, versus 19/100 control, while Hare survival was 60-61/100 versus 56/100. Both Trailblazer orders survived less often (42/100 and 46/100). These are contextual screening observations; medians remained low, means were skewed, and no tuning or balance decision is approved. See the [screen package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen-600-40-25/README.md) and [handoff](handoffs/2026-10-05-2348-codex-s4-600-40-25-paired-seed-screen.md). Raw evidence and exact dirty-source hashes are local under the ignored artifact root. No source or authored simulation asset was changed during the batch.
+
+
+**Wrapping population search: 2026-10-04, complete locally; visual candidate selection pending.**
+Bevin prefers wrapping and authorized a broad starting-population sweep with fixed
+species/skill values. The 336-combination, five-seed screen and seven-preset,
+20-fresh-seed recheck completed 1,820 main runs plus eight pilots. All inputs,
+7,310 phase windows, FPO accounting, slashline arithmetic and source hashes pass.
+600/40/25 survives in 10/20 and retains all three species in 2/20; 600/5/10
+survives in 13/20 but often narrowly after a huge boom; 400/20/10 survives in 1/20.
+Recommend Bevin visually compare 600/40/25 seeds 12000, 12011 and 12003 first.
+No source or authored defaults changed; existing local wrapping/avoidance work
+remains uncommitted. Read the [experiment package](Research/Experiments/S4-03-Wrapped-Population-Sweep/README.md)
+and [handoff](handoffs/2026-10-04-0127-codex-s4-wrapped-population-sweep.md).
+
+**Optional wrapping-grid experiment: 2026-10-04, complete locally; Bevin prefers the visual feel.**
+Bevin authorized connecting top/bottom and left/right edges with an Inspector
+toggle. `Species Simulation Preview > Wrap Edges` applies to both species and
+their movement, perception, interactions and neighbor counts; bounded remains
+the default. During Play, use Reset to Start before changing the toggle under
+Manual Simulation Testing. Six focused live assertion checks, matched initial
+layouts, and 80 matched 400/20/10 runs pass verification. Wrapping survives in
+0/20 control and 0/20 Movement-first Trailblazer runs versus 7/20 and 2/20
+bounded; this does not establish a balanced or more survivable default. Bevin visually
+preferred wrapping despite the failures and authorized a broad starting-population
+sweep with wrapping on. The authored default remains bounded. Earlier bounded results
+replay unchanged. Read the [wrapping handoff](handoffs/2026-10-04-0022-codex-s4-wrapping-grid-experiment.md)
+and [experiment package](Research/Experiments/S4-03-Wrapping-Grid-Screen/README.md).
+Source changes remain local and uncommitted with the prior paired-screen work.
+
+**S4-03 paired-seed screen: 2026-10-03, complete locally; human decision pending.** Bevin selected
+400 Plants / 20 Hares / 10 Foxes for the 13-arm, 20-seed comparison of six
+single Hare skills and both acquisition orders of the three core pairs. The
+first screen exposed scheduled Threat Avoidance not reaching experimental
+options; follow-up exposed an obsolete flee-speed gate and process-wide entity
+IDs in avoidance hashing. Local fixes and three focused assertion checks pass. The corrected 260-run
+screen and avoidance replay validate: control survives in 7/20, Crowding
+Tolerance alone in 9/20, and pairs in 2/20 to 5/20; all median final Hare
+populations are zero. No skill values or production assets were tuned.
+Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-development-screen.md)
+and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
+Results and fixes are not committed or pushed. The S4 Inspector fixture already
+uses 400/20/10; authored scenario defaults remain separate.
 **Forest Edge journey prototype: integrated 2026-10-06.** The canonical
 Desktop Simulation icon opens the full-screen journey map. The first unbranched
 reward node offers a Hare Mutation in a popup, then the first simulation node

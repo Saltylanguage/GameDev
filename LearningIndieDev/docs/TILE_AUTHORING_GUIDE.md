@@ -34,6 +34,10 @@ The neighboring terrain and active simulation atlas define the art contract. A n
 ## Unity implementation pattern
 
 - Keep terrain presentation in the existing atlas/resolver path; `TerrainTileResolver` owns the normalized 47-mask contract.
+- Live terrain samples four cells around a shared vertex and draws the selected
+  image between cell centers. Preserve matching grass/dirt coverage on shared
+  edges across all 16 corner states. Validate islands, holes and straight edges
+  using actual images; mask validity alone does not establish visual continuity.
 - Verify source sprite names, atlas packing, and the board renderer together. Do not add a second importer or a separate runtime loading convention for a new family.
 
 ## Verification checklist
@@ -47,6 +51,16 @@ The neighboring terrain and active simulation atlas define the art contract. A n
 - [ ] Rejected concepts stay under `artifacts/` and are not referenced by runtime code.
 
 ## Current example
+
+Forest Edge cosmetic decorations live in `Blob/64/ForestEdgeFlourishes/` and
+share the existing terrain atlas. They overlay full grass at 60% cell size;
+they are not a new 47-mask terrain family. Keep their `Noesis` texture label:
+the package importer premultiplies alpha for the custom board renderer, avoiding
+colored rectangles around otherwise transparent artwork. The V2 atlas importer
+must also explicitly set its default platform compression to Uncompressed:
+DXT compression can introduce RGB into fully transparent packed pixels even
+when the individual imports are correct. Preserve source PNGs. The current set
+contains ten decorations (three mushrooms, three shrubs and four flowers).
 
 The Grass terrain family is authored as named 64x64 sprites and packed by
 `Terrain_01.spriteatlasv2`. `TerrainTileResolver` selects among the 47 normalized

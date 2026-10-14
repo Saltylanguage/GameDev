@@ -1,0 +1,17 @@
+{
+  "state": "Passed",
+  "checks": [
+    "compact/detailed determinism",
+    "strict input rejection",
+    "dry run",
+    "exact serial/parallel output",
+    "detailed condition replay",
+    "resume identity",
+    "controller exclusion",
+    "orphan worker recovery",
+    "aggregate recovery",
+    "corrupt chunk rejection",
+    "timeout refusal",
+    "parity mismatch refusal"
+  ]
+}

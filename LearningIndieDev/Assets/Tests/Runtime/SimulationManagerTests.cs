@@ -587,6 +587,8 @@ namespace SaltyGame.Tests
             Assert.That(snapshot.Width, Is.EqualTo(2));
             Assert.That(snapshot.Height, Is.EqualTo(1));
             Assert.That(snapshot.GetCell(0, 0).IsPlantResource, Is.True);
+            Assert.That(snapshot.GetTerrainVertexMask(0, 0, TerrainVisualFamily.Grass), Is.EqualTo(255),
+                "Vertex coverage must retain the captured grid after the live cells change.");
             Assert.That(
                 TerrainTileResolver.IsValidMask(snapshot.GetCell(0, 0).TerrainVariantMask),
                 Is.True);

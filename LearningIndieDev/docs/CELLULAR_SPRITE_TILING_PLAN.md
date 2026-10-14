@@ -15,10 +15,11 @@
   The live terrain atlas packs the 47-mask Grass family under
   `Assets/Art/Terrain/Blob/64/Grass` and resolves sprites by stable name rather
   than pack order. Desert art is not currently present.
-- `TerrainTileResolver` computes a normalized eight-neighbor blob bit mask from the
-  simulation grid. It is presentation-only: it reads the immutable cell state
-  and never changes simulation rules or determinism. The same mask table is
-  shared by the runtime board, tests, and the editor preview window.
+- `TerrainTileResolver.ResolveVertexMask` samples the four terrain cells around
+  each shared vertex. The immutable board snapshot captures those masks; the
+  renderer draws their existing named sprites half a cell offset from the
+  simulation grid. The same vertex sampling drives the terrain paint preview.
+  This is presentation-only and never changes simulation rules or determinism.
 - The species preview no longer has a legacy IMGUI board or settings fallback;
   the Noesis shell is now the single runtime presentation path.
 - `TerrainTilePreviewWindow` reads the 64-pixel Grass family. The view model
@@ -30,28 +31,33 @@
 - `Terrain_01.spriteatlasv2` packs `Assets/Art/Terrain/Blob/64`. Its existing
   GUID is retained for scene references. The Noesis view model resolves names
   directly, so atlas packing order is not simulation or presentation state.
-- Every passable cell resolves a tile mask. Bare cells use the Grass neighbor
-  mask, so a dirt cell surrounded by Grass receives the right full or partial
-  Grass shape instead of remaining an un-tiled brown square. Bare remains a
-  distinct terrain when neighbor occupancy is sampled. Desert keeps its own
-  family and never falls back to Grass art.
+- Shared vertices give adjacent rendered tiles the same two control points
+  along their common edge. A Bare cell remains a dirt control point even when
+  surrounded by Grass; an isolated Grass cell remains a grass control point.
+  Non-wrapped borders extend the edge cell's terrain to the board clip; wrapped
+  boards sample the opposite edge. Animals, input and flourishes stay on the
+  simulation-cell grid. Desert retains its separate optional art slots.
 
 ## Smart-tiling model
 
-The Grass sprites represent the 47 normalized states of an eight-neighbor blob
-mask. The eight-bit mask is:
+The authored Grass sprites retain their 47-mask naming contract. Its bits are:
 
 ```text
 N = 1, NE = 2, E = 4, SE = 8, S = 16, SW = 32, W = 64, NW = 128
 ```
 
-Mask `000` is the full-dirt image (no grass vertices); mask `255` is entirely
-grass. Other raw masks are normalized for diagonal bridges, then resolved
-through the 47 named variants in `TerrainTileResolver`. The board samples the
-eight neighboring cells at every visual tile, including Bare dirt. Mask `000`
-is used only when none of those neighbors are Grass; a Bare center surrounded
-by Grass resolves to `255`. This stays presentation-only and does not alter
-simulation determinism.
+Mask `000` is full dirt and `255` is full grass. The live renderer supplies the
+NW/NE/SE/SW corner bits from the four cells surrounding a shared vertex.
+Normalization supplies each occupied corner's adjacent cardinal bits to select
+the compatible authored sprite. There are 16 four-corner states, all present in
+the existing 47-image atlas; no replacement art or runtime image rotation is
+required. The images span cell centers and are clipped to the board rectangle.
+
+The earlier center-excluding eight-neighbor mask is retained as per-cell
+coverage data for cosmetic flourish eligibility and legacy callers. It no
+longer selects the live board or paint-preview terrain image. That old drawing
+model duplicated straight boundaries and could hide isolated terrain; see the
+October 14 shared-vertex handoff for current validation.
 
 ## Planning concerns
 
@@ -77,10 +83,11 @@ Check that record before replacing a family or changing the renderer.
 - `TerrainTilePreviewWindow` previews all 47 Grass masks from the named files.
 - The runtime still uses one batched Noesis board; no Tilemap or `RuleTile`
   dependency was added.
-- Regression tests now cover a Bare center surrounded by Grass in both the
-  resolver and board snapshot. Post-fix Unity validation is pending: the
-  repository preflight found the Unity editor already open and refused to run
-  tests, rather than closing it or risking its state.
+- October 14 adds center-preserving island/hole and straight-boundary tests,
+  edge-clamp/wrap tests, immutable vertex-snapshot coverage, actual-art checks
+  for all compatible horizontal/vertical vertex edges, and rendered topology
+  coverage. The seam regression now checks the shifted terrain edges as well
+  as simulation-cell edges. The dated handoff records executed results.
 
 ## Remaining validation
 

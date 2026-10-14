@@ -22,6 +22,7 @@ namespace SaltyGame
             canonical.Append(Version).Append('|');
             Append(canonical, data.Width);
             Append(canonical, data.Height);
+            Append(canonical, data.WrapEdges);
             Append(canonical, data.RunDurationSeconds);
             Append(canonical, data.StepInterval);
             Append(canonical, data.MaxPopulation);

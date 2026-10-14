@@ -17,6 +17,9 @@ param(
     [int]$PhaseLengthTicks = 0,
     [string]$PhaseUpgradeSchedule = '',
     [string]$PhaseUpgradeAssetSchedule = '',
+    [ValidateSet('', 'trailblazer', 'warren', 'gardeners')]
+    [string]$MutationPolicy = '',
+    [switch]$WrapEdges,
     [ValidateRange(0, 1000000)]
     [double]$RunDurationSeconds = 0,
     [ValidateRange(0, 1000000)]
@@ -185,6 +188,14 @@ if ($null -ne $assetPath) {
 
 if (-not [string]::IsNullOrWhiteSpace($StartingPopulations)) {
     $arguments += @('-startingPopulations', $StartingPopulations)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($MutationPolicy)) {
+    $arguments += @('-mutationPolicy', $MutationPolicy)
+}
+
+if ($WrapEdges) {
+    $arguments += @('-wrapEdges', 'true')
 }
 
 if ($GridWidth -gt 0) {

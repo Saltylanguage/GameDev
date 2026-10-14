@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "snapshot": "../../artifacts/cellsim-neutral.json",
+  "seedStart": 100000,
+  "seedCount": 1000,
+  "chunkSize": 100,
+  "workers": 8,
+  "timeoutSeconds": 3600,
+  "maxRuns": 1000000,
+  "horizonTicks": 600,
+  "baseArguments": ["-phaseLengthTicks", "100"],
+  "axes": [
+    { "id": "populations", "values": [
+      { "id": "350-20-10", "arguments": ["-startingPopulations", "plant=350,hare=20,fox=10"] },
+      { "id": "400-40-20", "arguments": ["-startingPopulations", "plant=400,hare=40,fox=20"] }
+    ] },
+    { "id": "grid", "values": [
+      { "id": "30x18", "arguments": ["-gridWidth", "30", "-gridHeight", "18"] },
+      { "id": "36x20", "arguments": ["-gridWidth", "36", "-gridHeight", "20"] }
+    ] },
+    { "id": "fox-energy", "values": [
+      { "id": "80", "arguments": ["-speciesStats", "fox:energy.starting=80"] },
+      { "id": "120", "arguments": ["-speciesStats", "fox:energy.starting=120"] }
+    ] },
+    { "id": "hare-vision", "values": [
+      { "id": "5", "arguments": ["-speciesStats", "hare:awareness.vision-range=5"] },
+      { "id": "7", "arguments": ["-speciesStats", "hare:awareness.vision-range=7"] }
+    ] }
+  ],
+  "paths": [
+    { "id": "skip-all", "arguments": ["-phaseUpgradeSchedule", "none;none;none;none;none;none"] },
+    { "id": "trailblazer", "arguments": ["-mutationPolicy", "trailblazer"] },
+    { "id": "warren", "arguments": ["-mutationPolicy", "warren"] }
+  ],
+  "referencePath": "skip-all",
+  "metrics": [
+    "outcome.playerAliveAtHorizon", "outcome.allSpeciesAliveAtHorizon",
+    "population.hare.final", "population.hare.min", "population.hare.max", "population.hare.mean",
+    "population.fox.final", "population.fox.min", "population.fox.mean",
+    "herbivore.hare.PREY", "herbivore.hare.STRV", "herbivore.hare.CRWD", "herbivore.hare.BIR",
+    "herbivore.hare.pAVI", "herbivore.hare.sAVI", "herbivore.hare.cAVI", "herbivore.hare.RFS", "herbivore.hare.APS",
+    "predator.fox.KIL", "predator.fox.STRV", "predator.fox.BIR", "predator.fox.huntAVG", "predator.fox.AHS",
+    "activity.fox.reproductionBlockedEnergy", "activity.fox.births.per100Ticks", "activity.hare.births.per100Ticks"
+  ]
+}

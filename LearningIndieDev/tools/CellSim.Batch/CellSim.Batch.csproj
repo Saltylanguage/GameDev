@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);CELLSIM_STANDALONE</DefineConstants>
+    <NoWarn>$(NoWarn);CS0618;CS0649;CS0169;CS0168</NoWarn>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+  </PropertyGroup>
+  <ItemGroup>
+    <SharedSource Include="../../Assets/Scripts/Game/Grid/Grid.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Grid/GridPattern.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Grid/GridPatternTemplates.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Grid/GridSimulation.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Terrain/TerrainDefinition.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Terrain/TerrainId.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesArchetype.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesAttributeRegistry.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesAwarenessRules.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesCell.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesDefinition.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesGenomeContract.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesId.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesProgression.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesRole.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesRuleDefaults.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesRules.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesUpgrade.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesUpgradeAsset.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesUpgradeContract.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesUpgradeLoadoutFingerprint.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesUpgradePredictionInputAdapter.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimData.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SimulationRunResult.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesAttackOpportunity.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesExperimentalOptions.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesInitialGridFactory.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesNavigation.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesPairedSimulationRunner.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesPerception.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesSimulation.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesSimulationRunner.cs" />
+    <SharedSource Include="../../Assets/Editor/SimulationTools/CellularSimulationExperimentRunner.cs" />
+    <SharedSource Include="../../Assets/Editor/SimulationTools/SimulationReportSerialization.cs" />
+    <SharedSource Include="../../Assets/Editor/SimulationTools/CellSimPortable.cs" />
+    <Compile Include="@(SharedSource)" Link="Shared/%(Filename)%(Extension)" />
+    <EmbeddedResource Include="@(SharedSource)" LogicalName="CellSim.Source.%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

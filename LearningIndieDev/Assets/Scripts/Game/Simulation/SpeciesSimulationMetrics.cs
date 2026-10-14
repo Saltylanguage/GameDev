@@ -978,6 +978,9 @@ namespace SaltyGame
 
     public sealed class SpeciesSimulationMetrics : ISpeciesSimulationMetricsView
     {
+        // Summary runs keep counters and death evidence needed by stat lines.
+        public bool CaptureDetailedEvents { get; set; } = true;
+
         readonly Dictionary<SpeciesId, SpeciesSimulationActivity> activityBySpecies =
             new Dictionary<SpeciesId, SpeciesSimulationActivity>();
         readonly Dictionary<SpeciesId, SpeciesReproductionActivity> reproductionBySpecies =
@@ -1208,6 +1211,8 @@ namespace SaltyGame
 
         internal bool IsTrackedBehaviorCell(SpeciesId species, int x, int y)
         {
+            if (!CaptureDetailedEvents) return false;
+
             return trackedBehaviorCells.TryGetValue(species, out var tracked)
                 && tracked.X == x
                 && tracked.Y == y;
@@ -1232,6 +1237,7 @@ namespace SaltyGame
                     y,
                     currentState,
                     stateTicks: 1);
+                if (!CaptureDetailedEvents) return;
                 behaviorTransitions.Add(new SpeciesBehaviorTransition(
                     species,
                     entityId,
@@ -1635,6 +1641,8 @@ namespace SaltyGame
             int blockModifier,
             bool hit)
         {
+            if (!CaptureDetailedEvents) return;
+
             combatRollEvents.Add(new SpeciesCombatRollEvent(
                 attackerSpecies,
                 targetSpecies,
@@ -1653,6 +1661,8 @@ namespace SaltyGame
             int y,
             int remainingTicks)
         {
+            if (!CaptureDetailedEvents) return;
+
             combatCooldownSuppressionEvents.Add(new SpeciesCombatCooldownSuppressionEvent(
                 attackerSpecies,
                 entityId,
@@ -1685,6 +1695,8 @@ namespace SaltyGame
             int childX,
             int childY)
         {
+            if (!CaptureDetailedEvents) return;
+
             if (!species.IsValid)
             {
                 return;

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="2" result="Passed" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.1820179">
+  <test-suite type="TestSuite" id="1000" name="LearningIndieDev" fullname="LearningIndieDev" runstate="Runnable" testcasecount="318" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.182018" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1072" name="SaltyGame.Editor.Tests.dll" fullname="F:/ForkBin/GameDev/LearningIndieDev/Library/ScriptAssemblies/SaltyGame.Editor.Tests.dll" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.170587" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="16068" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestSuite" id="1073" name="SaltyGame" fullname="SaltyGame" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.169418" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-suite type="TestSuite" id="1074" name="EditorTests" fullname="SaltyGame.EditorTests" runstate="Runnable" testcasecount="61" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.168561" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+          <properties />
+          <test-suite type="TestFixture" id="1050" name="SimulationReportTelemetryTests" fullname="SaltyGame.EditorTests.SimulationReportTelemetryTests" classname="SaltyGame.EditorTests.SimulationReportTelemetryTests" runstate="Runnable" testcasecount="2" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.165933" total="2" passed="2" failed="0" inconclusive="0" skipped="0" asserts="0">
+            <properties />
+            <test-case id="1052" name="ActivityReportSerializesEligibleReproductionAttempts" fullname="SaltyGame.EditorTests.SimulationReportTelemetryTests.ActivityReportSerializesEligibleReproductionAttempts" methodname="ActivityReportSerializesEligibleReproductionAttempts" classname="SaltyGame.EditorTests.SimulationReportTelemetryTests" runstate="Runnable" seed="1915186969" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.024056" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+            </test-case>
+            <test-case id="1051" name="SummaryTelemetryPreservesStateAndPopulationAccounting" fullname="SaltyGame.EditorTests.SimulationReportTelemetryTests.SummaryTelemetryPreservesStateAndPopulationAccounting" methodname="SummaryTelemetryPreservesStateAndPopulationAccounting" classname="SaltyGame.EditorTests.SimulationReportTelemetryTests" runstate="Runnable" seed="1981655984" result="Passed" start-time="2026-10-08 17:31:49Z" end-time="2026-10-08 17:31:49Z" duration="0.125532" asserts="0">
+              <properties>
+                <property name="retryIteration" value="0" />
+                <property name="repeatIteration" value="0" />
+              </properties>
+              <output><![CDATA[[FSM][Tracked] Herbivore#15 age 0 at (3,1) Previous: Wandering, Current: Threatened
+[FSM][Tracked] Herbivore#15 age 6 at (2,0) Previous: Threatened, Current: Dead
+[FSM][Tracked] Carnivore#18 age 17 at (4,2) Previous: Wandering, Current: Sleeping
+[FSM][Tracked] Carnivore#18 age 25 at (4,2) Previous: Sleeping, Current: Wandering
+Saving results to: C:/Users/bevin/AppData/LocalLow/DefaultCompany/LearningIndieDev\TestResults.xml
+]]></output>
+            </test-case>
+          </test-suite>
+        </test-suite>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>
