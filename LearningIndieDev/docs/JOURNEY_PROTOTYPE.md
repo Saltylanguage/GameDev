@@ -1,6 +1,8 @@
 # Forest Edge journey prototype
 
-**Status (2026-10-06):** Integrated into the canonical Desktop player flow for the first two ecological cycles. The later map nodes are ScriptableObject placeholders. This implementation does not settle the final journey length, upgrade vocabulary, balance, or reward economy.
+**Status (2026-10-06):** Integrated into the canonical Desktop player flow for the first two ecological cycles. Josh accepted this as a playable prototype and deferred further journey work until later in Sprint 4. The next pass aims to polish it for V1 ship readiness. The later map nodes are ScriptableObject placeholders. This implementation does not settle the final journey length, upgrade vocabulary, balance, or reward economy.
+
+**Map layout pass (2026-10-08):** The authored 12-stage route now uses wider vertical spacing and longer distinct branches. Four fork points lead to 21 directed connections across 18 markers. The opening conditions lead to separate simulation markers: Seedfall to Burrow Study, Fox Tracks to Water Table. The later markers remain non-playable placeholders. The updated map passed its focused asset test, report-to-map PlayMode test, and 1920×1080 Game-view capture on both backdrops; visual acceptance by Josh is still pending.
 
 ## Player flow
 
@@ -15,7 +17,7 @@
 
 ## Authored map and UI
 
-The 18-node, 12-stage graph lives in [`Journey`](../Assets/Data/ProductionData/CellularSimulation/Journey/) ScriptableObjects. `ForestEdgeJourney` stores normalized positions, and `JourneyNodeAsset` stores kind, description, branch connections, availability, condition effect, data reward, and optional Mutation reward IDs. The first six nodes are playable: one starting Reward, one opening Simulation, two Conditions, and two connected Simulation nodes. The remaining twelve nodes are visible placeholders, not selectable content. Each complete visual route reaches 12 nodes.
+The 18-node, 12-stage graph lives in [`Journey`](../Assets/Data/ProductionData/CellularSimulation/Species/Journey/) ScriptableObjects. `ForestEdgeJourney` stores normalized positions, and `JourneyNodeAsset` stores kind, description, branch connections, availability, condition effect, data reward, and optional Mutation reward IDs. The first six nodes are playable: one starting Reward, one opening Simulation, two Conditions, and two connected Simulation nodes. The remaining twelve nodes are visible placeholders, not selectable content. Each complete visual route reaches 12 nodes.
 
 The full Desktop canvas has seasonal and continuous-summer backdrops. Node icons and curved route lines are XAML overlays over reusable artwork. Labels appear on hover, and hover focuses the connected route and fills the right field journal from the node asset. Selecting a playable node changes the journal and adds a pulsing highlight. The popup uses the selected node's authored description and current reward choices. Its copy and styling are still prototype quality.
 

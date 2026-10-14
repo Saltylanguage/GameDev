@@ -2619,6 +2619,236 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void CreatureGestationDelaysBirthForFortyEightTicks()
+        {
+            var pattern = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: pattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 1,
+                    metabolism: 0,
+                    gestationTicks: 48),
+            };
+            var cells = new Grid<SpeciesCell>(3, 1);
+            cells.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            var parentId = cells.GetCell(1, 0).EntityId;
+            var metrics = new SpeciesSimulationMetrics();
+            Assert.That(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId)
+                .Apply(rules[SpeciesIds.Carnivore]).GestationTicks, Is.EqualTo(48));
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 11, metrics: metrics);
+            Assert.That(cells.GetCell(1, 0).PendingLitterSize, Is.EqualTo(1));
+            Assert.That(cells.GetCell(1, 0).GestationTicksRemaining, Is.EqualTo(48));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+
+            for (var tick = 1; tick < 48; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 11, metrics: metrics);
+                Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+            }
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 11, metrics: metrics);
+            Assert.That(cells.GetCell(1, 0).PendingLitterSize, Is.Zero);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
+            Assert.That(metrics.BirthEvents, Has.Count.EqualTo(1));
+            Assert.That(metrics.BirthEvents[0].ParentEntityId, Is.EqualTo(parentId));
+            Assert.That(metrics.GetReproductionActivity(SpeciesIds.Carnivore).SuccessfulAttempts, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void PregnantCreatureKeepsItsLitterWhenItMoves()
+        {
+            var movement = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: movement,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: movement,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 1,
+                    metabolism: 0,
+                    gestationTicks: 48),
+            };
+            var cells = new Grid<SpeciesCell>(3, 1);
+            cells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            var parentId = cells.GetCell(0, 0).EntityId;
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 15);
+            Assert.That(cells.GetCell(0, 0).PendingLitterSize, Is.EqualTo(1));
+
+            var fasterMovement = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.FasterMovementId);
+            rules[SpeciesIds.Carnivore] = fasterMovement.Apply(fasterMovement.Apply(rules[SpeciesIds.Carnivore]));
+            var moved = false;
+            for (var tick = 0; tick < 10; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 15);
+                for (var x = 0; x < cells.Width; x++)
+                {
+                    var cell = cells.GetCell(x, 0);
+                    if (cell.EntityId != parentId)
+                    {
+                        continue;
+                    }
+
+                    Assert.That(cell.PendingLitterSize, Is.EqualTo(1));
+                    moved |= x > 0;
+                    break;
+                }
+            }
+
+            Assert.That(moved, Is.True, "The test fixture must exercise an actual move.");
+        }
+
+        [Test]
+        public void GestationEndsWithoutBirthWhenParentStarves()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.right }),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 1,
+                    metabolism: 1,
+                    gestationTicks: 48),
+            };
+            var cells = new Grid<SpeciesCell>(2, 1);
+            cells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 3));
+            var metrics = new SpeciesSimulationMetrics();
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 12, metrics: metrics);
+            Assert.That(cells.GetCell(0, 0).PendingLitterSize, Is.EqualTo(1));
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 12, metrics: metrics);
+            Assert.That(cells.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+        }
+
+        [Test]
+        public void GestationWaitsForAnOpenBirthCell()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.right }),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 1,
+                    metabolism: 0,
+                    gestationTicks: 48),
+            };
+            var cells = new Grid<SpeciesCell>(2, 1);
+            cells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            var metrics = new SpeciesSimulationMetrics();
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 13, metrics: metrics);
+            Assert.That(cells.GetCell(0, 0).PendingLitterSize, Is.EqualTo(1));
+            cells.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 0));
+
+            for (var tick = 0; tick < 48; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 13, metrics: metrics);
+            }
+
+            Assert.That(cells.GetCell(0, 0).GestationTicksRemaining, Is.Zero);
+            Assert.That(cells.GetCell(0, 0).PendingLitterSize, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+
+            cells.SetCell(1, 0, SpeciesCell.Empty);
+            cells = SpeciesSimulation.Step(cells, rules, seed: 13, metrics: metrics);
+
+            Assert.That(cells.GetCell(0, 0).PendingLitterSize, Is.Zero);
+            Assert.That(cells.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void GestationWaitsForTheWholeLitterWhenOnlyOneBirthCellIsOpen()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: EmptyPattern,
+                    dietTarget: null,
+                    reproductionPattern: new GridPattern(new[] { Vector2Int.left, Vector2Int.right }),
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 1f,
+                    reproductionFoodRequired: 1,
+                    litterMinimum: 2,
+                    litterMaximum: 2,
+                    metabolism: 0,
+                    gestationTicks: 48),
+            };
+            var cells = new Grid<SpeciesCell>(3, 1);
+            cells.SetCell(1, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 10));
+            var metrics = new SpeciesSimulationMetrics();
+
+            cells = SpeciesSimulation.Step(cells, rules, seed: 14, metrics: metrics);
+            Assert.That(cells.GetCell(1, 0).PendingLitterSize, Is.EqualTo(2));
+            cells.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 0));
+
+            for (var tick = 0; tick < 48; tick++)
+            {
+                cells = SpeciesSimulation.Step(cells, rules, seed: 14, metrics: metrics);
+            }
+
+            Assert.That(cells.GetCell(1, 0).GestationTicksRemaining, Is.Zero);
+            Assert.That(cells.GetCell(1, 0).PendingLitterSize, Is.EqualTo(2));
+            Assert.That(cells.GetCell(0, 0).IsCreature, Is.False);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.Zero);
+
+            cells.SetCell(2, 0, SpeciesCell.Empty);
+            cells = SpeciesSimulation.Step(cells, rules, seed: 14, metrics: metrics);
+
+            Assert.That(cells.GetCell(1, 0).PendingLitterSize, Is.Zero);
+            Assert.That(cells.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(cells.GetCell(2, 0).IsCreature, Is.True);
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).Births, Is.EqualTo(2));
+            Assert.That(metrics.BirthEvents, Has.Count.EqualTo(2));
+        }
+
+        [Test]
         public void AlphaOffspringRulePromotesNewbornCreaturesAndChangesTheRulesetFingerprint()
         {
             var source = new Grid<SpeciesCell>(3, 1);

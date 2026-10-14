@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: OldGrove
+  m_Name: CanopyWatch
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: old-grove
-  displayName: OLD GROVE
-  description: Old trees shelter a changing community.
+  nodeId: canopy-watch
+  displayName: CANOPY WATCH
+  description: Survey the forest from its upper branches.
   kind: 5
-  row: 7
+  row: 8
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 16c431e8db9a4926814300dea4560fda, type: 2}
-  - {fileID: 11400000, guid: a37abab3a4fd4d9b85a0892d5a4c6abe, type: 2}
+  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
+  - {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}

@@ -227,7 +227,7 @@
   </UserControl.Resources>
 
   <Grid x:Name="RootGrid" Background="#FF9DCDEB">
-    <Image Source="{StaticResource GalapagOS.Image.Background.MainMenu}"
+    <Image Source="{StaticResource GalapagOS.Image.Background.WoodlandSummer}"
            Stretch="UniformToFill"
            RenderOptions.BitmapScalingMode="NearestNeighbor"/>
     <Rectangle IsHitTestVisible="False">
@@ -263,10 +263,15 @@
         </EventTrigger>
       </Grid.Triggers>
 
-      <Border Height="92"
-              VerticalAlignment="Bottom"
-              Background="#3822180D"
-              IsHitTestVisible="False" d:IsHidden="True"/>
+      <Rectangle Height="180" VerticalAlignment="Bottom" IsHitTestVisible="False">
+        <Rectangle.Fill>
+          <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+            <GradientStop Offset="0" Color="#0022180D" />
+            <GradientStop Offset="0.5" Color="#1422180D" />
+            <GradientStop Offset="1" Color="#4822180D" />
+          </LinearGradientBrush>
+        </Rectangle.Fill>
+      </Rectangle>
 
       <Grid x:Name="MainMenu_ContentGrid" Margin="68,44,68,44" d:IsHidden="True">
         <Grid.RowDefinitions>
@@ -447,11 +452,6 @@
 
         <Grid x:Name="FooterStrip" Grid.Row="2">
           <TextBlock Text="A CELLULAR AUTOMATA ROGUELIKE"
-                     FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                     FontSize="11"
-                     Foreground="{StaticResource Menu.Cream}" />
-          <TextBlock Text="FOREST EDGE  •  DAWN CYCLE"
-                     HorizontalAlignment="Right"
                      FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                      FontSize="11"
                      Foreground="{StaticResource Menu.Cream}" />

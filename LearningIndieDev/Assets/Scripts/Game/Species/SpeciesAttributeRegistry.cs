@@ -319,7 +319,8 @@ namespace SaltyGame
                 rules.MatingEnergyThresholdFraction,
                 rules.MatingEnergyCostFraction,
                 rules.DistributeMatingEnergyToOffspring,
-                crowdingEnergyReduction);
+                crowdingEnergyReduction,
+                rules.GestationTicks);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()

@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: Migration
+  m_Name: RidgeTrail
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: migration
-  displayName: MIGRATION
-  description: New movement patterns reshape the food web.
-  kind: 3
-  row: 4
-  column: 1
+  nodeId: ridge-trail
+  displayName: RIDGE TRAIL
+  description: The experiment moves through a higher stretch of woodland.
+  kind: 0
+  row: 9
+  column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}
+  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}

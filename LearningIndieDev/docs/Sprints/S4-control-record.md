@@ -36,6 +36,82 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
 - Josh approved the 400 Plants / 25 Hares / 15 Foxes comparison variant with
   a 0.1-second step. Keep the authored production asset at 400 / 55 / 35 and
   0.2 seconds; the difference is understood and does not block planning.
+- **Josh's S4-01 build identity decision, 2026-10-07:** Trailblazer, Warren,
+  and Gardeners are flexible Hare builds assembled through freely chosen basic
+  skills. The workbook's named pick paths are examples and comparison inputs,
+  not locked loadouts or separate species. Skill values, strategy trade-offs,
+  and evidence still require S4-01 review.
+- **Trailblazer player identity, 2026-10-07:** Josh wants the speedster Hare
+  build: high mobility and threat avoidance, fast travel and broad map coverage,
+  with a lower-crowding, dispersed population. Warren and Gardeners should feel
+  more territorial and localized by comparison. This is a design target for
+  matched-seed and in-game review, not yet a measured outcome or a decision to
+  add a separate crowding mechanic.
+- **Gardeners player identity, 2026-10-10:** Josh wants Hares to maintain a
+  local network of renewable food patches and move among them as patches
+  recover. This should create more movement between resources than Warren's
+  fixed home range while staying more localized than Trailblazer. Feeding
+  efficiency and seed dispersal are the candidate supported skills. Josh chose
+  the current one-unit stored-food-reserve cost per successful seed drop as the
+  main immediate tradeoff for the first comparison. Patch renewal, reserve
+  spending, and player-visible movement still need S4 evidence.
+- **Warren player identity, 2026-10-07:** Josh wants the opposite end of the
+  Trailblazer spectrum: stationary, territorial, localized, and settled. Smaller
+  litters with safer reproduction through burrows should support a reliable
+  population in one territory. Crowding Tolerance may be stronger, but it is a
+  supporting skill rather than Warren's defining pillar. This revises the
+  workbook example built mainly from Tough Hide and Crowding Tolerance.
+  Burrows is intended as one of the defining, high-impact upgrades in the later
+  half of the Rabbit Genome tree, available for a mature Warren-style active
+  allocation rather than an innate species rule or S4 Mutation. A working
+  Burrows node is required for 1.0, not S4. The S4 existing-skill comparison
+  can provide provisional evidence but cannot establish the full Warren
+  identity. The Burrows node pairs safer reproduction with smaller litters as
+  its explicit tradeoff, rather than placing litter reduction in a separate
+  Genome node. Josh's burrow construction, shelter, reuse, and litter-based
+  capacity direction is recorded in the [Warren treatment](../Species%20Design/HARE_FOX_ITERATIVE_TREATMENT.md).
+  Capacity is N+2 (litter size plus two parent slots), and only the founding
+  pair and their offspring can use the burrow. Josh set a provisional 48-tick
+  gestation baseline for animals and asked for it in the game now; the Hare and
+  Fox rules use that value. Josh confirmed that the whole conceived litter
+  waits and retries each tick until enough birth cells open. The current
+  implementation caps the conceived litter by open cells at mating. Burrow
+  shelter remains 1.0 design work, outside the bounded S4 build comparison.
+  Josh chose a provisional 1–3-kit range for Burrows (2026-10-08), compared
+  with the current Rabbit 2–5-kit range; no production asset value changes in
+  S4. Because gestation changes population timing, rerun matched-seed controls
+  before comparing S4 balance results with pre-gestation reports.
+- **Species energy direction, 2026-10-08:** Josh wants a species-specific base
+  energy cost each tick, including while a Rabbit is sheltered in a burrow.
+  Movement, mating, and crowding costs are additional; sheltered Rabbits must
+  emerge to forage. Josh chose to preserve the current effective animal rates:
+  Hare 0.125 energy per tick, charged as 1 every 8 ticks, and Fox 1 per tick.
+  No production asset value changes are needed for these rates. Terrain
+  movement cost currently slows travel without charging energy. Josh chose a
+  flat energy charge for each completed move, tunable per species and
+  independent of terrain; terrain and other features may add separate charges
+  later. Josh chose a provisional Hare charge of 0.125 energy per completed
+  move (one energy after eight moves by that Hare) and Fox charge of 0.5 per
+  completed move (one energy after two moves by that Fox). These charges are
+  not yet implemented or balance-tested. Josh chose a separate post-S4
+  experiment for movement energy (2026-10-10); keep it out of the current S4
+  comparison and measure its effect before production adoption. Plant energy
+  accounting remains open.
+- **Rabbit crowding pressure, 2026-10-07:** Strengthen the existing energy cost
+  for each Rabbit according to its own nearby Rabbit density: more neighbors
+  mean a stronger cost. This makes dispersal a meaningful need for Trailblazer
+  without tying the rule to a named build or General Movement levels. Additional
+  debuffs may be explored after the energy effect is observed. For the first
+  experiment, zero to three adjacent Rabbits are a safe group and the surcharge
+  starts at four neighbors in the existing eight-cell neighborhood. Add a
+  provisional 0.5 energy per neighbor beyond three on each eligible crowding
+  charge: 0.5 at four neighbors through 2.5 at eight. The current production
+  Hare energy-loss interval is eight ticks. Keep this energy threshold separate
+  from `MaxReproductionGroupSize` so reproduction and movement rules are not
+  changed incidentally. Warren's Crowding Tolerance reduces the entire
+  density-based surcharge by 10% of its original value per level, matching its
+  approved starting behavior (2.5 becomes 2.0 at level 2, and zero at level
+  10). The measured balance of this test value still needs review.
 - The first control/candidate pilot was attempted on 2026-10-01 but Unity's
   licensing/global-mutex and Package Manager IPC failed before simulation.
   No experiment report or S4-02/03 re-estimate exists. The failure is not game
@@ -174,13 +250,16 @@ without assigning him product decisions or profile persistence.
   uses the existing active profile and its frozen Genome snapshot; no new
   profile persistence is implied. Versioned progression saves, migration,
   settlement, and production Genome persistence stay out of S4.
-- **Optional Genome contract:** S4-06 costs 4h beyond the baseline. Keep it out
-  unless Josh and Sim explicitly trade away other feature work.
+- **Genome contract:** The design-only S4-06 outcome was completed outside the
+  sprint in the accepted [P1-029 handoff](../handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
+  No S4 capacity was used. Runtime effects, persistence migration, and balance
+  evidence remain unscheduled and need separate scope.
 
 ### Decisions to complete during S4
 
-- The strategy identity and supported skill values are the purpose of S4-01;
-  movement offer/cap and Seed Dispersal value/cap are not yet authored.
+- The flexible-build identity is settled; supported skill values and strategy
+  trade-offs still need S4-01 review. Verify the authored movement offer/cap and
+  Seed Dispersal value/cap before comparison evidence.
 - Freeze exact confirmation seeds, arms, response mode, skill values, and
   thresholds before running the separate confirmation panel.
 - Keep the wider capability-map, reference-panel, and Adaptation Value lane out
@@ -205,9 +284,9 @@ its measured effort materially changes the estimate.
 | S4-05 — Save and restore approved profile fields (deferred to Backlog) | [Open card](https://trello.com/c/78M83hds/116-s4-05-save-and-restore-approved-local-profile-fields) |
 | S4-07 — Integration, defects, and review reserve | [Open card](https://trello.com/c/e5xd0K7c/117-s4-07-integration-defects-and-review-reserve) |
 
-S4-06, the optional Genome contract spike, remains out of the baseline and has
-no Trello card. Owner and reviewer names are in the card descriptions; Trello
-member assignment fields are empty.
+S4-06 has no Trello card and is not part of the baseline. Its design-only
+deliverable is complete through P1-029; no sprint hours were charged. Runtime
+Genome effects, persistence migration, and balance evidence remain future work.
 
 ### Priority work — P1-032 Desktop launch-context migration
 
@@ -324,25 +403,25 @@ member assignment fields are empty.
 feature work + 3h reserve. Feature work totals 28h against a 32h cap; total
 planned capacity is 36h against 40h, leaving 4h unallocated.
 
-## Optional card requiring a capacity trade
+## Genome design work completed outside the S4 baseline
 
-### S4-06 — Define the first production Genome node contract (design only)
+### S4-06 — First production Genome node contract (design only; complete)
 
 - **Feature:** F16
-- **Proposed owner / reviewer:** Josh / Sim
-- **Estimate:** 2h each (4h total; not included in the baseline above)
-- **Outcome:** Specify one candidate node's identity, player meaning, cost and
-  prerequisites, activation boundary, and evidence needed for a later
-  implementation decision.
-- **Acceptance:** The contract distinguishes permanent unlock from active
-  state, defines species-keyed application and launch-time freezing, and
-  records a validation plan. No production asset, runtime effect, purchase
-  action, or persistence is implemented in this card.
+- **Status:** Design contract accepted on 2026-10-01 in the
+  [P1-029 handoff](../handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
+- **Capacity:** Completed outside S4; no hours were added to or charged against
+  the baseline. No Trello card was created.
+- **Outcome:** Fertile Droppings and its food-web tradeoff, Rabbit tree license,
+  Rabbit Data active allocation, reset refund and Research Data fee, three-run
+  Gene Lab gate, eight-point capacity, launch freezing, tutorial, and evidence
+  requirements are recorded in the handoff.
+- **Boundary:** No production asset, runtime effect, purchase action,
+  persistence migration, or balance evidence is delivered by this design work.
 - **Depends on:** The existing Genome contract and the `UPG-C07` species-
   identity constraint.
-- **Why optional:** The roadmap feature ledger calls for an S4 contract, but
-  the S4 capacity row does not allocate hours to F16. Include this only after
-  an explicit 4h trade from baseline feature work; do not consume the reserve.
+- **Follow-up:** Runtime behavior, persistence migration, numeric prices, and
+  balance validation require separately scheduled capacity.
 
 ## Exit gate
 

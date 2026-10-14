@@ -100,6 +100,6 @@ The current Genome profile implementation stores permanently unlocked node IDs
 separately from active node IDs. That data model does not match a permanent
 whole-tree license and resettable active allocation; update the save/profile
 contract and migration plan before implementing persistence. P1-029 closes the
-design-contract gap only. The optional four-hour S4 Genome spike remains outside
-the active sprint; runtime implementation and balance evidence need separate
-capacity and tracking.
+design-contract gap only. The design-only S4-06 deliverable was completed
+outside the active sprint with no S4 capacity charged. Runtime implementation
+and balance evidence need separate capacity and tracking.

@@ -10,17 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: QuietHollow
+  m_Name: RiverCrossing
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: quiet-hollow
-  displayName: QUIET HOLLOW
-  description: A sheltered valley reveals a quieter path.
-  kind: 3
-  row: 8
+  nodeId: river-crossing
+  displayName: RIVER CROSSING
+  description: The trail meets a river that joins distant habitats.
+  kind: 0
+  row: 5
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
+  - {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}
+  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}

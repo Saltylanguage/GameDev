@@ -2,11 +2,10 @@
 
 > **Progression update — 2026-10-01:** The current direction is a permanent
 > whole-species Genome-tree unlock followed by resettable upgrade allocation;
-> resetting costs generic data. This supersedes the individual permanent-node
-> purchases and free reallocation described below. Rabbit Data buys tree access
-> and active upgrades; reset refunds the allocation for a flat Research Data
-> fee. Gene Lab opens after three completed runs, wins or losses. Fee and node
-> prices remain balance values. See the [P1-029 design
+> resetting costs generic data. Rabbit Data buys tree access and active
+> upgrades; reset refunds the allocation for a flat Research Data fee. Gene Lab
+> opens after three completed runs, wins or losses. Fee and node prices remain
+> balance values. See the [P1-029 design
 > handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
 
 Status: **approved product direction; deferred until the vertical-slice upgrade loop is proven**.

@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: OldGrowth
+  m_Name: Stonefall
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: old-growth
-  displayName: OLD GROWTH
-  description: The oldest trees offer a different kind of resilience.
-  kind: 2
-  row: 10
-  column: 0
+  nodeId: stonefall
+  displayName: STONEFALL
+  description: Loose ground forces the ecosystem to adapt.
+  kind: 3
+  row: 5
+  column: 1
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}

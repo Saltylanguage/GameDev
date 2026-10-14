@@ -26,6 +26,10 @@ six nodes playable. The seasonal and continuous-summer landscapes remain
 reusable behind XAML icons, route lines, hover labels, a field journal, and a
 selected-node pulse. See [the prototype contract](JOURNEY_PROTOTYPE.md) for
 current effects, evidence, and remaining balance and terminology decisions.
+Josh accepted the playable prototype on 2026-10-06. On 2026-10-08, the journey
+layout was spread across the woodland, with longer branches and distinct
+condition-to-simulation routes. Focused asset and PlayMode checks and Game-view
+captures passed; Josh has not yet reviewed this layout pass.
 
 **Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
 sprites now supply the standardized 32/64/128 icons and retained compatibility

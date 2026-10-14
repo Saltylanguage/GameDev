@@ -8,7 +8,7 @@ namespace SaltyGame.EditorTests
     public sealed class JourneyMapAssetTests
     {
         const string MapPath =
-            "Assets/Data/ProductionData/CellularSimulation/Journey/ForestEdgeJourney.asset";
+            "Assets/Data/ProductionData/CellularSimulation/Species/Journey/ForestEdgeJourney.asset";
         const string ScenarioPath =
             "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
 
@@ -25,9 +25,16 @@ namespace SaltyGame.EditorTests
             Assert.That(map.StartNode.Row, Is.Zero);
             Assert.That(map.ValidateOverlayLayout(out var layoutError), Is.True, layoutError);
             Assert.That(map.NodePlacements.Count, Is.EqualTo(map.Nodes.Count));
-            Assert.That(map.Nodes.Sum(node => node.NextNodes.Count), Is.EqualTo(23));
+            Assert.That(map.Nodes.Sum(node => node.NextNodes.Count), Is.EqualTo(21));
             Assert.That(LongestRouteFrom(map.StartNode), Is.EqualTo(12));
-            Assert.That(map.Nodes.Count(node => node.NextNodes.Count > 1), Is.GreaterThanOrEqualTo(4));
+            Assert.That(map.Nodes.Count(node => node.NextNodes.Count > 1), Is.EqualTo(4));
+            Assert.That(ReachableNodesFrom(map.StartNode).Count, Is.EqualTo(map.Nodes.Count));
+            foreach (var stage in map.Nodes.GroupBy(node => node.Row))
+            {
+                Assert.That(stage.Select(node => node.Column).OrderBy(column => column),
+                    Is.EqualTo(Enumerable.Range(0, stage.Count())),
+                    $"Stage {stage.Key} has duplicate or missing lane indices.");
+            }
 
             var ids = new HashSet<string>();
             var centers = new HashSet<UnityEngine.Vector2>();
@@ -40,7 +47,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(map.TryGetNormalizedCenter(node, out var center), Is.True);
                 Assert.That(centers.Add(center), Is.True, $"Duplicate visual position for {node.NodeId}");
                 Assert.That(center.x, Is.InRange(0.05f, 0.95f));
-                Assert.That(center.y, Is.InRange(0.2f, 0.85f));
+                Assert.That(center.y, Is.InRange(0.15f, 0.85f));
                 foreach (var next in node.NextNodes)
                 {
                     Assert.That(next, Is.Not.Null);
@@ -52,6 +59,17 @@ namespace SaltyGame.EditorTests
                 }
             }
 
+            Assert.That(centers.Max(center => center.x) - centers.Min(center => center.x),
+                Is.GreaterThanOrEqualTo(0.9f));
+            Assert.That(centers.Max(center => center.y) - centers.Min(center => center.y),
+                Is.GreaterThanOrEqualTo(0.65f));
+            foreach (var center in centers)
+            {
+                Assert.That(centers.Where(other => other != center)
+                    .All(other => UnityEngine.Vector2.Distance(center, other) > 0.075f),
+                    Is.True, $"Journey markers are crowded around {center}.");
+            }
+
             Assert.That(map.StartNode.Kind, Is.EqualTo(JourneyNodeKind.Reward));
             Assert.That(map.StartNode.RewardMutationIds.Count, Is.EqualTo(3));
             Assert.That(map.StartNode.NextNodes.Count, Is.EqualTo(1));
@@ -61,6 +79,8 @@ namespace SaltyGame.EditorTests
             Assert.That(firstSimulation.PlayableInPrototype, Is.True);
             var conditions = firstSimulation.NextNodes.ToArray();
             Assert.That(conditions, Has.Length.EqualTo(2));
+            Assert.That(conditions.All(node => node.NextNodes.Count == 1), Is.True);
+            Assert.That(conditions.Select(node => node.NextNodes[0]).Distinct().Count(), Is.EqualTo(2));
             var rules = scenario.CreateRuntimeData().SpeciesRules;
             foreach (var conditionNode in conditions)
             {
@@ -86,6 +106,28 @@ namespace SaltyGame.EditorTests
             return 1 + (node.NextNodes.Count == 0
                 ? 0
                 : node.NextNodes.Max(LongestRouteFrom));
+        }
+
+        static HashSet<JourneyNodeAsset> ReachableNodesFrom(JourneyNodeAsset start)
+        {
+            var reached = new HashSet<JourneyNodeAsset>();
+            var pending = new Stack<JourneyNodeAsset>();
+            pending.Push(start);
+            while (pending.Count > 0)
+            {
+                var node = pending.Pop();
+                if (!reached.Add(node))
+                {
+                    continue;
+                }
+
+                foreach (var next in node.NextNodes)
+                {
+                    pending.Push(next);
+                }
+            }
+
+            return reached;
         }
     }
 }

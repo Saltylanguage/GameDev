@@ -10,17 +10,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: CanopyWatch
+  m_Name: BurrowStudy
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: canopy-watch
-  displayName: CANOPY WATCH
-  description: Survey the forest from its upper branches.
-  kind: 5
-  row: 8
-  column: 1
-  playableInPrototype: 0
+  nodeId: burrow-study
+  displayName: BURROW STUDY
+  description: Continue this same biome through six more phases beneath the canopy.
+  kind: 0
+  row: 3
+  column: 0
+  playableInPrototype: 1
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d006, type: 2}

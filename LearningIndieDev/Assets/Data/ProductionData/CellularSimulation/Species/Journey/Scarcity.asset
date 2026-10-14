@@ -10,18 +10,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0a90cde13b764f8b9d3e0152f118c001, type: 3}
-  m_Name: Seedfall
+  m_Name: Scarcity
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
-  nodeId: seedfall
-  displayName: SEEDFALL
-  description: Plants spread seeds 10 percentage points more often in the next cycle.
-  kind: 1
-  row: 2
+  nodeId: scarcity
+  displayName: SCARCITY
+  description: A lean interval tests the balance of life.
+  kind: 3
+  row: 4
   column: 0
-  playableInPrototype: 1
-  conditionUpgrade: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118c101, type: 2}
+  playableInPrototype: 0
+  conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d004, type: 2}
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d005, type: 2}
+  - {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}
+  - {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}

@@ -95,6 +95,7 @@ namespace SaltyGame
                 LitterMinimum = rules.LitterMinimum;
                 LitterMinimumText = rules.LitterMinimum.ToString(CultureInfo.InvariantCulture);
                 LitterMaximum = rules.LitterMaximum;
+                GestationTicks = rules.GestationTicks;
                 LitterMaximumText = rules.LitterMaximum.ToString(CultureInfo.InvariantCulture);
                 ForageBelowEnergy = rules.ForageBelowEnergy;
                 ForageThresholdFraction = rules.ForageThresholdFraction;
@@ -160,6 +161,7 @@ namespace SaltyGame
             public int LitterMinimum;
             public string LitterMinimumText;
             public int LitterMaximum;
+            public int GestationTicks;
             public string LitterMaximumText;
             public int ForageBelowEnergy;
             public string ForageBelowEnergyText;
@@ -2886,7 +2888,8 @@ namespace SaltyGame
                     matingEnergyThresholdFraction: draft.MatingEnergyThresholdFraction,
                     matingEnergyCostFraction: draft.MatingEnergyCostFraction,
                     distributeMatingEnergyToOffspring: draft.DistributeMatingEnergyToOffspring,
-                    crowdingEnergyReduction: draft.CrowdingEnergyReduction);
+                    crowdingEnergyReduction: draft.CrowdingEnergyReduction,
+                    gestationTicks: draft.GestationTicks);
             }
 
             return result;
