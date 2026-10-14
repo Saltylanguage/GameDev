@@ -112,6 +112,8 @@ GameObject:
   - component: {fileID: 100009}
   - component: {fileID: 100010}
   - component: {fileID: 100011}
+  - component: {fileID: 100016}
+  - component: {fileID: 100017}
   m_Layer: 0
   m_Name: GalapagOS Desktop Test Camera
   m_TagString: MainCamera
@@ -293,6 +295,8 @@ MonoBehaviour:
   view: {fileID: 100003}
   viewModel: {fileID: 100005}
   xaml: {fileID: -8414808784256213763, guid: d4f8a1c37b5e4a9f86c2d0e17b6a5f88, type: 3}
+  profileSession: {fileID: 100016}
+  sceneTransition: {fileID: 100017}
   simulationCamera: {fileID: 100014}
   simulationView: {fileID: 100015}
   simulationXaml: {fileID: -8414808784256213763, guid: 39cb684d85274e16950d0df949c634a1, type: 3}
@@ -499,6 +503,35 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 413061eae5fbb7245aef3a3f7e9be293, type: 2}
   - {fileID: 11400000, guid: 1e7a1d0d79a389e419c9ace023b1de9d, type: 2}
   selectedScenarioIndex: 0
+--- !u!114 &100016
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e5f4a3b2c1d0e9f8a7b6c5d4e3f2a10, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_ProfileSession
+  trackPlaytime: 0
+--- !u!114 &100017
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6e5d4c3b2a1908f7e6d5c4b3a29180, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.Helper_SceneTransition
+  labSceneName: Lab
+  desktopSceneName: GalapagOSDesktopTest
+  mainMenuSceneName: MainMenu
+  simulationSceneName: CellularAutomataPrototype
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -74,13 +74,14 @@ namespace SaltyGame
             }
         }
 
-        public string CurrentProfileName => profileSession?.Current?.HasLoadedProfile == true
-            ? profileSession.Current.ProfileName
-            : "NO PROFILE LOADED";
+        public string CurrentProfileName => profileSession?.LoadWarning.Length > 0
+            ? "PROFILE SAVE NEEDS RECOVERY"
+            : profileSession?.Current?.HasLoadedProfile == true
+                ? profileSession.Current.ProfileName
+                : "NO PROFILE LOADED";
 
         public bool ContinueEnabled => profileSession?.Current?.HasLoadedProfile == true;
         public bool CreateInitialProfileEnabled => profileSession != null
-            && !profileSession.HasProfiles
             && !string.IsNullOrWhiteSpace(profileNameInput);
 
         void Awake()
@@ -106,6 +107,10 @@ namespace SaltyGame
             profileSession.SnapshotChanged += HandleProfileSnapshotChanged;
             RefreshProfiles();
             RaiseProfileState();
+            if (Helper_SceneTransition.ConsumeProfileSelectionRequest())
+            {
+                OpenProfileSelection();
+            }
         }
 
         void OnDestroy()
@@ -136,7 +141,7 @@ namespace SaltyGame
                 return;
             }
 
-            profileSession.CreateInitialProfile(profileNameInput);
+            profileSession.CreateProfile(profileNameInput);
             CloseProfileSelection();
         }
 

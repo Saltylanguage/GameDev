@@ -30,6 +30,9 @@ namespace SaltyGame
         int lastBirthSoundTick = -1;
         int lastFoxHuntReactionTick = -1;
         SimulationRunState lastReactionRun;
+        bool profileLaunchActive;
+        SimulationRunState trackedProfileRun;
+        int trackedProfileTick;
 
         void Start()
         {
@@ -65,11 +68,24 @@ namespace SaltyGame
             var hasLaunchRequest = Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch);
             if (hasLaunchRequest)
             {
-                if (!preview.TryApplyLaunchRequest(launch, out var validationMessage))
+                if (profileSession == null
+                    || !profileSession.Current.HasLoadedProfile
+                    || profileSession.Current.ProfileId != launch.ProfileId)
                 {
-                    Debug.LogError($"Simulation launch request was rejected: {validationMessage}", this);
+                    RecoverProfileSelection("The selected profile could not be loaded for Simulation launch.");
                     return;
                 }
+
+                if (!preview.TryApplyLaunchRequest(launch, out var validationMessage))
+                {
+                    RecoverProfileSelection($"Simulation launch request was rejected: {validationMessage}");
+                    return;
+                }
+
+                profileLaunchActive = true;
+                profileSession.SetPlaytimeTracking(true);
+                trackedProfileRun = preview.Run;
+                trackedProfileTick = trackedProfileRun?.Tick ?? 0;
             }
 
             viewModel.Initialize(preview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
@@ -119,6 +135,12 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            TrackSimulationTicks();
+            if (profileLaunchActive && profileSession != null)
+            {
+                profileSession.Flush();
+            }
+
             if (simulationBoard != null)
             {
                 simulationBoard.ZoomRequested -= HandleBoardZoomRequested;
@@ -137,9 +159,40 @@ namespace SaltyGame
 
         void Update()
         {
+            TrackSimulationTicks();
             simulationBoard?.UpdateFoxHuntCue();
             simulationBoard?.UpdateMatingCue(
                 preview != null && preview.State == SpeciesPreviewState.Paused);
+        }
+
+        void TrackSimulationTicks()
+        {
+            if (!profileLaunchActive || profileSession == null || preview == null)
+            {
+                return;
+            }
+
+            var run = preview.Run;
+            if (!ReferenceEquals(run, trackedProfileRun))
+            {
+                trackedProfileRun = run;
+                trackedProfileTick = 0;
+            }
+
+            if (run != null && run.Tick > trackedProfileTick)
+            {
+                profileSession.RecordSimulationTicks(run.Tick - trackedProfileTick);
+                trackedProfileTick = run.Tick;
+            }
+        }
+
+        void RecoverProfileSelection(string message)
+        {
+            Debug.LogError(message, this);
+            if (sceneTransition == null || !sceneTransition.ReturnToProfileSelection())
+            {
+                Debug.LogError("Simulation profile recovery could not open Profile Selection.", this);
+            }
         }
 
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)

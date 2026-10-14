@@ -12,7 +12,28 @@ namespace SaltyGame.PlayModeTests
     public sealed class LabPlayModeTests
     {
         const string LabScene = "Lab";
+        const string MainMenuScene = "MainMenu";
         const string ViewModelType = "SaltyGame.VM_Lab";
+        ProfilePlayerPrefsBackup originalProfileSave;
+
+        [SetUp]
+        public void PreserveProfileSave()
+        {
+            originalProfileSave = ProfilePlayerPrefsBackup.Capture();
+        }
+
+        [UnityTearDown]
+        public IEnumerator RestoreProfileSave()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            foreach (var session in Object.FindObjectsByType<Helper_ProfileSession>(FindObjectsSortMode.None))
+            {
+                session.SetPlaytimeTracking(false);
+                session.enabled = false;
+            }
+
+            originalProfileSave.Restore();
+        }
 
         [UnityTest]
         public IEnumerator LabSceneHasOneComposedRoot()

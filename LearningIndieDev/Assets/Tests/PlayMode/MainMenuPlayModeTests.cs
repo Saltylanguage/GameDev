@@ -13,6 +13,26 @@ namespace SaltyGame.PlayModeTests
         const string MainMenuScene = "MainMenu";
         const string DesktopScene = "GalapagOSDesktopTest";
         const string ViewModelType = "SaltyGame.VM_MainMenu";
+        ProfilePlayerPrefsBackup originalProfileSave;
+
+        [SetUp]
+        public void PreserveProfileSave()
+        {
+            originalProfileSave = ProfilePlayerPrefsBackup.Capture();
+        }
+
+        [UnityTearDown]
+        public IEnumerator RestoreProfileSave()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            foreach (var session in Object.FindObjectsByType<Helper_ProfileSession>(FindObjectsSortMode.None))
+            {
+                session.SetPlaytimeTracking(false);
+                session.enabled = false;
+            }
+
+            originalProfileSave.Restore();
+        }
 
         [UnityTest]
         public IEnumerator ContinueIsDisabledWithoutAProfile()
@@ -44,6 +64,14 @@ namespace SaltyGame.PlayModeTests
 
             Assert.That(GetBool(viewModel, "ContinueEnabled"), Is.True);
             Assert.That(GetString(viewModel, "CurrentProfileName"), Is.EqualTo("Darwin Station"));
+            var menuProfile = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
+            Assert.That(menuProfile, Is.Not.Null);
+            Assert.That(menuProfile.TrySetGenomeConfiguration(
+                new SpeciesId("hare"),
+                new[] { "hare.guard" },
+                new[] { "hare.guard" },
+                out var validationMessage), Is.True, validationMessage);
+            var profileId = menuProfile.Current.ProfileId;
 
             ExecuteCommand(viewModel, "ContinueCommand");
             var transitionDeadline = Time.realtimeSinceStartup + 3f;
@@ -54,6 +82,31 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(DesktopScene));
+            var desktopRoot = GameObject.Find("GalapagOS Desktop Test Camera");
+            var desktopProfile = desktopRoot?.GetComponent<Helper_ProfileSession>();
+            var preview = Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            Assert.That(desktopProfile?.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(preview.BaseSeed, Is.EqualTo(10100));
+            Assert.That(preview.PlayerSpecies, Is.EqualTo(new SpeciesId("hare")));
+            Assert.That(preview.ActiveGenomeSnapshot.TryGetSpeciesGenome(
+                new SpeciesId("hare"), out var genome), Is.True);
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guard" }));
+            var desktopViewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            var openSimulation = GetCommand(desktopViewModel, "OpenDesktopIconCommand");
+            openSimulation.GetType().GetMethod("Execute")?.Invoke(
+                openSimulation, new object[] { "Simulation" });
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            var tickDeadline = Time.realtimeSinceStartup + 3f;
+            while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < tickDeadline)
+            {
+                yield return null;
+            }
+
+            desktopProfile.Flush();
+            Assert.That(desktopProfile.Current.SimulationTicks, Is.GreaterThan(0));
             ClearProfiles();
         }
 
@@ -72,6 +125,82 @@ namespace SaltyGame.PlayModeTests
             var reloadedViewModel = FindViewModel();
             Assert.That(GetString(reloadedViewModel, "CurrentProfileName"), Is.EqualTo("Returning Researcher"));
             Assert.That(GetBool(reloadedViewModel, "ContinueEnabled"), Is.True);
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator ActiveProfilePlaytimeSurvivesMainMenuReload()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+
+            var viewModel = FindViewModel();
+            SetProperty(viewModel, "ProfileNameInput", "Timed Researcher");
+            ExecuteCommand(viewModel, "OpenProfileSelectionCommand");
+            ExecuteCommand(viewModel, "CreateInitialProfileCommand");
+            var profile = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
+            Assert.That(profile, Is.Not.Null);
+
+            yield return new WaitForSecondsRealtime(0.05f);
+            profile.Flush();
+            var savedMilliseconds = profile.Current.PlayTimeMilliseconds;
+            Assert.That(savedMilliseconds, Is.GreaterThan(0));
+
+            yield return LoadMainMenu();
+            var reloaded = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
+            Assert.That(reloaded?.Current.PlayTimeMilliseconds, Is.GreaterThanOrEqualTo(savedMilliseconds));
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator SimulationLaunchWithoutItsProfileReturnsToProfileSelection()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+
+            var transition = GameObject.Find("Main Camera")?.GetComponent<Helper_SceneTransition>();
+            Assert.That(transition, Is.Not.Null);
+            LogAssert.Expect(LogType.Error,
+                "The selected profile could not be loaded for Simulation launch.");
+            Assert.That(transition.LoadSimulation(new SimulationLaunchRequest(
+                "missing-profile", "ForestEdge", "hare", 10100)), Is.True);
+
+            var deadline = Time.realtimeSinceStartup + 3f;
+            Component recoveredViewModel = null;
+            while (Time.realtimeSinceStartup < deadline)
+            {
+                yield return null;
+                if (SceneManager.GetActiveScene().name == MainMenuScene)
+                {
+                    recoveredViewModel = FindViewModel();
+                    if (recoveredViewModel != null
+                        && GetVisibility(recoveredViewModel, "ProfileSelectionVisibility") == "Visible")
+                    {
+                        break;
+                    }
+                }
+            }
+
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(MainMenuScene));
+            Assert.That(recoveredViewModel, Is.Not.Null);
+            Assert.That(GetVisibility(recoveredViewModel, "ProfileSelectionVisibility"), Is.EqualTo("Visible"));
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator PartialSaveRecoveryIsVisibleWithAUsableProfile()
+        {
+            ClearProfiles();
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey,
+                "{\"version\":1,\"profiles\":[{\"id\":\"valid\",\"name\":\"Kept\"},"
+                + "{\"id\":\"invalid\",\"currency\":-1}],\"lastLoadedProfileId\":\"valid\"}");
+            PlayerPrefs.Save();
+            yield return LoadMainMenu();
+
+            var viewModel = FindViewModel();
+            Assert.That(GetString(viewModel, "CurrentProfileName"),
+                Is.EqualTo("PROFILE SAVE NEEDS RECOVERY"));
+            Assert.That(GetBool(viewModel, "ContinueEnabled"), Is.True);
             ClearProfiles();
         }
 
@@ -99,6 +228,12 @@ namespace SaltyGame.PlayModeTests
 
         static void ClearProfiles()
         {
+            foreach (var session in Object.FindObjectsByType<Helper_ProfileSession>(FindObjectsSortMode.None))
+            {
+                session.SetPlaytimeTracking(false);
+                session.Flush();
+            }
+
             PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
             PlayerPrefs.Save();
         }
@@ -157,6 +292,50 @@ namespace SaltyGame.PlayModeTests
         static void SetProperty(Component viewModel, string propertyName, object value)
         {
             viewModel.GetType().GetProperty(propertyName)?.SetValue(viewModel, value);
+        }
+    }
+
+    internal sealed class ProfilePlayerPrefsBackup
+    {
+        readonly bool hasStore;
+        readonly string store;
+        readonly bool hasRecovery;
+        readonly string recovery;
+
+        ProfilePlayerPrefsBackup(bool hasStore, string store, bool hasRecovery, string recovery)
+        {
+            this.hasStore = hasStore;
+            this.store = store;
+            this.hasRecovery = hasRecovery;
+            this.recovery = recovery;
+        }
+
+        public static ProfilePlayerPrefsBackup Capture()
+        {
+            return new ProfilePlayerPrefsBackup(
+                PlayerPrefs.HasKey(Helper_ProfileSession.StoreKey),
+                PlayerPrefs.GetString(Helper_ProfileSession.StoreKey),
+                PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey),
+                PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
+        }
+
+        public void Restore()
+        {
+            RestoreKey(Helper_ProfileSession.StoreKey, hasStore, store);
+            RestoreKey(Helper_ProfileSession.RecoveryStoreKey, hasRecovery, recovery);
+            PlayerPrefs.Save();
+        }
+
+        static void RestoreKey(string key, bool existed, string value)
+        {
+            if (existed)
+            {
+                PlayerPrefs.SetString(key, value);
+            }
+            else
+            {
+                PlayerPrefs.DeleteKey(key);
+            }
         }
     }
 }

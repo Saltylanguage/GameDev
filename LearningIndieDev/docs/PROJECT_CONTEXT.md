@@ -89,8 +89,10 @@ uncertainty or regression risk.
   loop, understandable Mutation effects, and bounded visual polish/UI
   integration. Josh accepted M1 using distributed retained evidence; later
   changes may need retesting. S4 is Active from 2026-10-01: three-build Forest
-  Edge evidence plus the Desktop active-profile launch. Local profile-choice
-  save/restore is deferred. Later S5–S7 windows remain forecasts until their
+  Edge evidence plus the Desktop active-profile launch. A local profile-choice
+  save/restore foundation now exists, with per-profile currency, progression
+  IDs, simulation ticks, and playtime; economy settlement remains deferred.
+  Later S5–S7 windows remain forecasts until their
   kickoffs are confirmed. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.

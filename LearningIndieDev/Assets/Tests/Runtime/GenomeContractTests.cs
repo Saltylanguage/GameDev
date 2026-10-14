@@ -8,6 +8,40 @@ namespace SaltyGame.Tests
     [Category("Simulation")]
     public sealed class GenomeContractTests
     {
+        bool hadProfileSave;
+        string originalProfileSave;
+        bool hadRecoverySave;
+        string originalRecoverySave;
+
+        [SetUp]
+        public void PreserveProfileSave()
+        {
+            hadProfileSave = PlayerPrefs.HasKey(Helper_ProfileSession.StoreKey);
+            originalProfileSave = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
+            hadRecoverySave = PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey);
+            originalRecoverySave = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+        }
+
+        [TearDown]
+        public void RestoreProfileSave()
+        {
+            RestoreKey(Helper_ProfileSession.StoreKey, hadProfileSave, originalProfileSave);
+            RestoreKey(Helper_ProfileSession.RecoveryStoreKey, hadRecoverySave, originalRecoverySave);
+            PlayerPrefs.Save();
+        }
+
+        static void RestoreKey(string key, bool existed, string value)
+        {
+            if (existed)
+            {
+                PlayerPrefs.SetString(key, value);
+            }
+            else
+            {
+                PlayerPrefs.DeleteKey(key);
+            }
+        }
+
         [Test]
         public void ProfileKeepsPermanentUnlocksSeparateFromActiveConfiguration()
         {
@@ -188,6 +222,177 @@ namespace SaltyGame.Tests
 
                 PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
                 PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void ProfileSessionKeepsCurrencyProgressAndTimeSeparatePerProfile()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
+            GameObject firstObject = null;
+            GameObject secondObject = null;
+            try
+            {
+                firstObject = new GameObject("First Profile Session");
+                var firstSession = firstObject.AddComponent<Helper_ProfileSession>();
+                firstSession.SetPlaytimeTracking(false);
+                var firstProfileId = firstSession.CreateProfile("First").ProfileId;
+                firstSession.AddCurrency(100);
+                Assert.That(firstSession.TrySpendCurrency(25), Is.True);
+                Assert.That(firstSession.TrySpendCurrency(100), Is.False);
+                firstSession.UnlockSpecies(new SpeciesId("fox"));
+                firstSession.UnlockGenome(new SpeciesId("hare"));
+                Assert.That(firstSession.TrySetGenomeConfiguration(
+                    new SpeciesId("hare"),
+                    new[] { "hare.guard" },
+                    new[] { "hare.guard" },
+                    out var validationMessage), Is.True, validationMessage);
+                firstSession.RecordSimulationTicks(600);
+                firstSession.RecordPlayedMilliseconds(7200000);
+                firstSession.Flush();
+
+                var secondProfileId = firstSession.CreateProfile("Second").ProfileId;
+                firstSession.AddCurrency(9);
+                firstSession.RecordSimulationTicks(10);
+                firstSession.RecordPlayedMilliseconds(1800000);
+                firstSession.Flush();
+
+                secondObject = new GameObject("Reloaded Profile Session");
+                var reloaded = secondObject.AddComponent<Helper_ProfileSession>();
+                reloaded.Reload();
+                reloaded.SetPlaytimeTracking(false);
+                Assert.That(reloaded.Profiles.Count, Is.EqualTo(2));
+                Assert.That(reloaded.Current.ProfileId, Is.EqualTo(secondProfileId));
+                Assert.That(reloaded.Current.Currency, Is.EqualTo(9));
+                Assert.That(reloaded.Current.SimulationTicks, Is.EqualTo(10));
+                Assert.That(reloaded.Current.HoursPlayed, Is.EqualTo(0.5d));
+
+                Assert.That(reloaded.SelectProfile(firstProfileId), Is.True);
+                Assert.That(reloaded.Current.Currency, Is.EqualTo(75));
+                Assert.That(reloaded.Current.SimulationTicks, Is.EqualTo(600));
+                Assert.That(reloaded.Current.HoursPlayed, Is.EqualTo(2d));
+                Assert.That(reloaded.Current.UnlockedSpeciesIds, Does.Contain(new SpeciesId("hare")));
+                Assert.That(reloaded.Current.UnlockedSpeciesIds, Does.Contain(new SpeciesId("fox")));
+                Assert.That(reloaded.Current.UnlockedGenomeSpeciesIds, Does.Contain(new SpeciesId("hare")));
+                Assert.That(reloaded.Current.TryGetGenomeProfile(new SpeciesId("hare"),
+                    out var genomeProfile), Is.True);
+                Assert.That(genomeProfile.UnlockedNodeIds, Is.EqualTo(new[] { "hare.guard" }));
+            }
+            finally
+            {
+                if (firstObject != null)
+                {
+                    Object.DestroyImmediate(firstObject);
+                }
+
+                if (secondObject != null)
+                {
+                    Object.DestroyImmediate(secondObject);
+                }
+
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void ProfileSessionLoadsLegacyProfileWithoutLosingItsIdentity()
+        {
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey,
+                "{\"profiles\":[{\"id\":\"legacy\",\"name\":\"Legacy\",\"genomeProfiles\":[]}],\"lastLoadedProfileId\":\"legacy\"}");
+            PlayerPrefs.Save();
+            GameObject sessionObject = null;
+            try
+            {
+                sessionObject = new GameObject("Legacy Profile Session");
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.Reload();
+                session.SetPlaytimeTracking(false);
+                Assert.That(session.Current.ProfileId, Is.EqualTo("legacy"));
+                Assert.That(session.Current.Currency, Is.Zero);
+                Assert.That(session.Current.SimulationTicks, Is.Zero);
+                Assert.That(session.Current.PlayTimeMilliseconds, Is.Zero);
+                Assert.That(session.Current.UnlockedSpeciesIds,
+                    Does.Contain(new SpeciesId("hare")));
+            }
+            finally
+            {
+                if (sessionObject != null)
+                {
+                    Object.DestroyImmediate(sessionObject);
+                }
+
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void ProfileSessionPreservesUnreadableSaveForRecovery()
+        {
+            const string invalidJson = "not a profile store";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, invalidJson);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.Save();
+            GameObject sessionObject = null;
+            try
+            {
+                sessionObject = new GameObject("Corrupt Profile Session");
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.Reload();
+                session.SetPlaytimeTracking(false);
+                Assert.That(session.HasProfiles, Is.False);
+                Assert.That(session.LoadWarning, Is.Not.Empty);
+                Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
+                    Is.EqualTo(invalidJson));
+                Assert.That(session.CreateProfile("New Profile").HasLoadedProfile, Is.True);
+                Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
+                    Is.EqualTo(invalidJson));
+            }
+            finally
+            {
+                if (sessionObject != null)
+                {
+                    Object.DestroyImmediate(sessionObject);
+                }
+
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void ProfileSessionKeepsValidProfileWhenAnotherRecordIsInvalid()
+        {
+            const string partiallyInvalidJson =
+                "{\"version\":1,\"profiles\":[{\"id\":\"valid\",\"name\":\"Kept\",\"currency\":7},"
+                + "{\"id\":\"invalid\",\"name\":\"Discarded\",\"currency\":-1}],"
+                + "\"lastLoadedProfileId\":\"valid\"}";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, partiallyInvalidJson);
+            PlayerPrefs.Save();
+            GameObject sessionObject = null;
+            try
+            {
+                sessionObject = new GameObject("Partial Profile Session");
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.Reload();
+                session.SetPlaytimeTracking(false);
+
+                Assert.That(session.Current.ProfileId, Is.EqualTo("valid"));
+                Assert.That(session.Current.Currency, Is.EqualTo(7));
+                Assert.That(session.Profiles.Count, Is.EqualTo(1));
+                Assert.That(session.LoadWarning, Is.Not.Empty);
+                Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
+                    Is.EqualTo(partiallyInvalidJson));
+            }
+            finally
+            {
+                if (sessionObject != null)
+                {
+                    Object.DestroyImmediate(sessionObject);
+                }
             }
         }
     }

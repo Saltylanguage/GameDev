@@ -11,6 +11,8 @@ namespace SaltyGame
         [SerializeField] string simulationSceneName = "CellularAutomataPrototype";
 
         static SimulationLaunchRequest pendingSimulationLaunch;
+        static string pendingDesktopProfileId;
+        static bool pendingProfileSelection;
 
         public string LabSceneName => labSceneName;
         public string DesktopSceneName => desktopSceneName;
@@ -35,7 +37,20 @@ namespace SaltyGame
                 return false;
             }
 
+            pendingDesktopProfileId = profile.ProfileId;
             SceneManager.LoadScene(desktopSceneName, LoadSceneMode.Single);
+            return true;
+        }
+
+        public bool ReturnToProfileSelection()
+        {
+            if (string.IsNullOrEmpty(mainMenuSceneName))
+            {
+                return false;
+            }
+
+            pendingProfileSelection = true;
+            SceneManager.LoadScene(mainMenuSceneName, LoadSceneMode.Single);
             return true;
         }
 
@@ -74,10 +89,26 @@ namespace SaltyGame
             return launch != null;
         }
 
+        public static bool TryConsumeDesktopProfile(out string profileId)
+        {
+            profileId = pendingDesktopProfileId;
+            pendingDesktopProfileId = null;
+            return !string.IsNullOrEmpty(profileId);
+        }
+
+        public static bool ConsumeProfileSelectionRequest()
+        {
+            var requested = pendingProfileSelection;
+            pendingProfileSelection = false;
+            return requested;
+        }
+
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         static void ResetPendingLaunch()
         {
             pendingSimulationLaunch = null;
+            pendingDesktopProfileId = null;
+            pendingProfileSelection = false;
         }
     }
 }

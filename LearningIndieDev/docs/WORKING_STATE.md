@@ -5,6 +5,14 @@ become a master changelog.
 
 ## Current focus
 
+**Profile persistence foundation: 2026-10-14, ready for review.**
+Multiple profiles now keep separate currency, species/Genome unlock IDs,
+Genome node state, cumulative simulation ticks, and active playtime. The
+canonical Desktop launch uses the selected profile's frozen Genome state;
+focused EditMode and PlayMode checks passed. Run reward settlement and data
+categories remain design decisions. See the
+[profile persistence handoff](handoffs/2026-10-14-1424-codex-profile-persistence-foundation.md).
+
 **Forest Edge journey prototype: integrated 2026-10-06.** The canonical
 Desktop Simulation icon opens the full-screen journey map. The first unbranched
 reward node offers a Hare Mutation in a popup, then the first simulation node

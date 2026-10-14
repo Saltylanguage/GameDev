@@ -14,6 +14,8 @@ namespace SaltyGame
         [SerializeField] NoesisView view;
         [SerializeField] VM_GalapagOS_Desktop viewModel;
         [SerializeField] NoesisXaml xaml;
+        [SerializeField] Helper_ProfileSession profileSession;
+        [SerializeField] Helper_SceneTransition sceneTransition;
 
         [Header("Simulation Composition")]
         [SerializeField] Camera simulationCamera;
@@ -29,6 +31,9 @@ namespace SaltyGame
 
         SpeciesSimulationBoard simulationBoard;
         bool simulationCompositionReady;
+        bool profileLaunchActive;
+        SimulationRunState trackedProfileRun;
+        int trackedProfileTick;
         int lastBirthSoundTick = -1;
         int lastFoxHuntReactionTick = -1;
         SimulationRunState lastReactionRun;
@@ -66,10 +71,33 @@ namespace SaltyGame
 
             view.Content.DataContext = viewModel;
             viewModel.BindSimulationLauncher(OpenSimulation);
-            simulationCompositionReady = TryInitializeSimulation();
+            var hasProfileRoute = Helper_SceneTransition.TryConsumeDesktopProfile(out var profileId);
+            if (hasProfileRoute
+                && (profileSession == null
+                    || !profileSession.Current.HasLoadedProfile
+                    || profileSession.Current.ProfileId != profileId))
+            {
+                RecoverProfileSelection("The selected profile could not be loaded for Desktop launch.");
+                return;
+            }
+
+            simulationCompositionReady = TryInitializeSimulation(hasProfileRoute);
+            if (hasProfileRoute && !simulationCompositionReady)
+            {
+                RecoverProfileSelection("The profile's Simulation launch settings could not be applied.");
+                return;
+            }
+
+            profileLaunchActive = hasProfileRoute;
+            if (profileLaunchActive)
+            {
+                profileSession.SetPlaytimeTracking(true);
+                trackedProfileRun = simulationPreview.Run;
+                trackedProfileTick = trackedProfileRun?.Tick ?? 0;
+            }
         }
 
-        bool TryInitializeSimulation()
+        bool TryInitializeSimulation(bool hasProfileRoute)
         {
             if (simulationCamera == null
                 || simulationView == null
@@ -82,6 +110,22 @@ namespace SaltyGame
                     "GalapagOSDesktopNoesisHost requires simulation XAML, preview, shell VM, and board VM references.",
                     this);
                 return false;
+            }
+
+            if (hasProfileRoute)
+            {
+                var profile = profileSession.Current;
+                var launch = new SimulationLaunchRequest(
+                    profile.ProfileId,
+                    VM_ExpeditionSetup.DefaultScenarioId,
+                    VM_ExpeditionSetup.DefaultPlayerSpeciesId,
+                    VM_ExpeditionSetup.DefaultSeed,
+                    activeGenomeSnapshot: profile.CreateGenomeSnapshot());
+                if (!simulationPreview.TryApplyLaunchRequest(launch, out var validationMessage))
+                {
+                    Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
+                    return false;
+                }
             }
 
             simulationViewModel.Initialize(simulationPreview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
@@ -169,6 +213,12 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            TrackSimulationTicks();
+            if (profileLaunchActive && profileSession != null)
+            {
+                profileSession.Flush();
+            }
+
             if (simulationBoardViewModel != null)
             {
                 simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
@@ -177,9 +227,40 @@ namespace SaltyGame
 
         void Update()
         {
+            TrackSimulationTicks();
             simulationBoard?.UpdateFoxHuntCue();
             simulationBoard?.UpdateMatingCue(
                 simulationPreview != null && simulationPreview.State == SpeciesPreviewState.Paused);
+        }
+
+        void TrackSimulationTicks()
+        {
+            if (!profileLaunchActive || profileSession == null || simulationPreview == null)
+            {
+                return;
+            }
+
+            var run = simulationPreview.Run;
+            if (!ReferenceEquals(run, trackedProfileRun))
+            {
+                trackedProfileRun = run;
+                trackedProfileTick = 0;
+            }
+
+            if (run != null && run.Tick > trackedProfileTick)
+            {
+                profileSession.RecordSimulationTicks(run.Tick - trackedProfileTick);
+                trackedProfileTick = run.Tick;
+            }
+        }
+
+        void RecoverProfileSelection(string message)
+        {
+            Debug.LogError(message, this);
+            if (sceneTransition == null || !sceneTransition.ReturnToProfileSelection())
+            {
+                Debug.LogError("Desktop profile recovery could not open Profile Selection.", this);
+            }
         }
 
         void HandleBoardPropertyChanged(object sender, PropertyChangedEventArgs args)

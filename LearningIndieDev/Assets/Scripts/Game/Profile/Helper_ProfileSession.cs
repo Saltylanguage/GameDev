@@ -7,6 +7,11 @@ namespace SaltyGame
     public sealed class Helper_ProfileSession : MonoBehaviour
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
+        public const string RecoveryStoreKey = StoreKey + ".Recovery";
+        const int StoreVersion = 1;
+        const double AutosaveSeconds = 30d;
+
+        [SerializeField] bool trackPlaytime = true;
 
         [Serializable]
         sealed class GenomeProfileRecord
@@ -22,22 +27,34 @@ namespace SaltyGame
             public string id;
             public string name;
             public List<GenomeProfileRecord> genomeProfiles = new List<GenomeProfileRecord>();
+            public long currency;
+            public long simulationTicks;
+            public long playTimeMilliseconds;
+            public List<string> unlockedSpeciesIds = new List<string>();
+            public List<string> unlockedGenomeSpeciesIds = new List<string>();
         }
 
         [Serializable]
         sealed class ProfileStore
         {
+            public int version;
             public List<ProfileRecord> profiles = new List<ProfileRecord>();
             public string lastLoadedProfileId;
         }
 
         readonly List<ProfileSessionSnapshot> profiles = new List<ProfileSessionSnapshot>();
+        long pendingSimulationTicks;
+        double pendingPlayTimeMilliseconds;
+        double autosaveElapsedSeconds;
+        bool applicationFocused = true;
+        bool applicationPaused;
 
         public event Action<ProfileSessionSnapshot> SnapshotChanged;
 
         public IReadOnlyList<ProfileSessionSnapshot> Profiles => profiles;
         public ProfileSessionSnapshot Current { get; private set; } = ProfileSessionSnapshot.Empty;
         public bool HasProfiles => profiles.Count > 0;
+        public string LoadWarning { get; private set; } = string.Empty;
 
         void Awake()
         {
@@ -46,10 +63,13 @@ namespace SaltyGame
 
         public ProfileSessionSnapshot CreateInitialProfile(string displayName)
         {
-            if (HasProfiles)
-            {
-                return Current;
-            }
+            return CreateProfile(displayName);
+        }
+
+        public ProfileSessionSnapshot CreateProfile(string displayName)
+        {
+            Flush();
+            UnloadCurrentProfile();
 
             var normalizedName = string.IsNullOrWhiteSpace(displayName)
                 ? "Researcher 01"
@@ -57,7 +77,8 @@ namespace SaltyGame
             var profile = new ProfileSessionSnapshot(
                 true,
                 Guid.NewGuid().ToString("N"),
-                normalizedName);
+                normalizedName,
+                unlockedSpeciesIds: new[] { new SpeciesId("hare") });
 
             profiles.Add(profile);
             Current = profile;
@@ -81,11 +102,10 @@ namespace SaltyGame
                     continue;
                 }
 
-                Current = new ProfileSessionSnapshot(
-                    true,
-                    profile.ProfileId,
-                    profile.ProfileName,
-                    profile.GenomeProfiles);
+                Flush();
+                UnloadCurrentProfile();
+                Current = profiles[index].WithLoaded(true);
+                profiles[index] = Current;
                 Save();
                 NotifyChanged();
                 return true;
@@ -96,13 +116,162 @@ namespace SaltyGame
 
         public void Reload()
         {
+            Flush();
             Load();
+        }
+
+        void Update()
+        {
+            var elapsedSeconds = Math.Max(0d, Time.unscaledDeltaTime);
+            if (trackPlaytime && Current.HasLoadedProfile && applicationFocused && !applicationPaused)
+            {
+                pendingPlayTimeMilliseconds += elapsedSeconds * 1000d;
+            }
+
+            autosaveElapsedSeconds += elapsedSeconds;
+            if (autosaveElapsedSeconds >= AutosaveSeconds)
+            {
+                Flush();
+            }
+        }
+
+        void OnApplicationFocus(bool focused)
+        {
+            applicationFocused = focused;
+            if (!focused)
+            {
+                Flush();
+            }
+        }
+
+        void OnApplicationPause(bool paused)
+        {
+            applicationPaused = paused;
+            if (paused)
+            {
+                Flush();
+            }
+        }
+
+        void OnDestroy()
+        {
+            Flush();
+        }
+
+        public void SetPlaytimeTracking(bool enabled)
+        {
+            if (!enabled)
+            {
+                Flush();
+            }
+
+            trackPlaytime = enabled;
+        }
+
+        public void RecordSimulationTicks(long ticks)
+        {
+            if (ticks < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(ticks));
+            }
+
+            if (Current.HasLoadedProfile)
+            {
+                pendingSimulationTicks = checked(pendingSimulationTicks + ticks);
+            }
+        }
+
+        public void RecordPlayedMilliseconds(long milliseconds)
+        {
+            if (milliseconds < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(milliseconds));
+            }
+
+            if (Current.HasLoadedProfile)
+            {
+                pendingPlayTimeMilliseconds += milliseconds;
+            }
+        }
+
+        public void Flush()
+        {
+            if (!Current.HasLoadedProfile)
+            {
+                pendingSimulationTicks = 0;
+                pendingPlayTimeMilliseconds = 0;
+                autosaveElapsedSeconds = 0;
+                return;
+            }
+
+            var playTimeMilliseconds = (long)pendingPlayTimeMilliseconds;
+            if (pendingSimulationTicks == 0 && playTimeMilliseconds == 0)
+            {
+                autosaveElapsedSeconds = 0;
+                return;
+            }
+
+            var next = Current.WithTime(
+                checked(Current.SimulationTicks + pendingSimulationTicks),
+                checked(Current.PlayTimeMilliseconds + playTimeMilliseconds));
+            pendingSimulationTicks = 0;
+            pendingPlayTimeMilliseconds -= playTimeMilliseconds;
+            autosaveElapsedSeconds = 0;
+            CommitCurrent(next);
+        }
+
+        public void AddCurrency(long amount)
+        {
+            if (amount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithCurrency(checked(Current.Currency + amount)));
+        }
+
+        public bool TrySpendCurrency(long amount)
+        {
+            if (amount < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(amount));
+            }
+
+            RequireLoadedProfile();
+            Flush();
+            if (Current.Currency < amount)
+            {
+                return false;
+            }
+
+            CommitCurrent(Current.WithCurrency(Current.Currency - amount));
+            return true;
+        }
+
+        public void UnlockSpecies(SpeciesId speciesId)
+        {
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithUnlockedSpecies(speciesId));
+        }
+
+        public void UnlockGenome(SpeciesId speciesId)
+        {
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithUnlockedGenome(speciesId));
         }
 
         void Load()
         {
             profiles.Clear();
             Current = ProfileSessionSnapshot.Empty;
+            LoadWarning = string.Empty;
+            pendingSimulationTicks = 0;
+            pendingPlayTimeMilliseconds = 0;
+            autosaveElapsedSeconds = 0;
 
             if (!PlayerPrefs.HasKey(StoreKey))
             {
@@ -110,29 +279,36 @@ namespace SaltyGame
                 return;
             }
 
+            var storedJson = PlayerPrefs.GetString(StoreKey);
             ProfileStore store;
             try
             {
-                store = JsonUtility.FromJson<ProfileStore>(PlayerPrefs.GetString(StoreKey));
+                store = JsonUtility.FromJson<ProfileStore>(storedJson);
             }
             catch (Exception)
             {
-                PlayerPrefs.DeleteKey(StoreKey);
+                BackUpUnreadableStore(storedJson);
                 NotifyChanged();
                 return;
             }
 
-            if (store?.profiles == null)
+            if (store?.profiles == null || store.version < 0 || store.version > StoreVersion)
             {
+                BackUpUnreadableStore(storedJson);
                 NotifyChanged();
                 return;
             }
 
+            var invalidProfileFound = false;
+            var seenProfileIds = new HashSet<string>(StringComparer.Ordinal);
             for (var index = 0; index < store.profiles.Count; index++)
             {
                 var record = store.profiles[index];
-                if (record == null || string.IsNullOrEmpty(record.id))
+                if (record == null
+                    || string.IsNullOrWhiteSpace(record.id)
+                    || !seenProfileIds.Add(record.id))
                 {
+                    invalidProfileFound = true;
                     continue;
                 }
 
@@ -145,6 +321,7 @@ namespace SaltyGame
                         var genomeRecord = record.genomeProfiles[genomeIndex];
                         if (genomeRecord == null || string.IsNullOrWhiteSpace(genomeRecord.speciesId))
                         {
+                            invalidProfileFound = true;
                             continue;
                         }
 
@@ -153,6 +330,7 @@ namespace SaltyGame
                             var genomeSpeciesId = new SpeciesId(genomeRecord.speciesId);
                             if (!seenGenomeSpecies.Add(genomeSpeciesId))
                             {
+                                invalidProfileFound = true;
                                 continue;
                             }
 
@@ -163,16 +341,37 @@ namespace SaltyGame
                         }
                         catch (ArgumentException)
                         {
-                            // Ignore malformed optional Genome state while preserving the profile.
+                            invalidProfileFound = true;
                         }
                     }
                 }
 
-                profiles.Add(new ProfileSessionSnapshot(
-                    false,
-                    record.id,
-                    string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name,
-                    genomeProfiles));
+                try
+                {
+                    profiles.Add(new ProfileSessionSnapshot(
+                        false,
+                        record.id,
+                        string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name,
+                        genomeProfiles,
+                        record.currency,
+                        record.simulationTicks,
+                        record.playTimeMilliseconds,
+                        store.version == 0
+                            ? new[] { new SpeciesId("hare") }
+                            : ParseSpeciesIds(record.unlockedSpeciesIds),
+                        ParseSpeciesIds(record.unlockedGenomeSpeciesIds)));
+                }
+                catch (ArgumentException)
+                {
+                    invalidProfileFound = true;
+                }
+            }
+
+            if (invalidProfileFound)
+            {
+                PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
+                PlayerPrefs.Save();
+                LoadWarning = "Some profile data could not be loaded. The original save was preserved for recovery.";
             }
 
             if (!string.IsNullOrEmpty(store.lastLoadedProfileId))
@@ -193,11 +392,8 @@ namespace SaltyGame
                     continue;
                 }
 
-                Current = new ProfileSessionSnapshot(
-                    true,
-                    profile.ProfileId,
-                    profile.ProfileName,
-                    profile.GenomeProfiles);
+                Current = profile.WithLoaded(true);
+                profiles[index] = Current;
                 return;
             }
         }
@@ -217,22 +413,12 @@ namespace SaltyGame
 
             try
             {
+                Flush();
                 var nextProfile = Current.WithGenomeProfile(new SpeciesGenomeProfile(
                     speciesId,
                     unlockedNodeIds,
                     activeNodeIds));
-                Current = nextProfile;
-                for (var index = 0; index < profiles.Count; index++)
-                {
-                    if (profiles[index].ProfileId == Current.ProfileId)
-                    {
-                        profiles[index] = Current;
-                        break;
-                    }
-                }
-
-                Save();
-                NotifyChanged();
+                CommitCurrent(nextProfile);
                 return true;
             }
             catch (ArgumentException exception)
@@ -246,6 +432,7 @@ namespace SaltyGame
         {
             var store = new ProfileStore
             {
+                version = StoreVersion,
                 lastLoadedProfileId = Current.HasLoadedProfile ? Current.ProfileId : string.Empty,
             };
 
@@ -256,6 +443,11 @@ namespace SaltyGame
                 {
                     id = profile.ProfileId,
                     name = profile.ProfileName,
+                    currency = profile.Currency,
+                    simulationTicks = profile.SimulationTicks,
+                    playTimeMilliseconds = profile.PlayTimeMilliseconds,
+                    unlockedSpeciesIds = ToStrings(profile.UnlockedSpeciesIds),
+                    unlockedGenomeSpeciesIds = ToStrings(profile.UnlockedGenomeSpeciesIds),
                 });
                 var record = store.profiles[store.profiles.Count - 1];
                 for (var genomeIndex = 0; genomeIndex < profile.GenomeProfiles.Count; genomeIndex++)
@@ -272,6 +464,80 @@ namespace SaltyGame
 
             PlayerPrefs.SetString(StoreKey, JsonUtility.ToJson(store));
             PlayerPrefs.Save();
+        }
+
+        void RequireLoadedProfile()
+        {
+            if (!Current.HasLoadedProfile)
+            {
+                throw new InvalidOperationException("A loaded profile is required.");
+            }
+        }
+
+        void UnloadCurrentProfile()
+        {
+            if (!Current.HasLoadedProfile)
+            {
+                return;
+            }
+
+            for (var index = 0; index < profiles.Count; index++)
+            {
+                if (profiles[index].ProfileId == Current.ProfileId)
+                {
+                    profiles[index] = Current.WithLoaded(false);
+                    break;
+                }
+            }
+        }
+
+        void CommitCurrent(ProfileSessionSnapshot nextProfile)
+        {
+            Current = nextProfile;
+            for (var index = 0; index < profiles.Count; index++)
+            {
+                if (profiles[index].ProfileId == Current.ProfileId)
+                {
+                    profiles[index] = Current;
+                    break;
+                }
+            }
+
+            Save();
+            NotifyChanged();
+        }
+
+        static List<string> ToStrings(IReadOnlyList<SpeciesId> ids)
+        {
+            var values = new List<string>(ids.Count);
+            for (var index = 0; index < ids.Count; index++)
+            {
+                values.Add(ids[index].Value);
+            }
+
+            return values;
+        }
+
+        static List<SpeciesId> ParseSpeciesIds(List<string> values)
+        {
+            var ids = new List<SpeciesId>();
+            if (values != null)
+            {
+                for (var index = 0; index < values.Count; index++)
+                {
+                    ids.Add(new SpeciesId(values[index]));
+                }
+            }
+
+            return ids;
+        }
+
+        void BackUpUnreadableStore(string storedJson)
+        {
+            PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
+            PlayerPrefs.DeleteKey(StoreKey);
+            PlayerPrefs.Save();
+            LoadWarning = "Profile data could not be loaded. The original save was preserved for recovery.";
         }
 
         void NotifyChanged()
