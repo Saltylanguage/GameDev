@@ -52,7 +52,11 @@ Forest Edge cosmetic decorations live in `Blob/64/ForestEdgeFlourishes/` and
 share the existing terrain atlas. They overlay full grass at 60% cell size;
 they are not a new 47-mask terrain family. Keep their `Noesis` texture label:
 the package importer premultiplies alpha for the custom board renderer, avoiding
-colored rectangles around otherwise transparent artwork. Preserve source PNGs.
+colored rectangles around otherwise transparent artwork. The V2 atlas importer
+must also explicitly set its default platform compression to Uncompressed:
+DXT compression can introduce RGB into fully transparent packed pixels even
+when the individual imports are correct. Preserve source PNGs. The current set
+contains ten decorations (three mushrooms, three shrubs and four flowers).
 
 The Grass terrain family is authored as named 64x64 sprites and packed by
 `Terrain_01.spriteatlasv2`. `TerrainTileResolver` selects among the 47 normalized

@@ -315,6 +315,20 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(grassTiles.GetValue(mask), Is.Not.Null, $"Grass mask {mask:D3} must be initialized.");
             }
 
+            var flourishes = viewModel.GetType()
+                .GetField("forestEdgeFlourishes", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(viewModel) as Array;
+            Assert.That(flourishes, Is.Not.Null, "ForestEdge must initialize the authored flourish atlas crops.");
+            Assert.That(flourishes.Length, Is.EqualTo(ForestEdgeFlourishResolver.SpriteNames.Count));
+            var flourishRects = new HashSet<Noesis.Int32Rect>();
+            for (var index = 0; index < flourishes.Length; index++)
+            {
+                Assert.That(flourishes.GetValue(index), Is.Not.Null,
+                    $"Flourish '{ForestEdgeFlourishResolver.SpriteNames[index]}' must be initialized.");
+                Assert.That(flourishRects.Add(((Noesis.CroppedBitmap)flourishes.GetValue(index)).SourceRect), Is.True,
+                    $"Flourish '{ForestEdgeFlourishResolver.SpriteNames[index]}' must resolve its own atlas crop.");
+            }
+
             var boardViewModel = camera.GetComponent("SaltyGame.VM_SimulationBoard");
             Assert.That(boardViewModel, Is.Not.Null);
             var snapshot = boardViewModel.GetType()

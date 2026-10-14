@@ -8,6 +8,7 @@ namespace SaltyGame
         {
             "ForestEdge_Mushroom", "ForestEdge_Shrub_01", "ForestEdge_Shrub_02", "ForestEdge_Shrub_03",
             "ForestEdge_Flower_Cream", "ForestEdge_Flower_Purple", "ForestEdge_Flower_Blue", "ForestEdge_Flower_Yellow",
+            "ForestEdge_Mushroom_Green", "ForestEdge_Mushroom_Brown",
         };
 
         public static IReadOnlyList<string> SpriteNames => Names;

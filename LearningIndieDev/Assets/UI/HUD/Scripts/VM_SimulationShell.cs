@@ -873,9 +873,8 @@ namespace SaltyGame
                 for (var spriteIndex = 0; spriteIndex < packedSprites.Length; spriteIndex++)
                 {
                     if (packedSprites[spriteIndex] != null
-                        && packedSprites[spriteIndex].name.StartsWith(
-                        spriteNames[index],
-                        StringComparison.OrdinalIgnoreCase))
+                        && (string.Equals(packedSprites[spriteIndex].name, spriteNames[index], StringComparison.OrdinalIgnoreCase)
+                            || string.Equals(packedSprites[spriteIndex].name, spriteNames[index] + "(Clone)", StringComparison.OrdinalIgnoreCase)))
                     {
                         matchingSprite = packedSprites[spriteIndex];
                         break;

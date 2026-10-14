@@ -27,6 +27,10 @@ namespace SaltyGame.EditorTests
         {
             var atlas = AssetDatabase.LoadAssetAtPath<SpriteAtlas>(AtlasPath);
             Assert.That(atlas, Is.Not.Null);
+            var atlasImporter = (SpriteAtlasImporter)AssetImporter.GetAtPath(AtlasPath);
+            Assert.That(atlasImporter.GetPlatformSettings("DefaultTexturePlatform").textureCompression,
+                Is.EqualTo(TextureImporterCompression.Uncompressed),
+                "Atlas compression must preserve Noesis premultiplied alpha at transparent sprite edges.");
             foreach (var name in ForestEdgeFlourishResolver.SpriteNames)
             {
                 var path = $"{TileRoot}/ForestEdgeFlourishes/{name}.png";

@@ -6,6 +6,15 @@ become a master changelog.
 
 ## Current focus
 
+**October 14 Forest Edge flourish replacement accepted:** Replaced the eight old
+images with Bevin's ten supplied mushroom/shrub/flower PNGs, preserving existing
+asset identities. Noesis labels plus explicit uncompressed V2 atlas defaults
+preserve transparent edges; exact sprite-name matching keeps the three mushroom
+colors distinct. 12 distinct focused EditMode checks, 26 presentation PlayMode
+tests and one 1920x1080 Desktop visual capture pass. GPU alpha and source hashes
+verify. Bevin confirmed the rendered result and authorized publication. See
+the [replacement handoff](handoffs/2026-10-14-codex-forest-edge-flourish-replacement.md).
+
 **October 13 intermittent tile seams accepted:** The shared board now
 aligns tile boundaries in screen pixels and refreshes after pan/layout scale
 changes. 26 presentation PlayMode tests pass, including a rendered regression

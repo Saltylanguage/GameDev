@@ -28,7 +28,8 @@ namespace SaltyGame.Tests
                         SimulationCellSnapshot.Create(SpeciesCell.Empty, 255), x, y), Is.EqualTo(-1));
                 }
             }
-            Assert.That(variants.Count, Is.EqualTo(8));
+            Assert.That(ForestEdgeFlourishResolver.SpriteNames.Count, Is.EqualTo(10));
+            Assert.That(variants.Count, Is.EqualTo(ForestEdgeFlourishResolver.SpriteNames.Count));
             Assert.That(decorated, Is.InRange(180, 300));
         }
     }
