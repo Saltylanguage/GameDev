@@ -63,9 +63,11 @@ exploration. This is the next comparison candidate; the implemented S4 fixture
 and authored production defaults have not been changed. Seed Dispersal is now
 implemented locally with direct planting counters and a Gardeners offer path;
 automated and manual card/results acceptance are complete, while balance
-validation remains open. The `CellSim`
-wrapper's missing `Resolve-UnityExecutionLane` helper also needs repair before
-the larger experiment checkpoint. Read the
+validation remains open. The `CellSim` wrapper was repaired and its Clean test
+and experiment lanes passed focused smoke checks on 2026-10-14; the Live lane
+still needs a ready Editor check. See the
+[tooling handoff](handoffs/2026-10-14-1533-codex-cellsim-wrapper-restoration.md).
+Also read the
 [implementation handoff](handoffs/2026-10-01-2216-codex-s4-02-trailblazer-and-editor-manual-testing-first-slice.md)
 and the original [six-skill checklist](handoffs/2026-10-01-1947-codex-s4-02-implementation-checklist-and-editor-testing-preflight.md).
 

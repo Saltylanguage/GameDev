@@ -85,12 +85,12 @@ The Inspector and reports expose `seedDropAttempts`, `seedDropSuccesses`,
 in the existing `Births` counter. Efficient Digestion and Seed Dispersal remain
 paired in the normal Hare offers for the Gardeners path.
 
-The current `CellSim Test` wrapper references a missing
-`Resolve-UnityExecutionLane` helper. The first implementation slice was verified
-with direct `unity test` calls; see the
-[implementation handoff](handoffs/2026-10-01-2216-codex-s4-02-trailblazer-and-editor-manual-testing-first-slice.md)
-for retained commands and results. Repair the wrapper before the larger S4
-experiment checkpoint.
+The `CellSim` lane helpers were restored on 2026-10-14. `Doctor`, a focused
+Clean EditMode test, and a one-seed Clean experiment produced retained results;
+the worker's separate closed-Editor batch preflight also passed. This clears
+the wrapper blocker before the larger S4 experiment checkpoint. The Live lane
+still needs a check with a ready Pipeline Editor. See the
+[tooling handoff](handoffs/2026-10-14-1533-codex-cellsim-wrapper-restoration.md).
 
 Use an explicit experiment input to compare starting populations without editing
 the production scenario. For example, the proposed S4 fixture can be launched as:

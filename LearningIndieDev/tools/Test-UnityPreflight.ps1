@@ -14,4 +14,4 @@ if ([string]::IsNullOrWhiteSpace($ProjectPath)) {
 
 $project = Resolve-UnityProjectPath -ProjectPath $ProjectPath
 $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
-Invoke-UnityPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts') -TimeoutSeconds $TimeoutSeconds
+Invoke-UnityBatchPreflight -ProjectPath $project -UnityPath $unity -ArtifactsRoot (Join-Path $project 'artifacts') -TimeoutSeconds $TimeoutSeconds
