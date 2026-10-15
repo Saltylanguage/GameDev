@@ -1140,7 +1140,7 @@ mask for Bare cells too, so dirt cells inside a Grass field can display their
 Grass vertices. Resolver and snapshot regression tests were added and pass in
 the current clean EditMode suite recorded at the top of this file.
 
-**Roadmap v2.2 remains active.** M0 and M1 are complete; Josh closed M1 on
+**Historical S3 closeout context (Roadmap v2.2 at the time).** M0 and M1 are complete; Josh closed M1 on
 2026-09-29 after accepting the distributed exit-gate evidence. Sprint 2 closed on 2026-09-17 with Fox telemetry as
 its sole carry-over. Sprint 3 closed on 2026-09-29 after manual review. The
 committed S3 cards and control card are in Trello Done; S3-05 remains in Backlog
@@ -1150,7 +1150,8 @@ complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
 scope. Chrono is producing the selected Main Menu art, with further polish as
 iterative work. At S3 closeout, the S4 plan still needed refinement; S4 was
 subsequently activated on 2026-10-01. Retesting may be needed as later work
-changes the accepted baseline. Local profile-choice save/restore is deferred beyond S4.
+changes the accepted baseline. Local profile-choice save/restore was deferred beyond S4
+at that kickoff; its foundation was published separately on 2026-10-14.
 The GalapagOS Desktop is the canonical
 player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will
