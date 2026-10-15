@@ -1011,6 +1011,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(run.PhaseResults, Has.Count.EqualTo(12));
             Assert.That(preview.PurchasedUpgradeCount, Is.EqualTo(mutationCount));
             Assert.That(preview.HasVisitedJourneyNode(preview.JourneyCurrentNode), Is.True);
+            Assert.That(preview.Progression.Currency, Is.GreaterThan(0));
 
             var next = viewModel.GetType().GetProperty("PlayNextSimulationCommand")?.GetValue(viewModel);
             next?.GetType().GetMethod("Execute")?.Invoke(next, new object[] { null });
@@ -1021,6 +1022,7 @@ namespace SaltyGame.PlayModeTests
             fresh?.GetType().GetMethod("Execute")?.Invoke(fresh, new object[] { null });
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
             Assert.That(preview.PurchasedUpgradeCount, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.Zero);
         }
 
         [UnityTest]

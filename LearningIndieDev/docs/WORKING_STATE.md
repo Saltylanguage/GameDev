@@ -16,6 +16,13 @@ wallets, and the first implementation slice remain open. See the
 [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)
 and [clarification handoff](handoffs/2026-10-15-1232-codex-journey-failure-persistence-clarification.md).
 
+**Journey Field Data reset: 2026-10-15, ready for review.** Starting a new
+Forest Edge journey now clears leftover Field Data along with its temporary
+upgrades. Standalone expedition currency carryover remains unchanged. Two
+focused Clean PlayMode checks passed. The separate permanent-currency deposit
+and permanent unlock rules remain design work. See the
+[boundary handoff](handoffs/2026-10-15-1250-codex-journey-field-data-reset-at-run-end.md).
+
 **October 14 ProjectMain and BevBranch integration:** Sim's terrain, artwork,
 simulation, and tooling commits are merged with the local S4/journey checkpoint
 and profile persistence. The merged Unity suites and Release tooling builds pass.
