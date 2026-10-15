@@ -11,6 +11,38 @@ created the Trello control card linked above.
 See the [S4 kickoff handoff](../handoffs/2026-10-01-codex-s4-kickoff.md) for
 the board verification and next steps.
 
+## Current card status - 2026-10-14
+
+Bevin requested that S4-01, S4-02, S4-03 and S4-07 be checked for stale
+content, refreshed and closed. All four descriptions now distinguish the
+delivered S4 work, current meeting decisions and continuing work. Their
+original planning text, links and comments remain historical context. All
+four cards are marked complete in Done, verified individually after reload.
+
+P1-032 remains in Current Work. The S4 control card remains Active; this
+four-card operation did not close the whole sprint or start another one.
+Board totals after reload: Current Work 1, Done 12, Upcoming Work 0,
+In Progress 0, Blocked 0 and Backlog 25.
+
+The closed cards do not establish new balance acceptance or an unperformed
+human review. Continue numerical tuning, strategy observations and any
+fresh current-opening comparisons as subsequent work. The approved
+four-neighbor density surcharge is still absent from the current source;
+the older seven-neighbor crowding trigger remains. Burrows stays later work.
+Actual reserve hours are not recorded. No new owner, estimate or deadline
+was assigned during this closeout.
+
+The final meeting leaves initial playtesting pass criteria provisional under
+Bev's guidance. Failure ends the journey without cash-out and loses only
+that journey's earnings, preserving banked Desktop progress. Field Data
+carries across journey phases. Expanded spending, reward modifiers,
+tunable speed, wrapping obstacles, varied maps and functional food assets
+are follow-up direction, not newly implemented behavior.
+
+See the [verified closeout handoff](../handoffs/2026-10-14-2254-codex-s4-four-card-closeout.md).
+The dated planning and research entries below retain their original status
+and evidence; this section is the current card-status record.
+
 ## Sprint outcome
 
 Trailblazer, Warren, and Gardeners produce distinct strategic decisions in
@@ -145,10 +177,11 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.
 
-**Kickoff status:** S4 is Active. The 13-arm × 20-seed screen is complete,
-with corrected Threat Avoidance evidence retained. S4-03 still requires
-spatial behavior evidence, the in-game review, and a human accept/revise
-decision. Review any material capacity change while preserving the 8h reserve.
+**Current status:** S4 remains Active with P1-032 in Current Work.
+S4-01/02/03/07 are complete in Done as of the verified October 14 refresh.
+The corrected screen and later spatial evidence are retained at their
+original revisions. Continuing player review and balance work is described
+in the current card-status section above.
 
 ## Selected work packages
 
@@ -222,9 +255,11 @@ for comparison; use the linked Sim review for his accepted refinements.
 
 ## Planning basis — Sim review and Josh decisions
 
-This section records the planning basis. Selected S4 cards are in
-`Current Work`; deferred profile cards remain in Backlog. The estimates are
-accepted planning assumptions.
+This section records the original planning basis. On October 14,
+S4-01/02/03/07 moved to Done; P1-032 remains in Current Work. The profile
+cards remain in Backlog with October 14 updates for their published
+foundation outside the original S4 allocation. Estimates below remain
+historical planning assumptions, not actual or remaining hours.
 
 See the [Sim kickoff handoff](../handoffs/2026-09-29-1241-codex-s4-sim-kickoff-approvals.md)
 for the requested capacity, feasibility, evidence, scope, and profile-boundary
@@ -280,24 +315,27 @@ without assigning him product decisions or profile persistence.
   No S4 capacity was used. Runtime effects, persistence migration, and balance
   evidence remain unscheduled and need separate scope.
 
-### Decisions to complete during S4
+### Original decision scope and continuing work
 
-- The flexible-build identity is settled; supported skill values and strategy
-  trade-offs still need S4-01 review. Verify the authored movement offer/cap and
-  Seed Dispersal value/cap before comparison evidence.
-- Freeze exact confirmation seeds, arms, response mode, skill values, and
-  thresholds before running the separate confirmation panel.
+- The flexible-build identity and shared-skill implementation are recorded in
+  the closed S4-01/02 cards. Further numeric tuning and strategy tradeoff
+  observations continue beyond this closeout; older requests below remain
+  historical context.
+- Freeze exact seeds, arms, response mode, values and declared research
+  criteria before any new confirmation. Historical frozen evidence does not
+  validate the changed opening offers or impose a fixed playtesting pass gate.
 - Keep the wider capability-map, reference-panel, and Adaptation Value lane out
   unless Josh and Sim make an explicit capacity trade.
 
 ## Scheduled task cards — S4 baseline
 
-The five selected cards are in `Current Work`; S4-04/05 remain deferred in
-Backlog. Current owners, availability, and planning estimates are accepted.
-P1-032 plus S4-01/02/03 total 28h of feature estimates; the protected 8h
-reserve brings the plan to 36h, leaving 4h unallocated. Run the control and
-candidate pilot before scaling to the full screen and revisit the plan only if
-its measured effort materially changes the estimate.
+The original baseline selected five cards. As of October 14, S4-01/02/03/07
+are complete in Done and P1-032 remains in Current Work. S4-04/05 remain in
+Backlog with their separate published-foundation update and outstanding
+manual exit/relaunch and Sim review. Original owners and estimates are
+preserved: P1-032 plus S4-01/02/03 total 28h of feature estimates; the 8h
+reserve brings the original plan to 36h of 40h. Actual hours and new-work
+capacity were not decided by this card closeout.
 
 | Task | Trello card |
 | --- | --- |
