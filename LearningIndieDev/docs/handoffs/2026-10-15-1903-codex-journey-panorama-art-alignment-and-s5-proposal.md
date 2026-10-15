@@ -26,6 +26,8 @@ while the S4 Trello closeout decision remains pending.
   conversion and temporary-placeholder behavior.
 - Drafted `docs/Sprints/S5-proposal-2026-10-15.md` for the next simulation and
   upgrade work block. It is a proposal, not an activated sprint.
+- Reconciled `ROADMAP.md` v2.3 and `docs/PROJECT_CONTEXT.md` with Josh's new
+  S5 priority while leaving S4 Active and S5 Proposed pending Trello decisions.
 
 ## Decisions and assumptions
 
@@ -50,7 +52,7 @@ while the S4 Trello closeout decision remains pending.
   screenshots were retained in
   `artifacts/journey-map-5760-contract-20261015/`; opening, middle, right,
   and hover images were inspected.
-- Scoped `git diff --check` is required before publication of this follow-up.
+- Scoped `git diff --check` passed for the map alignment and proposal files.
 
 ## Risks and incomplete work
 

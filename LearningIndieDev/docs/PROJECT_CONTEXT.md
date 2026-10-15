@@ -128,8 +128,8 @@ uncertainty or regression risk.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
-- [`ROADMAP.md`](../ROADMAP.md) version 2.2 is the active production baseline
-  as of 2026-10-01: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
+- [`ROADMAP.md`](../ROADMAP.md) version 2.3 is the active production baseline
+  as of 2026-10-15: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
   closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
   loop, understandable Mutation effects, and bounded visual polish/UI
   integration. Josh accepted M1 using distributed retained evidence; later
@@ -137,8 +137,10 @@ uncertainty or regression risk.
   Edge evidence plus the Desktop active-profile launch. A local profile-choice
   save/restore foundation now exists, with per-profile currency, progression
   IDs, simulation ticks, and playtime; economy settlement remains deferred.
-  Later S5–S7 windows remain forecasts until their
-  kickoffs are confirmed. The
+  Josh's next priority is Forest Edge simulation and upgrade content/balance;
+  the [S5 proposal](Sprints/S5-proposal-2026-10-15.md) records candidate work
+  without activating the sprint. Later S5–S7 windows remain forecasts until
+  their kickoffs are confirmed. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the
@@ -376,7 +378,7 @@ settle them in foundational grid code.
   `VM_SimulationBoard`; the legacy shell ViewModel remains the compatibility
   composition surface until the safe naming pass.
 - T4–T6 below are retained implementation checkpoints for the standalone Lab
-  route. Roadmap v2.2 supersedes their original navigation topology with Main
+  route. Roadmap v2.3 supersedes their original navigation topology with Main
   Menu → GalapagOS Desktop → Simulation while preserving their profile, launch-
   request, stable-ID, and results-return contracts.
 - T4 establishes the Main Menu contract: `VM_MainMenu` and
