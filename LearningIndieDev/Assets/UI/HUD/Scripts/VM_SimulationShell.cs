@@ -145,7 +145,7 @@ namespace SaltyGame
 
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
-        internal const float JourneyOverlayWidth = 3133.3333f;
+        internal const float JourneyOverlayWidth = 3840f;
         internal const float JourneyOverlayHeight = 520f;
         const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
         const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;

@@ -42,11 +42,11 @@ The map uses the full screen width for its horizontally scrolling trail. The mou
 
 ### Replacing the placeholder artwork
 
-- Author a continuous 4,700 × 1,080 panorama at the current reference scale. The 1920 × 1080 viewport shows overlapping portions of it.
-- The UI uses a 1280 × 720 logical canvas and a 3133.3333 × 520 logical scrolling route area. The panorama is displayed at 3133.3333 × 720 with its top offset by −95 inside that area; the fixed header and footer cover the outer bands.
+- Author a continuous 5,760 × 1,080 panorama, matching Chrono's art brief. The 1920 × 1080 viewport shows overlapping portions of it. The older 4,700 × 1,080 placeholder stretches across this area until final art arrives.
+- The UI uses a 1280 × 720 logical canvas and a 3840 × 520 logical scrolling route area. The panorama is displayed at 3840 × 720 with its top offset by −95 inside that area; the fixed header and footer cover the outer bands.
 - The stable resource key is `GalapagOS.Image.Journey.Panorama` in `Assets/UI/ImageResources.xaml`. Its current source is `Assets/UI/GalapagOS/Art/Journey/JourneyPanoramaPlaceholder.png`. Replace its source through the dictionary and preserve asset identity and approved pixel-art import settings.
 - Node positions and route geometry remain live UI. Keep icons, labels, state highlights, and hover cards out of the painting. The current trails are drawn by XAML; align any authored trail texture to the same node and connection guide before replacing that layer.
-- For a placement from `ForestEdgeJourney`, reference-art coordinates are `x = normalizedCenter.x × 4700` and `y = 142.5 + normalizedCenter.y × 780`.
+- For a placement from `ForestEdgeJourney`, reference-art coordinates are `x = normalizedCenter.x × 5760` and `y = 142.5 + normalizedCenter.y × 780`.
 
 | Habitat choice | Effect for cycle 2 | Immediate reward |
 | --- | --- | --- |

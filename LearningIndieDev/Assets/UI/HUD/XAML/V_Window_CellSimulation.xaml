@@ -2002,7 +2002,7 @@
                     <b:Interaction.Behaviors><game:JourneyMapScrollBehavior /></b:Interaction.Behaviors>
                     <Canvas Width="{Binding JourneyMapOverlayWidth}" Height="{Binding JourneyMapOverlayHeight}">
                         <Image Source="{StaticResource GalapagOS.Image.Journey.Panorama}"
-                               Width="3133.3333" Height="720" Canvas.Top="-95" Stretch="Fill" IsHitTestVisible="False" />
+                               Width="3840" Height="720" Canvas.Top="-95" Stretch="Fill" IsHitTestVisible="False" />
                         <Path x:Name="JourneyRouteNetwork" Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
                               Stroke="#B0AA7E" StrokeThickness="19" StrokeLineJoin="Round"
                               StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />

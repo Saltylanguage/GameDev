@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**Next work block proposed, 2026-10-15.** A draft
+[S5 simulation and upgrades proposal](Sprints/S5-proposal-2026-10-15.md)
+puts Forest Edge behavior, authored upgrade choices, matched evidence, and
+player review first. S4 remains Active in its control record until the pending
+Trello closeout decision is confirmed and verified. The canonical Desktop
+profile save/launch foundation is published; Sim's launch review and real
+application exit/relaunch check remain open. See the
+[profile acceptance handoff](handoffs/2026-10-15-1835-codex-profile-feature-unlock-storage-and-desktop-launch-acceptance.md).
+
+**Journey art alignment, 2026-10-15.** The published map is at `4d3d7734`.
+Its scrolling UI now targets Chrono's 5,760 × 1,080 panorama brief using
+normalized node positions; the current 4,700 × 1,080 artwork is a placeholder.
+The follow-up 1920 × 1080 visual check passed and captures are retained. See
+the [alignment handoff](handoffs/2026-10-15-1903-codex-journey-panorama-art-alignment-and-s5-proposal.md)
+and [art coordinates](JOURNEY_PROTOTYPE.md#replacing-the-placeholder-artwork).
+
 **October 14 team meeting: journey rules for the next playtest.** Bevin will
 guide phase-clear criteria as balance evidence develops. Failure ends the
 whole journey without cash-out: run-earned currency and temporary upgrades
