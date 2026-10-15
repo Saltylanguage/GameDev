@@ -93,6 +93,18 @@ uncertainty or regression risk.
 
 - **Journey meeting direction (2026-10-07):** success should mean surviving to tick 600 with an ecology viable through tick 700. The viability test is still undefined. Upgrades acquired in one journey simulation carry into the next journey simulation; persistence into a freshly started journey or permanent progression remains a separate decision. This journey carryover decision supersedes the earlier simulation-boundary reset assumption for that flow. Preserve 600/40/25 as historical research; SimMasterBev owns discovering a new starting population with a more personal pace of kills, births, and other events. DNA/secondary long-running simulator work is deferred for now. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
 
+- **Journey meeting decisions (2026-10-14):** Bevin guides phase-clear
+  criteria during initial playtesting; no population or event-metric formula
+  is fixed yet. Failure ends the whole journey with no cash-out or permanent
+  reward from that journey. Field Data carries between its phases and nodes;
+  other currency types can leave a successful journey for Desktop Genome
+  upgrades. Intended Field Data purchases include removing Hares, changing
+  Fox and Plant populations in either direction, and buying a random event.
+  Costs, limits, exact permanent wallets, and the first implementation slice
+  remain open. Clarify whether the failure note affects previously banked
+  profile data before implementing any deletion. See the
+  [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
+
 - The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)
   and [`TDD_TEMPLATE.md`](TDD_TEMPLATE.md). Use them to capture player-facing
   decisions separately from implementation contracts; completed sections should
@@ -488,6 +500,12 @@ settle them in foundational grid code.
 - The GalapagOS desktop must support multiple player-facing app windows open
   at the same time. Each window can be moved and closed independently; window
   orchestration belongs to the desktop shell and must not leak into `VM_Lab`.
+- The Forest Edge journey uses a horizontally scrolling forest panorama with
+  three playable trailheads, asymmetric trails, circular icon-only nodes, and
+  hover details. Its current visual graph has 13 stages and 29 markers; later
+  encounter content remains provisional. Final artist artwork replaces the
+  panorama behind live route and node UI. See [`JOURNEY_PROTOTYPE.md`](JOURNEY_PROTOTYPE.md)
+  for the implementation and art coordinates.
 - The player desktop app ecosystem is planned in
   [`GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md`](GALAPAGOS_DESKTOP_APP_ECOSYSTEM_PLAN.md),
   with the detailed player-facing feature contract in

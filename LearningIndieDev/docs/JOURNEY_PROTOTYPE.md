@@ -6,6 +6,17 @@
 
 **Design update (2026-10-07):** the team meeting approved upgrade carryover into the next simulation in the journey, retained 600/40/25 as historical research, and assigned the search for more personal event pacing to SimMasterBev. Success is intended to combine reaching tick 600 with viability through tick 700; that criterion remains undefined and is not implemented by this documentation update. DNA/secondary simulator work is deferred. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
 
+**Design update (2026-10-14):** Bevin will guide phase-clear criteria during
+initial playtesting; no specific population or event-metric formula is locked.
+Failure ends the whole journey with no cash-out or new long-term reward from
+that journey. Field Data carries through its phases and nodes; other currency
+types can leave a successful journey for Desktop Genome upgrades. Intended
+Field Data purchases include removing Hares, changing Fox and Plant counts in
+either direction, and buying a random event. Exact gates, prices, limits, and
+the first implementation slice remain open. The scope of "lose any long term
+data" for previously banked profile progression must be clarified before any
+deletion behavior is built. See the [October 14 meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
+
 ## Player flow
 
 1. Opening Simulation from the Desktop shows the full-screen Forest Edge journey map. The Back button returns to the Desktop. The map can also be reopened during a simulation; doing so pauses a running clock until the player closes it.
@@ -14,6 +25,9 @@
 4. At the end of phase 6, the cycle report appears. **Return to Journey Map** reveals the two habitat condition branches. Clicking either opens a popup with its effect and field-data reward. Claiming it returns to the map and reveals the connected second simulation node.
 5. Choosing the second simulation resumes the *same* `SimulationRunState` at phase 7. Cells, population history, seed, clock, and the accumulated Mutation loadout persist. The selected habitat condition changes the relevant species rules for the next tick. Phase Mutations or Skip appear after phases 7–11.
 6. Phase 12 shows the final report. **Return to Journey Map** shows the completed route; **Start a New Journey** prepares a fresh expedition at the opening reward node.
+
+The flow above describes the current prototype. It does not yet end the
+journey on a failed phase or settle separate permanent currencies on success.
 
 **Approved continuity, provisional vocabulary (2026-10-07):** upgrades acquired during a journey simulation persist into its next simulation. The prototype uses the existing Mutation system for the opening reward and phase choices, and already retains them across nodes until the expedition ends. The meeting approves that inter-simulation carryover; the category name and any persistence into a newly started journey or permanent progression remain separate decisions. The earlier simulation-boundary reset assumption does not apply to this journey flow.
 
@@ -39,6 +53,14 @@ The focused Unity Editor asset test validates the graph, placement, reward start
 ## Next content decisions
 
 - Name the upgrade category that carries between journey simulations. Preserve the approved carryover; separately decide any reset at a newly started journey or permanent progression boundary.
+- Let Bevin choose and revise the initial phase-clear gates from playtest
+  evidence. Record the chosen gate with each test; do not treat the historical
+  600/40/25 fixture as a production rule.
+- Define the journey failure transition and provisional reward ledger, then
+  implement no cash-out on failure and a single success-time deposit once the
+  banked-profile-data ambiguity is resolved.
+- Specify Field Data earning, purchase costs and limits, and the first subset
+  of approved population controls and random events to make playable.
 - Replace the later placeholder nodes with real effects, costs, events, and rewards; extend the runtime node handler beyond the first two cycles.
 - Review map readability, choice pacing, and survival across matched seeds before setting a production run length.
 - Add explicit transition provenance to exported reports before interpreting changes across cycles as effects of one decision.
