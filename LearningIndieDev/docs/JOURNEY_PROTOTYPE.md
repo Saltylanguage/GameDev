@@ -8,14 +8,17 @@
 
 **Design update (2026-10-14):** Bevin will guide phase-clear criteria during
 initial playtesting; no specific population or event-metric formula is locked.
-Failure ends the whole journey with no cash-out or new long-term reward from
-that journey. Field Data carries through its phases and nodes; other currency
+Failure ends the whole journey with no cash-out. Currency and temporary
+upgrades acquired in that run are lost; permanent Desktop upgrades and
+unlocked upgrade or feature availability survive. An accomplishment during a
+failed run can still unlock permanent availability once those rules are
+designed. Field Data carries through its phases and nodes; other currency
 types can leave a successful journey for Desktop Genome upgrades. Intended
 Field Data purchases include removing Hares, changing Fox and Plant counts in
 either direction, and buying a random event. Exact gates, prices, limits, and
-the first implementation slice remain open. The scope of "lose any long term
-data" for previously banked profile progression must be clarified before any
-deletion behavior is built. See the [October 14 meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
+the first implementation slice remain open. The 100-rabbit Burrow Genome
+unlock is an illustrative example, not an approved condition. See the
+[October 14 meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 
 ## Player flow
 
@@ -52,13 +55,14 @@ The focused Unity Editor asset test validates the graph, placement, reward start
 
 ## Next content decisions
 
-- Name the upgrade category that carries between journey simulations. Preserve the approved carryover; separately decide any reset at a newly started journey or permanent progression boundary.
+- Name the temporary upgrade category that carries between journey simulations and clear it when that run ends. Keep permanent Desktop upgrades and unlock availability in a separate profile progression category.
 - Let Bevin choose and revise the initial phase-clear gates from playtest
   evidence. Record the chosen gate with each test; do not treat the historical
   600/40/25 fixture as a production rule.
 - Define the journey failure transition and provisional reward ledger, then
-  implement no cash-out on failure and a single success-time deposit once the
-  banked-profile-data ambiguity is resolved.
+  implement loss of run-earned currency and temporary upgrades on failure,
+  preserve permanent Desktop progression, and deposit eligible currency once
+  when the journey succeeds.
 - Specify Field Data earning, purchase costs and limits, and the first subset
   of approved population controls and random events to make playable.
 - Replace the later placeholder nodes with real effects, costs, events, and rewards; extend the runtime node handler beyond the first two cycles.

@@ -4,6 +4,8 @@
 > and immediate currency-award rules below describe the earlier standalone
 > vertical slice. For the Forest Edge journey, Bevin will guide phase-clear
 > gates during playtesting; failure ends the whole journey with no cash-out.
+> Run-earned currency and temporary upgrades are lost; permanent Desktop
+> upgrades and unlocked upgrade or feature availability survive.
 > Field Data carries within the journey, while other currency types can reach
 > the Desktop for Genome upgrades after success. The exact settlement and
 > spending contracts remain to be built. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)

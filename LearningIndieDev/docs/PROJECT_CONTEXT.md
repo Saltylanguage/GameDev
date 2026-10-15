@@ -95,14 +95,17 @@ uncertainty or regression risk.
 
 - **Journey meeting decisions (2026-10-14):** Bevin guides phase-clear
   criteria during initial playtesting; no population or event-metric formula
-  is fixed yet. Failure ends the whole journey with no cash-out or permanent
-  reward from that journey. Field Data carries between its phases and nodes;
-  other currency types can leave a successful journey for Desktop Genome
+  is fixed yet. Failure ends the whole journey with no cash-out: currency and
+  temporary upgrades gained during that run are lost. Permanent Desktop
+  upgrades and unlocked upgrade or feature availability survive, including
+  permanent unlocks earned during that run; their conditions are not designed.
+  Field Data carries between its phases and nodes; other currency types can
+  leave a successful journey for Desktop Genome
   upgrades. Intended Field Data purchases include removing Hares, changing
   Fox and Plant populations in either direction, and buying a random event.
   Costs, limits, exact permanent wallets, and the first implementation slice
-  remain open. Clarify whether the failure note affects previously banked
-  profile data before implementing any deletion. See the
+  remain open. The 100-rabbit Burrow Genome unlock is a hypothetical example,
+  not an approved requirement. See the
   [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 
 - The living design and engineering document templates are [`GDD_TEMPLATE.md`](GDD_TEMPLATE.md)

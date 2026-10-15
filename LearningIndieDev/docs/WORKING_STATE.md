@@ -7,12 +7,14 @@ become a master changelog.
 
 **October 14 team meeting: journey rules for the next playtest.** Bevin will
 guide phase-clear criteria as balance evidence develops. Failure ends the
-whole journey with no cash-out; Field Data carries through it, while other
-currency types can reach the Desktop after success. Population controls and
+whole journey without cash-out: run-earned currency and temporary upgrades
+are lost, while permanent Desktop upgrades and unlocked upgrade or feature
+availability remain. Field Data carries through a journey; other currency
+types can reach the Desktop after success. Population controls and
 a random-event gamble are intended Field Data purchases. Prices, exact
 wallets, and the first implementation slice remain open. See the
 [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)
-and [context handoff](handoffs/2026-10-15-0946-codex-october-14-journey-meeting-context.md).
+and [clarification handoff](handoffs/2026-10-15-1232-codex-journey-failure-persistence-clarification.md).
 
 **October 14 ProjectMain and BevBranch integration:** Sim's terrain, artwork,
 simulation, and tooling commits are merged with the local S4/journey checkpoint

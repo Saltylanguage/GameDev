@@ -13,9 +13,11 @@ and implementation deferred**.
 
 > **Team decisions — 2026-10-14:** Field Data carries through a journey.
 > Other currency types can leave a successful journey for Desktop Genome
-> upgrades. Failure ends the whole journey with no cash-out or long-term
-> reward from that journey. Intended Field Data purchases include removing
-> Hares, adding or removing Foxes and Plants, and buying a random event.
+> upgrades. Failure ends the whole journey with no cash-out: all currency and
+> temporary upgrades gained during that run are lost. Permanent Desktop
+> upgrades and unlocked upgrade or feature availability survive, even when
+> the unlock was earned during that run. Intended Field Data purchases include
+> removing Hares, adding or removing Foxes and Plants, and buying a random event.
 > Bevin will guide phase-clear criteria during initial playtesting; no exact
 > pass formula was chosen. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 >
@@ -56,8 +58,9 @@ accomplishments or world state. Phase earnings and final settlement must be
 identified separately and applied once; repeated Continue or viewing a summary
 cannot award them again. The current survivor-count reward is a prototype,
 not a validated continued-expedition economy. See the
-[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md); earning amounts, loss rules
-and permanent Lab integration remain deferred.
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md); earning amounts and
+permanent Lab integration remain deferred. The failure loss boundary is set
+below; its save and settlement mechanics remain to be built.
 
 The following earlier candidate triggers are exploratory. Josh proposed fixed
 amounts for meeting each simulation node's authored requirements, held until
@@ -71,12 +74,14 @@ successful completion of the whole journey:
 
 Repeated common events need caps or diminishing returns so large populations cannot generate unlimited currency. Existing deterministic telemetry should be reused to evaluate rewards before adding new event infrastructure.
 
-> **Settlement boundary — team, 2026-10-14:** a failed journey ends with no
-> cash-out or new permanent reward. The proposed fixed node rewards and
-> success-time deposit still need a concrete node and wallet contract. Do not
-> erase previously banked profile currency or upgrades based on the ambiguous
-> "lose any long term data" note; clarify that scope first. The current
-> survivor-count reward is prototype plumbing, not this settlement contract.
+> **Settlement boundary — team, 2026-10-14; clarified 2026-10-15:** a failed
+> journey ends without cash-out. Forfeit every currency amount earned during
+> that run and every temporary upgrade acquired during it. Keep permanent
+> Desktop upgrades and unlocked upgrade or feature availability on the
+> profile, including unlocks earned through accomplishments during the run.
+> The proposed fixed node rewards and success-time deposit still need a
+> concrete node and wallet contract. The current survivor-count reward is
+> prototype plumbing, not this settlement contract.
 
 ## Within-journey Field Data spending
 
@@ -117,7 +122,6 @@ uses include:
 - unlocking starting traits or alternate biological strategies;
 - improving previews and revealing deeper simulation statistics;
 - unlocking research objectives and accomplishment tracks;
-- preserving more collected data after defeat;
 - unlocking advanced observation tools.
 
 Genome improvements need two views. Species Simulations may judge how they help
@@ -168,7 +172,8 @@ Mastery objectives should require varied species behaviors. Repeating the same s
   settlement contract are approved.
 - Keep Field Data spending inside the journey; qualifying permanent node
   rewards bank only when the whole journey succeeds.
-- Communicate the zero permanent payout for a failed journey clearly.
+- Communicate the zero currency payout and loss of temporary upgrades for a
+  failed journey while showing any permanent unlocks that remain.
 - One small Hare Genome preview or purchase after its balance and persistence
   contracts are ready; broader Genome content remains later work.
 
@@ -178,8 +183,9 @@ Mastery objectives should require varied species behaviors. Repeating the same s
 - Does spending category data also require general Research Data?
 - What phase-clear and whole-journey success gates does Bevin choose for each
   initial playtest, and how does the UI explain a failed journey's zero payout?
-- Does failure forfeit only provisional rewards from that journey, or also
-  currency and upgrades already banked on the profile?
+- Which accomplishments unlock permanent upgrade or feature availability,
+  and when should the profile record them? Mating 100 rabbits to unlock a
+  Burrow Genome upgrade is hypothetical, not an approved threshold.
 - Which approved Field Data purchases enter the first playable slice, and what
   are their costs, limits, legal timing, and random-event outcomes?
 - How does the UI show provisional node rewards before the successful journey

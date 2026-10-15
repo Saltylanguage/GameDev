@@ -14,11 +14,14 @@ preparation notes remain as a record of questions and proposals.
    criteria as the ecology is tested. The team did not lock population totals
    or a births, deaths, and kills formula. The October 7 tick-600/tick-700
    direction remains context, not a fixed production phase gate.
-2. **Journey failure:** Failure ends the whole journey. The player cannot cash
-   out and receives no long-term data earned on that failed journey. The note
-   says to "lose any long term data"; whether it also means deleting currency
-   or upgrades banked on the profile before this journey needs clarification
-   before implementation.
+2. **Journey failure (clarified October 15):** Failure ends the whole journey
+   without a cash-out. All currency earned during that run and all temporary
+   upgrades acquired during it are lost. Permanent Desktop upgrades and
+   unlocked upgrade or feature availability remain on the profile, including
+   permanent unlocks earned through an accomplishment during the run. The
+   conditions for those unlocks are not designed yet. For illustration only,
+   mating 100 rabbits might unlock a Burrow Genome upgrade; 100 is not an
+   approved threshold, and this is not an implemented feature.
 3. **Currency boundary:** Field Data carries between phases and nodes during
    one journey. Other currency types can leave a successful journey for the
    Desktop and Genome upgrades. The exact permanent wallet categories and
