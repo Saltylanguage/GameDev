@@ -23,6 +23,14 @@ focused Clean PlayMode checks passed. The separate permanent-currency deposit
 and permanent unlock rules remain design work. See the
 [boundary handoff](handoffs/2026-10-15-1250-codex-journey-field-data-reset-at-run-end.md).
 
+**Scrollable Forest Edge journey: 2026-10-14, ready for visual review.**
+The map now follows Josh's horizontal layout study: three playable openings,
+29 circular markers, 35 connections, and 13 visual stages over a quiet forest
+panorama. Mouse-wheel travel and hover cards are implemented. The two-cycle
+gameplay remains the playable scope; later markers await content. See the
+[journey handoff](handoffs/2026-10-14-2105-codex-scrollable-forest-journey-map.md)
+for verification and Chrono's art replacement coordinates.
+
 **October 14 ProjectMain and BevBranch integration:** Sim's terrain, artwork,
 simulation, and tooling commits are merged with the local S4/journey checkpoint
 and profile persistence. The merged Unity suites and Release tooling builds pass.
@@ -550,23 +558,14 @@ Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-developm
 and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
 Results and fixes are not committed or pushed. The S4 Inspector fixture already
 uses 400/20/10; authored scenario defaults remain separate.
-**Forest Edge journey prototype: integrated 2026-10-06.** The canonical
-Desktop Simulation icon opens the full-screen journey map. The first unbranched
-reward node offers a Hare Mutation in a popup, then the first simulation node
-runs six phases. Its report returns the player to the map, where an authored
-habitat condition popup leads to a connected second simulation. The same run,
-ecosystem, history, and all accumulated Mutations continue through phase 12;
-the final report returns to the map. This persistence is a temporary prototype
-rule while the within-run upgrade term and boundary reset rule are designed.
-The map has 18 ScriptableObject nodes across 12 stages, with only the first
-six nodes playable. The seasonal and continuous-summer landscapes remain
-reusable behind XAML icons, route lines, hover labels, a field journal, and a
-selected-node pulse. See [the prototype contract](JOURNEY_PROTOTYPE.md) for
-current effects, evidence, and remaining balance and terminology decisions.
-Josh accepted the playable prototype on 2026-10-06. On 2026-10-08, the journey
-layout was spread across the woodland, with longer branches and distinct
-condition-to-simulation routes. Focused asset and PlayMode checks and Game-view
-captures passed; Josh has not yet reviewed this layout pass.
+**Forest Edge journey prototype: integrated 2026-10-06, layout updated 2026-10-14.**
+The Desktop Simulation icon opens the scrolling journey map. A choice of three
+trailheads leads through the opening reward, first simulation, connected habitat
+condition, and second simulation. The same run, ecosystem, history, and accumulated
+Mutations continue through phase 12. The visual map has 29 markers across 13
+stages; the first ten markers are playable and later content remains provisional.
+See [the prototype contract](JOURNEY_PROTOTYPE.md) for current effects, approved
+upgrade carryover, art coordinates, and remaining content and balance decisions.
 
 **Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
 sprites now supply the standardized 32/64/128 icons and retained compatibility

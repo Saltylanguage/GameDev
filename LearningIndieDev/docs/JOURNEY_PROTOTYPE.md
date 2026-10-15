@@ -2,7 +2,7 @@
 
 **Status (2026-10-06):** Integrated into the canonical Desktop player flow for the first two ecological cycles. Josh accepted this as a playable prototype and deferred further journey work until later in Sprint 4. The next pass aims to polish it for V1 ship readiness. The later map nodes are ScriptableObject placeholders. This implementation does not settle the final journey length, upgrade vocabulary, balance, or reward economy.
 
-**Map layout pass (2026-10-08):** The authored 12-stage route now uses wider vertical spacing and longer distinct branches. Four fork points lead to 21 directed connections across 18 markers. The opening conditions lead to separate simulation markers: Seedfall to Burrow Study, Fox Tracks to Water Table. The later markers remain non-playable placeholders. The updated map passed its focused asset test, report-to-map PlayMode test, and 1920×1080 Game-view capture on both backdrops; visual acceptance by Josh is still pending.
+**Scrollable layout (2026-10-14):** Josh requested the accepted layout study in Unity, with all three opening choices playable. The authored graph now has 29 markers, 35 directed connections, and 13 encounter stages. The full-screen map scrolls horizontally across a 4,700 × 1,080 reference panorama. Circular icons and hover cards sit over live dirt-trail geometry and a quiet pixel-art forest placeholder. Chrono's final art will replace the panorama through one shared image resource. Later encounters remain non-playable placeholders.
 
 **Design update (2026-10-07):** the team meeting approved upgrade carryover into the next simulation in the journey, retained 600/40/25 as historical research, and assigned the search for more personal event pacing to SimMasterBev. Success is intended to combine reaching tick 600 with viability through tick 700; that criterion remains undefined and is not implemented by this documentation update. DNA/secondary simulator work is deferred. See the [meeting decisions](Meeting%20Briefs/2026-10-07-Journey-and-Ecology-Balance-Agenda.md#meeting-decisions).
 
@@ -23,9 +23,9 @@ unlock is an illustrative example, not an approved condition. See the
 ## Player flow
 
 1. Opening Simulation from the Desktop shows the full-screen Forest Edge journey map. The Back button returns to the Desktop. The map can also be reopened during a simulation; doing so pauses a running clock until the player closes it.
-2. The only available opening node is **First Discovery**. Clicking it opens a reward popup with three authored Hare Mutation choices. Claiming one returns to the map. The first simulation node then becomes available.
-3. Choosing **Forest Edge** starts six phases in the same ecosystem. After phases 1–5, the usual Mutation or Skip choice appears. The starting reward and phase Mutations remain in the run loadout.
-4. At the end of phase 6, the cycle report appears. **Return to Journey Map** reveals the two habitat condition branches. Clicking either opens a popup with its effect and field-data reward. Claiming it returns to the map and reveals the connected second simulation node.
+2. **Fern Glade**, **Creek Bend**, and **Pine Verge** are available at the start. Each opens a reward popup with the existing three Hare Mutation choices. Claiming one records that opening and makes only its connected first simulation available.
+3. Choosing **Canopy Edge**, **Forest Edge**, or **Pine Trail** starts six phases in the same ecosystem. These first simulation nodes use the same scenario and cadence. After phases 1–5, the usual Mutation or Skip choice appears. The starting reward and phase Mutations remain in the run loadout.
+4. At the end of phase 6, the cycle report appears. **Return to Journey Map** reveals the connected habitat condition choices. The upper opening leads to Seedfall, the middle opening can choose Seedfall or Fox Tracks, and the lower opening leads to Fox Tracks. Claiming a condition returns to the map and reveals its connected second simulation node.
 5. Choosing the second simulation resumes the *same* `SimulationRunState` at phase 7. Cells, population history, seed, clock, and the accumulated Mutation loadout persist. The selected habitat condition changes the relevant species rules for the next tick. Phase Mutations or Skip appear after phases 7–11.
 6. Phase 12 shows the final report. **Return to Journey Map** shows the completed route; **Start a New Journey** prepares a fresh expedition at the opening reward node.
 
@@ -36,9 +36,17 @@ journey on a failed phase or settle separate permanent currencies on success.
 
 ## Authored map and UI
 
-The 18-node, 12-stage graph lives in [`Journey`](../Assets/Data/ProductionData/CellularSimulation/Species/Journey/) ScriptableObjects. `ForestEdgeJourney` stores normalized positions, and `JourneyNodeAsset` stores kind, description, branch connections, availability, condition effect, data reward, and optional Mutation reward IDs. The first six nodes are playable: one starting Reward, one opening Simulation, two Conditions, and two connected Simulation nodes. The remaining twelve nodes are visible placeholders, not selectable content. Each complete visual route reaches 12 nodes.
+The 29-node, 13-stage graph lives in [`Journey`](../Assets/Data/ProductionData/CellularSimulation/Species/Journey/) ScriptableObjects. `ForestEdgeJourney` stores normalized positions, and `JourneyNodeAsset` stores kind, description, branch connections, availability, condition effect, data reward, and optional Mutation reward IDs. Ten nodes are playable: three starting Rewards, three first Simulations, two Conditions, and two second Simulations. The remaining nineteen nodes are visible placeholders. Each complete visual route reaches 13 nodes; the implemented gameplay still ends after its second simulation.
 
-The full Desktop canvas has seasonal and continuous-summer backdrops. Node icons and curved route lines are XAML overlays over reusable artwork. Labels appear on hover, and hover focuses the connected route and fills the right field journal from the node asset. Selecting a playable node changes the journal and adds a pulsing highlight. The popup uses the selected node's authored description and current reward choices. Its copy and styling are still prototype quality.
+The map uses the full screen width for its horizontally scrolling trail. The mouse wheel moves along the panorama; the native horizontal scrollbar is also available on hover. The header and footer stay fixed. Nodes show only their type icon, with a gold ring for an available choice and a pulse for the current selection. Hover shows kind, title, state, and description in a card and highlights connected trails. The hover card changes sides near a viewport edge. Encounter popups use the selected node's description and current reward choices.
+
+### Replacing the placeholder artwork
+
+- Author a continuous 4,700 × 1,080 panorama at the current reference scale. The 1920 × 1080 viewport shows overlapping portions of it.
+- The UI uses a 1280 × 720 logical canvas and a 3133.3333 × 520 logical scrolling route area. The panorama is displayed at 3133.3333 × 720 with its top offset by −95 inside that area; the fixed header and footer cover the outer bands.
+- The stable resource key is `GalapagOS.Image.Journey.Panorama` in `Assets/UI/ImageResources.xaml`. Its current source is `Assets/UI/GalapagOS/Art/Journey/JourneyPanoramaPlaceholder.png`. Replace its source through the dictionary and preserve asset identity and approved pixel-art import settings.
+- Node positions and route geometry remain live UI. Keep icons, labels, state highlights, and hover cards out of the painting. The current trails are drawn by XAML; align any authored trail texture to the same node and connection guide before replacing that layer.
+- For a placement from `ForestEdgeJourney`, reference-art coordinates are `x = normalizedCenter.x × 4700` and `y = 142.5 + normalizedCenter.y × 780`.
 
 | Habitat choice | Effect for cycle 2 | Immediate reward |
 | --- | --- | --- |
@@ -51,7 +59,7 @@ Both condition effects are captured as runtime snapshots when the expedition is 
 
 Forest Edge/Hare uses 12 phase windows in one run. The boundary at phase 6 holds the run in `AwaitingDecision` while the report, map, and condition popup are shown. Choosing the connected simulation resumes through `ContinueWithBoundaryState`. Non-Journey scenarios retain their six-phase flow, and direct test scenes can still auto-start.
 
-The focused Unity Editor asset test validates the graph, placement, reward start, and connected simulation/condition sequence. Play Mode tests verify the Desktop Noesis map and popup, report-to-map transition, same run/cells/history through cycle 2, persistent Mutations, and final reset. Game-view captures of the map and opening popup are in the 2026-10-06 visual-evidence artifacts. These tests do not establish ecological balance or final pacing. The current default of 100 ticks per phase yields 1,200 ticks for the two-cycle Forest Edge run.
+The focused Unity Editor asset test validates the graph, placement, three reward starts, and connected simulation/condition sequence. Play Mode tests verify each trailhead, the Desktop Noesis map and popup, report-to-map transition, same run/cells/history through cycle 2, persistent Mutations, and final reset. Graphics checks cover wheel travel, opening/middle/right views, hover details, and returning to the trailheads after exploration or reset. Current evidence is indexed in the [scrolling map handoff](handoffs/2026-10-14-2105-codex-scrollable-forest-journey-map.md). These tests do not establish ecological balance or final pacing. The current default of 100 ticks per phase yields 1,200 ticks for the two-cycle Forest Edge run.
 
 ## Next content decisions
 

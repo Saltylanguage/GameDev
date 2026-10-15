@@ -25,6 +25,15 @@ namespace SaltyGame
             var node = AssociatedObject.DataContext as JourneyMapNodeItem;
             if (node?.HoverCommand?.CanExecute(null) == true)
             {
+                for (DependencyObject parent = AssociatedObject; parent != null;
+                    parent = VisualTreeHelper.GetParent(parent))
+                {
+                    if (parent is ScrollViewer scroll)
+                    {
+                        node.PlaceHoverCard(scroll.HorizontalOffset, scroll.ViewportWidth);
+                        break;
+                    }
+                }
                 node.HoverCommand.Execute(null);
             }
         }

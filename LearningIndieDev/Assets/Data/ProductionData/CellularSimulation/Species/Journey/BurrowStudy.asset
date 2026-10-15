@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: burrow-study
   displayName: BURROW STUDY
-  description: Continue this same biome through six more phases beneath the canopy.
+  description: Continue the same ecosystem through a sheltered second cycle.
   kind: 0
   row: 3
   column: 0
@@ -23,4 +23,5 @@ MonoBehaviour:
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d006, type: 2}
+  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}
+  - {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}

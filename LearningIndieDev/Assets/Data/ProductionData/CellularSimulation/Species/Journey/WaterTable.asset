@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: water-table
   displayName: WATER TABLE
-  description: Continue this same biome through six more phases along the waterways.
+  description: Continue the same ecosystem through a water-bound second cycle.
   kind: 0
   row: 3
   column: 1
@@ -23,4 +23,5 @@ MonoBehaviour:
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d007, type: 2}
+  - {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}
+  - {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}

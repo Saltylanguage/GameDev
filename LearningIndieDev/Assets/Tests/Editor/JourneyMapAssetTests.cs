@@ -20,15 +20,20 @@ namespace SaltyGame.EditorTests
             Assert.That(map, Is.Not.Null);
             Assert.That(scenario, Is.Not.Null);
             Assert.That(map.AppliesTo(scenario, new SpeciesId("hare")), Is.True);
-            Assert.That(map.Nodes.Count, Is.EqualTo(18));
+            Assert.That(map.Nodes.Count, Is.EqualTo(29));
             Assert.That(map.StartNode, Is.Not.Null);
             Assert.That(map.StartNode.Row, Is.Zero);
             Assert.That(map.ValidateOverlayLayout(out var layoutError), Is.True, layoutError);
             Assert.That(map.NodePlacements.Count, Is.EqualTo(map.Nodes.Count));
-            Assert.That(map.Nodes.Sum(node => node.NextNodes.Count), Is.EqualTo(21));
-            Assert.That(LongestRouteFrom(map.StartNode), Is.EqualTo(12));
-            Assert.That(map.Nodes.Count(node => node.NextNodes.Count > 1), Is.EqualTo(4));
-            Assert.That(ReachableNodesFrom(map.StartNode).Count, Is.EqualTo(map.Nodes.Count));
+            Assert.That(map.Nodes.Sum(node => node.NextNodes.Count), Is.EqualTo(35));
+            var openings = map.Nodes.Where(node => node.Row == 0).ToArray();
+            Assert.That(openings, Has.Length.EqualTo(3));
+            Assert.That(openings, Does.Contain(map.StartNode));
+            Assert.That(openings.All(node => node.Kind == JourneyNodeKind.Reward
+                && node.PlayableInPrototype && node.RewardMutationIds.Count == 3), Is.True);
+            Assert.That(openings.Select(LongestRouteFrom), Is.All.EqualTo(13));
+            Assert.That(openings.SelectMany(ReachableNodesFrom).Distinct().Count(),
+                Is.EqualTo(map.Nodes.Count));
             foreach (var stage in map.Nodes.GroupBy(node => node.Row))
             {
                 Assert.That(stage.Select(node => node.Column).OrderBy(column => column),
@@ -46,8 +51,8 @@ namespace SaltyGame.EditorTests
                 Assert.That(node.Description, Is.Not.Empty);
                 Assert.That(map.TryGetNormalizedCenter(node, out var center), Is.True);
                 Assert.That(centers.Add(center), Is.True, $"Duplicate visual position for {node.NodeId}");
-                Assert.That(center.x, Is.InRange(0.05f, 0.95f));
-                Assert.That(center.y, Is.InRange(0.15f, 0.85f));
+                Assert.That(center.x, Is.InRange(0.04f, 0.95f));
+                Assert.That(center.y, Is.InRange(0.14f, 0.79f));
                 foreach (var next in node.NextNodes)
                 {
                     Assert.That(next, Is.Not.Null);
@@ -60,31 +65,29 @@ namespace SaltyGame.EditorTests
             }
 
             Assert.That(centers.Max(center => center.x) - centers.Min(center => center.x),
-                Is.GreaterThanOrEqualTo(0.9f));
+                Is.GreaterThanOrEqualTo(0.89f));
             Assert.That(centers.Max(center => center.y) - centers.Min(center => center.y),
-                Is.GreaterThanOrEqualTo(0.65f));
+                Is.GreaterThanOrEqualTo(0.6f));
             foreach (var center in centers)
             {
                 Assert.That(centers.Where(other => other != center)
-                    .All(other => UnityEngine.Vector2.Distance(center, other) > 0.075f),
+                    .All(other => UnityEngine.Vector2.Distance(center, other) > 0.07f),
                     Is.True, $"Journey markers are crowded around {center}.");
             }
 
-            Assert.That(map.StartNode.Kind, Is.EqualTo(JourneyNodeKind.Reward));
-            Assert.That(map.StartNode.RewardMutationIds.Count, Is.EqualTo(3));
-            Assert.That(map.StartNode.NextNodes.Count, Is.EqualTo(1));
-            var firstSimulation = map.StartNode.NextNodes[0];
-            Assert.That(firstSimulation.Kind, Is.EqualTo(JourneyNodeKind.Simulation));
-            Assert.That(firstSimulation.Row, Is.EqualTo(1));
-            Assert.That(firstSimulation.PlayableInPrototype, Is.True);
-            var conditions = firstSimulation.NextNodes.ToArray();
+            Assert.That(openings.All(node => node.NextNodes.Count == 1), Is.True);
+            var firstSimulations = openings.Select(node => node.NextNodes[0]).ToArray();
+            Assert.That(firstSimulations.Distinct().Count(), Is.EqualTo(3));
+            Assert.That(firstSimulations.All(node => node.Kind == JourneyNodeKind.Simulation
+                && node.Row == 1 && node.PlayableInPrototype), Is.True);
+            var conditions = firstSimulations.SelectMany(node => node.NextNodes).Distinct().ToArray();
             Assert.That(conditions, Has.Length.EqualTo(2));
             Assert.That(conditions.All(node => node.NextNodes.Count == 1), Is.True);
             Assert.That(conditions.Select(node => node.NextNodes[0]).Distinct().Count(), Is.EqualTo(2));
             var rules = scenario.CreateRuntimeData().SpeciesRules;
             foreach (var conditionNode in conditions)
             {
-                Assert.That(map.CanChooseAfter(firstSimulation, conditionNode), Is.True);
+                Assert.That(firstSimulations.Any(node => map.CanChooseAfter(node, conditionNode)), Is.True);
                 Assert.That(conditionNode.Kind, Is.EqualTo(JourneyNodeKind.Condition));
                 Assert.That(conditionNode.PlayableInPrototype, Is.True);
                 Assert.That(conditionNode.TryCreateCondition(out var condition, out var error),
@@ -96,7 +99,7 @@ namespace SaltyGame.EditorTests
                     && next.PlayableInPrototype && next.Row == 3), Is.True);
             }
 
-            Assert.That(map.Nodes.Count(node => node.Row > 3), Is.EqualTo(12));
+            Assert.That(map.Nodes.Count(node => node.Row > 3), Is.EqualTo(19));
             Assert.That(map.Nodes.Where(node => node.Row > 3)
                 .All(node => !node.PlayableInPrototype), Is.True);
         }

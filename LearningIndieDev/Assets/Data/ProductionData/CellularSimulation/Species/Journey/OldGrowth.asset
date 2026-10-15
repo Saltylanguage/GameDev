@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: old-growth
   displayName: OLD GROWTH
-  description: The oldest trees offer a different kind of resilience.
+  description: The grove offers resilience.
   kind: 2
   row: 9
-  column: 1
+  column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}
+  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}

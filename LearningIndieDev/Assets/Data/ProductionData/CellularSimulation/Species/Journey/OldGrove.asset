@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: old-grove
   displayName: OLD GROVE
-  description: Old trees shelter a changing community.
+  description: Old trees shape the route.
   kind: 5
-  row: 6
-  column: 1
+  row: 4
+  column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 16c431e8db9a4926814300dea4560fda, type: 2}
+  - {fileID: 11400000, guid: a37abab3a4fd4d9b85a0892d5a4c6abe, type: 2}

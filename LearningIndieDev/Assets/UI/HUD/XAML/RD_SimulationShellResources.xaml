@@ -284,9 +284,24 @@
             <Style x:Key="GalapagOS.Button.JourneyNode"
                    TargetType="Button"
                    BasedOn="{StaticResource GalapagOS.Button.SecondaryPaper}">
-                <Setter Property="Background" Value="{DynamicResource Chrono_LightCream}" />
-                <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
+                <Setter Property="Background" Value="#F1F0D5" />
+                <Setter Property="BorderBrush" Value="#748854" />
                 <Setter Property="BorderThickness" Value="1.5" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Button">
+                            <Grid>
+                                <Ellipse Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}"
+                                         StrokeThickness="1.5" />
+                                <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Grid>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="#D69D4F" /></Trigger>
+                                <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#E5CF91" /></Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
                 <Style.Triggers>
                     <DataTrigger Binding="{Binding Status}" Value="CURRENT">
                         <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />

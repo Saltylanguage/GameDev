@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: quiet-hollow
   displayName: QUIET HOLLOW
-  description: A sheltered valley reveals a quieter path.
+  description: A lower trail winds through shelter.
   kind: 3
-  row: 7
-  column: 0
+  row: 5
+  column: 2
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: a37abab3a4fd4d9b85a0892d5a4c6abe, type: 2}
+  - {fileID: 11400000, guid: d8f483aa2221c0c46a60ab434d2f6830, type: 2}

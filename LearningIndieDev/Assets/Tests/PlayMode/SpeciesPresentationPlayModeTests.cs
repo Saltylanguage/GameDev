@@ -906,6 +906,36 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator EveryOpeningTrailheadCanBeginTheJourney()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
+            var openings = new[]
+            {
+                ("fern-glade-start", "canopy-cycle"),
+                ("forest-edge-start", "first-cycle"),
+                ("pine-verge-start", "pine-cycle"),
+            };
+            foreach (var (startId, simulationId) in openings)
+            {
+                preview.ResetToStart();
+                Assert.That(preview.JourneyActive, Is.True);
+                Assert.That(preview.JourneyMap.Nodes.Count(node => node.Row == 0
+                    && preview.CanChooseJourneyNode(node.NodeId)), Is.EqualTo(3));
+                Assert.That(preview.ChooseJourneyNode(startId), Is.True);
+                Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+                Assert.That(preview.JourneyCurrentNode.NodeId, Is.EqualTo(startId));
+                Assert.That(preview.CanChooseJourneyNode(simulationId), Is.True);
+                Assert.That(preview.JourneyMap.Nodes.Count(node => node.Row == 0
+                    && preview.CanChooseJourneyNode(node.NodeId)), Is.Zero);
+                Assert.That(preview.ChooseJourneyNode(simulationId), Is.True);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            }
+        }
+
+        [UnityTest]
         public IEnumerator JourneyNodeRewardsAndSimulationsContinueTheSameBiome()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");

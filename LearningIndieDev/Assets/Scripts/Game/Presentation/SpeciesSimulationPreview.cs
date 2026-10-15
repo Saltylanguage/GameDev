@@ -1948,7 +1948,7 @@ namespace SaltyGame
 
             if (journeyCurrentNode == null)
             {
-                return node == journeyMap.StartNode
+                return node.Row == 0
                     && node.Kind == JourneyNodeKind.Reward
                     && previewState == SpeciesPreviewState.Ready
                     && run.Status == SimulationRunStatus.Ready;
@@ -2113,7 +2113,7 @@ namespace SaltyGame
                 };
                 SynchronizePlayerUpgradeSnapshots();
                 PrepareNextRun();
-                journeyCurrentNode = journeyMap.StartNode;
+                journeyCurrentNode = node;
                 journeyVisitedNodeIds.Add(node.NodeId);
                 journeyPendingNode = null;
                 journeyRewardOptions = Array.Empty<SpeciesUpgrade>();

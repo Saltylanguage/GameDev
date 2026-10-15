@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: stonefall
   displayName: STONEFALL
-  description: Loose ground forces the ecosystem to adapt.
+  description: Loose ground changes the trail.
   kind: 3
-  row: 5
-  column: 1
+  row: 4
+  column: 2
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}
+  - {fileID: 11400000, guid: 16c431e8db9a4926814300dea4560fda, type: 2}

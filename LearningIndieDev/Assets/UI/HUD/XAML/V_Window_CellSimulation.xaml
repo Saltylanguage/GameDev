@@ -1964,282 +1964,141 @@
         </HeaderedContentControl>
         <Grid x:Name="JourneyMapPanel"
               Visibility="{Binding JourneyMapVisibility}"
-              Background="#182D24"
-              ClipToBounds="True">
-            <Image Source="{StaticResource GalapagOS.Image.Journey.SeasonalWoodland}"
-                   Width="970" HorizontalAlignment="Left" Stretch="Fill"
-                   Visibility="{Binding JourneySeasonalBackdropVisibility}"
-                   IsHitTestVisible="False" />
-            <Image Source="{StaticResource GalapagOS.Image.Journey.WoodlandSummerTrails}"
-                   Width="970" HorizontalAlignment="Left" Stretch="Fill"
-                   Visibility="{Binding JourneySummerBackdropVisibility}"
-                   IsHitTestVisible="False" />
-            <Rectangle Fill="#5012221A" IsHitTestVisible="False" />
+              Background="#E3E7C5" ClipToBounds="True">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="95" />
                     <RowDefinition Height="*" />
                     <RowDefinition Height="94" />
                 </Grid.RowDefinitions>
-                <Border Grid.Row="0" Background="#E5162B22" BorderBrush="#9CD4CF9D" BorderThickness="0,0,0,2">
-                    <Grid Margin="24,10">
+                <Border Grid.Row="0" Background="#2F4433" BorderBrush="#9BAD74" BorderThickness="0,0,0,5">
+                    <Grid Margin="26,12">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="125" />
+                            <ColumnDefinition Width="122" />
                             <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="235" />
                         </Grid.ColumnDefinitions>
-                        <Button Grid.Column="0" Content="←  BACK"
-                                Command="{Binding CloseJourneyMapCommand}"
-                                Width="112" Height="42"
-                                HorizontalAlignment="Left" VerticalAlignment="Center"
+                        <Button Content="BACK" Command="{Binding CloseJourneyMapCommand}"
+                                Width="90" Height="48" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"
                                 Style="{StaticResource GalapagOS.Button.SecondaryPaper}" />
-                        <StackPanel Grid.Column="1" Margin="15,0,0,0" VerticalAlignment="Center">
-                            <TextBlock Text="THE LIVING WOODLAND"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                                       FontSize="29" FontWeight="Bold" Foreground="#FFFFF5DC" />
-                            <TextBlock Text="ONE SPECIES  ·  ONE ECOSYSTEM  ·  MANY GENERATIONS"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="11" FontWeight="Bold" Foreground="#FFD9DEA9"
-                                       Margin="1,2,0,0" />
+                        <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                            <TextBlock Text="THE LIVING WOODLAND" FontSize="27" FontWeight="Bold"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" Foreground="#FCF7E1" />
+                            <TextBlock Text="FOREST EDGE / HARE EXPEDITION" FontSize="12" FontWeight="Bold"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" Foreground="#D5DEB3" Margin="1,7,0,0" />
                         </StackPanel>
-                        <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                            <Button Content="{Binding JourneyBackdropLabel}"
-                                    Command="{Binding ToggleJourneyBackdropCommand}"
-                                    Width="168" Height="38" FontSize="10" Margin="0,0,12,0"
-                                    Style="{StaticResource GalapagOS.Button.SecondaryPaper}" />
-                            <Border Padding="12,7" Background="#A91D3A2B"
-                                    BorderBrush="#FFAFBA84" BorderThickness="1" CornerRadius="4">
-                                <StackPanel>
-                                    <TextBlock Text="FOREST EDGE" FontSize="13" FontWeight="Bold"
-                                               Foreground="#FFFFF5DC" HorizontalAlignment="Right" />
-                                    <TextBlock Text="A GENERATIONAL JOURNEY" FontSize="9"
-                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                               Foreground="#FFD9DEA9" HorizontalAlignment="Right" />
-                                </StackPanel>
-                            </Border>
-                        </StackPanel>
+                        <Border Grid.Column="2" Background="#E8EBCB" BorderBrush="#9BAD74" BorderThickness="1"
+                                CornerRadius="7" Padding="14,8" VerticalAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="13 ENCOUNTERS PER ROUTE" FontSize="11" FontWeight="Bold" Foreground="#5B7041" />
+                                <TextBlock Text="Three ways to begin" FontSize="13" Foreground="#36301F" Margin="0,3,0,0" />
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
-                <Grid Grid.Row="1">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="310" />
-                    </Grid.ColumnDefinitions>
-                    <Grid Grid.Column="0" Margin="18,7,2,0">
-                        <Border Height="32" Width="340" HorizontalAlignment="Left"
-                                VerticalAlignment="Top" Margin="0,4,0,0"
-                                Background="#CBEDE8CB" BorderBrush="#B47B8C61"
-                                BorderThickness="1" CornerRadius="5">
-                            <TextBlock Text="FOLLOW THE LIVING TRAIL  ·  HOVER TO EXPLORE"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="10" FontWeight="Bold" Foreground="#FF314731" />
-                        </Border>
-                        <Canvas Width="{Binding JourneyMapOverlayWidth}"
-                                Height="{Binding JourneyMapOverlayHeight}"
-                                HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Path x:Name="JourneyRouteNetwork"
-                                  Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
-                                  Stroke="#6A173829" StrokeThickness="5" StrokeLineJoin="Round"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
-                            <Path Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
-                                  Stroke="#8FE8E1BD" StrokeThickness="2" StrokeLineJoin="Round"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
-                            <Path x:Name="JourneyRouteFocus"
-                                  Data="{Binding JourneyMapFocusGeometry}" Stretch="None"
-                                  Stroke="#FFF7D78D" StrokeThickness="5" StrokeLineJoin="Round"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
-                            <ItemsControl Width="{Binding JourneyMapOverlayWidth}"
-                                          Height="{Binding JourneyMapOverlayHeight}"
-                                          ItemsSource="{Binding JourneyMapNodes}">
-                                <ItemsControl.ItemsPanel>
-                                    <ItemsPanelTemplate><Canvas /></ItemsPanelTemplate>
-                                </ItemsControl.ItemsPanel>
-                                <ItemsControl.ItemContainerStyle>
-                                    <Style TargetType="ContentPresenter">
-                                        <Setter Property="Canvas.Left" Value="{Binding X}" />
-                                        <Setter Property="Canvas.Top" Value="{Binding Y}" />
-                                    </Style>
-                                </ItemsControl.ItemContainerStyle>
-                                <ItemsControl.ItemTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Width="82">
-                                            <b:Interaction.Behaviors>
-                                                <game:JourneyNodeHoverBehavior />
-                                            </b:Interaction.Behaviors>
-                                            <Ellipse x:Name="SelectedJourneyPulse" Width="54" Height="54"
-                                                     Margin="0,0,0,-49" HorizontalAlignment="Center"
-                                                     Stroke="#FFFFD77B" StrokeThickness="3"
-                                                     Visibility="{Binding SelectedVisibility}"
-                                                     IsHitTestVisible="False" Opacity="0.55">
-                                                <Ellipse.Triggers>
-                                                    <EventTrigger RoutedEvent="FrameworkElement.Loaded">
-                                                        <BeginStoryboard>
-                                                            <Storyboard RepeatBehavior="Forever">
-                                                                <DoubleAnimation Storyboard.TargetName="SelectedJourneyPulse"
-                                                                                 Storyboard.TargetProperty="Opacity"
-                                                                                 From="0.22" To="0.88" Duration="0:0:0.8"
-                                                                                 AutoReverse="True" />
-                                                            </Storyboard>
-                                                        </BeginStoryboard>
-                                                    </EventTrigger>
-                                                </Ellipse.Triggers>
-                                            </Ellipse>
-                                            <Border Width="44" Height="44" CornerRadius="22"
-                                                    Background="#E8FFF9DD" BorderBrush="#FF274731"
-                                                    BorderThickness="2" HorizontalAlignment="Center"
-                                                    ToolTip="{Binding Description}">
-                                                <Button Width="36" Height="36" Padding="0"
-                                                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                                                        Command="{Binding ChooseCommand}"
-                                                        IsHitTestVisible="{Binding CanChoose}"
-                                                        Focusable="{Binding CanChoose}"
-                                                        Style="{StaticResource GalapagOS.Button.JourneyNode}"
-                                                        ToolTip="{Binding Description}">
-                                                    <Grid>
-                                                        <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Visibility="{Binding SimulationIconVisibility}" />
-                                                        <Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="25" Height="25" Visibility="{Binding ConditionIconVisibility}" />
-                                                        <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" Width="25" Height="25" Visibility="{Binding UpgradeIconVisibility}" />
-                                                        <TextBlock Text="!" FontSize="23" FontWeight="Bold" Foreground="#FF8B4E26"
-                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding EventIconVisibility}" />
-                                                        <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Width="25" Height="25" Visibility="{Binding FinaleIconVisibility}" />
-                                                        <Image Source="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" Width="25" Height="25" Visibility="{Binding RewardIconVisibility}" />
-                                                    </Grid>
-                                                </Button>
-                                            </Border>
-                                            <Border Margin="0,2,0,0" Padding="2,2"
-                                                    Visibility="{Binding LabelVisibility}"
-                                                    Background="#E8FFF7DD" BorderBrush="#9A405539"
-                                                    BorderThickness="1" CornerRadius="3">
+                <ScrollViewer x:Name="JourneyMapScroll" Grid.Row="1"
+                              HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled"
+                              CanContentScroll="False" Background="#E3E7C5">
+                    <b:Interaction.Behaviors><game:JourneyMapScrollBehavior /></b:Interaction.Behaviors>
+                    <Canvas Width="{Binding JourneyMapOverlayWidth}" Height="{Binding JourneyMapOverlayHeight}">
+                        <Image Source="{StaticResource GalapagOS.Image.Journey.Panorama}"
+                               Width="3133.3333" Height="720" Canvas.Top="-95" Stretch="Fill" IsHitTestVisible="False" />
+                        <Path x:Name="JourneyRouteNetwork" Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
+                              Stroke="#B0AA7E" StrokeThickness="19" StrokeLineJoin="Round"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                        <Path Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
+                              Stroke="#E0D1A5" StrokeThickness="14" StrokeLineJoin="Round"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                        <Path Data="{Binding JourneyMapRouteGeometry}" Stretch="None"
+                              Stroke="#F5E8C5" StrokeThickness="2" StrokeLineJoin="Round" Opacity="0.7"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                        <Path x:Name="JourneyRouteFocus" Data="{Binding JourneyMapFocusGeometry}" Stretch="None"
+                              Stroke="#D69D4F" StrokeThickness="4" StrokeLineJoin="Round"
+                              StrokeStartLineCap="Round" StrokeEndLineCap="Round" IsHitTestVisible="False" />
+                        <ItemsControl Width="{Binding JourneyMapOverlayWidth}" Height="{Binding JourneyMapOverlayHeight}"
+                                      ItemsSource="{Binding JourneyMapNodes}">
+                            <ItemsControl.ItemsPanel><ItemsPanelTemplate><Canvas /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemContainerStyle>
+                                <Style TargetType="ContentPresenter">
+                                    <Setter Property="Canvas.Left" Value="{Binding X}" />
+                                    <Setter Property="Canvas.Top" Value="{Binding Y}" />
+                                    <Setter Property="Panel.ZIndex" Value="{Binding HoverZIndex}" />
+                                </Style>
+                            </ItemsControl.ItemContainerStyle>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Width="64" Height="64">
+                                        <b:Interaction.Behaviors><game:JourneyNodeHoverBehavior /></b:Interaction.Behaviors>
+                                        <Ellipse Width="52" Height="52" Fill="#A7B889" Margin="4,5,0,0" IsHitTestVisible="False" />
+                                        <Ellipse Width="57" Height="57" Stroke="#D69D4F" StrokeThickness="3"
+                                                 Visibility="{Binding AvailableVisibility}" IsHitTestVisible="False" />
+                                        <Ellipse x:Name="SelectedJourneyPulse" Width="61" Height="61"
+                                                 Stroke="#D69D4F" StrokeThickness="2" Visibility="{Binding SelectedVisibility}"
+                                                 IsHitTestVisible="False" Opacity="0.55">
+                                            <Ellipse.Triggers>
+                                                <EventTrigger RoutedEvent="FrameworkElement.Loaded">
+                                                    <BeginStoryboard><Storyboard RepeatBehavior="Forever">
+                                                        <DoubleAnimation Storyboard.TargetName="SelectedJourneyPulse" Storyboard.TargetProperty="Opacity"
+                                                                         From="0.22" To="0.88" Duration="0:0:0.8" AutoReverse="True" />
+                                                    </Storyboard></BeginStoryboard>
+                                                </EventTrigger>
+                                            </Ellipse.Triggers>
+                                        </Ellipse>
+                                        <Border Width="51" Height="51" CornerRadius="26" Background="#F1F0D5"
+                                                BorderBrush="#748854" BorderThickness="2">
+                                            <Button Width="45" Height="45" Padding="0" Command="{Binding ChooseCommand}"
+                                                    IsHitTestVisible="{Binding CanChoose}" Focusable="{Binding CanChoose}"
+                                                    Style="{StaticResource GalapagOS.Button.JourneyNode}">
+                                                <Grid>
+                                                    <Path Data="M 0,0 H 7 V 7 H 0 Z M 10,0 H 17 V 7 H 10 Z M 20,0 H 27 V 7 H 20 Z M 0,10 H 7 V 17 H 0 Z M 10,10 H 17 V 17 H 10 Z M 20,10 H 27 V 17 H 20 Z M 0,20 H 7 V 27 H 0 Z M 10,20 H 17 V 27 H 10 Z M 20,20 H 27 V 27 H 20 Z"
+                                                          Width="24" Height="24" Stretch="Uniform" Fill="#405334" Visibility="{Binding SimulationIconVisibility}" />
+                                                    <Path Data="M 1,6 C 5,1 7,1 11,6 C 15,11 17,11 21,6 M 1,14 C 5,9 7,9 11,14 C 15,19 17,19 21,14 M 1,22 C 5,17 7,17 11,22 C 15,27 17,27 21,22"
+                                                          Width="27" Height="27" Stretch="Uniform" Stroke="#47736B" StrokeThickness="2.4" Visibility="{Binding ConditionIconVisibility}" />
+                                                    <Path Data="M 14,0 L 0,14 9,14 9,30 19,30 19,14 28,14 Z"
+                                                          Width="24" Height="27" Stretch="Uniform" Fill="#645D7B" Visibility="{Binding UpgradeIconVisibility}" />
+                                                    <TextBlock Text="!" FontSize="27" FontWeight="Bold" Foreground="#785331" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding EventIconVisibility}" />
+                                                    <Path Data="M 14,0 L 18,10 28,14 18,18 14,28 10,18 0,14 10,10 Z"
+                                                          Width="27" Height="27" Stretch="Uniform" Fill="#9C713C" Visibility="{Binding FinaleIconVisibility}" />
+                                                    <Path Data="M 15,27 L 15,15 4,9 5,17 13,21 13,32 17,32 17,21 26,17 28,7 17,14 17,27 Z"
+                                                          Width="27" Height="27" Stretch="Uniform" Fill="#405334" Visibility="{Binding RewardIconVisibility}" />
+                                                    <Path Data="M 15,27 L 15,15 4,9 5,17 13,21 13,32 17,32 17,21 26,17 28,7 17,14 17,27 Z"
+                                                          Width="27" Height="27" Stretch="Uniform" Fill="#405334" Visibility="{Binding OpeningFernVisibility}" />
+                                                    <Path Data="M 1,6 C 5,1 7,1 11,6 C 15,11 17,11 21,6 M 1,14 C 5,9 7,9 11,14 C 15,19 17,19 21,14 M 1,22 C 5,17 7,17 11,22 C 15,27 17,27 21,22"
+                                                          Width="27" Height="27" Stretch="Uniform" Stroke="#47736B" StrokeThickness="2.4" Visibility="{Binding OpeningWaterVisibility}" />
+                                                    <Path Data="M 14,0 L 6,11 10,11 3,20 8,20 0,29 12,29 12,35 16,35 16,29 28,29 20,20 25,20 18,11 22,11 Z"
+                                                          Width="25" Height="30" Stretch="Uniform" Fill="#405334" Visibility="{Binding OpeningPineVisibility}" />
+                                                </Grid>
+                                            </Button>
+                                        </Border>
+                                        <Canvas IsHitTestVisible="False" Visibility="{Binding LabelVisibility}">
+                                            <Border Canvas.Left="{Binding HoverCardX}" Canvas.Top="{Binding HoverCardY}"
+                                                    Width="230" Background="#FFF8E1" BorderBrush="#748854" BorderThickness="2" CornerRadius="7" Padding="14">
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding Title}" TextAlignment="Center"
-                                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                               FontSize="8" FontWeight="Bold" Foreground="#FF243C2D"
-                                                               TextWrapping="Wrap" />
-                                                    <TextBlock Text="{Binding Status}" TextAlignment="Center"
-                                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                               FontSize="7" FontWeight="Bold" Foreground="#FF7B4C27" />
+                                                    <TextBlock Text="{Binding Kind}" FontSize="10" FontWeight="Bold" Foreground="#6B7C4D" />
+                                                    <TextBlock Text="{Binding Title}" FontSize="17" FontWeight="Bold" Foreground="#36301F" TextWrapping="Wrap" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{Binding Status}" FontSize="9" FontWeight="Bold" Foreground="#996732" Margin="0,5,0,0" />
+                                                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#4C573B" TextWrapping="Wrap" Margin="0,10,0,0" />
                                                 </StackPanel>
                                             </Border>
-                                        </StackPanel>
-                                    </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
-                        </Canvas>
-                    </Grid>
-                    <Border Grid.Column="1" Margin="0,13,18,10" Padding="12"
-                            Background="#F5FFF5DB" BorderBrush="#FF33492D"
-                            BorderThickness="2" CornerRadius="7">
-                        <Grid>
-                            <Image Source="{StaticResource GalapagOS.Image.Simulation.BotanicalSketch}"
-                                   Width="215" Height="210" Stretch="Uniform"
-                                   HorizontalAlignment="Right" VerticalAlignment="Top"
-                                   Opacity="0.13" IsHitTestVisible="False" />
-                            <Grid>
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="27" />
-                                    <RowDefinition Height="76" />
-                                    <RowDefinition Height="92" />
-                                    <RowDefinition Height="54" />
-                                    <RowDefinition Height="*" />
-                                    <RowDefinition Height="42" />
-                                </Grid.RowDefinitions>
-                                <Border Grid.Row="0" Background="#FF344C31" CornerRadius="3" Padding="7,4">
-                                    <TextBlock Text="FIELD JOURNAL  /  TRAIL MARKER"
-                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                               FontSize="10" FontWeight="Bold" Foreground="#FFFFF6D9" />
-                                </Border>
-                                <Grid Grid.Row="1" Margin="0,9,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="54" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Width="45" Height="45" CornerRadius="23"
-                                            Background="#FFFFE8B1" BorderBrush="#FF7C673D"
-                                            BorderThickness="2" VerticalAlignment="Top">
-                                        <Grid>
-                                            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="29" Height="29" Visibility="{Binding JourneyDetailSimulationIconVisibility}" />
-                                            <Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="29" Height="29" Visibility="{Binding JourneyDetailConditionIconVisibility}" />
-                                            <Image Source="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" Width="29" Height="29" Visibility="{Binding JourneyDetailUpgradeIconVisibility}" />
-                                            <TextBlock Text="!" FontSize="27" FontWeight="Bold" Foreground="#FF8B4E26"
-                                                       HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding JourneyDetailEventIconVisibility}" />
-                                            <Image Source="{StaticResource GalapagOS.Image.Icon.Clipboard}" Width="29" Height="29" Visibility="{Binding JourneyDetailFinaleIconVisibility}" />
-                                            <Image Source="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" Width="29" Height="29" Visibility="{Binding JourneyDetailRewardIconVisibility}" />
-                                        </Grid>
-                                    </Border>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="{Binding JourneyDetailKind}"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="10" FontWeight="Bold" Foreground="#FF758057" />
-                                        <TextBlock Text="{Binding JourneyDetailTitle}" FontSize="19"
-                                                   FontWeight="Bold" TextWrapping="Wrap" Foreground="#FF263B2B" />
-                                        <TextBlock Text="{Binding JourneyDetailStatus}"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="9" FontWeight="Bold" Foreground="#FF9A5B29" />
-                                    </StackPanel>
-                                </Grid>
-                                <Border Grid.Row="2" Padding="10,9" Background="#D5F0E8C9"
-                                        BorderBrush="#FFAFB590" BorderThickness="1" CornerRadius="4">
-                                    <StackPanel>
-                                        <TextBlock Text="WHAT THIS TRAIL HOLDS"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="10" FontWeight="Bold" Foreground="#FF526747" />
-                                        <TextBlock Text="{Binding JourneyDetailDescription}"
-                                                   FontSize="12" TextWrapping="Wrap"
-                                                   Foreground="#FF263B2B" Margin="0,7,0,0" />
-                                    </StackPanel>
-                                </Border>
-                                <StackPanel Grid.Row="3" Margin="2,9,2,0">
-                                    <TextBlock Text="THE LIVING CONSEQUENCE"
-                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                               FontSize="10" FontWeight="Bold" Foreground="#FF526747" />
-                                    <TextBlock Text="{Binding JourneyDetailReward}" FontSize="11"
-                                               TextWrapping="Wrap" Foreground="#FF263B2B" Margin="0,4,0,0" />
-                                </StackPanel>
-                                <Grid Grid.Row="4" Margin="0,7,0,0">
-                                    <StackPanel>
-                                        <Rectangle Height="1" Fill="#FFB7B78A" Margin="0,0,0,7" />
-                                        <TextBlock Text="THE EXPERIMENT CONTINUES"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="10" FontWeight="Bold" Foreground="#FF526747" />
-                                        <TextBlock Text="{Binding JourneyMapSummary}"
-                                                   FontSize="11" TextWrapping="Wrap"
-                                                   Foreground="#FF263B2B" Margin="0,4,0,0" />
-                                    </StackPanel>
-                                </Grid>
-                                <Grid Grid.Row="5" Margin="0,6,0,0">
-                                    <Button Content="START A NEW JOURNEY"
-                                            Visibility="{Binding JourneyNewRunVisibility}"
-                                            Command="{Binding StartNewJourneyCommand}"
-                                            Style="{StaticResource GalapagOS.Button.PrimaryPaper}"
-                                            HorizontalAlignment="Stretch" Height="40" />
-                                </Grid>
-                            </Grid>
-                        </Grid>
-                    </Border>
-                </Grid>
-                <Border Grid.Row="2" Background="#E51B3328"
-                        BorderBrush="#9CD4CF9D" BorderThickness="0,2,0,0">
-                    <Grid Margin="30,8">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="❀  THE FIRST GENERATION" FontSize="15" FontWeight="Bold" Foreground="#FFFFF1CE" />
-                            <TextBlock Text="Life takes root" FontSize="11" Foreground="#FFDCE2B2" />
+                                        </Canvas>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Canvas>
+                </ScrollViewer>
+                <Border Grid.Row="2" Background="#2F4433" BorderBrush="#9BAD74" BorderThickness="0,4,0,0">
+                    <Grid Margin="34,15">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="A GENERATIONAL JOURNEY" FontSize="12" FontWeight="Bold" Foreground="#FCF7E1" />
+                            <TextBlock Text="{Binding JourneyMapSummary}" FontSize="11" Foreground="#D5DEB3" Margin="0,5,20,0" TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="✿  THE GROWING BIOME" FontSize="15" FontWeight="Bold" Foreground="#FFFFF1CE" />
-                            <TextBlock Text="The woodland grows" FontSize="11" Foreground="#FFDCE2B2" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="2" VerticalAlignment="Center">
-                            <TextBlock Text="✦  THE PASSING YEARS" FontSize="15" FontWeight="Bold" Foreground="#FFFFF1CE" />
-                            <TextBlock Text="Choices echo outward" FontSize="11" Foreground="#FFDCE2B2" />
-                        </StackPanel>
-                        <StackPanel Grid.Column="3" VerticalAlignment="Center">
-                            <TextBlock Text="✧  THE LIVING LEGACY" FontSize="15" FontWeight="Bold" Foreground="#FFFFF1CE" />
-                            <TextBlock Text="The biome remembers" FontSize="11" Foreground="#FFDCE2B2" />
+                            <TextBlock Text="SCROLL TO EXPLORE →" FontSize="12" FontWeight="Bold" Foreground="#E7CF91" HorizontalAlignment="Right" />
+                            <TextBlock Text="Hover a marker for details" FontSize="10" Foreground="#D5DEB3" Margin="0,5,0,0" HorizontalAlignment="Right" />
+                            <Button Content="START A NEW JOURNEY" Visibility="{Binding JourneyNewRunVisibility}"
+                                    Command="{Binding StartNewJourneyCommand}" Style="{StaticResource GalapagOS.Button.PrimaryPaper}" Height="30" Margin="0,7,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>

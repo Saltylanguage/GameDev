@@ -14,12 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: headwaters
   displayName: HEADWATERS
-  description: Trace the water that ties this biome together.
+  description: Trace the river upstream.
   kind: 5
-  row: 10
+  row: 8
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
+  rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+  - {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}

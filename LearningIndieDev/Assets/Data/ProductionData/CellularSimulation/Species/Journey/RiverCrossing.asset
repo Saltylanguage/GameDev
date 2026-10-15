@@ -14,14 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: river-crossing
   displayName: RIVER CROSSING
-  description: The trail meets a river that joins distant habitats.
+  description: Two trails join at the river.
   kind: 0
-  row: 5
+  row: 6
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: e96848b3984447728e84344f22e553f5, type: 2}
-  - {fileID: 11400000, guid: 18db69234f7a4a8e907a3e017f27bea9, type: 2}
+  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d007, type: 2}
