@@ -1,5 +1,10 @@
 # Sprint 5 planning draft
 
+> **Historical planning document, superseded at kickoff on 2026-10-16.**
+> The [Active S5 control](S5-control-record.md) selects all 16 Field Data
+> tickets for October 19-November 15, 2026. Dates, capacity and status below
+> are retained proposal history, not the active sprint record.
+
 Status: On hold at Bevin's request, 2026-10-15. No kickoff or Trello changes.
 
 **Integration note, 2026-10-16:** Salty's

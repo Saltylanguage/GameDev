@@ -3,13 +3,15 @@
 This ledger tracks unresolved gaps that are not already owned by a sprint,
 roadmap, or hygiene ticket. Closed decisions remain in Git and dated handoffs.
 
-## Current review — 2026-10-15
+## Current review — 2026-10-16
 
 No P0 issue is verified. S4 closed on 2026-10-15, with P1-032 returned to
 Backlog for Sim's launch-input review and a real app save/exit/relaunch check;
 S4-04/05 remain Backlog. These are owned by their Trello cards and the
-[S4 control record](Sprints/S4-control-record.md). S5 remains Proposed, with
-simulation and upgrade content candidates recorded in its
+[S4 control record](Sprints/S4-control-record.md). The
+[Active S5 control](Sprints/S5-control-record.md) now owns the 16 Field Data
+tickets for October 19-November 15, including explicit unassigned-role and
+capacity exceptions. Broader candidates remain in the historical
 [proposal](Sprints/S5-proposal-2026-10-15.md). Forest Edge balance
 iteration (P1-034) is covered by the
 [future sprint roadmap](FUTURE_SPRINT_ROADMAP.md); deferred compatibility and

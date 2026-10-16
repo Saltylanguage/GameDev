@@ -11,13 +11,19 @@ for the complete rules, content catalog, paper ledger and internal test protocol
 Checkboxes describe the action as written. A selected rule or deliberate
 scope deferral can be checked; implementation, correctness tests and self-play
 remain unchecked until actually performed. A complete design is not a completed
-feature or a balance result. No sprint or deadline is assigned here.
+feature or a balance result. The delivery work is now selected for Active
+[Sprint 5](Sprints/S5-control-record.md), October 19-November 15, 2026;
+the original checklist IDs and evidence states remain unchanged.
 
 Implementation planning now has two draft companions:
 [Process Design](FIELD_DATA_PROCESS_DESIGN.md) for player/delivery flow and
 [Solution Design](FIELD_DATA_SOLUTION_DESIGN.md) for proposed code/data/UI
 integration. Their FD-I01–FD-I07 stages organize delivery without replacing the
 original item IDs below. Neither draft marks delivery complete.
+
+The [published ticket specification](FIELD_DATA_TICKET_DRAFT.md) maps pending delivery
+to 16 selected S5 tickets; it preserves these IDs and leaves their checkboxes open
+until the work and required evidence exist.
 
 | Step | Design state | Delivery/evidence state |
 | --- | --- | --- |

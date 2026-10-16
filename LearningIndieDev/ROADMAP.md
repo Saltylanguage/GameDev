@@ -1,13 +1,21 @@
-# Cellular Automata Roguelike Roadmap v2.3
+# Cellular Automata Roguelike Roadmap v2.4
 
-> **Status:** Active production roadmap | **Version:** 2.3 | **Updated:**
-> 2026-10-15 | **Cadence:** Two weeks, approximately 20 hours per developer |
+> **Status:** Active production roadmap | **Version:** 2.4 | **Updated:**
+> 2026-10-16 | **Cadence:** Two weeks, approximately 20 hours per developer |
 > **Product owner:** Josh
 
 This is the product-level source of truth for what the team is trying to make,
 what comes next, and what must be true before work moves forward. Feature briefs,
 sprint control records, Trello cards, and technical plans provide execution
 detail; they do not silently expand this roadmap.
+
+**S5 delivery exception:** [Active S5](docs/Sprints/S5-control-record.md) runs
+October 19-November 15, 2026 with all 16 Field Data tickets selected. This
+four-week exception leaves the normal two-week cadence unchanged. The explicit
+first-test journey contains three six-round simulations and two shops; FD-T01
+reviews route entry/terminology without silently replacing the overall product
+contract below. Roles remain unassigned by Bevin's request; the selected
+57-95h estimate carries the control's documented capacity risk.
 
 ## Product outcome
 
@@ -34,7 +42,7 @@ The first vertical slice uses:
 
 Every item has one of three scheduling states:
 
-- **Active:** inside the current sprint's approved capacity.
+- **Active:** explicitly selected for the current sprint; any capacity exception is recorded in its control.
 - **Proposed:** prepared for the next sprint but not committed until kickoff.
 - **Horizon:** sequenced by dependency and given a planning range, but not yet a
   sprint commitment.
@@ -200,15 +208,16 @@ reserve; do not replace the reserve with new feature scope.
 S4 closed on 2026-10-15 with the research and Desktop foundation published.
 Its original in-game strategy acceptance remains open. P1-032 returned to
 Backlog for Sim's launch-input review and a real save/exit/relaunch check;
-S4-04/05 remain Backlog. S5 is Proposed, with no selected cards or approved
-capacity yet. Later dates remain forecast windows, not commitments.
+S4-04/05 remain Backlog. S5 Field Data work is Active with all 16 cards selected
+for October 19-November 15. S6/S7 dates require reforecasting after the extended
+S5; their scope remains horizon work, not a kickoff.
 
 | Sprint | Forecast dates | Primary outcome | Feature capacity | Reserve | Exit test |
 | --- | --- | --- | ---: | ---: | --- |
 | **S4 — Build identity and evidence (Closed 2026-10-15)** | 2026-10-01–2026-10-14 | Trailblazer, Warren, and Gardeners create distinct decisions in Forest Edge; the canonical Desktop starts from the active profile and current defaults. | Historical plan: 28h scheduled feature work across P1-032, F03, F07, and F11; local profile-choice save/restore and optional design spikes deferred | 8h | Research and Desktop foundation published; four selected cards Done. The original in-game strategy acceptance and independent review remain open, and P1-032 was returned to Backlog. See the [closeout](docs/Sprints/S4-control-record.md#closeout--2026-10-15). |
-| **S5 — Forest Edge simulation and upgrades (Proposed)** | 2026-10-15–2026-10-28 | Make the first Forest Edge/Hare journey's simulation pressures and shared-skill choices understandable and meaningfully different in play. | Up to 32h of selected simulation, upgrade, matched-evidence, and review work; exact cards, owners, and estimates await kickoff | 8h | Frozen-input comparisons and an in-game review support explicit accept/revise decisions on selected behavior and upgrade content. See the [S5 proposal](docs/Sprints/S5-proposal-2026-10-15.md). |
-| **S6 — Persistence and first Genome** | 2026-10-29–2026-11-11 | One completed expedition changes a later expedition through settled, versioned progression. | Up to 32h across F06, F13, and F16 | 8h | The permanent Rabbit tree license and resettable upgrade allocation survive restart; active Hare upgrades apply to all Hare populations, and reset refunds Rabbit Data for a flat Research Data fee. |
-| **S7 — Vertical-slice integration** | 2026-11-12–2026-11-25 | An external player completes and replays the slice without developer help. | Up to 32h for integration and validation; only the accepted focused slices of F08, F09, and F16 may enter | 8h | M2 passes or the evidence produces a short prioritized revision plan. |
+| **S5 — Field Data journey implementation (Active)** | 2026-10-19–2026-11-15 | Implement and internally evaluate the complete five-node, 18-round journey with two shops and one retained world/wallet. | All 16 FD-T01–FD-T16 tickets: 57–95h estimated; conservative feature allowance 64h; unassigned roles by request | 16h protected | Full Desktop route, focused correctness/profile isolation, headless replay parity and 200 matched seeds per arm plus internal self-play accept/revise. See the [S5 control](docs/Sprints/S5-control-record.md). |
+| **S6 — Persistence and first Genome** | TBD; reforecast after S5 | One completed expedition changes a later expedition through settled, versioned progression. | Up to 32h across F06, F13, and F16 | 8h | The permanent Rabbit tree license and resettable upgrade allocation survive restart; active Hare upgrades apply to all Hare populations, and reset refunds Rabbit Data for a flat Research Data fee. |
+| **S7 — Vertical-slice integration** | TBD; reforecast after S5 | An external player completes and replays the slice without developer help. | Up to 32h for integration and validation; only the accepted focused slices of F08, F09, and F16 may enter | 8h | M2 passes or the evidence produces a short prioritized revision plan. |
 
 If S6's ready work cannot fit inside 32 feature hours, split the persistence and
 Genome implementation before moving S7. Do not compress migration, recovery,
@@ -223,16 +232,16 @@ before M2.
 | --- | --- | --- | --- | ---: | --- | --- | --- |
 | F01 | Expedition decision loop | Now | Implement six 10-second simulation-time rounds, rewards, confirmed End/no-Restart, and terminal outcomes | M | S3 | Josh / Sim | S3 foundation delivered; refinement follows balance evidence |
 | F02 | Phase decision moment | Now | Five readable frozen-boundary choices after rounds 1–5: one of three Mutations or Skip, with End and Continue | M | S3 | Josh / Sim | S3 foundation delivered; refinement follows balance evidence |
-| F03 | Mutation grammar and build identity | Now → Next | Close readability review, then prove three distinct Hare paths | XL | S2 closeout; S3 review; S4 research; S5 candidate | Josh / Sim | S4 research delivered; playable acceptance proposed |
-| F04 | Mutation and Genome tree presentation | Next | Author the first approved Genome content and make temporary/permanent tree language understandable before functional Genome actions | L | S5 content candidate; functional actions after their contract | Josh / UI reviewer | Proposed content / horizon |
+| F03 | Mutation grammar and build identity | Now → Next | Close readability review, then prove three distinct Hare paths | XL | S2 closeout; S3 review; S4 research; broader tuning outside selected S5 tickets | Josh / Sim | S4 research delivered; playable acceptance proposed |
+| F04 | Mutation and Genome tree presentation | Next | Author the first approved Genome content and make temporary/permanent tree language understandable before functional Genome actions | L | content not selected in S5 kickoff; functional actions after their contract | Josh / UI reviewer | Proposed content / horizon |
 | F05 | Cause-and-effect phase summary | Now → Next | Explain one phase and one expedition outcome in player language | M | S3 foundation; refine alongside balance evidence | Josh / Sim | Horizon |
-| F06 | Economy and currency loop | Now → Next | Approve phase rewards, final settlement, temporary spending, and banked data | L | S5 content candidate; implementation after approved values and triggers | Josh / Sim | Proposed content / horizon |
-| F07 | Species identity and counterplay | Next | Hare and Fox create different pressures and invite different responses; playable plants remain deferred | L | S5 simulation candidate | Josh / Sim | Proposed / horizon |
+| F06 | Economy and currency loop | Now → Next | Deliver the reviewed journey-local Field Data loop; permanent settlement remains separate | XL | Active S5: FD-T01–FD-T16 | Unassigned by request | Selected; implementation/evidence not complete |
+| F07 | Species identity and counterplay | Next | Hare and Fox create different pressures and invite different responses; playable plants remain deferred | L | not selected in Field Data S5 kickoff | Josh / Sim | Proposed / horizon |
 | F08 | Risk/reward events and adaptive pressure | Next → Later | Define one readable event or pressure response without hidden rubber-banding | L | S4 design; S7 only if accepted; otherwise post-M2 | Josh / Sim | Horizon |
 | F09 | Species simulation and ecology depth | Next, foundational | Implement one focused predator/prey/plant interaction slice | XL | S4 design; staged validation; broad portfolio post-M2 | Josh / Sim | Horizon |
 | F10 | Biome mechanics expansion | Next → Later | Prove one biome pressure that changes viable plans | XL | S4 design; implementation post-M2 unless required by the slice | Josh / Sim | Horizon |
-| F11 | Scenario pressure | Next | Make Forest Edge support multiple readable responses | L | S5 simulation candidate | Josh / Sim | Proposed / horizon |
-| F12 | Collection and Field Notes | Next | Define seen, discovered, owned, researched, and secret states | L | S5 taxonomy; full surface post-M2 | Josh / UI reviewer | Horizon |
+| F11 | Scenario pressure | Next | Make Forest Edge support multiple readable responses | L | not selected in Field Data S5 kickoff | Josh / Sim | Proposed / horizon |
+| F12 | Collection and Field Notes | Next | Define seen, discovered, owned, researched, and secret states | L | taxonomy unscheduled; full surface post-M2 | Josh / UI reviewer | Horizon |
 | F13 | Expedition setup and home-base context | Next | Safe Lab-to-expedition-to-Lab route and active-profile Desktop launch are implemented; finish P1-032 review and real exit/relaunch acceptance | L | S3 safe route complete; P1-032 deferred to Backlog at S4 closeout | Josh / Sim for launch inputs | Foundation published; acceptance open |
 | F14 | Readable visual language | Next | Lock board-scale hierarchy for terrain, roles, danger, selection, and effects | L | Current exploration; schedule after the simulation and upgrade review | Josh / art reviewer | Active exploration / horizon |
 | F15 | Audio and simulation feedback | Next | One rate-limited UI/simulation feedback palette | M | Unscheduled after the S5 priority change | Josh / audio reviewer TBD | Horizon |
@@ -248,7 +257,7 @@ before M2.
 S2 trustworthy Mutation foundation
   -> S3 expedition decision loop + M1 closeout
        -> S4 build, species, and scenario identity
-            -> S5 Forest Edge simulation and upgrades (proposed)
+            -> S5 Field Data journey implementation (Active; four-week exception)
                  -> S6 local profile, settlement, and first Genome
                       -> S7 vertical-slice integration and M2 decision
 
@@ -331,7 +340,8 @@ belongs in the sprint control record and task board.
 - [Sprint 2 plan](docs/NEXT_WORK_BUCKET_PLAN.md)
 - [Closed Sprint 3 control record](docs/Sprints/S3-control-record.md)
 - [Closed Sprint 4 control record](docs/Sprints/S4-control-record.md)
-- [Proposed Sprint 5 simulation and upgrades plan](docs/Sprints/S5-proposal-2026-10-15.md)
+- [Active Sprint 5 control](docs/Sprints/S5-control-record.md)
+- [Historical S5 simulation and upgrades proposal](docs/Sprints/S5-proposal-2026-10-15.md)
 - [Sprint 4 kickoff handoff](docs/handoffs/2026-10-01-codex-s4-kickoff.md)
 - [Mutation and Genome direction](docs/UPGRADE_SYSTEM_DIRECTION.md)
 - [Scientific data economy](docs/SCIENTIFIC_DATA_ECONOMY.md)

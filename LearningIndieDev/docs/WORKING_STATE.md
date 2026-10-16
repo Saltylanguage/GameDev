@@ -5,6 +5,30 @@ become a master changelog.
 
 ## Current focus
 
+**October 16 Sprint 5 kickoff:** S5 is Active with the approved four-week work
+window **October 19-November 15, 2026**. All 16 Field Data tickets are in
+Current Work with 79 unchecked acceptance items; owners/reviewers stay
+unassigned for team allocation as Bevin requested. Estimates total 57-95h;
+the 80h combined planning floor protects 16h reserve and leaves 64h feature
+capacity, so the upper estimate exceeds that allowance by 31h. See the
+[S5 control](Sprints/S5-control-record.md),
+[published ticket index](FIELD_DATA_TICKET_DRAFT.md#published-trello-index---2026-10-16)
+and [kickoff handoff](handoffs/2026-10-16-0125-codex-s5-kickoff-trello-publication-and-projectmain-sync.md).
+No gameplay implementation or new test/seed run was performed at kickoff.
+Next: allocate the work and resolve FD-T01's route entry/compatibility review.
+
+### Earlier checkpoints (historical)
+
+**October 16 Field Data ticket planning:** The
+[local ticket draft](FIELD_DATA_TICKET_DRAFT.md) breaks the PDD/SDD into 16
+proposed tickets with dependencies, acceptance checks and rough estimates.
+Bevin explicitly requested unassigned owners/reviewers for team review. The
+57–95 active-hour feature backlog is not a sprint commitment; FD-T01–FD-T05
+are a proposed first foundation package. No Trello cards, gameplay changes or
+new test runs were made during this planning pass.
+See the [ticket-planning handoff](handoffs/2026-10-16-0029-codex-field-data-actionable-ticket-draft.md)
+for coverage and draft-validation evidence.
+
 **October 16 publication, merge and plan alignment:** Bevin's Field Data work
 was published as `d178a62`; Salty's `ProjectMain` through `341cc702` is merged
 at `0928359`. The [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)

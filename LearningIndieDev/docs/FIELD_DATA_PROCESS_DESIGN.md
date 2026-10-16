@@ -6,7 +6,8 @@
 - **Product baseline:** [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
 - **Technical companion:** [Solution Design, SDD-FD-001](FIELD_DATA_SOLUTION_DESIGN.md)
 - **Decision owner:** Bevin; sprint scheduling remains with Salty
-- **Status:** process proposal for review; no implementation or test execution performed
+- **Status:** process design for the selected S5 slice; implementation/evidence remain outstanding
+- **Delivery:** [Active S5 control](Sprints/S5-control-record.md), October 19-November 15, 2026; all 16 tickets selected, owners/reviewers unassigned by request
 
 ## 1. Purpose and scope
 
@@ -192,9 +193,13 @@ checks must not mistake legitimate time accounting for an economy write.
 
 ## 6. Proposed implementation stages
 
-These stages are delivery units, not a sprint assignment. Each should be a
+These stages map to the selected S5 tickets. Each should be a
 bounded reviewable change with its own evidence. Do not mark later stages done
 because earlier tests pass.
+
+The [published ticket specification](FIELD_DATA_TICKET_DRAFT.md) breaks these stages
+into 16 selected outcomes with dependencies and acceptance checks. Owners and
+reviewers remain unassigned for team review; its estimates are provisional.
 
 | Stage | Work and output | Evidence needed to leave the stage |
 | --- | --- | --- |
@@ -251,7 +256,7 @@ Exported timing, currency and histories must have units and stable identities.
 Before handing work to another developer, update the numbered delivery checklist
 from actual evidence, add a dated handoff, and link current state. Keep all
 evidence local until publication is authorized. An authorized later push includes
-the usual Trello/Obsidian handoff; this draft schedules no external updates.
+the usual Trello/Obsidian handoff; the S5 kickoff and published cards are recorded in the active control.
 
 ## 9. Traceability and draft review
 

@@ -141,10 +141,11 @@ uncertainty or regression risk.
   check. A local profile-choice save/restore foundation now exists, with
   per-profile currency, progression
   IDs, simulation ticks, and playtime; economy settlement remains deferred.
-  Josh's next priority is Forest Edge simulation and upgrade content/balance;
-  the [S5 proposal](Sprints/S5-proposal-2026-10-15.md) records candidate work
-  without activating the sprint. Later S5–S7 windows remain forecasts until
-  their kickoffs are confirmed. The
+  The [Active S5 control](Sprints/S5-control-record.md), kicked off October 16,
+  selects all 16 Field Data tickets for October 19-November 15, 2026. Roles
+  remain unassigned by request and the 57–95h estimate retains its capacity
+  risk. Broader simulation corrections/permanent content remain separate;
+  S6/S7 dates need reforecasting after the extended S5. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the

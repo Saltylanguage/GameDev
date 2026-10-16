@@ -21,6 +21,12 @@ no package, service, generic modifier engine, global event bus or persistence
 migration. All prices, strengths and reward schedules come from the baseline.
 The process document defines delivery stages FD-I01 through FD-I07.
 
+The [ticket draft](FIELD_DATA_TICKET_DRAFT.md) translates those stages and this
+technical proposal into reviewable work. All 16 are selected in the
+[Active S5 control](Sprints/S5-control-record.md), October 19-November 15,
+2026. FD-T01 reviews the integration boundaries before implementation;
+proposed types/APIs remain guidance rather than implemented code.
+
 ## 2. Current implementation and integration seams
 
 The [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md) records

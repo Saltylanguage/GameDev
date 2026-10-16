@@ -1,7 +1,7 @@
 # Field Data and simulation planning alignment
 
 - **Prepared:** 2026-10-16
-- **Status:** combined planning draft for review; no sprint kickoff or ticket commitment
+- **Status:** combined planning reference; Field Data tickets selected in Active S5 (October 19-November 15, 2026)
 - **Integrated sources:** Bevin's planning publication `d178a62` and Salty's
   `ProjectMain` through `341cc702`, merged on `BevBranch` at `0928359`
 - **Planning ownership:** Salty/Josh retains sprint planning and the existing
@@ -16,7 +16,8 @@ and profile foundations instead of rebuilding them as new features.
 
 This document brings the two plans together without treating every idea as
 one sprint. It identifies completed foundations, the defined Field Data slice,
-related simulation work and decisions needed before selecting tickets.
+related simulation work and remaining integration decisions. All 16 Field Data
+tickets are now selected; see the [Active S5 control](Sprints/S5-control-record.md).
 
 ## Which document answers which question?
 
@@ -24,10 +25,10 @@ related simulation work and decisions needed before selecting tickets.
 | --- | --- |
 | What is the first Field Data slice? | [Field Data Journey Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md), Bevin's reviewed rules and provisional values |
 | How would we deliver and implement it? | [Process Design](FIELD_DATA_PROCESS_DESIGN.md) and [Solution Design](FIELD_DATA_SOLUTION_DESIGN.md), technical/process drafts |
-| What broader simulation/upgrade work does Salty propose? | [S5 simulation and upgrades proposal](Sprints/S5-proposal-2026-10-15.md), still Proposed |
+| What broader simulation/upgrade work does Salty propose? | [S5 simulation and upgrades proposal](Sprints/S5-proposal-2026-10-15.md), historical proposal; broader candidates not selected by the Field Data kickoff |
 | What is implemented today? | Merged code/tests, [journey prototype](JOURNEY_PROTOTYPE.md) and dated implementation handoffs |
 | What was discussed earlier? | Both October 14 meeting records and the historical sections of the economy and sprint documents |
-| What is scheduled? | An approved kickoff and selected Trello cards; this alignment draft creates neither |
+| What is scheduled? | [Active S5 control](Sprints/S5-control-record.md) and the [published ticket index](FIELD_DATA_TICKET_DRAFT.md); kickoff verified October 16 |
 
 The earlier [Bevin-side sprint draft](Sprints/S5-planning-draft.md) remains on
 hold. It is historical capacity/candidate discussion, not a second active S5.
@@ -41,7 +42,7 @@ stages remain a delivery breakdown, not sprint identifiers or estimates.
 | Journey map and artwork contract | Scrollable 29-marker/35-connection map, three opening choices, wheel/hover behavior and normalized 5760 x 1080 panorama target | Later encounters remain placeholders; the five-node Field Data test route and shops are not implemented by the map |
 | Journey reset boundary | `SpeciesSimulationPreview.PlayNextSimulation` clears carried currency for a new journey while preserving the standalone carryover path | Complete first-slice failure, terminal settlement and results-exit behavior still need their own checks |
 | Permanent feature availability | Profile schema v2 stores `UnlockedFeatureIds` alongside existing species/Genome state | Accomplishment triggers, feature gates, permanent reward wallets and Genome purchases are not implemented by storage alone |
-| Sprint administration | S4 is Closed in the incoming closeout record; P1-032 returned to Backlog; S4-04/05 remain Backlog | Launch-input review and actual application exit/relaunch acceptance remain open; S5 is Proposed |
+| Sprint administration | S4 is Closed in the incoming closeout record; P1-032 returned to Backlog; S4-04/05 remain Backlog | Launch-input review and actual application exit/relaunch acceptance remain open; S5 Field Data work is Active |
 
 These are source/handoff observations. Fresh merge-test results belong in the
 integration handoff; previous pass counts do not become current evidence merely
@@ -81,8 +82,8 @@ the underlying ecology between matched arms.
 
 ## Suggested work order for ticket planning
 
-This is a proposed dependency order, not a selected sprint. No new hours or
-owners are assigned here.
+This dependency order informs the selected S5 Field Data tickets. Broader follow-on
+content remains separate; owner/reviewer allocation is deliberately unassigned.
 
 1. **Confirm the combined slice and inputs.** Select the Field Data route's
    entry point in the current map, identify the ecology revision used for its
@@ -105,18 +106,22 @@ owners are assigned here.
 P1-032 and deferred profile acceptance may become separate bounded review work
 if selected. Their remaining effort is not the original implementation estimate.
 
-## Decisions to settle before tickets are committed
+## Selection decisions and remaining implementation review
 
 | Decision | Why it matters | Current state |
 | --- | --- | --- |
-| Which package is first: the Field Data loop, selected simulation corrections, or a bounded combination? | Determines dependencies and whether the work fits available time | Team selection pending; Salty's S5 is still a proposal |
+| Which package is first: the Field Data loop, selected simulation corrections, or a bounded combination? | Determines dependencies and whether the work fits available time | Field Data FD-T01–FD-T16 selected for S5; broader ecology corrections remain separate |
 | How is the explicit five-node test route reached from the current journey UI? | Prevents the 29-marker content map from silently replacing or expanding the agreed acceptance route | Solution draft proposes opt-in definition/map composition; exact authored entry needs review |
 | Which ecology/scenario/build is frozen for the comparison? | Keeps population/income results comparable | Choose during preparation; no production population change approved here |
 | How should roadmap terminology be aligned? | The [roadmap](../ROADMAP.md) still describes one six-round expedition/five choices, while this test journey contains three six-round simulations plus shops/node choices | Owner review needed before declaring a revised overall product contract; keep the first-test scope explicit |
 | Is permanent Genome/reward content part of the selected work block? | Salty proposes it; Bevin's first FD slice defers it | Separate package unless explicitly selected; no invented wallets, prices or accomplishment thresholds |
-| Owners, reviewers, estimates and reserve | Needed to turn packages into scheduled work | Pending; proposed two-week capacity/reserve is not a kickoff |
+| Owners, reviewers, estimates and reserve | Needed to turn packages into scheduled work | Four-week S5 approved; 57–95h selected, 16h protected reserve; owners/reviewers unassigned by request; see control for capacity risk |
 
 ## Ticket preparation rules
+
+The [October 16 ticket draft](FIELD_DATA_TICKET_DRAFT.md) now contains 16
+Field Data work items derived from the PDD/SDD. It retains unassigned owners/
+reviewers and planning estimates; all 16 are published and selected for S5.
 
 Start from the numbered Field Data checklist and FD-I stages rather than making
 parallel tickets for the same requirement. Each selected ticket should state a
@@ -130,8 +135,8 @@ agreed boundary. Do not mark implementation, balance, runtime review or a
 
 ## Not selected by this alignment
 
-No S5 kickoff, new Trello tickets, new ecology values, permanent reward amounts,
-Genome node effects, active-run resume, additional species, random-event
-gambling, final panorama delivery or generic modifier framework is approved by
-combining these plans. The next action is review of the combined scope and then
-the bounded ticket breakdown.
+The October 16 kickoff selected the 16 Field Data tickets and four-week S5
+window. New ecology values, permanent reward amounts, Genome node effects,
+active-run resume, additional species, random-event gambling, final panorama
+delivery and a generic modifier framework remain outside those tickets.
+The next action is team allocation and FD-T01's bounded integration review.
