@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1800" height="830" viewBox="0 0 1800 830">
+<rect width="100%" height="100%" fill="#f6f8fb"/>
+<text x="52" y="32" font-family="Segoe UI, sans-serif" font-size="48" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Your Field Data journey</text>
+<text x="52" y="98" font-family="Segoe UI, sans-serif" font-size="29" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Start with 0 Field Data. Keep the same ecosystem, balance and journey upgrades throughout.</text>
+<text x="52" y="164" font-family="Segoe UI, sans-serif" font-size="24" font-weight="700" fill="#2458a6" dominant-baseline="text-before-edge">THE ROUTE</text>
+<rect x="52" y="207" width="304" height="128" rx="18" fill="#eaf0fb" stroke="#94aed3" stroke-width="2"/>
+<text x="74" y="229" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Simulation 1</text>
+<text x="74" y="279" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">6 rounds</text>
+<path d="M364 271 H381" fill="none" stroke="#486078" stroke-width="4"/><path d="M391 271 l-13 -8 v16 z" fill="#486078"/>
+<rect x="400" y="207" width="304" height="128" rx="18" fill="#e9f4ef" stroke="#7eab95" stroke-width="2"/>
+<text x="422" y="229" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Shop 1</text>
+<text x="422" y="279" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Spend or save</text>
+<path d="M712 271 H729" fill="none" stroke="#486078" stroke-width="4"/><path d="M739 271 l-13 -8 v16 z" fill="#486078"/>
+<rect x="748" y="207" width="304" height="128" rx="18" fill="#eaf0fb" stroke="#94aed3" stroke-width="2"/>
+<text x="770" y="229" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Simulation 2</text>
+<text x="770" y="279" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">6 rounds</text>
+<path d="M1060 271 H1077" fill="none" stroke="#486078" stroke-width="4"/><path d="M1087 271 l-13 -8 v16 z" fill="#486078"/>
+<rect x="1096" y="207" width="304" height="128" rx="18" fill="#e9f4ef" stroke="#7eab95" stroke-width="2"/>
+<text x="1118" y="229" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Shop 2</text>
+<text x="1118" y="279" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Spend or save</text>
+<path d="M1408 271 H1425" fill="none" stroke="#486078" stroke-width="4"/><path d="M1435 271 l-13 -8 v16 z" fill="#486078"/>
+<rect x="1444" y="207" width="304" height="128" rx="18" fill="#eaf0fb" stroke="#94aed3" stroke-width="2"/>
+<text x="1466" y="229" font-family="Segoe UI, sans-serif" font-size="32" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">Simulation 3</text>
+<text x="1466" y="279" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">6 rounds, then results</text>
+<text x="52" y="381" font-family="Segoe UI, sans-serif" font-size="24" font-weight="700" fill="#2458a6" dominant-baseline="text-before-edge">ROUNDS 1-5: REPEAT THIS LOOP IN EACH SIMULATION</text>
+<rect x="52" y="428" width="304" height="169" rx="18" fill="#ffffff" stroke="#c7d1de" stroke-width="2"/>
+<text x="72" y="449" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">1. Play a round</text>
+<text x="72" y="500" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Run 100 ticks.</text>
+<path d="M364 512 H381" fill="none" stroke="#486078" stroke-width="4"/><path d="M391 512 l-13 -8 v16 z" fill="#486078"/>
+<rect x="400" y="428" width="304" height="169" rx="18" fill="#ffffff" stroke="#c7d1de" stroke-width="2"/>
+<text x="420" y="449" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">2. Collect Field Data</text>
+<text x="420" y="500" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Earn income from</text>
+<text x="420" y="535" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">the ending population.</text>
+<path d="M712 512 H729" fill="none" stroke="#486078" stroke-width="4"/><path d="M739 512 l-13 -8 v16 z" fill="#486078"/>
+<rect x="748" y="428" width="304" height="169" rx="18" fill="#ffffff" stroke="#c7d1de" stroke-width="2"/>
+<text x="768" y="449" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">3. Pick a free upgrade</text>
+<text x="768" y="500" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Choose one of three</text>
+<text x="768" y="535" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">offers, or Skip.</text>
+<path d="M1060 512 H1077" fill="none" stroke="#486078" stroke-width="4"/><path d="M1087 512 l-13 -8 v16 z" fill="#486078"/>
+<rect x="1096" y="428" width="304" height="169" rx="18" fill="#ffffff" stroke="#c7d1de" stroke-width="2"/>
+<text x="1116" y="449" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">4. Adjust populations</text>
+<text x="1116" y="500" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Optionally spend FD</text>
+<text x="1116" y="535" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">to add or remove life.</text>
+<path d="M1408 512 H1425" fill="none" stroke="#486078" stroke-width="4"/><path d="M1435 512 l-13 -8 v16 z" fill="#486078"/>
+<rect x="1444" y="428" width="304" height="169" rx="18" fill="#ffffff" stroke="#c7d1de" stroke-width="2"/>
+<text x="1464" y="449" font-family="Segoe UI, sans-serif" font-size="27" font-weight="700" fill="#192d43" dominant-baseline="text-before-edge">5. Press Continue</text>
+<text x="1464" y="500" font-family="Segoe UI, sans-serif" font-size="25" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Start the next round.</text>
+<text x="52" y="622" font-family="Segoe UI, sans-serif" font-size="28" font-weight="400" fill="#486078" dominant-baseline="text-before-edge">Round 6 ends the simulation. Follow the round-6 table below instead of this loop.</text>
+<rect x="52" y="685" width="1696" height="101" rx="18" fill="#fff0ed" stroke="#dfaa9e" stroke-width="2"/>
+<text x="74" y="703" font-family="Segoe UI, sans-serif" font-size="29" font-weight="700" fill="#853729" dominant-baseline="text-before-edge">If your selected species dies out, the journey ends immediately.</text>
+<text x="74" y="746" font-family="Segoe UI, sans-serif" font-size="27" font-weight="400" fill="#853729" dominant-baseline="text-before-edge">That round pays nothing. Any remaining Field Data from the journey is lost.</text>
+</svg>

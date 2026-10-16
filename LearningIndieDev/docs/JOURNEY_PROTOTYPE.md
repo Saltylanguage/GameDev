@@ -1,5 +1,19 @@
 # Forest Edge journey prototype
 
+**Field Data design update (2026-10-15):** Round-end income starts at the
+surviving population of the player's species: 20 Hares earns 20 Field Data.
+The balance carries across the journey for simulation population interventions
+and journey upgrades. The reviewed first slice defines income modifiers,
+shop reordering and node rewards; random challenges remain future work.
+Failure loses all remaining
+Field Data, while previously banked Desktop progress remains intact. Permanent
+Genome/unlock currency is separate. The first slice discards leftover Field
+Data on success-result exit and defers conversion. See the
+[complete first-slice design](FIELD_DATA_JOURNEY_DESIGN.md) and
+[current economy direction](SCIENTIFIC_DATA_ECONOMY.md#current-field-data-direction--2026-10-15).
+The implementation/evidence entries below remain dated prototype records and
+do not establish that this economy is implemented or balanced.
+
 **Status (2026-10-06):** Integrated into the canonical Desktop player flow for the first two ecological cycles. Josh accepted this as a playable prototype and deferred further journey work until later in Sprint 4. The next pass aims to polish it for V1 ship readiness. The later map nodes are ScriptableObject placeholders. This implementation does not settle the final journey length, upgrade vocabulary, balance, or reward economy.
 
 **Map layout pass (2026-10-08):** The authored 12-stage route now uses wider vertical spacing and longer distinct branches. Four fork points lead to 21 directed connections across 18 markers. The opening conditions lead to separate simulation markers: Seedfall to Burrow Study, Fox Tracks to Water Table. The later markers remain non-playable placeholders. The updated map passed its focused asset test, report-to-map PlayMode test, and 1920×1080 Game-view capture on both backdrops; visual acceptance by Josh is still pending.

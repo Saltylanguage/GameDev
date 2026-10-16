@@ -5,6 +5,53 @@ become a master changelog.
 
 ## Current focus
 
+**October 16 PDD readability revision:** Section 4 of the
+[Process Design](FIELD_DATA_PROCESS_DESIGN.md#4-end-to-end-player-process) now
+uses a rendered journey/round overview and a separate round-6 table. The product
+rules and implementation scope are unchanged; the diagram's editable SVG lives
+alongside its PNG in `docs/diagrams/`.
+
+**October 15 Field Data implementation design drafts:**
+[Process Design, PDD-FD-001](FIELD_DATA_PROCESS_DESIGN.md) and
+[Solution Design, SDD-FD-001](FIELD_DATA_SOLUTION_DESIGN.md) are draft 0.1 for
+review. They map the approved baseline to the player process, seven delivery
+stages, existing simulation/wallet/Noesis seams and future verification. They
+propose one retained progression wallet, one journey session/settlement path,
+atomic population changes, signed shop overlays and shared headless evidence.
+No gameplay code, assets, runtime tests or 200-seed runs were changed/executed.
+Implementation owners and scheduling remain unassigned by these drafts.
+See the [draft handoff](handoffs/2026-10-15-2352-codex-field-data-implementation-design-drafts.md)
+for source review and documentation-validation scope.
+
+**October 15 Field Data design review:** The Step 1–5 design decisions are
+consolidated in [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md).
+The [design/delivery checklist](FIELD_DATA_DESIGN_PLAN.md) preserves all original
+IDs and distinguishes design selection from implementation and test results.
+The full five-node route, starter economy, reward schedule, ordering/reordering,
+UI requirements, correctness checks and internal self-play protocol are defined.
+
+The final review confirmed 10-FD starting random reorders, chosen at 10× current
+rounded random charge, 10% escalation per paid reorder of either kind/reset at
+next shop; 200 fixed matched seeds; three free choices or Skip after rounds
+1–5 and the first two simulation clears; a provisional 10-FD clear bonus at all
+three simulation nodes; protection for the final selected-species individual;
+and population controls at nonterminal round-6 results before shops.
+
+Implementation and focused runtime validation have not begun. Internal
+comparisons follow that delivery, using a frozen scenario and actual 200-seed
+list. Paper budgets are synthetic arithmetic, not ecology evidence. Success
+conversion, external-player research and follow-up content selection remain
+explicitly deferred. No new sprint, board change or publication follows from
+this documentation review. See the [review handoff](handoffs/2026-10-15-2335-codex-field-data-design-baseline-review.md)
+for scope and validation.
+
+**October 15 focus change:** Bevin put the initial
+[Sprint 5 planning draft](Sprints/S5-planning-draft.md) on hold and intends to
+leave sprint planning to Salty. Bevin's immediate focus is the currency/journey
+loop and how the simulation plays out, with that work feeding into Salty's
+planning. The draft's dates, budget and candidate list are historical discussion
+material, not a current commitment. No S5 kickoff or Trello changes occurred.
+
 **October 14 meeting record approved for publication:** The
 [Word meeting record](Meeting%20Briefs/TEAM%20MEETING%20%E2%80%94%20OCTOBER%2014,%202026,%20AT%209%20PM.docx)
 now contains the nine decisions, clarified journey-loss rule, verified S4

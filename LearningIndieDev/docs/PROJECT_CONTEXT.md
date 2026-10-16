@@ -150,6 +150,21 @@ uncertainty or regression risk.
   and production scheduling remain open; evaluate whether their growth and
   ecological effects are readable within the current expedition pace before
   changing the global simulation cadence.
+- **Field Data design baseline (2026-10-15):**
+  [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
+  is the standalone first-slice authority. It covers one journey wallet,
+  ordered round income, six fixed population controls, the Hare shop pool,
+  free round/node rewards, shop reordering, and a continuous five-node route
+  with 18 round payouts. The Step 1–5 design review is complete; implementation
+  and self-play are pending. Reorders start at 10 FD random / 100 FD chosen,
+  rise 10% per successful paid reorder within a shop, round the random charge
+  up and keep chosen at exactly 10× it; next shop resets prices. Internal
+  comparisons use 200 matched fixed seeds. Block removal of the final selected
+  individual, keep population controls before nonterminal shops, and defer
+  permanent-currency conversion and the next content addition. Preserve the
+  selected scenario, same simulation state through shops and banked Desktop
+  currency/unlocks. Values are provisional, not balance findings. The
+  [numbered checklist](FIELD_DATA_DESIGN_PLAN.md) tracks pending delivery.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - The earlier standalone six-round contract has two distinct upgrade systems; the journey carryover decision above changes its simulation-boundary reset assumption for the journey flow. **Mutations** are acute

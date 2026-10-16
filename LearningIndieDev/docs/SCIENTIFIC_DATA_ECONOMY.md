@@ -1,4 +1,49 @@
-# Scientific Data Economy — Future Work
+# Field Data and Permanent Progression Economy
+
+## Current Field Data direction — 2026-10-15
+
+The complete first-slice rules now live in the standalone
+[Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md).
+The [numbered checklist](FIELD_DATA_DESIGN_PLAN.md) preserves the Step 1–5 IDs
+and distinguishes completed design decisions from pending delivery.
+
+Current design in brief:
+
+- Start each journey with 0 FD. Earn base income from the surviving selected
+  species after each successful 100-tick round.
+- Use one wallet across Simulation → Shop → Simulation → Shop → Simulation,
+  with six rounds per simulation and the same ecosystem continuing throughout.
+- Provide six between-round population controls, each at provisional 10 FD:
+  add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants. Reject invalid
+  purchases atomically and block removal of the final selected individual.
+- Execute income modifiers in acquired or paid-reordered sequence, rounding down
+  once after the full calculation. Starter offers are +1 FD/Hare, ×1.5 and ×2.
+- Shops have five seeded distinct offers: Hare-family buffs/nerfs and income
+  modifiers. Round and node choices are free and income eligibility is not a
+  guarantee. Award a provisional 10 FD after each simulation clear.
+- Shop-only reordering starts at 10 FD random / 100 FD chosen. Escalate the
+  unrounded random basis 10% per successful paid reorder of either kind, round
+  the random charge up, and charge exactly 10 times it for chosen reorder.
+  Reset prices at the next shop.
+- Fail immediately on selected-species extinction or incomplete-route
+  abandonment. Discard only journey FD; banked Desktop currency/unlocks remain.
+  Success shows leftover FD, then discards it on results exit. New journeys
+  reset local balance/upgrades; permanent currency and conversion remain separate.
+- Use internal team comparisons on 200 matched fixed seeds. External player
+  interviews, teach-back and behavioral research are deferred. Related economy
+  values may be adjusted as one documented bundle; team evidence guides the
+  accept/revise call and subsequent content choice.
+
+These are reviewed design requirements and provisional test settings, not
+implemented behavior or balance evidence. The historical proposals below are
+retained for provenance and do not override the standalone first-slice design.
+
+## Historical economy direction — through 2026-10-01
+
+The following sections preserve earlier categories and proposals. Use the
+October 15 Field Data direction above for journey earning, spending and loss.
+Do not treat the older general-data/Lab transfer text as the current Field
+Data contract or infer final permanent currency names from it.
 
 > **Progression update — 2026-10-01:** The current direction is a permanent
 > whole-species Genome-tree unlock followed by resettable upgrade allocation;
