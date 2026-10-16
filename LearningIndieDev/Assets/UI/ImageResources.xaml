@@ -5,6 +5,8 @@
                  UriSource="GalapagOS/Art/Journey/SeasonalWoodland.png" />
     <BitmapImage x:Key="GalapagOS.Image.Journey.WoodlandSummerTrails"
                  UriSource="GalapagOS/Art/Journey/WoodlandSummerTrails.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Journey.Panorama"
+                 UriSource="GalapagOS/Art/Journey/JourneyPanoramaPlaceholder.png" />
     <BitmapImage x:Key="GalapagOS.Image.Background.WoodlandSummer"
                  UriSource="GalapagOS/Art/Journey/WoodlandSummer.png" />
 

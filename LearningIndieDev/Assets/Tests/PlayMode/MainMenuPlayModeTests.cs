@@ -88,10 +88,22 @@ namespace SaltyGame.PlayModeTests
             Assert.That(desktopProfile?.Current.ProfileId, Is.EqualTo(profileId));
             Assert.That(preview, Is.Not.Null);
             Assert.That(preview.BaseSeed, Is.EqualTo(10100));
+            Assert.That(preview.SelectedScenario?.name, Is.EqualTo("ForestEdge"));
             Assert.That(preview.PlayerSpecies, Is.EqualTo(new SpeciesId("hare")));
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(preview.Run.Tick, Is.Zero);
             Assert.That(preview.ActiveGenomeSnapshot.TryGetSpeciesGenome(
                 new SpeciesId("hare"), out var genome), Is.True);
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guard" }));
+            Assert.That(desktopProfile.TrySetGenomeConfiguration(
+                new SpeciesId("hare"),
+                new[] { "hare.guard" },
+                System.Array.Empty<string>(),
+                out var updatedProfileMessage), Is.True, updatedProfileMessage);
+            Assert.That(preview.ActiveGenomeSnapshot.TryGetSpeciesGenome(
+                new SpeciesId("hare"), out var frozenGenome), Is.True);
+            Assert.That(frozenGenome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guard" }));
             var desktopViewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
             var openSimulation = GetCommand(desktopViewModel, "OpenDesktopIconCommand");
             openSimulation.GetType().GetMethod("Execute")?.Invoke(

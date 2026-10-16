@@ -53,7 +53,24 @@ Data contract or infer final permanent currency names from it.
 > balance values. See the [P1-029 design
 > handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
 
-Status: **approved product direction; deferred until the vertical-slice upgrade loop is proven**.
+Status: **Genome progression direction approved; journey economy partly decided
+and implementation deferred**.
+
+> **Team decisions — 2026-10-14:** Field Data carries through a journey.
+> Other currency types can leave a successful journey for Desktop Genome
+> upgrades. Failure ends the whole journey with no cash-out: all currency and
+> temporary upgrades gained during that run are lost. Permanent Desktop
+> upgrades and unlocked upgrade or feature availability survive, even when
+> the unlock was earned during that run. Intended Field Data purchases include
+> removing Hares, adding or removing Foxes and Plants, and buying a random event.
+> Bevin will guide phase-clear criteria during initial playtesting; no exact
+> pass formula was chosen. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
+>
+> **Josh's premeeting proposal, still to detail:** use a distinct permanent
+> currency for each species and biome, with Rabbit Data for Rabbit Genome and
+> Forest Data for Forest upgrades. Give qualifying simulation nodes fixed
+> rewards, held provisionally until the whole journey succeeds. Mutation
+> choices remain free and Skip gives no reward in the current prototype.
 
 ## Concept
 
@@ -64,6 +81,11 @@ Mutations for free and gives Skip no reward. The future power-now-versus-
 progress-later model remains a design direction, not the current S3 contract.
 
 ## Data categories
+
+The categories below are earlier candidates, not an approved complete wallet
+list. Josh's October 14 proposal calls for distinct species and biome
+currencies; the exact wallet list and Research Data's place in the journey
+economy need review before implementation.
 
 - **Research Data:** general-purpose data earned from meaningful observations.
 - **Plant Data:** earned from growth, propagation, resource recovery, and plant survival.
@@ -81,10 +103,13 @@ accomplishments or world state. Phase earnings and final settlement must be
 identified separately and applied once; repeated Continue or viewing a summary
 cannot award them again. The current survivor-count reward is a prototype,
 not a validated continued-expedition economy. See the
-[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md); earning amounts, loss rules
-and permanent Lab integration remain deferred.
+[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md); earning amounts and
+permanent Lab integration remain deferred. The failure loss boundary is set
+below; its save and settlement mechanics remain to be built.
 
-Data should reward meaningful discoveries and accomplishments, not raw tick count. Candidate triggers include:
+The following earlier candidate triggers are exploratory. Josh proposed fixed
+amounts for meeting each simulation node's authored requirements, held until
+successful completion of the whole journey:
 
 - first observation of a behavior or upgrade activation;
 - reaching or recovering from a population threshold;
@@ -94,23 +119,36 @@ Data should reward meaningful discoveries and accomplishments, not raw tick coun
 
 Repeated common events need caps or diminishing returns so large populations cannot generate unlimited currency. Existing deterministic telemetry should be reused to evaluate rewards before adding new event infrastructure.
 
-> **Pending owner decision — provisional settlement:** the earning, spending,
-> phase-transfer, final-settlement, and extinction-loss rules are not resolved.
-> The current survivor-count reward is prototype plumbing only. Do not infer a
-> wallet contract from this document. Any future reward-doubling for Skip is a
-> separate deferred economy rule. S3-04 Mutation choices are free and do not
-> spend this data.
+> **Settlement boundary — team, 2026-10-14; clarified 2026-10-15:** a failed
+> journey ends without cash-out. Forfeit every currency amount earned during
+> that run and every temporary upgrade acquired during it. Keep permanent
+> Desktop upgrades and unlocked upgrade or feature availability on the
+> profile, including unlocks earned through accomplishments during the run.
+> The proposed fixed node rewards and success-time deposit still need a
+> concrete node and wallet contract. The current survivor-count reward is
+> prototype plumbing, not this settlement contract.
+
+## Within-journey Field Data spending
+
+The team included all of these as intended options: remove Hares, add or
+remove Foxes, add or remove Plants, and buy a random event as a gamble. Field
+Data remains available across phase and node boundaries during the journey.
+Purchase costs, caps, legal timing and targets, random-event outcomes, and
+which options belong in the first playable slice are open. These purchases
+must be evaluated for ecological and balance effects before their values are
+approved.
 
 ## Spending tension
 
 A later economy may allow data to purchase temporary Mutations that affect the
 selected species for the rest of that expedition. That is not the S3-04
-contract: its Mutation choices are free. Unspent data can instead be returned
-to the **Lab** and used for permanent Genome research. Extinction may cause
-some unbanked data to be lost, with the exact loss rule left for playtesting.
+contract: its Mutation choices are free. The earlier proposal let unspent data
+return to the **Lab** for permanent Genome research. Josh's October 14 proposal
+instead banks qualifying permanent-currency rewards at successful journey
+completion. The team agreed that failure provides no cash-out.
 
-If later approved, this would create the economic decision: **power now versus
-progress later**.
+The final earning and pricing rules will determine the actual tradeoff between
+spending during a journey and pursuing long-term progression.
 
 ## The Lab
 
@@ -129,7 +167,6 @@ uses include:
 - unlocking starting traits or alternate biological strategies;
 - improving previews and revealing deeper simulation statistics;
 - unlocking research objectives and accomplishment tracks;
-- preserving more collected data after defeat;
 - unlocking advanced observation tools.
 
 Genome improvements need two views. Species Simulations may judge how they help
@@ -145,11 +182,12 @@ refunds its Rabbit Data spend. The active configuration is frozen at launch.
 Authored node prices, exact reset fee, capacity growth, and the broader Genome
 economy remain open; do not infer them from the Gene Lab mock or runtime shim.
 
-Biome projects are a possible separate use for banked data. These would improve
-or reshape the habitat itself—such as water retention, habitat corridors, soil
-recovery, or available niches—rather than act as hidden species buffs. Whether
-a small restoration baseline gates later Biome progress remains an open design
-decision.
+Biome-specific currency and upgrades are now part of Josh's October 14
+direction: Forest Data buys Forest biome upgrades. The first upgrade's effect,
+price, configuration, and validation remain open. Earlier "Biome projects"
+ideas—water retention, habitat corridors, soil recovery, or available niches—
+are possible designs for those upgrades, not approved content. Whether a small
+restoration baseline gates later Biome progress also remains open.
 
 Plant, Herbivore, and Carnivore remain useful data categories and navigation
 filters. They are not permanent-buff targets: Genome changes belong to a stable
@@ -171,14 +209,16 @@ Genome nodes:
 
 Mastery objectives should require varied species behaviors. Repeating the same safe run should not be the optimal path.
 
-## Suggested first implementation
+## Earlier first-implementation suggestions to revisit
 
-- Research Data plus the fewest role or species data categories that have a
-  proven purchase use.
+- The earlier Research Data plus role-category suggestion needs revision if
+  Josh's per-species and per-biome currency proposal is adopted in detail.
 - Keep Species Mastery deferred and non-gating until the upgrade loop and
   settlement contract are approved.
-- A choice to spend data during the run or bank it at the Lab.
-- A simple, clearly communicated consequence for extinction.
+- Keep Field Data spending inside the journey; qualifying permanent node
+  rewards bank only when the whole journey succeeds.
+- Communicate the zero currency payout and loss of temporary upgrades for a
+  failed journey while showing any permanent unlocks that remain.
 - One small Hare Genome preview or purchase after its balance and persistence
   contracts are ready; broader Genome content remains later work.
 
@@ -186,8 +226,15 @@ Mastery objectives should require varied species behaviors. Repeating the same s
 
 - Which data categories are currencies versus progress meters?
 - Does spending category data also require general Research Data?
-- How much unbanked data survives victory, narrow survival, and extinction?
-- When is data awarded: immediately, at phase summaries, or at run results?
+- What phase-clear and whole-journey success gates does Bevin choose for each
+  initial playtest, and how does the UI explain a failed journey's zero payout?
+- Which accomplishments unlock permanent upgrade or feature availability,
+  and when should the profile record them? Mating 100 rabbits to unlock a
+  Burrow Genome upgrade is hypothetical, not an approved threshold.
+- Which approved Field Data purchases enter the first playable slice, and what
+  are their costs, limits, legal timing, and random-event outcomes?
+- How does the UI show provisional node rewards before the successful journey
+  settlement that deposits them to the profile?
 - Which rewards are repeatable, capped per run, or first-discovery only?
 - How is Genome data earned without turning species collection or repetitive
   grinding into the game's main objective?
@@ -196,5 +243,5 @@ Mastery objectives should require varied species behaviors. Repeating the same s
 - Does active Genome capacity ever grow beyond the current 8-point baseline,
   and if so is growth tied to research, Biome progress, or a fixed scenario
   rule?
-- Are Biome projects a separate progression track, and does an introductory
-  restoration project gate advanced Biome challenges?
+- What is the first Forest biome upgrade, and does an introductory restoration
+  project gate advanced Biome challenges?

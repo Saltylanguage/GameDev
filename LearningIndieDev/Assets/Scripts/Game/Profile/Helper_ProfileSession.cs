@@ -8,7 +8,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 1;
+        const int StoreVersion = 2;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -32,6 +32,7 @@ namespace SaltyGame
             public long playTimeMilliseconds;
             public List<string> unlockedSpeciesIds = new List<string>();
             public List<string> unlockedGenomeSpeciesIds = new List<string>();
+            public List<string> unlockedFeatureIds = new List<string>();
         }
 
         [Serializable]
@@ -264,6 +265,13 @@ namespace SaltyGame
             CommitCurrent(Current.WithUnlockedGenome(speciesId));
         }
 
+        public void UnlockFeature(string featureId)
+        {
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithUnlockedFeature(featureId));
+        }
+
         void Load()
         {
             profiles.Clear();
@@ -359,7 +367,8 @@ namespace SaltyGame
                         store.version == 0
                             ? new[] { new SpeciesId("hare") }
                             : ParseSpeciesIds(record.unlockedSpeciesIds),
-                        ParseSpeciesIds(record.unlockedGenomeSpeciesIds)));
+                        ParseSpeciesIds(record.unlockedGenomeSpeciesIds),
+                        record.unlockedFeatureIds));
                 }
                 catch (ArgumentException)
                 {
@@ -448,6 +457,7 @@ namespace SaltyGame
                     playTimeMilliseconds = profile.PlayTimeMilliseconds,
                     unlockedSpeciesIds = ToStrings(profile.UnlockedSpeciesIds),
                     unlockedGenomeSpeciesIds = ToStrings(profile.UnlockedGenomeSpeciesIds),
+                    unlockedFeatureIds = new List<string>(profile.UnlockedFeatureIds),
                 });
                 var record = store.profiles[store.profiles.Count - 1];
                 for (var genomeIndex = 0; genomeIndex < profile.GenomeProfiles.Count; genomeIndex++)

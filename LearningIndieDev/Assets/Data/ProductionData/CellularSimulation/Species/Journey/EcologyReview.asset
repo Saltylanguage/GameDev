@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: ecology-review
   displayName: ECOLOGY REVIEW
-  description: Read the full story written by this ecosystem.
+  description: Read the whole ecosystem.
   kind: 4
-  row: 11
+  row: 12
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}

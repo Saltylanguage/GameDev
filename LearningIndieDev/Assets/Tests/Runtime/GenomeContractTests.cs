@@ -243,6 +243,8 @@ namespace SaltyGame.Tests
                 Assert.That(firstSession.TrySpendCurrency(100), Is.False);
                 firstSession.UnlockSpecies(new SpeciesId("fox"));
                 firstSession.UnlockGenome(new SpeciesId("hare"));
+                firstSession.UnlockFeature("test-feature");
+                firstSession.UnlockFeature("test-feature");
                 Assert.That(firstSession.TrySetGenomeConfiguration(
                     new SpeciesId("hare"),
                     new[] { "hare.guard" },
@@ -267,6 +269,7 @@ namespace SaltyGame.Tests
                 Assert.That(reloaded.Current.Currency, Is.EqualTo(9));
                 Assert.That(reloaded.Current.SimulationTicks, Is.EqualTo(10));
                 Assert.That(reloaded.Current.HoursPlayed, Is.EqualTo(0.5d));
+                Assert.That(reloaded.Current.UnlockedFeatureIds, Is.Empty);
 
                 Assert.That(reloaded.SelectProfile(firstProfileId), Is.True);
                 Assert.That(reloaded.Current.Currency, Is.EqualTo(75));
@@ -275,6 +278,8 @@ namespace SaltyGame.Tests
                 Assert.That(reloaded.Current.UnlockedSpeciesIds, Does.Contain(new SpeciesId("hare")));
                 Assert.That(reloaded.Current.UnlockedSpeciesIds, Does.Contain(new SpeciesId("fox")));
                 Assert.That(reloaded.Current.UnlockedGenomeSpeciesIds, Does.Contain(new SpeciesId("hare")));
+                Assert.That(reloaded.Current.UnlockedFeatureIds,
+                    Is.EqualTo(new[] { "test-feature" }));
                 Assert.That(reloaded.Current.TryGetGenomeProfile(new SpeciesId("hare"),
                     out var genomeProfile), Is.True);
                 Assert.That(genomeProfile.UnlockedNodeIds, Is.EqualTo(new[] { "hare.guard" }));
@@ -315,6 +320,7 @@ namespace SaltyGame.Tests
                 Assert.That(session.Current.PlayTimeMilliseconds, Is.Zero);
                 Assert.That(session.Current.UnlockedSpeciesIds,
                     Does.Contain(new SpeciesId("hare")));
+                Assert.That(session.Current.UnlockedFeatureIds, Is.Empty);
             }
             finally
             {

@@ -14,13 +14,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: migration
   displayName: MIGRATION
-  description: New movement patterns reshape the food web.
+  description: Movement reshapes the biome.
   kind: 3
-  row: 4
-  column: 1
+  row: 7
+  column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}
+  - {fileID: 11400000, guid: 019819d7fb76499cbee60b0f2cef4775, type: 2}
+  - {fileID: 11400000, guid: d127fc6db17d963488b98fb7ebb3cb16, type: 2}

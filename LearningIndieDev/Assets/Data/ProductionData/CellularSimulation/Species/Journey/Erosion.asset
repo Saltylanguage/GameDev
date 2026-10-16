@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: erosion
   displayName: EROSION
-  description: Shifting soil alters the next stretch of habitat.
+  description: Shifting soil joins the trails.
   kind: 3
-  row: 10
-  column: 0
+  row: 9
+  column: 1
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+  - {fileID: 11400000, guid: ce13fa6857cbbd24cb4a091eaaceb971, type: 2}

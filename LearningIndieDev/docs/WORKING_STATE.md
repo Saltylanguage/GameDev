@@ -63,11 +63,57 @@ document, accepted it and authorized the documentation push. See the
 **October 14 S4 card closeout:** At Bevin's request, S4-01, S4-02, S4-03
 and S4-07 now have refreshed Trello descriptions and are complete in Done.
 The board was reloaded and each change verified: Current Work has only
-P1-032; Done has 12 cards. The sprint control remains Active and no next
-sprint was opened. Historical plans and evidence are retained; ongoing
+P1-032; Done has 12 cards. At that October 14 checkpoint, the sprint control remained Active and no
+next sprint was opened; the October 15 closeout below supersedes that status. Historical plans and evidence are retained; ongoing
 crowding, balance and player-review work is recorded as follow-up rather
 than reported as newly validated. See the
 [four-card closeout](handoffs/2026-10-14-2254-codex-s4-four-card-closeout.md).
+
+**S4 closed; next work block proposed, 2026-10-15.** Josh approved the
+[S4 closeout](Sprints/S4-control-record.md#closeout--2026-10-15): four selected
+cards are Done, P1-032 returned to Backlog, and S4-04/05 remain Backlog. The
+[S5 simulation and upgrades proposal](Sprints/S5-proposal-2026-10-15.md)
+puts Forest Edge behavior, authored upgrade choices, matched evidence, and
+player review first, but S5 has no kickoff commitment yet. The canonical
+Desktop profile save/launch foundation is published; Sim's launch review and
+real application exit/relaunch check remain open on P1-032. See the
+[S4 closeout handoff](handoffs/2026-10-15-2007-codex-s4-closeout-and-s5-proposed-handoff.md)
+and the
+[profile acceptance handoff](handoffs/2026-10-15-1835-codex-profile-feature-unlock-storage-and-desktop-launch-acceptance.md).
+
+**Journey art alignment, 2026-10-15.** The published map is at `4d3d7734`.
+Its scrolling UI now targets Chrono's 5,760 × 1,080 panorama brief using
+normalized node positions; the current 4,700 × 1,080 artwork is a placeholder.
+The follow-up 1920 × 1080 visual check passed and captures are retained. See
+the [alignment handoff](handoffs/2026-10-15-1903-codex-journey-panorama-art-alignment-and-s5-proposal.md)
+and [art coordinates](JOURNEY_PROTOTYPE.md#replacing-the-placeholder-artwork).
+
+**October 14 team meeting: journey rules for the next playtest.** Bevin will
+guide phase-clear criteria as balance evidence develops. Failure ends the
+whole journey without cash-out: run-earned currency and temporary upgrades
+are lost, while permanent Desktop upgrades and unlocked upgrade or feature
+availability remain. Field Data carries through a journey; other currency
+types can reach the Desktop after success. Population controls and
+a random-event gamble are intended Field Data purchases. At that meeting, prices, exact
+wallets and the first slice were open. The October 15 Field Data baseline
+now defines the first slice; permanent wallet content remains open. See the
+[meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)
+and [clarification handoff](handoffs/2026-10-15-1232-codex-journey-failure-persistence-clarification.md).
+
+**Journey Field Data reset: 2026-10-15, ready for review.** Starting a new
+Forest Edge journey now clears leftover Field Data along with its temporary
+upgrades. Standalone expedition currency carryover remains unchanged. Two
+focused Clean PlayMode checks passed. The separate permanent-currency deposit
+and permanent unlock rules remain design work. See the
+[boundary handoff](handoffs/2026-10-15-1250-codex-journey-field-data-reset-at-run-end.md).
+
+**Scrollable Forest Edge journey: 2026-10-14, ready for visual review.**
+The map now follows Josh's horizontal layout study: three playable openings,
+29 circular markers, 35 connections, and 13 visual stages over a quiet forest
+panorama. Mouse-wheel travel and hover cards are implemented. The two-cycle
+gameplay remains the playable scope; later markers await content. See the
+[journey handoff](handoffs/2026-10-14-2105-codex-scrollable-forest-journey-map.md)
+for verification and Chrono's art replacement coordinates.
 
 **October 14 ProjectMain and BevBranch integration:** Sim's terrain, artwork,
 simulation, and tooling commits are merged with the local S4/journey checkpoint
@@ -596,23 +642,14 @@ Read the [screen handoff](handoffs/2026-10-03-1200-codex-s4-paired-seed-developm
 and [experiment package](Research/Experiments/S4-03-Hare-Paired-Seed-Screen/README.md).
 Results and fixes are not committed or pushed. The S4 Inspector fixture already
 uses 400/20/10; authored scenario defaults remain separate.
-**Forest Edge journey prototype: integrated 2026-10-06.** The canonical
-Desktop Simulation icon opens the full-screen journey map. The first unbranched
-reward node offers a Hare Mutation in a popup, then the first simulation node
-runs six phases. Its report returns the player to the map, where an authored
-habitat condition popup leads to a connected second simulation. The same run,
-ecosystem, history, and all accumulated Mutations continue through phase 12;
-the final report returns to the map. This persistence is a temporary prototype
-rule while the within-run upgrade term and boundary reset rule are designed.
-The map has 18 ScriptableObject nodes across 12 stages, with only the first
-six nodes playable. The seasonal and continuous-summer landscapes remain
-reusable behind XAML icons, route lines, hover labels, a field journal, and a
-selected-node pulse. See [the prototype contract](JOURNEY_PROTOTYPE.md) for
-current effects, evidence, and remaining balance and terminology decisions.
-Josh accepted the playable prototype on 2026-10-06. On 2026-10-08, the journey
-layout was spread across the woodland, with longer branches and distinct
-condition-to-simulation routes. Focused asset and PlayMode checks and Game-view
-captures passed; Josh has not yet reviewed this layout pass.
+**Forest Edge journey prototype: integrated 2026-10-06, layout updated 2026-10-14.**
+The Desktop Simulation icon opens the scrolling journey map. A choice of three
+trailheads leads through the opening reward, first simulation, connected habitat
+condition, and second simulation. The same run, ecosystem, history, and accumulated
+Mutations continue through phase 12. The visual map has 29 markers across 13
+stages; the first ten markers are playable and later content remains provisional.
+See [the prototype contract](JOURNEY_PROTOTYPE.md) for current effects, approved
+upgrade carryover, art coordinates, and remaining content and balance decisions.
 
 **Chrono species artwork: 2026-10-02, accepted for BevBranch publication.** Both handmade source
 sprites now supply the standardized 32/64/128 icons and retained compatibility
@@ -1171,7 +1208,7 @@ mask for Bare cells too, so dirt cells inside a Grass field can display their
 Grass vertices. Resolver and snapshot regression tests were added and pass in
 the current clean EditMode suite recorded at the top of this file.
 
-**Roadmap v2.2 remains active.** M0 and M1 are complete; Josh closed M1 on
+**Historical S3 closeout context (Roadmap v2.2 at the time).** M0 and M1 are complete; Josh closed M1 on
 2026-09-29 after accepting the distributed exit-gate evidence. Sprint 2 closed on 2026-09-17 with Fox telemetry as
 its sole carry-over. Sprint 3 closed on 2026-09-29 after manual review. The
 committed S3 cards and control card are in Trello Done; S3-05 remains in Backlog
@@ -1181,7 +1218,8 @@ complete, S3-03 is Unity-validated, and S3-04 V1 was accepted within its bounded
 scope. Chrono is producing the selected Main Menu art, with further polish as
 iterative work. At S3 closeout, the S4 plan still needed refinement; S4 was
 subsequently activated on 2026-10-01. Retesting may be needed as later work
-changes the accepted baseline. Local profile-choice save/restore is deferred beyond S4.
+changes the accepted baseline. Local profile-choice save/restore was deferred beyond S4
+at that kickoff; its foundation was published separately on 2026-10-14.
 The GalapagOS Desktop is the canonical
 player home; the standalone Lab remains a legacy/developer route.
 The S3-04 working plan is now recorded. Josh confirmed that Mutation copy will

@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: ridge-trail
   displayName: RIDGE TRAIL
-  description: The experiment moves through a higher stretch of woodland.
+  description: A final highland cycle.
   kind: 0
-  row: 9
+  row: 10
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}
+  - {fileID: 11400000, guid: 8806a1772117e7e45af0f627635b5738, type: 2}

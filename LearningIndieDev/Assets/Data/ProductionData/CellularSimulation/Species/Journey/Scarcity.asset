@@ -14,14 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: scarcity
   displayName: SCARCITY
-  description: A lean interval tests the balance of life.
+  description: A lean season tests the balance.
   kind: 3
-  row: 4
-  column: 0
+  row: 8
+  column: 2
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}
-  - {fileID: 11400000, guid: bc94a1da98f149bf940bee0743b69fdf, type: 2}
+  - {fileID: 11400000, guid: 86409440863546528fb5d0932ec7d506, type: 2}

@@ -14,14 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: canopy-watch
   displayName: CANOPY WATCH
-  description: Survey the forest from its upper branches.
+  description: Read the upper forest.
   kind: 5
-  row: 8
+  row: 5
   column: 0
   playableInPrototype: 0
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []
   dataReward: 0
   nextNodes:
-  - {fileID: 11400000, guid: 70ca9b2c2bf349e88f61241746287589, type: 2}
-  - {fileID: 11400000, guid: e50068752947408a9c097c4542d8b2a5, type: 2}
+  - {fileID: 11400000, guid: 16e05e223f1b494385f030552858b58a, type: 2}

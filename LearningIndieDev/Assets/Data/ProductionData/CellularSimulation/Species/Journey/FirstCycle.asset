@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Run the first six phases in one living ecosystem.
   kind: 0
   row: 1
-  column: 0
+  column: 1
   playableInPrototype: 1
   conditionUpgrade: {fileID: 0}
   rewardMutationIds: []

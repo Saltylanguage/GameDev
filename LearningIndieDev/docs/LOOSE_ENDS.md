@@ -3,11 +3,14 @@
 This ledger tracks unresolved gaps that are not already owned by a sprint,
 roadmap, or hygiene ticket. Closed decisions remain in Git and dated handoffs.
 
-## Current review — 2026-10-01
+## Current review — 2026-10-15
 
-No P0 issue is verified. S4 is Active from 2026-10-01. P1-032, the Desktop
-active-profile launch migration, is the first S4 task and is owned by the
-[S4 control record](Sprints/S4-control-record.md). Forest Edge balance
+No P0 issue is verified. S4 closed on 2026-10-15, with P1-032 returned to
+Backlog for Sim's launch-input review and a real app save/exit/relaunch check;
+S4-04/05 remain Backlog. These are owned by their Trello cards and the
+[S4 control record](Sprints/S4-control-record.md). S5 remains Proposed, with
+simulation and upgrade content candidates recorded in its
+[proposal](Sprints/S5-proposal-2026-10-15.md). Forest Edge balance
 iteration (P1-034) is covered by the
 [future sprint roadmap](FUTURE_SPRINT_ROADMAP.md); deferred compatibility and
 naming work (P2-007 and P2-014) retain their gates in the

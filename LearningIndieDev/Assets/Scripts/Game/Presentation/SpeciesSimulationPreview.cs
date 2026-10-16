@@ -1948,7 +1948,7 @@ namespace SaltyGame
 
             if (journeyCurrentNode == null)
             {
-                return node == journeyMap.StartNode
+                return node.Row == 0
                     && node.Kind == JourneyNodeKind.Reward
                     && previewState == SpeciesPreviewState.Ready
                     && run.Status == SimulationRunStatus.Ready;
@@ -2113,7 +2113,7 @@ namespace SaltyGame
                 };
                 SynchronizePlayerUpgradeSnapshots();
                 PrepareNextRun();
-                journeyCurrentNode = journeyMap.StartNode;
+                journeyCurrentNode = node;
                 journeyVisitedNodeIds.Add(node.NodeId);
                 journeyPendingNode = null;
                 journeyRewardOptions = Array.Empty<SpeciesUpgrade>();
@@ -2211,8 +2211,8 @@ namespace SaltyGame
         {
             if (previewState == SpeciesPreviewState.Results)
             {
-                // Mutations reset for each expedition; earned field data carries forward.
-                var carriedCurrency = progression?.Currency ?? 0;
+                // Field Data ends with a journey; standalone expeditions retain their existing carryover.
+                var carriedCurrency = journeyActive ? 0 : progression?.Currency ?? 0;
                 rules = CreateRulesFromDrafts().ToDictionary(entry => entry.Key, entry => entry.Value);
                 ResetExpeditionProgression(rules[playerSpecies]);
                 progression.AddCurrency(carriedCurrency);

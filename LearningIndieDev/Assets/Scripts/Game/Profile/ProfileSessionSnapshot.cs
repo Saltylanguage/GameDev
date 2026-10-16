@@ -11,6 +11,7 @@ namespace SaltyGame
         readonly IReadOnlyList<SpeciesGenomeProfile> genomeProfiles;
         readonly IReadOnlyList<SpeciesId> unlockedSpeciesIds;
         readonly IReadOnlyList<SpeciesId> unlockedGenomeSpeciesIds;
+        readonly IReadOnlyList<string> unlockedFeatureIds;
 
         public bool HasLoadedProfile { get; }
         public string ProfileId { get; }
@@ -18,6 +19,7 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesGenomeProfile> GenomeProfiles => genomeProfiles;
         public IReadOnlyList<SpeciesId> UnlockedSpeciesIds => unlockedSpeciesIds;
         public IReadOnlyList<SpeciesId> UnlockedGenomeSpeciesIds => unlockedGenomeSpeciesIds;
+        public IReadOnlyList<string> UnlockedFeatureIds => unlockedFeatureIds;
         public long Currency { get; }
         public long SimulationTicks { get; }
         public long PlayTimeMilliseconds { get; }
@@ -32,7 +34,8 @@ namespace SaltyGame
             long simulationTicks = 0,
             long playTimeMilliseconds = 0,
             IEnumerable<SpeciesId> unlockedSpeciesIds = null,
-            IEnumerable<SpeciesId> unlockedGenomeSpeciesIds = null)
+            IEnumerable<SpeciesId> unlockedGenomeSpeciesIds = null,
+            IEnumerable<string> unlockedFeatureIds = null)
         {
             if (currency < 0)
             {
@@ -57,6 +60,7 @@ namespace SaltyGame
             PlayTimeMilliseconds = playTimeMilliseconds;
             this.unlockedSpeciesIds = CopySpeciesIds(unlockedSpeciesIds, nameof(unlockedSpeciesIds));
             this.unlockedGenomeSpeciesIds = CopySpeciesIds(unlockedGenomeSpeciesIds, nameof(unlockedGenomeSpeciesIds));
+            this.unlockedFeatureIds = CopyFeatureIds(unlockedFeatureIds);
 
             var copiedGenomeProfiles = new List<SpeciesGenomeProfile>();
             var seenSpecies = new HashSet<SpeciesId>();
@@ -130,7 +134,8 @@ namespace SaltyGame
                     SimulationTicks,
                     PlayTimeMilliseconds,
                     unlockedSpeciesIds,
-                    unlockedGenomeSpeciesIds);
+                    unlockedGenomeSpeciesIds,
+                    unlockedFeatureIds);
             }
 
             nextProfiles.Add(nextProfile);
@@ -143,25 +148,29 @@ namespace SaltyGame
                 SimulationTicks,
                 PlayTimeMilliseconds,
                 unlockedSpeciesIds,
-                unlockedGenomeSpeciesIds);
+                unlockedGenomeSpeciesIds,
+                unlockedFeatureIds);
         }
 
         public ProfileSessionSnapshot WithLoaded(bool isLoaded)
         {
             return new ProfileSessionSnapshot(isLoaded, ProfileId, ProfileName, genomeProfiles,
-                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds);
+                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
+                unlockedFeatureIds);
         }
 
         public ProfileSessionSnapshot WithCurrency(long amount)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
-                amount, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds);
+                amount, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
+                unlockedFeatureIds);
         }
 
         public ProfileSessionSnapshot WithTime(long simulationTicks, long playTimeMilliseconds)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
-                Currency, simulationTicks, playTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds);
+                Currency, simulationTicks, playTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
+                unlockedFeatureIds);
         }
 
         public ProfileSessionSnapshot WithUnlockedSpecies(SpeciesId speciesId)
@@ -178,7 +187,8 @@ namespace SaltyGame
             }
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
-                Currency, SimulationTicks, PlayTimeMilliseconds, nextIds, unlockedGenomeSpeciesIds);
+                Currency, SimulationTicks, PlayTimeMilliseconds, nextIds, unlockedGenomeSpeciesIds,
+                unlockedFeatureIds);
         }
 
         public ProfileSessionSnapshot WithUnlockedGenome(SpeciesId speciesId)
@@ -195,7 +205,26 @@ namespace SaltyGame
             }
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
-                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, nextIds);
+                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, nextIds,
+                unlockedFeatureIds);
+        }
+
+        public ProfileSessionSnapshot WithUnlockedFeature(string featureId)
+        {
+            if (string.IsNullOrWhiteSpace(featureId))
+            {
+                throw new ArgumentException("A feature id is required.", nameof(featureId));
+            }
+
+            var nextIds = new List<string>(unlockedFeatureIds);
+            if (!nextIds.Contains(featureId))
+            {
+                nextIds.Add(featureId);
+            }
+
+            return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
+                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds,
+                unlockedGenomeSpeciesIds, nextIds);
         }
 
         static IReadOnlyList<SpeciesId> CopySpeciesIds(IEnumerable<SpeciesId> ids, string parameterName)
@@ -209,6 +238,26 @@ namespace SaltyGame
                     if (!id.IsValid || !seen.Add(id))
                     {
                         throw new ArgumentException("Species ids must be valid and unique.", parameterName);
+                    }
+
+                    copied.Add(id);
+                }
+            }
+
+            return copied.AsReadOnly();
+        }
+
+        static IReadOnlyList<string> CopyFeatureIds(IEnumerable<string> ids)
+        {
+            var copied = new List<string>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+            if (ids != null)
+            {
+                foreach (var id in ids)
+                {
+                    if (string.IsNullOrWhiteSpace(id) || !seen.Add(id))
+                    {
+                        throw new ArgumentException("Feature ids must be non-empty and unique.", nameof(ids));
                     }
 
                     copied.Add(id);

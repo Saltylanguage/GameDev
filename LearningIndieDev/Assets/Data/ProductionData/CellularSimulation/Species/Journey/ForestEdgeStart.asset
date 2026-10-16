@@ -13,11 +13,12 @@ MonoBehaviour:
   m_Name: ForestEdgeStart
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: forest-edge-start
-  displayName: FIRST DISCOVERY
-  description: Choose one Hare Mutation before the first ecological cycle.
+  displayName: CREEK BEND
+  description: Begin beside the water. Choose one Hare Mutation before the first
+    cycle.
   kind: 5
   row: 0
-  column: 0
+  column: 1
   playableInPrototype: 1
   conditionUpgrade: {fileID: 0}
   rewardMutationIds:

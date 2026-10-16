@@ -180,22 +180,44 @@ namespace SaltyGame.PlayModeTests
             ResetJourneyHover(simulationViewModel, ((SpeciesSimulationPreview)preview).JourneyMap.StartNode.NodeId);
             yield return null;
             yield return CaptureCamera(outputDirectory, "03a-galapagos-journey-map", simulationCamera, settleFrames: 0);
-            ExecuteCommand(GetProperty(simulationViewModel, "ToggleJourneyBackdropCommand"));
+            var journeyContent = GetProperty(simulationCamera.GetComponent("NoesisView"), "Content");
+            var mapScroll = journeyContent.GetType().GetMethod("FindName")
+                ?.Invoke(journeyContent, new object[] { "JourneyMapScroll" });
+            Assert.That(mapScroll, Is.Not.Null);
+            Assert.That((float)GetProperty(mapScroll, "ScrollableWidth"), Is.GreaterThan(1800f));
+            var scrollViewer = (Noesis.ScrollViewer)mapScroll;
+            var wheel = new Noesis.MouseWheelEventArgs(scrollViewer, Noesis.UIElement.PreviewMouseWheelEvent, -120);
+            scrollViewer.RaiseEvent(wheel);
             yield return null;
-            Assert.That(GetProperty(simulationViewModel, "JourneySummerBackdropVisibility").ToString(), Is.EqualTo("Visible"));
-            ResetJourneyHover(simulationViewModel, ((SpeciesSimulationPreview)preview).JourneyMap.StartNode.NodeId);
             yield return null;
-            yield return CaptureCamera(outputDirectory, "03b-galapagos-journey-summer-trails", simulationCamera, settleFrames: 0);
-            var stonefall = FindJourneyNode(simulationViewModel, "stonefall");
-            ExecuteCommand(GetProperty(stonefall, "HoverCommand"));
-            Assert.That(GetProperty(stonefall, "LabelVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(wheel.Handled, Is.True);
+            Assert.That(scrollViewer.HorizontalOffset, Is.GreaterThan(0f));
+            mapScroll.GetType().GetMethod("ScrollToHorizontalOffset")?.Invoke(mapScroll, new object[] { 926.6667f });
             yield return null;
-            yield return CaptureCamera(outputDirectory, "03c-galapagos-journey-node-hover", simulationCamera, settleFrames: 0);
-            ExecuteCommand(GetProperty(stonefall, "LeaveCommand"));
-            ExecuteCommand(GetProperty(simulationViewModel, "ToggleJourneyBackdropCommand"));
+            yield return null;
+            Assert.That((float)GetProperty(mapScroll, "HorizontalOffset"), Is.EqualTo(926.6667f).Within(1f));
+            yield return CaptureCamera(outputDirectory, "03b-galapagos-journey-middle", simulationCamera, settleFrames: 0);
+            mapScroll.GetType().GetMethod("ScrollToHorizontalOffset")?.Invoke(mapScroll,
+                new[] { GetProperty(mapScroll, "ScrollableWidth") });
+            yield return null;
+            yield return null;
+            yield return CaptureCamera(outputDirectory, "03c-galapagos-journey-right", simulationCamera, settleFrames: 0);
+            ExecuteCommand(GetProperty(simulationViewModel, "CloseJourneyMapCommand"));
+            ExecuteCommand(openCommand, "Simulation");
+            yield return null;
+            yield return null;
+            Assert.That(scrollViewer.HorizontalOffset, Is.EqualTo(0f).Within(1f),
+                "Reopening the journey should return to the available trailheads.");
+            var seedfallHover = FindJourneyNode(simulationViewModel, "seedfall");
+            ExecuteCommand(GetProperty(seedfallHover, "HoverCommand"));
+            Assert.That(GetProperty(seedfallHover, "LabelVisibility").ToString(), Is.EqualTo("Visible"));
+            yield return null;
+            yield return null;
+            yield return CaptureCamera(outputDirectory, "03d-galapagos-journey-node-hover", simulationCamera, settleFrames: 0);
+            ExecuteCommand(GetProperty(seedfallHover, "LeaveCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             yield return null;
-            yield return CaptureCamera(outputDirectory, "03d-galapagos-first-reward", simulationCamera);
+            yield return CaptureCamera(outputDirectory, "03e-galapagos-first-reward", simulationCamera);
             var firstRewards = (Array)GetProperty(simulationViewModel, "JourneyRewardItems");
             ExecuteCommand(GetProperty(firstRewards.GetValue(0), "ChooseCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "first-cycle"), "ChooseCommand"));
@@ -459,7 +481,24 @@ namespace SaltyGame.PlayModeTests
 
             preview.EndSimulation();
             yield return null;
-            ExecuteCommand(GetProperty(simulationViewModel, "ReturnToLabCommand"));
+            ExecuteCommand(GetProperty(simulationViewModel, "OpenJourneyMapCommand"));
+            var content = GetProperty(GameObject.Find(SimulationCameraName).GetComponent("NoesisView"), "Content");
+            var navigation = (Noesis.ScrollViewer)content.GetType().GetMethod("FindName")
+                ?.Invoke(content, new object[] { "JourneyMapScroll" });
+            Assert.That(navigation, Is.Not.Null);
+            yield return null;
+            yield return null;
+            Assert.That(navigation.ScrollableWidth, Is.GreaterThan(1800f));
+            navigation.ScrollToHorizontalOffset(navigation.ScrollableWidth);
+            yield return null;
+            yield return null;
+            Assert.That(navigation.HorizontalOffset, Is.GreaterThan(1800f));
+            ExecuteCommand(GetProperty(simulationViewModel, "StartNewJourneyCommand"));
+            yield return null;
+            yield return null;
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(navigation.HorizontalOffset, Is.EqualTo(0f).Within(1f));
+            ExecuteCommand(GetProperty(simulationViewModel, "CloseJourneyMapCommand"));
         }
 
         static object GetProperty(object target, string propertyName)
@@ -539,6 +578,9 @@ namespace SaltyGame.PlayModeTests
             {
                 renderTexture.Create();
                 camera.targetTexture = renderTexture;
+                // Let Noesis arrange against the capture target instead of the Editor Game view.
+                yield return null;
+                yield return null;
                 camera.Render();
                 RenderTexture.active = renderTexture;
                 image.ReadPixels(new Rect(0, 0, width, height), 0, 0);

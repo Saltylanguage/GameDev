@@ -43,6 +43,7 @@ namespace SaltyGame
                 : node.Column == 0 ? "A" : "B";
             Kind = node.Kind.ToString().ToUpperInvariant();
             CanChoose = canChoose;
+            AvailableVisibility = canChoose ? Visibility.Visible : Visibility.Collapsed;
             SelectedVisibility = selected ? Visibility.Visible : Visibility.Collapsed;
             ChooseCommand = new DelegateCommand(choose);
             HoverCommand = new DelegateCommand(() =>
@@ -51,14 +52,19 @@ namespace SaltyGame
                 hover();
             });
             LeaveCommand = new DelegateCommand(() => LabelVisibility = Visibility.Collapsed);
-            X = normalizedCenter.x * VM_SimulationShell.JourneyOverlayWidth - 41f;
-            Y = normalizedCenter.y * VM_SimulationShell.JourneyOverlayHeight - 22f;
+            X = normalizedCenter.x * VM_SimulationShell.JourneyOverlayWidth - 32f;
+            Y = normalizedCenter.y * VM_SimulationShell.JourneyOverlayHeight - 32f;
+            HoverCardX = node.Row >= 11 ? -238f : 66f;
+            HoverCardY = normalizedCenter.y > 0.65f ? -118f : 0f;
             SimulationIconVisibility = node.Kind == JourneyNodeKind.Simulation ? Visibility.Visible : Visibility.Collapsed;
             ConditionIconVisibility = node.Kind == JourneyNodeKind.Condition ? Visibility.Visible : Visibility.Collapsed;
             UpgradeIconVisibility = node.Kind == JourneyNodeKind.Upgrade ? Visibility.Visible : Visibility.Collapsed;
             EventIconVisibility = node.Kind == JourneyNodeKind.Event ? Visibility.Visible : Visibility.Collapsed;
             FinaleIconVisibility = node.Kind == JourneyNodeKind.Finale ? Visibility.Visible : Visibility.Collapsed;
-            RewardIconVisibility = node.Kind == JourneyNodeKind.Reward ? Visibility.Visible : Visibility.Collapsed;
+            RewardIconVisibility = node.Kind == JourneyNodeKind.Reward && node.Row != 0 ? Visibility.Visible : Visibility.Collapsed;
+            OpeningFernVisibility = node.Row == 0 && node.Column == 0 ? Visibility.Visible : Visibility.Collapsed;
+            OpeningWaterVisibility = node.Row == 0 && node.Column == 1 ? Visibility.Visible : Visibility.Collapsed;
+            OpeningPineVisibility = node.Row == 0 && node.Column == 2 ? Visibility.Visible : Visibility.Collapsed;
         }
 
         public string NodeId { get; }
@@ -68,6 +74,7 @@ namespace SaltyGame
         public string Slot { get; }
         public string Kind { get; }
         public bool CanChoose { get; }
+        public Visibility AvailableVisibility { get; }
         public Visibility SelectedVisibility { get; }
         public DelegateCommand ChooseCommand { get; }
         public DelegateCommand HoverCommand { get; }
@@ -80,17 +87,31 @@ namespace SaltyGame
                 if (labelVisibility == value) return;
                 labelVisibility = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LabelVisibility)));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoverZIndex)));
             }
         }
         public event PropertyChangedEventHandler PropertyChanged;
         public float X { get; }
         public float Y { get; }
+        public float HoverCardX { get; private set; }
+        public float HoverCardY { get; }
+        public int HoverZIndex => labelVisibility == Visibility.Visible ? 10 : 0;
+        public void PlaceHoverCard(float horizontalOffset, float viewportWidth)
+        {
+            var viewportX = X - horizontalOffset;
+            HoverCardX = viewportX + 296f > viewportWidth ? -238f : 66f;
+            HoverCardX = Mathf.Max(HoverCardX, 8f - viewportX);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HoverCardX)));
+        }
         public Visibility SimulationIconVisibility { get; }
         public Visibility ConditionIconVisibility { get; }
         public Visibility UpgradeIconVisibility { get; }
         public Visibility EventIconVisibility { get; }
         public Visibility FinaleIconVisibility { get; }
         public Visibility RewardIconVisibility { get; }
+        public Visibility OpeningFernVisibility { get; }
+        public Visibility OpeningWaterVisibility { get; }
+        public Visibility OpeningPineVisibility { get; }
     }
 
     public sealed class JourneyMapRowItem
@@ -124,7 +145,7 @@ namespace SaltyGame
 
     public sealed class VM_SimulationShell : MonoBehaviour, INotifyPropertyChanged
     {
-        internal const float JourneyOverlayWidth = 926f;
+        internal const float JourneyOverlayWidth = 3840f;
         internal const float JourneyOverlayHeight = 520f;
         const float MinimumBoardZoom = SpeciesSimulationBoard.MinimumZoomScale;
         const float MaximumBoardZoom = SpeciesSimulationBoard.MaximumZoomScale;
@@ -251,6 +272,7 @@ namespace SaltyGame
         JourneyMapRowItem[] journeyMapRows = Array.Empty<JourneyMapRowItem>();
         JourneyMapNodeItem[] journeyMapNodes = Array.Empty<JourneyMapNodeItem>();
         JourneyMapAsset journeyGeometryMap;
+        float journeyMapFocusX;
         JourneyNodeAsset journeyFocusedNode;
         Geometry journeyMapRouteGeometry;
         Geometry journeyMapFocusGeometry;
@@ -368,6 +390,7 @@ namespace SaltyGame
         public JourneyMapNodeItem[] JourneyMapNodes => journeyMapNodes;
         public float JourneyMapOverlayWidth => JourneyOverlayWidth;
         public float JourneyMapOverlayHeight => JourneyOverlayHeight;
+        public float JourneyMapFocusX => journeyMapFocusX;
         public Geometry JourneyMapRouteGeometry => journeyMapRouteGeometry;
         public Geometry JourneyMapFocusGeometry => journeyMapFocusGeometry;
         public Visibility JourneySeasonalBackdropVisibility => showSummerJourneyBackdrop ? Visibility.Collapsed : Visibility.Visible;
@@ -1139,6 +1162,7 @@ namespace SaltyGame
 
                     journeyMapPreviewOpen = true;
                     Refresh(true);
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(JourneyMapFocusX)));
                 }
             });
             CloseJourneyMapCommand = new DelegateCommand(() =>
@@ -1930,7 +1954,7 @@ namespace SaltyGame
 
             Set(ref journeyMapSummary,
                 state == SpeciesPreviewState.Ready
-                    ? "Choose your first discovery, then follow the trail into the living biome."
+                    ? "Choose one of three trailheads, then follow the path into the living biome."
                     : state == SpeciesPreviewState.JourneyDecision
                         ? preview.ChosenJourneyNode != null
                             ? "Habitat condition recorded. Choose a connected simulation node to continue."
@@ -2012,6 +2036,8 @@ namespace SaltyGame
             var defaultNode = pending ?? preview.JourneyCurrentNode ?? map.StartNode;
             if (defaultNode != null)
             {
+                if (map.TryGetNormalizedCenter(defaultNode, out var focusCenter))
+                    Set(ref journeyMapFocusX, focusCenter.x * JourneyOverlayWidth, nameof(JourneyMapFocusX));
                 var status = pending == defaultNode ? "SELECTED"
                     : preview.JourneyCurrentNode == defaultNode ? "CURRENT"
                     : preview.CanChooseJourneyNode(defaultNode.NodeId) ? "AVAILABLE" : "UNCHARTED";
