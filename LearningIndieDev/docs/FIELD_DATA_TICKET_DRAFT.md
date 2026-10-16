@@ -1,7 +1,7 @@
 # Field Data implementation tickets - Sprint 5
 
 - **Prepared:** 2026-10-16
-- **Status:** published to Trello; all 16 selected for Active S5, October 19-November 15, 2026; implementation not started
+- **Status:** published to Trello; all 16 retained for Active S5 priority review, October 19-November 15, 2026. At the later October 16 board check FD-T01–03 were Done, FD-T04 In Progress and FD-T05–16 in Current Work; final committed subset awaits team review.
 - **Planning baseline:** merged `BevBranch` at `dcd6bb0`
 - **Owner / reviewer:** unassigned on every ticket, as Bevin requested
 - **Estimates:** proposed active team-hours, including focused tests and ordinary review fixes; selected planning ranges; capacity risk recorded in the S5 control
@@ -50,9 +50,11 @@ amount and resulting balance.
 The selected tickets total **57–95 active team-hours**, before unknown machine
 time or a new tuning iteration. Bevin selected all 16 for a four-week S5 after
 the over-capacity warning. The [S5 control](Sprints/S5-control-record.md)
-records the 80–120h combined availability, protected 16h reserve, conservative
-64h feature allowance and 31h upper-estimate overage. Re-estimate after FD-T01
-and each implementation review.
+records the 80–120h combined availability. Josh removed the protected review
+reserve on October 16 and will use separate dedicated review time. The 80h
+conservative planning floor leaves a 15h upper-estimate overage before new
+ecology/playability work. Re-estimate remaining work with Sim before final
+S5 prioritization and at each implementation review.
 
 The original **FD-T01–FD-T05** recommendation remains a useful 15–25h foundation
 sequence within the full selected scope.
@@ -382,11 +384,13 @@ P1-032's separate launch-input/real exit-relaunch acceptance; it is not a new
 profile implementation hidden in this backlog. Do not add the deferred
 crowding/movement/litter changes or permanent reward economy to these tickets.
 
-All 16 tickets are selected for S5. Allocate owners/reviewers during team
-review; leaving them unassigned at kickoff is Bevin's explicit exception.
-Resolve FD-T01, review technical proposals against the current code, and retain
-the recorded reserve and capacity risk. Kickoff and card creation do not satisfy
-any implementation, runtime, balance or self-play acceptance criterion.
+All 16 tickets remain visible for S5 priority review with Sim. Allocate
+owners/reviewers and confirm the final subset during that review; leaving them
+unassigned at kickoff is Bevin's explicit exception. Reconcile completed
+foundation cards, inspect FD-T04's remaining implementation, review technical
+proposals against the current code, and retain the documented capacity risk.
+Kickoff and card creation do not satisfy any implementation, runtime, balance
+or self-play acceptance criterion.
 
 ## Requirement coverage
 

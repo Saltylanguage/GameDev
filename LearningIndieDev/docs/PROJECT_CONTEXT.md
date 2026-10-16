@@ -129,7 +129,7 @@ uncertainty or regression risk.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
-- [`ROADMAP.md`](../ROADMAP.md) version 2.3 is the active production baseline
+- [`ROADMAP.md`](../ROADMAP.md) version 2.4 is the active production baseline
   as of 2026-10-15: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
   closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
   loop, understandable Mutation effects, and bounded visual polish/UI
@@ -142,9 +142,15 @@ uncertainty or regression risk.
   per-profile currency, progression
   IDs, simulation ticks, and playtime; economy settlement remains deferred.
   The [Active S5 control](Sprints/S5-control-record.md), kicked off October 16,
-  selects all 16 Field Data tickets for October 19-November 15, 2026. Roles
-  remain unassigned by request and the 57–95h estimate retains its capacity
-  risk. Broader simulation corrections/permanent content remain separate;
+  published all 16 Field Data tickets for October 19-November 15, 2026. Josh's
+  [playability goalpost](Sprints/S5-playability-goalpost-2026-10-16.md) makes a
+  polished two-simulation/one-shop route the first S5 review gate. All 16 cards
+  remain visible for tonight's priority meeting with Sim; final commitment,
+  owners and acceptance changes await that meeting. Josh removed the protected
+  16h review reserve and will handle review in separate dedicated time. The
+  57–95h Field Data range exceeds the conservative 80h sprint floor by 15h at
+  its upper end before unestimated ecology/playability work. Permanent content
+  remains separate; simulation corrections are candidates for the meeting.
   S6/S7 dates need reforecasting after the extended S5. The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
