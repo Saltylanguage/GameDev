@@ -5,13 +5,16 @@ become a master changelog.
 
 ## Current focus
 
-**Next work block proposed, 2026-10-15.** A draft
+**S4 closed; next work block proposed, 2026-10-15.** Josh approved the
+[S4 closeout](Sprints/S4-control-record.md#closeout--2026-10-15): four selected
+cards are Done, P1-032 returned to Backlog, and S4-04/05 remain Backlog. The
 [S5 simulation and upgrades proposal](Sprints/S5-proposal-2026-10-15.md)
 puts Forest Edge behavior, authored upgrade choices, matched evidence, and
-player review first. S4 remains Active in its control record until the pending
-Trello closeout decision is confirmed and verified. The canonical Desktop
-profile save/launch foundation is published; Sim's launch review and real
-application exit/relaunch check remain open. See the
+player review first, but S5 has no kickoff commitment yet. The canonical
+Desktop profile save/launch foundation is published; Sim's launch review and
+real application exit/relaunch check remain open on P1-032. See the
+[S4 closeout handoff](handoffs/2026-10-15-2007-codex-s4-closeout-and-s5-proposed-handoff.md)
+and the
 [profile acceptance handoff](handoffs/2026-10-15-1835-codex-profile-feature-unlock-storage-and-desktop-launch-acceptance.md).
 
 **Journey art alignment, 2026-10-15.** The published map is at `4d3d7734`.

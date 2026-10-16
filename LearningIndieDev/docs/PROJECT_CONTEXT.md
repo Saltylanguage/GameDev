@@ -133,9 +133,12 @@ uncertainty or regression risk.
   closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
   loop, understandable Mutation effects, and bounded visual polish/UI
   integration. Josh accepted M1 using distributed retained evidence; later
-  changes may need retesting. S4 is Active from 2026-10-01: three-build Forest
-  Edge evidence plus the Desktop active-profile launch. A local profile-choice
-  save/restore foundation now exists, with per-profile currency, progression
+  changes may need retesting. S4 closed on 2026-10-15 with the matched-seed
+  research and Desktop active-profile launch foundation published; full
+  three-build in-game acceptance and independent review remain open. P1-032
+  returned to Backlog for Sim's launch-input review and a real app relaunch
+  check. A local profile-choice save/restore foundation now exists, with
+  per-profile currency, progression
   IDs, simulation ticks, and playtime; economy settlement remains deferred.
   Josh's next priority is Forest Edge simulation and upgrade content/balance;
   the [S5 proposal](Sprints/S5-proposal-2026-10-15.md) records candidate work

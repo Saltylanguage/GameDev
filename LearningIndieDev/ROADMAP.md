@@ -197,12 +197,15 @@ reserve; do not replace the reserve with new feature scope.
 
 ### Delivery schedule after Sprint 3
 
-S4 is Active. Later dates assume uninterrupted two-week cadence and remain
-forecast windows, not commitments.
+S4 closed on 2026-10-15 with the research and Desktop foundation published.
+Its original in-game strategy acceptance remains open. P1-032 returned to
+Backlog for Sim's launch-input review and a real save/exit/relaunch check;
+S4-04/05 remain Backlog. S5 is Proposed, with no selected cards or approved
+capacity yet. Later dates remain forecast windows, not commitments.
 
 | Sprint | Forecast dates | Primary outcome | Feature capacity | Reserve | Exit test |
 | --- | --- | --- | ---: | ---: | --- |
-| **S4 — Build identity and evidence (Active)** | 2026-10-01–2026-10-14 | Trailblazer, Warren, and Gardeners create distinct decisions in Forest Edge; the canonical Desktop starts from the active profile and current defaults. | 28h scheduled feature work across P1-032, F03, F07, and F11; local profile-choice save/restore and optional design spikes deferred | 8h | Three builds create distinct decisions under matched-seed evidence and pass in-game review; the Desktop launch uses the active profile without changing deterministic simulation behavior. Playable plant species remain on hold unless separately approved. |
+| **S4 — Build identity and evidence (Closed 2026-10-15)** | 2026-10-01–2026-10-14 | Trailblazer, Warren, and Gardeners create distinct decisions in Forest Edge; the canonical Desktop starts from the active profile and current defaults. | Historical plan: 28h scheduled feature work across P1-032, F03, F07, and F11; local profile-choice save/restore and optional design spikes deferred | 8h | Research and Desktop foundation published; four selected cards Done. The original in-game strategy acceptance and independent review remain open, and P1-032 was returned to Backlog. See the [closeout](docs/Sprints/S4-control-record.md#closeout--2026-10-15). |
 | **S5 — Forest Edge simulation and upgrades (Proposed)** | 2026-10-15–2026-10-28 | Make the first Forest Edge/Hare journey's simulation pressures and shared-skill choices understandable and meaningfully different in play. | Up to 32h of selected simulation, upgrade, matched-evidence, and review work; exact cards, owners, and estimates await kickoff | 8h | Frozen-input comparisons and an in-game review support explicit accept/revise decisions on selected behavior and upgrade content. See the [S5 proposal](docs/Sprints/S5-proposal-2026-10-15.md). |
 | **S6 — Persistence and first Genome** | 2026-10-29–2026-11-11 | One completed expedition changes a later expedition through settled, versioned progression. | Up to 32h across F06, F13, and F16 | 8h | The permanent Rabbit tree license and resettable upgrade allocation survive restart; active Hare upgrades apply to all Hare populations, and reset refunds Rabbit Data for a flat Research Data fee. |
 | **S7 — Vertical-slice integration** | 2026-11-12–2026-11-25 | An external player completes and replays the slice without developer help. | Up to 32h for integration and validation; only the accepted focused slices of F08, F09, and F16 may enter | 8h | M2 passes or the evidence produces a short prioritized revision plan. |
@@ -218,9 +221,9 @@ before M2.
 
 | ID | Feature | Priority | First useful slice | Effort | Landing window | Owner / reviewer | Scheduling state |
 | --- | --- | --- | --- | ---: | --- | --- | --- |
-| F01 | Expedition decision loop | Now | Implement six 10-second simulation-time rounds, rewards, confirmed End/no-Restart, and terminal outcomes | M | S3 | Josh / Sim | Active |
-| F02 | Phase decision moment | Now | Five readable frozen-boundary choices after rounds 1–5: one of three Mutations or Skip, with End and Continue | M | S3 | Josh / Sim | Active |
-| F03 | Mutation grammar and build identity | Now → Next | Close readability review, then prove three distinct Hare paths | XL | S2 closeout; S3 review; S4 depth | Josh / Sim | Active / horizon |
+| F01 | Expedition decision loop | Now | Implement six 10-second simulation-time rounds, rewards, confirmed End/no-Restart, and terminal outcomes | M | S3 | Josh / Sim | S3 foundation delivered; refinement follows balance evidence |
+| F02 | Phase decision moment | Now | Five readable frozen-boundary choices after rounds 1–5: one of three Mutations or Skip, with End and Continue | M | S3 | Josh / Sim | S3 foundation delivered; refinement follows balance evidence |
+| F03 | Mutation grammar and build identity | Now → Next | Close readability review, then prove three distinct Hare paths | XL | S2 closeout; S3 review; S4 research; S5 candidate | Josh / Sim | S4 research delivered; playable acceptance proposed |
 | F04 | Mutation and Genome tree presentation | Next | Author the first approved Genome content and make temporary/permanent tree language understandable before functional Genome actions | L | S5 content candidate; functional actions after their contract | Josh / UI reviewer | Proposed content / horizon |
 | F05 | Cause-and-effect phase summary | Now → Next | Explain one phase and one expedition outcome in player language | M | S3 foundation; refine alongside balance evidence | Josh / Sim | Horizon |
 | F06 | Economy and currency loop | Now → Next | Approve phase rewards, final settlement, temporary spending, and banked data | L | S5 content candidate; implementation after approved values and triggers | Josh / Sim | Proposed content / horizon |
@@ -230,7 +233,7 @@ before M2.
 | F10 | Biome mechanics expansion | Next → Later | Prove one biome pressure that changes viable plans | XL | S4 design; implementation post-M2 unless required by the slice | Josh / Sim | Horizon |
 | F11 | Scenario pressure | Next | Make Forest Edge support multiple readable responses | L | S5 simulation candidate | Josh / Sim | Proposed / horizon |
 | F12 | Collection and Field Notes | Next | Define seen, discovered, owned, researched, and secret states | L | S5 taxonomy; full surface post-M2 | Josh / UI reviewer | Horizon |
-| F13 | Expedition setup and home-base context | Next | Safe Lab-to-expedition-to-Lab route is complete; connect canonical Desktop launch to the active profile and current defaults; defer local choice persistence | L | S3 safe route complete; P1-032 in active S4; local save/restore unscheduled | Josh / Sim for launch inputs | Active foundation / S4 active |
+| F13 | Expedition setup and home-base context | Next | Safe Lab-to-expedition-to-Lab route and active-profile Desktop launch are implemented; finish P1-032 review and real exit/relaunch acceptance | L | S3 safe route complete; P1-032 deferred to Backlog at S4 closeout | Josh / Sim for launch inputs | Foundation published; acceptance open |
 | F14 | Readable visual language | Next | Lock board-scale hierarchy for terrain, roles, danger, selection, and effects | L | Current exploration; schedule after the simulation and upgrade review | Josh / art reviewer | Active exploration / horizon |
 | F15 | Audio and simulation feedback | Next | One rate-limited UI/simulation feedback palette | M | Unscheduled after the S5 priority change | Josh / audio reviewer TBD | Horizon |
 | F16 | Species Genome progression | Later, contract early | Implement the approved permanent Rabbit tree license and resettable allocation, starting with the versioned Fertile Droppings node | XL | P1-029 contract accepted; S6 implementation; S7 validation | Josh / Sim | Horizon |
@@ -327,7 +330,8 @@ belongs in the sprint control record and task board.
 - [Feature rationale and dependency triage](docs/GAME_FEATURE_ROADMAP_TRIAGE.md)
 - [Sprint 2 plan](docs/NEXT_WORK_BUCKET_PLAN.md)
 - [Closed Sprint 3 control record](docs/Sprints/S3-control-record.md)
-- [Active Sprint 4 control record](docs/Sprints/S4-control-record.md)
+- [Closed Sprint 4 control record](docs/Sprints/S4-control-record.md)
+- [Proposed Sprint 5 simulation and upgrades plan](docs/Sprints/S5-proposal-2026-10-15.md)
 - [Sprint 4 kickoff handoff](docs/handoffs/2026-10-01-codex-s4-kickoff.md)
 - [Mutation and Genome direction](docs/UPGRADE_SYSTEM_DIRECTION.md)
 - [Scientific data economy](docs/SCIENTIFIC_DATA_ECONOMY.md)

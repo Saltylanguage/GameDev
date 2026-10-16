@@ -1,15 +1,31 @@
 # Sprint 4 — Build Strategy Identity and Evidence
 
-> **Status:** Active; kickoff verified 2026-10-01 ([Trello control card](https://trello.com/c/Zn4UpBYc/118-sprint-4-control-record-build-identity-and-evidence))
+> **Status:** Closed 2026-10-15; kickoff verified 2026-10-01 ([Trello control card](https://trello.com/c/Zn4UpBYc/118-sprint-4-control-record-build-identity-and-evidence))
 > **Dates:** 2026-10-01–2026-10-14
 > **Cadence:** two weeks  
 > **Capacity:** Josh 20h; Sim 20h; 28h scheduled feature work, 8h protected integration/review reserve, and 4h unallocated
 
-This is the active S4 control record. Sprint 3 and M1 closed on 2026-09-29.
+This is the closed S4 control record. Sprint 3 and M1 closed on 2026-09-29.
 The kickoff selected five work cards, left S4-04/05 deferred in Backlog, and
 created the Trello control card linked above.
 See the [S4 kickoff handoff](../handoffs/2026-10-01-codex-s4-kickoff.md) for
 the board verification and next steps.
+
+## Closeout — 2026-10-15
+
+Josh approved closing S4 after reviewing the unfinished work. The Trello
+control card is in Done. S4-01, S4-02, S4-03, and S4-07 are Done; P1-032 was
+returned from Current Work to Backlog. S4-04/05 remain in Backlog. No work was
+silently added to S5, which remains Proposed pending a separate kickoff.
+
+The matched-seed research checkpoint, six shared Hare skills, opening-offer
+access, and the active-profile Desktop launch foundation were published. This
+administrative closeout does **not** claim the original three-build in-game
+acceptance or independent review passed. Sim's P1-032 launch-input review and a
+real application save/exit/relaunch check also remain open on that card. The
+next proposed work block concentrates on simulation and upgrade content and
+balance; see the [S5 proposal](S5-proposal-2026-10-15.md). The original scope,
+estimates, and kickoff decisions below are retained as the historical plan.
 
 ## Sprint outcome
 
@@ -145,7 +161,7 @@ defaults. Local profile-choice save/restore work is deferred outside S4.
   3h reserve. That is 28h feature work, the full 8h protected reserve, and 4h
   unallocated. Josh accepts the S4-02/03 estimates as planning assumptions.
 
-**Kickoff status:** S4 is Active. The 13-arm × 20-seed screen is complete,
+**Historical kickoff checkpoint:** S4 was Active. The 13-arm × 20-seed screen is complete,
 with corrected Threat Avoidance evidence retained. S4-03 still requires
 spatial behavior evidence, the in-game review, and a human accept/revise
 decision. Review any material capacity change while preserving the 8h reserve.
@@ -466,7 +482,7 @@ planned capacity is 36h against 40h, leaving 4h unallocated.
 - Broad species/scenario expansion and full reactive-ecology implementation
   remain out of scope. Any design spike must be small and must not displace the
   primary outcome or the 8h reserve.
-- S4 is Active. Complete the pilot before the full screen; revisit capacity if
+- At kickoff, S4 was Active. Complete the pilot before the full screen; revisit capacity if
   its measured effort materially changes the accepted estimates.
 
 ## Kickoff record — 2026-10-01
