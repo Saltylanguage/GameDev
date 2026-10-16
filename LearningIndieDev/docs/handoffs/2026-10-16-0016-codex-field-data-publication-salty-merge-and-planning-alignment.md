@@ -63,8 +63,12 @@ implementation or sprint kickoff occurred.
 - Live development-board readback on October 16: Current Work 0, Upcoming 0,
   In Progress 0, Blocked 0, Done 13, Backlog 26. S4 control is complete in Done;
   P1-032 is Backlog. No S5 control appeared in the board inventory. Publication
-  handoff belongs on the existing [player-agency reference](https://trello.com/c/lbwZtdrq),
-  preserving its description/status and leaving ticket creation for next review.
+  handoff was added to the existing [player-agency reference](https://trello.com/c/lbwZtdrq#comment-6ad1a594ab022e5276f3b6b1)
+  and the actual posted content read back. Its description/status were preserved;
+  ticket creation remains for next review. Screenshot:
+  `artifacts/integration-20261016-field-data/trello-publication.jpg`.
+- Planning/alignment publication `b3fb097` matched `origin/BevBranch` by full
+  remote SHA with ahead/behind `0/0`; incoming `341cc702` is an ancestor.
 
 ## Risks and incomplete work
 
