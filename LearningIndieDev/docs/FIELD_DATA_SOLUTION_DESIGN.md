@@ -3,6 +3,7 @@
 - **Document:** SDD-FD-001, draft 0.1
 - **Prepared:** 2026-10-15
 - **Source baseline:** `735b189c`, branch `BevBranch`, plus inspected local files
+- **Integration review:** 2026-10-16, merged `0928359` including `ProjectMain` through `341cc702`
 - **Product authority:** [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
 - **Process companion:** [Process Design, PDD-FD-001](FIELD_DATA_PROCESS_DESIGN.md)
 - **Status:** proposed technical design; types/APIs described as proposed do not exist yet
@@ -21,6 +22,14 @@ migration. All prices, strengths and reward schedules come from the baseline.
 The process document defines delivery stages FD-I01 through FD-I07.
 
 ## 2. Current implementation and integration seams
+
+The [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md) records
+the integration update: retain Salty's scrolling map and profile-v2 feature
+availability, reuse the new-journey Field Data reset, and keep the exact
+five-node test route explicit. These additions do not implement shops, the
+third simulation, ordered income or permanent reward settlement. No new profile
+schema migration is proposed by this Field Data slice; protect existing
+`UnlockedFeatureIds` along with the other banked state.
 
 The following entries are observed in source. They are not proposed filenames
 or runtime validation claims.

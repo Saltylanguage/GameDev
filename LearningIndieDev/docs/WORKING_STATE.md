@@ -5,6 +5,18 @@ become a master changelog.
 
 ## Current focus
 
+**October 16 publication, merge and plan alignment:** Bevin's Field Data work
+was published as `d178a62`; Salty's `ProjectMain` through `341cc702` is merged
+at `0928359`. The [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)
+maps overlap, implemented foundations, retained simulation work and decisions
+needed before tickets. S4 is Closed; S5 remains Proposed. The reviewed Field
+Data rules remain the first-test baseline; implementation and permanent economy
+are not approved merely by integrating these documents.
+Merged Clean checks: 340 EditMode passed; 45 PlayMode passed, 0 failed and four
+graphics-dependent tests skipped. Fresh visual/build acceptance and the 200-seed
+economy panel remain unperformed. See the
+[integration handoff](handoffs/2026-10-16-0016-codex-field-data-publication-salty-merge-and-planning-alignment.md).
+
 **October 16 PDD readability revision:** Section 4 of the
 [Process Design](FIELD_DATA_PROCESS_DESIGN.md#4-end-to-end-player-process) now
 uses a rendered journey/round overview and a separate round-6 table. The product

@@ -29,8 +29,9 @@ failed run can still unlock permanent availability once those rules are
 designed. Field Data carries through its phases and nodes; other currency
 types can leave a successful journey for Desktop Genome upgrades. Intended
 Field Data purchases include removing Hares, changing Fox and Plant counts in
-either direction, and buying a random event. Exact gates, prices, limits, and
-the first implementation slice remain open. The 100-rabbit Burrow Genome
+either direction, and buying a random event. Gates, prices, limits and the
+first slice were open at that meeting; the October 15 Field Data design at the
+top of this document now defines its test scope. The 100-rabbit Burrow Genome
 unlock is an illustrative example, not an approved condition. See the
 [October 14 meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 

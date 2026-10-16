@@ -2,6 +2,12 @@
 
 Status: On hold at Bevin's request, 2026-10-15. No kickoff or Trello changes.
 
+**Integration note, 2026-10-16:** Salty's
+[S5 proposal](S5-proposal-2026-10-15.md) and the
+[combined planning draft](../FIELD_DATA_AND_SIMULATION_ALIGNMENT.md) are the
+next review inputs. S4 subsequently closed and P1-032 returned to Backlog.
+The board snapshot and candidates below remain historical, not current status.
+
 Bevin stopped this planning exercise and intends to leave sprint planning to
 Salty. His immediate focus is the currency/journey loop and how the simulation
 plays out; that work can be folded into Salty's planning. This records Bevin's

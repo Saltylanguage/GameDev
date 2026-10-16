@@ -38,12 +38,17 @@ These are reviewed design requirements and provisional test settings, not
 implemented behavior or balance evidence. The historical proposals below are
 retained for provenance and do not override the standalone first-slice design.
 
-## Historical economy direction — through 2026-10-01
+## Earlier economy context — October 1–15, 2026
 
 The following sections preserve earlier categories and proposals. Use the
 October 15 Field Data direction above for journey earning, spending and loss.
 Do not treat the older general-data/Lab transfer text as the current Field
 Data contract or infer final permanent currency names from it.
+
+The [October 16 combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)
+distinguishes the defined first Field Data test from Salty's broader permanent
+economy proposals. Questions below about the first FD purchase set or gate are
+historical; separate permanent-wallet/content decisions remain open.
 
 > **Progression update — 2026-10-01:** The current direction is a permanent
 > whole-species Genome-tree unlock followed by resettable upgrade allocation;

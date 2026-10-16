@@ -13,6 +13,13 @@
 
 ## Promise
 
+**First-test planning update, 2026-10-16:** The
+[Field Data baseline](FIELD_DATA_JOURNEY_DESIGN.md) defines the five-node
+economy test; the [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)
+maps it to the simulation/upgrade proposal and identifies the roadmap terminology
+review still needed. Earlier standalone wording below does not imply that the
+new journey economy or permanent reward system is implemented.
+
 **Cellular automata as a roguelike:** the player guides one species through a
 short, deterministic ecosystem expedition by choosing temporary **Mutations**,
 then watches those choices reshape survival, movement, feeding, reproduction,

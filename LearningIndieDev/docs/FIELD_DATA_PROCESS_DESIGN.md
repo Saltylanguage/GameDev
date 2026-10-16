@@ -27,6 +27,11 @@ rewards/conversion, external-player research and additional content are deferred
 
 ## 2. Starting point and required change
 
+The [October 16 plan alignment](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md) includes
+Salty's map, profile-feature storage and new-journey currency reset. Reuse these
+foundations while delivering the missing Field Data loop; the stages below do
+not ask the team to reimplement them.
+
 Current source already provides continuous simulation boundaries, a journey-local
 wallet, free species upgrades, a seeded Add Hare path and a Noesis journey UI.
 It does not implement the complete approved Field Data slice.

@@ -19,6 +19,11 @@ Sprint planning remains with Salty; this design assigns no sprint or deadline.
 
 ## Implementation design drafts
 
+The [October 16 combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)
+maps this baseline to Salty's simulation/upgrade proposal and merged foundations.
+It keeps sprint selection and broader product decisions separate from these
+first-test rules.
+
 The [Process Design, PDD-FD-001](FIELD_DATA_PROCESS_DESIGN.md) describes the
 player process, implementation stages and evidence needed for delivery. The
 [Solution Design, SDD-FD-001](FIELD_DATA_SOLUTION_DESIGN.md) proposes the code,
@@ -564,6 +569,14 @@ price the first loop around an undecided permanent-currency conversion.
 
 Audit date: 2026-10-15. Source baseline: `735b189c`; relevant code was
 inspected locally. These observations do not establish runtime acceptance.
+
+**Integration refresh, 2026-10-16:** `ProjectMain` through `341cc702` is now
+merged. `PlayNextSimulation` clears carried Field Data for a new journey while
+retaining standalone carryover; the profile now stores permanent feature IDs,
+and the scrolling map has 29 markers/35 connections. The dated audit below
+describes the earlier revision. The complete five-node economy and settlement
+contract remains implementation work; see the
+[combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md).
 
 
 This is a source inspection of the current prototype, not runtime or test

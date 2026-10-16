@@ -103,8 +103,9 @@ uncertainty or regression risk.
   leave a successful journey for Desktop Genome
   upgrades. Intended Field Data purchases include removing Hares, changing
   Fox and Plant populations in either direction, and buying a random event.
-  Costs, limits, exact permanent wallets, and the first implementation slice
-  remain open. The 100-rabbit Burrow Genome unlock is a hypothetical example,
+  Costs, limits and first-slice scope were open at that meeting; the October 15
+  Field Data baseline below now defines them for its test. Exact permanent
+  wallets remain open. The 100-rabbit Burrow Genome unlock is a hypothetical example,
   not an approved requirement. See the
   [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions).
 
