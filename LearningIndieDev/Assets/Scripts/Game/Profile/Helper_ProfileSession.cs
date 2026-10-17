@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace SaltyGame
@@ -8,7 +9,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 2;
+        const int StoreVersion = 3;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -19,6 +20,15 @@ namespace SaltyGame
             public string speciesId;
             public List<string> unlockedNodeIds = new List<string>();
             public List<string> activeNodeIds = new List<string>();
+            public List<GenomeAllocationRecord> allocations = new List<GenomeAllocationRecord>();
+        }
+
+        [Serializable]
+        sealed class GenomeAllocationRecord
+        {
+            public string nodeId;
+            public long rabbitDataSpent;
+            public int capacityPoints;
         }
 
         [Serializable]
@@ -28,6 +38,10 @@ namespace SaltyGame
             public string name;
             public List<GenomeProfileRecord> genomeProfiles = new List<GenomeProfileRecord>();
             public long currency;
+            public long rabbitData;
+            public long researchData;
+            public int completedRuns;
+            public List<string> completedRunIds = new List<string>();
             public long simulationTicks;
             public long playTimeMilliseconds;
             public List<string> unlockedSpeciesIds = new List<string>();
@@ -272,6 +286,181 @@ namespace SaltyGame
             CommitCurrent(Current.WithUnlockedFeature(featureId));
         }
 
+        public void AddRabbitData(long amount)
+        {
+            if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(
+                checked(Current.RabbitData + amount), Current.ResearchData, Current.CompletedRuns));
+        }
+
+        public void AddResearchData(long amount)
+        {
+            if (amount < 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            RequireLoadedProfile();
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(
+                Current.RabbitData, checked(Current.ResearchData + amount), Current.CompletedRuns));
+        }
+
+        // The journey/result flow supplies a stable completion id on settlement.
+        public bool RecordCompletedRun(string completionId)
+        {
+            if (string.IsNullOrWhiteSpace(completionId))
+                throw new ArgumentException("A completed run id is required.", nameof(completionId));
+            RequireLoadedProfile();
+            var normalizedId = completionId.Trim();
+            if (Current.CompletedRunIds.Contains(normalizedId))
+                return false;
+
+            var completedRunIds = new List<string>(Current.CompletedRunIds) { normalizedId };
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(
+                Current.RabbitData, Current.ResearchData, checked(Current.CompletedRuns + 1),
+                nextCompletedRunIds: completedRunIds));
+            return true;
+        }
+
+        public bool TryPurchaseRabbitGenomeLicense(long rabbitDataPrice, out string reason)
+        {
+            reason = string.Empty;
+            if (rabbitDataPrice <= 0) throw new ArgumentOutOfRangeException(nameof(rabbitDataPrice));
+            if (!Current.HasLoadedProfile || !Current.GeneLabUnlocked)
+            {
+                reason = "The Gene Lab requires three completed runs on a loaded profile.";
+                return false;
+            }
+
+            var hare = new SpeciesId("hare");
+            if (Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                reason = "Rabbit Genome access is already owned.";
+                return false;
+            }
+
+            if (Current.RabbitData < rabbitDataPrice)
+            {
+                reason = "Not enough Rabbit Data.";
+                return false;
+            }
+
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - rabbitDataPrice,
+                Current.ResearchData, Current.CompletedRuns, unlockRabbitTree: true));
+            return true;
+        }
+
+        public bool TryPurchaseRabbitGenomeNode(
+            SpeciesGenomeMapSnapshot map,
+            string nodeId,
+            long rabbitDataPrice,
+            int capacityPoints,
+            out string reason)
+        {
+            reason = string.Empty;
+            if (rabbitDataPrice <= 0) throw new ArgumentOutOfRangeException(nameof(rabbitDataPrice));
+            if (capacityPoints < 1 || capacityPoints > GenomeContract.ActiveCapacity)
+                throw new ArgumentOutOfRangeException(nameof(capacityPoints));
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            var hare = new SpeciesId("hare");
+            if (map.SpeciesId != hare || string.IsNullOrWhiteSpace(nodeId)
+                || !map.TryGetNode(nodeId, out var node))
+            {
+                reason = "The node must belong to the Rabbit Genome catalog.";
+                return false;
+            }
+
+            if (!Current.HasLoadedProfile || !Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                reason = "Rabbit Genome access is required.";
+                return false;
+            }
+
+            Current.TryGetGenomeProfile(hare, out var profile);
+            if (profile != null && profile.IsNodeActive(node.Id))
+            {
+                reason = "The Genome node is already active.";
+                return false;
+            }
+
+            foreach (var prerequisite in node.PrerequisiteNodeIds)
+            {
+                if (profile == null || !profile.IsNodeActive(prerequisite))
+                {
+                    reason = $"The prerequisite Genome node '{prerequisite}' must be active.";
+                    return false;
+                }
+            }
+
+            if ((profile?.CapacityUsed ?? 0) + capacityPoints > GenomeContract.ActiveCapacity)
+            {
+                reason = "The active Genome has no room for this node.";
+                return false;
+            }
+
+            if (Current.RabbitData < rabbitDataPrice)
+            {
+                reason = "Not enough Rabbit Data.";
+                return false;
+            }
+
+            var active = profile == null ? new List<string>() : new List<string>(profile.ActiveNodeIds);
+            var allocations = profile == null
+                ? new List<GenomeNodeAllocation>()
+                : new List<GenomeNodeAllocation>(profile.Allocations);
+            active.Add(node.Id);
+            allocations.Add(new GenomeNodeAllocation(node.Id, rabbitDataPrice, capacityPoints));
+            var nextProfile = new SpeciesGenomeProfile(hare, profile?.UnlockedNodeIds, active, allocations);
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - rabbitDataPrice,
+                Current.ResearchData, Current.CompletedRuns, nextProfile));
+            return true;
+        }
+
+        public bool TryResetRabbitGenome(long researchDataFee, out string reason)
+        {
+            reason = string.Empty;
+            if (researchDataFee <= 0) throw new ArgumentOutOfRangeException(nameof(researchDataFee));
+            var hare = new SpeciesId("hare");
+            if (!Current.HasLoadedProfile || !Current.UnlockedGenomeSpeciesIds.Contains(hare)
+                || !Current.TryGetGenomeProfile(hare, out var profile)
+                || profile.ActiveNodeIds.Count == 0)
+            {
+                reason = "There is no active Rabbit Genome allocation to reset.";
+                return false;
+            }
+
+            if (Current.ResearchData < researchDataFee)
+            {
+                reason = "Not enough Research Data.";
+                return false;
+            }
+
+            long refund = 0;
+            long rabbitData;
+            try
+            {
+                foreach (var allocation in profile.Allocations)
+                {
+                    refund = checked(refund + allocation.RabbitDataSpent);
+                }
+
+                rabbitData = checked(Current.RabbitData + refund);
+            }
+            catch (OverflowException)
+            {
+                reason = "The Rabbit Data refund exceeds the wallet limit.";
+                return false;
+            }
+
+            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds);
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(rabbitData,
+                Current.ResearchData - researchDataFee, Current.CompletedRuns, nextProfile));
+            return true;
+        }
+
         void Load()
         {
             profiles.Clear();
@@ -342,12 +531,28 @@ namespace SaltyGame
                                 continue;
                             }
 
+                            var allocations = new List<GenomeNodeAllocation>();
+                            if (genomeRecord.allocations != null)
+                            {
+                                foreach (var allocation in genomeRecord.allocations)
+                                {
+                                    if (allocation == null) throw new ArgumentException("Null Genome allocation.");
+                                    allocations.Add(new GenomeNodeAllocation(allocation.nodeId,
+                                        allocation.rabbitDataSpent, allocation.capacityPoints));
+                                }
+                            }
+
                             genomeProfiles.Add(new SpeciesGenomeProfile(
                                 genomeSpeciesId,
                                 genomeRecord.unlockedNodeIds,
-                                genomeRecord.activeNodeIds));
+                                genomeRecord.activeNodeIds,
+                                allocations));
                         }
                         catch (ArgumentException)
+                        {
+                            invalidProfileFound = true;
+                        }
+                        catch (OverflowException)
                         {
                             invalidProfileFound = true;
                         }
@@ -368,7 +573,11 @@ namespace SaltyGame
                             ? new[] { new SpeciesId("hare") }
                             : ParseSpeciesIds(record.unlockedSpeciesIds),
                         ParseSpeciesIds(record.unlockedGenomeSpeciesIds),
-                        record.unlockedFeatureIds));
+                        record.unlockedFeatureIds,
+                        record.rabbitData,
+                        record.researchData,
+                        record.completedRuns,
+                        record.completedRunIds));
                 }
                 catch (ArgumentException)
                 {
@@ -423,6 +632,13 @@ namespace SaltyGame
             try
             {
                 Flush();
+                if (Current.TryGetGenomeProfile(speciesId, out var existingProfile)
+                    && existingProfile.Allocations.Count > 0)
+                {
+                    validationMessage = "Purchased Genome allocations must be changed through purchase or reset.";
+                    return false;
+                }
+
                 var nextProfile = Current.WithGenomeProfile(new SpeciesGenomeProfile(
                     speciesId,
                     unlockedNodeIds,
@@ -453,6 +669,10 @@ namespace SaltyGame
                     id = profile.ProfileId,
                     name = profile.ProfileName,
                     currency = profile.Currency,
+                    rabbitData = profile.RabbitData,
+                    researchData = profile.ResearchData,
+                    completedRuns = profile.CompletedRuns,
+                    completedRunIds = new List<string>(profile.CompletedRunIds),
                     simulationTicks = profile.SimulationTicks,
                     playTimeMilliseconds = profile.PlayTimeMilliseconds,
                     unlockedSpeciesIds = ToStrings(profile.UnlockedSpeciesIds),
@@ -469,6 +689,16 @@ namespace SaltyGame
                         unlockedNodeIds = new List<string>(genomeProfile.UnlockedNodeIds),
                         activeNodeIds = new List<string>(genomeProfile.ActiveNodeIds),
                     });
+                    var genomeRecord = record.genomeProfiles[record.genomeProfiles.Count - 1];
+                    foreach (var allocation in genomeProfile.Allocations)
+                    {
+                        genomeRecord.allocations.Add(new GenomeAllocationRecord
+                        {
+                            nodeId = allocation.NodeId,
+                            rabbitDataSpent = allocation.RabbitDataSpent,
+                            capacityPoints = allocation.CapacityPoints,
+                        });
+                    }
                 }
             }
 

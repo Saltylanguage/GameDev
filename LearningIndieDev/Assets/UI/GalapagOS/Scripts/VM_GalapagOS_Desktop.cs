@@ -12,6 +12,7 @@ namespace SaltyGame
     {
         [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
         [SerializeField] string genomeSpeciesId = "hare";
+        Helper_ProfileSession profileSession;
 
         public DelegateCommand OpenDesktopIconCommand { get; private set; }
         public DelegateCommand CloseDesktopAppCommand { get; private set; }
@@ -61,6 +62,11 @@ namespace SaltyGame
         public void BindSimulationLauncher(Action launch)
         {
             simulationLauncher = launch;
+        }
+
+        public void BindProfileSession(Helper_ProfileSession session)
+        {
+            profileSession = session;
         }
 
         void Awake()
@@ -188,6 +194,7 @@ namespace SaltyGame
                 genomeCatalogProvider == null
                     ? GenomeCatalogSnapshot.Empty
                     : genomeCatalogProvider.Snapshot,
+                profile: profileSession?.Current,
                 selectedSpecies: selectedSpecies);
         }
 

@@ -12,6 +12,7 @@ namespace SaltyGame
         readonly IReadOnlyList<SpeciesId> unlockedSpeciesIds;
         readonly IReadOnlyList<SpeciesId> unlockedGenomeSpeciesIds;
         readonly IReadOnlyList<string> unlockedFeatureIds;
+        readonly IReadOnlyList<string> completedRunIds;
 
         public bool HasLoadedProfile { get; }
         public string ProfileId { get; }
@@ -20,7 +21,12 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesId> UnlockedSpeciesIds => unlockedSpeciesIds;
         public IReadOnlyList<SpeciesId> UnlockedGenomeSpeciesIds => unlockedGenomeSpeciesIds;
         public IReadOnlyList<string> UnlockedFeatureIds => unlockedFeatureIds;
+        public IReadOnlyList<string> CompletedRunIds => completedRunIds;
         public long Currency { get; }
+        public long RabbitData { get; }
+        public long ResearchData { get; }
+        public int CompletedRuns { get; }
+        public bool GeneLabUnlocked => CompletedRuns >= 3;
         public long SimulationTicks { get; }
         public long PlayTimeMilliseconds { get; }
         public double HoursPlayed => PlayTimeMilliseconds / 3600000d;
@@ -35,11 +41,20 @@ namespace SaltyGame
             long playTimeMilliseconds = 0,
             IEnumerable<SpeciesId> unlockedSpeciesIds = null,
             IEnumerable<SpeciesId> unlockedGenomeSpeciesIds = null,
-            IEnumerable<string> unlockedFeatureIds = null)
+            IEnumerable<string> unlockedFeatureIds = null,
+            long rabbitData = 0,
+            long researchData = 0,
+            int completedRuns = 0,
+            IEnumerable<string> completedRunIds = null)
         {
             if (currency < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(currency));
+            }
+
+            if (rabbitData < 0 || researchData < 0 || completedRuns < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rabbitData), "Genome balances and completed runs cannot be negative.");
             }
 
             if (simulationTicks < 0)
@@ -56,11 +71,19 @@ namespace SaltyGame
             ProfileId = profileId ?? string.Empty;
             ProfileName = profileName ?? string.Empty;
             Currency = currency;
+            RabbitData = rabbitData;
+            ResearchData = researchData;
+            CompletedRuns = completedRuns;
             SimulationTicks = simulationTicks;
             PlayTimeMilliseconds = playTimeMilliseconds;
             this.unlockedSpeciesIds = CopySpeciesIds(unlockedSpeciesIds, nameof(unlockedSpeciesIds));
             this.unlockedGenomeSpeciesIds = CopySpeciesIds(unlockedGenomeSpeciesIds, nameof(unlockedGenomeSpeciesIds));
             this.unlockedFeatureIds = CopyFeatureIds(unlockedFeatureIds);
+            this.completedRunIds = CopyFeatureIds(completedRunIds, "Completed run");
+            if (this.completedRunIds.Count > completedRuns)
+            {
+                throw new ArgumentException("Completed run ids cannot exceed the recorded run count.", nameof(completedRunIds));
+            }
 
             var copiedGenomeProfiles = new List<SpeciesGenomeProfile>();
             var seenSpecies = new HashSet<SpeciesId>();
@@ -135,7 +158,7 @@ namespace SaltyGame
                     PlayTimeMilliseconds,
                     unlockedSpeciesIds,
                     unlockedGenomeSpeciesIds,
-                    unlockedFeatureIds);
+                    unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
             }
 
             nextProfiles.Add(nextProfile);
@@ -149,28 +172,28 @@ namespace SaltyGame
                 PlayTimeMilliseconds,
                 unlockedSpeciesIds,
                 unlockedGenomeSpeciesIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithLoaded(bool isLoaded)
         {
             return new ProfileSessionSnapshot(isLoaded, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithCurrency(long amount)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 amount, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithTime(long simulationTicks, long playTimeMilliseconds)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, simulationTicks, playTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithUnlockedSpecies(SpeciesId speciesId)
@@ -188,7 +211,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, nextIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithUnlockedGenome(SpeciesId speciesId)
@@ -206,7 +229,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, nextIds,
-                unlockedFeatureIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
         }
 
         public ProfileSessionSnapshot WithUnlockedFeature(string featureId)
@@ -224,7 +247,27 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds,
-                unlockedGenomeSpeciesIds, nextIds);
+                unlockedGenomeSpeciesIds, nextIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+        }
+
+        public ProfileSessionSnapshot WithGenomeEconomy(
+            long rabbitData,
+            long researchData,
+            int completedRuns,
+            SpeciesGenomeProfile genomeProfile = null,
+            bool unlockRabbitTree = false,
+            IEnumerable<string> nextCompletedRunIds = null)
+        {
+            var next = genomeProfile == null ? this : WithGenomeProfile(genomeProfile);
+            if (unlockRabbitTree)
+            {
+                next = next.WithUnlockedGenome(new SpeciesId("hare"));
+            }
+
+            return new ProfileSessionSnapshot(next.HasLoadedProfile, next.ProfileId, next.ProfileName,
+                next.GenomeProfiles, next.Currency, next.SimulationTicks, next.PlayTimeMilliseconds,
+                next.UnlockedSpeciesIds, next.UnlockedGenomeSpeciesIds, next.UnlockedFeatureIds,
+                rabbitData, researchData, completedRuns, nextCompletedRunIds ?? completedRunIds);
         }
 
         static IReadOnlyList<SpeciesId> CopySpeciesIds(IEnumerable<SpeciesId> ids, string parameterName)
@@ -247,7 +290,7 @@ namespace SaltyGame
             return copied.AsReadOnly();
         }
 
-        static IReadOnlyList<string> CopyFeatureIds(IEnumerable<string> ids)
+        static IReadOnlyList<string> CopyFeatureIds(IEnumerable<string> ids, string label = "Feature")
         {
             var copied = new List<string>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
@@ -257,7 +300,7 @@ namespace SaltyGame
                 {
                     if (string.IsNullOrWhiteSpace(id) || !seen.Add(id))
                     {
-                        throw new ArgumentException("Feature ids must be non-empty and unique.", nameof(ids));
+                        throw new ArgumentException($"{label} ids must be non-empty and unique.", nameof(ids));
                     }
 
                     copied.Add(id);

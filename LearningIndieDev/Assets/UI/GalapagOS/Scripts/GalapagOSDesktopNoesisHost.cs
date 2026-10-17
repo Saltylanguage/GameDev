@@ -71,6 +71,7 @@ namespace SaltyGame
 
             view.Content.DataContext = viewModel;
             viewModel.BindSimulationLauncher(OpenSimulation);
+            viewModel.BindProfileSession(profileSession);
             var hasProfileRoute = Helper_SceneTransition.TryConsumeDesktopProfile(out var profileId);
             if (hasProfileRoute
                 && (profileSession == null

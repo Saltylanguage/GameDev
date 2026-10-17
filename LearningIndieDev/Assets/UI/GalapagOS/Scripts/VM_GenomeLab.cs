@@ -225,7 +225,7 @@ namespace SaltyGame
                 return $"0 / {GenomeContract.ActiveCapacity}";
             }
 
-            return $"{speciesProfile.ActiveNodeIds.Count} / {GenomeContract.ActiveCapacity}";
+            return $"{speciesProfile.CapacityUsed} / {GenomeContract.ActiveCapacity}";
         }
 
         void OnPropertyChanged([CallerMemberName] string propertyName = "")

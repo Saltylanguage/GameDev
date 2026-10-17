@@ -18,19 +18,51 @@ namespace SaltyGame
         public const int ActiveCapacity = 8;
     }
 
+    /// <summary>Receipt for one resettable active Genome purchase.</summary>
+    public sealed class GenomeNodeAllocation
+    {
+        public GenomeNodeAllocation(string nodeId, long rabbitDataSpent, int capacityPoints)
+        {
+            if (string.IsNullOrWhiteSpace(nodeId))
+            {
+                throw new ArgumentException("A Genome node id is required.", nameof(nodeId));
+            }
+
+            if (rabbitDataSpent <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(rabbitDataSpent));
+            }
+
+            if (capacityPoints < 1 || capacityPoints > GenomeContract.ActiveCapacity)
+            {
+                throw new ArgumentOutOfRangeException(nameof(capacityPoints));
+            }
+
+            NodeId = nodeId.Trim();
+            RabbitDataSpent = rabbitDataSpent;
+            CapacityPoints = capacityPoints;
+        }
+
+        public string NodeId { get; }
+        public long RabbitDataSpent { get; }
+        public int CapacityPoints { get; }
+    }
+
     /// <summary>
-    /// Persistent profile state for one species. Unlocked nodes are permanent;
-    /// active nodes are the reassignable configuration for the next run.
+    /// Persistent profile state for one species. UnlockedNodeIds preserves legacy
+    /// permanent unlocks; purchased allocations are resettable.
     /// </summary>
     public sealed class SpeciesGenomeProfile
     {
         readonly IReadOnlyList<string> unlockedNodeIds;
         readonly IReadOnlyList<string> activeNodeIds;
+        readonly IReadOnlyList<GenomeNodeAllocation> allocations;
 
         public SpeciesGenomeProfile(
             SpeciesId speciesId,
             IEnumerable<string> unlockedNodeIds = null,
-            IEnumerable<string> activeNodeIds = null)
+            IEnumerable<string> activeNodeIds = null,
+            IEnumerable<GenomeNodeAllocation> allocations = null)
         {
             if (!speciesId.IsValid)
             {
@@ -40,22 +72,67 @@ namespace SaltyGame
             SpeciesId = speciesId;
             this.unlockedNodeIds = CopyIds(unlockedNodeIds, nameof(unlockedNodeIds));
             this.activeNodeIds = CopyIds(activeNodeIds, nameof(activeNodeIds));
+            var copiedAllocations = new List<GenomeNodeAllocation>();
+            var allocatedIds = new HashSet<string>(StringComparer.Ordinal);
+            var capacityUsed = 0;
+            if (allocations != null)
+            {
+                foreach (var allocation in allocations)
+                {
+                    if (allocation == null || !allocatedIds.Add(allocation.NodeId))
+                    {
+                        throw new ArgumentException("Genome allocations must be non-null and unique.", nameof(allocations));
+                    }
+
+                    capacityUsed = checked(capacityUsed + allocation.CapacityPoints);
+                    copiedAllocations.Add(allocation);
+                }
+            }
+
+            this.allocations = new ReadOnlyCollection<GenomeNodeAllocation>(copiedAllocations);
 
             var unlocked = new HashSet<string>(this.unlockedNodeIds, StringComparer.Ordinal);
             foreach (var nodeId in this.activeNodeIds)
             {
-                if (!unlocked.Contains(nodeId))
+                if (!unlocked.Contains(nodeId) && !allocatedIds.Contains(nodeId))
                 {
                     throw new ArgumentException(
-                        $"Active Genome node '{nodeId}' is not permanently unlocked.",
+                        $"Active Genome node '{nodeId}' is neither a legacy unlock nor an allocation.",
                         nameof(activeNodeIds));
                 }
             }
+
+            foreach (var allocation in copiedAllocations)
+            {
+                if (!Contains(this.activeNodeIds, allocation.NodeId))
+                {
+                    throw new ArgumentException("Every purchased Genome allocation must be active.", nameof(allocations));
+                }
+            }
+
+            // Legacy selections predate priced capacity records. Count each as one
+            // point for new purchases without rejecting existing saves on load.
+            foreach (var nodeId in this.activeNodeIds)
+            {
+                if (!allocatedIds.Contains(nodeId))
+                {
+                    capacityUsed = checked(capacityUsed + 1);
+                }
+            }
+
+            if (copiedAllocations.Count > 0 && capacityUsed > GenomeContract.ActiveCapacity)
+            {
+                throw new ArgumentException("Purchased Genome allocations exceed active capacity.", nameof(allocations));
+            }
+
+            CapacityUsed = capacityUsed;
         }
 
         public SpeciesId SpeciesId { get; }
         public IReadOnlyList<string> UnlockedNodeIds => unlockedNodeIds;
         public IReadOnlyList<string> ActiveNodeIds => activeNodeIds;
+        public IReadOnlyList<GenomeNodeAllocation> Allocations => allocations;
+        public int CapacityUsed { get; }
 
         public bool IsNodeUnlocked(string nodeId)
         {
@@ -71,7 +148,7 @@ namespace SaltyGame
 
         public SpeciesGenomeProfile WithActiveNodeIds(IEnumerable<string> nextActiveNodeIds)
         {
-            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds);
+            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations);
         }
 
         public SpeciesGenomeSnapshot CreateSnapshot()

@@ -5,6 +5,15 @@ become a master changelog.
 
 ## Current focus
 
+**October 17 Rabbit Genome foundation:** The profile/save and transaction code
+for the accepted P1-029 Rabbit tree contract is implemented locally. It adds
+distinct Rabbit/Research Data, an idempotent completed-run gate, permanent tree
+access purchase, resettable node allocations with eight-point capacity, and
+refund receipts. Focused EditMode 13/13 and Gene Lab PlayMode 1/1 passed. The
+[handoff](handoffs/2026-10-17-1025-codex-rabbit-genome-profile-economy-foundation.md)
+records migration behavior and the remaining journey/UI seams. Fertile
+Droppings' authored offer and effect details are the next design boundary.
+
 **October 16 S5 product goalpost:** Josh wants a much more solid Forest Edge
 simulation and a playable demonstration that the loop could become a fun,
 engaging game. The [playability goalpost](Sprints/S5-playability-goalpost-2026-10-16.md)

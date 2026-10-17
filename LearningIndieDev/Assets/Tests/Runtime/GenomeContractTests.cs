@@ -302,6 +302,121 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void RabbitGenomePurchasesResetAndReloadPreserveTheRightBalances()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.Save();
+            GameObject sessionObject = null;
+            GameObject reloadedObject = null;
+            try
+            {
+                sessionObject = new GameObject("Rabbit Genome Economy");
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                var firstId = session.CreateProfile("Rabbit").ProfileId;
+                session.AddRabbitData(100);
+                session.AddResearchData(10);
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(10, out _), Is.False);
+                Assert.That(session.RecordCompletedRun("run-1"), Is.True);
+                Assert.That(session.RecordCompletedRun("run-1"), Is.False);
+                Assert.That(session.RecordCompletedRun("run-2"), Is.True);
+                Assert.That(session.RecordCompletedRun("run-3"), Is.True);
+                Assert.That(session.Current.GeneLabUnlocked, Is.True);
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(10, out var reason), Is.True, reason);
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(10, out _), Is.False);
+
+                var hare = new SpeciesId("hare");
+                var root = new GenomeUpgradeNodeSnapshot("hare.root", "Root", "Root", hare);
+                var branch = new GenomeUpgradeNodeSnapshot("hare.branch", "Branch", "Branch",
+                    hare, new[] { "hare.root" });
+                var map = new SpeciesGenomeMapSnapshot(hare, new[] { root, branch });
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 1, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, root.Id, 20, 3, out reason), Is.True, reason);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, root.Id, 20, 3, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 6, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 5, out reason), Is.True, reason);
+                Assert.That(session.Current.RabbitData, Is.EqualTo(65));
+                Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+                Assert.That(genome.CapacityUsed, Is.EqualTo(8));
+                Assert.That(genome.Allocations.Count, Is.EqualTo(2));
+                Assert.That(session.TrySetGenomeConfiguration(hare, new[] { root.Id },
+                    new[] { root.Id }, out _), Is.False);
+
+                var secondId = session.CreateProfile("Second").ProfileId;
+                Assert.That(session.Current.RabbitData, Is.Zero);
+                Assert.That(session.Current.ResearchData, Is.Zero);
+                Assert.That(session.Current.CompletedRuns, Is.Zero);
+                Assert.That(session.SelectProfile(firstId), Is.True);
+
+                reloadedObject = new GameObject("Reloaded Rabbit Genome Economy");
+                var reloaded = reloadedObject.AddComponent<Helper_ProfileSession>();
+                reloaded.Reload();
+                reloaded.SetPlaytimeTracking(false);
+                Assert.That(reloaded.Current.ProfileId, Is.EqualTo(firstId));
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(65));
+                Assert.That(reloaded.Current.ResearchData, Is.EqualTo(10));
+                Assert.That(reloaded.Current.CompletedRuns, Is.EqualTo(3));
+                Assert.That(reloaded.RecordCompletedRun("run-1"), Is.False);
+                Assert.That(reloaded.Current.CompletedRuns, Is.EqualTo(3));
+                Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+                Assert.That(genome.Allocations.Count, Is.EqualTo(2));
+                Assert.That(reloaded.TryResetRabbitGenome(11, out _), Is.False);
+                Assert.That(reloaded.TryResetRabbitGenome(3, out reason), Is.True, reason);
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(90));
+                Assert.That(reloaded.Current.ResearchData, Is.EqualTo(7));
+                Assert.That(reloaded.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+                Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+                Assert.That(genome.ActiveNodeIds, Is.Empty);
+                Assert.That(reloaded.TryResetRabbitGenome(3, out _), Is.False);
+                Assert.That(reloaded.SelectProfile(secondId), Is.True);
+                Assert.That(reloaded.Current.RabbitData, Is.Zero);
+            }
+            finally
+            {
+                if (sessionObject != null) Object.DestroyImmediate(sessionObject);
+                if (reloadedObject != null) Object.DestroyImmediate(reloadedObject);
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void VersionTwoGenomeSaveKeepsLegacyNodesAndStartsNewEconomyAtZero()
+        {
+            const string versionTwo =
+                "{\"version\":2,\"profiles\":[{\"id\":\"v2\",\"name\":\"Old\",\"currency\":14,"
+                + "\"genomeProfiles\":[{\"speciesId\":\"hare\",\"unlockedNodeIds\":[\"hare.old\"],"
+                + "\"activeNodeIds\":[\"hare.old\"]}]}],\"lastLoadedProfileId\":\"v2\"}";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, versionTwo);
+            PlayerPrefs.Save();
+            GameObject sessionObject = null;
+            try
+            {
+                sessionObject = new GameObject("Version Two Genome Profile");
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.Reload();
+                session.SetPlaytimeTracking(false);
+                Assert.That(session.Current.Currency, Is.EqualTo(14));
+                Assert.That(session.Current.RabbitData, Is.Zero);
+                Assert.That(session.Current.ResearchData, Is.Zero);
+                Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out var genome), Is.True);
+                Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.old" }));
+                session.AddRabbitData(2);
+                session.Reload();
+                Assert.That(session.Current.RabbitData, Is.EqualTo(2));
+                Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out genome), Is.True);
+                Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "hare.old" }));
+                Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.old" }));
+            }
+            finally
+            {
+                if (sessionObject != null) Object.DestroyImmediate(sessionObject);
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
         public void ProfileSessionLoadsLegacyProfileWithoutLosingItsIdentity()
         {
             PlayerPrefs.SetString(Helper_ProfileSession.StoreKey,
