@@ -5,6 +5,17 @@ become a master changelog.
 
 ## Current focus
 
+**October 21 publication and closeout:** All FD-T01–FD-T16 are verified in
+Trello Done, with complete flags and all 79 current checklist resolutions.
+Bevin accepted the initial five-node slice and confirmed APS fixed. Accepted
+implementation `e6cadcd` and integration `dc4f6c5` are published to BevBranch and
+ProjectMain, preserving Salty's incoming `6df406c` planning update. T16 explicitly
+defers uncollected human timing/matched-path notes; no measurements are invented.
+Sprint 5 stays Active and WTR-01 stays In Progress. Unrelated terrain metadata
+and Unity recovery files remain local and unchanged. See the
+[publication handoff](handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md).
+Earlier dated entries below describe their own checkpoints, including then-local work.
+
 **October21 first-slice acceptance:** Bevin explicitly accepts the initial
 five-node Field Data implementation as a good starting point and confirms APS
 fixed after further play. The new screenshot is a valid failed run atseed10100/

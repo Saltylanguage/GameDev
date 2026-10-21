@@ -1,5 +1,17 @@
 # Field Data — internal self-play and decision record
 
+**Published and closed, October 21, 2026:** Bevin authorized publication and
+closing the FD workstream after acceptance. All 16 Trello cards are now Done
+and complete. T16's checklist explicitly resolves uncollected timing and matched
+human comparison notes as deferred, the no-revision replay condition as not
+applicable, and next content as undecided. These are scope dispositions, not
+claims that missing observations were performed. See the
+[T16 acceptance comment](https://trello.com/c/osmzcZVf/134-fd-t16-review-internal-self-play-and-record-accept-revise#comment-6ad8527f794bb2a3e26f1825)
+and [publication handoff](handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md).
+Implementation `e6cadcd` and integration `dc4f6c5` are on BevBranch and ProjectMain.
+Sprint 5 remains Active for other work. Earlier dated statements below retain
+their original pre-publication context.
+
 **Accepted, October 21, 2026:** Bevin explicitly confirmed that playtesting of
 the initial five-node implementation looks good, that it is a good starting
 point despite being bare bones, and that APS is fixed. Human acceptance of

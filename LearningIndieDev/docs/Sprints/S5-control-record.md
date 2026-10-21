@@ -8,6 +8,19 @@
 - **Owner / reviewer allocation:** Unassigned on all 16, explicitly requested by Bevin for team allocation
 - **Carry-over:** None. S4 remains Closed; P1-032 and S4-04/05 remain Backlog.
 
+**October 21 Field Data closeout:** All FD-T01–FD-T16 were read back in Trello
+Done, with complete flags and 79 resolved current checklist items. Bevin's
+full-route playthrough, initial-slice acceptance and APS confirmation close
+the remaining T13/T16 gates. Uncollected timing/matched-human notes are explicitly
+deferred, not fabricated; no new economy revision or content addition was chosen.
+Implementation `e6cadcd` and integration `dc4f6c5` are published on BevBranch and
+ProjectMain. The incoming October 16 planning/capacity record is preserved.
+Sprint 5 stays **Active**; WTR-01 stays In Progress and is outside this closeout.
+See the [live checkpoint](https://trello.com/c/hqQczLQ9/135-sprint-5-control-record-field-data-and-playability#comment-6ad853274498e3ff589854a2)
+and [publication handoff](../handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md).
+Older board counts, pending-meeting language and unpublished-work statements below
+are dated history, not the current Field Data status.
+
 **October 16 planning update:** Josh set [playability as the proposed S5 exit
 goal](S5-playability-goalpost-2026-10-16.md), with a polished two-simulation,
 one-shop route as the first review gate. He asked to keep all 16 Field Data cards

@@ -1,6 +1,7 @@
 # Field Data implementation tickets - Sprint 5
 
 - **Prepared:** 2026-10-16
+- **Published closeout, October 21:** All FD-T01–FD-T16 are verified Done/complete in Trello, with 79 current checklist items resolved. Bevin accepted the first five-node slice and confirmed APS fixed. Implementation `e6cadcd` and integration `dc4f6c5` are on BevBranch and ProjectMain; Salty's incoming planning update is preserved. T16 explicitly defers uncollected timing/matched-human notes and next content rather than claiming they occurred. Sprint 5 remains Active for unrelated work. See the [publication handoff](handoffs/2026-10-21-0153-codex-field-data-publication-and-ticket-closeout.md). Older dated status entries below are historical.
 - **October21 acceptance:** Bevin explicitly accepts the initial five-node slice as a good starting point and confirms APS fixed in play. The local T13 human presentation criterion and T16 keep-loop decision are satisfied; missing timing/matched-human-path metadata is preserved as unrecorded, not invented or made into another acceptance gate. Further content remains unspecified. This records human acceptance without claiming a fresh Trello audit, all16 external cards closed or publication. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
 - **October20 human playthrough:** Bevin completed the whole route and said it felt good, with near population misses on both animal sides. Positive keep-loop feedback is recorded in the [self-play record](FIELD_DATA_SELF_PLAY_REVIEW.md); APS reporting was the specific defect, now corrected with159 focused EditMode/4 PlayMode passes (2 graphics skips). Missing human timing/matched-path details are not fabricated, and no live Trello criteria/status changes are claimed. See the [handoff](handoffs/2026-10-20-0007-codex-field-data-human-playthrough-and-aps-accounting-fix.md).
 - **October 19 evidence refresh:** T14 now has eight current-rule action fixtures passing direct Unity/headless parity (1/1 dedicated test, zero skips). T15 has 600/600 validated current-rule journeys: Remove Hare 58/200 survive, Add Hare 1/200, save for ×2 52/200. Current evidence and limits are in the [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md). Earlier dated execution entries remain history. No card status, tuning, commit or push changed; T13/T16 human work remains open.
@@ -27,9 +28,9 @@ related work and scope boundaries. The proposed type names are implementation
 guidance, not a requirement to create one class for every ticket.
 
 `FD-T01` through `FD-T16` are stable task references on the S5 Trello cards.
-Every ticket starts Not started with no owner/reviewer, as requested. Its
-acceptance boxes below describe future evidence; none is checked by writing
-this document. A receipt means a recorded award or purchase with its identity,
+Every ticket started Not started with no owner/reviewer, as requested. Current
+acceptance boxes record verified behavior or explicitly labeled closeout dispositions;
+writing a document alone does not verify a criterion. A receipt means a recorded award or purchase with its identity,
 amount and resulting balance.
 
 ## Ticket index and dependencies
@@ -74,7 +75,7 @@ other domain work proceeds. Agree shared-file ownership before parallel edits.
 [Active Sprint 5 control](https://trello.com/c/hqQczLQ9/135-sprint-5-control-record-field-data-journey-implementation) |
 [Repository control and capacity](Sprints/S5-control-record.md)
 
-| Card | Verified workflow list, October 17 | Execution state |
+| Card | Verified workflow list, October 21 | Execution state |
 | --- | --- | --- |
 | [FD-T01](https://trello.com/c/kl9F3o2l/119-fd-t01-agree-the-test-route-entry-and-first-implementation-boundaries) | Done | Done |
 | [FD-T02](https://trello.com/c/3ZTf7hmC/120-fd-t02-freeze-and-validate-the-starter-journey-definition) | Done | Done |
@@ -88,10 +89,10 @@ other domain work proceeds. Agree shared-file ownership before parallel edits.
 | [FD-T10](https://trello.com/c/C9D3evir/128-fd-t10-buy-random-or-chosen-income-reorders) | Done | Done (verified October 17) |
 | [FD-T11](https://trello.com/c/GZFJ6QPo/129-fd-t11-show-round-income-rewards-and-population-actions-in-noesis) | Done | 5/5 verified |
 | [FD-T12](https://trello.com/c/J2EqiGv3/130-fd-t12-show-shops-and-reorder-controls-in-noesis) | Done | 5/5 verified |
-| [FD-T13](https://trello.com/c/FGFDVXcQ/131-fd-t13-author-the-test-route-and-verify-the-complete-desktop-flow) | In Progress | Human visual acceptance remains |
-| [FD-T14](https://trello.com/c/XB3Yc2j7/132-fd-t14-run-the-same-journey-domain-headlessly-and-export-replay-evidence) | Done | Five-fixture parity verified |
-| [FD-T15](https://trello.com/c/nnujHAoK/133-fd-t15-freeze-and-run-the-matched-200-seed-comparison) | Done | 600/600 current-source replays |
-| [FD-T16](https://trello.com/c/osmzcZVf/134-fd-t16-review-internal-self-play-and-record-accept-revise) | In Progress | Team self-play and decision remain |
+| [FD-T13](https://trello.com/c/FGFDVXcQ/131-fd-t13-author-the-test-route-and-verify-the-complete-desktop-flow) | Done | Human acceptance recorded October 21; 5/5 resolved |
+| [FD-T14](https://trello.com/c/XB3Yc2j7/132-fd-t14-run-the-same-journey-domain-headlessly-and-export-replay-evidence) | Done | Eight-fixture parity verified October 19 |
+| [FD-T15](https://trello.com/c/nnujHAoK/133-fd-t15-freeze-and-run-the-matched-200-seed-comparison) | Done | 600/600 October 19 replays; predates APS fix |
+| [FD-T16](https://trello.com/c/osmzcZVf/134-fd-t16-review-internal-self-play-and-record-accept-revise) | Done | Accept initial slice; 5/5 resolved with explicit deferrals |
 
 ### Kickoff checkpoint - 2026-10-16
 
@@ -380,7 +381,7 @@ Add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD.
 Use deterministic random valid positions/targets. Respect separate creature
 and plant-resource cell contents and update the boundary/previous grid safely.
 
-- [x] All six operations support repeat purchases in legal windows, including nonterminal round-6 results before shops.
+- [x] All six operations support repeat purchases after free choices in ordinary local rounds 1–5 only. No population controls appear at node completion, in shops or after the final round.
 - [x] Reject insufficient FD, too few removal targets, insufficient full-batch space and removal of the last selected-species individual without partial changes or charges.
 - [x] Plant removal preserves a creature sharing that cell; creature removal preserves its underlying resource/terrain.
 - [x] Rejected actions leave IDs/random ordinals unchanged; repeated deliberate clicks are distinct purchases while retries of one request cannot charge twice.
@@ -433,10 +434,10 @@ ordinary species upgrades only. All income modifiers are shop-only: +1 FD/Hare
 and ×1.5 from Shop 1, ×2 from Shop 2. The old source-eligibility test results
 below describe the prior rule and must not be used as evidence for this update.
 
-- [x] Draw three distinct eligible options or fewer if needed, deterministically; income remains eligible rather than guaranteed.
+- [x] Draw three distinct eligible ordinary Hare skill options or fewer if needed, deterministically. Field Data income modifiers are shop-only; generic Attack is excluded for Hares.
 - [x] Choosing one resolves the source once; Skip grants no award or penalty. Reopening does not generate a fresh choice.
 - [x] Free species rewards cost no FD. Shop-acquired income appends to current execution order and first affects the next unsettled payout. (The old completion evidence predates the October 17 shop-only correction.)
-- [x] Income has no copy cap; ordinary upgrades retain their existing cap and separate state.
+- [x] The six approved Hare skill families can repeat to level 10, with ordinary upgrade state separate from shop species-effect and income state.
 - [x] No free reward is offered after terminal success; test round/node timing and replay-safe resolution.
 
 **Trace:** FD-I04; PDD P-04/P-06; SDD §§4/9; checklist 4.10, 4.26.
@@ -510,8 +511,8 @@ income steps, separate node bonus and current balance. Bind reward/Skip,
 population controls, Continue and terminal results to authoritative commands.
 
 - [x] Display cost/effect before clicking; a population purchase applies on one click and balance updates after every transaction.
-- [x] Population controls appear only in allowed windows, including pre-shop round-6 results, and disappear after terminal success.
-- [x] The free choice resolves before population buying; selected income effects are clear for the next payout.
+- [x] Population controls appear only after ordinary local rounds 1–5, after the free choice. They are absent on node settlement/results, in shops and after terminal success.
+- [x] The ordinary species free choice resolves before population buying; income modifiers are offered only in shops and the next payout shows their ordered effects.
 - [x] Failure shows FD lost; success shows leftover FD until exit. A stale/disabled command is rejected in the domain too.
 - [x] Add focused Noesis integration and rendered checks; preserve board rendering/zoom/pan and one clock forwarder. No economy calculations move into XAML/ViewModel.
 
@@ -647,11 +648,11 @@ look for income purchases crowding out useful species/population actions.
 Combine observations with FD-T15's records. This is internal testing, without
 external interviews, teach-back requests or behavioral-research requirements.
 
-- [ ] Record team observations, real decision time and simulation ticks; do not substitute automated runtime for player deliberation.
-- [ ] Review intervention versus saving, payout/effect clarity and concrete opportunity-cost examples without inventing a numeric pass gate.
-- [x] Record accept/revise and its evidence. Bevin's complete seed10100 custom-path playthrough felt good; keep the first loop with the specific APS accounting correction (recorded October20). No price/effect bundle was requested. This local record does not claim all other criteria or Trello were closed.
-- [ ] A revision requires matched replays through FD-T15 on both weaker/stronger paths; do not claim isolated causality for a multi-value bundle.
-- [ ] Choose the next content addition only after findings exist; permanent economy, Fox/Plant/multispecies shop effects and random events remain separate decisions.
+- [x] Record Bevin's self-play observations and simulation ticks. Real decision-time measurements were not collected and are deferred from this accepted first-slice closeout (October 21, 2026).
+- [x] Review the initial loop using Bevin's direct play and FD-T15 evidence, without a numeric pass gate. Matched human spend/save and opportunity-cost notes are deferred from this closeout.
+- [x] Record accept/revise and its evidence. Bevin accepts the initial five-node implementation and confirms APS fixed. See the self-play record and October 21 Trello acceptance comment.
+- [x] Not applicable at acceptance: no economy revision requested. Future tuning requires matched FD-T15 replays on weaker/stronger paths and no isolated-causality claim for a multi-value bundle.
+- [x] Next content remains deferred. Permanent economy, Fox/Plant/multispecies shop effects and random events remain separate future decisions.
 
 **Trace:** FD-I07; PDD §7; baseline Step 5; checklist 5.02–5.03, 5.08–5.16.
 
