@@ -11,7 +11,12 @@ S4-04/05 remain Backlog. These are owned by their Trello cards and the
 [S4 control record](Sprints/S4-control-record.md). The
 [Active S5 control](Sprints/S5-control-record.md) now owns the 16 Field Data
 tickets for October 19-November 15, including explicit unassigned-role and
-capacity exceptions. Broader candidates remain in the historical
+capacity exceptions. Josh's [S5 playability goalpost](Sprints/S5-playability-goalpost-2026-10-16.md)
+sets the first two-simulation review gate; all 16 cards remain visible for
+tonight's Sim priority meeting. The protected review reserve was removed;
+the 57–95h Field Data range is 15h above the conservative 80h floor at its
+upper end, before unestimated ecology work. Final priorities and owners are
+tracked by the S5 control. Broader candidates remain in the historical
 [proposal](Sprints/S5-proposal-2026-10-15.md). Forest Edge balance
 iteration (P1-034) is covered by the
 [future sprint roadmap](FUTURE_SPRINT_ROADMAP.md); deferred compatibility and

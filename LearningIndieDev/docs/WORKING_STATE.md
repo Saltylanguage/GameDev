@@ -243,6 +243,32 @@ No gameplay implementation or new test/seed run was performed at kickoff. At
 that time, next was team allocation and FD-T01's route entry/compatibility
 review; both are now resolved, and FD-T02 is complete.
 
+### October16 incoming planning/capacity checkpoint (historical)
+
+**October 16 S5 product goalpost:** Josh wants a much more solid Forest Edge
+simulation and a playable demonstration that the loop could become a fun,
+engaging game. The [playability goalpost](Sprints/S5-playability-goalpost-2026-10-16.md)
+sets a two-simulation, one-shop first review gate and a meeting agenda. Keep
+all 16 Field Data cards visible for tonight's priority meeting with Sim;
+the final committed subset, owners and changed acceptance checks await that
+meeting.
+
+**October 16 Sprint 5 kickoff and planning update:** S5 is Active with the
+approved four-week window **October 19-November 15, 2026**. At kickoff all 16
+Field Data tickets were in Current Work with 79 unchecked acceptance items.
+The later board check has FD-T01–03 Done, FD-T04 In Progress and FD-T05–16 in
+Current Work. Owners/reviewers remain unassigned for team allocation as Bevin
+requested. Estimates total 57–95h; Josh removed the 16h protected review
+reserve and will handle review in separate dedicated time outside sprint
+effort. Against the 80h conservative planning floor, the upper Field Data
+estimate is 15h over before unestimated ecology/playability work. See the
+[S5 control](Sprints/S5-control-record.md),
+[published ticket index](FIELD_DATA_TICKET_DRAFT.md#published-trello-index---2026-10-16)
+and [kickoff handoff](handoffs/2026-10-16-0125-codex-s5-kickoff-trello-publication-and-projectmain-sync.md).
+No gameplay implementation or new test/seed run was performed at kickoff.
+Next: agree priorities, actual remaining estimates, owners and review gate
+with Sim; reconcile FD-T02/03's completion comments and unchecked due flags.
+
 ### Earlier checkpoints (historical)
 
 **October 16 Field Data ticket planning:** The

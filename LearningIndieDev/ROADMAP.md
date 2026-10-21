@@ -15,7 +15,14 @@ four-week exception leaves the normal two-week cadence unchanged. The explicit
 first-test journey contains three six-round simulations and two shops; FD-T01
 reviews route entry/terminology without silently replacing the overall product
 contract below. Roles remain unassigned by Bevin's request; the selected
-57-95h estimate carries the control's documented capacity risk.
+57-95h estimate carries the control's documented capacity risk. Josh's October
+16 [playability goalpost](docs/Sprints/S5-playability-goalpost-2026-10-16.md)
+sets a polished two-simulation/one-shop first review gate. All 16 cards stay
+visible for the priority meeting with Sim; final commitment and any revised
+acceptance await that meeting. Josh removed the 16h protected review reserve
+and will handle review in separate dedicated time. The conservative sprint
+planning floor is 80h, with the Field Data upper range 15h over before new
+simulation/playability work.
 
 ## Product outcome
 
@@ -215,7 +222,7 @@ S5; their scope remains horizon work, not a kickoff.
 | Sprint | Forecast dates | Primary outcome | Feature capacity | Reserve | Exit test |
 | --- | --- | --- | ---: | ---: | --- |
 | **S4 — Build identity and evidence (Closed 2026-10-15)** | 2026-10-01–2026-10-14 | Trailblazer, Warren, and Gardeners create distinct decisions in Forest Edge; the canonical Desktop starts from the active profile and current defaults. | Historical plan: 28h scheduled feature work across P1-032, F03, F07, and F11; local profile-choice save/restore and optional design spikes deferred | 8h | Research and Desktop foundation published; four selected cards Done. The original in-game strategy acceptance and independent review remain open, and P1-032 was returned to Backlog. See the [closeout](docs/Sprints/S4-control-record.md#closeout--2026-10-15). |
-| **S5 — Field Data journey implementation (Active)** | 2026-10-19–2026-11-15 | Implement and internally evaluate the complete five-node, 18-round journey with two shops and one retained world/wallet. | All 16 FD-T01–FD-T16 tickets: 57–95h estimated; conservative feature allowance 64h; unassigned roles by request | 16h protected | Full Desktop route, focused correctness/profile isolation, headless replay parity and 200 matched seeds per arm plus internal self-play accept/revise. See the [S5 control](docs/Sprints/S5-control-record.md). |
+| **S5 — Field Data and playability (Active; priorities under review)** | 2026-10-19–2026-11-15 | Prove a solid, engaging simulation through a polished two-simulation/one-shop player route; retain the published five-node plan for tonight's priority discussion. | All 16 FD-T01–FD-T16 cards remain visible: 57–95h estimated; conservative sprint floor 80h; final subset and unestimated ecology work await Sim review | No protected reserve; review in separate dedicated time | First playable review follows the [S5 playability goalpost](docs/Sprints/S5-playability-goalpost-2026-10-16.md). The complete 18-round route, headless parity and 200 matched seeds remain in the card list until the team decides the S5 exit subset. See the [S5 control](docs/Sprints/S5-control-record.md). |
 | **S6 — Persistence and first Genome** | TBD; reforecast after S5 | One completed expedition changes a later expedition through settled, versioned progression. | Up to 32h across F06, F13, and F16 | 8h | The permanent Rabbit tree license and resettable upgrade allocation survive restart; active Hare upgrades apply to all Hare populations, and reset refunds Rabbit Data for a flat Research Data fee. |
 | **S7 — Vertical-slice integration** | TBD; reforecast after S5 | An external player completes and replays the slice without developer help. | Up to 32h for integration and validation; only the accepted focused slices of F08, F09, and F16 may enter | 8h | M2 passes or the evidence produces a short prioritized revision plan. |
 

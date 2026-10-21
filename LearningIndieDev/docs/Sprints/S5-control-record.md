@@ -1,4 +1,4 @@
-# Sprint 5 control record - Field Data journey implementation
+# Sprint 5 control record - Field Data and playability
 
 - **Sprint:** S5
 - **Status:** Active; kickoff verified 2026-10-16
@@ -8,7 +8,15 @@
 - **Owner / reviewer allocation:** Unassigned on all 16, explicitly requested by Bevin for team allocation
 - **Carry-over:** None. S4 remains Closed; P1-032 and S4-04/05 remain Backlog.
 
-## Goal and scope
+**October 16 planning update:** Josh set [playability as the proposed S5 exit
+goal](S5-playability-goalpost-2026-10-16.md), with a polished two-simulation,
+one-shop route as the first review gate. He asked to keep all 16 Field Data cards
+visible for tonight's priority meeting with Sim. The final committed subset,
+owners and any acceptance changes are pending that meeting. The kickoff goal
+and ticket checks below remain the published baseline, not a claim that every
+item fits the revised goal.
+
+## Published kickoff goal and scope
 
 Deliver and internally evaluate Simulation -> Shop -> Simulation -> Shop ->
 Simulation: 18 rounds, two shops, one retained ecosystem and journey wallet.
@@ -27,17 +35,19 @@ FD-T01 resolves the explicit test-route entry and compatibility review.
 
 Bevin selected all 16 tickets after the capacity warning and requested four
 weeks from October 19. Both developers' planning availability is 10-15h/week:
-40-60h each, 80-120h combined. Use the conservative 80h floor and protect 16h
-(20%) for integration/review, leaving 64h of feature capacity at that floor.
-The tickets total **57-95 active team-hours**, excluding unknown machine time
-and a new tuning iteration. The upper estimate exceeds that conservative
-feature allowance by **31h**. Re-estimate openly; do not assume maximum
-availability or consume reserve silently.
+40-60h each, 80-120h combined. On October 16, Josh removed the protected
+16h integration/review reserve; review will use separate dedicated time outside
+the sprint effort. Use the conservative **80h planning floor**. The tickets
+total **57-95 active team-hours**, excluding unknown machine time and a new
+tuning iteration. Their upper estimate exceeds that floor by **15h**, before
+unestimated ecology/playability work. Re-estimate openly; do not assume maximum
+availability or that removing the reserve makes every ticket fit.
 
 This is an approved four-week exception for S5; the normal two-week cadence
 is unchanged. Owners/reviewers remain unassigned by explicit user instruction.
-Selection records intended work, not completion or a guarantee of the upper
-estimate fitting available capacity. S6/S7 dates need reforecasting after S5.
+The full board selection is retained for team prioritization, not a guarantee
+of final S5 commitment or of the upper estimate fitting available capacity.
+S6/S7 dates need reforecasting after S5.
 
 ## Selected work
 
@@ -51,7 +61,11 @@ and unpushed; original kickoff estimates and ownership exceptions remain.
 
 Every linked card has Sprint ID S5, its stable FD-T task ID, work dates,
 estimate, dependencies, outcome, source links and a native acceptance checklist.
-All work is Not started as of the October 16 kickoff audit.
+All work was Not started at kickoff. At the later October 16 board check,
+FD-T01–03 were Done, FD-T04 In Progress and FD-T05–16 in Current Work. No
+cards were moved during the playability/capacity revision. FD-T02/03 have
+completion comments while their Trello due-complete flags remain unset;
+reconcile that bookkeeping with the implementer.
 
 | Task / Trello | Outcome | Active hours | Depends on | Owner / reviewer |
 | --- | --- | ---: | --- | --- |
@@ -73,11 +87,13 @@ All work is Not started as of the October 16 kickoff audit.
 | [FD-T16](https://trello.com/c/osmzcZVf/134-fd-t16-review-internal-self-play-and-record-accept-revise) | Review internal self-play and record accept/revise | 3–5 | FD-T15 | Unassigned |
 
 Follow the dependency fields. FD-T03/04 can follow FD-T02 independently;
-agree ownership of shared files when allocating work. At kickoff, the next
-step was team allocation and FD-T01's entry/compatibility review; the review
-is now complete and FD-T02 has also been implemented.
+agree ownership of shared files when allocating work. At the October16
+planning checkpoint Josh requested priority/ownership review with Sim and an
+ecological diagnosis estimate. Bevin subsequently accepted the implemented full
+five-node route on October21 and authorized closing the FD workstream. This does
+not close unrelated Sprint5 work or claim that an unrecorded meeting occurred.
 
-## Exit evidence
+## Published kickoff exit evidence
 
 - Focused correctness checks accompany implementation; awards/purchases settle once and reject invalid changes atomically.
 - Complete the full 18-round Desktop flow and both shops, retaining world/wallet/upgrades and showing readable ordered payouts and purchase effects.

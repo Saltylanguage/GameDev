@@ -17,7 +17,10 @@ and profile foundations instead of rebuilding them as new features.
 This document brings the two plans together without treating every idea as
 one sprint. It identifies completed foundations, the defined Field Data slice,
 related simulation work and remaining integration decisions. All 16 Field Data
-tickets are now selected; see the [Active S5 control](Sprints/S5-control-record.md).
+cards remain visible for the Sim priority meeting. Josh's
+[S5 playability goalpost](Sprints/S5-playability-goalpost-2026-10-16.md) sets
+the first two-simulation review gate; final commitment is pending. See the
+[Active S5 control](Sprints/S5-control-record.md).
 
 ## Which document answers which question?
 
@@ -115,7 +118,7 @@ if selected. Their remaining effort is not the original implementation estimate.
 | Which ecology/scenario/build is frozen for the comparison? | Keeps population/income results comparable | Choose during preparation; no production population change approved here |
 | How should roadmap terminology be aligned? | The [roadmap](../ROADMAP.md) still describes one six-round expedition/five choices, while this test journey contains three six-round simulations plus shops/node choices | Owner review needed before declaring a revised overall product contract; keep the first-test scope explicit |
 | Is permanent Genome/reward content part of the selected work block? | Salty proposes it; Bevin's first FD slice defers it | Separate package unless explicitly selected; no invented wallets, prices or accomplishment thresholds |
-| Owners, reviewers, estimates and reserve | Needed to turn packages into scheduled work | Four-week S5 approved; 57–95h selected, 16h protected reserve; owners/reviewers unassigned by request; see control for capacity risk |
+| Owners, reviewers, estimates and review time | Needed to turn packages into scheduled work | Four-week S5 approved; 57–95h Field Data master list; Josh removed the protected reserve and will review in separate dedicated time. The 95h upper range exceeds the conservative 80h sprint floor by 15h before unestimated ecology/playability work. Owners/reviewers and final priority subset await the Sim meeting; see control. |
 
 ## Ticket preparation rules
 

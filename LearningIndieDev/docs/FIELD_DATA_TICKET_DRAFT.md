@@ -7,6 +7,7 @@
 - **October 18 node-navigation revision:** Bevin removed population controls from all node-end settlements. Simulation settlement now returns to the map before explicit shop entry; leaving a shop returns to the map before explicit simulation entry. Final success also offers the completed map. Earlier checked pre-shop round-6 purchase criteria below are superseded by this decision; ordinary rounds 1–5 retain their controls. See the current PDD/SDD and node-navigation handoff.
 - **Status, October 17:** 14 Done (T01–T12, T14, T15); T13 In Progress 4/5 awaiting independent human visual acceptance; T16 In Progress 0/5 awaiting team self-play and accept/revise. All 16 remain selected for Active S5, October 19–November 15, 2026. Implementation is local and unpushed.
 - **October 17 correction:** route selection now previews the five-node path before a separate Start action; active Field Data screens can reopen that route map. Income modifiers are shop-only and Hare free rewards exclude generic attack upgrades. October 18 verification adds visible route cards and panel Map buttons: full suites passed 399 EditMode / 49 PlayMode with dedicated skips, followed by final graphics passes of 6/6 at 1280x720 and 1/1 at 1920x1080. See the [validation handoff](handoffs/2026-10-18-fd-route-and-reward-validation.md). Human acceptance/self-play remain open; earlier T08/T15 panel evidence remains historical.
+- **October16 incoming planning checkpoint (historical):** published to Trello; all 16 retained for Active S5 priority review, October 19-November 15, 2026. At the later October 16 board check FD-T01–03 were Done, FD-T04 In Progress and FD-T05–16 in Current Work; final committed subset awaits team review.
 - **Planning baseline:** merged `BevBranch` at `dcd6bb0`
 - **Owner / reviewer:** unassigned on every ticket, as Bevin requested
 - **Estimates:** proposed active team-hours, including focused tests and ordinary review fixes; selected planning ranges; capacity risk recorded in the S5 control
@@ -55,9 +56,11 @@ amount and resulting balance.
 The selected tickets total **57–95 active team-hours**, before unknown machine
 time or a new tuning iteration. Bevin selected all 16 for a four-week S5 after
 the over-capacity warning. The [S5 control](Sprints/S5-control-record.md)
-records the 80–120h combined availability, protected 16h reserve, conservative
-64h feature allowance and 31h upper-estimate overage. Re-estimate after FD-T01
-and each implementation review.
+records the 80–120h combined availability. Josh removed the protected review
+reserve on October 16 and will use separate dedicated review time. The 80h
+conservative planning floor leaves a 15h upper-estimate overage before new
+ecology/playability work. Re-estimate remaining work with Sim before final
+S5 prioritization and at each implementation review.
 
 The original **FD-T01–FD-T05** recommendation remains a useful 15–25h foundation
 sequence within the full selected scope.
@@ -665,11 +668,13 @@ P1-032's separate launch-input/real exit-relaunch acceptance; it is not a new
 profile implementation hidden in this backlog. Do not add the deferred
 crowding/movement/litter changes or permanent reward economy to these tickets.
 
-All 16 tickets are selected for S5. Allocate owners/reviewers during team
-review; leaving them unassigned at kickoff is Bevin's explicit exception.
-Resolve FD-T01, review technical proposals against the current code, and retain
-the recorded reserve and capacity risk. Kickoff and card creation do not satisfy
-any implementation, runtime, balance or self-play acceptance criterion.
+All 16 tickets remain visible for S5 priority review with Sim. Allocate
+owners/reviewers and confirm the final subset during that review; leaving them
+unassigned at kickoff is Bevin's explicit exception. Reconcile completed
+foundation cards, inspect FD-T04's remaining implementation, review technical
+proposals against the current code, and retain the documented capacity risk.
+Kickoff and card creation do not satisfy any implementation, runtime, balance
+or self-play acceptance criterion.
 
 ## Requirement coverage
 
