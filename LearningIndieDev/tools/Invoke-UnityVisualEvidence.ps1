@@ -74,8 +74,14 @@ New-Item -ItemType Directory -Path (Split-Path -Parent $requestPath) -Force | Ou
 
 $resultPath = $null
 $summary = $null
+$originalProcessEnvironment = @{}
 try {
     if ($selection.Lane -eq 'Clean') {
+        # A clean Editor may recreate Temp before tests read the live request file.
+        foreach ($requestEntry in $requestValues) {
+            $originalProcessEnvironment[$requestEntry.name] = [Environment]::GetEnvironmentVariable($requestEntry.name, 'Process')
+            [Environment]::SetEnvironmentVariable($requestEntry.name, $requestEntry.value, 'Process')
+        }
         $unity = Resolve-UnityEditorPath -ProjectPath $project -UnityPath $UnityPath
         $resultPath = Join-Path $artifactDirectory 'PlayMode-results.xml'
         $unityLogPath = Join-Path $artifactDirectory 'PlayMode.log'
@@ -140,6 +146,9 @@ try {
     }
 }
 finally {
+    foreach ($environmentName in $originalProcessEnvironment.Keys) {
+        [Environment]::SetEnvironmentVariable($environmentName, $originalProcessEnvironment[$environmentName], 'Process')
+    }
     Remove-Item -LiteralPath $requestPath -Force -ErrorAction SilentlyContinue
 }
 

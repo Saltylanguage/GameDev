@@ -5,6 +5,231 @@ become a master changelog.
 
 ## Current focus
 
+**October21 first-slice acceptance:** Bevin explicitly accepts the initial
+five-node Field Data implementation as a good starting point and confirms APS
+fixed after further play. The new screenshot is a valid failed run atseed10100/
+tick1168: ADD6/REM7, FPO0/expected0, ReconciledTrue, APS-1.04. This is separate
+from the prior completed1800-tick journey. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
+Human acceptance for the initial slice is satisfied; more content/polish and
+balance development remain future scope. Missing research timing metadata is
+not fabricated or used to deny acceptance. This turn changes documentation
+only; no tests, tuning, live Trello changes, commit or push were performed.
+
+**October 20 human playthrough and APS fix:** Bevin completed the full route,
+reported that it felt good and described near population misses for both Foxes
+and Hares. The captured seed10100/tick1800 run exposed missing paid-intervention
+accounting:8 Hares added/9 removed were omitted, making expected144 disagree
+with actual143 and invalidating APS. Run counters, live/snapshot metric factories,
+UI and reports now include separate ADD/REM for all controls; natural births/deaths
+stay separate. Corrected captured APS is about1.19; Fox accounting also reconciles.
+Unity passes159 focused EditMode and4 Field Data PlayMode tests (2 graphics skips);
+portable build/self-test pass. See the [handoff](handoffs/2026-10-20-0007-codex-field-data-human-playthrough-and-aps-accounting-fix.md)
+and [self-play record](FIELD_DATA_SELF_PLAY_REVIEW.md). Positive full-route human
+feedback is now recorded; missing human timing/matched notes and next-content
+decisions are not invented. No ecology tuning, board changes or push occurred.
+
+**October 19 current parity/cohort refresh:** The authored 20-Fox setup and
+current rules have a fresh export, eight-fixture direct Unity/headless parity
+pass (1/1 test, zero skips), and **600/600 validated journeys** across 200 matched
+seeds and three v3 schedules. Survival: Remove Hare 58/200, Add Hare 1/200,
+save for ×2 52/200. The first payout affords a 10-FD action in 180/200 seeds,
+but all removal survivors and 51/52 saving survivors finish with one Hare.
+No ecology values or prices changed; T13 human acceptance and T16 recorded
+self-play/accept-revise remain open. See the [refresh handoff](handoffs/2026-10-19-1601-codex-field-data-current-parity-and-matched-cohort-refresh.md)
+and [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md).
+October 17 frozen artifacts remain historical. No Trello changes, commit or
+push were made for this refresh.
+
+**October 19 round-7 reward exhaustion:** Taking all six free mutations in the
+first simulation exhausted the ordinary reward pool because every skill was
+treated as single-use. Round 7 then displayed disabled legacy Attack/Data-cost
+cards. A regression reproduced the empty pool exactly at round 7. Field Data
+now reoffers the six Hare skills up to their existing level caps (10), retaining
+the separate shop cap and legacy authored-upgrade rules. Missing choices are
+hidden and an empty pool explains Skip. Focused EditMode passes 91 tests with
+one dedicated parity skip; focused PlayMode passes 4 with two separate graphics
+skips. Clean rendered checks pass 6/6 at 1280x720 and the round-7 ownership
+fixture 1/1 at 1920x1080; captures were inspected. Evidence is recorded in the
+[round-7 handoff](handoffs/2026-10-19-fd-round7-reward-exhaustion.md).
+
+**October 18 explicit node entry:** Bevin keeps node-end Field Data settlement
+but removes its population controls. Settlement now returns to the map before
+explicit shop entry, and leaving each shop returns to the map before the next
+simulation can start. Final success offers the completed map and a separate
+new-journey action. Ordinary rounds 1–5 retain controls. Focused population
+tests pass 9/9; Field Data PlayMode passes 4/4 with two separate graphics checks.
+Final graphics pass 6/6 at 1280x720 and the authored route 1/1 at 1920x1080;
+captures were reviewed. See the
+[node-navigation handoff](handoffs/2026-10-18-fd-node-map-navigation.md).
+Earlier pre-shop round-6 control rules are superseded. Human acceptance remains open.
+
+**October 18 approved playtest default:** Bevin approved switching Forest Edge
+from 35 to **20 starting Foxes**; 55 Hares and 400 Plants remain. The authored
+asset now resolves to the tested 20-Fox candidate. This is the next playtest
+setting, with later population crashes still open. See the
+[change record](handoffs/2026-10-18-fd-20-fox-playtest-default.md).
+
+**October 18 opening-population diagnostic:** Bevin reports Hares collapse too
+quickly. An 80-run current-source screen (20 matched seeds x four settings)
+finds 3.8 Hares at the first baseline payout on average; 0/20 can afford the
+10-FD intervention. Starting 20 Foxes instead of 35 gives 16.55 Hares and
+18/20 affordability, but only 5/20 no-action journeys survive to tick 1800
+(four with one Hare). Ten Foxes gives a gentler opening followed by worse
+full-route survival; raising Hare starting energy shifts losses to starvation.
+Forty actual FD replays match the baseline/candidate screen, and two Unity
+session cases match the standalone boundaries. Recommend temporary 20-Fox
+playtests on matched seeds 10100/10102, not a production balance approval.
+Production assets were unchanged during that diagnostic; the approval above
+subsequently adopts its 20-Fox candidate. The authored map is nonwrapping; freeze
+candidate values into resolved data because `journey-replay` ignores research
+argument overrides. See the [diagnostic report](Research/Experiments/FD-Opening-Hare-Collapse-20261018/REPORT.md).
+
+**October 18 validated Field Data correction:** The selected test route now
+shows five visible node cards before explicit Start, with the correct route
+heading and accessible Map buttons in round/shop and results panels. Map
+round trips preserve the session, tick and wallet; Reproductive Drive is now
+bounded at reproduction chance 1.0 instead of throwing. Shop-only income and
+the six-skill Hare pool have regression coverage. Clean suites passed 399
+EditMode / 49 PlayMode (1 dedicated parity and 6 graphics skips); final graphics
+passed 6/6 at 1280x720 and the authored route 1/1 at 1920x1080. Screenshots were
+reviewed. The final graphics runs include the panel Map buttons added after
+the broad suites. Portable Release build and self-test pass. Human visual
+acceptance and team self-play remain open; no fresh parity/panel, player build,
+Trello change or push is claimed. See the [validation handoff](handoffs/2026-10-18-fd-route-and-reward-validation.md).
+
+**October 17 Field Data UX/economy correction:** Bevin reported that choosing
+the test route immediately launched simulation, the active Field Data journey
+had no usable route map at round/shop decisions, and a generic attack upgrade
+appeared for Hares while income modifiers appeared outside shops. Source review
+confirmed: route selection configured and started in one action; the map toggle
+was hidden during Field Data decisions and the Field Data path had no mapped
+JourneyMap nodes; the ordinary Hare fallback included generic attack; the
+starter definition allowed +1/Hare at round rewards and ×1.5 at node rewards.
+Local changes now show a five-node route preview before an explicit Start,
+expose an in-journey map summary/toggle through round and shop decisions, limit
+Hare free rewards to the six approved Hare skills, and restrict all income
+modifiers to shop offers in both authoring validation and reward generation.
+Unity compile/tests and human visual review have **not** been run for this
+follow-up. Earlier T08/T15 evidence used the superseded income-source rule and
+does not validate this correction. See the [correction handoff](handoffs/2026-10-17-fd-route-map-and-shop-income-correction.md).
+
+**October 17, 02:02 delivery checkpoint:** T11/T12 are verified complete;
+T13's authored Desktop route, all 18 rounds/two shops, natural failure,
+abandonment and reset have runtime/rendered evidence, while independent human
+visual acceptance remains open. T14 now passes five authored action fixtures
+against Unity at every decision/board boundary; an ordinary reward-pool mismatch
+was corrected with a shared resolver and explicit portable pool. T15 completed
+and validated all 600 current-source runs (200 matched seeds × three approved
+policies), preserving earlier frozen artifacts. Full checks: EditMode 397
+passed/1 dedicated-fixture skip; PlayMode 49 passed/6 graphics skips; dedicated
+parity 1/1; final 1280×720 graphics 2/2, earlier 1920×1080 graphics 2/2.
+T16 still needs genuine team self-play, decision-time observations and
+accept/revise. No tuning/content decision or implementation push is claimed.
+See the [current handoff](handoffs/2026-10-17-0202-codex-field-data-rendering-parity-and-cohort.md)
+and [play/review instructions](FIELD_DATA_SELF_PLAY_REVIEW.md).
+
+**October 17 verified T04–T06 closeout:** T04, T05 and T06 are Done on Trello,
+5/5 criteria each. Clean Unity verification passed 49/49 FieldData EditMode
+tests at `artifacts/unity-tests-20261017-010128` and 5/5 focused PlayMode tests
+at `artifacts/unity-tests-20261017-010227`. This adds repeat Continue/results,
+shop re-entry, legacy entry and seeded species/Genome unlock preservation to
+the current route/lifecycle evidence. T06 fixes prevent Plant additions from
+overwriting existing resources and count both population layers at capacity.
+T07 also passed its strengthened signed-effect checks in the full clean
+EditMode suite (390/390 at `artifacts/unity-tests-20261017-010934`) and is Done,
+5/5 on Trello. T08 is also Done, 5/5, after the expanded clean session fixture
+passed 13/13 at `artifacts/unity-tests-20261017-011229`. T09 is Done after its
+16/16 session-fixture pass at `artifacts/unity-tests-20261017-011558`; T10 is
+Done after the full clean EditMode suite passed 395/395 at
+`artifacts/unity-tests-20261017-011725`. Each has 5/5 checked on Trello with
+read-back completion evidence. T11 is active: review reproduced shop actions
+being accepted before the free node reward (`artifacts/unity-tests-20261017-011920`).
+The domain/UI gate is corrected; focused PlayMode passed 4/4 at
+`artifacts/unity-tests-20261017-013124`. Two older second-shop fixtures needed
+to resolve the node choice before their actions and have been updated; the
+focused EditMode rerun passed 56/56 at `artifacts/unity-tests-20261017-013258`.
+T11/T12 rendering review then exposed oversized paper-button rows, a zero-based
+shop heading, a premature discard message and missing offer eligibility/effect
+details. These are corrected locally. Clean 1280×720 graphics passed 2/2 at
+`artifacts/visual-evidence-20261017-014514`: the actual authored 18-round route
+and a separately labeled preloaded-ownership fixture for capped offers, free
+reroll exhaustion and paid random/chosen reorders. A fresh 1920×1080 run and
+integrated suites are in progress; human acceptance remains open. T14 reports
+now also retain board digests before/after actions and actual charged FD;
+current-source cross-runtime verification is still pending. See the
+[T04–T06 closeout handoff](handoffs/2026-10-17-0106-codex-fd-t04-t06-verified-closeout.md)
+and [T07 completion](FIELD_DATA_TICKET_DRAFT.md#fd-t07--apply-the-six-signed-hare-shop-effect-families).
+
+**Earlier October 17 Field Data continuation:** `CellSim.Batch` Release build and full
+self-test passed earlier in this work block. The FieldData-named EditMode suite
+passed 46/46 at `artifacts/unity-tests-20261017-002151`. A clean Desktop
+PlayMode run passed 4/4 at
+`artifacts/unity-tests-20261017-004043`, covering authored-settings route
+success, natural failure, manual abandonment through End confirmation, and
+the route-entry check. Success and failure/abandonment each preserve seeded
+Desktop profile currency and feature unlocks across a fresh journey. The route
+test now forces the authored 0.2-second cadence; seed 10100 completed all 18
+rounds and two shops. The previous seed 10125 pass inherited a 0.1-second
+editor setting and was not evidence for the authored asset.
+
+T14's authored Forest Edge snapshot and 200-seed Unity reference export now
+exist under `artifacts/field-data-t14/`. A no-purchase headless journey on seed
+10100 completed 18 population awards and three node rewards, then discarded
+52 leftover FD on success. Its final Hare/Fox/Plant populations (1/0/717)
+match the Unity reference. Full Unity/headless receipt/order parity for
+scheduled purchases and reorders remains open.
+
+T15's v2 policies ran all 600 matched replays for seeds 10100–10299; all 600
+reports completed and each seed appears once in all three arms. The baseline
+Unity reference had 45/200 Hare survivors; removal had 50/200, additive Hare
+intervention 0/200, and save-for-second-shop ×2 45/200. The detailed aggregate
+and every replay are under `artifacts/field-data-t15/run-20261017/`.
+Automated replay runtime totals 872,424.8 ms across the 600 runs (1,454 ms
+mean). Human setup/analysis time is not captured. Treat the survival counts as
+descriptive evidence only; no numeric acceptance gate was approved.
+
+T13's repeat/re-entry lifecycle checks now pass; fresh graphics captures
+and independent human review remain open. T14 needs action/receipt/order parity and report
+compatibility checks. T15 needs a separately recorded active team setup/analysis
+time. T16 is not complete: internal self-play, real decision-time notes, and
+the team's accept/revise judgment require team participation. See the [Oct 17
+ticket checkpoint](FIELD_DATA_TICKET_DRAFT.md#current-execution-checkpoint---2026-10-17)
+and [T14/T15 SDD evidence](FIELD_DATA_SOLUTION_DESIGN.md#20-fd-t14-and-t15-authored-replay-evidence---2026-10-17).
+
+**Historical October 16 FD-T04/T05 checkpoint (superseded above):** Added `FieldDataJourneySession` to
+coordinate one ready 1,800-tick run with 100-tick rounds, decision pauses and
+shops at ticks 600/1,200. It retains the same runner/run and progression,
+rejects runner replacement, treats early completion as failure, and completes
+only at tick 1,800 with the selected species alive. `SpeciesSimulationPreview`
+now has an explicit configuration seam that prepares 18 rounds, binds the
+session to the preview's manager, bypasses legacy reward handlers for that
+mode, and bridges decision/shop/result state; the preview remains the only
+simulation clock forwarder. The focused `FieldData` EditMode suite passed
+24/24 in the connected Editor (`artifacts/unity-tests-20261016-204629`). A
+session test exposed and fixed disposal leaving the state at Failed; the route
+fixture now uses a stable Hare rule to test flow only, not ecology balance.
+Rendered preview/runtime behavior remains unverified. FD-T04 remains In
+Progress and all five criteria remain open. FD-T05 now has a journey-local
+wallet ledger with idempotent population and node-clear receipts, failure
+forfeiture, successful-result remainder discard, and focused Unity coverage.
+After the verified T05 move, the board is at 16 Done,
+2 In Progress, 11 Current Work, and 65 acceptance items open (whole-board counts
+derived from the verified post-T04 snapshot and T05 move). See the [T05 SDD checkpoint](FIELD_DATA_SOLUTION_DESIGN.md#18-fd-t05-wallet-settlement---2026-10-16),
+[T04 SDD checkpoint](FIELD_DATA_SOLUTION_DESIGN.md#17-fd-t04-retained-journey-session---2026-10-16),
+[T03 checkpoint](FIELD_DATA_SOLUTION_DESIGN.md#16-fd-t03-ordered-income-checkpoint---2026-10-16),
+[T02 checkpoint](FIELD_DATA_SOLUTION_DESIGN.md#15-fd-t02-implementation-checkpoint---2026-10-16)
+and [ticket status](FIELD_DATA_TICKET_DRAFT.md#current-execution-checkpoint---2026-10-16).
+
+**October 16 FD-T01 accepted and complete:** Source review is prepared at `acc371a`. Bevin
+confirmed that the Desktop Simulation icon should retain the larger map as
+entry, with the five-node test selected from it. The
+[entry/compatibility review](FIELD_DATA_ENTRY_REVIEW.md) records the route,
+development inputs and concrete composition proposal. PDD/SDD launch sections
+are updated. Bevin accepted the plan and waived further review, including the
+additional Salty review. FD-T01 is Done with all four criteria closed under
+that explicit exception. See the
+[FD-T01 handoff](handoffs/2026-10-16-1335-codex-fd-t01-route-entry-and-compatibility-review.md).
+
 **October 16 Sprint 5 kickoff:** S5 is Active with the approved four-week work
 window **October 19-November 15, 2026**. All 16 Field Data tickets are in
 Current Work with 79 unchecked acceptance items; owners/reviewers stay
@@ -14,8 +239,9 @@ capacity, so the upper estimate exceeds that allowance by 31h. See the
 [S5 control](Sprints/S5-control-record.md),
 [published ticket index](FIELD_DATA_TICKET_DRAFT.md#published-trello-index---2026-10-16)
 and [kickoff handoff](handoffs/2026-10-16-0125-codex-s5-kickoff-trello-publication-and-projectmain-sync.md).
-No gameplay implementation or new test/seed run was performed at kickoff.
-Next: allocate the work and resolve FD-T01's route entry/compatibility review.
+No gameplay implementation or new test/seed run was performed at kickoff. At
+that time, next was team allocation and FD-T01's route entry/compatibility
+review; both are now resolved, and FD-T02 is complete.
 
 ### Earlier checkpoints (historical)
 

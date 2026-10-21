@@ -45,6 +45,7 @@ internal static class Program
                     + "CellSim.Batch verify <reference.jsonl> <runs.jsonl>\n"
                     + "CellSim.Batch replay <snapshot.json> <seed> <new-output.json>\n"
                     + "CellSim.Batch replay-batch <batch-directory> <condition> <seed> <new-output.json>\n"
+                    + "CellSim.Batch journey-replay <snapshot.json> <seed> <actions.json> <new-output.json>\n"
                     + "CellSim.Batch header <snapshot.json> <arguments.json> <seedStart> <seedCount> <new-output.json>\n"
                     + "CellSim.Batch status <batch-directory>\nCellSim.Batch self-test");
                 return 0;
@@ -78,6 +79,20 @@ internal static class Program
                         var input = LoadSnapshot(plan.snapshot);
                         using var output = NewWriter(args[4]);
                         output.Write(RunPortableSeed(input, condition.arguments, seed, true));
+                    }
+                    break;
+                case "journey-replay":
+                    Require(args, 5, 5);
+                    try { JourneyReplay(args[1], int.Parse(args[2]), args[3], args[4]); }
+                    catch (Exception exception)
+                    {
+                        if (!File.Exists(args[4]))
+                        {
+                            Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(args[4]))!);
+                            WriteAtomic(args[4], new { schemaVersion = 1, reportType = "FieldDataJourneyReplay",
+                                executionStatus = "crashed", error = exception.ToString() });
+                        }
+                        throw;
                     }
                     break;
                 case "self-test": Require(args, 1, 1); SelfTest(); break;
@@ -136,6 +151,394 @@ internal static class Program
     }
     static string Identity(Plan plan) => HashText(JsonSerializer.Serialize(new { snapshotHash = HashFile(plan.snapshot), assemblyHash = AssemblyHash,
         runtime = Environment.Version.ToString(), plan.seedStart, plan.seedCount, plan.chunkSize, plan.conditions }, Json));
+
+    static void JourneyReplay(string snapshotPath, int seed, string actionsPath, string outputPath)
+    {
+        if (seed < 0) throw new ArgumentOutOfRangeException(nameof(seed));
+        if (File.Exists(outputPath)) throw new IOException("Journey replay output already exists; choose a new path.");
+        var snapshot = LoadSnapshot(snapshotPath);
+        if (snapshot.fieldDataDefinition == null)
+            throw new InvalidDataException("The portable snapshot has no valid Field Data definition: "
+                + "export it with -fieldDataDefinitionPath");
+        if (!snapshot.fieldDataDefinition.TryRestore(out var definition, out var definitionError))
+            throw new InvalidDataException("The portable Field Data definition is invalid: " + definitionError);
+        var schedule = Read<FieldDataReplaySchedule>(actionsPath);
+        if (schedule.schemaVersion != 1 || schedule.actions == null)
+            throw new InvalidDataException("Field Data action schedule is incomplete or unsupported.");
+        var data = snapshot.Restore();
+        var selected = new SpeciesId(definition.SelectedSpeciesId);
+        if (!data.SpeciesRules.TryGetValue(selected, out var selectedRules))
+            throw new InvalidDataException("The selected Field Data species is absent from the portable scenario.");
+        var targetTicks = checked(definition.RoundLength * definition.RoundsPerNode * FieldDataJourneyDefinition.SimulationCount);
+        ValidateReplaySchedule(schedule, targetTicks);
+        var run = new SimulationRunState(SpeciesInitialGridFactory.Create(data, seed), selected,
+            seed, data.RunDurationSeconds, targetTicks);
+        run.ConfigureContinuousPhases(definition.RoundLength);
+        var runner = new SpeciesSimulationRunner(run, data);
+        var manager = new SimulationManager();
+        manager.SetRunner(runner);
+        var progression = new SpeciesProgression(new SpeciesDefinition(selected, selectedRules));
+        using var session = new FieldDataJourneySession(definition, manager, progression);
+        if (snapshot.fieldDataOrdinaryRewards == null)
+            throw new InvalidDataException("This Field Data snapshot predates the explicit ordinary reward pool; export it again.");
+        var ordinaryUpgrades = snapshot.fieldDataOrdinaryRewards.Select(item => item.Restore())
+            .Where(item => item.TargetSpecies == selected).ToArray() ?? Array.Empty<SpeciesUpgradeSnapshot>();
+        if (ordinaryUpgrades.Length > 0 && !session.SetOrdinaryRewardPool(ordinaryUpgrades))
+            throw new InvalidDataException("The portable upgrade catalog could not initialize the journey reward pool.");
+        if (!session.Begin()) throw new InvalidOperationException("The Field Data journey could not start.");
+
+        var result = new FieldDataReplayResult
+        {
+            schemaVersion = 1,
+            reportType = "FieldDataJourneyReplay",
+            seed = seed,
+            sourceHash = snapshot.sourceHash,
+            scenarioFingerprint = data.Fingerprint,
+            definitionFingerprint = definition.Fingerprint,
+            scheduledActionCount = schedule.actions.Length,
+            scheduledActions = new List<FieldDataReplayActionResult>(),
+            boundaries = new List<FieldDataReplayBoundary>(),
+            firstAffordable = new List<FieldDataReplayAffordability>(),
+            acquisitions = new List<FieldDataReplayIncomeAcquisition>(),
+            reorders = new List<FieldDataReplayReorder>(),
+            humanDecisionTimeCaptured = schedule.actions.Any(action => action.humanDecisionTimeMilliseconds.HasValue),
+            decisionTimingUnit = "milliseconds",
+        };
+        var replayTimer = Stopwatch.StartNew();
+        var executedActions = new HashSet<FieldDataReplayAction>();
+        var recordedAffordability = new HashSet<string>(StringComparer.Ordinal);
+        var actionsByTick = schedule.actions.GroupBy(action => action.tick).ToDictionary(group => group.Key, group => group.ToArray());
+        while (session.State == FieldDataJourneyFlowState.Running)
+        {
+            var previousTick = run.Tick;
+            manager.Advance(data.StepInterval);
+            if (run.Tick == previousTick)
+                throw new InvalidOperationException("The shared simulation runner made no progress.");
+            if (session.State == FieldDataJourneyFlowState.Failed || session.State == FieldDataJourneyFlowState.Succeeded)
+            {
+                if (actionsByTick.TryGetValue(run.Tick, out var terminalActions))
+                    foreach (var action in terminalActions)
+                    {
+                        result.scheduledActions.Add(ExecuteReplayAction(session, run, action));
+                        executedActions.Add(action);
+                        result.scheduledActions[result.scheduledActions.Count - 1].humanDecisionTimeMilliseconds = action.humanDecisionTimeMilliseconds;
+                    }
+                break;
+            }
+            if (session.State != FieldDataJourneyFlowState.RoundDecision && session.State != FieldDataJourneyFlowState.Shop)
+                continue;
+
+            var boundary = CreateReplayBoundary(session, run);
+            result.boundaries.Add(boundary);
+            if (session.State == FieldDataJourneyFlowState.Shop)
+                boundary.shopOffers = CreateReplayShopOffers(session.GetCurrentShopVisit());
+            RecordFirstAffordability(result, session, definition, boundary, recordedAffordability);
+            if (actionsByTick.TryGetValue(run.Tick, out var scheduled))
+                foreach (var action in scheduled)
+                {
+                    result.scheduledActions.Add(ExecuteReplayAction(session, run, action));
+                    executedActions.Add(action);
+                    result.scheduledActions[result.scheduledActions.Count - 1].humanDecisionTimeMilliseconds = action.humanDecisionTimeMilliseconds;
+                }
+            foreach (var choices in new[] { session.GetCurrentRoundRewardChoices(), session.GetCurrentNodeRewardChoices() })
+            {
+                if (choices == null || choices.Resolved) continue;
+                var before = session.Ledger.Balance;
+                var resolved = session.ResolveRewardChoice(choices.SourceId, "skip", out var error);
+                result.scheduledActions.Add(new FieldDataReplayActionResult
+                {
+                    tick = run.Tick, type = "auto-skip-choice", requestId = choices.SourceId,
+                    targetId = "skip", succeeded = resolved, status = resolved ? "succeeded" : "rejected", error = error,
+                    balanceBefore = before, balanceAfter = session.Ledger.Balance,
+                });
+            }
+            boundary.balanceAfterActions = session.Ledger.Balance;
+            boundary.boardDigestAfterActions = PortableBoardDigest(run.Cells);
+            boundary.incomeOrderAfterActions = session.CurrentIncomeExecutionOrder
+                .Select(item => item.InstanceId).ToArray();
+            if (session.State == FieldDataJourneyFlowState.Succeeded) break;
+            if (session.State == FieldDataJourneyFlowState.RoundDecision || session.State == FieldDataJourneyFlowState.Shop)
+                if (!session.Continue())
+                    throw new InvalidOperationException("The Field Data journey could not continue at tick " + run.Tick + ".");
+        }
+
+        result.finalTick = run.Tick;
+        result.finalBoardDigest = PortableBoardDigest(run.Cells);
+        replayTimer.Stop();
+        result.automatedRuntimeMilliseconds = replayTimer.Elapsed.TotalMilliseconds;
+        foreach (var action in schedule.actions.Where(action => !executedActions.Contains(action)))
+            result.scheduledActions.Add(new FieldDataReplayActionResult
+            {
+                tick = action.tick, type = action.type ?? string.Empty, requestId = action.requestId ?? string.Empty,
+                targetId = action.offerId ?? action.choiceId ?? action.controlKind ?? string.Empty,
+                status = "not-executed", error = "Journey ended before this scheduled tick or it was not a decision boundary.",
+                balanceBefore = session.Ledger.Balance, balanceAfter = session.Ledger.Balance,
+                humanDecisionTimeMilliseconds = action.humanDecisionTimeMilliseconds,
+            });
+        result.terminalState = session.State.ToString();
+        result.executionStatus = session.State == FieldDataJourneyFlowState.Succeeded
+            || session.State == FieldDataJourneyFlowState.Failed || session.State == FieldDataJourneyFlowState.Closed
+            ? "completed" : "incomplete";
+        result.finalBalance = session.Ledger.Balance;
+        result.fieldDataLostOnFailure = session.FieldDataLostOnFailure;
+        result.populationAwards = session.Ledger.Awards.Where(award => award.Kind == FieldDataAwardKind.PopulationPayout)
+            .Select(award => CreateReplayAward(award)).ToArray();
+        result.nodeClearAwards = session.Ledger.Awards.Where(award => award.Kind == FieldDataAwardKind.NodeClear)
+            .Select(award => CreateReplayAward(award)).ToArray();
+        result.acquisitions.AddRange(session.IncomeAcquisitionHistory.Select(item => new FieldDataReplayIncomeAcquisition
+        { sequence = item.Sequence, instanceId = item.InstanceId, offerId = item.OfferId, sourceId = item.SourceId }));
+        result.reorders.AddRange(session.IncomeReorderHistory.Select(item => new FieldDataReplayReorder
+        {
+            requestId = item.RequestId, shopVisit = item.ShopVisit, kind = item.Kind.ToString(),
+            priceStep = item.PriceStep, cost = item.Cost, previousOrder = item.PreviousOrder.ToArray(), nextOrder = item.NextOrder.ToArray(),
+        }));
+        result.effectiveIncomeOrder = session.CurrentIncomeExecutionOrder.Select(item => item.InstanceId).ToArray();
+        if (session.State == FieldDataJourneyFlowState.Succeeded || session.State == FieldDataJourneyFlowState.Closed)
+        {
+            var explicitExit = result.scheduledActions.LastOrDefault(action => action.type == "exit-success" && action.succeeded);
+            if (explicitExit != null) result.successfulExitDiscardedFieldData = explicitExit.discardedFieldData;
+            result.fieldDataBeforeSuccessfulExit = session.State == FieldDataJourneyFlowState.Succeeded
+                ? session.Ledger.Balance : explicitExit?.balanceBefore ?? 0;
+            if (schedule.exitSuccessfulResults && session.State == FieldDataJourneyFlowState.Succeeded)
+            {
+                if (!session.TryExitSuccessfulResults(out var discarded))
+                    throw new InvalidOperationException("The successful Field Data journey could not exit results.");
+                result.successfulExitDiscardedFieldData = discarded;
+                result.finalBalance = session.Ledger.Balance;
+                result.terminalState = session.State.ToString();
+            }
+        }
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(outputPath))!);
+        WriteAtomic(outputPath, result);
+    }
+
+    static void ValidateReplaySchedule(FieldDataReplaySchedule schedule, int targetTicks)
+    {
+        var requestIds = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var action in schedule.actions)
+        {
+            if (action == null || action.tick < 0 || action.tick > targetTicks)
+                throw new InvalidDataException("Every Field Data action must have a tick within the journey.");
+            if (action.type == "resolve-choice" && string.IsNullOrWhiteSpace(action.choiceId))
+                throw new InvalidDataException("A resolve-choice action requires choiceId.");
+            if ((action.type == "population" || action.type == "shop-offer" || action.type == "random-reorder"
+                || action.type == "chosen-reorder") && string.IsNullOrWhiteSpace(action.requestId))
+                throw new InvalidDataException("Purchases and reorders require a stable requestId.");
+            if ((action.type == "shop-offer" || action.type == "reroll") && string.IsNullOrWhiteSpace(action.offerId))
+                throw new InvalidDataException("Shop offer actions require offerId.");
+            if (action.type == "chosen-reorder" && (action.orderIds == null || action.orderIds.Length == 0))
+                throw new InvalidDataException("A chosen reorder requires a complete orderIds list.");
+            if (action.humanDecisionTimeMilliseconds.HasValue && action.humanDecisionTimeMilliseconds.Value < 0)
+                throw new InvalidDataException("Human decision time cannot be negative.");
+            if (!string.IsNullOrWhiteSpace(action.requestId) && !requestIds.Add(action.requestId))
+                throw new InvalidDataException("Scheduled requestId values must be unique.");
+            if (action.type != "resolve-choice" && action.type != "population" && action.type != "shop-offer"
+                && action.type != "reroll" && action.type != "random-reorder" && action.type != "chosen-reorder"
+                && action.type != "exit-success")
+                throw new InvalidDataException("Unknown Field Data action type: " + action.type);
+        }
+    }
+
+    static void RecordFirstAffordability(FieldDataReplayResult result, FieldDataJourneySession session,
+        FieldDataJourneyDefinition definition, FieldDataReplayBoundary boundary, HashSet<string> recorded)
+    {
+        void Add(string type, string id, int cost)
+        {
+            var key = type + ":" + id;
+            if (cost <= boundary.balanceBeforeActions && recorded.Add(key))
+                result.firstAffordable.Add(new FieldDataReplayAffordability
+                {
+                    type = type, targetId = id, cost = cost, tick = boundary.tick,
+                    globalRound = boundary.globalRound, simulationNode = (boundary.globalRound - 1)
+                        / FieldDataJourneyDefinition.RoundsPerSimulation + 1,
+                    balance = boundary.balanceBeforeActions,
+                });
+        }
+
+        if (session.State == FieldDataJourneyFlowState.Shop)
+        {
+            foreach (var offer in boundary.shopOffers ?? Array.Empty<FieldDataReplayShopOffer>())
+                if (!offer.locked && !offer.purchased) Add("shop-offer", offer.id, offer.cost);
+            if (session.TryGetCurrentReorderCosts(out var randomCost, out var chosenCost, out _))
+            {
+                Add("random-reorder", "random", randomCost);
+                Add("chosen-reorder", "chosen", chosenCost);
+            }
+        }
+        else
+        {
+            foreach (var control in definition.PopulationControls)
+                Add("population", control.Id, control.Cost);
+        }
+    }
+
+    static FieldDataReplayActionResult ExecuteReplayAction(FieldDataJourneySession session, SimulationRunState run,
+        FieldDataReplayAction action)
+    {
+        var record = new FieldDataReplayActionResult
+        {
+            tick = run.Tick, type = action.type ?? string.Empty, requestId = action.requestId ?? string.Empty,
+            targetId = action.offerId ?? action.choiceId ?? action.controlKind ?? string.Empty,
+            balanceBefore = session.Ledger.Balance, balanceAfter = session.Ledger.Balance,
+        };
+        try
+        {
+            switch (action.type)
+            {
+                case "resolve-choice":
+                    var choices = session.GetCurrentRoundRewardChoices() ?? session.GetCurrentNodeRewardChoices();
+                    record.succeeded = choices != null && session.ResolveRewardChoice(choices.SourceId, action.choiceId, out record.error);
+                    if (choices == null) record.error = "There is no unresolved reward choice at this boundary.";
+                    break;
+                case "population":
+                    if (!Enum.TryParse(action.controlKind, true, out FieldDataPopulationInterventionKind kind))
+                        throw new ArgumentException("Unknown population control kind: " + action.controlKind);
+                    record.succeeded = session.TryBuyPopulationControl(action.requestId, kind, out var population, out record.error);
+                    if (population != null)
+                    {
+                        record.receiptId = population.RequestId;
+                        record.populationKind = population.Kind.ToString();
+                        record.speciesId = population.SpeciesId.Value;
+                        record.populationDelta = population.Quantity;
+                        record.cost = population.Cost;
+                        record.affectedPositions = population.AffectedPositions.Select(position => new[] { position.X, position.Y }).ToArray();
+                    }
+                    break;
+                case "shop-offer":
+                    record.cost = session.GetCurrentShopVisit()?.Offers.FirstOrDefault(offer => offer.Id == action.offerId)?.Cost ?? 0;
+                    record.succeeded = session.TryBuyShopOffer(action.requestId, action.offerId, out record.error);
+                    record.receiptId = record.succeeded ? action.requestId : string.Empty;
+                    break;
+                case "reroll":
+                    record.succeeded = session.TryRerollCappedShopOffer(action.offerId, out var replacement, out record.error);
+                    record.receiptId = replacement?.Id ?? string.Empty;
+                    break;
+                case "random-reorder":
+                    record.succeeded = session.TryBuyRandomIncomeReorder(action.requestId, out var random, out record.error);
+                    if (random != null)
+                    {
+                        record.cost = random.Cost;
+                        record.receiptId = random.RequestId;
+                        record.previousOrder = random.PreviousOrder.ToArray();
+                        record.nextOrder = random.NextOrder.ToArray();
+                    }
+                    break;
+                case "chosen-reorder":
+                    if (!session.TryCreateChosenIncomeReorderDraft(out _, out record.error)) break;
+                    record.succeeded = session.TryConfirmChosenIncomeReorder(action.requestId,
+                        action.orderIds ?? Array.Empty<string>(), out var chosen, out record.error);
+                    if (chosen != null)
+                    {
+                        record.cost = chosen.Cost;
+                        record.receiptId = chosen.RequestId;
+                        record.previousOrder = chosen.PreviousOrder.ToArray();
+                        record.nextOrder = chosen.NextOrder.ToArray();
+                    }
+                    break;
+                case "exit-success":
+                    record.succeeded = session.TryExitSuccessfulResults(out var discarded);
+                    record.discardedFieldData = record.succeeded ? discarded : 0;
+                    if (record.succeeded) record.receiptId = "successful-results-exit";
+                    break;
+                default:
+                    throw new ArgumentException("Unknown Field Data action type: " + action.type);
+            }
+        }
+        catch (Exception exception) { record.error = exception.Message; record.succeeded = false; }
+        record.status = record.succeeded ? "succeeded" : "rejected";
+        record.balanceAfter = session.Ledger.Balance;
+        record.chargedFieldData = action.type == "exit-success" ? 0 : record.balanceBefore - record.balanceAfter;
+        return record;
+    }
+
+    static string PortableBoardDigest(Grid<SpeciesCell> cells) => (string)typeof(SaltyGame.EditorTools.CellularSimulationExperimentRunner)
+        .GetMethod("PortableStateDigest", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { cells });
+
+    static FieldDataReplayBoundary CreateReplayBoundary(FieldDataJourneySession session, SimulationRunState run)
+    {
+        var snapshot = run.PopulationHistory[run.PopulationHistory.Count - 1];
+        return new FieldDataReplayBoundary
+        {
+            tick = run.Tick, globalRound = session.GlobalRound, flowState = session.State.ToString(),
+            populations = snapshot.Counts.ToDictionary(pair => pair.Key.Value, pair => pair.Value, StringComparer.Ordinal),
+            balanceBeforeActions = session.Ledger.Balance,
+            boardDigestBeforeActions = PortableBoardDigest(run.Cells),
+            pendingRewardChoices = (session.GetCurrentRoundRewardChoices() ?? session.GetCurrentNodeRewardChoices())?.Choices
+                .Select(choice => choice.Id).ToArray() ?? Array.Empty<string>(),
+            incomeOrderBeforeActions = session.CurrentIncomeExecutionOrder.Select(item => item.InstanceId).ToArray(),
+        };
+    }
+
+    static FieldDataReplayShopOffer[] CreateReplayShopOffers(FieldDataShopVisit visit) => visit?.Offers.Select(offer => new FieldDataReplayShopOffer
+    {
+        id = offer.Id, kind = offer.Kind.ToString(), displayName = offer.DisplayName,
+        cost = offer.Cost, locked = offer.Locked, purchased = offer.Purchased,
+    }).ToArray() ?? Array.Empty<FieldDataReplayShopOffer>();
+
+    static FieldDataReplayAward CreateReplayAward(FieldDataAwardReceipt award) => new FieldDataReplayAward
+    {
+        tick = award.Tick, globalRound = award.GlobalRound, kind = award.Kind.ToString(), amount = award.Amount,
+        balanceBefore = award.BalanceBefore, balanceAfter = award.BalanceAfter,
+        populations = award.PopulationCounts.ToDictionary(pair => pair.Key.Value, pair => pair.Value, StringComparer.Ordinal),
+        incomeSteps = award.Income?.Steps.Select(step => new FieldDataReplayIncomeStep
+        {
+            instanceId = step.InstanceId, offerId = step.OfferId, operation = step.Operation.ToString(),
+            inputAmount = step.InputAmount, outputAmount = step.OutputAmount, population = step.HarePopulation,
+        }).ToArray() ?? Array.Empty<FieldDataReplayIncomeStep>(),
+    };
+
+    sealed class FieldDataReplaySchedule
+    { public int schemaVersion; public bool exitSuccessfulResults; public FieldDataReplayAction[] actions; }
+    sealed class FieldDataReplayAction
+    {
+        public int tick; public string type; public string requestId; public string choiceId; public string offerId;
+        public string controlKind; public string[] orderIds; public int? humanDecisionTimeMilliseconds;
+    }
+    sealed class FieldDataReplayResult
+    {
+        public int schemaVersion; public string reportType; public int seed; public string sourceHash;
+        public string scenarioFingerprint; public string definitionFingerprint; public int scheduledActionCount;
+        public string terminalState; public int finalTick; public int finalBalance; public int fieldDataLostOnFailure; public string finalBoardDigest;
+        public string executionStatus;
+        public int fieldDataBeforeSuccessfulExit; public int successfulExitDiscardedFieldData;
+        public double automatedRuntimeMilliseconds; public bool humanDecisionTimeCaptured; public string decisionTimingUnit;
+        public List<FieldDataReplayActionResult> scheduledActions; public List<FieldDataReplayBoundary> boundaries;
+        public List<FieldDataReplayAffordability> firstAffordable;
+        public FieldDataReplayAward[] populationAwards; public FieldDataReplayAward[] nodeClearAwards;
+        public List<FieldDataReplayIncomeAcquisition> acquisitions; public List<FieldDataReplayReorder> reorders;
+        public string[] effectiveIncomeOrder;
+    }
+    sealed class FieldDataReplayActionResult
+    {
+        public int tick; public string type; public string requestId; public string targetId; public bool succeeded;
+        public string error; public string receiptId; public string status; public int balanceBefore; public int balanceAfter;
+        public int discardedFieldData; public int chargedFieldData; public string[] previousOrder; public string[] nextOrder;
+        public int? humanDecisionTimeMilliseconds;
+        public string populationKind; public string speciesId; public int populationDelta; public int cost; public int[][] affectedPositions;
+    }
+    sealed class FieldDataReplayAffordability
+    { public string type; public string targetId; public int cost; public int tick; public int globalRound; public int simulationNode; public int balance; }
+    sealed class FieldDataReplayBoundary
+    {
+        public int tick; public int globalRound; public string flowState; public Dictionary<string, int> populations;
+        public int balanceBeforeActions; public int balanceAfterActions; public string[] pendingRewardChoices;
+        public string[] incomeOrderBeforeActions; public string[] incomeOrderAfterActions;
+        public string boardDigestBeforeActions; public string boardDigestAfterActions;
+        public FieldDataReplayShopOffer[] shopOffers;
+    }
+    sealed class FieldDataReplayShopOffer
+    { public string id; public string kind; public string displayName; public int cost; public bool locked; public bool purchased; }
+    sealed class FieldDataReplayAward
+    {
+        public int tick; public int globalRound; public string kind; public int amount; public int balanceBefore;
+        public int balanceAfter; public Dictionary<string, int> populations; public FieldDataReplayIncomeStep[] incomeSteps;
+    }
+    sealed class FieldDataReplayIncomeStep
+    { public string instanceId; public string offerId; public string operation; public decimal inputAmount; public decimal outputAmount; public int population; }
+    sealed class FieldDataReplayIncomeAcquisition
+    { public int sequence; public string instanceId; public string offerId; public string sourceId; }
+    sealed class FieldDataReplayReorder
+    { public string requestId; public int shopVisit; public string kind; public int priceStep; public int cost; public string[] previousOrder; public string[] nextOrder; }
 
     static void Batch(string planPath, string[] flags)
     {
@@ -608,7 +1011,129 @@ internal static class Program
         restored.width++; rejected = false;
         try { restored.Restore(); } catch (InvalidOperationException) { rejected = true; }
         if (!rejected) throw new Exception("Corrupt snapshot accepted.");
+        RunJourneyReplaySelfTest();
         Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; gestation state digest and entity normalization; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
+    }
+
+    static void RunJourneyReplaySelfTest()
+    {
+        var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
+        var hare = new SpeciesId("hare");
+        var cardinals = SpeciesRuleDefaults.CreateCardinalPattern();
+        rules[hare] = new SpeciesRules(0, cardinals, cardinals, 0, cardinals, 0, cardinals, null,
+            cardinals, 0, reproductionChance: 0, startingEnergy: 500, metabolism: 0,
+            role: SpeciesRole.Herbivore, maximumEnergy: 500);
+        var probabilities = new Dictionary<SpeciesId, float>();
+        var populations = new Dictionary<SpeciesId, int>
+        { [hare] = 20, [SpeciesIds.Plant] = 0, [SpeciesIds.Carnivore] = 0 };
+        var data = new CellularSimData(16, 16, probabilities, rules, 20f, .2f,
+            startingPopulations: populations);
+        var route = new[]
+        {
+            new FieldDataRouteNode("sim-1", JourneyNodeKind.Simulation, "shop-1"),
+            new FieldDataRouteNode("shop-1", JourneyNodeKind.Shop, "sim-2"),
+            new FieldDataRouteNode("sim-2", JourneyNodeKind.Simulation, "shop-2"),
+            new FieldDataRouteNode("shop-2", JourneyNodeKind.Shop, "sim-3"),
+            new FieldDataRouteNode("sim-3", JourneyNodeKind.Simulation, ""),
+        };
+        var controls = new[]
+        {
+            new FieldDataPopulationControl("add-hares", "hare", 1, 10),
+            new FieldDataPopulationControl("remove-hares", "hare", -1, 10),
+            new FieldDataPopulationControl("add-foxes", "carnivore", 1, 10),
+            new FieldDataPopulationControl("remove-foxes", "carnivore", -1, 10),
+            new FieldDataPopulationControl("add-plants", "plant", 5, 10),
+            new FieldDataPopulationControl("remove-plants", "plant", -5, 10),
+        };
+        var income = new[]
+        {
+            new FieldDataIncomeOffer("flat-hare", "+1 FD per Hare", FieldDataIncomeOperation.AddPerHare, 1m,
+                FieldDataIncomeSource.Shop, 1, 20),
+            new FieldDataIncomeOffer("multiply-1-5", "×1.5 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m,
+                FieldDataIncomeSource.Shop, 1, 30),
+            new FieldDataIncomeOffer("multiply-2", "×2 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m,
+                FieldDataIncomeSource.Shop, 2, 50),
+        };
+        var definition = new FieldDataJourneyDefinition("portable-self-test", "self-test", "hare", route,
+            controls, income, Array.Empty<FieldDataSignedSpeciesOffer>(), new FieldDataReorderPricing(10, 11, 10, 10));
+        var portable = PortableSnapshot.Create(data);
+        portable.sourceCommit = "self-test";
+        portable.arguments = new[] { "-playerSpeciesId", "hare", "-runTicks", "1800" };
+        portable.fieldDataDefinition = FieldDataPortableDefinition.Create(definition);
+        portable.sourceHash = PortableSourceHash(relative =>
+        {
+            using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("CellSim.Source." + Path.GetFileName(relative))
+                ?? throw new InvalidDataException("Missing embedded source: " + relative);
+            using var reader = new StreamReader(stream);
+            return reader.ReadToEnd();
+        });
+
+        var directory = Path.Combine(Path.GetTempPath(), "cellsim-field-data-self-test-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            var snapshotPath = Path.Combine(directory, "snapshot.json");
+            var firstPath = Path.Combine(directory, "first.json");
+            var repeatedPath = Path.Combine(directory, "repeated.json");
+            var actionPath = Path.Combine(directory, "actions.json");
+            portable.fieldDataOrdinaryRewards = Array.Empty<UpgradeData>();
+            File.WriteAllText(snapshotPath, JsonSerializer.Serialize(portable, Json));
+            var schedule = new FieldDataReplaySchedule
+            {
+                schemaVersion = 1,
+                exitSuccessfulResults = true,
+                actions = new[]
+                {
+                    new FieldDataReplayAction { tick = 100, type = "resolve-choice", choiceId = "skip", humanDecisionTimeMilliseconds = 247 },
+                    new FieldDataReplayAction { tick = 100, type = "population", requestId = "buy-hare-1", controlKind = "AddHare" },
+                    new FieldDataReplayAction { tick = 101, type = "population", requestId = "off-boundary", controlKind = "AddHare" },
+                },
+            };
+            File.WriteAllText(actionPath, JsonSerializer.Serialize(schedule, Json));
+            JourneyReplay(snapshotPath, 42, actionPath, firstPath);
+            JourneyReplay(snapshotPath, 42, actionPath, repeatedPath);
+
+            using var first = JsonDocument.Parse(File.ReadAllText(firstPath));
+            using var repeated = JsonDocument.Parse(File.ReadAllText(repeatedPath));
+            var output = first.RootElement;
+            var repeat = repeated.RootElement;
+            if (output.GetProperty("finalTick").GetInt32() != 1800
+                || output.GetProperty("executionStatus").GetString() != "completed"
+                || output.GetProperty("terminalState").GetString() != "Closed"
+                || output.GetProperty("populationAwards").GetArrayLength() != 18
+                || output.GetProperty("nodeClearAwards").GetArrayLength() != 3
+                || output.GetProperty("successfulExitDiscardedFieldData").GetInt32() <= 0)
+                throw new Exception("Full journey replay, settlement count, node awards or success exit failed.");
+            var actions = output.GetProperty("scheduledActions").EnumerateArray()
+                .Where(action => action.GetProperty("type").GetString() != "auto-skip-choice").ToArray();
+            if (actions.Length != 3 || actions[0].GetProperty("status").GetString() != "succeeded"
+                || actions[1].GetProperty("status").GetString() != "succeeded"
+                || actions[1].GetProperty("cost").GetInt32() != 10
+                || actions[1].GetProperty("chargedFieldData").GetInt32() != 10
+                || actions[1].GetProperty("populationDelta").GetInt32() != 1
+                || actions[1].GetProperty("affectedPositions").GetArrayLength() != 1
+                || actions[2].GetProperty("status").GetString() != "not-executed"
+                || !output.GetProperty("humanDecisionTimeCaptured").GetBoolean()
+                || actions[0].GetProperty("humanDecisionTimeMilliseconds").GetInt32() != 247
+                || !output.TryGetProperty("firstAffordable", out var affordability) || affordability.GetArrayLength() == 0)
+                throw new Exception("Replay action status, decision timing or affordability evidence failed: " + output.GetProperty("scheduledActions")
+                    + " affordability=" + (output.TryGetProperty("firstAffordable", out var recorded) ? recorded.GetArrayLength() : -1));
+            if (Canonical(output.GetProperty("boundaries")) != Canonical(repeat.GetProperty("boundaries"))
+                || Canonical(output.GetProperty("populationAwards")) != Canonical(repeat.GetProperty("populationAwards"))
+                || output.GetProperty("finalBalance").GetInt32() != repeat.GetProperty("finalBalance").GetInt32()
+                || output.GetProperty("finalBoardDigest").GetString()?.Length != 64
+                || output.GetProperty("finalBoardDigest").GetString() != repeat.GetProperty("finalBoardDigest").GetString())
+                throw new Exception("Field Data journey replay was not deterministic for identical frozen inputs.");
+            var boundary200 = output.GetProperty("boundaries").EnumerateArray()
+                .Single(boundary => boundary.GetProperty("tick").GetInt32() == 200);
+            if (boundary200.GetProperty("populations").GetProperty("hare").GetInt32() != 21)
+                throw new Exception("A successful replay intervention did not change the next board boundary.");
+            Console.WriteLine("PASS: full 18-round Field Data replay; 18 exactly-once population awards; three node awards; successful-result discard; deterministic boundaries; scheduled and incomplete action statuses; first-affordability and human-time provenance.");
+        }
+        finally
+        {
+            Directory.Delete(directory, true);
+        }
     }
     public sealed class Plan
     {

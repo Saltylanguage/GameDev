@@ -14,6 +14,8 @@ namespace SaltyGame
         PhaseDecision,
         JourneyDecision,
         JourneyNodeReward,
+        FieldDataRoundDecision,
+        FieldDataShop,
         Rewards,
         Results,
     }
@@ -248,6 +250,7 @@ namespace SaltyGame
 
         [Header("Journey")]
         [SerializeField] JourneyMapAsset journeyMap;
+        [SerializeField] FieldDataJourneyDefinitionAsset fieldDataTestJourneyDefinition;
         [SerializeField] bool journeyPrototypeEnabled = true;
 
         [Header("Run")]
@@ -321,12 +324,16 @@ namespace SaltyGame
         bool selectedUpgradeAppliedToCurrentRun;
         string phaseRewardMessage;
         bool savedSettingsLoaded;
+        FieldDataJourneyDefinition fieldDataJourneyDefinition;
+        FieldDataJourneySession fieldDataJourneySession;
 
         const string DefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v5";
         const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
+        public FieldDataJourneySession FieldDataSession => fieldDataJourneySession;
+        public FieldDataJourneyDefinition ConfiguredFieldDataJourney => fieldDataJourneyDefinition;
         public SpeciesProgression Progression => progression;
         public bool LastExpeditionFailed => lastExpeditionFailed;
         public bool LastRunEndedEarly => lastRunEndedEarly;
@@ -469,6 +476,7 @@ namespace SaltyGame
         public int ContinuousPhaseCount => ContinuousExpeditionPhaseCount;
         public bool JourneyActive => journeyActive;
         public JourneyMapAsset JourneyMap => journeyMap;
+        public bool HasFieldDataTestJourney => fieldDataTestJourneyDefinition != null;
         public JourneyNodeAsset JourneyCurrentNode => journeyCurrentNode;
         public JourneyNodeAsset JourneyPendingNode => journeyPendingNode;
         public int JourneyRewardOptionCount => journeyPendingNode?.Kind == JourneyNodeKind.Reward
@@ -679,6 +687,12 @@ namespace SaltyGame
                 return;
             }
 
+            if (fieldDataJourneySession != null)
+            {
+                throw new InvalidOperationException(
+                    "The simulation helper cannot be rebound while a Field Data journey session is attached.");
+            }
+
             var existingRunner = simulationManager?.Runner;
 
             if (simulationHelper != null)
@@ -855,6 +869,7 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            DisposeFieldDataJourneySession();
             if (simulationManager != null)
             {
                 simulationManager.RunCompleted -= HandleRunCompleted;
@@ -870,6 +885,11 @@ namespace SaltyGame
 
         void HandlePhaseBoundaryReached(SimulationRunState run)
         {
+            if (fieldDataJourneySession != null)
+            {
+                return;
+            }
+
             if (continuousPhasesEnabled
                 && run != null
                 && run.Status == SimulationRunStatus.AwaitingDecision)
@@ -897,6 +917,11 @@ namespace SaltyGame
 
         void HandleRunCompleted(SimulationRunState run)
         {
+            if (fieldDataJourneySession != null)
+            {
+                return;
+            }
+
             if (rewardGranted)
             {
                 return;
@@ -982,7 +1007,23 @@ namespace SaltyGame
                     PrepareNextRun();
                 }
 
-                if (simulationHelper != null)
+                if (fieldDataJourneyDefinition != null)
+                {
+                    var manager = simulationHelper != null ? simulationHelper.Manager : simulationManager;
+                    fieldDataJourneySession = new FieldDataJourneySession(
+                        fieldDataJourneyDefinition,
+                        manager,
+                        progression);
+                    if (!fieldDataJourneySession.SetOrdinaryRewardPool(CreateFieldDataOrdinaryRewardPool()))
+                        throw new InvalidOperationException("The Field Data ordinary reward pool could not be configured before journey start.");
+                    fieldDataJourneySession.StateChanged += HandleFieldDataJourneyStateChanged;
+                    if (!fieldDataJourneySession.Begin())
+                    {
+                        DisposeFieldDataJourneySession();
+                        throw new InvalidOperationException("The Field Data journey could not start its prepared simulation run.");
+                    }
+                }
+                else if (simulationHelper != null)
                 {
                     simulationHelper.StartRun();
                 }
@@ -993,6 +1034,105 @@ namespace SaltyGame
                 sessionStarted = true;
                 previewState = SpeciesPreviewState.Running;
             }
+        }
+
+        SpeciesUpgradeSnapshot[] CreateFieldDataOrdinaryRewardPool()
+        {
+            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions);
+        }
+
+        /// <summary>Opts this preview into the approved Field Data route before its first run starts.</summary>
+        public bool TryConfigureFieldDataJourney(
+            FieldDataJourneyDefinition definition,
+            out string validationMessage)
+        {
+            validationMessage = string.Empty;
+            if (definition == null)
+            {
+                validationMessage = "A validated Field Data journey definition is required.";
+            }
+            else if (previewState != SpeciesPreviewState.Ready || sessionStarted || fieldDataJourneySession != null)
+            {
+                validationMessage = "A Field Data journey can only be configured before the simulation starts.";
+            }
+            else if (!string.Equals(definition.SelectedSpeciesId, playerSpecies.Value, StringComparison.Ordinal))
+            {
+                validationMessage = "The Field Data definition must match the selected player species.";
+            }
+            else if (SelectedScenario == null
+                || !string.Equals(definition.ScenarioId, SelectedScenario.name, StringComparison.OrdinalIgnoreCase))
+            {
+                validationMessage = "The Field Data definition must match the selected simulation scenario.";
+            }
+
+            if (!string.IsNullOrEmpty(validationMessage))
+            {
+                settingsMessage = validationMessage;
+                return false;
+            }
+
+            fieldDataJourneyDefinition = definition;
+            continuousPhasesEnabled = true;
+            phaseLengthTicks = definition.RoundLength;
+            ResetToStart();
+            settingsMessage = "Field Data journey configured; the prepared run will retain one 18-round simulation session.";
+            return true;
+        }
+
+        public bool TryConfigureFieldDataTestJourney(out string validationMessage)
+        {
+            if (fieldDataTestJourneyDefinition == null)
+            {
+                validationMessage = "The Field Data test route has not been assigned to this simulation entry.";
+                return false;
+            }
+            if (!fieldDataTestJourneyDefinition.TryResolve(out var definition, out validationMessage))
+                return false;
+            return TryConfigureFieldDataJourney(definition, out validationMessage);
+        }
+
+        public bool AbandonFieldDataJourney()
+        {
+            return fieldDataJourneySession != null && fieldDataJourneySession.Abandon();
+        }
+
+        void HandleFieldDataJourneyStateChanged(FieldDataJourneySession session)
+        {
+            if (!ReferenceEquals(session, fieldDataJourneySession))
+            {
+                return;
+            }
+
+            switch (session.State)
+            {
+                case FieldDataJourneyFlowState.Running:
+                    previewState = SpeciesPreviewState.Running;
+                    break;
+                case FieldDataJourneyFlowState.RoundDecision:
+                    previewState = SpeciesPreviewState.FieldDataRoundDecision;
+                    break;
+                case FieldDataJourneyFlowState.Shop:
+                    previewState = SpeciesPreviewState.FieldDataShop;
+                    break;
+                case FieldDataJourneyFlowState.Succeeded:
+                case FieldDataJourneyFlowState.Failed:
+                    result = SimulationRunResults.Create(session.Run, rewardsEligible: session.State == FieldDataJourneyFlowState.Succeeded);
+                    lastExpeditionFailed = session.State == FieldDataJourneyFlowState.Failed;
+                    previewState = SpeciesPreviewState.Results;
+                    break;
+            }
+        }
+
+        void DisposeFieldDataJourneySession()
+        {
+            if (fieldDataJourneySession == null)
+            {
+                return;
+            }
+
+            fieldDataJourneySession.StateChanged -= HandleFieldDataJourneyStateChanged;
+            fieldDataJourneySession.Dispose();
+            fieldDataJourneySession = null;
         }
 
         public bool TryApplyGlobalSettings(
@@ -1909,6 +2049,14 @@ namespace SaltyGame
 
         public void ContinueWithoutUpgrade()
         {
+            if (fieldDataJourneySession != null
+                && (fieldDataJourneySession.State == FieldDataJourneyFlowState.RoundDecision
+                    || fieldDataJourneySession.State == FieldDataJourneyFlowState.Shop))
+            {
+                fieldDataJourneySession.Continue();
+                return;
+            }
+
             if (previewState == SpeciesPreviewState.PhaseDecision)
             {
                 if (phaseDecisionCommitted)
@@ -2209,6 +2357,29 @@ namespace SaltyGame
 
         public void PlayNextSimulation(bool startImmediately = true)
         {
+            if (fieldDataJourneySession != null)
+            {
+                if (previewState != SpeciesPreviewState.Results)
+                {
+                    return;
+                }
+
+                if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Succeeded)
+                {
+                    if (!fieldDataJourneySession.TryExitSuccessfulResults(out _)) return;
+                }
+                else if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Failed)
+                {
+                    if (!fieldDataJourneySession.TryExitFailedResults()) return;
+                }
+                else if (fieldDataJourneySession.State != FieldDataJourneyFlowState.Closed)
+                {
+                    return;
+                }
+
+                DisposeFieldDataJourneySession();
+            }
+
             if (previewState == SpeciesPreviewState.Results)
             {
                 // Field Data ends with a journey; standalone expeditions retain their existing carryover.
@@ -2227,6 +2398,7 @@ namespace SaltyGame
 
         public void ResetToStart()
         {
+            DisposeFieldDataJourneySession();
             if (randomizeSeedOnStart)
             {
                 seed = Guid.NewGuid().GetHashCode();
@@ -2424,13 +2596,15 @@ namespace SaltyGame
             }
             rules = currentRules;
             var simulationData = CreateSimulationData();
-            journeyActive = journeyPrototypeEnabled
+            journeyActive = fieldDataJourneyDefinition == null
+                && journeyPrototypeEnabled
                 && continuousPhasesEnabled
                 && journeyMap != null
                 && journeyMap.AppliesTo(SelectedScenario, playerSpecies);
             SnapshotJourneyConditions();
-            var phaseCount = ContinuousExpeditionPhaseCount
-                * (journeyActive ? JourneyPrototypeCycleCount : 1);
+            var phaseCount = fieldDataJourneyDefinition != null
+                ? FieldDataJourneyDefinition.RoundsPerSimulation * FieldDataJourneyDefinition.SimulationCount
+                : ContinuousExpeditionPhaseCount * (journeyActive ? JourneyPrototypeCycleCount : 1);
             var continuousRun = continuousPhasesEnabled
                 && phaseLengthTicks > 0
                 && phaseLengthTicks <= int.MaxValue / phaseCount;

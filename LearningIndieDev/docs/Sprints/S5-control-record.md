@@ -41,6 +41,14 @@ estimate fitting available capacity. S6/S7 dates need reforecasting after S5.
 
 ## Selected work
 
+**October 17 delivery update:** implementation evidence is complete through
+FD-T12 plus FD-T14/15. The five-node Desktop route is playable; FD-T13 retains
+its independent human visual-acceptance criterion and FD-T16 needs actual
+internal self-play and accept/revise. This is not Sprint 5 or balance acceptance.
+See the [current handoff](../handoffs/2026-10-17-0202-codex-field-data-rendering-parity-and-cohort.md)
+and [self-play record](../FIELD_DATA_SELF_PLAY_REVIEW.md). Changes remain local
+and unpushed; original kickoff estimates and ownership exceptions remain.
+
 Every linked card has Sprint ID S5, its stable FD-T task ID, work dates,
 estimate, dependencies, outcome, source links and a native acceptance checklist.
 All work is Not started as of the October 16 kickoff audit.
@@ -65,8 +73,9 @@ All work is Not started as of the October 16 kickoff audit.
 | [FD-T16](https://trello.com/c/osmzcZVf/134-fd-t16-review-internal-self-play-and-record-accept-revise) | Review internal self-play and record accept/revise | 3–5 | FD-T15 | Unassigned |
 
 Follow the dependency fields. FD-T03/04 can follow FD-T02 independently;
-agree ownership of shared files when allocating work. The next operational
-step is team allocation and FD-T01's entry/compatibility review.
+agree ownership of shared files when allocating work. At kickoff, the next
+step was team allocation and FD-T01's entry/compatibility review; the review
+is now complete and FD-T02 has also been implemented.
 
 ## Exit evidence
 
@@ -79,6 +88,13 @@ step is team allocation and FD-T01's entry/compatibility review.
 
 ## Verified kickoff evidence - 2026-10-16
 
+**Later October 16 progress:** FD-T01 is accepted and complete with all four
+criteria closed under Bevin's explicit review exception. Bevin selected larger-map entry followed by explicit
+five-node test selection. [Source review](../FIELD_DATA_ENTRY_REVIEW.md) and
+PDD/SDD updates are accepted; Bevin waived further review. No Salty review is
+claimed. FD-T02 may proceed. Other 15 cards remain
+Current Work. The counts below retain the original kickoff snapshot.
+
 The live board was read back after publication: Current Work 16, Upcoming Work
 0, In Progress 0, Blocked 0, Done 13 and Backlog 26. Each card's description,
 Current Work placement and exact unchecked acceptance criteria were verified;
@@ -87,3 +103,20 @@ Local UI audit files/screenshots are under ignored
 `artifacts/s5-kickoff-20261016/`; those are publication evidence, not gameplay
 or balance evidence. No gameplay implementation or new Unity/seed run was
 performed during kickoff.
+
+## Current execution checkpoint - 2026-10-16
+
+After FD-T04 and FD-T05 moved from Current Work to In Progress, the board
+reads 16 Done, 2 In Progress, 11 Current Work, 0 Upcoming, 0 Blocked, and 26
+Backlog (derived from the verified post-T04 snapshot and verified T05 move).
+All criteria for T01 (4), T02 (5), and T03 (5) are checked; T04's five and
+T05's five criteria remain open, leaving 65 acceptance items open. Focused
+Unity EditMode verification now passes 24/24 Field Data tests; this does not
+close T04 or T05, whose remaining integration and player-flow criteria are
+still open. The kickoff
+count above is retained as its historical snapshot. The T02 definition,
+T03 ordered-income, T04 retained-session, and T05 wallet-ledger records are in
+the [T02 checkpoint](../FIELD_DATA_SOLUTION_DESIGN.md#15-fd-t02-implementation-checkpoint---2026-10-16),
+[T03 checkpoint](../FIELD_DATA_SOLUTION_DESIGN.md#16-fd-t03-ordered-income-checkpoint---2026-10-16),
+and [T04 checkpoint](../FIELD_DATA_SOLUTION_DESIGN.md#17-fd-t04-retained-journey-session---2026-10-16),
+and [T05 checkpoint](../FIELD_DATA_SOLUTION_DESIGN.md#18-fd-t05-wallet-settlement---2026-10-16).

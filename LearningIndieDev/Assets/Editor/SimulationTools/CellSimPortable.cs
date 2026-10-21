@@ -42,8 +42,20 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesUpgradeLoadoutFingerprint.cs",
             "Assets/Scripts/Game/Species/SpeciesUpgradePredictionInputAdapter.cs",
             "Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataIncome.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataIncomeReordering.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataJourneyDefinition.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataPortableDefinition.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataJourneyLedger.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataJourneySession.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataPopulationIntervention.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataRewardChoices.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataShopOffers.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataSpeciesEffects.cs",
+            "Assets/Scripts/Game/Simulation/JourneyNodeKind.cs",
             "Assets/Scripts/Game/Simulation/CellularSimData.cs",
             "Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs",
+            "Assets/Scripts/Game/Simulation/SimulationManager.cs",
             "Assets/Scripts/Game/Simulation/SimulationRunResult.cs",
             "Assets/Scripts/Game/Simulation/SpeciesAttackOpportunity.cs",
             "Assets/Scripts/Game/Simulation/SpeciesExperimentalOptions.cs",
@@ -365,6 +377,20 @@ namespace SaltyGame.EditorTools
                 var snapshot = PortableSnapshot.Create(data);
                 snapshot.scenarioPath = options.ScenarioPath;
                 snapshot.arguments = scientific.ToArray();
+                var fieldDataDefinitionPath = CommandLineOptions.GetOptionalValue(arguments, "-fieldDataDefinitionPath");
+                if (!string.IsNullOrWhiteSpace(fieldDataDefinitionPath))
+                {
+                    var definitionAsset = AssetDatabase.LoadAssetAtPath<FieldDataJourneyDefinitionAsset>(fieldDataDefinitionPath);
+                    if (definitionAsset == null)
+                        throw new ArgumentException("The requested Field Data definition is missing or invalid: "
+                            + fieldDataDefinitionPath);
+                    if (!definitionAsset.TryResolve(out var definition, out var definitionError))
+                        throw new ArgumentException("The requested Field Data definition is missing or invalid: "
+                            + definitionError);
+                    if (!string.Equals(definition.ScenarioId, Path.GetFileNameWithoutExtension(options.ScenarioPath), StringComparison.Ordinal))
+                        throw new ArgumentException("The Field Data definition scenario ID must match the exported scenario asset name.");
+                    snapshot.fieldDataDefinition = FieldDataPortableDefinition.Create(definition);
+                }
                 snapshot.catalogPath = string.IsNullOrWhiteSpace(options.AuthoredUpgradeCatalogPath)
                     ? SpeciesUpgradePredictionInputAdapter.ProductionCatalogPath : options.AuthoredUpgradeCatalogPath;
                 if (!AssetDatabase.IsValidFolder(snapshot.catalogPath))
@@ -377,6 +403,12 @@ namespace SaltyGame.EditorTools
                         if (!asset.TryCreateSnapshot(out var upgrade, out var message)) throw new InvalidOperationException(message);
                         return UpgradeData.Create(upgrade);
                     }).ToArray();
+                if (snapshot.fieldDataDefinition != null)
+                    snapshot.fieldDataOrdinaryRewards = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(
+                        new SpeciesId(snapshot.fieldDataDefinition.selectedSpeciesId),
+                        options.ExperimentalFeatures == SpeciesExperimentalOptions.BevExperimentalFeaturesId
+                            ? Array.Empty<SpeciesUpgradeSnapshot>()
+                            : snapshot.upgrades.Select(upgrade => upgrade.Restore())).Select(UpgradeData.Create).ToArray();
                 var project = Directory.GetParent(Application.dataPath).FullName;
                 snapshot.sourceHash = PortableSourceHash(relative => File.ReadAllText(Path.Combine(project, relative)));
                 snapshot.sourceCommit = CommandLineOptions.GetOptionalValue(arguments, "-portableSourceCommit") ?? "unspecified";
@@ -403,6 +435,7 @@ namespace SaltyGame.EditorTools
                 throw;
             }
         }
+
 #endif
 
         [Serializable]
@@ -418,6 +451,8 @@ namespace SaltyGame.EditorTools
             public TerrainData[] terrain;
             public AlphaData[] alpha;
             public UpgradeData[] upgrades = Array.Empty<UpgradeData>();
+            public FieldDataPortableDefinition fieldDataDefinition;
+            public UpgradeData[] fieldDataOrdinaryRewards;
 
             public static PortableSnapshot Create(CellularSimData data)
             {

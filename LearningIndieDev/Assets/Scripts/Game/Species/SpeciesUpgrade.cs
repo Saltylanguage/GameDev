@@ -200,7 +200,7 @@ namespace SaltyGame
                     blockAmount += (int)Value;
                     break;
                 case SpeciesUpgradeType.ReproductionChance:
-                    reproductionChance += Value;
+                    reproductionChance = Math.Max(0f, Math.Min(1f, reproductionChance + Value));
                     break;
                 case SpeciesUpgradeType.DigestionEnergyBonus:
                     digestionEnergyBonus += Value;
@@ -285,6 +285,45 @@ namespace SaltyGame
 
     public static class SpeciesUpgradeCatalog
     {
+        static readonly string[] FieldDataHareSkillIds =
+        {
+            ToughHideId, EfficientDigestionId, SeedDispersalId,
+            CrowdingToleranceId, ReproductiveDriveId, KeenSensesId,
+        };
+
+        public static int GetFieldDataRewardMaxLevel(SpeciesId species, string upgradeId)
+        {
+            return species.Value == "hare" && Array.IndexOf(FieldDataHareSkillIds, upgradeId) >= 0
+                ? GetMaxLevel(upgradeId) : 1;
+        }
+
+        public static SpeciesUpgradeSnapshot[] ResolveFieldDataOrdinaryRewardPool(
+            SpeciesId species, IEnumerable<SpeciesUpgradeSnapshot> authored)
+        {
+            var pool = new List<SpeciesUpgradeSnapshot>();
+            if (species.Value == "hare")
+            {
+                foreach (var id in FieldDataHareSkillIds)
+                {
+                    SpeciesUpgradeSnapshot selected = null;
+                    foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
+                        if (upgrade != null && upgrade.TargetSpecies == species && upgrade.Id == id)
+                        {
+                            selected = upgrade;
+                            break;
+                        }
+                    pool.Add(selected ?? Create(id).CreateSnapshot(species));
+                }
+                return pool.ToArray();
+            }
+            foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
+                if (upgrade != null && upgrade.TargetSpecies == species) pool.Add(upgrade);
+            if (pool.Count == 0)
+                foreach (var id in new[] { FasterMovementId, StrongerAttackId, StrongerBlockId })
+                    pool.Add(Create(id).CreateSnapshot(species));
+            return pool.ToArray();
+        }
+
         public const string FasterMovementId = "faster-movement";
         public const int FasterMovementMaxLevel = 10;
         public const string StrongerAttackId = "stronger-attack";

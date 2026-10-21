@@ -308,7 +308,7 @@ namespace SaltyGame.EditorTests
             Assert.That(data.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(2));
             var authored = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
             Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(55));
-            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(35));
+            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
         }
 
         [TestCase("hare=-1")]
@@ -406,7 +406,7 @@ namespace SaltyGame.EditorTests
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 var loaded = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(path).CreateRuntimeData();
                 Assert.That(loaded.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(25));
-                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(35));
+                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
             }
             finally
             {

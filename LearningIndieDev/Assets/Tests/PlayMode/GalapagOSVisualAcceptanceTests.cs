@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -18,6 +19,317 @@ namespace SaltyGame.PlayModeTests
         const string CurrentDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v5";
         const string PreviousDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v4";
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
+
+        [UnityTest]
+        public IEnumerator FieldDataAuthoredRouteCapturesRoundShopReorderAndSuccessEvidence()
+        {
+            var outputDirectory = TryGetVisualOutputDirectory();
+            if (outputDirectory == null)
+                Assert.Ignore("Use the visual runner to retain Field Data screenshots.");
+            var profileBackup = ProfilePlayerPrefsBackup.Capture();
+            try
+            {
+                Screen.SetResolution(GetVisualDimension("CELLSIM_VISUAL_WIDTH", 1280),
+                    GetVisualDimension("CELLSIM_VISUAL_HEIGHT", 720), false);
+                yield return SceneManager.LoadSceneAsync(SceneName);
+                yield return null;
+                yield return null;
+                var desktopRoot = GameObject.Find(DesktopCameraName);
+                var preview = desktopRoot.GetComponent<SpeciesSimulationPreview>();
+                var shell = desktopRoot.GetComponent("SaltyGame.VM_SimulationShell");
+                var desktop = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+                Assert.That(preview, Is.Not.Null);
+                Assert.That(shell, Is.Not.Null);
+                var profile = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+                if (profile == null) profile = new GameObject("Field Data visual profile").AddComponent<Helper_ProfileSession>();
+                profile.SetPlaytimeTracking(false);
+                profile.CreateProfile("Field Data authored visual route");
+                typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(preview, false);
+                typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(preview, 10100);
+                SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
+                ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
+                yield return null;
+                yield return null;
+                var camera = GameObject.Find(SimulationCameraName).GetComponent<Camera>();
+                yield return CaptureCamera(outputDirectory, "fd-01-map-entry", camera);
+                ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+                Assert.That(preview.FieldDataSession, Is.Null);
+                yield return CaptureCamera(outputDirectory, "fd-01-selected-route-preview", camera);
+                ExecuteCommand(GetProperty(shell, "CloseJourneyMapCommand"));
+                yield return CaptureCamera(outputDirectory, "fd-01-return-to-setup", camera);
+                ExecuteCommand(GetProperty(shell, "OpenJourneyMapCommand"));
+                ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
+                preview.PauseSimulation();
+                var retainedRun = preview.Run;
+                yield return CaptureCamera(outputDirectory, "fd-02-running", camera);
+
+                for (var round = 1; round <= 18; round++)
+                {
+                    for (var tick = 0; tick < 100; tick++)
+                        Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True,
+                            "Authored seed 10100 must reach round " + round);
+                    Assert.That(preview.Run, Is.SameAs(retainedRun));
+                    if (round == 18) break;
+                    var session = preview.FieldDataSession;
+                    var choices = session.GetCurrentRoundRewardChoices() ?? session.GetCurrentNodeRewardChoices();
+                    Assert.That(choices, Is.Not.Null);
+                    if (round == 1 || round == 2 || round == 6 || round == 12)
+                        yield return CaptureCamera(outputDirectory, "fd-" + round.ToString("00") + "-reward", camera);
+                    Assert.That(choices.Choices.All(choice => !choice.IncomeOffer.HasValue
+                        && choice.OrdinaryUpgrade != null
+                        && choice.OrdinaryUpgrade.Id != SpeciesUpgradeCatalog.StrongerAttackId), Is.True);
+                    if (round == 1 || round == 6 || round == 12)
+                    {
+                        var stateBeforeMap = preview.State;
+                        OpenFieldDataMapFromRenderedButton(camera, "FieldDataDecisionMapButton");
+                        yield return CaptureCamera(outputDirectory, "fd-round-" + round + "-map", camera);
+                        ExecuteCommand(GetProperty(shell, "CloseJourneyMapCommand"));
+                        Assert.That(preview.State, Is.EqualTo(stateBeforeMap));
+                        Assert.That(preview.Run.Tick, Is.EqualTo(round * 100));
+                    }
+                    ExecuteCommand(GetProperty(shell, "ContinueWithoutUpgradeCommand"));
+                    if (round == 1)
+                    {
+                        yield return BringFieldDataElementIntoView(camera, "FieldDataIncomePanel");
+                        yield return CaptureCamera(outputDirectory, "fd-03-round-actions", camera);
+                    }
+                    if (round == 6 || round == 12)
+                    {
+                        Assert.That(GetProperty(shell, "FieldDataPopulationControlsVisibility").ToString(), Is.EqualTo("Collapsed"));
+                        Assert.That(GetProperty(shell, "FieldDataShopVisibility").ToString(), Is.EqualTo("Collapsed"));
+                        yield return CaptureCamera(outputDirectory, "fd-node-" + (round / 6) + "-settlement", camera);
+                        ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                        yield return CaptureCamera(outputDirectory, "fd-node-" + (round / 6) + "-map-to-shop", camera);
+                        SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode((MonoBehaviour)shell, round / 6 * 2 - 1);
+                        yield return BringFieldDataElementIntoView(camera, "FieldDataShopPanel");
+                        yield return CaptureCamera(outputDirectory, "fd-shop-" + (round / 6) + "-offers", camera);
+                        var visit = session.GetCurrentShopVisit();
+                        var incomeShopIndex = visit.Offers.ToList().FindIndex(offer => offer.Kind == FieldDataShopOfferKind.IncomeModifier);
+                        if (incomeShopIndex >= 0 && session.Ledger.Balance >= visit.Offers[incomeShopIndex].Cost)
+                            ExecuteCommand(GetProperty(shell, "BuyFieldDataShopOffer" + (incomeShopIndex + 1) + "Command"));
+                        yield return CaptureCamera(outputDirectory, "fd-shop-" + (round / 6) + "-purchased", camera);
+                        if (session.CurrentIncomeExecutionOrder.Count >= 2)
+                        {
+                            var walletBeforeDraft = session.Ledger.Balance;
+                            ExecuteCommand(GetProperty(shell, "StartChosenIncomeReorderCommand"));
+                            Assert.That(session.ChosenReorderDraft, Is.Not.Null);
+                            var rows = (IList)GetProperty(shell, "ChosenIncomeOrderItems");
+                            var multiplierRow = Enumerable.Range(1, rows.Count - 1)
+                                .FirstOrDefault(index => ((string)GetProperty(rows[index], "Label")).Contains("×"));
+                            if (multiplierRow == 0) multiplierRow = rows.Count - 1;
+                            ExecuteCommand(GetProperty(rows[multiplierRow], "MoveUpCommand"));
+                            yield return BringFieldDataElementIntoView(camera, "FieldDataReorderDraftPanel");
+                            yield return CaptureCamera(outputDirectory, "fd-shop-" + (round / 6) + "-chosen-preview", camera);
+                            if (round == 6)
+                            {
+                                ExecuteCommand(GetProperty(shell, "CancelChosenIncomeReorderCommand"));
+                                Assert.That(session.Ledger.Balance, Is.EqualTo(walletBeforeDraft));
+                            }
+                            else
+                            {
+                                var chosenCost = session.ChosenReorderDraft.Cost;
+                                ExecuteCommand(GetProperty(shell, "ConfirmChosenIncomeReorderCommand"));
+                                if (walletBeforeDraft < chosenCost)
+                                {
+                                    Assert.That(session.Ledger.Balance, Is.EqualTo(walletBeforeDraft));
+                                    Assert.That(session.ChosenReorderDraft, Is.Not.Null);
+                                    ExecuteCommand(GetProperty(shell, "CancelChosenIncomeReorderCommand"));
+                                }
+                                else
+                                    Assert.That(session.Ledger.Balance, Is.EqualTo(walletBeforeDraft - chosenCost));
+                                Assert.That(session.ChosenReorderDraft, Is.Null);
+                                yield return BringFieldDataElementIntoView(camera, "FieldDataShopPanel");
+                                yield return CaptureCamera(outputDirectory, "fd-shop-2-chosen-applied", camera);
+                            }
+                        }
+                    }
+                    ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                    if (round == 6 || round == 12)
+                    {
+                        yield return CaptureCamera(outputDirectory, "fd-shop-" + (round / 6) + "-map-to-simulation", camera);
+                        SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode((MonoBehaviour)shell, round / 6 * 2);
+                    }
+                    preview.PauseSimulation();
+                }
+                Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));
+                Assert.That(preview.Run.Tick, Is.EqualTo(1800));
+                yield return CaptureCamera(outputDirectory, "fd-18-success", camera);
+                OpenFieldDataMapFromRenderedButton(camera, "JourneyResultsMapButton");
+                yield return CaptureCamera(outputDirectory, "fd-18-cleared-map", camera);
+                ExecuteCommand(GetProperty(shell, "CloseJourneyMapCommand"));
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+                Assert.That((string)GetProperty(shell, "SelectedUpgradeSummaryText"), Does.Contain("income modifiers"));
+                Assert.That((string)GetProperty(shell, "ResultsMessageText"), Does.Contain("Field Data remains"));
+                var completedSession = preview.FieldDataSession;
+                var nextRunNumber = (int)typeof(SpeciesSimulationPreview).GetField("runNumber", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(preview);
+                typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(preview, 10108 - nextRunNumber);
+                ExecuteCommand(GetProperty(shell, "PlayNextSimulationCommand"));
+                Assert.That(preview.FieldDataSession, Is.SameAs(completedSession));
+                yield return CaptureCamera(outputDirectory, "fd-final-node-map", camera);
+                ExecuteCommand(GetProperty(shell, "StartNewJourneyCommand"));
+                SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode((MonoBehaviour)shell, 0);
+                preview.PauseSimulation();
+                Assert.That(completedSession.Ledger.Balance, Is.Zero);
+                Assert.That(preview.FieldDataSession.Ledger.Balance, Is.Zero);
+                Assert.That(preview.Run.Seed, Is.EqualTo(10108));
+                while (preview.FieldDataSession.State != FieldDataJourneyFlowState.Failed && preview.Run.Tick < 600)
+                {
+                    if (preview.FieldDataSession.State == FieldDataJourneyFlowState.Running)
+                        Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                    else
+                    {
+                        ExecuteCommand(GetProperty(shell, "ContinueWithoutUpgradeCommand"));
+                        ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                        preview.PauseSimulation();
+                    }
+                }
+                Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed));
+                yield return CaptureCamera(outputDirectory, "fd-natural-failure", camera);
+            }
+            finally
+            {
+                profileBackup.Restore();
+            }
+        }
+
+        static void OpenFieldDataMapFromRenderedButton(Camera camera, string name)
+        {
+            var content = GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var button = content.GetType().GetMethod("FindName").Invoke(content, new object[] { name }) as Noesis.Button;
+            Assert.That(button, Is.Not.Null);
+            Assert.That(button.IsVisible && button.IsEnabled && button.ActualWidth > 0 && button.ActualHeight > 0, Is.True,
+                "The map action must be visible and usable on the active panel.");
+            ExecuteCommand(GetProperty(button, "Command"));
+        }
+
+        static IEnumerator BringFieldDataElementIntoView(Camera camera, string name)
+        {
+            yield return null;
+            yield return null;
+            var content = GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var element = content.GetType().GetMethod("FindName").Invoke(content, new object[] { name }) as Noesis.FrameworkElement;
+            Assert.That(element, Is.Not.Null, "The Field Data view must expose " + name);
+            element.BringIntoView();
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataShopOwnershipFixtureCapturesCapsRerollsAndPaidReorders()
+        {
+            var outputDirectory = TryGetVisualOutputDirectory();
+            if (outputDirectory == null) Assert.Ignore("Use the visual runner to retain Field Data screenshots.");
+            var backup = ProfilePlayerPrefsBackup.Capture();
+            try
+            {
+                Screen.SetResolution(GetVisualDimension("CELLSIM_VISUAL_WIDTH", 1280),
+                    GetVisualDimension("CELLSIM_VISUAL_HEIGHT", 720), false);
+                yield return SceneManager.LoadSceneAsync(SceneName);
+                yield return null;
+                yield return null;
+                var root = GameObject.Find(DesktopCameraName);
+                var preview = root.GetComponent<SpeciesSimulationPreview>();
+                var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+                var profile = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+                if (profile == null) profile = new GameObject("Field Data fixture profile").AddComponent<Helper_ProfileSession>();
+                profile.SetPlaytimeTracking(false);
+                profile.CreateProfile("Field Data synthetic ownership fixture");
+                ExecuteCommand(GetProperty(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand"), "Simulation");
+                yield return null;
+                yield return null;
+                Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                    "36", "20", "10100", "2000", "0", "1800", "0.2", "0", "0", "0", false,
+                    "300", "200", "0", out var error), Is.True, error);
+                var hare = new SpeciesId("hare");
+                var rules = preview.GetSpeciesRuleEditValues(hare);
+                rules.MovementEnabled = false;
+                rules.ReproductionEnabled = false;
+                rules.Metabolism = "0";
+                ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
+                Assert.That(preview.TryApplySpeciesRuleEditValues(hare, rules, out error), Is.True, error);
+                ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
+                preview.PauseSimulation();
+                var session = preview.FieldDataSession;
+                // Preloaded ownership reaches a future-shop state the two-shop starter route cannot naturally reach.
+                var owned = (IList)typeof(FieldDataJourneySession).GetField("speciesEffects", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(session);
+                foreach (var offer in session.Definition.SignedSpeciesOffers.Where(item => item.SignedAmount > 0))
+                    for (var copy = 0; copy < 3; copy++)
+                        owned.Add(new FieldDataSpeciesEffectInstance("fixture-owned-" + offer.Id + "-" + copy, offer));
+                for (var round = 1; round <= 6; round++)
+                {
+                    for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                    if (round == 1)
+                    {
+                        Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance(
+                            "fixture-plus", "income-plus-one-per-hare", FieldDataIncomeOperation.AddPerHare, 1m), out error), Is.True, error);
+                        Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance(
+                            "fixture-times", "income-multiply-one-point-five", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m), out error), Is.True, error);
+                    }
+                    ExecuteCommand(GetProperty(shell, "PurchaseRewardOption1Command"));
+                    if (round == 6) break;
+                    ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                    preview.PauseSimulation();
+                }
+                ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode((MonoBehaviour)shell, 1);
+                var camera = GameObject.Find(SimulationCameraName).GetComponent<Camera>();
+                var visit = session.GetCurrentShopVisit();
+                Assert.That(visit.Offers.Any(offer => offer.Locked), Is.True);
+                yield return BringFieldDataElementIntoView(camera, "FieldDataShopPanel");
+                yield return CaptureCamera(outputDirectory, "fd-fixture-capped-offers", camera);
+                var beforeReroll = session.Ledger.Balance;
+                while (visit.Offers.Any(offer => offer.Locked))
+                {
+                    var index = visit.Offers.ToList().FindIndex(offer => offer.Locked);
+                    Assert.That(GetProperty(shell, "CanRerollFieldDataShopOffer" + (index + 1)), Is.EqualTo(true));
+                    Assert.That(GetProperty(shell, "CanBuyFieldDataShopOffer" + (index + 1)), Is.EqualTo(false));
+                    var original = visit.Offers[index].Id;
+                    ExecuteCommand(GetProperty(shell, "RerollFieldDataShopOffer" + (index + 1) + "Command"));
+                    Assert.That(session.TryRerollCappedShopOffer(original, out _, out _), Is.False);
+                    Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReroll));
+                }
+                Assert.That(visit.Offers.Count, Is.EqualTo(2));
+                yield return CaptureCamera(outputDirectory, "fd-fixture-reroll-exhaustion", camera);
+                ExecuteCommand(GetProperty(shell, "RandomIncomeReorderCommand"));
+                Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReroll - 10));
+                Assert.That(session.ChosenReorderDraft, Is.Null);
+                ExecuteCommand(GetProperty(shell, "StartChosenIncomeReorderCommand"));
+                var rows = (IList)GetProperty(shell, "ChosenIncomeOrderItems");
+                ExecuteCommand(GetProperty(rows[0], "MoveDownCommand"));
+                var beforeChosen = session.Ledger.Balance;
+                yield return BringFieldDataElementIntoView(camera, "FieldDataReorderDraftPanel");
+                yield return CaptureCamera(outputDirectory, "fd-fixture-paid-chosen-preview", camera);
+                Assert.That(GetProperty(shell, "CanConfirmChosenIncomeReorder"), Is.EqualTo(true));
+                ExecuteCommand(GetProperty(shell, "ConfirmChosenIncomeReorderCommand"));
+                Assert.That(session.Ledger.Balance, Is.EqualTo(beforeChosen - 110));
+                Assert.That(visit.ReorderPriceStep, Is.EqualTo(2));
+                yield return BringFieldDataElementIntoView(camera, "FieldDataShopPanel");
+                yield return CaptureCamera(outputDirectory, "fd-fixture-paid-reorders-applied", camera);
+                ExecuteCommand(GetProperty(shell, "ContinueJourneyCommand"));
+                SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode((MonoBehaviour)shell, 2);
+                preview.PauseSimulation();
+                for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                ExecuteCommand(GetProperty(shell, "OpenJourneyMapCommand"));
+                ExecuteCommand(GetProperty(shell, "CloseJourneyMapCommand"));
+                Assert.That(session.GlobalRound, Is.EqualTo(7));
+                Assert.That(session.GetCurrentRoundRewardChoices().Choices, Has.Count.EqualTo(3));
+                Assert.That(GetProperty(shell, "CanPurchaseRewardOption1"), Is.EqualTo(true));
+                yield return CaptureCamera(outputDirectory, "fd-round-7-after-shop-mutations", camera);
+                var beforeReward = session.Ledger.Balance;
+                ExecuteCommand(GetProperty(shell, "PurchaseRewardOption1Command"));
+                Assert.That(session.GetCurrentRoundRewardChoices().Resolved, Is.True);
+                Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReward));
+                Assert.That(GetProperty(shell, "CanAddHares"), Is.EqualTo(true));
+                ExecuteCommand(GetProperty(shell, "AddHaresCommand"));
+                Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReward - 10));
+                yield return BringFieldDataElementIntoView(camera, "FieldDataIncomePanel");
+                yield return CaptureCamera(outputDirectory, "fd-round-7-after-shop-population-purchase", camera);
+            }
+            finally { backup.Restore(); }
+        }
 
         [UnityTest]
         public IEnumerator LegacySquareGridSettingsMigrateOnStartup()

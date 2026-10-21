@@ -1281,12 +1281,12 @@
                             </Grid>
                         </Border>
 
-                        <ScrollViewer Grid.Row="1"
+                        <ScrollViewer x:Name="FieldDataDecisionScroll" Grid.Row="1"
                                       Margin="28,16,28,10"
                                       VerticalScrollBarVisibility="Auto"
                                       HorizontalScrollBarVisibility="Disabled">
                             <StackPanel>
-                            <TextBlock Text="The habitat is paused at its phase boundary. Choose a Mutation, or continue with the current field conditions."
+                            <TextBlock Text="The habitat is paused at its phase boundary. Review the Field Data earned, make any available choices, then continue."
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                                        FontSize="14"
                                        Foreground="{DynamicResource Chrono_TreeBark}"
@@ -1308,7 +1308,7 @@
                                            VerticalAlignment="Center" />
                             </Border>
 
-                            <Grid Margin="0,0,0,8">
+                            <Grid Visibility="{Binding FieldDataRewardChoicesVisibility}" Margin="0,0,0,8">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
                                     <ColumnDefinition Width="*" />
@@ -1319,23 +1319,13 @@
                                            FontSize="10"
                                            FontWeight="Bold"
                                            Foreground="{DynamicResource Chrono_TreeBark}" />
-                                <Rectangle Grid.Column="1"
-                                           Height="1"
-                                           Margin="10,0"
-                                           Fill="Transparent"
-                                           Stroke="{DynamicResource Chrono_Sand}"
-                                           StrokeDashArray="6,4"
-                                           StrokeThickness="2"
-                                           VerticalAlignment="Center" />
-                                <TextBlock Grid.Column="2"
-                                           Text="ONE FREE CHOICE"
-                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                           FontSize="8"
-                                           Foreground="{DynamicResource Chrono_Olive}" />
+                                <Rectangle Grid.Column="1" Height="1" Margin="10,0" Fill="Transparent" Stroke="{DynamicResource Chrono_Sand}" StrokeDashArray="6,4" StrokeThickness="2" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="2" Text="ONE FREE CHOICE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="8" Foreground="{DynamicResource Chrono_Olive}" />
                             </Grid>
 
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Visibility="{Binding FieldDataRewardChoicesVisibility}">
                                 <Button Command="{Binding PurchaseRewardOption1Command}"
+                                        Visibility="{Binding RewardOption1Visibility}"
                                         IsEnabled="{Binding CanPurchaseRewardOption1}"
                                         Style="{StaticResource GalapagOS.Button.RewardCard}"
                                         Width="258"
@@ -1383,6 +1373,7 @@
                                     </Grid>
                                 </Button>
                                 <Button Command="{Binding PurchaseRewardOption2Command}"
+                                        Visibility="{Binding RewardOption2Visibility}"
                                         IsEnabled="{Binding CanPurchaseRewardOption2}"
                                         Style="{StaticResource GalapagOS.Button.RewardCard}"
                                         Width="258"
@@ -1478,6 +1469,106 @@
                                 </Button>
                             </StackPanel>
 
+                            <Border x:Name="FieldDataIncomePanel" Visibility="{Binding FieldDataPanelVisibility}"
+                                    Margin="0,0,0,14"
+                                    Padding="14,10"
+                                    Background="{DynamicResource Chrono_VanillaCream}"
+                                    BorderBrush="{DynamicResource Chrono_Olive}"
+                                    BorderThickness="2"
+                                    CornerRadius="8">
+                                <StackPanel>
+                                    <TextBlock Text="FIELD DATA SETTLEMENT"
+                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource Chrono_TreeBark}" />
+                                    <TextBlock Text="{Binding FieldDataBreakdownText}"
+                                               Margin="0,6,0,0"
+                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource Chrono_Olive}"
+                                               TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding FieldDataStatusText}"
+                                               Margin="0,4,0,0"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource Chrono_TreeBark}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </Border>
+
+                            <Border Visibility="{Binding FieldDataPopulationControlsVisibility}"
+                                    Margin="0,0,0,14"
+                                    Padding="14,10"
+                                    Background="{DynamicResource Chrono_VanillaCream}"
+                                    BorderBrush="{DynamicResource Chrono_Olive}"
+                                    BorderThickness="2"
+                                    CornerRadius="8">
+                                <StackPanel>
+                                    <TextBlock Text="POPULATION CONTROLS · 10 FD EACH"
+                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource Chrono_TreeBark}" />
+                                    <WrapPanel Margin="0,8,0,0" HorizontalAlignment="Center">
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding AddHaresText}" Command="{Binding AddHaresCommand}" IsEnabled="{Binding CanAddHares}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding RemoveHaresText}" Command="{Binding RemoveHaresCommand}" IsEnabled="{Binding CanRemoveHares}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding AddFoxesText}" Command="{Binding AddFoxesCommand}" IsEnabled="{Binding CanAddFoxes}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding RemoveFoxesText}" Command="{Binding RemoveFoxesCommand}" IsEnabled="{Binding CanRemoveFoxes}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding AddPlantsText}" Command="{Binding AddPlantsCommand}" IsEnabled="{Binding CanAddPlants}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="240" Height="40" Padding="8,4" FontSize="12" Content="{Binding RemovePlantsText}" Command="{Binding RemovePlantsCommand}" IsEnabled="{Binding CanRemovePlants}" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="FieldDataShopPanel" Visibility="{Binding FieldDataShopVisibility}"
+                                    Margin="0,0,0,14"
+                                    Padding="14,10"
+                                    Background="{DynamicResource Chrono_VanillaCream}"
+                                    BorderBrush="{DynamicResource Chrono_Olive}"
+                                    BorderThickness="2"
+                                    CornerRadius="8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding FieldDataShopSummaryText}"
+                                               FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                               FontSize="10"
+                                               FontWeight="Bold"
+                                               Foreground="{DynamicResource Chrono_TreeBark}" />
+                                    <StackPanel Margin="0,6,0,0">
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer1Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer1Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer1Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer1Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer2Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer2Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer2Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer2Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer3Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer3Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer3Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer3Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer4Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer4Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer4Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer4Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer5Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer5Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer5Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer5Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding FieldDataReorderText}" Margin="0,8,0,2" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                                    <TextBlock Text="{Binding FieldDataReorderCostText}" FontSize="10" Foreground="{DynamicResource Chrono_Olive}" />
+                                    <WrapPanel Margin="0,5,0,0">
+                                        <Button Width="180" Content="RANDOM REORDER" Command="{Binding RandomIncomeReorderCommand}" IsEnabled="{Binding CanRandomIncomeReorder}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        <Button Width="160" Content="CHOOSE ORDER" Command="{Binding StartChosenIncomeReorderCommand}" IsEnabled="{Binding CanStartChosenIncomeReorder}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                    </WrapPanel>
+                                    <StackPanel x:Name="FieldDataReorderDraftPanel" Visibility="{Binding FieldDataReorderDraftVisibility}" Margin="0,6,0,0">
+                                        <TextBlock Text="{Binding FieldDataChosenOrderText}" FontSize="10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                                        <ScrollViewer MaxHeight="240" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl ItemsSource="{Binding ChosenIncomeOrderItems}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <DockPanel Margin="0,2">
+                                                        <Button DockPanel.Dock="Right" Width="62" Content="DOWN" Command="{Binding MoveDownCommand}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3,0" />
+                                                        <Button DockPanel.Dock="Right" Width="62" Content="UP" Command="{Binding MoveUpCommand}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3,0" />
+                                                        <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                                                    </DockPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        </ScrollViewer>
+                                        <WrapPanel>
+                                            <Button Width="130" Content="CONFIRM" Command="{Binding ConfirmChosenIncomeReorderCommand}" IsEnabled="{Binding CanConfirmChosenIncomeReorder}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                            <Button Width="130" Content="CANCEL" Command="{Binding CancelChosenIncomeReorderCommand}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="3" />
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
                             <Border Visibility="{Binding HarePurchaseVisibility}"
                                     Margin="0,14,0,0"
                                     Padding="14,10"
@@ -1527,6 +1618,7 @@
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="ONE MUTATION PER PHASE · THE HABITAT REMAINS PAUSED"
+                                           Visibility="{Binding HarePurchaseVisibility}"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="8"
                                            Foreground="{DynamicResource Chrono_Olive}"
@@ -1534,6 +1626,11 @@
                                 <StackPanel Grid.Column="1"
                                             Orientation="Horizontal"
                                             HorizontalAlignment="Right">
+                                    <Button x:Name="FieldDataDecisionMapButton" Content="MAP"
+                                            Visibility="{Binding FieldDataPanelVisibility}"
+                                            Command="{Binding OpenJourneyMapCommand}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                            Width="100" Height="44" FontSize="12" Margin="0,0,10,0" />
                                     <Button Content="SKIP"
                                             Command="{Binding ContinueWithoutUpgradeCommand}"
                                             IsEnabled="{Binding CanContinueWithoutUpgrade}"
@@ -1549,6 +1646,15 @@
                                             Width="82"
                                             Height="44"
                                             FontSize="12" />
+                                    <Button Content="{Binding FieldDataContinueText}"
+                                            Command="{Binding ContinueJourneyCommand}"
+                                            IsEnabled="{Binding CanContinueJourney}"
+                                            Visibility="{Binding FieldDataPanelVisibility}"
+                                            Style="{StaticResource GalapagOS.Button.Primary}"
+                                            Width="190"
+                                            Height="44"
+                                            FontSize="12"
+                                            Margin="10,0,0,0" />
                                 </StackPanel>
                             </Grid>
                         </Border>
@@ -1850,6 +1956,11 @@
                                 BorderBrush="{DynamicResource Chrono_Sand}"
                                 BorderThickness="0,2,0,0">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <Button x:Name="JourneyResultsMapButton" Content="MAP"
+                                        Visibility="{Binding JourneyMapHudButtonVisibility}"
+                                        Command="{Binding OpenJourneyMapCommand}"
+                                        Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                        Width="100" Height="52" Margin="0,0,10,0" />
                                 <Button Content="{Binding PlayNextSimulationText}"
                                         Command="{Binding PlayNextSimulationCommand}"
                                         IsEnabled="{Binding CanPlayNextSimulation}"
@@ -1969,7 +2080,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="95" />
                     <RowDefinition Height="*" />
-                    <RowDefinition Height="94" />
+                    <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Border Grid.Row="0" Background="#2F4433" BorderBrush="#9BAD74" BorderThickness="0,0,0,5">
                     <Grid Margin="26,12">
@@ -1979,6 +2090,7 @@
                             <ColumnDefinition Width="235" />
                         </Grid.ColumnDefinitions>
                         <Button Content="BACK" Command="{Binding CloseJourneyMapCommand}"
+                                Visibility="{Binding JourneyMapCloseVisibility}"
                                 Width="90" Height="48" FontSize="14" HorizontalAlignment="Left" VerticalAlignment="Center"
                                 Style="{StaticResource GalapagOS.Button.SecondaryPaper}" />
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
@@ -1990,8 +2102,8 @@
                         <Border Grid.Column="2" Background="#E8EBCB" BorderBrush="#9BAD74" BorderThickness="1"
                                 CornerRadius="7" Padding="14,8" VerticalAlignment="Center">
                             <StackPanel>
-                                <TextBlock Text="13 ENCOUNTERS PER ROUTE" FontSize="11" FontWeight="Bold" Foreground="#5B7041" />
-                                <TextBlock Text="Three ways to begin" FontSize="13" Foreground="#36301F" Margin="0,3,0,0" />
+                                <TextBlock Text="{Binding JourneyMapEncounterText}" FontSize="11" FontWeight="Bold" Foreground="#5B7041" />
+                                <TextBlock Text="{Binding JourneyMapPathText}" FontSize="13" Foreground="#36301F" Margin="0,3,0,0" />
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -2087,7 +2199,32 @@
                         </ItemsControl>
                     </Canvas>
                 </ScrollViewer>
-                <Border Grid.Row="2" Background="#2F4433" BorderBrush="#9BAD74" BorderThickness="0,4,0,0">
+                <StackPanel Grid.Row="1" Visibility="{Binding FieldDataRouteMapVisibility}"
+                            HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="FIELD DATA TEST ROUTE" FontSize="24" FontWeight="Bold"
+                               Foreground="#2F4433" HorizontalAlignment="Center" Margin="0,0,0,22" />
+                    <ItemsControl x:Name="FieldDataRouteNodes" ItemsSource="{Binding FieldDataRouteNodes}">
+                        <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal" /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Width="204" Height="128">
+                                    <Button Margin="0,0,24,0" Background="#FFF8E1" BorderBrush="#748854" BorderThickness="2" Padding="10,18"
+                                            Command="{Binding EnterCommand}" IsEnabled="{Binding CanEnter}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontSize="15" FontWeight="Bold" Foreground="#36301F" TextAlignment="Center" />
+                                            <TextBlock Text="{Binding Description}" FontSize="10" Foreground="#4C573B" TextAlignment="Center" Margin="0,12,0,0" />
+                                            <TextBlock Text="{Binding Status}" FontSize="11" FontWeight="Bold" Foreground="#785331" TextAlignment="Center" Margin="0,14,0,0" />
+                                        </StackPanel>
+                                    </Button>
+                                    <Border Margin="0,0,24,0" BorderBrush="#D69D4F" BorderThickness="4" CornerRadius="8" Visibility="{Binding CurrentVisibility}" IsHitTestVisible="False" />
+                                    <TextBlock Text="→" Width="24" HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="20" Foreground="#405334" Visibility="{Binding ConnectorVisibility}" />
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <Border Grid.Row="2" MinHeight="94" Background="#2F4433" BorderBrush="#9BAD74" BorderThickness="0,4,0,0">
                     <Grid Margin="34,15">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                         <StackPanel VerticalAlignment="Center">
@@ -2095,10 +2232,15 @@
                             <TextBlock Text="{Binding JourneyMapSummary}" FontSize="11" Foreground="#D5DEB3" Margin="0,5,20,0" TextWrapping="Wrap" />
                         </StackPanel>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                            <TextBlock Text="SCROLL TO EXPLORE →" FontSize="12" FontWeight="Bold" Foreground="#E7CF91" HorizontalAlignment="Right" />
-                            <TextBlock Text="Hover a marker for details" FontSize="10" Foreground="#D5DEB3" Margin="0,5,0,0" HorizontalAlignment="Right" />
+                            <TextBlock Text="SCROLL TO EXPLORE →" Visibility="{Binding JourneyMapScrollHintVisibility}" FontSize="12" FontWeight="Bold" Foreground="#E7CF91" HorizontalAlignment="Right" />
+                            <TextBlock Text="Hover a marker for details" Visibility="{Binding JourneyMapScrollHintVisibility}" FontSize="10" Foreground="#D5DEB3" Margin="0,5,0,0" HorizontalAlignment="Right" />
                             <Button Content="START A NEW JOURNEY" Visibility="{Binding JourneyNewRunVisibility}"
                                     Command="{Binding StartNewJourneyCommand}" Style="{StaticResource GalapagOS.Button.PrimaryPaper}" Height="30" Margin="0,7,0,0" />
+                            <Button Content="{Binding FieldDataTestRouteButtonText}"
+                                    Visibility="{Binding FieldDataTestRouteVisibility}"
+                                    Command="{Binding StartFieldDataTestJourneyCommand}"
+                                    Style="{StaticResource GalapagOS.Button.PrimaryPaper}"
+                                    Height="34" Margin="0,7,0,0" />
                         </StackPanel>
                     </Grid>
                 </Border>

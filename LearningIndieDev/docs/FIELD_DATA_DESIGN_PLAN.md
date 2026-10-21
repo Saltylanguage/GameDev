@@ -1,7 +1,12 @@
 # Field Data design coverage and delivery checklist
 
 **Reviewed:** 2026-10-15
-**Canonical design:** [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
+**Canonical design:** [Field Data and Journey Loop Design v1.1](FIELD_DATA_JOURNEY_DESIGN.md)
+
+**October 18 revision:** Node-end settlement has no population controls. Return
+to the map after each simulation or shop and explicitly click the next ready
+node to enter it. The PDD/SDD carry this approved update; earlier round-6
+population-window decisions are superseded. Ordinary rounds 1–5 retain controls.
 
 The Step 1–5 design review is complete for the first slice, including the five
 settings confirmed during hardening. This file preserves every numbered item
@@ -42,7 +47,7 @@ until the work and required evidence exist.
 - [x] **1.05** Require **no unlocks for the current six controls for now**, as established by Bevin's decision that all six are available from journey start. Future controls or restrictions remain undecided.
 - [x] **1.06** Automatically remove random individuals; reject overlarge removals and block removal of the final selected-species individual.
 - [x] **1.07** Place additions at random valid available locations; reject the entire purchase without charge if the full addition cannot fit.
-- [x] **1.08** Apply a newly acquired income upgrade from the **next round-end payout after acquisition**, without recalculating earlier payouts. Use the same timing for shop, round-reward and journey-node sources. Bevin confirmed 2026-10-15.
+- [x] **1.08** Apply a newly acquired income upgrade from the **next round-end payout after acquisition**, without recalculating earlier payouts. Income upgrades are shop-only under the October 17 correction; the original October 15 multi-source decision is superseded.
 - [x] **1.09** For ordinary rounds 1–5: pause and evaluate failure, award income, present the free reward choice, allow population purchases, then Continue. Nonterminal round-6 and terminal flow are defined in the standalone design.
 - [x] **1.10** Evaluate selected-species extinction before payout. Failure skips the incomplete round payout/rewards, discards journey FD and preserves banked Desktop state.
 - [x] **1.11** Award each successful final round its ordinary modified payout before node completion and the 10-FD clear bonus, including Simulation 3.
@@ -94,9 +99,9 @@ until the work and required evidence exist.
 - [x] **2.13f** Price each initial single-species buff at a provisional 30 FD, keep the price fixed across repeat purchases, and scale multispecies offers linearly by the number of targets. One multispecies purchase counts as one stack. Bevin confirmed 2026-10-15; these are comparison prices, not balanced values.
 - [x] **2.13g** Let the player choose to reroll a capped buff offer, for free, once per capped offer in that shop visit. Draw replacements only from currently eligible items, excluding capped items and same-visit positive/negative conflicts. If fewer than five items are eligible, show fewer shop offers. Bevin confirmed 2026-10-15.
 - [x] **2.13h** Make +1 FD per Hare and ×1.5 population-payout modifiers eligible in shops from the first visit. Keep ×2 shop-only, starting at the second visit. Field Data modifiers are positive-only in the first playtest and have no copy cap for now; the once-per-distinct-offer rule still applies. Bevin confirmed 2026-10-15.
-- [x] **2.14** Include +1 Field Data per Hare per payout as an eligible round-reward upgrade. Bevin confirmed 2026-10-15; offers can later be tuned and randomized with weighting.
-- [x] **2.15** Include the ×1.5 population-payout multiplier as an eligible journey-node reward. Bevin confirmed 2026-10-15; offers can later be tuned and randomized with weighting.
-- [x] **2.16** Put income upgrades and species upgrades in the same pick-one reward choice; taking one means passing on the other. Bevin confirmed 2026-10-15.
+- [x] **2.14** Offer +1 Field Data per Hare per payout in shops only, from visit one at 20 FD. The October 17 correction supersedes the October 15 round-reward source.
+- [x] **2.15** Offer the ×1.5 population-payout multiplier in shops only, from visit one at 30 FD. The October 17 correction supersedes the October 15 node-reward source.
+- [x] **2.16** Free round/node choices contain species upgrades only, with Skip available. Income and species offers compete for the same shop wallet; this October 17 correction supersedes the original mixed free-reward pool.
 - [x] **2.17** Keep the complete six-control, income and signed species-offer catalogs in the standalone design, with effects, source, lifetime, repeatability and provisional prices.
 - [x] **2.18** Use add/remove 1 Hare, add/remove 1 Fox and add/remove 5 Plants, each for 10 FD. Reject invalid purchases without charge/partial effect; block removal of the final selected-species individual.
 
@@ -129,7 +134,7 @@ until the work and required evidence exist.
 - [ ] **4.07** Implement the agreed payout and wallet corrections needed by that segment.
 - [ ] **4.08** Implement the six fixed-amount 10-FD population controls, random valid selection, atomic rejection and final-selected-individual guard.
 - [ ] **4.09** Implement +1 FD per Hare, ×1.5 population payout and ×2 population payout upgrades.
-- [ ] **4.10** Make income upgrades eligible through shop, round-reward and node-reward sources; income offers from each source remain randomized rather than guaranteed.
+- [ ] **4.10** Restrict all income modifiers to randomized shop offers; free round and node rewards contain species upgrades only.
 - [ ] **4.11** Implement journey-persistent shop species buffs/nerfs so purchases take effect in the next simulation.
 - [ ] **4.12** Display population counts for all species on each payout summary.
 - [ ] **4.13** Display base payout, each modifier in execution order with a running total, and the final rounded award.

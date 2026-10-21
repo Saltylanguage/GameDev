@@ -1,0 +1,170 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: becb676e41ef400193948acb646f3517, type: 3}
+  m_Name: FieldDataStarterDefinition
+  m_EditorClassIdentifier:
+  definitionId: field-data-starter-v1
+  scenarioId: ForestEdge
+  selectedSpeciesId: hare
+  route:
+  - id: simulation-1
+    kind: 0
+    nextNodeId: shop-1
+  - id: shop-1
+    kind: 6
+    nextNodeId: simulation-2
+  - id: simulation-2
+    kind: 0
+    nextNodeId: shop-2
+  - id: shop-2
+    kind: 6
+    nextNodeId: simulation-3
+  - id: simulation-3
+    kind: 0
+    nextNodeId:
+  populationControls:
+  - id: add-hares
+    speciesId: hare
+    amount: 1
+    cost: 10
+  - id: remove-hares
+    speciesId: hare
+    amount: -1
+    cost: 10
+  - id: add-foxes
+    speciesId: fox
+    amount: 1
+    cost: 10
+  - id: remove-foxes
+    speciesId: fox
+    amount: -1
+    cost: 10
+  - id: add-plants
+    speciesId: plant
+    amount: 5
+    cost: 10
+  - id: remove-plants
+    speciesId: plant
+    amount: -5
+    cost: 10
+  incomeOffers:
+  - id: income-plus-one-per-hare
+    displayName: +1 FD per Hare
+    operation: 0
+    value: "1"
+    sources: 4
+    firstShopVisit: 1
+    shopCost: 20
+  - id: income-multiply-one-point-five
+    displayName: x1.5 population payout
+    operation: 1
+    value: "1.5"
+    sources: 4
+    firstShopVisit: 1
+    shopCost: 30
+  - id: income-multiply-two
+    displayName: x2 population payout
+    operation: 1
+    value: "2"
+    sources: 4
+    firstShopVisit: 2
+    shopCost: 50
+  signedSpeciesOffers:
+  - id: hare-long-stride-plus
+    familyId: long-stride
+    targetSpeciesId: hare
+    attributeId: movement.speed
+    signedAmount: 1.5
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-long-stride-minus
+    familyId: long-stride
+    targetSpeciesId: hare
+    attributeId: movement.speed
+    signedAmount: -1.5
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-sharper-instinct-plus
+    familyId: sharper-instinct
+    targetSpeciesId: hare
+    attributeId: avoidance.pre-contact-chance
+    signedAmount: 0.24
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-sharper-instinct-minus
+    familyId: sharper-instinct
+    targetSpeciesId: hare
+    attributeId: avoidance.pre-contact-chance
+    signedAmount: -0.24
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-reinforced-hide-plus
+    familyId: reinforced-hide
+    targetSpeciesId: hare
+    attributeId: combat.block
+    signedAmount: 6
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-reinforced-hide-minus
+    familyId: reinforced-hide
+    targetSpeciesId: hare
+    attributeId: combat.block
+    signedAmount: -6
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-warren-comfort-plus
+    familyId: warren-comfort
+    targetSpeciesId: hare
+    attributeId: crowding.energy-reduction
+    signedAmount: 0.3
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-warren-comfort-minus
+    familyId: warren-comfort
+    targetSpeciesId: hare
+    attributeId: crowding.energy-reduction
+    signedAmount: -0.3
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-deep-digestion-plus
+    familyId: deep-digestion
+    targetSpeciesId: hare
+    attributeId: digestion.energy-bonus
+    signedAmount: 0.3
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-deep-digestion-minus
+    familyId: deep-digestion
+    targetSpeciesId: hare
+    attributeId: digestion.energy-bonus
+    signedAmount: -0.3
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-abundant-seedfall-plus
+    familyId: abundant-seedfall
+    targetSpeciesId: hare
+    attributeId: resource.seed-drop-chance
+    signedAmount: 0.03
+    cost: 30
+    firstShopVisit: 1
+  - id: hare-abundant-seedfall-minus
+    familyId: abundant-seedfall
+    targetSpeciesId: hare
+    attributeId: resource.seed-drop-chance
+    signedAmount: -0.03
+    cost: 30
+    firstShopVisit: 1
+  reorderBaseRandomCost: 10
+  reorderIncreaseNumerator: 11
+  reorderIncreaseDenominator: 10
+  chosenReorderMultiplier: 10
+

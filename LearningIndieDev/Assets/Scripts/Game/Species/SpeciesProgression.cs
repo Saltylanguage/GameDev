@@ -142,16 +142,26 @@ namespace SaltyGame
 
         public bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade)
         {
+            var levelLimit = upgrade != null && upgrade.PopulationToAdd > 0
+                && SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id) ? int.MaxValue : 1;
+            return TryApplyRunUpgrade(upgrade, levelLimit);
+        }
+
+        public bool TryApplyFieldDataReward(SpeciesUpgradeSnapshot upgrade)
+        {
+            return TryApplyRunUpgrade(upgrade, upgrade == null ? 1
+                : SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(Definition.Id, upgrade.Id));
+        }
+
+        bool TryApplyRunUpgrade(SpeciesUpgradeSnapshot upgrade, int levelLimit)
+        {
             if (upgrade == null)
             {
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
             var currentLevel = GetUpgradeLevel(upgrade.Id);
-            if (upgrade.TargetSpecies != Definition.Id
-                || (currentLevel > 0
-                    && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
-                        || upgrade.PopulationToAdd == 0)))
+            if (upgrade.TargetSpecies != Definition.Id || currentLevel >= levelLimit)
             {
                 return false;
             }

@@ -2,11 +2,15 @@
 
 - **Document:** SDD-FD-001, draft 0.1
 - **Prepared:** 2026-10-15
+- **October21 human acceptance:** Bevin accepts this initial five-node implementation and confirms APS fixed in play. This supersedes the earlier open human-acceptance checkpoint below; it does not approve new content or complete production polish. See the [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md).
+- **October 19 evidence refresh:** Current authored export and direct Unity/headless parity pass eight action fixtures (including all six skills owned before round 7); 600/600 current-rule journeys validate across 200 matched seeds and three policies. See the [report](Research/Experiments/FD-Current-Loop-Refresh-20261019/REPORT.md). No tuning or human acceptance is inferred.
+- **October 19 correction:** Field Data Hare skill rewards repeat to their existing per-skill level caps. Eligibility and reward application use the same cap; legacy authored single-use upgrades retain their contract. Empty/missing Field Data offers never display legacy priced cards. See the [round-7 handoff](handoffs/2026-10-19-fd-round7-reward-exhaustion.md).
+- **Node-navigation revision:** 2026-10-18 — player-controlled map entry between nodes, with no node-end population controls. See the [implementation handoff](handoffs/2026-10-18-fd-node-map-navigation.md).
 - **Source baseline:** `735b189c`, branch `BevBranch`, plus inspected local files
 - **Integration review:** 2026-10-16, merged `0928359` including `ProjectMain` through `341cc702`
-- **Product authority:** [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
+- **Product authority:** [Field Data and Journey Loop Design v1.1](FIELD_DATA_JOURNEY_DESIGN.md)
 - **Process companion:** [Process Design, PDD-FD-001](FIELD_DATA_PROCESS_DESIGN.md)
-- **Status:** proposed technical design; types/APIs described as proposed do not exist yet
+- **Status:** Initial five-node slice accepted by Bevin on October21,2026; APS fix confirmed in play. Further content/polish remain future work. The [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md) preserves observations, prior verification and unrecorded metadata.
 
 ## 1. Outcome and constraints
 
@@ -24,8 +28,12 @@ The process document defines delivery stages FD-I01 through FD-I07.
 The [ticket draft](FIELD_DATA_TICKET_DRAFT.md) translates those stages and this
 technical proposal into reviewable work. All 16 are selected in the
 [Active S5 control](Sprints/S5-control-record.md), October 19-November 15,
-2026. FD-T01 reviews the integration boundaries before implementation;
-proposed types/APIs remain guidance rather than implemented code.
+2026. As of October 19, T01–T12 are implemented, T14's direct parity and T15's
+matched study have refreshed current-rule evidence, and T13/T16 retain their
+human acceptance and recorded self-play decision work. Journey settlement,
+launch integration, shops and the signed species catalog are implemented;
+the sections below retain the design's architectural approach and earlier
+integration baseline rather than implying those systems are still absent.
 
 ## 2. Current implementation and integration seams
 
@@ -99,6 +107,12 @@ authoritative number. Retain the same progression instance across shops and all
 18 rounds. Ordinary upgrade levels remain in progression; shop family counts
 and income instances have their own explicitly separate ledgers.
 
+The selected route is previewed before its Start action creates the Field Data
+session and begins simulation ticks. The active route map summarizes the five
+definition nodes and current node state. The map toggle remains available while
+the run is active, paused, at a round decision or at a shop; returning from the
+map resumes only a run that was running when the map opened.
+
 The helper receives the manager through an explicit internal composition seam
 on `Helper_Simulation`, not scene discovery. The session uses that manager for
 domain operations. `SpeciesSimulationPreview` delegates Field Data-mode flow
@@ -133,7 +147,17 @@ Real time is evidence metadata, not an input to random draws or payout amounts.
 Do not use asset paths, display names, GUIDs or process-dependent string hash
 codes as gameplay identity. Asset GUIDs may remain additional provenance.
 
-The solution uses a simple flow enum, proposed as `Running`, `RoundChoice`,
+**October 18 node-navigation revision:** `VM_SimulationShell` distinguishes
+node settlement, map awaiting shop entry, active shopping, and map awaiting
+simulation entry using a feature-local enum. The retained session stays at
+its `Shop` boundary throughout these screens. Only the next ready map card is
+enabled. Shop commands are guarded until explicit shop entry; leaving a shop
+does not call session Continue. The next simulation card calls it exactly once.
+The domain rejects population controls throughout the node boundary, including
+settlement. Ordinary round controls remain. Final success returns to the
+completed map; a separate new-journey action resets local state.
+
+The original solution proposed a simple flow enum, `Running`, `RoundChoice`,
 `PopulationWindow`, `NodeChoice`, `NodePopulationWindow`, `Shop`, `Succeeded`,
 `Failed`, `Closed`. This is state data in the session, not a state-pattern
 framework. The low-level run remains `AwaitingDecision` throughout nonterminal
@@ -147,7 +171,8 @@ Derive `simulationIndex = (globalRound - 1) / 6` and
 six-phase constants in place: the frozen definition selects this route only.
 
 At absolute ticks 600 and 1,200, hold the existing runner at its boundary while
-settlement, node rewards, interventions and shop actions occur. Apply the
+settlement, node rewards, map selection and shop actions occur. No population
+interventions are allowed at these node boundaries. Apply the
 resulting rules/options through the existing boundary-installation seam before
 calling Continue once. Keep `previousCells`, creature IDs, cooldowns, resources,
 metrics and Genome snapshot. Never call the initial-grid factory or legacy
@@ -161,9 +186,11 @@ population before that operation even when the runner has already become
 
 Manual End/abandon uses the same terminal failure operation from any incomplete
 journey state. Success-result exit discards its displayed leftover FD and closes
-the session. A new journey constructs fresh local state; it is not a reset of
-selected fields on the old session. This draft adds no player-facing checkpoint
-save/resume feature.
+the session. Starting again from either terminal results screen closes and
+disposes the finished session before preparing a new run and zeroed journey
+ledger; permanent progression currency remains unchanged. A new journey
+constructs fresh local state; it is not a reset of selected fields on the old
+session. This draft adds no player-facing checkpoint save/resume feature.
 
 ## 6. Exactly-once settlement and arithmetic
 
@@ -335,6 +362,17 @@ board projection; never infer transactions from rendered sprites.
 
 ## 11. Authoring, compatibility and rollout
 
+**Entry decision, October 16:** Bevin selected the existing larger map as the
+Desktop Simulation entry, with the five-node test selected from that map. See
+the [FD-T01 entry review](FIELD_DATA_ENTRY_REVIEW.md) for the inspected source
+and composition boundary accepted by Bevin, who waived further review on
+October 16. Retain the larger entry map
+and separate active test-route map/definition references. A configured definition
+does not auto-select the mode: only the explicit test-route launch action does.
+Neither opening the larger map nor selecting the test claims legacy opening
+rewards/conditions. Invalid selected definitions fail validation at selection;
+an absent definition leaves legacy paths available.
+
 Append `Shop` to `JourneyNodeKind` without changing existing serialized numeric
 values (current kinds occupy 0–5). Add an optional explicit Field Data definition
 reference to the authored map/composition; a null reference preserves the legacy
@@ -428,7 +466,379 @@ standalone build is not a Unity runtime or visual acceptance result.
 | Transactions | Serialized, revision-checked staged commit and identity-keyed receipts; supports repeated actions and safe retries |
 | Replay | Versioned deterministic operation identities and shared domain source; avoids wall-clock randomness and duplicated economy code |
 
-These are draft implementation decisions for review alongside PDD-FD-001. The
-gameplay rules stay in the approved baseline. No proposed class, enum value,
-asset, API, runner option or test case is claimed to be implemented by this
-document.
+These are the approved technical direction for the implementation tickets.
+The gameplay rules stay in the accepted baseline. Actual implementation status
+is recorded in the FD-T02 and FD-T03 checkpoints below; the remaining components
+are still proposals until their tickets are completed.
+
+## 15. FD-T02 implementation checkpoint - 2026-10-16
+
+**Status: complete.** The FD-T02 acceptance criteria are closed after 7/7
+focused Edit Mode tests passed on October 16, 2026. The results are recorded in
+`artifacts/fd-t02-editor-tests.xml`; the Unity log is
+`artifacts/fd-t02-editor-tests.log`.
+
+The first authoring boundary now exists in
+[`FieldDataJourneyDefinitionAsset.cs`](../Assets/Scripts/Game/Simulation/FieldDataJourneyDefinitionAsset.cs)
+and [`FieldDataJourneyDefinition.cs`](../Assets/Scripts/Game/Simulation/FieldDataJourneyDefinition.cs).
+[`FieldDataStarterDefinition.asset`](../Assets/Data/TestData/FieldDataStarterDefinition.asset)
+contains the five stable route-node IDs, all six 10-FD population controls,
+the three income offers with their source/visit gates, and the approved reorder
+pricing inputs. The selected definition is resolved into copied read-only data
+with a versioned SHA-256 fingerprint. The shared journey-node enum now pins its
+existing values at 0-5 and appends Shop at 6.
+
+The resolver rejects route order/link errors, missing or duplicate control and
+offer IDs, unsupported starter effects, invalid prices, invalid source gates,
+and unsupported signed Hare targets before it returns a run definition. The
+signed-offer data shape exists, but the starter catalog stays empty until its
+effects receive the runtime mappings in FD-T07. The existing 29-node map is
+still separate; map selection and Desktop launch integration remain FD-T13.
+Currently mapped species offer families are restricted to the five existing
+explicit attribute targets. Sharper Instinct remains rejected until its
+avoidance mapping is added; unsupported signed targets cannot be resolved.
+Focused editor tests are in
+[`FieldDataJourneyDefinitionTests.cs`](../Assets/Tests/Editor/FieldDataJourneyDefinitionTests.cs);
+they cover valid resolution, route/cost/ID/mapping rejection, snapshot
+fingerprint isolation, enum-number preservation, and continued validity of the
+legacy map. The asset is an authoring fixture, not a selected or playable
+route. Runtime launch selection, test-map authoring and full flow integration
+remain FD-T13.
+
+## 16. FD-T03 ordered income checkpoint - 2026-10-16
+
+**Status: complete.** The population payout calculator is implemented in
+[`FieldDataIncome.cs`](../Assets/Scripts/Game/Simulation/FieldDataIncome.cs).
+It accepts the selected-species and Hare closing counts plus an explicit ordered
+list of acquired modifier instances. The approved +1 FD per Hare, ×1.5 and ×2
+operations execute in that order using decimal intermediates; only the final
+population award is floored. The separate 10-FD node-clear reward is not part of
+this calculation, and the calculator has no wallet dependency or side effect.
+
+The immutable receipt contains the base counts, modifier instance and offer IDs,
+operation/value, each input/output amount, unrounded total and integer award.
+Invalid operations, duplicate/missing identities and negative populations are
+rejected. Decimal overflow and awards beyond the existing integer wallet range
+return an error without a receipt; this is a technical range check, not a
+gameplay tuning cap. The calculation consumes an already ordered active list;
+acquisition, reordering, source availability and exactly-once wallet settlement
+remain owned by later tickets.
+
+Focused tests in
+[`FieldDataIncomeTests.cs`](../Assets/Tests/Editor/FieldDataIncomeTests.cs)
+passed **8/8**. They cover 80 vs. 60 for reversed order, fractional intermediate
+values and one final floor, empty populations, invalid inputs, wallet-range and
+decimal overflow rejection, and immutable prior receipts. The T02 definition
+tests also passed 7/7 after the `AddPerHare` operation name was clarified; its
+serialized enum value remains 0. No full suite, player build, UI, journey
+settlement, or balance test was performed. T04 is in progress; T05 and T13
+remain outstanding.
+
+## 17. FD-T04 retained journey session - 2026-10-16
+
+**Status: implementation in progress; focused Unity EditMode tests passed 16/16 on 2026-10-16.**
+[`FieldDataJourneySession.cs`](../Assets/Scripts/Game/Simulation/FieldDataJourneySession.cs)
+adds a feature-local flow coordinator around one existing
+[`SimulationManager`](../Assets/Scripts/Game/Simulation/SimulationManager.cs),
+its prepared runner/run, and the existing `SpeciesProgression` reference. It
+accepts only a ready continuous run configured for 100-tick rounds through
+tick 1,800. It exposes `Running`, `RoundDecision`, `Shop`, `Succeeded`,
+`Failed`, and `Closed` states; ticks 600 and 1,200 pause as shop boundaries,
+and an ordinary decision or shop advances only through an explicit Continue.
+At tick 1,800 the existing manager completion callback resolves success only
+when the selected population remains present. Early completion/abandonment
+resolves failure. The session verifies runner and run identity before state
+changes and unsubscribes both manager events on disposal.
+
+Focused lifecycle fixtures were added in
+[`FieldDataJourneySessionTests.cs`](../Assets/Tests/Editor/FieldDataJourneySessionTests.cs)
+for 18-round traversal, the two shop pauses, no time advancement while paused,
+the same run/progression/history, early abandonment, invalid route length,
+disposal and runner replacement. After forcing recompilation through the
+connected project Editor, the focused `FieldDataJourney` suite passed 16/16.
+The fixture uses a stable Hare rule to test the session state machine without
+making a Forest Edge balance claim. A failing test exposed and fixed disposal
+leaving the session in `Failed` rather than transitioning to `Closed`; a
+round-boundary extinction test confirms failure occurs without a payout or
+decision. Results are retained in
+`artifacts/unity-tests-20261016-204629/EditMode-results.json`.
+
+This checkpoint does not claim completed Field Data UI or acceptance of the
+five criteria. The selected-mode composition is wired in source, but rendered
+preview/runtime behavior remains unverified. All T04 criteria remain open on
+Trello pending the remaining integration review. Wallet settlement is FD-T05;
+Desktop/map route selection remains FD-T13.
+
+### Explicit preview composition update
+
+The session now has a narrow composition seam in
+[`SpeciesSimulationPreview.cs`](../Assets/Scripts/Game/Presentation/SpeciesSimulationPreview.cs):
+`TryConfigureFieldDataJourney` accepts an already-resolved definition before
+the first run, prepares one 18-round continuous run, and `StartSimulation`
+binds the session to the same manager used by the preview (including the
+`Helper_Simulation` wrapper case). The preview's existing `Update` remains the
+only caller that advances simulation time. While the Field Data session is
+bound, the preview skips its legacy boundary and completion reward handlers;
+the session state is bridged to explicit preview states for round decisions,
+shops, and results. The method does not add Desktop/map selection or the
+Field Data screens and reward controls; those remain T13 and later UI work.
+`ContinueWithoutUpgrade` routes only explicit Field Data decision states to
+the session, and the legacy continue path is unchanged for other runs.
+
+Runtime and Editor test assemblies compiled successfully after this
+composition update using Unity's generated Bee response files. The focused
+Unity lifecycle suite passed 15/15 after the connected Editor was recompiled.
+No visual/runtime acceptance is claimed.
+
+## 18. FD-T05 wallet settlement - 2026-10-16
+
+**Status: implementation in progress; focused Unity EditMode tests passed 24/24 on 2026-10-16.**
+[`FieldDataJourneyLedger.cs`](../Assets/Scripts/Game/Simulation/FieldDataJourneyLedger.cs)
+now keeps Field Data in a journey-owned balance, separate from
+`SpeciesProgression.Currency`. It creates immutable receipts with frozen
+species counts and before/after balances. Population payout and node-clear
+reward use separate stable identities. Replaying a settled round returns the
+same population receipt; a split population/node-clear API allows a retry to
+finish a missing node reward without replaying income. Each sixth-round node
+clear awards its separate 10 FD.
+
+`FieldDataJourneySession` owns the ledger and settles each living-species round
+before presenting its decision/shop state. Completion at tick 1,800 settles
+round 18 and the third node reward. Extinction or early End skips that round's
+award and forfeits the prior journey balance, retaining the exact amount for
+failure results. Successful-results exit can discard the leftover balance
+only after all 18 rounds and three node clears have receipts. `TryAddIncomeModifier`
+accepts unique, validated modifiers only at decision/shop boundaries so
+future payouts see them while earlier receipts remain frozen.
+
+[`FieldDataJourneyLedgerTests.cs`](../Assets/Tests/Editor/FieldDataJourneyLedgerTests.cs)
+covers exactly-once round payout and node reward, separate retry behavior,
+extinction rejection, local-wallet forfeiture, success-only remainder discard,
+and permanent progression currency isolation. Runtime and Editor test
+The focused `FieldData` EditMode suite passed 24/24 in the connected Editor;
+results are retained in
+`artifacts/unity-tests-20261016-204629/EditMode-results.json`. The ledger and
+session remain implementation work rather than a finished player flow: wallet
+and results UI, complete award-entry integration, and the remaining T05
+acceptance checks still need verification. T05 remains In Progress and its
+five board criteria remain open.
+
+## 19. FD-T14 headless Field Data replay - 2026-10-16
+
+**Status: shared-domain replay implementation and deterministic fixture test
+passed; authored-scenario export and Unity parity remain open.**
+
+`CellSim.Batch` now compiles the same Field Data income, definition, reorder,
+ledger, journey session, population intervention, reward, shop, node-kind and
+simulation-manager sources used by Unity. The portable snapshot adds a
+versioned `FieldDataPortableDefinition` containing the resolved route,
+catalogue entries, reorder pricing and definition fingerprint. Focused Unity
+tests for round-trip fidelity, altered-content rejection and unsupported
+schemas passed by exact-name runs on October 17. The new session-level
+extinction cases at ticks 100, 600 and 1,800 passed 3/3; the complete
+`FieldDataJourneySessionTests` fixture passed 12/12, and the broader
+FieldData-named EditMode run passed 46/46. The
+`FieldDataTestRouteCanBeSelectedFromTheJourneyMapBeforeFirstSimulation`
+PlayMode integration test passed 1/1 through the first shop. A portable-exporter
+compile error was fixed by separating the missing-asset and invalid-definition
+checks; Unity recompile then completed with `compilationFailed: false`.
+
+The new `journey-replay <snapshot.json> <seed> <actions.json>
+<new-output.json>` command restores the frozen scenario and definition, then
+advances the existing shared runner through the 18-round session. Scheduled
+choices, population actions, shop purchases, rerolls, random/chosen reorders and
+successful-results exit are recorded with tick, request/offer identity,
+receipt, cost/balance and prior/next order or population positions where
+applicable. Unexecuted actions remain visible with a `not-executed` status;
+runner exceptions produce a `crashed` record when an output path is still
+available. The report carries all-species boundary populations, ordered
+income-step breakdowns, separate population/node awards, shop offers,
+first-affordability by node/round/tick/balance, and acquisition and effective
+order histories. Replay duration is explicitly automated milliseconds. Human
+decision time is optional input in milliseconds, keeping it separate from
+automated runtime.
+
+Validation on October 16–17:
+
+- `dotnet build tools/CellSim.Batch/CellSim.Batch.csproj -c Release` passed with
+  zero warnings or errors.
+- `CellSim.Batch self-test` passed, including two deterministic 18-round
+  replays, exact 18 population awards and three node-clear awards, successful
+  remainder discard, a successful scheduled choice and Hare intervention with
+  a verified next-boundary population change, an off-boundary action retained
+  as not executed, first affordability and a supplied human decision duration.
+- The earlier Unity Authoring EditMode category passed 20/20 at
+  `artifacts/unity-tests-20261016-231614/EditMode-results.json`; it did not
+  include the portable-definition tests. Exact-name runs passed at
+  `artifacts/unity-tests-20261016-235923` and
+  `artifacts/unity-tests-20261016-235926`; the 46/46 FieldData-named suite is
+  at `artifacts/unity-tests-20261017-000802`.
+- The route-entry/first-shop PlayMode test passed 1/1 at
+  `artifacts/unity-tests-20261017-000653`. It does not complete all 18 rounds.
+  An earlier attempt was blocked by `CS0165` in the exporter and was cancelled;
+  the error is fixed and the route-entry test passed after recompilation.
+- Authored Forest Edge seed search found a full-route success at seed 10125.
+  `FieldDataTestRouteCompletesThroughBothShopsOnFixedSeed` passed 1/1 at
+  `artifacts/unity-tests-20261017-001248/PlayMode-results.json`, exercising all
+  1,800 ticks and both shops through the actual Desktop UI, then successful
+  results and leftover-FD discard. This verifies the success route only;
+  failure/abandonment and protected profile state, repeat-entry cases, rendered
+  captures and human review remain open.
+- Both FieldData-named PlayMode tests passed 2/2 at
+  `artifacts/unity-tests-20261017-001323/PlayMode-results.json`.
+- The expanded FieldData PlayMode subset passed 3/3 at
+  `artifacts/unity-tests-20261017-002057/PlayMode-results.json`. It now also
+  covers natural-extinction results, exact journey-wallet forfeiture, skipping
+  the unsettled extinction-round payout, unchanged progression currency, and
+  restarting a new zero-FD run from both failed and successful results.
+- Those tests exposed and fixed a lifecycle gap: the terminal Field Data session
+  stayed attached and blocked the results-screen restart. `PlayNextSimulation`
+  now closes/disposes a terminal session before preparing the next run, and the
+  shell labels the action `START NEW JOURNEY`. The updated EditMode suite passed
+  46/46 at `artifacts/unity-tests-20261017-002151/EditMode-results.json`.
+- `tools/Export-CellSimSnapshot.ps1` now accepts
+  `-FieldDataDefinitionPath`; the existing exporter can freeze the authored
+  route alongside scenario, source and upgrade provenance when the Editor is
+  closed.
+- The T15 seed list is frozen in
+  `artifacts/field-data-t15/seed-manifest.json`: 10100–10299, matched against
+  the authored Forest Edge scenario and starter definition. Their asset hashes
+  and three deterministic action arms are recorded; the full runtime snapshot
+  and study remain pending.
+- The authored Forest Edge export and real Unity-versus-headless action parity
+  are not established. The snapshot exporter requires the Editor to be closed;
+  no authored scenario snapshot or comparison has been generated. FD-T14 remains
+  open and its criteria are unchecked.
+
+The 200 fixed seeds (10100–10299), authored scenario/definition hashes and
+three deterministic policy arms are selected and recorded, but no frozen
+runtime snapshot or comparison runs exist yet. Do not treat the stable
+headless fixture as Forest Edge survival or economy evidence.
+
+## 20. FD-T14 and T15 authored replay evidence - 2026-10-17
+
+This checkpoint supersedes the earlier pending-export notes in §19. The user
+saved and closed the Unity Editor for the authored export. The snapshot and its
+200 Unity reference rows were generated at:
+
+- `artifacts/field-data-t14/forest-edge-field-data-20261017.json`
+- `artifacts/field-data-t14/forest-edge-field-data-20261017.reference.jsonl`
+
+The snapshot contains the authored Forest Edge 36×20 starting populations,
+0.2-second step interval, selected Hare species, portable five-node definition,
+and upgrade catalogue. Its snapshot SHA-256 is
+`33fd190765379ab85c37716b5c07edf63dfdaf32d0f548f6255ad9a292d5ab96`; the
+reference JSONL SHA-256 is
+`3e499799beff1aea29a9b5d7cbab22a7a0c8df076b8c6b9674b86c6d087a911f`.
+The portable simulation source hash is
+`3d4de5dda9f00494024fbec6e89a1e01b0c8aa6d9f8c1873ef381ec32a84fa74`, the
+definition fingerprint is
+`ac5dacc3bca2a54615472d62e31aa04dc97d6c8c6f1c56d9f8290f253070051b`, and the
+Release runner DLL SHA-256 is
+`7ee89c9c3ab4afb213d05db7a2993a489a3add4f45cf22f3ee1d467a00838831`.
+Snapshot provenance records `acc371ac` as the Git HEAD anchor; the worktree
+contained local modifications, so that commit is not a clean-source claim.
+The active Genome input for this first-test baseline is empty; authored
+scenario species rules are used as the base rules.
+
+The clean Desktop PlayMode route test now pins the authored scenario settings.
+On seed 10100 it passed all 18 rounds and both shop visits. A headless
+no-purchase replay on that seed completed with 18 population awards, three
+node-clear rewards, 52 FD discarded at successful results, and final
+populations of Hare 1, Fox 0 and Plant 717. Those final populations match the
+Unity reference row. The earlier seed 10125 success was run with a 0.1-second
+editor setting and did not represent the authored 0.2-second snapshot; on the
+authored settings, that seed naturally fails during round 2. The corrected
+PlayMode run is at
+`artifacts/unity-tests-20261017-003411/PlayMode-results.xml`; expanded route,
+failure and manual abandonment coverage passed 4/4 at
+`artifacts/unity-tests-20261017-004043/PlayMode-results.xml`.
+
+The three frozen T15 policy schedules ran on every seed from 10100 through
+10299. The full set has 600 completed reports, exactly three per seed, with
+matching scenario/definition fingerprints. Baseline Unity-reference Hare
+survival was 45/200. The removal arm survived 50/200, the addition arm 0/200,
+and the save-for-second-shop ×2 arm 45/200. Removal had 158 successful paid
+actions; additive Hare actions had 589; the ×2 offer was bought twice and was
+rejected for availability or affordability in 46 executed attempts. These
+descriptive results have no approved numeric pass/fail gate. Full reports,
+v2 action schedules, cohort index and aggregate are under
+`artifacts/field-data-t15/run-20261017/`. The aggregate simulation runtime is
+872,424.8 ms (1,454 ms mean); active human setup/analysis time was not captured.
+
+T14 remains In Progress because the authored parity evidence only covers the
+no-purchase route's final populations. Matching Unity and headless offer IDs,
+purchase receipts, reorder histories, intermediate board effects and report
+compatibility still require a common fixture. T15's runtime comparison is
+complete, but its active team setup/analysis-time record is open. No balance
+revision or content choice follows from these figures; the next decision
+belongs to T16 internal self-play and the team's accept/revise review.
+
+## 21. FD-T04–T06 verified closeout - 2026-10-17
+
+T04, T05 and T06 are Done with five checked criteria each on Trello. The current
+clean FieldData EditMode run passed 49/49 at
+`artifacts/unity-tests-20261017-010128/EditMode-results.xml`; the clean focused
+PlayMode run passed 5/5 at
+`artifacts/unity-tests-20261017-010227/PlayMode-results.xml`. The latter covers
+the authored seed-10100 route through all 18 rounds/two shops, retained shop
+and reward choices, repeated Continue/results, failure, manual abandonment,
+restart and legacy Desktop map entry. Terminal-path fixtures seed and preserve
+banked currency, species unlocks, Genome unlocks and feature IDs.
+
+Two T06 placement defects were corrected. Plant additions now exclude cells
+already holding Plant resources, ensuring an accepted five-Plant action adds
+five distinct resources. Capacity validation counts a creature and Plant
+resource sharing a cell separately, matching the ecology population limit.
+The new shared-layer test failed before the fix (the action was accepted when
+rejection was expected) at `artifacts/unity-tests-20261017-010046`, then passed
+in the 49-test run. The nine population-control tests also verify full-batch
+rejection, layer preservation, repeated intents versus retries, deterministic
+placement after rejection, frozen settled counts and separate natural metrics.
+
+The force-closed Editor's unheld temporary lock was preserved under
+`artifacts/unity-recovery-20261017-005903` after confirming no Editor process
+and obtaining exclusive file access. Supported clean Unity runs then completed
+normally. These focused checks do not establish T13 rendered/human acceptance,
+T14 action parity or T16 self-play. The standalone runner and authored parity
+inputs must be rebuilt/refrozen for subsequent current-source evidence; earlier
+frozen artifacts retain their original fingerprints and historical meanings.
+
+## 22. FD-T07 signed-effect acceptance - 2026-10-17
+
+The full clean EditMode suite passed 390/390 at
+`artifacts/unity-tests-20261017-010934/EditMode-results.xml`. T07 is Done on
+Trello, 5/5. Tests now exercise all twelve authored variants on interior values
+and verify that only the registered runtime target changes. Paired opposites
+for all six targets cancel before bounds in either order. A session fixture
+reaches the ordinary movement cap independently of the shared three-copy shop
+family cap, then compares every cell across shop activation with deliberately
+non-default energy, cooldowns and behavior state. Later-node continuation keeps
+the same net overlay instead of accumulating it again; a new journey has no
+shop effects. Immutable definition/portable round-trip, registry/fingerprint
+and legacy domain checks pass in that same suite. UI rendering and cross-runtime
+receipt parity remain in T11–T14.
+
+## 23. Rendered delivery, action parity and current-source panel — 2026-10-17
+
+The [current handoff](handoffs/2026-10-17-0202-codex-field-data-rendering-parity-and-cohort.md)
+records the domain choice gate, rendered fixes, complete regression evidence,
+five authored Unity/headless action fixtures and all 600 current-source matched
+replays. It supersedes §20's limited no-purchase parity and historical timing.
+The report keeps schema version 1 with additive before/after board digests and
+`chargedFieldData`; quoted/receipt cost and actual debit remain separate.
+
+Portable Field Data input now includes `fieldDataOrdinaryRewards`, resolved by
+the same catalog helper as the Desktop. Under this slice's Bev-experimental
+configuration, that is General Movement, Attack and Block; the two authored
+litter assets are not substituted for the live fallback pool. Opt-in journey
+replay requires a fresh export containing that explicit pool. Legacy ordinary
+ecology replay and its report meaning remain unchanged and match the fresh
+Unity reference in the compatibility check.
+
+Final rendered evidence is at `artifacts/visual-evidence-20261017-015907`
+(1280×720); the earlier 1920×1080 pass at `014742` precedes the final text-only
+readability changes. The synthetic capped-ownership fixture is separate from
+the authored 18-round success/failure route. Neither substitutes for human
+visual acceptance or economy self-play. The [team review record](FIELD_DATA_SELF_PLAY_REVIEW.md)
+remains blank until that work is actually performed.

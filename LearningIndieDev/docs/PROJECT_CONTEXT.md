@@ -6,6 +6,13 @@ changes, and do not treat research references as approved implementation work.
 
 ## Unity plugin skills and project fit
 
+**Field Data navigation, October 18:** Keep node-end Field Data settlement but
+remove its population controls. After each simulation or shop, return to the
+map and wait for the player to click the next ready node. Preserve the retained
+world/tick, wallet and upgrades while waiting. Ordinary round-1–5 population
+controls remain. Final success returns to the completed map; starting a fresh
+journey is a separate action. This supersedes earlier pre-shop round-6 controls.
+
 The Unity plugin provides on-demand specialists across these areas:
 
 - Editor, search, and packages: `unity-cli`, `generate-editor-search-query`,
@@ -146,6 +153,13 @@ uncertainty or regression risk.
   remain unassigned by request and the 57–95h estimate retains its capacity
   risk. Broader simulation corrections/permanent content remain separate;
   S6/S7 dates need reforecasting after the extended S5. The
+  October 16 [FD-T01 entry decision](FIELD_DATA_ENTRY_REVIEW.md) retains the
+  larger map as the Desktop Simulation entry; the five-node Field Data test
+  is selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
+  The October 17 route correction adds a five-node preview and explicit Start
+  action after selection; income modifiers are shop-only, while free round and
+  node choices contain species upgrades.
+  The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
 - The initial vertical-slice content selection is Forest Edge with hare as the

@@ -301,6 +301,59 @@ namespace SaltyGame
                 resourceSpeciesId: resourceSpecies);
         }
 
+        public SpeciesCell WithPlantResource(
+            TerrainDefinition resourceTerrain,
+            SpeciesId resourceSpecies,
+            float energy)
+        {
+            if (resourceTerrain == null || !resourceTerrain.ProvidesResource)
+            {
+                throw new ArgumentException("A plant resource terrain is required.", nameof(resourceTerrain));
+            }
+
+            if (!resourceSpecies.IsValid || energy < 0f || float.IsNaN(energy) || float.IsInfinity(energy))
+            {
+                throw new ArgumentOutOfRangeException(nameof(energy), energy,
+                    "A valid resource species and finite non-negative energy are required.");
+            }
+
+            if (!IsCreature)
+            {
+                return FromTerrain(resourceTerrain, energy, resourceSpecies);
+            }
+
+            return new SpeciesCell(
+                SpeciesId,
+                true,
+                Health,
+                Energy,
+                Age,
+                FoodEaten,
+                FoodReserve,
+                IsAlpha,
+                resourceTerrain.Id,
+                energy,
+                isResourceSpecies: false,
+                isResourceTerrain: true,
+                isPassable: resourceTerrain.IsPassable,
+                movementCost: resourceTerrain.MovementCost,
+                resourceSpeciesId: resourceSpecies,
+                behaviorState: BehaviorState,
+                behaviorStateTicks: BehaviorStateTicks,
+                entityId: EntityId,
+                attackCooldownTicksRemaining: AttackCooldownTicksRemaining,
+                energyRemainder: EnergyRemainder,
+                crowdingEnergyRemainder: CrowdingEnergyRemainder,
+                trackingTargetEntityId: TrackingTargetEntityId,
+                trackingTargetX: TrackingTargetX,
+                trackingTargetY: TrackingTargetY,
+                trackingTicksRemaining: TrackingTicksRemaining,
+                reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining,
+                forageReservePhase: ForagePhase,
+                terrainResourceGrowthElapsedTicks: 0,
+                gestation: Gestation);
+        }
+
         public bool IsOccupied { get; }
         public bool IsCreature => IsOccupied && !isResourceSpecies;
         public bool IsTerrainResource => isResourceTerrain && TerrainEnergy > 0f;
