@@ -12,7 +12,8 @@ linked FD2 files. All 12 cards were created in the board's **🎯 Upcoming Work*
 list, with Bevin (Nick Nevins) assigned and recorded as owner and reviewer; no
 sprint placement was made. Exact Research cap/costs, reset fee and initial Hare
 node catalog remain tuning inputs. This is design and ticket publication only;
-no FD2 implementation or runtime verification is claimed. See the published
+no FD2 implementation or runtime verification is claimed. The document package was published
+to `origin/BevBranch` and `origin/ProjectMain` as commit `3224307` on 2026-10-21. See the published
 [Trello ticket index](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md#published-trello-cards-2026-10-21).
 
 **October 21 publication and closeout:** All FD-T01–FD-T16 are verified in

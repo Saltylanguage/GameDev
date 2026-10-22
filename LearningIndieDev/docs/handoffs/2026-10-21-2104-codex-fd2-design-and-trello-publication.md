@@ -1,6 +1,6 @@
 # FD2 design documents and Trello publication
 
-[Working state](../WORKING_STATE.md) | Status: ready-for-review
+[Working state](../WORKING_STATE.md) | Status: shared
 
 - Handoff schema: 1
 - Handoff ID: 2026-10-21-2104-codex-fd2-design-and-trello-publication
@@ -14,9 +14,10 @@
 
 Bevin approved the FD2 permanent-progression direction, then authorized publication
 of all 12 actionable cards with himself as owner and reviewer. The PDD, SDD,
-ticket breakdown and project-context updates are complete locally. The 12 Trello
-cards are in Upcoming Work with Bevin's account assigned; no sprint placement or
-estimate was added. This handoff records the scope for the requested Git push.
+ticket breakdown and project-context updates were committed as `3224307` and
+pushed to both `origin/BevBranch` and `origin/ProjectMain`. The 12 Trello cards
+are in Upcoming Work with Bevin's account assigned; no sprint placement or
+estimate was added.
 
 ## Changes
 
@@ -50,9 +51,13 @@ estimate was added. This handoff records the scope for the requested Git push.
 - Read back all 12 cards on Trello. Confirmed their titles, descriptions, owner/
   reviewer text and Nick Nevins member assignment. The board count for Upcoming
   Work was 12 after creation.
-- Checked repository-relative Markdown links in the FD2 design and ticket files.
-- `git diff --check` passed for the changed project-context documents. No Unity
-  tests or gameplay validation were needed for this documentation-only change.
+- Checked repository-relative Markdown links in the FD2 design, ticket and handoff
+files; all resolve. `git diff --check` passed for the staged document set. The
+repository-wide handoff validator reports errors in pre-existing historical
+handoffs; those files were not changed. No Unity tests or gameplay validation
+were needed for this documentation-only change.
+- Verified `origin/BevBranch` and `origin/ProjectMain` both received the published
+  commit; final reference parity is recorded in the response.
 
 ## Risks and incomplete work
 
@@ -64,6 +69,5 @@ estimate was added. This handoff records the scope for the requested Git push.
 
 ## Next useful step
 
-Commit and push the reviewed FD2 document set to BevBranch, fast-forward and push
-ProjectMain, verify both remote references and the retained unrelated local
-changes, then update this handoff to Status: shared with the published commit.
+Continue with FD2-T01: finalize the first-slice progression content and tuning
+definition before implementation begins.
