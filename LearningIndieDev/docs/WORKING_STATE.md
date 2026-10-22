@@ -5,6 +5,16 @@ become a master changelog.
 
 ## Current focus
 
+**October 21 FD2 planning and Trello publication:** Bevin approved the permanent
+progression direction after accepting FD1. The FD2 process design, solution
+design and 12-card actionable ticket breakdown are documented in the three
+linked FD2 files. All 12 cards were created in the board's **🎯 Upcoming Work**
+list, with Bevin (Nick Nevins) assigned and recorded as owner and reviewer; no
+sprint placement was made. Exact Research cap/costs, reset fee and initial Hare
+node catalog remain tuning inputs. This is design and ticket publication only;
+no FD2 implementation or runtime verification is claimed. See the published
+[Trello ticket index](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md#published-trello-cards-2026-10-21).
+
 **October 21 publication and closeout:** All FD-T01–FD-T16 are verified in
 Trello Done, with complete flags and all 79 current checklist resolutions.
 Bevin accepted the initial five-node slice and confirmed APS fixed. Accepted

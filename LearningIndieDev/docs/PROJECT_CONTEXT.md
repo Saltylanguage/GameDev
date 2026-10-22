@@ -207,6 +207,22 @@ uncertainty or regression risk.
   selected scenario, same simulation state through shops and banked Desktop
   currency/unlocks. Values are provisional, not balance findings. The
   [numbered checklist](FIELD_DATA_DESIGN_PLAN.md) tracks pending delivery.
+- **FD2 permanent progression direction (2026-10-21):** The accepted FD1
+  journey now has a bounded design for moving successful-run value into
+  permanent progression. Success deposits leftover FD into only the selected
+  species wallet at a provisional 10 FD : 1 data rate, rounded down, and grants
+  a provisional fixed 10 Research Data; a global Research upgrade adds +10%
+  multiplicatively per level for later settlements. Failed journeys lose only
+  run-earned FD. Generic legacy profile currency migrates to Research Data;
+  prior Genome ownership/loadouts remain. The first permanent tree is Hare:
+  its path license and nodes use Hare Data, unlocked nodes remain permanent,
+  active configuration stays within the existing capacity of 8, and a paid
+  Research Data reset clears only the active Hare loadout without refunding
+  node costs. Exact research cap/costs, reset fee and first Hare catalog are
+  still implementation tuning. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
+  [FD2 Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md),
+  and [FD2 ticket draft](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md).
+  All 12 FD2 tickets were published to the board's 🎯 Upcoming Work list on 2026-10-21, assigned to Bevin (Nick Nevins) and marked Owner/Reviewer: Bevin; no sprint placement was made. The ticket draft contains the verified card links.
 - The player develops a cell and its ruleset over the course of a run. Levels,
   currency, or both may purchase new rules and improve existing ones.
 - The earlier standalone six-round contract has two distinct upgrade systems; the journey carryover decision above changes its simulation-boundary reset assumption for the journey flow. **Mutations** are acute
