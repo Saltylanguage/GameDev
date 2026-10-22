@@ -34,7 +34,7 @@ other broad ticket outcomes remain S5 exit requirements or follow-on work.
    judgments; no fixed population quota is invented here.
 3. **Meaningful choices:** Compare at least two plans from the same start,
    including spending versus saving Field Data and different Hare upgrade
-   choices. Show their effects on the world, wallet and outcome. Trailblazer,
+   choices. Show their effects on t he world, wallet and outcome. Trailblazer,
    Warren and Gardeners are comparison lenses, not locked builds.
 4. **Readable play:** At the decisions and result, players can understand the
    pressure, price, effect and reason for the outcome. Bevin and Salty each

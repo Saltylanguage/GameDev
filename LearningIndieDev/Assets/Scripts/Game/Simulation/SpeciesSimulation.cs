@@ -24,6 +24,8 @@ namespace SaltyGame
         static readonly GridPattern NearbyPattern = GridPatternTemplates.CreateMooreRange(1);
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
         static readonly SpeciesId HareSpeciesId = new SpeciesId("hare");
+        public const string FertileDroppingsNodeId = "fertile-droppings";
+        public const float FertileDroppingsSeedChanceBonus = 0.1f;
 
         public static bool CanAddBoundaryPopulation(
             Grid<SpeciesCell> source,
@@ -224,7 +226,8 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
-            Grid<SpeciesCell> previousSource = null)
+            Grid<SpeciesCell> previousSource = null,
+            GenomeSimulationSnapshot genomeSnapshot = null)
         {
             if (simulationData == null)
             {
@@ -243,7 +246,8 @@ namespace SaltyGame
                 attackOpportunityMode,
                 experimentalOptions,
                 previousSource,
-                stepIntervalSeconds: simulationData.StepInterval);
+                stepIntervalSeconds: simulationData.StepInterval,
+                genomeSnapshot: genomeSnapshot);
         }
 
         public static Grid<SpeciesCell> Step(
@@ -258,7 +262,8 @@ namespace SaltyGame
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
             Grid<SpeciesCell> previousSource = null,
-            float stepIntervalSeconds = 0.1f)
+            float stepIntervalSeconds = 0.1f,
+            GenomeSimulationSnapshot genomeSnapshot = null)
         {
             if (source == null)
             {
@@ -311,7 +316,8 @@ namespace SaltyGame
                 seed,
                 forcedOpportunity: null,
                 experimentalOptions: experimentalOptions,
-                stepIntervalSeconds: stepIntervalSeconds);
+                stepIntervalSeconds: stepIntervalSeconds,
+                genomeSnapshot: genomeSnapshot);
         }
 
         public static SpeciesPairedStepResult StepPaired(
@@ -483,7 +489,32 @@ namespace SaltyGame
             ResolveAttackCooldowns(next, experimentalOptions);
             ResolveReproductionCooldowns(next);
             ResolveGestationTimers(next);
+            ResolveScentDecay(next);
             SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
+        }
+
+        static void ResolveScentDecay(Grid<SpeciesCell> next)
+        {
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature && cell.SpeciesId == HareSpeciesId
+                        && !cell.ScentMarker.IsDropping)
+                    {
+                        next.SetCell(x, y, cell.WithScentMarker(new SpeciesScentMarker(
+                            cell.SpeciesId,
+                            cell.EntityId,
+                            SpeciesPerception.BaseScentDurationTicks,
+                            isDropping: false)));
+                    }
+                    else if (cell.ScentMarker.IsActive)
+                    {
+                        next.SetCell(x, y, cell.WithScentMarker(cell.ScentMarker.Advance()));
+                    }
+                }
+            }
         }
 
         static Grid<SpeciesCell> CompleteStep(
@@ -500,7 +531,8 @@ namespace SaltyGame
             int seed,
             SpeciesAttackOpportunity? forcedOpportunity,
             SpeciesExperimentalOptions experimentalOptions = null,
-            float stepIntervalSeconds = 0.1f)
+            float stepIntervalSeconds = 0.1f,
+            GenomeSimulationSnapshot genomeSnapshot = null)
         {
             RecordSpeciesExposureStep(source, rules, metrics, experimentalOptions);
             ResolveAttacks(
@@ -519,7 +551,7 @@ namespace SaltyGame
             ResolveTerrainRegrowth(next, terrainDefinitions);
             ResolveCrowdingMetabolism(next, rules, metrics);
             ResolveStarvation(next, rules, metrics);
-            ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics);
+            ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics, genomeSnapshot);
             ResolveWilt(next, rules, random, metrics);
             ResolveGestationBirths(next, rules, alphaOffspringRules, random, metrics);
             ResolveReproduction(
@@ -671,7 +703,8 @@ namespace SaltyGame
                     x,
                     y,
                     SpeciesDeathCause.PopulationLimit,
-                    populationLimitRemovals: 1);
+                    populationLimitRemovals: 1,
+                    resourceLayer: !population.IsCreature);
             }
         }
 
@@ -1838,7 +1871,8 @@ namespace SaltyGame
                 return false;
             }
 
-            if (speciesRules.Awareness.VisionRange <= 0)
+            if (speciesRules.Awareness.VisionRange <= 0
+                && !currentCell.ScentMemory.IsActive)
             {
                 return false;
             }
@@ -1886,6 +1920,11 @@ namespace SaltyGame
                     currentCell,
                     speciesRules,
                     out trackedFoodTarget);
+            var scentTarget = default(SpeciesPerceivedTarget);
+            var hasScentTarget = !hasFood
+                && ShouldForage(currentCell, speciesRules)
+                && SpeciesPerception.TryFindScentMemoryTarget(
+                    source, currentCell.ScentMemory, out scentTarget);
             var canSeekMate = CanSeekMate(currentCell, speciesRules)
                 && CountPatternSpeciesNeighbors(
                     source,
@@ -1911,7 +1950,7 @@ namespace SaltyGame
                 && speciesRules.Awareness.Intelligence > 0
                 && !(speciesRules.ForageThresholdFraction > 0f
                     && ShouldForage(currentCell, speciesRules)
-                    && (hasFood || hasTrackedFood));
+                    && (hasFood || hasTrackedFood || hasScentTarget));
 
             if (prioritizeMate
                 && TryMoveTowardPerceivedTarget(
@@ -1948,6 +1987,26 @@ namespace SaltyGame
                     random,
                     metrics))
             {
+                return true;
+            }
+
+            if (hasScentTarget
+                && TryMoveTowardPerceivedTarget(
+                    source,
+                    next,
+                    x,
+                    y,
+                    currentCell,
+                    speciesRules,
+                    scentTarget,
+                    movementPass,
+                    plantEnergyValue,
+                    moved,
+                    claimed,
+                    random,
+                    metrics))
+            {
+                metrics?.Record(currentCell.SpeciesId, scentPursuitDecisions: 1);
                 return true;
             }
 
@@ -2179,7 +2238,10 @@ namespace SaltyGame
                 return false;
             }
 
-            next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
+            next.SetCell(x, y, LeaveMovementScent(
+                source.GetCell(x, y).WithoutEntity()
+                    .WithScentMarker(next.GetCell(x, y).ScentMarker),
+                cell));
             var movedCell = currentTarget.WithEntity(
                 cell.SpeciesId,
                 cell.Health,
@@ -2192,7 +2254,8 @@ namespace SaltyGame
                 energyRemainder: cell.EnergyRemainder,
                 crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
                 reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
-                .WithGestation(cell.Gestation);
+                .WithGestation(cell.Gestation)
+                .WithScentMemory(cell.ScentMemory);
             if (cell.TrackingTargetEntityId > 0 && cell.TrackingTicksRemaining > 0)
             {
                 movedCell = movedCell.WithTrackingTarget(
@@ -2200,6 +2263,15 @@ namespace SaltyGame
                     cell.TrackingTargetX,
                     cell.TrackingTargetY,
                     cell.TrackingTicksRemaining);
+            }
+
+            if (cell.SpeciesId == HareSpeciesId && !movedCell.ScentMarker.IsDropping)
+            {
+                movedCell = movedCell.WithScentMarker(new SpeciesScentMarker(
+                    cell.SpeciesId,
+                    cell.EntityId,
+                    SpeciesPerception.BaseScentDurationTicks,
+                    isDropping: false));
             }
 
             next.SetCell(targetX, targetY, movedCell
@@ -2210,6 +2282,20 @@ namespace SaltyGame
             claimed[targetIndex] = true;
             metrics?.Record(cell.SpeciesId, movementSteps: 1);
             return true;
+        }
+
+        static SpeciesCell LeaveMovementScent(SpeciesCell vacated, SpeciesCell mover)
+        {
+            if (mover.SpeciesId != HareSpeciesId || vacated.ScentMarker.IsDropping)
+            {
+                return vacated;
+            }
+
+            return vacated.WithScentMarker(new SpeciesScentMarker(
+                mover.SpeciesId,
+                mover.EntityId,
+                SpeciesPerception.BaseScentDurationTicks,
+                isDropping: false));
         }
 
         static bool IsThreatenedState(SpeciesBehaviorState state)
@@ -2312,8 +2398,11 @@ namespace SaltyGame
                     return true;
                 }
 
-                next.SetCell(x, y, source.GetCell(x, y).WithoutEntity());
-                next.SetCell(targetX, targetY, next.GetCell(targetX, targetY).WithEntity(
+                next.SetCell(x, y, LeaveMovementScent(
+                    source.GetCell(x, y).WithoutEntity()
+                        .WithScentMarker(next.GetCell(x, y).ScentMarker),
+                    cell));
+                var movedCell = next.GetCell(targetX, targetY).WithEntity(
                     cell.SpeciesId,
                     cell.Health,
                     cell.Energy,
@@ -2326,8 +2415,19 @@ namespace SaltyGame
                     crowdingEnergyRemainder: cell.CrowdingEnergyRemainder,
                     reproductionCooldownTicksRemaining: cell.ReproductionCooldownTicksRemaining)
                     .WithGestation(cell.Gestation)
+                    .WithScentMemory(cell.ScentMemory)
                     .WithForageReservePhase(cell.ForagePhase)
-                    .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks));
+                    .WithBehaviorState(cell.BehaviorState, cell.BehaviorStateTicks);
+                if (cell.SpeciesId == HareSpeciesId && !movedCell.ScentMarker.IsDropping)
+                {
+                    movedCell = movedCell.WithScentMarker(new SpeciesScentMarker(
+                        cell.SpeciesId,
+                        cell.EntityId,
+                        SpeciesPerception.BaseScentDurationTicks,
+                        isDropping: false));
+                }
+
+                next.SetCell(targetX, targetY, movedCell);
                 moved[GetIndex(source, x, y)] = true;
                 moved[targetIndex] = true;
                 claimed[targetIndex] = true;
@@ -2633,7 +2733,7 @@ namespace SaltyGame
                     }
 
                     next.SetCell(x, y, cell.WithoutPlantResource());
-                    metrics?.RecordDeath(cell, x, y, SpeciesDeathCause.Wilt);
+                    metrics?.RecordDeath(cell, x, y, SpeciesDeathCause.Wilt, resourceLayer: true);
                 }
             }
         }
@@ -2643,7 +2743,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            GenomeSimulationSnapshot genomeSnapshot)
         {
             var plantEntry = GetFirstPlant(rules);
             if (!plantEntry.HasValue || plantEntry.Value.Value.StartingFoodReserve <= 0f)
@@ -2653,15 +2754,18 @@ namespace SaltyGame
 
             var plantSpecies = plantEntry.Value.Key;
             var plantRules = plantEntry.Value.Value;
+            var fertileDroppings = genomeSnapshot != null
+                && genomeSnapshot.GetSpeciesGenome(HareSpeciesId).HasActiveNode(FertileDroppingsNodeId);
 
             for (var y = 0; y < next.Height; y++)
             {
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
+                    var usesFertileDroppings = fertileDroppings && cell.SpeciesId == HareSpeciesId;
                     if (!cell.IsCreature
                         || !rules.TryGetValue(cell.SpeciesId, out var speciesRules)
-                        || speciesRules.SeedDropChance <= 0f
+                        || (speciesRules.SeedDropChance <= 0f && !usesFertileDroppings)
                         || cell.FoodReserve < 1f
                         || speciesRules.MovementPattern.Count == 0)
                     {
@@ -2681,7 +2785,10 @@ namespace SaltyGame
                     if (!hasSpace) continue;
 
                     metrics?.Record(cell.SpeciesId, seedDropAttempts: 1);
-                    if (random.NextDouble() >= speciesRules.SeedDropChance) continue;
+                    var seedChance = usesFertileDroppings
+                        ? Math.Min(1f, speciesRules.SeedDropChance + FertileDroppingsSeedChanceBonus)
+                        : speciesRules.SeedDropChance;
+                    if (random.NextDouble() >= seedChance) continue;
 
                     var startOffset = random.Next(movementPattern.Count);
                     for (var offsetIndex = 0; offsetIndex < movementPattern.Count; offsetIndex++)
@@ -2695,18 +2802,30 @@ namespace SaltyGame
                             continue;
                         }
 
+                        var previousSeedCell = next.GetCell(seedX, seedY);
                         next.SetCell(seedX, seedY, SpeciesCell.FromTerrain(
                             terrainDefinitions[TerrainIds.Grass],
                             plantRules.StartingFoodReserve,
-                            plantSpecies));
-                        next.SetCell(x, y, cell.WithEntity(
+                            plantSpecies).WithScentMarker(previousSeedCell.ScentMarker));
+                        var spentCell = cell.WithEntity(
                             cell.SpeciesId,
                             cell.Health,
                             cell.Energy,
                             cell.Age,
                             cell.FoodEaten,
                             cell.FoodReserve - 1f,
-                            cell.IsAlpha));
+                            cell.IsAlpha);
+                        if (usesFertileDroppings)
+                        {
+                            // shortcut: the newest dropping owns this tile's scent; layer sources if overlaps become a balance problem.
+                            spentCell = spentCell.WithScentMarker(new SpeciesScentMarker(
+                                cell.SpeciesId,
+                                cell.EntityId,
+                                SpeciesPerception.DroppingScentDurationTicks,
+                                isDropping: true));
+                        }
+
+                        next.SetCell(x, y, spentCell);
                         metrics?.Record(plantSpecies, births: 1);
                         metrics?.Record(cell.SpeciesId, seedDropSuccesses: 1,
                             seedDropFoodCreated: plantRules.StartingFoodReserve, seedDropReserveSpent: 1);
@@ -3193,7 +3312,7 @@ namespace SaltyGame
                             ? SpeciesCell.FromTerrain(
                                 terrainDefinitions[TerrainIds.Grass],
                                 speciesRules.StartingFoodReserve,
-                                parent.SpeciesId)
+                                parent.SpeciesId).WithScentMarker(childCell.ScentMarker)
                             : childCell.WithEntity(
                                 parent.SpeciesId,
                                 health: 1,
@@ -3445,11 +3564,11 @@ namespace SaltyGame
                         plant.Energy,
                         plant.Age,
                         plant.FoodEaten,
-                        remainingEnergy)
+                        remainingEnergy).WithScentMarker(plant.ScentMarker)
                     : plant.WithoutEntity());
             if (remainingEnergy <= 0f)
             {
-                metrics?.RecordDeath(plant, plantX, plantY, SpeciesDeathCause.ResourceConsumed);
+                metrics?.RecordDeath(plant, plantX, plantY, SpeciesDeathCause.ResourceConsumed, resourceLayer: true);
             }
             return true;
         }
@@ -3758,12 +3877,14 @@ namespace SaltyGame
                     }
 
                     var trackedCell = UpdateTracking(source, next, x, y, cell, speciesRules, random);
+                    var perceivedCell = UpdateScentMemory(
+                        source, next, x, y, trackedCell, speciesRules, metrics);
 
                     var state = ChooseState(
                         source,
                         x,
                         y,
-                        trackedCell,
+                        perceivedCell,
                         speciesRules,
                         rules,
                         random,
@@ -3842,6 +3963,108 @@ namespace SaltyGame
             return updated;
         }
 
+        static SpeciesCell UpdateScentMemory(
+            Grid<SpeciesCell> source,
+            Grid<SpeciesCell> next,
+            int x,
+            int y,
+            SpeciesCell cell,
+            SpeciesRules rules,
+            SpeciesSimulationMetrics metrics)
+        {
+            if (rules.Role != SpeciesRole.Carnivore)
+            {
+                return cell;
+            }
+
+            var memory = cell.ScentMemory.Advance();
+            if (!rules.DietTargetId.HasValue || !ShouldForage(cell, rules))
+            {
+                var resting = cell.WithScentMemory(memory);
+                next.SetCell(x, y, resting);
+                return resting;
+            }
+
+            if (memory.IsActive && !memory.SniffedDropping)
+            {
+                var marker = source.GetCell(memory.X, memory.Y).ScentMarker;
+                if (!marker.IsActive || marker.OwnerEntityId != memory.TargetEntityId)
+                {
+                    memory = default;
+                }
+                else if (marker.IsDropping
+                    && source.GetDistance(x, y, memory.X, memory.Y) <= 1)
+                {
+                    metrics?.Record(cell.SpeciesId, scentDroppingSniffs: 1);
+                    memory = new SpeciesScentMemory(
+                        memory.TargetEntityId,
+                        memory.X,
+                        memory.Y,
+                        SpeciesPerception.BaseScentDurationTicks,
+                        sniffedDropping: true);
+                }
+            }
+
+            if (source.GetCell(x, y).Age % SpeciesPerception.ScentSampleIntervalTicks == 0)
+            {
+                if (memory.IsActive && memory.SniffedDropping
+                    && SpeciesPerception.TryFindSniffedTarget(
+                        source, x, y, rules.DietTargetId.Value, memory.TargetEntityId,
+                        out var scentedPrey))
+                {
+                    memory = new SpeciesScentMemory(
+                        memory.TargetEntityId,
+                        scentedPrey.Location.x,
+                        scentedPrey.Location.y,
+                        SpeciesPerception.BaseScentDurationTicks,
+                        sniffedDropping: true);
+                    metrics?.Record(cell.SpeciesId, scentTrackSamples: 1);
+                }
+                else if (!memory.SniffedDropping
+                    && SpeciesPerception.TryFindDroppingScent(
+                        source, x, y, rules.DietTargetId.Value,
+                        out var dropping, out var marker))
+                {
+                    if (!memory.IsActive || memory.TargetEntityId != marker.OwnerEntityId
+                        || memory.X != dropping.Location.x || memory.Y != dropping.Location.y)
+                    {
+                        metrics?.Record(cell.SpeciesId, scentDroppingDetections: 1);
+                    }
+
+                    var sniffed = source.GetDistance(
+                        x, y, dropping.Location.x, dropping.Location.y) <= 1;
+                    if (sniffed)
+                    {
+                        metrics?.Record(cell.SpeciesId, scentDroppingSniffs: 1);
+                    }
+
+                    memory = new SpeciesScentMemory(
+                        marker.OwnerEntityId,
+                        dropping.Location.x,
+                        dropping.Location.y,
+                        SpeciesPerception.BaseScentDurationTicks,
+                        sniffedDropping: sniffed);
+                }
+                else if (!memory.IsActive
+                    && SpeciesPerception.TryFindMovementScent(
+                        source, x, y, rules.DietTargetId.Value,
+                        out var movement, out var movementMarker))
+                {
+                    metrics?.Record(cell.SpeciesId, scentOrdinaryDetections: 1);
+                    memory = new SpeciesScentMemory(
+                        movementMarker.OwnerEntityId,
+                        movement.Location.x,
+                        movement.Location.y,
+                        SpeciesPerception.BaseScentDurationTicks,
+                        sniffedDropping: false);
+                }
+            }
+
+            var updated = cell.WithScentMemory(memory);
+            next.SetCell(x, y, updated);
+            return updated;
+        }
+
         static SpeciesBehaviorState ChooseState(
             Grid<SpeciesCell> cells,
             int x,
@@ -3908,6 +4131,11 @@ namespace SaltyGame
                 {
                     return SpeciesBehaviorState.Hunting;
                 }
+
+                if (SpeciesPerception.TryFindScentMemoryTarget(cells, cell.ScentMemory, out _))
+                {
+                    return SpeciesBehaviorState.Hunting;
+                }
             }
 
             if (speciesRules.TryGetBehaviorStateRule(cell.BehaviorState, out var activeStateRule)
@@ -3951,6 +4179,12 @@ namespace SaltyGame
 
             if (ShouldForage(cell, speciesRules)
                 && SpeciesPerception.TryFindTrackedFoodTarget(cells, cell, speciesRules, out _))
+            {
+                return SpeciesBehaviorState.Hunting;
+            }
+
+            if (ShouldForage(cell, speciesRules)
+                && SpeciesPerception.TryFindScentMemoryTarget(cells, cell.ScentMemory, out _))
             {
                 return SpeciesBehaviorState.Hunting;
             }

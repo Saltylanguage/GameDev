@@ -32,6 +32,7 @@
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimData.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/PopulationIntervention.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/SimulationRunResult.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesAttackOpportunity.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/SpeciesExperimentalOptions.cs" />

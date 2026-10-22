@@ -2,11 +2,12 @@
 
 Status: **Product direction approved.** The first Mutation contract, Genome
 identity/profile/snapshot contract, and data-driven Genome authoring skeleton
-exist. Josh approved the first Hare Genome contract on 2026-10-01; its runtime
-effect and balance evidence remain follow-up work. The current Genome slice
-includes profile persistence, an immutable launch/run boundary, ScriptableObject
-catalog snapshots, and a responsive species-bound Gene Lab binding. Production
-effect catalog and behavior application remain deferred.
+exist. Josh approved the first Hare Genome contract on 2026-10-01. A local first
+Fertile Droppings runtime behavior is now gated on its active snapshot ID;
+production catalog/UI wiring and balance evidence remain follow-up work. The
+current Genome slice includes profile persistence, an immutable launch/run
+boundary, ScriptableObject catalog snapshots, and a responsive species-bound
+Gene Lab binding.
 Feature owner: **Josh**. Sim participates only in explicitly scheduled evidence
 and review work; this contract slice does not yet make Genome effects part of
 simulation rules.
@@ -22,6 +23,12 @@ Balance guideline:
 > handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
 
 ## Two upgrade systems
+
+The October 21 [population Genome contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md)
+adds two lifecycle effects: +5 starting Hares per new journey and +10 player
+population-pool capacity per node (base 50). The pool limits ordinary
+replenishment; it does not remove survivors between rounds or restrain natural
+births. Food exhaustion from unchecked growth remains an intended failure path.
 
 Every species has both systems. They share the species-rule foundation, but
 their ownership and lifetime must remain visibly separate.
@@ -81,32 +88,51 @@ any later Mutation cost or Skip reward remain open in
   configuration per species is sufficient for the next implementation slice.
 - Species Mastery is deferred and non-gating. Its later visibility or
   node-reveal relationship to Genome remains open.
-- Provisional scientific-data settlement remains open pending feature-owner
-  approval.
+- Josh approved the provisional successful-journey payout of 1 Rabbit Data
+  plus 1 Research Data. Failure and early endings grant neither; other
+  scientific-data wallets and final economy balance remain open.
 - The first Hare Genome contract is approved: Fertile Droppings pairs grass
   renewal with predator-trackable scent. Rabbit Data buys the permanent tree
   license and active upgrades. Resetting refunds the active allocation and
-  charges a flat Research Data fee. Gene Lab access begins after three
-  completed runs (wins and losses count); the first Rabbit Genome selection
+  charges a flat Research Data fee. The implemented playtest Gene Lab gate
+  counts three successful journey cashouts; the first Rabbit Genome selection
   teaches the available paths. The tree tile grants access only. Stat rewards
-  stack by default unless a node says otherwise. Numeric prices and effect
-  values remain unapproved pending economy tuning and matched evidence.
+  stack by default unless a node says otherwise. The 1-point/1-Rabbit-Data root,
+  1-Rabbit-Data tree license and 1-Research-Data reset are approved for playtesting;
+  further prices and final effect values remain open pending tuning and evidence.
+- **October 17 design clarification:** Josh's proposed 8-node Trailblazer,
+  8-node Warren, and 9-node Gardener lists are permanent Rabbit Genome branch
+  candidates, configured before a run and applying to all Hares. The existing
+  temporary Mutations still use these build identities but are separate
+  upgrades. The [AI design forecast](Research/2026-10-17-Rabbit-Genome-build-forecast.md)
+  records testability and balance hypotheses; it does not approve the node
+  list, effects, costs, or S5 scope.
+- **October 17 local mechanics checkpoint:** The first Fertile Droppings slice
+  adds an identity-bearing scent marker after a successful Hare seed drop. A
+  hungry carnivore samples Hare scent every 10 ticks, prioritizes
+  detected droppings, then follows that Hare's freshest ordinary scent at longer
+  range after sniffing. Standing Hares and vacated tiles leave ordinary scent;
+  it lasts 20 ticks and reaches 16 tiles;
+  droppings last 40 ticks and reach 24 tiles. Post-sniff tracking reaches 36
+  tiles. Josh confirmed those scent ranges and durations as starting values.
+  An active node adds a provisional +0.10 seed-drop chance. Sight still takes
+  priority, and attacks use the existing combat rules. These values remain open
+  to balance tuning. See the [mechanics handoff](handoffs/2026-10-17-1545-codex-fertile-droppings-scent-first-slice.md).
 
 ### Implemented Genome contract boundary
 
 The current runtime contract is intentionally small. `SpeciesGenomeProfile`
 owns one species' permanent unlocked node IDs and reassignable active node IDs.
-`SpeciesGenomeSnapshot` freezes the active IDs for one species, and
+`SpeciesGenomeSnapshot` freezes active IDs and resolved ordered node values for one species, and
 `GenomeSimulationSnapshot` freezes the participating species map and its
 fingerprint. Launch requests, run state, checkpoints, and run results carry that
 snapshot as provenance. Missing profiles are represented as empty active
 configurations for participating species, so selection does not substitute for
 species identity.
 
-The agreed 8-point active capacity is recorded as contract policy, but active
-node count is not validated until authored node costs are approved. Node
-effects, economy, profile actions, and applying Genome behavior to the
-simulation rules remain deferred. The authoring skeleton resolves explicit
+The approved playtest offer enforces eight capacity points through allocation
+receipts, tree access, and reset/refund actions. Other node costs remain
+unapproved. The authoring path resolves explicit
 `GenomeUpgradeAsset` nodes through `SpeciesGenomeMapAsset` maps into an
 asset-free `GenomeCatalogSnapshot`; `GenomeCatalogProvider` is the Unity
 composition boundary, and `GenomeLabViewModel` consumes that snapshot for the
@@ -114,11 +140,38 @@ Gene Lab tree surface. Each node asset declares its target `SpeciesId`, and the
 map rejects target mismatches, missing prerequisites, duplicate IDs, and
 cycles. The provider listens to map and node authoring validation changes,
 recaptures only when the catalog fingerprint changes, and refreshes an open
-Gene Lab via view-model rebinding. This carries metadata and prerequisite
-topology only; the current UI projects that topology as square node tiles with
-data-bound branch segments. The desktop test fixture includes separate Hare and
-Fox maps and a debug-only selector that swaps species through the same catalog
-binding. It does not mutate a simulation snapshot or apply effects.
+Gene Lab via view-model rebinding. Node catalog version `genome-node-catalog-v3`
+also carries ordered `SpeciesUpgradeModifier` values. These use the existing
+attribute registry and explicit signed-additive applier; they do not turn
+permanent nodes into per-run Mutation purchases.
+
+At the canonical Desktop launch boundary, active IDs resolve against the
+catalog in allocation order. The frozen snapshot includes immutable node
+values, catalog identity, registry identity, and fingerprints. Natural rules
+for all participating species receive these effects before initial populations
+are seeded and before ordered Mutations are applied. A new journey rebuilds
+from natural rules; phase continuation and checkpoint restore use already
+effective rules. Bounds are validated through the existing registry/rule
+constructors. Invalid or unresolved stat nodes and active metadata placeholders
+without implemented effects are rejected. Fertile Droppings keeps its explicit
+ability implementation and is not applied a second time as a stat reward.
+
+Identity-only snapshots remain available for profile/transport compatibility
+and the existing explicit Fertile Droppings research/legacy route. Callers
+launching arbitrary stat nodes must resolve their catalog and compose natural
+rules with `ApplyToNaturalRules` before creating the initial grid. The CellSim
+command-line selector now accepts legal ordered Rabbit allocations against an
+explicit catalog, records the resolved values in report schema 38, and freezes
+the same map in portable exports. Generic phase schedules and Mutation policies
+preserve the Genome; paired-lockstep diagnostics remain excluded. See the
+[runner handoff](handoffs/2026-10-20-2245-codex-multi-node-genome-research-runner.md).
+Multi-node Gene Lab selection now
+works against Josh's approved POC catalog: branch filters, selectable nodes,
+allocation blockers, capacity display, reset/refund and saved next-journey
+activation. It uses existing stat targets and keeps unsupported Burrows as an
+unavailable preview. Production node/economy design and new ability mechanics
+remain open. See the [POC record](Research/2026-10-20-Gene-Lab-selection-POC.md) and
+[stat bridge handoff](handoffs/2026-10-20-1237-codex-genome-stat-node-runtime-bridge.md).
 
 ## Permanent tree access and active Genome upgrades
 
@@ -130,8 +183,9 @@ is returned when it is reset, and the reset costs a flat Research Data fee.
 Other species' wallet mapping remains to be defined when their trees are
 designed.
 
-The Gene Lab becomes available after three completed runs, whether the player
-wins or loses. The first time the player selects Rabbit Genome, a brief tutorial
+The current playtest Gene Lab gate counts three successfully cashed-out
+journeys; failures and early endings do not advance it or grant Data. The first
+time the player selects Rabbit Genome, a brief tutorial
 explains that the tree offers paths with different playstyles and benefits.
 Player-facing node copy should be concise, practical, and qualitative. Stat
 rewards stack by default unless the node explicitly says otherwise.

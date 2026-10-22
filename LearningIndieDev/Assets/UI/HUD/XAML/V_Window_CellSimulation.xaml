@@ -10,6 +10,38 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="RD_SimulationShellResources.xaml" />
             </ResourceDictionary.MergedDictionaries>
+            <DataTemplate x:Key="PopulationControlsTemplate">
+                <Border Padding="14,10"
+                        Background="{DynamicResource Chrono_VanillaCream}"
+                        BorderBrush="{DynamicResource Chrono_Olive}"
+                        BorderThickness="2"
+                        CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock Text="MANAGE THE ECOSYSTEM" FontSize="12" FontWeight="Bold"
+                                   Foreground="{DynamicResource Chrono_TreeBark}" />
+                        <TextBlock Text="{Binding FoodPressureText}" FontSize="11" TextWrapping="Wrap"
+                                   Margin="0,6,0,8" Foreground="{DynamicResource Chrono_Olive}" />
+                        <ItemsControl ItemsSource="{Binding PopulationControlItems}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Button Command="{Binding ChooseCommand}" IsEnabled="{Binding CanChoose}"
+                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Height="72" Margin="3" Padding="8,4">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" FontSize="12" FontWeight="Bold" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Description}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                        </StackPanel>
+                                    </Button>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding PopulationActionMessage}" FontSize="11" TextWrapping="Wrap"
+                                   Margin="0,6,0,0" Foreground="{DynamicResource Chrono_TreeBark}" />
+                    </StackPanel>
+                </Border>
+            </DataTemplate>
         </ResourceDictionary>
     </UserControl.Resources>
     <Viewbox Stretch="Uniform" StretchDirection="Both">
@@ -390,7 +422,7 @@
                                            Foreground="{DynamicResource Chrono_TreeBark}" />
                                 <TextBlock x:Name="PlantPopulationCount"
                                            Grid.Column="1"
-                                           Text="{Binding PlantPopulationText}"
+                                           Text="{Binding FoodSupplyText}"
                                            Margin="4,0,0,0"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="10"
@@ -1270,12 +1302,12 @@
                                                    FontSize="8"
                                                    Foreground="{DynamicResource Chrono_Olive}"
                                                    HorizontalAlignment="Center" />
-                                        <TextBlock Text="{Binding PhaseCurrencyText}"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
-                                                   FontSize="19"
-                                                   FontWeight="Bold"
-                                                   Foreground="{DynamicResource Chrono_TreeBark}"
-                                                   HorizontalAlignment="Center" />
+                                        <Viewbox Width="166" Height="23" Stretch="Uniform" StretchDirection="DownOnly">
+                                            <TextBlock Text="{Binding PhaseCurrencyText}"
+                                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
+                                                       FontSize="19" FontWeight="Bold"
+                                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                                        </Viewbox>
                                     </StackPanel>
                                 </Border>
                             </Grid>
@@ -1478,40 +1510,10 @@
                                 </Button>
                             </StackPanel>
 
-                            <Border Visibility="{Binding HarePurchaseVisibility}"
-                                    Margin="0,14,0,0"
-                                    Padding="14,10"
-                                    Background="{DynamicResource Chrono_VanillaCream}"
-                                    BorderBrush="{DynamicResource Chrono_Olive}"
-                                    BorderThickness="2"
-                                    CornerRadius="8">
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel VerticalAlignment="Center">
-                                        <TextBlock Text="HARE REINFORCEMENTS"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="11"
-                                                   FontWeight="Bold"
-                                                   Foreground="{DynamicResource Chrono_TreeBark}" />
-                                        <TextBlock Text="Add one Hare for the next phase. Buy again while Data and space remain."
-                                                   FontSize="11"
-                                                   Foreground="{DynamicResource Chrono_Olive}"
-                                                   TextWrapping="Wrap" />
-                                    </StackPanel>
-                                    <Button Grid.Column="1"
-                                            Content="{Binding HarePurchaseText}"
-                                            Command="{Binding BuyHareCommand}"
-                                            IsEnabled="{Binding CanBuyHare}"
-                                            Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
-                                            Width="290"
-                                            Height="44"
-                                            Margin="12,0,0,0"
-                                            FontSize="11" />
-                                </Grid>
-                            </Border>
+                            <ContentControl Visibility="{Binding HarePurchaseVisibility}"
+                                            Content="{Binding}"
+                                            ContentTemplate="{StaticResource PopulationControlsTemplate}"
+                                            Margin="0,14,0,0" />
 
                             </StackPanel>
                         </ScrollViewer>
@@ -1763,6 +1765,11 @@
                                                    Foreground="{DynamicResource Chrono_TreeBark}" />
                                     </StackPanel>
                                 </Border>
+
+                                <ContentControl Visibility="{Binding HarePurchaseVisibility}"
+                                                Content="{Binding}"
+                                                ContentTemplate="{StaticResource PopulationControlsTemplate}"
+                                                Margin="0,0,0,12" />
 
                                 <Border Padding="14,11"
                                         Margin="0,0,0,12"
@@ -2047,6 +2054,7 @@
                                         <Border Width="51" Height="51" CornerRadius="26" Background="#F1F0D5"
                                                 BorderBrush="#748854" BorderThickness="2">
                                             <Button Width="45" Height="45" Padding="0" Command="{Binding ChooseCommand}"
+                                                            IsEnabled="{Binding CanChoose}"
                                                     IsHitTestVisible="{Binding CanChoose}" Focusable="{Binding CanChoose}"
                                                     Style="{StaticResource GalapagOS.Button.JourneyNode}">
                                                 <Grid>
@@ -2129,6 +2137,7 @@
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Button Command="{Binding ChooseCommand}"
+                                                            IsEnabled="{Binding CanChoose}"
                                                 Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
                                                 HorizontalAlignment="Stretch" Height="84"
                                                 Margin="0,0,0,9">

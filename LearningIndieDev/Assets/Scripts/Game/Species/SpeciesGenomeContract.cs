@@ -8,14 +8,19 @@ using System.Text;
 namespace SaltyGame
 {
     /// <summary>
-    /// Stable contract boundary for permanent Genome state. Node effects and
-    /// authored costs are intentionally not inferred until their catalog is
-    /// approved; this slice carries stable identities and active selections.
+    /// Permanent Genome selection, approved purchase terms, and frozen additive stat effects.
+    /// Bespoke abilities remain explicit simulation rules.
     /// </summary>
     public static class GenomeContract
     {
         public const string Version = "species-genome-v1";
         public const int ActiveCapacity = 8;
+        public const int BasePopulationPoolCapacity = 50;
+        public static readonly SpeciesId RabbitSpeciesId = new SpeciesId("hare");
+        public const long RabbitTreeLicensePrice = 1;
+        public const long RabbitResetResearchDataFee = 1;
+        public const long RabbitDataPerSuccessfulJourney = 1;
+        public const long ResearchDataPerSuccessfulJourney = 1;
     }
 
     /// <summary>Receipt for one resettable active Genome purchase.</summary>
@@ -204,8 +209,10 @@ namespace SaltyGame
     public sealed class SpeciesGenomeSnapshot
     {
         readonly IReadOnlyList<string> activeNodeIds;
+        readonly IReadOnlyList<GenomeUpgradeNodeSnapshot> resolvedNodes;
 
-        public SpeciesGenomeSnapshot(SpeciesId speciesId, IEnumerable<string> activeNodeIds = null)
+        public SpeciesGenomeSnapshot(SpeciesId speciesId, IEnumerable<string> activeNodeIds = null,
+            IEnumerable<GenomeUpgradeNodeSnapshot> resolvedNodes = null, string catalogFingerprint = null)
         {
             if (!speciesId.IsValid)
             {
@@ -237,12 +244,87 @@ namespace SaltyGame
             }
 
             this.activeNodeIds = new ReadOnlyCollection<string>(copied);
+            var nodes = new List<GenomeUpgradeNodeSnapshot>(resolvedNodes ?? Array.Empty<GenomeUpgradeNodeSnapshot>());
+            if (resolvedNodes != null)
+            {
+                if (nodes.Count != copied.Count)
+                {
+                    throw new ArgumentException("Resolved Genome nodes must match the complete active allocation.");
+                }
+                for (var index = 0; index < nodes.Count; index++)
+                {
+                    if (nodes[index] == null || nodes[index].TargetSpecies != speciesId || nodes[index].Id != copied[index])
+                    {
+                        throw new ArgumentException("Resolved Genome nodes must match species and allocation order.");
+                    }
+                }
+            }
+            this.resolvedNodes = new ReadOnlyCollection<GenomeUpgradeNodeSnapshot>(nodes);
+            CatalogFingerprint = catalogFingerprint ?? string.Empty;
             Fingerprint = CreateFingerprint();
         }
 
         public SpeciesId SpeciesId { get; }
         public IReadOnlyList<string> ActiveNodeIds => activeNodeIds;
+        public IReadOnlyList<GenomeUpgradeNodeSnapshot> ResolvedNodes => resolvedNodes;
+        public string CatalogFingerprint { get; }
         public string Fingerprint { get; }
+
+        public SpeciesRules ApplyToNaturalRules(SpeciesRules naturalRules)
+        {
+            if (naturalRules == null)
+            {
+                throw new ArgumentNullException(nameof(naturalRules));
+            }
+            if (resolvedNodes.Count != activeNodeIds.Count)
+            {
+                // Older identity-only callers can still use the explicit Fertile Droppings ability.
+                foreach (var id in activeNodeIds)
+                {
+                    if (SpeciesId != GenomeContract.RabbitSpeciesId || id != SpeciesSimulation.FertileDroppingsNodeId)
+                    {
+                        throw new InvalidOperationException($"Genome node '{id}' must be resolved against the catalog before launch.");
+                    }
+                }
+            }
+            var result = naturalRules;
+            foreach (var node in resolvedNodes)
+            {
+                result = node.Apply(result);
+            }
+            return result;
+        }
+
+        public int GetPopulationModifier(string attributeId)
+        {
+            if (!SpeciesAttributeRegistry.TryGet(attributeId, out var definition) || !definition.IsPopulationAttribute)
+                throw new ArgumentException("A Genome population attribute is required.", nameof(attributeId));
+            // Identity-only legacy snapshots have no effects; launch rule composition validates resolution.
+            var total = 0;
+            foreach (var node in resolvedNodes)
+                foreach (var modifier in node.Modifiers)
+                    if (modifier.AttributeId == attributeId)
+                        total = checked(total + (int)modifier.SignedValue);
+            return total;
+        }
+
+        public bool HasActiveNode(string nodeId)
+        {
+            if (string.IsNullOrWhiteSpace(nodeId))
+            {
+                return false;
+            }
+
+            foreach (var activeNodeId in activeNodeIds)
+            {
+                if (string.Equals(activeNodeId, nodeId, StringComparison.Ordinal))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         string CreateFingerprint()
         {
@@ -255,6 +337,17 @@ namespace SaltyGame
             foreach (var nodeId in orderedNodeIds)
             {
                 Append(canonical, nodeId);
+            }
+
+            if (resolvedNodes.Count > 0 || CatalogFingerprint.Length > 0)
+            {
+                Append(canonical, "genome-stat-effects-v1");
+                Append(canonical, SpeciesAttributeRegistry.Fingerprint);
+                Append(canonical, CatalogFingerprint);
+                foreach (var node in resolvedNodes)
+                {
+                    Append(canonical, node.Fingerprint);
+                }
             }
 
             return Sha256(canonical.ToString());
@@ -333,6 +426,81 @@ namespace SaltyGame
 
         public IReadOnlyDictionary<SpeciesId, SpeciesGenomeSnapshot> SpeciesGenomes => speciesGenomes;
         public string Fingerprint { get; }
+
+        public int GetPopulationPoolCapacity(SpeciesId species)
+        {
+            var capacity = checked(GenomeContract.BasePopulationPoolCapacity
+                + GetSpeciesGenome(species).GetPopulationModifier(SpeciesAttributeIds.PopulationPoolCapacity));
+            if (capacity < 1) throw new InvalidOperationException("Population pool capacity must be positive.");
+            return capacity;
+        }
+
+        public CellularSimData ApplyToStartingPopulations(CellularSimData natural)
+        {
+            if (natural == null) throw new ArgumentNullException(nameof(natural));
+            var populations = new Dictionary<SpeciesId, int>();
+            foreach (var entry in natural.StartingPopulations) populations.Add(entry.Key, entry.Value);
+            var changed = false;
+            foreach (var species in natural.SpeciesRules.Keys)
+            {
+                var bonus = GetSpeciesGenome(species).GetPopulationModifier(SpeciesAttributeIds.StartingPopulation);
+                if (bonus == 0) continue;
+                if (!populations.TryGetValue(species, out var starting))
+                    throw new InvalidOperationException($"Starting-population Genome requires an explicit starting count for '{species}'.");
+                populations[species] = checked(starting + bonus);
+                changed = true;
+            }
+            return changed ? natural.WithGridSizeAndStartingPopulations(natural.Width, natural.Height, populations) : natural;
+        }
+
+        /// <summary>Freeze authored values in allocation order, before any run rules are built.</summary>
+        public GenomeSimulationSnapshot Resolve(GenomeCatalogSnapshot catalog)
+        {
+            if (catalog == null)
+            {
+                throw new ArgumentNullException(nameof(catalog));
+            }
+            var snapshots = new List<SpeciesGenomeSnapshot>();
+            foreach (var genome in speciesGenomes.Values)
+            {
+                var nodes = new List<GenomeUpgradeNodeSnapshot>();
+                var map = catalog.GetSpeciesMap(genome.SpeciesId);
+                foreach (var id in genome.ActiveNodeIds)
+                {
+                    if (map == null || !map.TryGetNode(id, out var node))
+                    {
+                        throw new InvalidOperationException($"Active Genome node '{id}' is missing from the '{genome.SpeciesId}' catalog.");
+                    }
+                    foreach (var prerequisite in node.PrerequisiteNodeIds)
+                    {
+                        if (!genome.HasActiveNode(prerequisite))
+                        {
+                            throw new InvalidOperationException($"Active Genome node '{id}' requires '{prerequisite}'.");
+                        }
+                    }
+                    nodes.Add(node);
+                }
+                snapshots.Add(new SpeciesGenomeSnapshot(genome.SpeciesId, genome.ActiveNodeIds, nodes, catalog.Fingerprint));
+            }
+            return new GenomeSimulationSnapshot(snapshots);
+        }
+
+        /// <summary>Compose every participating species from natural rules exactly once, before Mutations.</summary>
+        public IReadOnlyDictionary<SpeciesId, SpeciesRules> ApplyToNaturalRules(
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> naturalRules)
+        {
+            if (naturalRules == null)
+            {
+                throw new ArgumentNullException(nameof(naturalRules));
+            }
+            var result = new Dictionary<SpeciesId, SpeciesRules>();
+            foreach (var entry in naturalRules)
+            {
+                GetPopulationPoolCapacity(entry.Key);
+                result.Add(entry.Key, GetSpeciesGenome(entry.Key).ApplyToNaturalRules(entry.Value));
+            }
+            return new ReadOnlyDictionary<SpeciesId, SpeciesRules>(result);
+        }
 
         public bool TryGetSpeciesGenome(SpeciesId speciesId, out SpeciesGenomeSnapshot snapshot)
         {
@@ -420,21 +588,26 @@ namespace SaltyGame
     }
 
     /// <summary>
-    /// Asset-free description of one authored Genome node. This is catalog
-    /// metadata only; gameplay effects and costs are intentionally deferred.
+    /// Asset-free authored node: ordered additive stat modifiers plus catalog terms.
+    /// Abilities such as Fertile Droppings remain explicit simulation rules keyed by ID.
     /// </summary>
     public sealed class GenomeUpgradeNodeSnapshot
     {
-        public const string ContractVersion = "genome-node-catalog-v1";
+        public const string ContractVersion = "genome-node-catalog-v3";
 
         readonly IReadOnlyList<string> prerequisiteNodeIds;
+        readonly IReadOnlyList<SpeciesUpgradeModifier> modifiers;
 
         public GenomeUpgradeNodeSnapshot(
             string id,
             string displayName,
             string description,
             SpeciesId targetSpecies,
-            IEnumerable<string> prerequisiteNodeIds = null)
+            IEnumerable<string> prerequisiteNodeIds = null,
+            long rabbitDataPrice = 0,
+            int capacityPoints = 0,
+            string branchName = null,
+            IEnumerable<SpeciesUpgradeModifier> modifiers = null)
         {
             if (string.IsNullOrWhiteSpace(id))
             {
@@ -451,11 +624,33 @@ namespace SaltyGame
                 throw new ArgumentException("Genome node target species is required.", nameof(targetSpecies));
             }
 
+            if (rabbitDataPrice < 0 || capacityPoints < 0
+                || (rabbitDataPrice == 0) != (capacityPoints == 0)
+                || capacityPoints > GenomeContract.ActiveCapacity)
+            {
+                throw new ArgumentException("A purchasable Genome node needs a positive Rabbit Data price and valid capacity cost.");
+            }
+
             Id = id.Trim();
             DisplayName = displayName.Trim();
             Description = description == null ? string.Empty : description.Trim();
             TargetSpecies = targetSpecies;
+            RabbitDataPrice = rabbitDataPrice;
+            CapacityPoints = capacityPoints;
+            BranchName = branchName == null ? string.Empty : branchName.Trim();
             this.prerequisiteNodeIds = CopyIds(prerequisiteNodeIds, nameof(prerequisiteNodeIds));
+            var copiedModifiers = new List<SpeciesUpgradeModifier>();
+            var attributes = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var modifier in modifiers ?? Array.Empty<SpeciesUpgradeModifier>())
+            {
+                SpeciesAttributeRegistry.ValidateModifier(modifier);
+                if (!attributes.Add(modifier.AttributeId))
+                {
+                    throw new ArgumentException($"Attribute '{modifier.AttributeId}' may only appear once per Genome node.");
+                }
+                copiedModifiers.Add(modifier);
+            }
+            this.modifiers = new ReadOnlyCollection<SpeciesUpgradeModifier>(copiedModifiers);
 
             foreach (var prerequisiteId in this.prerequisiteNodeIds)
             {
@@ -474,8 +669,32 @@ namespace SaltyGame
         public string DisplayName { get; }
         public string Description { get; }
         public SpeciesId TargetSpecies { get; }
+        public long RabbitDataPrice { get; }
+        public int CapacityPoints { get; }
+        public bool IsPurchasable => RabbitDataPrice > 0;
+        public string BranchName { get; }
         public IReadOnlyList<string> PrerequisiteNodeIds => prerequisiteNodeIds;
+        public IReadOnlyList<SpeciesUpgradeModifier> Modifiers => modifiers;
         public string Fingerprint { get; }
+
+        public SpeciesRules Apply(SpeciesRules rules)
+        {
+            if (rules == null)
+            {
+                throw new ArgumentNullException(nameof(rules));
+            }
+            if (modifiers.Count == 0
+                && (TargetSpecies != GenomeContract.RabbitSpeciesId || Id != SpeciesSimulation.FertileDroppingsNodeId))
+            {
+                throw new InvalidOperationException($"Genome node '{Id}' has no implemented stat or ability effect.");
+            }
+            foreach (var modifier in modifiers)
+            {
+                if (!SpeciesAttributeRegistry.TryGet(modifier.AttributeId, out var definition) || !definition.IsPopulationAttribute)
+                    rules = SpeciesAttributeRegistry.Apply(rules, modifier);
+            }
+            return rules;
+        }
 
         string CreateFingerprint()
         {
@@ -485,6 +704,15 @@ namespace SaltyGame
             Append(canonical, DisplayName);
             Append(canonical, Description);
             Append(canonical, TargetSpecies.Value);
+            Append(canonical, RabbitDataPrice.ToString(CultureInfo.InvariantCulture));
+            Append(canonical, CapacityPoints.ToString(CultureInfo.InvariantCulture));
+            Append(canonical, BranchName);
+            Append(canonical, SpeciesAttributeRegistry.Fingerprint);
+            foreach (var modifier in modifiers)
+            {
+                Append(canonical, modifier.AttributeId);
+                Append(canonical, modifier.SignedValue.ToString("R", CultureInfo.InvariantCulture));
+            }
 
             var orderedPrerequisites = new List<string>(prerequisiteNodeIds);
             orderedPrerequisites.Sort(StringComparer.Ordinal);

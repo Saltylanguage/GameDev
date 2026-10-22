@@ -124,6 +124,50 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator GeneLabOfferCapturesLockedAndActiveStates()
+        {
+            Screen.SetResolution(
+                GetVisualDimension("CELLSIM_VISUAL_WIDTH", 1280),
+                GetVisualDimension("CELLSIM_VISUAL_HEIGHT", 720), false);
+            yield return null;
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+            var desktopRoot = GameObject.Find(DesktopCameraName);
+            Assert.That(desktopRoot, Is.Not.Null);
+            var desktop = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            var session = desktopRoot.GetComponent<Helper_ProfileSession>();
+            Assert.That(desktop, Is.Not.Null);
+            Assert.That(session, Is.Not.Null);
+            session.SetPlaytimeTracking(false);
+            var backup = ProfilePlayerPrefsBackup.Capture();
+            session.CreateProfile("Gene Lab visual");
+            var open = GetProperty(desktop, "OpenDesktopIconCommand");
+            open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Gene Lab" });
+            var windows = (System.Collections.IList)GetProperty(desktop, "OpenDesktopWindows");
+            Assert.That(windows.Count, Is.EqualTo(1));
+            var lab = GetProperty(windows[0], "GenomeLab");
+            var outputDirectory = TryGetVisualOutputDirectory();
+            if (outputDirectory != null)
+                yield return CaptureCamera(outputDirectory, "gene-lab-locked", desktopRoot.GetComponent<Camera>());
+
+            session.AddRabbitData(2);
+            session.AddResearchData(1);
+            for (var index = 1; index <= 3; index++)
+                session.RecordCompletedRun($"visual-genome-{index}");
+            Assert.That(GetProperty(lab, "CanPurchaseLicense"), Is.True);
+            GetProperty(lab, "PurchaseLicenseCommand").GetType().GetMethod("Execute")
+                ?.Invoke(GetProperty(lab, "PurchaseLicenseCommand"), new object[] { null });
+            GetProperty(lab, "PurchaseNodeCommand").GetType().GetMethod("Execute")
+                ?.Invoke(GetProperty(lab, "PurchaseNodeCommand"), new object[] { null });
+            Assert.That(GetProperty(windows[0], "ActiveGenomeCapacityText"), Is.EqualTo("1 / 8"));
+            if (outputDirectory != null)
+                yield return CaptureCamera(outputDirectory, "gene-lab-fertile-droppings-active", desktopRoot.GetComponent<Camera>());
+
+            yield return SceneManager.LoadSceneAsync("MainMenu");
+            backup.Restore();
+        }
+
+        [UnityTest]
         public IEnumerator GalapagOSDesktopAndSimulationCaptureGameViewEvidence()
         {
             Screen.SetResolution(
@@ -543,7 +587,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(GetProperty(start, "LeaveCommand"));
         }
 
-        static string TryGetVisualOutputDirectory()
+        internal static string TryGetVisualOutputDirectory()
         {
             var configuredPath = VisualTestConfiguration.GetValue("CELLSIM_VISUAL_OUTPUT");
             if (string.IsNullOrWhiteSpace(configuredPath))
@@ -559,7 +603,7 @@ namespace SaltyGame.PlayModeTests
             return directory;
         }
 
-        static IEnumerator CaptureCamera(string directory, string name, Camera camera, int settleFrames = 10)
+        internal static IEnumerator CaptureCamera(string directory, string name, Camera camera, int settleFrames = 10)
         {
             for (var frame = 0; frame < settleFrames; frame++)
             {

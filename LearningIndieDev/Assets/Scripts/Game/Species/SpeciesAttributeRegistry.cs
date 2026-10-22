@@ -39,6 +39,8 @@ namespace SaltyGame
         public string Id { get; }
         public string DisplayName { get; }
         public SpeciesAttributeValueKind ValueKind { get; }
+        public bool IsPopulationAttribute => Target == SpeciesAttributeTarget.StartingPopulation
+            || Target == SpeciesAttributeTarget.PopulationPoolCapacity;
         internal SpeciesAttributeTarget Target { get; }
     }
 
@@ -72,11 +74,15 @@ namespace SaltyGame
         TrackingPersistenceSteps,
         CrowdingEnergyReduction,
         GestationTicks,
+        StartingPopulation,
+        PopulationPoolCapacity,
     }
 
     public static class SpeciesAttributeIds
     {
         public const string MovementSpeed = "movement.speed";
+        public const string StartingPopulation = "population.starting";
+        public const string PopulationPoolCapacity = "population.pool-capacity";
         public const string AttackAmount = "combat.attack-amount";
         public const string AttackModifier = "combat.attack-modifier";
         public const string DamageAmount = "combat.damage";
@@ -114,7 +120,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v6";
+        public const string Version = "species-attribute-registry-v7";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -161,6 +167,8 @@ namespace SaltyGame
 
             ValidateModifier(modifier);
             var definition = definitions[modifier.AttributeId.Trim()];
+            if (definition.IsPopulationAttribute)
+                throw new ArgumentException("Population attributes apply to Genome journey population, not animal rules.", nameof(modifier));
             var value = modifier.SignedValue;
 
             var movementSpeed = rules.MovementSpeed;
@@ -333,6 +341,8 @@ namespace SaltyGame
         {
             var values = new[]
             {
+                Definition(SpeciesAttributeIds.StartingPopulation, "Starting Population", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.StartingPopulation),
+                Definition(SpeciesAttributeIds.PopulationPoolCapacity, "Population Pool Capacity", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.PopulationPoolCapacity),
                 Definition(SpeciesAttributeIds.MovementSpeed, "Movement Speed", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.MovementSpeed),
                 Definition(SpeciesAttributeIds.AttackAmount, "Attack Amount", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.AttackAmount),
                 Definition(SpeciesAttributeIds.AttackModifier, "Attack Modifier", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.AttackModifier),

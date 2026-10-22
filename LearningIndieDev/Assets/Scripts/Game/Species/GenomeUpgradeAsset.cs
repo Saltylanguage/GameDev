@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace SaltyGame
@@ -6,11 +7,24 @@ namespace SaltyGame
     [CreateAssetMenu(menuName = "Salty Game/Genome/Genome Upgrade", fileName = "GenomeUpgrade")]
     public sealed class GenomeUpgradeAsset : ScriptableObject
     {
+        [Serializable]
+        sealed class ModifierEntry
+        {
+            [SerializeField] string attributeId;
+            [SerializeField] float signedValue;
+
+            public SpeciesUpgradeModifier CreateModifier() => new SpeciesUpgradeModifier(attributeId, signedValue);
+        }
+
         [SerializeField] string upgradeId;
         [SerializeField] string displayName;
         [SerializeField, TextArea] string description;
         [SerializeField] string targetSpeciesId;
         [SerializeField] string[] prerequisiteNodeIds = Array.Empty<string>();
+        [SerializeField] long rabbitDataPrice;
+        [SerializeField] int capacityPoints;
+        [SerializeField] string branchName;
+        [SerializeField] ModifierEntry[] modifiers = Array.Empty<ModifierEntry>();
 
         public string UpgradeId => upgradeId;
         public string DisplayName => displayName;
@@ -29,12 +43,25 @@ namespace SaltyGame
         {
             try
             {
+                var modifierValues = new List<SpeciesUpgradeModifier>();
+                foreach (var entry in modifiers ?? Array.Empty<ModifierEntry>())
+                {
+                    if (entry == null)
+                    {
+                        throw new InvalidOperationException("Genome modifier entries cannot be null.");
+                    }
+                    modifierValues.Add(entry.CreateModifier());
+                }
                 snapshot = new GenomeUpgradeNodeSnapshot(
                     upgradeId,
                     displayName,
                     description,
                     new SpeciesId(targetSpeciesId),
-                    prerequisiteNodeIds);
+                    prerequisiteNodeIds,
+                    rabbitDataPrice,
+                    capacityPoints,
+                    branchName,
+                    modifierValues);
                 validationMessage = string.Empty;
                 return true;
             }

@@ -127,9 +127,10 @@ namespace SaltyGame
             return false;
         }
 
-        public GenomeSimulationSnapshot CreateGenomeSnapshot()
+        public GenomeSimulationSnapshot CreateGenomeSnapshot(GenomeCatalogSnapshot catalog = null)
         {
-            return GenomeSimulationSnapshot.Create(genomeProfiles);
+            var snapshot = GenomeSimulationSnapshot.Create(genomeProfiles);
+            return catalog == null ? snapshot : snapshot.Resolve(catalog);
         }
 
         public ProfileSessionSnapshot WithGenomeProfile(SpeciesGenomeProfile nextProfile)

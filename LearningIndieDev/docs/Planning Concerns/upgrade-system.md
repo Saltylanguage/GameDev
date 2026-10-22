@@ -4,8 +4,9 @@
 Genome state, simulation-mode boundaries, runtime application, deterministic
 evidence, and the first production-quality species upgrade slice. The current
 implementation includes Genome identity/profile/run contracts and a
-metadata-only ScriptableObject authoring skeleton; Genome gameplay effects and
-Biome Simulations remain planning scope until scheduled. This record excludes a
+ScriptableObject authoring path with signed-additive stat effects and the
+explicit Fertile Droppings ability. Further Genome abilities and Biome
+Simulations remain planning scope until scheduled. This record excludes a
 generalized modifier/plugin framework.
 **Canonical plan:** [`../UPGRADE_SYSTEM_DIRECTION.md`](../UPGRADE_SYSTEM_DIRECTION.md)
 and [`../NEXT_WORK_BUCKET_PLAN.md`](../NEXT_WORK_BUCKET_PLAN.md)
@@ -57,6 +58,16 @@ the accepted triggers, severities, statuses or waivers below.
   reports. The adapter can resolve an explicit research fixture catalog while
   retaining the same snapshot shape used by production loadouts. Legacy
   experiment IDs remain intentionally supported for historical evidence.
+- **October 20 Genome progress:** Desktop resolves active nodes to immutable
+  ordered values and catalog/registry fingerprints before population seeding.
+  The run/checkpoint/result retains the frozen nodes. Focused tests cover source
+  edits, execution-order identity, all participating species, and repeat
+  journeys. The later multi-node runner slice now exports resolved Rabbit node
+  and ability values, freezes the catalog for portable execution, and verifies
+  both technical-smoke seeds against Unity reference state/counters/timing.
+  No balance or whole-ecosystem claim follows from these plumbing checks. See
+  the [runner handoff](../handoffs/2026-10-20-2245-codex-multi-node-genome-research-runner.md)
+  and [stat bridge handoff](../handoffs/2026-10-20-1237-codex-genome-stat-node-runtime-bridge.md).
 - **Smallest mitigation:** Resolve authoring assets once at launch into a plain immutable snapshot containing schema/version, stable upgrade ID, ordered modifier IDs and signed values, and registry/catalog fingerprint; retain the asset GUID/path only as optional provenance; emit the snapshot in run, report, and prediction artifacts and never consult the mutable asset during execution.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision

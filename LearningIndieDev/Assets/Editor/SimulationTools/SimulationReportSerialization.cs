@@ -41,6 +41,11 @@ namespace SaltyGame.EditorTools
                     seedDropSuccesses = source.SeedDropSuccesses,
                     seedDropFoodCreated = source.SeedDropFoodCreated,
                     seedDropReserveSpent = source.SeedDropReserveSpent,
+                    scentOrdinaryDetections = source.ScentOrdinaryDetections,
+                    scentDroppingDetections = source.ScentDroppingDetections,
+                    scentDroppingSniffs = source.ScentDroppingSniffs,
+                    scentTrackSamples = source.ScentTrackSamples,
+                    scentPursuitDecisions = source.ScentPursuitDecisions,
                     wiltDeaths = source.WiltDeaths,
                     populationLimitRemovals = source.PopulationLimitRemovals,
                     stateTransitions = metrics.GetStateTransitions(species[index]),
@@ -286,7 +291,7 @@ namespace SaltyGame.EditorTools
             var startingPopulation = run.PopulationHistory[0].GetCount(species);
             var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
             return CreateHerbivoreStatLine(
-                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species));
+                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species), run.GetBoundaryPopulationRemoved(species));
         }
 
         public static SimulationHerbivoreStatLineRecord CreateHerbivoreStatLine(
@@ -294,18 +299,19 @@ namespace SaltyGame.EditorTools
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var statLine = metrics.CreateHerbivoreStatLine(
                 species,
                 startingPopulation,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
             return new SimulationHerbivoreStatLineRecord
             {
                 speciesId = statLine.Species.Value,
                 SPO = statLine.StartingPopulation,
                 ADD = statLine.AddedPopulation,
+                REM = statLine.RemovedPopulation,
                 HPS = statLine.PredatorActiveHerbivoreSteps,
                 EHS = statLine.EncounteredHerbivoreSteps,
                 ECN = statLine.Encounters,
@@ -343,7 +349,7 @@ namespace SaltyGame.EditorTools
             var startingPopulation = run.PopulationHistory[0].GetCount(species);
             var finalPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species);
             return CreatePredatorStatLine(
-                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species));
+                run.Metrics, species, startingPopulation, finalPopulation, run.GetBoundaryPopulationAdded(species), run.GetBoundaryPopulationRemoved(species));
         }
 
         public static SimulationPredatorStatLineRecord CreatePredatorStatLine(
@@ -351,18 +357,19 @@ namespace SaltyGame.EditorTools
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var statLine = metrics.CreatePredatorStatLine(
                 species,
                 startingPopulation,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
             return new SimulationPredatorStatLineRecord
             {
                 speciesId = statLine.Species.Value,
                 SPO = statLine.StartingPopulation,
                 ADD = statLine.AddedPopulation,
+                REM = statLine.RemovedPopulation,
                 PPS = statLine.PreyActivePredatorSteps,
                 EPS = statLine.EncounteredPredatorSteps,
                 ECN = statLine.Encounters,
@@ -548,6 +555,11 @@ namespace SaltyGame.EditorTools
         public int seedDropSuccesses;
         public float seedDropFoodCreated;
         public int seedDropReserveSpent;
+        public int scentOrdinaryDetections;
+        public int scentDroppingDetections;
+        public int scentDroppingSniffs;
+        public int scentTrackSamples;
+        public int scentPursuitDecisions;
         public int wiltDeaths;
         public int populationLimitRemovals;
         public int stateTransitions;
@@ -699,6 +711,7 @@ namespace SaltyGame.EditorTools
         public string speciesId;
         public int SPO;
         public int ADD;
+        public int REM;
         public int HPS;
         public int EHS;
         public int ECN;
@@ -734,6 +747,7 @@ namespace SaltyGame.EditorTools
         public string speciesId;
         public int SPO;
         public int ADD;
+        public int REM;
         public int PPS;
         public int EPS;
         public int ECN;

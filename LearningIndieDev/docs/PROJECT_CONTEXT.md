@@ -63,6 +63,27 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **Population decisions playtest slice (October 21, 2026):** Local round-boundary
+  controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
+  and +/-5 Plants. Rejected changes cost nothing; paid removals are recorded
+  separately from simulation deaths. The first two-simulation route adds a
+  provisional Rest Stop (up to 10 Hares, 10 Plants, or no change) and Seed Cache
+  (50% +10 Plants / 50% -5 Plants, or leave; no Data cost). Encounter values freeze
+  at journey preparation, and reopening cannot reroll the cache. The live ledger
+  shows observed Plant-count change, while decisions show food pressure, refill
+  limit, and starvation counts. This supplies player agency without preventing
+  food exhaustion. These values are playtest defaults, not approved balance.
+  See [feature contract](POPULATION_DECISIONS_PLAYTEST.md).
+
+- **Food exhaustion and population pool (Josh, 2026-10-21):** Unchecked Hares
+  should be able to exhaust food and fail through starvation. Balance should
+  provide understandable consequences and player agency. Population pool
+  capacity is the player's replenishment/HP allowance: base **50**, with
+  **+10 per active capacity Genome node**. Ordinary refresh/population grants
+  fill only to that limit; special rules can explicitly override it. It is not
+  a survivor cut at round transitions. Natural births can exceed it. A separate
+  early Genome investment gives **+5 starting Hares** for a new journey without
+  increasing capacity. See the [implementation/design record](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md).
 - **Simulation tooling direction (2026-10-09):** Bevin wants the readable,
   per-run Excel format from the manual playtest to be an automated output,
   keeping choices, populations and short explanations together. The end goal
@@ -99,6 +120,9 @@ uncertainty or regression risk.
   temporary upgrades gained during that run are lost. Permanent Desktop
   upgrades and unlocked upgrade or feature availability survive, including
   permanent unlocks earned during that run; their conditions are not designed.
+  For the current playtest, a successful profile journey records one completion
+  and grants 1 Rabbit Data plus 1 Research Data; failed or early-ended runs pay
+  nothing. These rates are provisional.
   Field Data carries between its phases and nodes; other currency types can
   leave a successful journey for Desktop Genome
   upgrades. Intended Field Data purchases include removing Hares, changing
@@ -221,9 +245,9 @@ uncertainty or regression risk.
   and population limits allow. The S3 behavior is a V1; further Mutation and
   interface iteration remains future work. A broader Mutation economy or
   future Skip bonus remains deferred.
-- Current Genome progression direction (2026-10-01): the player permanently
+- Current Genome progression direction (2026-10-01; playtest gate updated October 20): the player permanently
   unlocks a species' full Genome tree, then configures resettable upgrades. The
-  Gene Lab opens after three completed runs (wins and losses count); the first
+  implemented playtest Gene Lab opens after three successful journey cashouts; the first
   Rabbit Genome selection teaches the different playstyle paths. Rabbit Data
   buys the tree and active upgrades. Resetting refunds the active allocation
   and costs a flat Research Data fee; the fee amount and node prices remain
@@ -254,18 +278,25 @@ uncertainty or regression risk.
   definition of a healthy, collapse-resistant environment remain open. The
   current [product brief](PRODUCT_BRIEF.md) still defines the bounded vertical
   slice and should not be silently treated as replaced by this concept.
-- Implemented Genome boundary (2026-09-12): the identity/profile/launch/run
-  snapshot contract and data-driven authoring skeleton exist, including
-  per-species profile persistence, immutable run provenance, ScriptableObject
-  node/map assets, an asset-free catalog snapshot, and generic Gene Lab
-  bindings. The implementation still stores permanent node IDs separately
-  from active IDs; it must be reconciled with the 2026-10-01 tree-license and
-  resettable-upgrade direction before production persistence is implemented.
-  Production effects, profile migration to tree-level unlocks and resettable
-  allocations, authored price validation, and applying effects to simulation
-  rules remain deferred. Named Genome loadouts and Species Mastery remain
-  non-gating. Provisional scientific-data settlement remains open pending
-  feature-owner approval.
+- Implemented Genome boundary (updated 2026-10-20): per-species profiles,
+  permanent Rabbit-tree access, resettable allocation receipts, eight-point
+  capacity, approved playtest prices, successful-journey settlement and the
+  Fertile Droppings ability are implemented. Authored stat nodes now use the
+  existing signed-additive attribute registry. Desktop freezes node values,
+  allocation order, and catalog/registry fingerprints, then applies every
+  participating species' Genome before population initialization and ordered
+  Mutations. New journeys rebuild natural rules; running journeys remain
+  frozen. The [stat bridge handoff](handoffs/2026-10-20-1237-codex-genome-stat-node-runtime-bridge.md)
+  records regression evidence. Multiple-node selection now has a working
+  [Gene Lab POC](Research/2026-10-20-Gene-Lab-selection-POC.md) with explicit
+  test assets, branch navigation, capacity/prerequisite feedback, persistence
+  and next-journey activation. Further production nodes/economy and new abilities
+  remain open. CellSim now accepts legal ordered Rabbit allocations against
+  explicit catalogs, records complete resolved values, and freezes catalogs
+  in portable exports. Generic phases/policies are supported; paired-lockstep
+  diagnostics and the full Desktop route export are not. See the
+  [runner handoff](handoffs/2026-10-20-2245-codex-multi-node-genome-research-runner.md).
+  Named Genome loadouts and Species Mastery remain non-gating.
 - Upgrade and species work follows
   [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md):
   use shared stats and capabilities for early value estimates, then require

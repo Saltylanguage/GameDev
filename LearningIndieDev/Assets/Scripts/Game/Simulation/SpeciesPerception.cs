@@ -28,6 +28,150 @@ namespace SaltyGame
 
     public static class SpeciesPerception
     {
+        // Agreed starting values for the first scent comparison; tune from measured play.
+        public const int ScentSampleIntervalTicks = 10;
+        public const int BaseScentDurationTicks = 20;
+        public const int BaseScentRange = 16;
+        public const int DroppingScentDurationTicks = BaseScentDurationTicks * 2;
+        public const int DroppingScentRange = BaseScentRange * 3 / 2;
+        public const int SniffedTargetRange = DroppingScentRange * 3 / 2;
+
+        public static bool TryFindDroppingScent(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesId preySpecies,
+            out SpeciesPerceivedTarget target,
+            out SpeciesScentMarker marker)
+        {
+            var bestDistance = int.MaxValue;
+            target = default;
+            marker = default;
+            for (var targetY = 0; targetY < cells.Height; targetY++)
+            {
+                for (var targetX = 0; targetX < cells.Width; targetX++)
+                {
+                    var cell = cells.GetCell(targetX, targetY);
+                    var scent = cell.ScentMarker;
+                    var distance = cells.GetDistance(x, y, targetX, targetY);
+                    if (!scent.IsActive || !scent.IsDropping
+                        || scent.OwnerSpeciesId != preySpecies
+                        || distance > DroppingScentRange || distance >= bestDistance)
+                    {
+                        continue;
+                    }
+
+                    bestDistance = distance;
+                    marker = scent;
+                    target = new SpeciesPerceivedTarget(
+                        SpeciesMovementIntent.Food,
+                        new Vector2Int(targetX, targetY),
+                        cell);
+                }
+            }
+
+            return bestDistance != int.MaxValue;
+        }
+
+        public static bool TryFindMovementScent(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesId preySpecies,
+            out SpeciesPerceivedTarget target,
+            out SpeciesScentMarker marker)
+        {
+            var bestLifetime = 0;
+            var bestDistance = int.MaxValue;
+            target = default;
+            marker = default;
+            for (var targetY = 0; targetY < cells.Height; targetY++)
+            {
+                for (var targetX = 0; targetX < cells.Width; targetX++)
+                {
+                    var cell = cells.GetCell(targetX, targetY);
+                    var scent = cell.ScentMarker;
+                    var distance = cells.GetDistance(x, y, targetX, targetY);
+                    if (!scent.IsActive || scent.IsDropping
+                        || scent.OwnerSpeciesId != preySpecies
+                        || distance > BaseScentRange
+                        || scent.TicksRemaining < bestLifetime
+                        || (scent.TicksRemaining == bestLifetime && distance >= bestDistance))
+                    {
+                        continue;
+                    }
+
+                    bestLifetime = scent.TicksRemaining;
+                    bestDistance = distance;
+                    marker = scent;
+                    target = new SpeciesPerceivedTarget(
+                        SpeciesMovementIntent.Food,
+                        new Vector2Int(targetX, targetY),
+                        cell);
+                }
+            }
+
+            return bestLifetime > 0;
+        }
+
+        public static bool TryFindSniffedTarget(
+            Grid<SpeciesCell> cells,
+            int x,
+            int y,
+            SpeciesId preySpecies,
+            long entityId,
+            out SpeciesPerceivedTarget target)
+        {
+            target = default;
+            var bestLifetime = 0;
+            var bestDistance = int.MaxValue;
+            for (var targetY = 0; targetY < cells.Height; targetY++)
+            {
+                for (var targetX = 0; targetX < cells.Width; targetX++)
+                {
+                    var cell = cells.GetCell(targetX, targetY);
+                    var scent = cell.ScentMarker;
+                    var distance = cells.GetDistance(x, y, targetX, targetY);
+                    if (!scent.IsActive || scent.IsDropping
+                        || scent.OwnerSpeciesId != preySpecies
+                        || scent.OwnerEntityId != entityId
+                        || distance > SniffedTargetRange
+                        || scent.TicksRemaining < bestLifetime
+                        || (scent.TicksRemaining == bestLifetime && distance >= bestDistance))
+                    {
+                        continue;
+                    }
+
+                    bestLifetime = scent.TicksRemaining;
+                    bestDistance = distance;
+                    target = new SpeciesPerceivedTarget(
+                        SpeciesMovementIntent.Food,
+                        new Vector2Int(targetX, targetY),
+                        cell);
+                }
+            }
+
+            return bestLifetime > 0;
+        }
+
+        public static bool TryFindScentMemoryTarget(
+            Grid<SpeciesCell> cells,
+            SpeciesScentMemory memory,
+            out SpeciesPerceivedTarget target)
+        {
+            target = default;
+            if (!memory.IsActive || !cells.TryGetCell(memory.X, memory.Y, out var cell))
+            {
+                return false;
+            }
+
+            target = new SpeciesPerceivedTarget(
+                SpeciesMovementIntent.Food,
+                new Vector2Int(memory.X, memory.Y),
+                cell);
+            return true;
+        }
+
         public static IReadOnlyDictionary<long, Vector2Int> BuildEntityPositionIndex(
             Grid<SpeciesCell> cells)
         {

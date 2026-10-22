@@ -6,11 +6,63 @@ code used by the game into reviewable test results and JSON experiment reports.
 
 Player-facing per-expedition upgrades are now called **Mutations**. Existing
 commands, file names, report fields, and C# types retain “upgrade” where needed
-for compatibility. Permanent per-species Genome unlocks, active Genome
-configuration, simulation-mode input, and provenance are planned additions;
-current reports must not be presented as Genome or Biome-Simulation evidence.
+for compatibility. Rabbit Genome allocation input and frozen provenance are
+implemented for the research runner. These remain Species-Simulation runs;
+they are not Biome-Simulation evidence.
 Species, Mutation, Genome, matchup, and balance-tooling work follows
 [`SG-005 — Upgrade and Ecology Balance`](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md).
+
+## Rabbit Genome build input (October 20)
+
+`-RabbitGenomeNodeIds` takes comma-separated IDs in allocation order. The
+default catalog is the production `Assets/Data/Genome/HareGenome.asset` map.
+Use `-RabbitGenomeCatalogPath` to opt into a different explicit map, including
+the separate Gene Lab POC catalog. Research validates species identity,
+uniqueness, implemented/purchasable offers, prerequisites before dependents,
+the eight-point capacity, and resulting rule bounds. It does not require a
+player profile, spend currency, or grant tree access.
+
+```powershell
+$pocCatalog = 'Assets/Data/TestData/Genome/RabbitSelectionPOC/RabbitSelectionPOC.asset'
+.\CellSim.ps1 -Command Run -Execution Auto `
+    -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
+    -PlayerSpeciesId hare `
+    -RabbitGenomeCatalogPath $pocCatalog `
+    -RabbitGenomeNodeIds 'fertile-droppings,poc.hare.efficient-digestion' `
+    -SeedStart 10100 -SeedCount 2 -GridWidth 8 -GridHeight 8 `
+    -StartingPopulations 'plant=20,hare=4,fox=0' -RunTicks 20 -StepIntervalSeconds 0.1
+```
+
+Omit `-RabbitGenomeNodeIds` for a natural-rules baseline. Do not pass placeholder
+nodes such as Burrows Preview. Genome effects apply before initial population
+seeding and ordered Mutations, including when Hare is a background species.
+Generic continued-phase schedules and Mutation policies preserve that frozen
+Genome. Paired-lockstep diagnostics use a separate runner and reject Genome
+allocations explicitly. This does not export the full Desktop journey's shop,
+map and cashout flow.
+
+Report schema **38** adds `genomeInput`: contract versions, catalog and registry
+fingerprints, ordered node IDs, full resolved node data, capacity use, and
+explicit Fertile Droppings seed/scent settings. Each run records the same
+`genomeFingerprint` as its report header. POC values remain provisional.
+
+Portable exports accept the same scientific arguments through
+`tools/Export-CellSimSnapshot.ps1`. The export freezes the entire explicit
+Rabbit map and validates it on restore, so later asset edits do not reinterpret
+the selected build. For a future baseline-versus-build batch, export natural
+scenario inputs with the explicit POC catalog path and omit the node-ID flag;
+individual batch conditions can then add legal allocations. Old exports with
+no frozen Genome catalog cannot gain a Genome by changing arguments: re-export.
+
+**Scheduled-loadout correction:** schema 38 also corrects an existing handoff
+that applied a scheduled initial Mutation loadout twice. The phase runner now
+receives Genome-adjusted natural rules and applies each declared cumulative
+Mutation loadout once. Older scheduled reports with a nonempty initial
+loadout need fresh matched evidence; do not silently compare them as equivalent.
+Schedules still declare the complete active Mutation loadout for each phase.
+
+See the [delivery handoff](handoffs/2026-10-20-2245-codex-multi-node-genome-research-runner.md)
+for verification and the distinction between technical smoke and ecology trials.
 
 **Consecutive-phase migration notice (2026-09-05):** the game-side run and
 Play Mode report now expose versioned phase windows, ordered upgrade acquisition
@@ -37,6 +89,76 @@ flowchart LR
     D --> E["Ignored artifacts/\nJSON report or NUnit XML"]
     E --> F["Human review, Codex analysis,\nand focused next experiment"]
 ```
+
+## Research stat overrides and gradual Fox introduction (schema 39)
+
+**Schema 41** adds ordered `populationInterventions` records containing species,
+signed actual amount, source, tick, phase and placement seed. Whole-run Herbivore
+and Predator stat lines expose `REM` separately from `ADD`; removals reconcile
+final population without appearing as simulation deaths. Checkpoints retain the
+ordered intervention records. This is feature accounting, not a new balance
+experiment. See [population decisions](POPULATION_DECISIONS_PLAYTEST.md).
+
+The later **schema 40** population Genome slice adds per-run
+`populationPoolCapacity` and `boundaryPopulationAdded` totals. The new Genome
+attributes `population.starting` and `population.pool-capacity` apply at journey
+initialization and to replenishment capacity, respectively; they are not
+Mutation animal-stat overrides. Headless purchase policies use the same pool
+gate and report `population-pool-full`. Historical schema-39 reports predate
+this rule. See the [population contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md).
+
+`CellSim Run -SpeciesStats 'hare:energy.forage-threshold=25'` exposes the existing
+registry-backed research override. It resolves an isolated natural-rule input
+before Genome and Mutations; production assets are not edited. The same flag
+works in frozen portable exports/replays.
+
+`-FoxIntroductionTicks '75,150,225,300,375,450,525,600'` introduces one authored
+Fox after each listed tick, using the existing deterministic population-addition
+path. It requires an explicit continuing legacy phase schedule and positive
+phase length. Ticks must be unique, increasing phase boundaries before the
+final tick. Policies, authored phase schedules and paired-lockstep diagnostics
+are excluded. Failed placement stops the run with the seed/tick diagnostic.
+
+For the proposed two-minute comparison, use sixteen `none` phases of 75 ticks
+at 0.1 seconds per tick. All arms use those same empty boundaries. Two initial
+Foxes plus eight later introductions means ten Foxes introduced in total,
+regardless of births and deaths. Placement uses open passable tiles, rather
+than a new edge-entry migration mechanic.
+
+Schema **39** adds requested stat overrides, resolved Hare feeding threshold,
+and the introduction schedule to the header/provenance. Each scheduled run
+records actual arrival tick/count and before/after/cumulative populations,
+plus exact first successful Hare feeding, mating and birth ticks (`-1` if not
+observed). Arrival events also appear in the runtime log with the same seed,
+tick and population values. Portable compact and detailed outputs retain these
+records. Introductory population counts must be included in mortality/birth
+accounting; a temporary zero-Fox gap is not irreversible extinction while more
+arrivals are scheduled.
+
+Scheduled ecology reports without a Hare purchase policy now observe their full
+declared tick window even after Hare extinction. The default runtime runner,
+gameplay and purchase-policy journey failure still stop as before. This is
+necessary to observe predator starvation and later introductions. The first
+October 21 baseline attempt inherited the journey stop and is explicitly
+rejected in its experiment record; use the corrected panel and its frozen
+source, not that partial attempt, for fixed-window comparisons.
+
+See the [proposed comparison scope](Research/2026-10-21-Feeding-and-Fox-introduction-comparison.md).
+Execution requires the recorded human scope approval under SG-001.
+
+## Mortality on shared plant/animal tiles (October 21)
+
+Wilt, resource consumption and population-limit removal now identify the
+removed resource layer explicitly. A plant disappearing under an animal is
+reported as a plant death with no creature ID; the animal retains its identity.
+Actual creature deaths on planted tiles retain their creature context.
+
+The mortality correction kept the schema-38 field shapes; the research
+intervention additions above subsequently advance the report to schema 39. Older reports
+can count plant wilt as animal deaths and retain incorrect entity/age labels;
+do not silently reinterpret them as fixed output. The October 21 screening
+bundle retains its raw reports and a separately validated derived correction.
+See the [fix and early-loss diagnosis](Research/2026-10-21-Hare-early-loss-diagnosis.md).
 
 ## Starting population overrides
 

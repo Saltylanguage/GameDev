@@ -44,6 +44,7 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs",
             "Assets/Scripts/Game/Simulation/CellularSimData.cs",
             "Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs",
+            "Assets/Scripts/Game/Simulation/PopulationIntervention.cs",
             "Assets/Scripts/Game/Simulation/SimulationRunResult.cs",
             "Assets/Scripts/Game/Simulation/SpeciesAttackOpportunity.cs",
             "Assets/Scripts/Game/Simulation/SpeciesExperimentalOptions.cs",
@@ -62,6 +63,7 @@ namespace SaltyGame.EditorTools
         public static readonly string[] PortableScientificArguments = new[]
         {
             PlayerSpeciesArgument, UpgradeIdArgument, UpgradeSequenceArgument,
+            RabbitGenomeNodesArgument, RabbitGenomeCatalogArgument,
             UpgradeAssetSequenceArgument, UpgradeAssetCatalogPathArgument,
             UpgradeValueOverrideArgument, CombatModeArgument, AttackOpportunityModeArgument,
             ExperimentalFeaturesArgument, FoxAttackCooldownTicksArgument,
@@ -69,7 +71,8 @@ namespace SaltyGame.EditorTools
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
             RunTicksArgument, PhaseLengthTicksArgument, PhaseUpgradeScheduleArgument,
             PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
-            MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats"
+            MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
+            FoxIntroductionTicksArgument
         };
 
         public static string PortableSourceHash(Func<string, string> readSource)
@@ -137,6 +140,84 @@ namespace SaltyGame.EditorTools
             return PortableHash(builder.ToString());
         }
 
+        public static SpeciesGenomeMapSnapshot CaptureRabbitGenomeCatalog(string assetPath)
+        {
+#if !CELLSIM_STANDALONE
+            var asset = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(assetPath);
+            if (asset == null)
+            {
+                throw new ArgumentException("Rabbit Genome map asset was not found: " + assetPath);
+            }
+            return asset.CreateSnapshot();
+#else
+            throw new InvalidOperationException("Provide the frozen Rabbit Genome catalog exported by Unity.");
+#endif
+        }
+
+        static GenomeSimulationSnapshot ResolveRabbitGenome(string[] ids, string catalogPath, SpeciesGenomeMapSnapshot frozenCatalog)
+        {
+            if (ids == null || ids.Length == 0)
+            {
+                return GenomeSimulationSnapshot.Empty;
+            }
+            var map = frozenCatalog ?? CaptureRabbitGenomeCatalog(catalogPath);
+            if (map.SpeciesId != GenomeContract.RabbitSpeciesId)
+            {
+                throw new ArgumentException("The Rabbit Genome catalog must target 'hare'.");
+            }
+            var genome = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(map.SpeciesId, ids) })
+                .Resolve(new GenomeCatalogSnapshot(new[] { map }));
+            var capacity = 0;
+            var allocated = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var node in genome.GetSpeciesGenome(map.SpeciesId).ResolvedNodes)
+            {
+                if (!node.IsPurchasable)
+                {
+                    throw new ArgumentException($"Genome node '{node.Id}' is a preview, not an activatable offer.");
+                }
+                if (node.PrerequisiteNodeIds.Any(id => !allocated.Contains(id)))
+                {
+                    throw new ArgumentException($"List prerequisites before Genome node '{node.Id}' in allocation order.");
+                }
+                capacity = checked(capacity + node.CapacityPoints);
+                if (capacity > GenomeContract.ActiveCapacity)
+                {
+                    throw new ArgumentException($"Rabbit Genome allocation uses {capacity} points; the limit is {GenomeContract.ActiveCapacity}.");
+                }
+                allocated.Add(node.Id);
+            }
+            return genome;
+        }
+
+        static CellularSimData ApplyGenomeToNaturalData(CellularSimData natural, GenomeSimulationSnapshot genome)
+        {
+            var data = natural;
+            foreach (var entry in genome.ApplyToNaturalRules(natural.SpeciesRules))
+            {
+                data = data.WithSpeciesRules(entry.Key, entry.Value);
+            }
+            return genome.ApplyToStartingPopulations(data);
+        }
+
+        static GenomeInputRecord CreateGenomeInput(GenomeSimulationSnapshot genome, string catalogPath)
+        {
+            var rabbit = genome.GetSpeciesGenome(GenomeContract.RabbitSpeciesId);
+            return new GenomeInputRecord
+            {
+                contractVersion = "rabbit-genome-experiment-input-v1",
+                genomeContractVersion = GenomeContract.Version,
+                nodeContractVersion = GenomeUpgradeNodeSnapshot.ContractVersion,
+                registryFingerprint = SpeciesAttributeRegistry.Fingerprint,
+                catalogPath = catalogPath, catalogFingerprint = rabbit.CatalogFingerprint,
+                fingerprint = genome.Fingerprint, capacityLimit = GenomeContract.ActiveCapacity,
+                capacityUsed = rabbit.ResolvedNodes.Sum(node => node.CapacityPoints),
+                orderedNodeIds = rabbit.ActiveNodeIds.ToArray(),
+                nodes = rabbit.ResolvedNodes.Select(GenomeNodeData.Create).ToArray(),
+                fertileDroppings = rabbit.HasActiveNode(SpeciesSimulation.FertileDroppingsNodeId)
+                    ? new FertileDroppingsInputRecord() : null,
+            };
+        }
+
         public static string RunPortableSeed(PortableSnapshot snapshot, string[] arguments, int seed, bool detailed, CellularSimData resolvedData = null)
         {
             ValidatePortableArguments(arguments);
@@ -154,7 +235,8 @@ namespace SaltyGame.EditorTools
                 throw new ArgumentException("Authored upgrade catalog differs from the frozen export.");
             var authored = options.AuthoredUpgradeLoadout == null ? null : snapshot.ResolveUpgrades(options.AuthoredUpgradeLoadout);
             var authoredPhases = ResolvePortablePhases(snapshot, options);
-            var report = CreateReport(data, options, "portable", GetExperimentalOptions(options), authored, authoredPhases);
+            var report = CreateReport(data, options, "portable", GetExperimentalOptions(options), authored, authoredPhases,
+                frozenRabbitGenomeCatalog: snapshot.ResolveGenomeCatalog(options.RabbitGenomeCatalogPath, options.RabbitGenomeNodeIds.Length > 0));
             var run = report.runs[0];
             run.populationTrajectory = CreatePopulationTrajectory(run.populationHistory);
             // Use the existing harness to retain complete phase/policy semantics.
@@ -198,7 +280,8 @@ namespace SaltyGame.EditorTools
             var data = ApplyPortableStats(ApplyOverrides(snapshot.Restore(), options), arguments);
             var authored = options.AuthoredUpgradeLoadout == null ? null : snapshot.ResolveUpgrades(options.AuthoredUpgradeLoadout);
             return JsonUtility.ToJson(CreateReport(data, options, "portable", GetExperimentalOptions(options), authored,
-                ResolvePortablePhases(snapshot, options), true));
+                ResolvePortablePhases(snapshot, options), true,
+                snapshot.ResolveGenomeCatalog(options.RabbitGenomeCatalogPath, options.RabbitGenomeNodeIds.Length > 0)));
         }
 
         public static void ValidatePortableConfiguration(PortableSnapshot snapshot, string[] arguments)
@@ -207,6 +290,9 @@ namespace SaltyGame.EditorTools
             var options = CommandLineOptions.Parse(arguments);
             var data = ApplyPortableStats(ApplyOverrides(snapshot.Restore(), options), arguments);
             GetExperimentalOptions(options);
+            var genome = ResolveRabbitGenome(options.RabbitGenomeNodeIds, options.RabbitGenomeCatalogPath,
+                snapshot.ResolveGenomeCatalog(options.RabbitGenomeCatalogPath, options.RabbitGenomeNodeIds.Length > 0));
+            data = ApplyGenomeToNaturalData(data, genome);
             if (!data.SpeciesRules.ContainsKey(new SpeciesId(options.PlayerSpeciesId)))
                 throw new ArgumentException("Player species is absent from the frozen scenario.");
             if (options.AttackOpportunityMode == SpeciesAttackOpportunityMode.PairedLockstepDiagnostic)
@@ -365,6 +451,8 @@ namespace SaltyGame.EditorTools
                 var snapshot = PortableSnapshot.Create(data);
                 snapshot.scenarioPath = options.ScenarioPath;
                 snapshot.arguments = scientific.ToArray();
+                snapshot.rabbitGenomeCatalogPath = options.RabbitGenomeCatalogPath;
+                snapshot.rabbitGenomeCatalog = GenomeCatalogData.Create(CaptureRabbitGenomeCatalog(options.RabbitGenomeCatalogPath));
                 snapshot.catalogPath = string.IsNullOrWhiteSpace(options.AuthoredUpgradeCatalogPath)
                     ? SpeciesUpgradePredictionInputAdapter.ProductionCatalogPath : options.AuthoredUpgradeCatalogPath;
                 if (!AssetDatabase.IsValidFolder(snapshot.catalogPath))
@@ -418,6 +506,8 @@ namespace SaltyGame.EditorTools
             public TerrainData[] terrain;
             public AlphaData[] alpha;
             public UpgradeData[] upgrades = Array.Empty<UpgradeData>();
+            public string rabbitGenomeCatalogPath;
+            public GenomeCatalogData rabbitGenomeCatalog;
 
             public static PortableSnapshot Create(CellularSimData data)
             {
@@ -472,6 +562,100 @@ namespace SaltyGame.EditorTools
                 return ids.Select(id => catalog.TryGetValue(id, out var upgrade) ? upgrade.Restore()
                     : throw new ArgumentException("Upgrade is absent from the frozen catalog: " + id)).ToArray();
             }
+
+            public SpeciesGenomeMapSnapshot ResolveGenomeCatalog(string catalogPath, bool required)
+            {
+                if (!required)
+                {
+                    return null;
+                }
+                if (rabbitGenomeCatalog == null || rabbitGenomeCatalogPath != catalogPath)
+                {
+                    throw new ArgumentException("Rabbit Genome catalog differs from or is absent in the frozen export; export the requested catalog first.");
+                }
+                return rabbitGenomeCatalog.Restore();
+            }
+        }
+
+        [Serializable] public sealed class GenomeCatalogData
+        {
+            public string speciesId, nodeContractVersion, fingerprint;
+            public GenomeNodeData[] nodes;
+
+            public static GenomeCatalogData Create(SpeciesGenomeMapSnapshot map) => new GenomeCatalogData
+            {
+                speciesId = map.SpeciesId.Value, nodeContractVersion = GenomeUpgradeNodeSnapshot.ContractVersion,
+                fingerprint = map.Fingerprint, nodes = map.Nodes.Select(GenomeNodeData.Create).ToArray(),
+            };
+
+            public SpeciesGenomeMapSnapshot Restore()
+            {
+                if (nodeContractVersion != GenomeUpgradeNodeSnapshot.ContractVersion || nodes == null)
+                {
+                    throw new ArgumentException("Unsupported or incomplete frozen Genome catalog.");
+                }
+                var map = new SpeciesGenomeMapSnapshot(new SpeciesId(speciesId), nodes.Select(node => node.Restore()));
+                if (map.Fingerprint != fingerprint)
+                {
+                    throw new InvalidOperationException("Frozen Genome catalog fingerprint mismatch.");
+                }
+                return map;
+            }
+        }
+
+        [Serializable] public sealed class GenomeNodeData
+        {
+            public string id, displayName, description, speciesId, branchName, fingerprint;
+            public string[] prerequisites;
+            public int capacityPoints;
+            public long rabbitDataPrice;
+            public ModifierData[] modifiers;
+
+            public static GenomeNodeData Create(GenomeUpgradeNodeSnapshot node) => new GenomeNodeData
+            {
+                id = node.Id, displayName = node.DisplayName, description = node.Description,
+                speciesId = node.TargetSpecies.Value, branchName = node.BranchName, fingerprint = node.Fingerprint,
+                prerequisites = node.PrerequisiteNodeIds.ToArray(), capacityPoints = node.CapacityPoints,
+                rabbitDataPrice = node.RabbitDataPrice,
+                modifiers = node.Modifiers.Select(value => new ModifierData { id = value.AttributeId, value = value.SignedValue }).ToArray(),
+            };
+
+            public GenomeUpgradeNodeSnapshot Restore()
+            {
+                if (modifiers == null)
+                {
+                    throw new ArgumentException("Frozen Genome node modifiers are missing.");
+                }
+                var node = new GenomeUpgradeNodeSnapshot(id, displayName, description, new SpeciesId(speciesId),
+                    prerequisites, rabbitDataPrice, capacityPoints, branchName,
+                    modifiers.Select(value => new SpeciesUpgradeModifier(value.id, value.value)));
+                if (node.Fingerprint != fingerprint)
+                {
+                    throw new InvalidOperationException("Frozen Genome node fingerprint mismatch: " + id);
+                }
+                return node;
+            }
+        }
+
+        [Serializable] public sealed class GenomeInputRecord
+        {
+            public string contractVersion, genomeContractVersion, nodeContractVersion, registryFingerprint;
+            public string catalogPath, catalogFingerprint, fingerprint;
+            public int capacityUsed, capacityLimit;
+            public string[] orderedNodeIds;
+            public GenomeNodeData[] nodes;
+            public FertileDroppingsInputRecord fertileDroppings;
+        }
+
+        [Serializable] public sealed class FertileDroppingsInputRecord
+        {
+            public float seedChanceBonus = SpeciesSimulation.FertileDroppingsSeedChanceBonus;
+            public int scentSampleIntervalTicks = SpeciesPerception.ScentSampleIntervalTicks;
+            public int ordinaryScentDurationTicks = SpeciesPerception.BaseScentDurationTicks;
+            public int ordinaryScentRange = SpeciesPerception.BaseScentRange;
+            public int droppingScentDurationTicks = SpeciesPerception.DroppingScentDurationTicks;
+            public int droppingScentRange = SpeciesPerception.DroppingScentRange;
+            public int sniffedTargetRange = SpeciesPerception.SniffedTargetRange;
         }
 
         [Serializable] public sealed class SpeciesData

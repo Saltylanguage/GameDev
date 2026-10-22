@@ -108,6 +108,8 @@ namespace SaltyGame
             foreach (var modifier in modifiers)
             {
                 SpeciesAttributeRegistry.ValidateModifier(modifier);
+                if (SpeciesAttributeRegistry.TryGet(modifier.AttributeId, out var definition) && definition.IsPopulationAttribute)
+                    throw new ArgumentException("Journey population attributes are Genome effects, not Mutation stat modifiers.", nameof(modifiers));
 
                 if (!seenAttributeIds.Add(modifier.AttributeId))
                 {

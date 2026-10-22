@@ -10,6 +10,99 @@ namespace SaltyGame.EditorTests
     public sealed class GenomeAuthoringAssetTests
     {
         [Test]
+        public void AuthoredGenomeModifiersUseRegistryAndFreezeValuesAcrossCatalogEdits()
+        {
+            var upgrade = UnityEngine.ScriptableObject.CreateInstance<GenomeUpgradeAsset>();
+            var map = UnityEngine.ScriptableObject.CreateInstance<SpeciesGenomeMapAsset>();
+            var providerObject = new UnityEngine.GameObject("Genome Stats Authoring Test");
+            try
+            {
+                ConfigureUpgrade(upgrade, "hare.test", "Test Node");
+                ConfigureMap(map, "hare", upgrade);
+                var serialized = new SerializedObject(upgrade);
+                var modifiers = serialized.FindProperty("modifiers");
+                modifiers.arraySize = 1;
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("attributeId").stringValue = SpeciesAttributeIds.DigestionEnergyBonus;
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("signedValue").floatValue = 2;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                var provider = providerObject.AddComponent<GenomeCatalogProvider>();
+                typeof(GenomeCatalogProvider).GetField("speciesMaps", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .SetValue(provider, new[] { map });
+                Assert.That(provider.TryCapture(out var reason), Is.True, reason);
+                var selection = new GenomeSimulationSnapshot(new[]
+                {
+                    new SpeciesGenomeSnapshot(new SpeciesId("hare"), new[] { "hare.test" }),
+                });
+                var frozen = selection.Resolve(provider.Snapshot);
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("signedValue").floatValue = 3;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(provider.TryCapture(out reason), Is.True, reason);
+                var next = selection.Resolve(provider.Snapshot);
+                Assert.That(next.Fingerprint, Is.Not.EqualTo(frozen.Fingerprint));
+                Assert.That(frozen.GetSpeciesGenome(new SpeciesId("hare")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(2));
+                Assert.That(next.GetSpeciesGenome(new SpeciesId("hare")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(3));
+
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("attributeId").stringValue = "unknown.stat";
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                Assert.That(upgrade.TryCreateSnapshot(out _, out reason), Is.False);
+                Assert.That(reason, Does.Contain("unknown.stat"));
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(providerObject);
+                UnityEngine.Object.DestroyImmediate(map);
+                UnityEngine.Object.DestroyImmediate(upgrade);
+            }
+        }
+
+        [Test]
+        public void PocCatalogOffersOnlyImplementedEffectsAndKeepsUnfinishedAbilitiesAsPreviews()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
+                "Assets/Data/TestData/Genome/RabbitSelectionPOC/RabbitSelectionPOC.asset");
+            Assert.That(asset, Is.Not.Null);
+            var map = asset.CreateSnapshot();
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(
+                "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset").CreateRuntimeData();
+            var natural = scenario.SpeciesRules[GenomeContract.RabbitSpeciesId];
+            var purchasable = 0;
+            var previews = 0;
+            foreach (var node in map.Nodes)
+            {
+                if (node.IsPurchasable)
+                {
+                    Assert.DoesNotThrow(() => node.Apply(natural), $"Offered node '{node.Id}' must have an implemented effect.");
+                    purchasable++;
+                }
+                else
+                {
+                    Assert.That(node.CapacityPoints, Is.Zero);
+                    Assert.That(node.Modifiers, Is.Empty);
+                    Assert.Throws<System.InvalidOperationException>(() => node.Apply(natural));
+                    previews++;
+                }
+            }
+            Assert.That(purchasable, Is.EqualTo(8));
+            Assert.That(previews, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ProductionFertileDroppingsOfferIsAuthoredAsGardenerRoot()
+        {
+            var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
+                "Assets/Data/Genome/HareGenome.asset");
+            Assert.That(map, Is.Not.Null);
+            Assert.That(map.TryCreateSnapshot(out var snapshot, out var reason), Is.True, reason);
+            Assert.That(snapshot.Nodes, Has.Count.EqualTo(1));
+            var node = snapshot.Nodes[0];
+            Assert.That(node.Id, Is.EqualTo("fertile-droppings"));
+            Assert.That(node.BranchName, Is.EqualTo("Gardener"));
+            Assert.That(node.PrerequisiteNodeIds, Is.Empty);
+            Assert.That(node.RabbitDataPrice, Is.EqualTo(1));
+            Assert.That(node.CapacityPoints, Is.EqualTo(1));
+        }
+
+        [Test]
         public void GenomeCatalogProviderCapturesAssetFreeSnapshot()
         {
             var upgrade = UnityEngine.ScriptableObject.CreateInstance<GenomeUpgradeAsset>();

@@ -4,6 +4,8 @@ param(
     [string]$Execution = 'Auto',
     [string]$ScenarioPath,
     [string]$StartingPopulations = '',
+    [string]$SpeciesStats = '',
+    [string]$FoxIntroductionTicks = '',
     [int]$SeedStart = 1,
     [ValidateRange(1, 10000)]
     [int]$SeedCount = 20,
@@ -25,6 +27,8 @@ param(
     [ValidateRange(0, 1000000)]
     [double]$StepIntervalSeconds = 0,
     [string]$PlayerSpeciesId = 'herbivore',
+    [string]$RabbitGenomeNodeIds = '',
+    [string]$RabbitGenomeCatalogPath = '',
     [string]$UpgradeId = 'none',
     [string]$UpgradeSequence = '',
     [string]$UpgradeAssetSequence = '',
@@ -188,6 +192,21 @@ if ($null -ne $assetPath) {
 
 if (-not [string]::IsNullOrWhiteSpace($StartingPopulations)) {
     $arguments += @('-startingPopulations', $StartingPopulations)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($RabbitGenomeNodeIds)) {
+    $arguments += @('-rabbitGenomeNodeIds', $RabbitGenomeNodeIds)
+}
+if (-not [string]::IsNullOrWhiteSpace($RabbitGenomeCatalogPath)) {
+    $genomeCatalogPath = ConvertTo-UnityAssetPath -Path $RabbitGenomeCatalogPath -ProjectRoot $project -ParameterName 'RabbitGenomeCatalogPath'
+    $arguments += @('-rabbitGenomeCatalogPath', $genomeCatalogPath)
+}
+
+if (-not [string]::IsNullOrWhiteSpace($SpeciesStats)) {
+    $arguments += @('-speciesStats', $SpeciesStats)
+}
+if (-not [string]::IsNullOrWhiteSpace($FoxIntroductionTicks)) {
+    $arguments += @('-foxIntroductionTicks', $FoxIntroductionTicks)
 }
 
 if (-not [string]::IsNullOrWhiteSpace($MutationPolicy)) {

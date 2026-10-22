@@ -8,6 +8,107 @@ namespace SaltyGame.Tests
     [Category("Simulation")]
     public sealed class GenomeContractTests
     {
+        static GenomeSimulationSnapshot PopulationGenome(params SpeciesUpgradeModifier[] modifiers)
+        {
+            var node = new GenomeUpgradeNodeSnapshot("hare.population-test", "Population", "Population fixture",
+                GenomeContract.RabbitSpeciesId, modifiers: modifiers);
+            return new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(GenomeContract.RabbitSpeciesId,
+                new[] { node.Id }, new[] { node }) });
+        }
+
+        static SpeciesSimulationRunner PopulationPoolRunner(int count, GenomeSimulationSnapshot genome = null)
+        {
+            var cells = new Grid<SpeciesCell>(80, 1, (x, _) => x < count
+                ? new SpeciesCell(GenomeContract.RabbitSpeciesId, health: 1, energy: 24) : SpeciesCell.Empty);
+            var run = new SimulationRunState(cells, GenomeContract.RabbitSpeciesId, 871, 0.4f, 4, genome);
+            run.ConfigureContinuousPhases(1);
+            run.Start();
+            run.Advance(cells, 0.1f);
+            return new SpeciesSimulationRunner(run, PopulationRules(), 0.1f);
+        }
+
+        static Dictionary<SpeciesId, SpeciesRules> PopulationRules()
+        {
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
+            rules[GenomeContract.RabbitSpeciesId] = rules[SpeciesIds.Herbivore];
+            return rules;
+        }
+
+        [Test]
+        public void PopulationPoolClampsGrantsRecordsActualAdditionsAndAllowsExplicitExceptions()
+        {
+            var runner = PopulationPoolRunner(49);
+            Assert.That(runner.Run.PopulationPoolCapacity, Is.EqualTo(50));
+            Assert.That(runner.TryAddBoundaryPopulation(GenomeContract.RabbitSpeciesId, 10, out var added), Is.True);
+            Assert.That(added, Is.EqualTo(1));
+            Assert.That(runner.Run.PopulationHistory[1].GetCount(GenomeContract.RabbitSpeciesId), Is.EqualTo(50));
+            Assert.That(runner.Run.GetBoundaryPopulationAdded(GenomeContract.RabbitSpeciesId), Is.EqualTo(1));
+            Assert.That(runner.TryAddBoundaryPopulation(GenomeContract.RabbitSpeciesId, 1, out added), Is.False);
+            Assert.That(added, Is.Zero);
+            Assert.That(runner.TryAddBoundaryPopulation(GenomeContract.RabbitSpeciesId, 5, out added, ignorePopulationPool: true), Is.True);
+            Assert.That(added, Is.EqualTo(5));
+            Assert.That(runner.Run.PopulationPoolSpace, Is.Zero);
+            Assert.That(runner.Run.GetBoundaryPopulationAdded(GenomeContract.RabbitSpeciesId), Is.EqualTo(6));
+        }
+
+        [Test]
+        public void AbovePoolPopulationContinuesWithoutCullingAndNonPlayerAdditionsStayIndependent()
+        {
+            var runner = PopulationPoolRunner(55);
+            Assert.That(runner.TryAddBoundaryPopulation(GenomeContract.RabbitSpeciesId, 1), Is.False);
+            Assert.That(runner.TryAddBoundaryPopulation(SpeciesIds.Carnivore, 1), Is.True);
+            Assert.That(runner.Run.ContinueWithoutUpgrade(), Is.True);
+            Assert.That(runner.Run.PopulationHistory[1].GetCount(GenomeContract.RabbitSpeciesId), Is.EqualTo(55));
+        }
+
+        [Test]
+        public void GenomePopulationEffectsAreFrozenSeparateFromStatsAndRestoredWithCheckpoint()
+        {
+            var modifiers = new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.StartingPopulation, 5),
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, 10) };
+            var genome = PopulationGenome(modifiers);
+            var natural = new CellularSimData(80, 1, new Dictionary<SpeciesId, float>(), PopulationRules(),
+                0.4f, 0.1f, startingPopulations: new Dictionary<SpeciesId, int> { [GenomeContract.RabbitSpeciesId] = 20 });
+            Assert.That(genome.ApplyToStartingPopulations(natural).StartingPopulations[GenomeContract.RabbitSpeciesId], Is.EqualTo(25));
+            Assert.That(genome.ApplyToStartingPopulations(natural).StartingPopulations[GenomeContract.RabbitSpeciesId], Is.EqualTo(25));
+            Assert.That(natural.StartingPopulations[GenomeContract.RabbitSpeciesId], Is.EqualTo(20));
+            Assert.That(genome.ApplyToNaturalRules(natural.SpeciesRules)[GenomeContract.RabbitSpeciesId],
+                Is.SameAs(natural.SpeciesRules[GenomeContract.RabbitSpeciesId]));
+            modifiers[1] = new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, 30);
+            var runner = PopulationPoolRunner(59, genome);
+            Assert.That(runner.Run.PopulationPoolCapacity, Is.EqualTo(60));
+            Assert.That(runner.Run.CreateCheckpoint().Restore().PopulationPoolCapacity, Is.EqualTo(60));
+            Assert.That(runner.TryAddBoundaryPopulation(GenomeContract.RabbitSpeciesId, 10, out var added), Is.True);
+            Assert.That(added, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void MultiplePopulationCapacityNodesAddTenEach()
+        {
+            var nodes = new[]
+            {
+                new GenomeUpgradeNodeSnapshot("hare.pool-1", "Pool I", "Capacity", GenomeContract.RabbitSpeciesId,
+                    modifiers: new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, 10) }),
+                new GenomeUpgradeNodeSnapshot("hare.pool-2", "Pool II", "Capacity", GenomeContract.RabbitSpeciesId,
+                    modifiers: new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, 10) }),
+            };
+            var genome = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(GenomeContract.RabbitSpeciesId,
+                new[] { nodes[0].Id, nodes[1].Id }, nodes) });
+            Assert.That(genome.GetPopulationPoolCapacity(GenomeContract.RabbitSpeciesId), Is.EqualTo(70));
+        }
+
+        [Test]
+        public void PopulationModifiersRequireWholeNumbersValidBoundsAndGenomeScope()
+        {
+            Assert.Throws<System.ArgumentException>(() => PopulationGenome(new SpeciesUpgradeModifier(SpeciesAttributeIds.StartingPopulation, 0.5f)));
+            Assert.Throws<System.InvalidOperationException>(() => PopulationGenome(new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, -50))
+                .GetPopulationPoolCapacity(GenomeContract.RabbitSpeciesId));
+            Assert.Throws<System.InvalidOperationException>(() => PopulationGenome(new SpeciesUpgradeModifier(SpeciesAttributeIds.PopulationPoolCapacity, -50))
+                .ApplyToNaturalRules(PopulationRules()));
+            Assert.Throws<System.ArgumentException>(() => new SpeciesUpgradeSnapshot("invalid", "Invalid", "Invalid Mutation",
+                GenomeContract.RabbitSpeciesId, 0, new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.StartingPopulation, 5) }));
+        }
+
         bool hadProfileSave;
         string originalProfileSave;
         bool hadRecoverySave;
@@ -40,6 +141,114 @@ namespace SaltyGame.Tests
             {
                 PlayerPrefs.DeleteKey(key);
             }
+        }
+
+        [Test]
+        public void GenomeStatsStackAcrossAllSpeciesBeforeMutationsWithoutChangingNaturalRules()
+        {
+            var hare = SpeciesIds.Herbivore;
+            var fox = SpeciesIds.Carnivore;
+            var natural = SpeciesRuleDefaults.Create();
+            var firstModifiers = new List<SpeciesUpgradeModifier>
+            {
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, 0.25f),
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.DigestionEnergyBonus, 2),
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.GestationTicks, -1),
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.LitterMaximum, 1),
+                new SpeciesUpgradeModifier(SpeciesAttributeIds.LitterMinimum, 1),
+            };
+            var first = new GenomeUpgradeNodeSnapshot("hare.first", "First", "Fixture", hare, modifiers: firstModifiers);
+            var second = StatNode("hare.second", hare, SpeciesAttributeIds.MovementSpeed, 0.5f);
+            var inactive = StatNode("hare.inactive", hare, SpeciesAttributeIds.MovementSpeed, 50);
+            var predator = StatNode("fox.vision", fox, SpeciesAttributeIds.VisionRange, 4);
+            var catalog = new GenomeCatalogSnapshot(new[]
+            {
+                new SpeciesGenomeMapSnapshot(hare, new[] { first, second, inactive }),
+                new SpeciesGenomeMapSnapshot(fox, new[] { predator }),
+            });
+            var frozen = new GenomeSimulationSnapshot(new[]
+            {
+                new SpeciesGenomeSnapshot(hare, new[] { first.Id, second.Id }),
+                new SpeciesGenomeSnapshot(fox, new[] { predator.Id }),
+            }).Resolve(catalog).IncludeSpecies(natural.Keys);
+            firstModifiers.Clear();
+            var effective = frozen.ApplyToNaturalRules(natural);
+            Assert.That(effective[hare].MovementSpeed, Is.EqualTo(natural[hare].MovementSpeed + 0.75f));
+            Assert.That(effective[hare].DigestionEnergyBonus, Is.EqualTo(natural[hare].DigestionEnergyBonus + 2));
+            Assert.That(effective[hare].GestationTicks, Is.EqualTo(natural[hare].GestationTicks - 1));
+            Assert.That(effective[hare].LitterMinimum, Is.EqualTo(natural[hare].LitterMinimum + 1));
+            Assert.That(effective[fox].Awareness.VisionRange, Is.EqualTo(natural[fox].Awareness.VisionRange + 4));
+            Assert.That(effective[SpeciesIds.Plant], Is.SameAs(natural[SpeciesIds.Plant]));
+            Assert.That(natural[hare].MovementSpeed, Is.EqualTo(SpeciesRuleDefaults.Create()[hare].MovementSpeed));
+
+            var progression = new SpeciesProgression(new SpeciesDefinition(hare, effective[hare]));
+            var mutation = new SpeciesUpgradeSnapshot("mutation", "Mutation", "Fixture", hare, 0,
+                new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.MovementSpeed, -0.25f) });
+            Assert.That(progression.TryApplyRunUpgrade(mutation), Is.True);
+            Assert.That(progression.Definition.Rules.MovementSpeed, Is.EqualTo(natural[hare].MovementSpeed + 0.75f));
+            Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(natural[hare].MovementSpeed + 0.5f));
+            Assert.That(progression.AppliedRunUpgrades, Has.Count.EqualTo(1));
+            Assert.That(frozen.GetSpeciesGenome(hare).ResolvedNodes[0].Modifiers, Has.Count.EqualTo(5));
+        }
+
+        [Test]
+        public void ResolvedGenomeFreezesValuesAndExecutionOrderInFingerprint()
+        {
+            var species = SpeciesIds.Herbivore;
+            var first = StatNode("a", species, SpeciesAttributeIds.MovementSpeed, 0.25f);
+            var second = StatNode("b", species, SpeciesAttributeIds.VisionRange, 1);
+            var catalog = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(species, new[] { first, second }) });
+            var selection = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(species, new[] { "a", "b" }) });
+            var frozen = selection.Resolve(catalog);
+            var changed = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(species, new[]
+            {
+                StatNode("a", species, SpeciesAttributeIds.MovementSpeed, 0.75f), second,
+            }) });
+            var newRun = selection.Resolve(changed);
+            var reverse = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(species, new[] { "b", "a" }) }).Resolve(catalog);
+            Assert.That(frozen.Fingerprint, Is.Not.EqualTo(newRun.Fingerprint));
+            Assert.That(frozen.Fingerprint, Is.Not.EqualTo(reverse.Fingerprint));
+            Assert.That(frozen.GetSpeciesGenome(species).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(0.25f));
+            Assert.That(frozen.GetSpeciesGenome(species).CatalogFingerprint, Is.EqualTo(catalog.Fingerprint));
+            var grid = new Grid<SpeciesCell>(4, 4);
+            grid.SetCell(1, 1, new SpeciesCell(species, energy: 100));
+            var run = new SimulationRunState(grid, species, 1, 1f, targetTicks: 10, activeGenomeSnapshot: frozen);
+            run.ConfigureContinuousPhases(1);
+            var runner = new SpeciesSimulationRunner(run, frozen.ApplyToNaturalRules(SpeciesRuleDefaults.Create()), 0.1f);
+            runner.Start();
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(run.CreateCheckpoint().Restore().ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(frozen.Fingerprint));
+            Assert.That(SimulationRunResults.Create(run).ActiveGenomeSnapshot, Is.SameAs(frozen));
+        }
+
+        [Test]
+        public void GenomeRejectsUnknownFractionalDuplicateAndUnresolvedStatModifiers()
+        {
+            var species = SpeciesIds.Herbivore;
+            Assert.Throws<System.ArgumentException>(() => StatNode("bad", species, "missing.stat", 1));
+            Assert.Throws<System.ArgumentException>(() => StatNode("bad", species, SpeciesAttributeIds.VisionRange, 0.5f));
+            Assert.Throws<System.ArgumentException>(() => new GenomeUpgradeNodeSnapshot("bad", "Bad", "Fixture", species,
+                modifiers: new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.VisionRange, 1),
+                    new SpeciesUpgradeModifier(SpeciesAttributeIds.VisionRange, 2) }));
+            var unresolved = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(species, new[] { "missing" }) });
+            Assert.Throws<System.InvalidOperationException>(() => unresolved.Resolve(GenomeCatalogSnapshot.Empty));
+            Assert.Throws<System.InvalidOperationException>(() => unresolved.ApplyToNaturalRules(SpeciesRuleDefaults.Create()));
+            var parent = StatNode("parent", species, SpeciesAttributeIds.VisionRange, 1);
+            var child = new GenomeUpgradeNodeSnapshot("child", "Child", "Fixture", species, new[] { "parent" },
+                modifiers: new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.VisionRange, 1) });
+            var catalog = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(species, new[] { parent, child }) });
+            var missingPrerequisite = new GenomeSimulationSnapshot(new[] { new SpeciesGenomeSnapshot(species, new[] { "child" }) });
+            Assert.Throws<System.InvalidOperationException>(() => missingPrerequisite.Resolve(catalog));
+            var invalid = StatNode("negative", species, SpeciesAttributeIds.MovementSpeed, -1000);
+            Assert.Throws<System.ArgumentOutOfRangeException>(() => invalid.Apply(SpeciesRuleDefaults.Create()[species]));
+            var placeholder = new GenomeUpgradeNodeSnapshot("placeholder", "Placeholder", "Metadata only", species);
+            Assert.Throws<System.InvalidOperationException>(() => placeholder.Apply(SpeciesRuleDefaults.Create()[species]));
+        }
+
+        static GenomeUpgradeNodeSnapshot StatNode(string id, SpeciesId species, string attribute, float amount)
+        {
+            return new GenomeUpgradeNodeSnapshot(id, id, "Fixture", species,
+                modifiers: new[] { new SpeciesUpgradeModifier(attribute, amount) });
         }
 
         [Test]
@@ -326,11 +535,13 @@ namespace SaltyGame.Tests
                 Assert.That(session.TryPurchaseRabbitGenomeLicense(10, out _), Is.False);
 
                 var hare = new SpeciesId("hare");
-                var root = new GenomeUpgradeNodeSnapshot("hare.root", "Root", "Root", hare);
+                var root = new GenomeUpgradeNodeSnapshot("hare.root", "Root", "Root", hare,
+                    rabbitDataPrice: 20, capacityPoints: 3);
                 var branch = new GenomeUpgradeNodeSnapshot("hare.branch", "Branch", "Branch",
-                    hare, new[] { "hare.root" });
+                    hare, new[] { "hare.root" }, rabbitDataPrice: 5, capacityPoints: 5);
                 var map = new SpeciesGenomeMapSnapshot(hare, new[] { root, branch });
-                Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 1, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 5, out _), Is.False);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, root.Id, 1, 1, out _), Is.False);
                 Assert.That(session.TryPurchaseRabbitGenomeNode(map, root.Id, 20, 3, out reason), Is.True, reason);
                 Assert.That(session.TryPurchaseRabbitGenomeNode(map, root.Id, 20, 3, out _), Is.False);
                 Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 6, out _), Is.False);

@@ -11,6 +11,7 @@ namespace SaltyGame
         readonly int maxPopulation;
         readonly SpeciesCombatResolutionMode combatResolutionMode;
         readonly SpeciesAttackOpportunityMode attackOpportunityMode;
+        readonly bool stopOnPlayerExtinction;
         SpeciesExperimentalOptions experimentalOptions;
         Grid<SpeciesCell> previousCells;
 
@@ -22,7 +23,8 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
-            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
+            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null,
+            bool stopOnPlayerExtinction = true)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.rules = rules ?? throw new ArgumentNullException(nameof(rules));
@@ -40,6 +42,7 @@ namespace SaltyGame
             this.maxPopulation = maxPopulation;
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
+            this.stopOnPlayerExtinction = stopOnPlayerExtinction;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
             Run.SetUpgradeLoadout(upgradeLoadout, this.experimentalOptions.CoupledSpeciesResponsesEnabled);
         }
@@ -60,7 +63,8 @@ namespace SaltyGame
             SpeciesCombatResolutionMode combatResolutionMode = SpeciesCombatResolutionMode.OpposedRoll,
             SpeciesAttackOpportunityMode attackOpportunityMode = SpeciesAttackOpportunityMode.Natural,
             SpeciesExperimentalOptions experimentalOptions = null,
-            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null)
+            IEnumerable<SpeciesUpgradeSnapshot> upgradeLoadout = null,
+            bool stopOnPlayerExtinction = true)
         {
             Run = run ?? throw new ArgumentNullException(nameof(run));
             this.simulationData = simulationData ?? throw new ArgumentNullException(nameof(simulationData));
@@ -69,6 +73,7 @@ namespace SaltyGame
             maxPopulation = simulationData.MaxPopulation;
             this.combatResolutionMode = combatResolutionMode;
             this.attackOpportunityMode = attackOpportunityMode;
+            this.stopOnPlayerExtinction = stopOnPlayerExtinction;
             this.experimentalOptions = experimentalOptions ?? SpeciesExperimentalOptions.None;
             if (Run.TargetTicks == 0)
             {
@@ -191,21 +196,37 @@ namespace SaltyGame
 
         public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
         {
+            return TryAddBoundaryPopulation(species, amount, out _);
+        }
+
+        public bool TryAddBoundaryPopulation(SpeciesId species, int amount, out int added, bool ignorePopulationPool = false)
+        {
+            added = 0;
             if (Run.Status != SimulationRunStatus.AwaitingDecision
                 || !rules.TryGetValue(species, out var targetRules))
             {
                 return false;
             }
 
-            return TryAddBoundaryPopulation(species, targetRules, amount);
+            return TryAddBoundaryPopulation(species, targetRules, amount, out added, ignorePopulationPool);
         }
 
         bool TryAddBoundaryPopulation(SpeciesId species, SpeciesRules targetRules, int amount)
         {
+            return TryAddBoundaryPopulation(species, targetRules, amount, out _);
+        }
+
+        bool TryAddBoundaryPopulation(SpeciesId species, SpeciesRules targetRules, int amount, out int added, bool ignorePopulationPool = false)
+        {
+            added = 0;
             if (Run.Status != SimulationRunStatus.AwaitingDecision)
             {
                 return false;
             }
+            if (amount <= 0) throw new ArgumentOutOfRangeException(nameof(amount));
+            if (species == Run.PlayerSpeciesId && !ignorePopulationPool)
+                amount = Math.Min(amount, Run.PopulationPoolSpace);
+            if (amount == 0) return false;
 
             var currentCells = Run.Cells;
             var initialCells = Run.CopyInitialCells();
@@ -223,6 +244,35 @@ namespace SaltyGame
             }
 
             previousCells = Run.Cells;
+            added = amount;
+            return true;
+        }
+
+        TerrainDefinition BoundaryPlantTerrain => simulationData != null
+            && simulationData.TerrainDefinitions.TryGetValue(TerrainIds.Grass, out var authoredGrass)
+                ? authoredGrass : TerrainDefaults.Grass;
+
+        public bool CanChangeBoundaryPopulation(SpeciesId species, int requested, out int actual, out string reason)
+        {
+            actual = 0;
+            reason = "Species is unavailable in this scenario.";
+            return rules.TryGetValue(species, out var targetRules)
+                && PopulationIntervention.TryPlan(Run, species, targetRules, requested, maxPopulation, BoundaryPlantTerrain,
+                    out actual, out _, out reason);
+        }
+
+        public bool TryChangeBoundaryPopulation(SpeciesId species, int requested, string source, out int actual)
+        {
+            actual = 0;
+            if (string.IsNullOrWhiteSpace(source) || !rules.TryGetValue(species, out var targetRules)
+                || !PopulationIntervention.TryPlan(Run, species, targetRules, requested, maxPopulation, BoundaryPlantTerrain,
+                    out var amount, out var candidates, out _)) return false;
+            var seed = unchecked(CreateBoundaryPopulationSeed(false) * 31 + Run.PopulationInterventions.Count);
+            var next = PopulationIntervention.Apply(Run.Cells, species, targetRules, amount, candidates, seed, BoundaryPlantTerrain);
+            Run.InstallPopulationIntervention(next,
+                new PopulationIntervention(species, amount, source, Run.Tick, Run.PhaseIndex, seed));
+            previousCells = Run.Cells;
+            actual = amount;
             return true;
         }
 
@@ -264,7 +314,8 @@ namespace SaltyGame
                     attackOpportunityMode: attackOpportunityMode,
                     experimentalOptions: experimentalOptions,
                     previousSource: previousCells,
-                    stepIntervalSeconds: stepSeconds)
+                    stepIntervalSeconds: stepSeconds,
+                    genomeSnapshot: Run.ActiveGenomeSnapshot)
                 : SpeciesSimulation.Step(
                     Run.Cells,
                     simulationData,
@@ -273,10 +324,11 @@ namespace SaltyGame
                     combatResolutionMode,
                     attackOpportunityMode,
                     experimentalOptions,
-                    previousSource: previousCells);
+                    previousSource: previousCells,
+                    genomeSnapshot: Run.ActiveGenomeSnapshot);
             previousCells = Run.Cells;
             Run.Advance(next, stepSeconds);
-            if (Run.SupportsContinuation
+            if (stopOnPlayerExtinction && Run.SupportsContinuation
                 && Run.Status != SimulationRunStatus.Complete
                 && Run.PopulationHistory[Run.PopulationHistory.Count - 1].GetCount(Run.PlayerSpeciesId) == 0)
             {

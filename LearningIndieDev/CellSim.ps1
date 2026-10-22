@@ -29,7 +29,11 @@ param(
     [double]$StepIntervalSeconds = 0,
     [string]$ScenarioPath,
     [string]$StartingPopulations = '',
+    [string]$SpeciesStats = '',
+    [string]$FoxIntroductionTicks = '',
 [string]$PlayerSpeciesId = 'herbivore',
+    [string]$RabbitGenomeNodeIds = '',
+    [string]$RabbitGenomeCatalogPath = '',
 [string]$UpgradeId = 'none',
 [string]$UpgradeSequence = '',
 [ValidateRange(0, 1000000)]
@@ -72,6 +76,8 @@ CellSim Visuals [-ReplayReportPath artifacts/.../report.json] -ReplaySeed 10100
 CellSim Run [-Execution Auto|Live|Clean] [-SeedStart 1] [-SeedCount 20] [-GridWidth 64] [-GridHeight 64] [-RunTicks 600] [-RunDurationSeconds 60] [-StepIntervalSeconds 0.1] [-ScenarioPath Assets/...]
              [-StartingPopulations 'plant=400,hare=25,fox=15']
              [-PlayerSpeciesId hare] [-UpgradeId tough-hide] [-UpgradeSequence tough-hide,tough-hide]
+             [-RabbitGenomeNodeIds 'fertile-droppings,poc.hare.efficient-digestion'] [-RabbitGenomeCatalogPath Assets/.../RabbitSelectionPOC.asset]
+             [-SpeciesStats 'hare:energy.forage-threshold=25'] [-FoxIntroductionTicks '75,150,225,300,375,450,525,600']
              [-ExperimentalFeatures bev-experimental] [-CombatMode opposed-roll]
              [-PreContactAvoidanceChance 0.10]
              [-PhaseLengthTicks <ticks>] [-PhaseUpgradeSchedule none;tough-hide;tough-hide,efficient-digestion]
@@ -104,7 +110,7 @@ switch ($Command) {
         & (Join-Path $PSScriptRoot 'tools/Invoke-UnityVisualEvidence.ps1') -Execution $Execution -ProjectPath $ProjectPath -UnityPath $UnityPath -TestFilter $TestFilter -ReplayReportPath $ReplayReportPath -ReplaySeed $ReplaySeed
     }
     'Run' {
-        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -MutationPolicy $MutationPolicy -WrapEdges $WrapEdges -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -PlayerSpeciesId $PlayerSpeciesId -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
+        & (Join-Path $PSScriptRoot 'tools/Run-CellularExperiment.ps1') -Execution $Execution -SeedStart $SeedStart -SeedCount $SeedCount -GridWidth $GridWidth -GridHeight $GridHeight -RunTicks $RunTicks -PhaseLengthTicks $PhaseLengthTicks -PhaseUpgradeSchedule $PhaseUpgradeSchedule -MutationPolicy $MutationPolicy -WrapEdges:$WrapEdges -RunDurationSeconds $RunDurationSeconds -StepIntervalSeconds $StepIntervalSeconds -ScenarioPath $ScenarioPath -StartingPopulations $StartingPopulations -SpeciesStats $SpeciesStats -FoxIntroductionTicks $FoxIntroductionTicks -PlayerSpeciesId $PlayerSpeciesId -RabbitGenomeNodeIds $RabbitGenomeNodeIds -RabbitGenomeCatalogPath $RabbitGenomeCatalogPath -UpgradeId $UpgradeId -UpgradeSequence $UpgradeSequence -UpgradeValueOverride $UpgradeValueOverride -CombatMode $CombatMode -AttackOpportunityMode $AttackOpportunityMode -ExperimentalFeatures $ExperimentalFeatures -FoxAttackCooldownTicks $FoxAttackCooldownTicks -PreContactAvoidanceChance $PreContactAvoidanceChance -ProjectPath $ProjectPath -UnityPath $UnityPath
     }
     'Report' {
         & (Join-Path $PSScriptRoot 'tools/New-CellSimReport.ps1') -ReportPath $ReportPath -BaselinePath $BaselinePath -TestArtifactDirectory $TestArtifactDirectory -OutputPath $OutputPath -ProjectPath $ProjectPath

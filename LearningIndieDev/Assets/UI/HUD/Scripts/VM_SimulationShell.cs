@@ -59,7 +59,7 @@ namespace SaltyGame
             SimulationIconVisibility = node.Kind == JourneyNodeKind.Simulation ? Visibility.Visible : Visibility.Collapsed;
             ConditionIconVisibility = node.Kind == JourneyNodeKind.Condition ? Visibility.Visible : Visibility.Collapsed;
             UpgradeIconVisibility = node.Kind == JourneyNodeKind.Upgrade ? Visibility.Visible : Visibility.Collapsed;
-            EventIconVisibility = node.Kind == JourneyNodeKind.Event ? Visibility.Visible : Visibility.Collapsed;
+            EventIconVisibility = (node.Kind == JourneyNodeKind.Event || node.Kind == JourneyNodeKind.Refresh) ? Visibility.Visible : Visibility.Collapsed;
             FinaleIconVisibility = node.Kind == JourneyNodeKind.Finale ? Visibility.Visible : Visibility.Collapsed;
             RewardIconVisibility = node.Kind == JourneyNodeKind.Reward && node.Row != 0 ? Visibility.Visible : Visibility.Collapsed;
             OpeningFernVisibility = node.Row == 0 && node.Column == 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -130,16 +130,18 @@ namespace SaltyGame
 
     public sealed class JourneyRewardChoiceItem
     {
-        public JourneyRewardChoiceItem(string label, Action choose)
+        public JourneyRewardChoiceItem(string label, Action choose, bool canChoose = true)
         {
             var lineBreak = label.IndexOf('\n');
             Title = lineBreak < 0 ? label : label.Substring(0, lineBreak);
             Description = lineBreak < 0 ? string.Empty : label.Substring(lineBreak + 1);
-            ChooseCommand = new DelegateCommand(choose);
+            CanChoose = canChoose;
+            ChooseCommand = new DelegateCommand(() => { if (CanChoose) choose(); });
         }
 
         public string Title { get; }
         public string Description { get; }
+        public bool CanChoose { get; }
         public DelegateCommand ChooseCommand { get; }
     }
 
@@ -351,6 +353,20 @@ namespace SaltyGame
         public DelegateCommand PurchaseRewardOption2Command { get; private set; }
         public DelegateCommand PurchaseRewardOption3Command { get; private set; }
         public DelegateCommand BuyHareCommand { get; private set; }
+        public JourneyRewardChoiceItem[] PopulationControlItems { get; private set; } = Array.Empty<JourneyRewardChoiceItem>();
+        public string FoodSupplyText
+        {
+            get
+            {
+                if (preview?.Run == null || preview.PlayerSpecies.Value != "hare") return PlantPopulationText;
+                var food = new FoodPressureSnapshot(preview.Run, SpeciesIds.Plant);
+                return food.Plants == 0 ? "PLANTS: 0 / EMPTY"
+                    : $"PLANTS: {food.Plants} ({food.Change:+0;-0;0})";
+            }
+        }
+        public string FoodPressureText => preview?.FoodPressureText ?? string.Empty;
+        public string PopulationActionMessage => preview?.PopulationActionMessage ?? string.Empty;
+
         public DelegateCommand ContinueWithoutUpgradeCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
         public DelegateCommand OpenJourneyMapCommand { get; private set; }
@@ -1391,7 +1407,7 @@ namespace SaltyGame
                     : string.Empty,
                 nameof(StatLineContextText));
             Set(ref statLineGuide,
-                "SPO starting population; ADD reinforcements; FPO current/final population.\n"
+                "SPO starting population; ADD reinforcements; REM boundary removals; FPO current/final population.\n"
                 + "STRV starvation deaths; CRWD crowding deaths; MAT mating candidates; BIR births.\n"
                 + (isHerbivorePlayer
                     ? "PREY predation deaths; HPS predator-active herbivore steps; EHS encountered herbivore steps; ECN encounters.\n"
@@ -1421,12 +1437,27 @@ namespace SaltyGame
                 $"{preview.Progression?.Currency ?? 0} FIELD DATA",
                 nameof(PhaseCurrencyText));
             Set(ref harePurchaseText,
-                preview.Progression?.Currency < SpeciesSimulationPreview.HareCost
+                run != null && run.PopulationPoolSpace == 0
+                    ? $"POPULATION POOL FULL  ·  {run.PopulationPoolCapacity} MAX"
+                    : preview.Progression?.Currency < SpeciesSimulationPreview.HareCost
                     ? $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA  ·  NEED {SpeciesSimulationPreview.HareCost - preview.Progression.Currency} MORE"
                     : !preview.CanBuyHare
                         ? "NO ROOM FOR HARE"
                         : $"BUY 1 HARE  ·  {SpeciesSimulationPreview.HareCost} DATA",
                 nameof(HarePurchaseText));
+            var controls = new List<JourneyRewardChoiceItem>();
+            for (var index = 0; index < preview.PopulationControlCount; index++)
+            {
+                var captured = index;
+                controls.Add(new JourneyRewardChoiceItem(preview.GetPopulationControlLabel(index),
+                    () => { if (preview.UsePopulationControl(captured)) Refresh(true); },
+                    preview.CanUsePopulationControl(index, out _)));
+            }
+            PopulationControlItems = controls.ToArray();
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PopulationControlItems)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FoodPressureText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FoodSupplyText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PopulationActionMessage)));
             Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
             SyncJourneyPresentation(state);
             var isContinuousRun = preview.ContinuousPhasesEnabled
@@ -1542,7 +1573,7 @@ namespace SaltyGame
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(JourneyMapCloseVisibility));
             Set(ref harePurchaseVisibility,
-                state == SpeciesPreviewState.PhaseDecision
+                preview.IsPopulationControlWindowOpen
                     && preview.PlayerSpecies.Value == "hare"
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(HarePurchaseVisibility));
@@ -1957,16 +1988,16 @@ namespace SaltyGame
                     ? "Choose one of three trailheads, then follow the path into the living biome."
                     : state == SpeciesPreviewState.JourneyDecision
                         ? preview.ChosenJourneyNode != null
-                            ? "Habitat condition recorded. Choose a connected simulation node to continue."
-                            : "The first cycle is recorded. Choose a habitat condition, then begin the next simulation."
+                            ? preview.PhaseRewardMessage + " Choose a connected simulation to continue."
+                            : "The first cycle is recorded. Choose a condition, refresh or event before the next simulation."
                         : state == SpeciesPreviewState.Results
                             ? "This expedition is complete. Begin another journey to explore a different path."
                             : "One ecosystem, a longer trail. Your Mutations and field data travel with you.",
                 nameof(JourneyMapSummary));
 
             var pending = preview.JourneyPendingNode;
-            Set(ref journeyRewardTitle, pending?.DisplayName ?? string.Empty, nameof(JourneyRewardTitle));
-            Set(ref journeyRewardDescription, pending?.Description ?? string.Empty, nameof(JourneyRewardDescription));
+            Set(ref journeyRewardTitle, preview.JourneyRewardTitle, nameof(JourneyRewardTitle));
+            Set(ref journeyRewardDescription, preview.JourneyRewardDescription + "\n" + preview.FoodPressureText, nameof(JourneyRewardDescription));
             var rewardItems = new List<JourneyRewardChoiceItem>();
             for (var optionIndex = 0; optionIndex < preview.JourneyRewardOptionCount; optionIndex++)
             {
@@ -1980,7 +2011,7 @@ namespace SaltyGame
                             journeyMapPreviewOpen = true;
                             Refresh(true);
                         }
-                    }));
+                    }, preview.CanClaimJourneyNodeReward(capturedIndex)));
             }
             Set(ref journeyRewardItems, rewardItems.ToArray(), nameof(JourneyRewardItems));
 
@@ -2076,7 +2107,7 @@ namespace SaltyGame
             Set(ref journeyDetailSimulationIconVisibility, node.Kind == JourneyNodeKind.Simulation ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailSimulationIconVisibility));
             Set(ref journeyDetailConditionIconVisibility, node.Kind == JourneyNodeKind.Condition ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailConditionIconVisibility));
             Set(ref journeyDetailUpgradeIconVisibility, node.Kind == JourneyNodeKind.Upgrade ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailUpgradeIconVisibility));
-            Set(ref journeyDetailEventIconVisibility, node.Kind == JourneyNodeKind.Event ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailEventIconVisibility));
+            Set(ref journeyDetailEventIconVisibility, (node.Kind == JourneyNodeKind.Event || node.Kind == JourneyNodeKind.Refresh) ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailEventIconVisibility));
             Set(ref journeyDetailFinaleIconVisibility, node.Kind == JourneyNodeKind.Finale ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailFinaleIconVisibility));
             Set(ref journeyDetailRewardIconVisibility, node.Kind == JourneyNodeKind.Reward ? Visibility.Visible : Visibility.Collapsed, nameof(JourneyDetailRewardIconVisibility));
         }
@@ -2441,10 +2472,11 @@ namespace SaltyGame
                 species,
                 run.PopulationHistory[0].GetCount(species),
                 run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species),
-                run.GetBoundaryPopulationAdded(species));
+                run.GetBoundaryPopulationAdded(species), run.GetBoundaryPopulationRemoved(species));
             var summary = new StringBuilder();
             AppendMetric(summary, "SPO", statLine.StartingPopulation);
             AppendMetric(summary, "ADD", statLine.AddedPopulation);
+            AppendMetric(summary, "REM", statLine.RemovedPopulation);
             AppendMetric(summary, "HPS", statLine.PredatorActiveHerbivoreSteps);
             AppendMetric(summary, "EHS", statLine.EncounteredHerbivoreSteps);
             AppendMetric(summary, "ECN", statLine.Encounters);
@@ -2485,10 +2517,11 @@ namespace SaltyGame
                 species,
                 run.PopulationHistory[0].GetCount(species),
                 run.PopulationHistory[run.PopulationHistory.Count - 1].GetCount(species),
-                run.GetBoundaryPopulationAdded(species));
+                run.GetBoundaryPopulationAdded(species), run.GetBoundaryPopulationRemoved(species));
             var summary = new StringBuilder();
             AppendMetric(summary, "SPO", statLine.StartingPopulation);
             AppendMetric(summary, "ADD", statLine.AddedPopulation);
+            AppendMetric(summary, "REM", statLine.RemovedPopulation);
             AppendMetric(summary, "PPS", statLine.PreyActivePredatorSteps);
             AppendMetric(summary, "EPS", statLine.EncounteredPredatorSteps);
             AppendMetric(summary, "ECN", statLine.Encounters);

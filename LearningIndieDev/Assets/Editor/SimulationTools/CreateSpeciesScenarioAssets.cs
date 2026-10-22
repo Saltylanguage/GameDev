@@ -13,6 +13,128 @@ namespace SaltyGame.EditorTools
         const string SpeciesRoot = Root + "/Species";
         const string ScenarioRoot = Root + "/Scenarios";
 
+        [MenuItem("Salty Game/Journey/Add Population Encounters")]
+        public static void CreatePopulationEncounters()
+        {
+            const string folder = "Assets/Data/ProductionData/CellularSimulation/Species/Journey";
+            var map = AssetDatabase.LoadAssetAtPath<JourneyMapAsset>(folder + "/ForestEdgeJourney.asset");
+            if (map == null) throw new InvalidOperationException("Forest Edge journey is missing.");
+            var refresh = PopulationEncounter(folder, "RestStop", "rest-stop", "REST STOP",
+                "Choose one refresh before the next cycle: Hares within your population pool, or Plants. You may continue without a refresh.",
+                JourneyNodeKind.Refresh, 2, map.GetNode("seedfall").NextNodes[0]);
+            var gamble = PopulationEncounter(folder, "SeedCache", "seed-cache", "SEED CACHE",
+                "An uncertain cache could renew the food supply or spoil existing Plants. The odds are shown before you choose. You may leave it alone.",
+                JourneyNodeKind.Event, 3, map.GetNode("fox-tracks").NextNodes[0]);
+            var nodes = new List<JourneyNodeAsset>(map.Nodes);
+            if (!nodes.Contains(refresh)) nodes.Add(refresh);
+            if (!nodes.Contains(gamble)) nodes.Add(gamble);
+            foreach (var node in nodes)
+            {
+                if (node.Row != 1) continue;
+                var serializedNode = new SerializedObject(node);
+                var next = serializedNode.FindProperty("nextNodes");
+                var links = new List<JourneyNodeAsset>(node.NextNodes);
+                if (!links.Contains(refresh)) links.Add(refresh);
+                if (!links.Contains(gamble)) links.Add(gamble);
+                next.arraySize = links.Count;
+                for (var i = 0; i < links.Count; i++) next.GetArrayElementAtIndex(i).objectReferenceValue = links[i];
+                serializedNode.ApplyModifiedPropertiesWithoutUndo();
+            }
+            var serialized = new SerializedObject(map);
+            var entries = serialized.FindProperty("nodes");
+            entries.arraySize = nodes.Count;
+            for (var i = 0; i < nodes.Count; i++) entries.GetArrayElementAtIndex(i).objectReferenceValue = nodes[i];
+            var centers = new Dictionary<JourneyNodeAsset, Vector2>();
+            foreach (var placement in map.NodePlacements) centers.Add(placement.Node, placement.NormalizedCenter);
+            centers[map.GetNode("seedfall")] = new Vector2(0.19787234f, 0.15f);
+            centers[refresh] = new Vector2(0.19787234f, 0.35f);
+            centers[gamble] = new Vector2(0.19787234f, 0.55f);
+            centers[map.GetNode("fox-tracks")] = new Vector2(0.19787234f, 0.76f);
+            var positions = serialized.FindProperty("nodePlacements");
+            positions.arraySize = nodes.Count;
+            for (var i = 0; i < nodes.Count; i++)
+            {
+                positions.GetArrayElementAtIndex(i).FindPropertyRelative("node").objectReferenceValue = nodes[i];
+                positions.GetArrayElementAtIndex(i).FindPropertyRelative("normalizedCenter").vector2Value = centers[nodes[i]];
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Salty] Refresh and seed-cache playtest encounters added to Forest Edge.");
+        }
+
+        static JourneyNodeAsset PopulationEncounter(string folder, string file, string id, string title,
+            string description, JourneyNodeKind kind, int column, JourneyNodeAsset next)
+        {
+            var path = folder + "/" + file + ".asset";
+            var asset = AssetDatabase.LoadAssetAtPath<JourneyNodeAsset>(path);
+            if (asset == null)
+            {
+                asset = ScriptableObject.CreateInstance<JourneyNodeAsset>();
+                AssetDatabase.CreateAsset(asset, path);
+            }
+            var serialized = new SerializedObject(asset);
+            serialized.FindProperty("nodeId").stringValue = id;
+            serialized.FindProperty("displayName").stringValue = title;
+            serialized.FindProperty("description").stringValue = description;
+            serialized.FindProperty("kind").enumValueIndex = (int)kind;
+            serialized.FindProperty("row").intValue = 2;
+            serialized.FindProperty("column").intValue = column;
+            serialized.FindProperty("playableInPrototype").boolValue = true;
+            var links = serialized.FindProperty("nextNodes");
+            links.arraySize = 1;
+            links.GetArrayElementAtIndex(0).objectReferenceValue = next;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            return asset;
+        }
+
+        [MenuItem("Salty Game/Genome/Add Population Playtest Nodes")]
+        public static void CreatePopulationGenomeNodes()
+        {
+            const string folder = "Assets/Data/TestData/Genome/RabbitSelectionPOC";
+            var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(folder + "/RabbitSelectionPOC.asset");
+            if (map == null) throw new InvalidOperationException("Rabbit selection POC map is missing.");
+            var nodes = new List<GenomeUpgradeAsset>(map.Upgrades);
+            AddPopulationNode(folder, nodes, "StartingPopulation", "poc.hare.starting-population", "Founding Hares",
+                "+5 Hares at the start of a new journey. A larger colony consumes more food. Does not refill each round.",
+                SpeciesAttributeIds.StartingPopulation, 5);
+            AddPopulationNode(folder, nodes, "PopulationPool", "poc.hare.population-pool", "Population Reserves",
+                "+10 population pool capacity. Refreshes and ordinary population grants can restore Hares up to this limit. Births may exceed it.",
+                SpeciesAttributeIds.PopulationPoolCapacity, 10);
+            var serialized = new SerializedObject(map);
+            var upgrades = serialized.FindProperty("upgrades");
+            upgrades.arraySize = nodes.Count;
+            for (var i = 0; i < nodes.Count; i++) upgrades.GetArrayElementAtIndex(i).objectReferenceValue = nodes[i];
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            AssetDatabase.SaveAssets();
+            Debug.Log("[Salty] Rabbit population playtest nodes are available in the POC catalog.");
+        }
+
+        static void AddPopulationNode(string folder, List<GenomeUpgradeAsset> nodes, string fileName,
+            string id, string name, string description, string attribute, int value)
+        {
+            var path = folder + "/" + fileName + ".asset";
+            var asset = AssetDatabase.LoadAssetAtPath<GenomeUpgradeAsset>(path);
+            if (asset == null)
+            {
+                asset = ScriptableObject.CreateInstance<GenomeUpgradeAsset>();
+                var serialized = new SerializedObject(asset);
+                serialized.FindProperty("upgradeId").stringValue = id;
+                serialized.FindProperty("displayName").stringValue = name;
+                serialized.FindProperty("description").stringValue = description;
+                serialized.FindProperty("targetSpeciesId").stringValue = "hare";
+                serialized.FindProperty("branchName").stringValue = "Warren";
+                serialized.FindProperty("rabbitDataPrice").longValue = 1;
+                serialized.FindProperty("capacityPoints").intValue = 2;
+                var modifiers = serialized.FindProperty("modifiers");
+                modifiers.arraySize = 1;
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("attributeId").stringValue = attribute;
+                modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("signedValue").floatValue = value;
+                serialized.ApplyModifiedPropertiesWithoutUndo();
+                AssetDatabase.CreateAsset(asset, path);
+            }
+            if (!nodes.Contains(asset)) nodes.Add(asset);
+        }
+
         [MenuItem("Salty Game/Simulation/Create Species Scenarios")]
         public static void Create()
         {

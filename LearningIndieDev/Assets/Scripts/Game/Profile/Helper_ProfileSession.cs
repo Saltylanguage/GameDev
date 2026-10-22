@@ -307,6 +307,19 @@ namespace SaltyGame
         // The journey/result flow supplies a stable completion id on settlement.
         public bool RecordCompletedRun(string completionId)
         {
+            return RecordRunCompletion(completionId, 0, 0);
+        }
+
+        public bool RecordSuccessfulJourney(string completionId)
+        {
+            return RecordRunCompletion(
+                completionId,
+                GenomeContract.RabbitDataPerSuccessfulJourney,
+                GenomeContract.ResearchDataPerSuccessfulJourney);
+        }
+
+        bool RecordRunCompletion(string completionId, long rabbitDataReward, long researchDataReward)
+        {
             if (string.IsNullOrWhiteSpace(completionId))
                 throw new ArgumentException("A completed run id is required.", nameof(completionId));
             RequireLoadedProfile();
@@ -314,10 +327,12 @@ namespace SaltyGame
             if (Current.CompletedRunIds.Contains(normalizedId))
                 return false;
 
-            var completedRunIds = new List<string>(Current.CompletedRunIds) { normalizedId };
             Flush();
+            var completedRunIds = new List<string>(Current.CompletedRunIds) { normalizedId };
             CommitCurrent(Current.WithGenomeEconomy(
-                Current.RabbitData, Current.ResearchData, checked(Current.CompletedRuns + 1),
+                checked(Current.RabbitData + rabbitDataReward),
+                checked(Current.ResearchData + researchDataReward),
+                checked(Current.CompletedRuns + 1),
                 nextCompletedRunIds: completedRunIds));
             return true;
         }
@@ -368,6 +383,13 @@ namespace SaltyGame
                 || !map.TryGetNode(nodeId, out var node))
             {
                 reason = "The node must belong to the Rabbit Genome catalog.";
+                return false;
+            }
+
+            if (!node.IsPurchasable || node.RabbitDataPrice != rabbitDataPrice
+                || node.CapacityPoints != capacityPoints)
+            {
+                reason = "The Rabbit Genome node price and capacity must match its authored offer.";
                 return false;
             }
 

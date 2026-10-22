@@ -13,6 +13,8 @@ namespace SaltyGame
         [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
         [SerializeField] string genomeSpeciesId = "hare";
         Helper_ProfileSession profileSession;
+        public GenomeCatalogSnapshot GenomeCatalog => genomeCatalogProvider == null
+            ? GenomeCatalogSnapshot.Empty : genomeCatalogProvider.Snapshot;
 
         public DelegateCommand OpenDesktopIconCommand { get; private set; }
         public DelegateCommand CloseDesktopAppCommand { get; private set; }
@@ -66,7 +68,18 @@ namespace SaltyGame
 
         public void BindProfileSession(Helper_ProfileSession session)
         {
+            if (profileSession != null)
+                profileSession.SnapshotChanged -= HandleProfileSnapshotChanged;
             profileSession = session;
+            if (profileSession != null)
+                profileSession.SnapshotChanged += HandleProfileSnapshotChanged;
+            HandleProfileSnapshotChanged(profileSession?.Current);
+        }
+
+        void OnDestroy()
+        {
+            if (profileSession != null)
+                profileSession.SnapshotChanged -= HandleProfileSnapshotChanged;
         }
 
         void Awake()
@@ -195,7 +208,8 @@ namespace SaltyGame
                     ? GenomeCatalogSnapshot.Empty
                     : genomeCatalogProvider.Snapshot,
                 profile: profileSession?.Current,
-                selectedSpecies: selectedSpecies);
+                selectedSpecies: selectedSpecies,
+                profileSession: profileSession);
         }
 
         SpeciesId? GetSelectedGenomeSpecies()
@@ -213,6 +227,15 @@ namespace SaltyGame
                 {
                     window.RefreshGenomeCatalog(snapshot);
                 }
+            }
+        }
+
+        void HandleProfileSnapshotChanged(ProfileSessionSnapshot snapshot)
+        {
+            foreach (var window in openDesktopWindows)
+            {
+                if (window.Title == "Gene Lab")
+                    window.RefreshGenomeProfile(snapshot);
             }
         }
 
@@ -422,7 +445,7 @@ namespace SaltyGame
             Title = title;
             Description = description;
             Width = isGeneLab
-                ? Mathf.Clamp(Screen.width - 64f, 960f, 1450f)
+                ? 1450f
                 : isFieldGuide
                     ? Mathf.Clamp(Screen.width - 96f, 1040f, 1510f)
                     : isSpeciesCollection
@@ -431,7 +454,7 @@ namespace SaltyGame
                             ? Mathf.Clamp(Screen.width - 220f, 1000f, 1280f)
                 : 620f;
             Height = isGeneLab
-                ? Mathf.Clamp(Screen.height - 116f, 560f, 820f)
+                ? 820f
                 : isFieldGuide
                     ? Mathf.Clamp(Screen.height - 128f, 560f, 820f)
                     : isSpeciesCollection
@@ -439,10 +462,14 @@ namespace SaltyGame
                         : isSettings
                             ? Mathf.Clamp(Screen.height - 180f, 560f, 760f)
                 : 300f;
-            Left = isGeneLab || isFieldGuide || isSettings || isSpeciesCollection
+            Left = isGeneLab
+                ? 235f
+                : isFieldGuide || isSettings || isSpeciesCollection
                 ? Mathf.Max(24f, (Screen.width - Width) * 0.5f)
                 : left;
-            Top = isGeneLab || isFieldGuide || isSettings || isSpeciesCollection
+            Top = isGeneLab
+                ? 92f
+                : isFieldGuide || isSettings || isSpeciesCollection
                 ? Mathf.Max(24f, (Screen.height - 76f - Height) * 0.5f)
                 : top;
             CloseCommand = new DelegateCommand(close);
@@ -517,6 +544,11 @@ namespace SaltyGame
         public void RefreshGenomeCatalog(GenomeCatalogSnapshot catalog)
         {
             GenomeLab.BindCatalog(catalog);
+        }
+
+        public void RefreshGenomeProfile(ProfileSessionSnapshot profile)
+        {
+            GenomeLab.BindProfile(profile);
         }
 
         void HandleGenomeLabPropertyChanged(object sender, PropertyChangedEventArgs eventArgs)

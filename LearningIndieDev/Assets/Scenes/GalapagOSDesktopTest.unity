@@ -114,6 +114,7 @@ GameObject:
   - component: {fileID: 100011}
   - component: {fileID: 100016}
   - component: {fileID: 100017}
+  - component: {fileID: 100018}
   m_Layer: 0
   m_Name: GalapagOS Desktop Test Camera
   m_TagString: MainCamera
@@ -277,7 +278,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d6d8a2c7f1b4e5aa6c3d9f0182b7e44, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SaltyGame.VM_GalapagOS_Desktop
-  genomeCatalogProvider: {fileID: 0}
+  genomeCatalogProvider: {fileID: 100018}
   genomeSpeciesId: hare
 --- !u!114 &100006
 MonoBehaviour:
@@ -532,6 +533,20 @@ MonoBehaviour:
   desktopSceneName: GalapagOSDesktopTest
   mainMenuSceneName: MainMenu
   simulationSceneName: CellularAutomataPrototype
+--- !u!114 &100018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 100000}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6c2d9e4b1a3478ca53f0e6d9b2c4157, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeCatalogProvider
+  speciesMaps:
+  - {fileID: 11400000, guid: 367d3fdd2236f7e46a386289af2c9e55, type: 2}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

@@ -21,11 +21,11 @@ if (-not $output.StartsWith($artifacts, [StringComparison]::OrdinalIgnoreCase)) 
 }
 if (Test-Path -LiteralPath $output) { throw 'Snapshot already exists; use a new output path.' }
 if ($ScientificArguments.Count % 2 -ne 0) { throw 'ScientificArguments must contain option/value pairs.' }
-$allowed = @('-playerSpeciesId','-upgradeId','-upgradeSequence','-upgradeAssetSequence','-upgradeAssetCatalogPath',
+$allowed = @('-playerSpeciesId','-rabbitGenomeNodeIds','-rabbitGenomeCatalogPath','-upgradeId','-upgradeSequence','-upgradeAssetSequence','-upgradeAssetCatalogPath',
     '-upgradeValueOverride','-combatMode','-attackOpportunityMode','-experimentalFeatures','-foxAttackCooldownTicks',
     '-preContactAvoidanceChance','-coupledSpeciesResponses','-wrapEdges','-gridWidth','-gridHeight','-startingPopulations',
     '-runTicks','-phaseLengthTicks','-phaseUpgradeSchedule','-phaseUpgradeAssetSchedule','-mutationPolicy',
-    '-mutationPolicyEarlyFirstChoice','-harePurchasePolicy','-runDurationSeconds','-stepIntervalSeconds','-speciesStats')
+    '-mutationPolicyEarlyFirstChoice','-harePurchasePolicy','-runDurationSeconds','-stepIntervalSeconds','-speciesStats','-foxIntroductionTicks')
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 for ($i = 0; $i -lt $ScientificArguments.Count; $i += 2) {
     if ($allowed -cnotcontains $ScientificArguments[$i] -or -not $seen.Add($ScientificArguments[$i]) -or

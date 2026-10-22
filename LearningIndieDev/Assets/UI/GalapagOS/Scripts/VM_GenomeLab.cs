@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using Noesis;
 
 namespace SaltyGame
 {
     /// <summary>
-    /// Presentation model for the authored Genome catalog. It exposes only
-    /// immutable snapshot data; unlock/activation commands belong to the
-    /// profile feature pass and are intentionally absent for now.
+    /// Presentation model for the authored Genome catalog and profile actions.
     /// </summary>
     public sealed class GenomeLabViewModel : INotifyPropertyChanged
     {
@@ -20,26 +20,141 @@ namespace SaltyGame
         const float TreePadding = 24f;
         const float TreeHeaderHeight = 42f;
         const float ConnectorThickness = 4f;
+        const string AllBranches = "All branches";
 
         GenomeCatalogSnapshot catalog;
-        readonly ProfileSessionSnapshot profile;
+        ProfileSessionSnapshot profile;
+        readonly Helper_ProfileSession profileSession;
         readonly SpeciesId? selectedSpecies;
+        string selectedNodeId;
+        string selectedBranch;
 
         public GenomeLabViewModel(
             GenomeCatalogSnapshot catalog,
             ProfileSessionSnapshot profile = null,
-            SpeciesId? selectedSpecies = null)
+            SpeciesId? selectedSpecies = null,
+            Helper_ProfileSession profileSession = null)
         {
             this.profile = profile;
             this.selectedSpecies = selectedSpecies;
+            this.profileSession = profileSession;
+            PurchaseLicenseCommand = new DelegateCommand(PurchaseLicense);
+            PurchaseNodeCommand = new DelegateCommand(PurchaseNode);
+            ResetGenomeCommand = new DelegateCommand(ResetGenome);
             Nodes = new ObservableCollection<GenomeLabNodeViewModel>();
             GenomeTreeSegments = new ObservableCollection<GenomeLabTreeSegmentViewModel>();
+            BranchNames = new ObservableCollection<string>();
             BindCatalog(catalog);
         }
 
         public ObservableCollection<GenomeLabNodeViewModel> Nodes { get; }
         public ObservableCollection<GenomeLabTreeSegmentViewModel> GenomeTreeSegments { get; }
-        public GenomeLabNodeViewModel SelectedNode => Nodes.Count == 0 ? null : Nodes[0];
+        public GenomeLabNodeViewModel SelectedNode => Nodes.FirstOrDefault(node => node.NodeId == selectedNodeId);
+        public ObservableCollection<string> BranchNames { get; }
+        public IReadOnlyList<bool> CapacitySlots { get; private set; } = Array.Empty<bool>();
+        public string SelectedBranch
+        {
+            get => selectedBranch;
+            set
+            {
+                if (value == selectedBranch || !BranchNames.Contains(value))
+                {
+                    return;
+                }
+                selectedBranch = value;
+                actionResult = null;
+                BindCatalog(catalog);
+            }
+        }
+        public DelegateCommand PurchaseLicenseCommand { get; }
+        public DelegateCommand PurchaseNodeCommand { get; }
+        public DelegateCommand ResetGenomeCommand { get; }
+        public string RabbitDataBalanceText => (profile?.RabbitData ?? 0).ToString();
+        public string ResearchDataBalanceText => (profile?.ResearchData ?? 0).ToString();
+        public string CompletedRunsText => (profile?.CompletedRuns ?? 0).ToString();
+        public string LicenseOfferText => $"TREE ACCESS · {GenomeContract.RabbitTreeLicensePrice} DATA";
+        public string NodeOfferText => SelectedNode == null
+            ? "NO NODE SELECTED"
+            : !SelectedNode.IsPurchasable ? "PREVIEW ONLY"
+            : profile != null && profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
+                && genome.IsNodeActive(SelectedNode.NodeId)
+                ? $"ACTIVE · {SelectedNode.CapacityPoints} POINTS"
+                : $"ACTIVATE · {SelectedNode.RabbitDataPrice} DATA / {SelectedNode.CapacityPoints} POINTS";
+        public string ResetOfferText => $"RESET · {GenomeContract.RabbitResetResearchDataFee} RESEARCH DATA";
+        string actionResult;
+        public string ActionStatusText => !string.IsNullOrEmpty(actionResult) ? actionResult
+            : GetPurchaseBlockReason() ?? "Ready to activate for the next journey.";
+        public bool CanPurchaseLicense => profileSession != null && profile != null
+            && profile.HasLoadedProfile && profile.GeneLabUnlocked
+            && SpeciesIdText == GenomeContract.RabbitSpeciesId.Value
+            && !HasRabbitLicense && profile.RabbitData >= GenomeContract.RabbitTreeLicensePrice;
+        public bool CanPurchaseNode => GetPurchaseBlockReason() == null;
+
+        string GetPurchaseBlockReason()
+        {
+            var node = SelectedNode;
+            if (profileSession == null || profile == null || !profile.HasLoadedProfile)
+            {
+                return "Select a profile to use Gene Lab.";
+            }
+            if (!profile.GeneLabUnlocked)
+            {
+                return $"Complete 3 successful journeys to unlock Gene Lab ({profile.CompletedRuns}/3).";
+            }
+            if (SpeciesIdText != GenomeContract.RabbitSpeciesId.Value)
+            {
+                return "Only Rabbit Genome allocation is available in this playtest.";
+            }
+            if (!HasRabbitLicense)
+            {
+                return "Unlock the Rabbit Genome tree first.";
+            }
+            if (node == null)
+            {
+                return "Select a Genome node.";
+            }
+            if (!node.IsPurchasable)
+            {
+                return "Preview only. This node's mechanic is not implemented.";
+            }
+            profile.TryGetGenomeProfile(GenomeContract.RabbitSpeciesId, out var genome);
+            if (genome != null && genome.IsNodeActive(node.NodeId))
+            {
+                return "Already active. Reset the allocation to change your build.";
+            }
+            var missing = node.PrerequisiteNodeIds.Where(id => genome == null || !genome.IsNodeActive(id))
+                .Select(id => ResolveSpeciesMap().GetNode(id).DisplayName).ToArray();
+            if (missing.Length > 0)
+            {
+                return $"Activate first: {string.Join(", ", missing)}.";
+            }
+            var free = GenomeContract.ActiveCapacity - (genome?.CapacityUsed ?? 0);
+            if (free < node.CapacityPoints)
+            {
+                return $"Needs {node.CapacityPoints} capacity; {free} available. Reset to reallocate.";
+            }
+            if (profile.RabbitData < node.RabbitDataPrice)
+            {
+                return $"Needs {node.RabbitDataPrice} Rabbit Data; you have {profile.RabbitData}.";
+            }
+            return null;
+        }
+        public bool CanResetGenome
+        {
+            get
+            {
+                if (profileSession == null || profile == null || !HasRabbitLicense
+                    || SpeciesIdText != GenomeContract.RabbitSpeciesId.Value
+                    || profile.ResearchData < GenomeContract.RabbitResetResearchDataFee)
+                {
+                    return false;
+                }
+                return profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
+                    && genome.ActiveNodeIds.Count > 0;
+            }
+        }
+        bool HasRabbitLicense => profile != null
+            && profile.UnlockedGenomeSpeciesIds.Contains(new SpeciesId("hare"));
         public string SpeciesNameText { get; private set; }
         public string SpeciesIdText { get; private set; }
         public string ActiveGenomeCapacityText { get; private set; }
@@ -50,10 +165,88 @@ namespace SaltyGame
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        public void BindProfile(ProfileSessionSnapshot nextProfile)
+        {
+            profile = nextProfile;
+            actionResult = null;
+            BindCatalog(catalog);
+        }
+
+        void PurchaseLicense(object _)
+        {
+            if (!CanPurchaseLicense)
+            {
+                return;
+            }
+            var succeeded = profileSession.TryPurchaseRabbitGenomeLicense(
+                GenomeContract.RabbitTreeLicensePrice, out var reason);
+            BindProfile(profileSession.Current);
+            SetActionResult(succeeded ? "Rabbit Genome unlocked." : reason);
+        }
+
+        void PurchaseNode(object _)
+        {
+            if (!CanPurchaseNode)
+            {
+                return;
+            }
+            var node = SelectedNode;
+            var succeeded = profileSession.TryPurchaseRabbitGenomeNode(
+                ResolveSpeciesMap(), node.NodeId, node.RabbitDataPrice, node.CapacityPoints, out var reason);
+            BindProfile(profileSession.Current);
+            SetActionResult(succeeded ? $"{node.DisplayName} active for the next journey." : reason);
+        }
+
+        void ResetGenome(object _)
+        {
+            if (!CanResetGenome)
+            {
+                return;
+            }
+            var succeeded = profileSession.TryResetRabbitGenome(
+                GenomeContract.RabbitResetResearchDataFee, out var reason);
+            BindProfile(profileSession.Current);
+            SetActionResult(succeeded ? "Rabbit Genome reset; node Rabbit Data refunded." : reason);
+        }
+
+        void SetActionResult(string message)
+        {
+            actionResult = message;
+            OnPropertyChanged(nameof(ActionStatusText));
+        }
+
+        void SelectNode(string nodeId)
+        {
+            selectedNodeId = nodeId;
+            actionResult = null;
+            foreach (var node in Nodes)
+            {
+                node.SetSelected(node.NodeId == selectedNodeId);
+            }
+            OnPropertyChanged(nameof(SelectedNode));
+            OnPropertyChanged(nameof(NodeOfferText));
+            OnPropertyChanged(nameof(CanPurchaseNode));
+            OnPropertyChanged(nameof(ActionStatusText));
+        }
+
         public void BindCatalog(GenomeCatalogSnapshot nextCatalog)
         {
             catalog = nextCatalog ?? GenomeCatalogSnapshot.Empty;
             var speciesMap = ResolveSpeciesMap();
+            var branches = new[] { AllBranches }.Concat((speciesMap?.Nodes ?? Array.Empty<GenomeUpgradeNodeSnapshot>())
+                .Select(node => node.BranchName).Where(name => !string.IsNullOrEmpty(name)).Distinct()).ToArray();
+            if (!BranchNames.SequenceEqual(branches))
+            {
+                BranchNames.Clear();
+                foreach (var branch in branches)
+                {
+                    BranchNames.Add(branch);
+                }
+            }
+            if (!BranchNames.Contains(selectedBranch))
+            {
+                selectedBranch = branches.Length > 1 ? branches[1] : AllBranches;
+            }
             Nodes.Clear();
             GenomeTreeSegments.Clear();
             GenomeTreeWidth = 560f;
@@ -73,16 +266,16 @@ namespace SaltyGame
                 SpeciesNameText = speciesMap.SpeciesId.Value.ToUpperInvariant();
                 SpeciesIdText = speciesMap.SpeciesId.Value;
                 ActiveGenomeCapacityText = GetActiveCapacityText(speciesMap.SpeciesId);
-                var fingerprintPrefix = catalog.Fingerprint.Length < 8
-                    ? catalog.Fingerprint
-                    : catalog.Fingerprint.Substring(0, 8);
-                CatalogStateText = $"AUTHORING SNAPSHOT · {fingerprintPrefix.ToUpperInvariant()}";
+                CatalogStateText = $"{speciesMap.Nodes.Count} GENOME OPTION{(speciesMap.Nodes.Count == 1 ? string.Empty : "S")}";
 
-                var nodeLayouts = CreateNodeLayouts(speciesMap, out var treeWidth, out var treeHeight);
-                foreach (var node in speciesMap.Nodes)
+                var visibleNodes = speciesMap.Nodes.Where(node => selectedBranch == AllBranches
+                    || node.BranchName == selectedBranch).ToArray();
+                var nodeLayouts = CreateNodeLayouts(speciesMap, visibleNodes, out var treeWidth, out var treeHeight);
+                foreach (var node in visibleNodes)
                 {
                     var layout = nodeLayouts[node.Id];
-                    Nodes.Add(new GenomeLabNodeViewModel(node, profile, layout.Left, layout.Top));
+                    Nodes.Add(new GenomeLabNodeViewModel(node, profile, layout.Left, layout.Top, SelectNode,
+                        prerequisiteText: string.Join(", ", node.PrerequisiteNodeIds.Select(id => speciesMap.GetNode(id).DisplayName))));
                     AddTreeSegments(node, nodeLayouts);
                 }
 
@@ -90,7 +283,22 @@ namespace SaltyGame
                 GenomeTreeHeight = treeHeight;
             }
 
+            if (!Nodes.Any(node => node.NodeId == selectedNodeId))
+            {
+                selectedNodeId = Nodes.FirstOrDefault()?.NodeId;
+            }
+            foreach (var node in Nodes)
+            {
+                node.SetSelected(node.NodeId == selectedNodeId);
+            }
+            var capacityUsed = profile != null && speciesMap != null && profile.TryGetGenomeProfile(speciesMap.SpeciesId, out var speciesProfile)
+                ? speciesProfile.CapacityUsed : 0;
+            CapacitySlots = Enumerable.Range(0, GenomeContract.ActiveCapacity).Select(index => index < capacityUsed).ToArray();
+
             OnPropertyChanged(nameof(Nodes));
+            OnPropertyChanged(nameof(BranchNames));
+            OnPropertyChanged(nameof(SelectedBranch));
+            OnPropertyChanged(nameof(CapacitySlots));
             OnPropertyChanged(nameof(GenomeTreeSegments));
             OnPropertyChanged(nameof(SelectedNode));
             OnPropertyChanged(nameof(SpeciesNameText));
@@ -100,15 +308,24 @@ namespace SaltyGame
             OnPropertyChanged(nameof(NodeCountText));
             OnPropertyChanged(nameof(GenomeTreeWidth));
             OnPropertyChanged(nameof(GenomeTreeHeight));
+            OnPropertyChanged(nameof(RabbitDataBalanceText));
+            OnPropertyChanged(nameof(ResearchDataBalanceText));
+            OnPropertyChanged(nameof(CompletedRunsText));
+            OnPropertyChanged(nameof(CanPurchaseLicense));
+            OnPropertyChanged(nameof(CanResetGenome));
+            OnPropertyChanged(nameof(ActionStatusText));
+            OnPropertyChanged(nameof(NodeOfferText));
+            OnPropertyChanged(nameof(CanPurchaseNode));
         }
 
         Dictionary<string, GenomeNodeLayout> CreateNodeLayouts(
             SpeciesGenomeMapSnapshot speciesMap,
+            IEnumerable<GenomeUpgradeNodeSnapshot> visibleNodes,
             out float treeWidth,
             out float treeHeight)
         {
             var depths = new Dictionary<string, int>(StringComparer.Ordinal);
-            foreach (var node in speciesMap.Nodes)
+            foreach (var node in visibleNodes)
             {
                 GetNodeDepth(node.Id, speciesMap, depths);
             }
@@ -117,7 +334,7 @@ namespace SaltyGame
             var layouts = new Dictionary<string, GenomeNodeLayout>(StringComparer.Ordinal);
             var maxDepth = 0;
             var maxRows = 0;
-            foreach (var node in speciesMap.Nodes)
+            foreach (var node in visibleNodes)
             {
                 var depth = depths[node.Id];
                 var row = nextRowsByDepth.TryGetValue(depth, out var nextRow)
@@ -175,7 +392,10 @@ namespace SaltyGame
             var childLayout = layouts[child.Id];
             foreach (var prerequisiteId in child.PrerequisiteNodeIds)
             {
-                var parentLayout = layouts[prerequisiteId];
+                if (!layouts.TryGetValue(prerequisiteId, out var parentLayout))
+                {
+                    continue;
+                }
                 var startX = parentLayout.Right;
                 var endX = childLayout.Left;
                 var midpointX = startX + (endX - startX) * 0.5f;
@@ -235,13 +455,15 @@ namespace SaltyGame
 
     }
 
-    public sealed class GenomeLabNodeViewModel
+    public sealed class GenomeLabNodeViewModel : INotifyPropertyChanged
     {
         public GenomeLabNodeViewModel(
             GenomeUpgradeNodeSnapshot node,
             ProfileSessionSnapshot profile = null,
             float left = 0f,
-            float top = 0f)
+            float top = 0f,
+            Action<string> select = null,
+            string prerequisiteText = null)
         {
             if (node == null)
             {
@@ -255,11 +477,26 @@ namespace SaltyGame
                 : node.Description;
             PrerequisiteText = node.PrerequisiteNodeIds.Count == 0
                 ? "ROOT NODE"
-                : $"REQUIRES · {string.Join(", ", node.PrerequisiteNodeIds)}";
+                : $"REQUIRES · {prerequisiteText ?? string.Join(", ", node.PrerequisiteNodeIds)}";
             StateText = GetStateText(node, profile);
+            RabbitDataPrice = node.RabbitDataPrice;
+            CapacityPoints = node.CapacityPoints;
+            IsPurchasable = node.IsPurchasable;
+            PrerequisiteNodeIds = node.PrerequisiteNodeIds;
+            BranchText = string.IsNullOrEmpty(node.BranchName) ? "GENOME NODE" : $"{node.BranchName.ToUpperInvariant()} · GENOME";
+            BiomeImpactText = node.Id == "fertile-droppings"
+                ? "Droppings may regrow grass but leave scent that hungry predators can follow."
+                : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.PopulationPoolCapacity)
+                    ? "Raises player replenishment capacity. Natural births can still exceed the pool and consume more food."
+                : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.StartingPopulation)
+                    ? "More Hares at launch increase food demand and encounters with predators."
+                : node.Modifiers.Count > 0
+                    ? "Applies to every Hare next journey. Playtest values; ecology balance is not established."
+                    : "Preview only. This mechanic is not available yet.";
             Fingerprint = node.Fingerprint;
             Left = left;
             Top = top;
+            SelectCommand = new DelegateCommand(() => select?.Invoke(NodeId));
         }
 
         public string NodeId { get; }
@@ -267,25 +504,48 @@ namespace SaltyGame
         public string Description { get; }
         public string PrerequisiteText { get; }
         public string StateText { get; }
+        public long RabbitDataPrice { get; }
+        public int CapacityPoints { get; }
+        public bool IsPurchasable { get; }
+        public IReadOnlyList<string> PrerequisiteNodeIds { get; }
+        public string BranchText { get; }
+        public string BiomeImpactText { get; }
         public string Fingerprint { get; }
         public float Left { get; }
         public float Top { get; }
+        public DelegateCommand SelectCommand { get; }
+        public bool IsSelected { get; private set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        internal void SetSelected(bool selected)
+        {
+            if (IsSelected == selected)
+            {
+                return;
+            }
+            IsSelected = selected;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+        }
 
         static string GetStateText(GenomeUpgradeNodeSnapshot node, ProfileSessionSnapshot profile)
         {
-            if (profile == null || !profile.TryGetGenomeProfile(node.TargetSpecies, out var speciesProfile))
-            {
-                return "CATALOG ENTRY";
-            }
-
-            if (speciesProfile.IsNodeActive(node.Id))
+            if (profile != null && profile.TryGetGenomeProfile(node.TargetSpecies, out var speciesProfile)
+                && speciesProfile.IsNodeActive(node.Id))
             {
                 return "ACTIVE";
             }
-
-            return speciesProfile.IsNodeUnlocked(node.Id)
-                ? "UNLOCKED"
-                : "LOCKED";
+            if (!node.IsPurchasable)
+            {
+                return "PREVIEW";
+            }
+            if (profile == null || !profile.HasLoadedProfile || !profile.GeneLabUnlocked
+                || !profile.UnlockedGenomeSpeciesIds.Contains(node.TargetSpecies))
+            {
+                return "LOCKED";
+            }
+            profile.TryGetGenomeProfile(node.TargetSpecies, out var genome);
+            return node.PrerequisiteNodeIds.Any(id => genome == null || !genome.IsNodeActive(id))
+                ? "REQUIRES NODE" : "AVAILABLE";
         }
     }
 

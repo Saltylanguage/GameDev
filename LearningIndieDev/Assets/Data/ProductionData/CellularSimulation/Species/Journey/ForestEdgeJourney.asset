@@ -45,6 +45,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: ce13fa6857cbbd24cb4a091eaaceb971, type: 2}
   - {fileID: 11400000, guid: 8806a1772117e7e45af0f627635b5738, type: 2}
   - {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
+  - {fileID: 11400000, guid: a601c75aa3537404593239e75f7474fc, type: 2}
+  - {fileID: 11400000, guid: 51ef4ede3d54d774ab96402867e81d86, type: 2}
   nodePlacements:
   - node: {fileID: 11400000, guid: fd885fa3026ee9c4b855eb7c30066df6, type: 2}
     normalizedCenter: {x: 0.04893617, y: 0.17051283}
@@ -59,9 +61,9 @@ MonoBehaviour:
   - node: {fileID: 11400000, guid: 6a24d7dce0db7984da86ec4bf000beb1, type: 2}
     normalizedCenter: {x: 0.12340426, y: 0.76282054}
   - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d002, type: 2}
-    normalizedCenter: {x: 0.19787234, y: 0.2653846}
+    normalizedCenter: {x: 0.19787234, y: 0.15}
   - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d003, type: 2}
-    normalizedCenter: {x: 0.19787234, y: 0.74743587}
+    normalizedCenter: {x: 0.19787234, y: 0.76}
   - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d004, type: 2}
     normalizedCenter: {x: 0.27234042, y: 0.23205128}
   - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d005, type: 2}
@@ -104,3 +106,7 @@ MonoBehaviour:
     normalizedCenter: {x: 0.8680851, y: 0.47435898}
   - node: {fileID: 11400000, guid: 0a90cde13b764f8b9d3e0152f118d008, type: 2}
     normalizedCenter: {x: 0.94255316, y: 0.47435898}
+  - node: {fileID: 11400000, guid: a601c75aa3537404593239e75f7474fc, type: 2}
+    normalizedCenter: {x: 0.19787234, y: 0.35}
+  - node: {fileID: 11400000, guid: 51ef4ede3d54d774ab96402867e81d86, type: 2}
+    normalizedCenter: {x: 0.19787234, y: 0.55}

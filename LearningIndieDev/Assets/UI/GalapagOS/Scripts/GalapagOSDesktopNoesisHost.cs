@@ -96,6 +96,11 @@ namespace SaltyGame
                 trackedProfileRun = simulationPreview.Run;
                 trackedProfileTick = trackedProfileRun?.Tick ?? 0;
             }
+
+            if (simulationCompositionReady && simulationPreview != null)
+            {
+                SpeciesSimulationPreview.RunCompleted += HandleRunCompleted;
+            }
         }
 
         bool TryInitializeSimulation(bool hasProfileRoute)
@@ -116,12 +121,16 @@ namespace SaltyGame
             if (hasProfileRoute)
             {
                 var profile = profileSession.Current;
+                if (!TryCaptureProfileGenome(out var genome))
+                {
+                    return false;
+                }
                 var launch = new SimulationLaunchRequest(
                     profile.ProfileId,
                     VM_ExpeditionSetup.DefaultScenarioId,
                     VM_ExpeditionSetup.DefaultPlayerSpeciesId,
                     VM_ExpeditionSetup.DefaultSeed,
-                    activeGenomeSnapshot: profile.CreateGenomeSnapshot());
+                    activeGenomeSnapshot: genome);
                 if (!simulationPreview.TryApplyLaunchRequest(launch, out var validationMessage))
                 {
                     Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
@@ -135,12 +144,47 @@ namespace SaltyGame
             return true;
         }
 
+        bool TryCaptureProfileGenome(out GenomeSimulationSnapshot snapshot)
+        {
+            try
+            {
+                snapshot = profileSession.Current.CreateGenomeSnapshot(viewModel.GenomeCatalog);
+                return true;
+            }
+            catch (System.Exception exception) when (exception is System.ArgumentException
+                || exception is System.InvalidOperationException)
+            {
+                snapshot = null;
+                Debug.LogError($"Desktop Genome launch was rejected: {exception.Message}", this);
+                return false;
+            }
+        }
+
         void OpenSimulation()
         {
             if (!simulationCompositionReady)
             {
                 Debug.LogError("GalapagOSDesktopNoesisHost cannot open Simulation because its composition is not ready.", this);
                 return;
+            }
+
+            var preparingNextJourney = simulationPreview.State == SpeciesPreviewState.Results;
+            if (preparingNextJourney)
+            {
+                simulationPreview.PlayNextSimulation(startImmediately: false);
+            }
+
+            if (profileLaunchActive && profileSession != null && simulationPreview.SettingsEditable)
+            {
+                if (!TryCaptureProfileGenome(out var genome))
+                {
+                    return;
+                }
+                if (!simulationPreview.TrySetActiveGenomeBeforeJourney(genome, out var genomeMessage))
+                {
+                    Debug.LogError($"Desktop Genome launch was rejected: {genomeMessage}", this);
+                    return;
+                }
             }
 
             desktopCamera.enabled = false;
@@ -174,10 +218,12 @@ namespace SaltyGame
 
             // The journey map is the entry point for Forest Edge/Hare. Other
             // scenarios keep the prepared live-board launch behavior.
-            if (simulationPreview.State == SpeciesPreviewState.Results)
+            if (preparingNextJourney)
             {
-                simulationPreview.PlayNextSimulation(
-                    startImmediately: !simulationPreview.JourneyActive);
+                if (!simulationPreview.JourneyActive)
+                {
+                    simulationPreview.StartSimulation();
+                }
                 simulationBoardViewModel.Initialize(simulationPreview);
                 ApplyBoardSnapshot();
                 if (simulationPreview.JourneyActive)
@@ -214,6 +260,7 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            SpeciesSimulationPreview.RunCompleted -= HandleRunCompleted;
             TrackSimulationTicks();
             if (profileLaunchActive && profileSession != null)
             {
@@ -252,6 +299,31 @@ namespace SaltyGame
             {
                 profileSession.RecordSimulationTicks(run.Tick - trackedProfileTick);
                 trackedProfileTick = run.Tick;
+            }
+        }
+
+        void HandleRunCompleted(SpeciesSimulationPreview preview, SimulationRunState run)
+        {
+            if (!profileLaunchActive
+                || profileSession == null
+                || preview == null
+                || !ReferenceEquals(preview, simulationPreview)
+                || !preview.JourneyActive
+                || run == null
+                || !run.SupportsContinuation
+                || !preview.LastRunRewardsEligible
+                || string.IsNullOrWhiteSpace(preview.RunCompletionId))
+            {
+                return;
+            }
+
+            try
+            {
+                profileSession.RecordSuccessfulJourney(preview.RunCompletionId);
+            }
+            catch (System.Exception exception)
+            {
+                Debug.LogError($"Could not save successful journey rewards: {exception.Message}", this);
             }
         }
 

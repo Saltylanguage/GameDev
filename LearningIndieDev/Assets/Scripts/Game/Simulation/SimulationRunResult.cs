@@ -136,6 +136,7 @@ namespace SaltyGame
         readonly List<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
         readonly List<SimulationPhaseResult> phaseResults;
         readonly Dictionary<SpeciesId, int> boundaryPopulationAdded = new Dictionary<SpeciesId, int>();
+        readonly List<PopulationIntervention> populationInterventions = new List<PopulationIntervention>();
         readonly SpeciesSimulationMetrics metrics;
         SpeciesSimulationMetricsSnapshot phaseMetricsStart;
         SpeciesPopulationSnapshot phasePopulationStart;
@@ -173,6 +174,7 @@ namespace SaltyGame
             DurationSeconds = durationSeconds;
             TargetTicks = targetTicks;
             ActiveGenomeSnapshot = activeGenomeSnapshot ?? GenomeSimulationSnapshot.Empty;
+            PopulationPoolCapacity = ActiveGenomeSnapshot.GetPopulationPoolCapacity(playerSpecies);
             Status = SimulationRunStatus.Ready;
             PhaseIndex = 1;
             populationHistory = new List<SpeciesPopulationSnapshot>
@@ -199,6 +201,9 @@ namespace SaltyGame
         public SpeciesArchetype PlayerSpecies => SpeciesId.ToLegacyArchetype(PlayerSpeciesId);
         public int Seed { get; }
         public GenomeSimulationSnapshot ActiveGenomeSnapshot { get; }
+        public int PopulationPoolCapacity { get; }
+        public int PopulationPoolSpace => Math.Max(0, PopulationPoolCapacity
+            - populationHistory[populationHistory.Count - 1].GetCount(PlayerSpeciesId));
         public string RulesetFingerprint { get; private set; }
         public float DurationSeconds { get; }
         public int TargetTicks { get; private set; }
@@ -215,6 +220,30 @@ namespace SaltyGame
         public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline { get; }
         public IReadOnlyList<SimulationPhaseResult> PhaseResults { get; }
         public SpeciesSimulationMetrics Metrics { get; }
+
+        public IReadOnlyList<PopulationIntervention> PopulationInterventions => populationInterventions.AsReadOnly();
+
+        public int GetBoundaryPopulationRemoved(SpeciesId species)
+        {
+            var removed = 0;
+            foreach (var action in populationInterventions)
+                if (action.Species == species && action.Amount < 0) removed -= action.Amount;
+            return removed;
+        }
+
+        internal void InstallPopulationIntervention(Grid<SpeciesCell> next, PopulationIntervention action)
+        {
+            if (Status != SimulationRunStatus.AwaitingDecision)
+                throw new InvalidOperationException("Population interventions need a decision boundary.");
+            Cells = next;
+            populationHistory[populationHistory.Count - 1] = SpeciesPopulationSnapshot.Create(Cells, Tick);
+            populationInterventions.Add(action);
+            if (action.Amount > 0)
+            {
+                boundaryPopulationAdded.TryGetValue(action.Species, out var added);
+                boundaryPopulationAdded[action.Species] = added + action.Amount;
+            }
+        }
 
         public int GetBoundaryPopulationAdded(SpeciesId species)
         {
@@ -421,6 +450,9 @@ namespace SaltyGame
                 throw new InvalidOperationException("Only a running, paused, or decision-boundary simulation can be restarted.");
             }
 
+            foreach (var action in populationInterventions)
+                if (action.Amount > 0) boundaryPopulationAdded[action.Species] -= action.Amount;
+            populationInterventions.Clear();
             Cells = initialCells.Copy();
             ElapsedSeconds = 0f;
             Tick = 0;
@@ -561,6 +593,7 @@ namespace SaltyGame
                 UpgradeAcquisitionTimeline,
                 PhaseResults,
                 boundaryPopulationAdded,
+                populationInterventions,
                 previousCells);
         }
 
@@ -627,6 +660,7 @@ namespace SaltyGame
             {
                 run.boundaryPopulationAdded.Add(entry.Key, entry.Value);
             }
+            run.populationInterventions.AddRange(checkpoint.PopulationInterventions);
             run.phasePopulationStart = run.populationHistory[run.populationHistory.Count - 1];
             run.phaseMetricsStart = run.metrics.CreateSnapshot();
             run.phaseOpen = false;
@@ -725,6 +759,7 @@ namespace SaltyGame
         readonly IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline;
         readonly IReadOnlyList<SimulationPhaseResult> phaseResults;
         readonly IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded;
+        readonly IReadOnlyList<PopulationIntervention> populationInterventions;
         readonly Grid<SpeciesCell> previousCells;
 
         internal SimulationRunCheckpoint(
@@ -746,6 +781,7 @@ namespace SaltyGame
             IReadOnlyList<SimulationUpgradeAcquisition> upgradeAcquisitionTimeline,
             IReadOnlyList<SimulationPhaseResult> phaseResults,
             IReadOnlyDictionary<SpeciesId, int> boundaryPopulationAdded,
+            IReadOnlyList<PopulationIntervention> populationInterventions,
             Grid<SpeciesCell> previousCells)
         {
             this.cells = cells.Copy();
@@ -767,6 +803,7 @@ namespace SaltyGame
             this.phaseResults = new List<SimulationPhaseResult>(phaseResults).AsReadOnly();
             this.boundaryPopulationAdded = new System.Collections.ObjectModel.ReadOnlyDictionary<SpeciesId, int>(
                 new Dictionary<SpeciesId, int>(boundaryPopulationAdded));
+            this.populationInterventions = new List<PopulationIntervention>(populationInterventions).AsReadOnly();
             this.previousCells = previousCells == null ? null : previousCells.Copy();
         }
 
@@ -787,6 +824,7 @@ namespace SaltyGame
         public IReadOnlyList<SimulationUpgradeAcquisition> UpgradeAcquisitionTimeline => upgradeAcquisitionTimeline;
         public IReadOnlyList<SimulationPhaseResult> PhaseResults => phaseResults;
         public IReadOnlyDictionary<SpeciesId, int> BoundaryPopulationAdded => boundaryPopulationAdded;
+        public IReadOnlyList<PopulationIntervention> PopulationInterventions => populationInterventions;
 
         public Grid<SpeciesCell> CopyCells()
         {

@@ -328,7 +328,12 @@ namespace SaltyGame
             int seedDropAttempts = 0,
             int seedDropSuccesses = 0,
             float seedDropFoodCreated = 0f,
-            int seedDropReserveSpent = 0)
+            int seedDropReserveSpent = 0,
+            int scentOrdinaryDetections = 0,
+            int scentDroppingDetections = 0,
+            int scentDroppingSniffs = 0,
+            int scentTrackSamples = 0,
+            int scentPursuitDecisions = 0)
         {
             Births = births;
             FoodConsumed = foodConsumed;
@@ -356,6 +361,11 @@ namespace SaltyGame
             SeedDropSuccesses = seedDropSuccesses;
             SeedDropFoodCreated = seedDropFoodCreated;
             SeedDropReserveSpent = seedDropReserveSpent;
+            ScentOrdinaryDetections = scentOrdinaryDetections;
+            ScentDroppingDetections = scentDroppingDetections;
+            ScentDroppingSniffs = scentDroppingSniffs;
+            ScentTrackSamples = scentTrackSamples;
+            ScentPursuitDecisions = scentPursuitDecisions;
         }
 
         public int Births { get; }
@@ -384,6 +394,11 @@ namespace SaltyGame
         public int SeedDropSuccesses { get; }
         public float SeedDropFoodCreated { get; }
         public int SeedDropReserveSpent { get; }
+        public int ScentOrdinaryDetections { get; }
+        public int ScentDroppingDetections { get; }
+        public int ScentDroppingSniffs { get; }
+        public int ScentTrackSamples { get; }
+        public int ScentPursuitDecisions { get; }
 
         internal SpeciesSimulationActivity Add(
             int births = 0,
@@ -411,7 +426,12 @@ namespace SaltyGame
             int seedDropAttempts = 0,
             int seedDropSuccesses = 0,
             float seedDropFoodCreated = 0f,
-            int seedDropReserveSpent = 0)
+            int seedDropReserveSpent = 0,
+            int scentOrdinaryDetections = 0,
+            int scentDroppingDetections = 0,
+            int scentDroppingSniffs = 0,
+            int scentTrackSamples = 0,
+            int scentPursuitDecisions = 0)
         {
             return new SpeciesSimulationActivity(
                 Births + births,
@@ -439,7 +459,12 @@ namespace SaltyGame
                 SeedDropAttempts + seedDropAttempts,
                 SeedDropSuccesses + seedDropSuccesses,
                 SeedDropFoodCreated + seedDropFoodCreated,
-                SeedDropReserveSpent + seedDropReserveSpent);
+                SeedDropReserveSpent + seedDropReserveSpent,
+                ScentOrdinaryDetections + scentOrdinaryDetections,
+                ScentDroppingDetections + scentDroppingDetections,
+                ScentDroppingSniffs + scentDroppingSniffs,
+                ScentTrackSamples + scentTrackSamples,
+                ScentPursuitDecisions + scentPursuitDecisions);
         }
 
         internal SpeciesSimulationActivity Subtract(SpeciesSimulationActivity baseline)
@@ -470,7 +495,12 @@ namespace SaltyGame
                 SeedDropAttempts - baseline.SeedDropAttempts,
                 SeedDropSuccesses - baseline.SeedDropSuccesses,
                 SeedDropFoodCreated - baseline.SeedDropFoodCreated,
-                SeedDropReserveSpent - baseline.SeedDropReserveSpent);
+                SeedDropReserveSpent - baseline.SeedDropReserveSpent,
+                ScentOrdinaryDetections - baseline.ScentOrdinaryDetections,
+                ScentDroppingDetections - baseline.ScentDroppingDetections,
+                ScentDroppingSniffs - baseline.ScentDroppingSniffs,
+                ScentTrackSamples - baseline.ScentTrackSamples,
+                ScentPursuitDecisions - baseline.ScentPursuitDecisions);
         }
     }
 
@@ -495,7 +525,7 @@ namespace SaltyGame
             int births,
             int crowding,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             if (!species.IsValid)
             {
@@ -504,7 +534,7 @@ namespace SaltyGame
 
             if (startingPopulation < 0 || predatorActiveHerbivoreSteps < 0
                 || encounteredHerbivoreSteps < 0 || encounters < 0 || preyed < 0 || starved < 0
-                || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0 || addedPopulation < 0)
+                || mating < 0 || births < 0 || crowding < 0 || finalPopulation < 0 || addedPopulation < 0 || removedPopulation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
             }
@@ -518,7 +548,7 @@ namespace SaltyGame
             var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
             var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
             var birthAverageStatus = GetRateStatus(births, mating);
-            var expectedFinalPopulation = populationBeforeCrowding - crowding;
+            var expectedFinalPopulation = populationBeforeCrowding - crowding - removedPopulation;
             var populationReconciled = finalPopulation == expectedFinalPopulation;
 
             var inversePreyedAverage = inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
@@ -545,7 +575,7 @@ namespace SaltyGame
                 ? (float)births / mating
                 : 0f;
 
-            var replicationFitnessNumerator = finalPopulation - startingPopulation - addedPopulation;
+            var replicationFitnessNumerator = finalPopulation + removedPopulation - startingPopulation - addedPopulation;
             var replicationFitnessStatus = GetReplicationFitnessStatus(birthAverageStatus);
             var replicationFitnessScore = replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? replicationFitnessNumerator * birthAverage
@@ -586,6 +616,7 @@ namespace SaltyGame
             Species = species;
             StartingPopulation = startingPopulation;
             AddedPopulation = addedPopulation;
+            RemovedPopulation = removedPopulation;
             PredatorActiveHerbivoreSteps = predatorActiveHerbivoreSteps;
             EncounteredHerbivoreSteps = encounteredHerbivoreSteps;
             Encounters = encounters;
@@ -687,6 +718,7 @@ namespace SaltyGame
         public SpeciesId Species { get; }
         public int StartingPopulation { get; }
         public int AddedPopulation { get; }
+        public int RemovedPopulation { get; }
         public int PredatorActiveHerbivoreSteps { get; }
         public int EncounteredHerbivoreSteps { get; }
         public int Encounters { get; }
@@ -731,7 +763,7 @@ namespace SaltyGame
             int births,
             int crowding,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             if (!species.IsValid)
             {
@@ -741,7 +773,7 @@ namespace SaltyGame
             if (startingPopulation < 0 || preyActivePredatorSteps < 0
                 || encounteredPredatorSteps < 0 || encounters < 0 || huntAttempts < 0
                 || preyKilled < 0 || starved < 0 || mating < 0 || births < 0
-                || crowding < 0 || finalPopulation < 0 || addedPopulation < 0)
+                || crowding < 0 || finalPopulation < 0 || addedPopulation < 0 || removedPopulation < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Predator stat counts cannot be negative.");
             }
@@ -753,7 +785,7 @@ namespace SaltyGame
             var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
             var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
             var birthAverageStatus = GetRateStatus(births, mating);
-            var expectedFinalPopulation = populationBeforeCrowding - crowding;
+            var expectedFinalPopulation = populationBeforeCrowding - crowding - removedPopulation;
             var populationReconciled = finalPopulation == expectedFinalPopulation;
 
             var huntSuccessAverage = huntSuccessStatus == SpeciesHerbivoreMetricStatus.Valid
@@ -778,7 +810,7 @@ namespace SaltyGame
                 ? (float)births / mating
                 : 0f;
 
-            var replicationFitnessNumerator = finalPopulation - startingPopulation - addedPopulation;
+            var replicationFitnessNumerator = finalPopulation + removedPopulation - startingPopulation - addedPopulation;
             var replicationFitnessStatus = GetReplicationFitnessStatus(birthAverageStatus);
             var replicationFitnessScore = replicationFitnessStatus == SpeciesHerbivoreMetricStatus.Valid
                 ? replicationFitnessNumerator * birthAverage
@@ -818,6 +850,7 @@ namespace SaltyGame
             Species = species;
             StartingPopulation = startingPopulation;
             AddedPopulation = addedPopulation;
+            RemovedPopulation = removedPopulation;
             PreyActivePredatorSteps = preyActivePredatorSteps;
             EncounteredPredatorSteps = encounteredPredatorSteps;
             Encounters = encounters;
@@ -920,6 +953,7 @@ namespace SaltyGame
         public SpeciesId Species { get; }
         public int StartingPopulation { get; }
         public int AddedPopulation { get; }
+        public int RemovedPopulation { get; }
         public int PreyActivePredatorSteps { get; }
         public int EncounteredPredatorSteps { get; }
         public int Encounters { get; }
@@ -972,8 +1006,8 @@ namespace SaltyGame
         int ControlledOpportunityEligible { get; }
         int ControlledOpportunityUnfulfilledNoTarget { get; }
         int ControlledOpportunityUnfulfilledInvalidated { get; }
-        SpeciesHerbivoreStatLine CreateHerbivoreStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0);
-        SpeciesPredatorStatLine CreatePredatorStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0);
+        SpeciesHerbivoreStatLine CreateHerbivoreStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0, int removedPopulation = 0);
+        SpeciesPredatorStatLine CreatePredatorStatLine(SpeciesId species, int startingPopulation, int finalPopulation, int addedPopulation = 0, int removedPopulation = 0);
     }
 
     public sealed class SpeciesSimulationMetrics : ISpeciesSimulationMetricsView
@@ -1370,7 +1404,12 @@ namespace SaltyGame
             int seedDropAttempts = 0,
             int seedDropSuccesses = 0,
             float seedDropFoodCreated = 0f,
-            int seedDropReserveSpent = 0)
+            int seedDropReserveSpent = 0,
+            int scentOrdinaryDetections = 0,
+            int scentDroppingDetections = 0,
+            int scentDroppingSniffs = 0,
+            int scentTrackSamples = 0,
+            int scentPursuitDecisions = 0)
         {
             if (!species.IsValid)
             {
@@ -1403,7 +1442,12 @@ namespace SaltyGame
                 seedDropAttempts,
                 seedDropSuccesses,
                 seedDropFoodCreated,
-                seedDropReserveSpent);
+                seedDropReserveSpent,
+                scentOrdinaryDetections,
+                scentDroppingDetections,
+                scentDroppingSniffs,
+                scentTrackSamples,
+                scentPursuitDecisions);
         }
 
         internal void RecordFoodAction(
@@ -1515,7 +1559,7 @@ namespace SaltyGame
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -1549,14 +1593,14 @@ namespace SaltyGame
                 GetActivity(species).Births,
                 crowding,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
         }
 
         public SpeciesPredatorStatLine CreatePredatorStatLine(
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -1592,7 +1636,7 @@ namespace SaltyGame
                 activity.Births,
                 crowding,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
         }
 
         internal void RecordControlledOpportunityScheduled()
@@ -1720,9 +1764,12 @@ namespace SaltyGame
             int x,
             int y,
             SpeciesDeathCause cause,
-            int populationLimitRemovals = 0)
+            int populationLimitRemovals = 0,
+            bool resourceLayer = false)
         {
-            var species = cell.IsPlantResource && !cell.IsCreature
+            // Resources and creatures can share a tile; the caller identifies the layer removed.
+            var resourceDied = cell.IsPlantResource && (resourceLayer || !cell.IsCreature);
+            var species = resourceDied
                 ? (cell.ResourceSpeciesId.IsValid ? cell.ResourceSpeciesId : cell.SpeciesId)
                 : cell.SpeciesId;
             if (!species.IsValid)
@@ -1739,13 +1786,13 @@ namespace SaltyGame
                 populationLimitRemovals: populationLimitRemovals);
             deathEvents.Add(new SpeciesDeathEvent(
                 species,
-                cell.EntityId,
-                cell.Age,
+                resourceDied ? 0L : cell.EntityId,
+                resourceDied && cell.IsCreature ? 0 : cell.Age,
                 x,
                 y,
                 currentTick,
                 cause,
-                cell.IsCreature));
+                cell.IsCreature && !resourceDied));
         }
 
         internal SpeciesSimulationMetricsSnapshot CreateSnapshot()
@@ -2131,7 +2178,7 @@ namespace SaltyGame
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -2165,14 +2212,14 @@ namespace SaltyGame
                 GetActivity(species).Births,
                 crowding,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
         }
 
         public SpeciesPredatorStatLine CreatePredatorStatLine(
             SpeciesId species,
             int startingPopulation,
             int finalPopulation,
-            int addedPopulation = 0)
+            int addedPopulation = 0, int removedPopulation = 0)
         {
             var starved = 0;
             var crowding = 0;
@@ -2208,7 +2255,7 @@ namespace SaltyGame
                 activity.Births,
                 crowding,
                 finalPopulation,
-                addedPopulation);
+                addedPopulation, removedPopulation);
         }
     }
 }

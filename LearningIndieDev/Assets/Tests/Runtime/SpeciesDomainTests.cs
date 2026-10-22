@@ -3761,6 +3761,128 @@ namespace SaltyGame.Tests
             Assert.That(metrics.GetActivity(SpeciesIds.Plant).WiltDeaths, Is.EqualTo(1));
         }
 
+        [TestCase("hare")]
+        [TestCase("fox")]
+        public void PlantsWiltUnderCreaturesWithoutAnimalDeath(string speciesId)
+        {
+            var species = new SpeciesId(speciesId);
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, SpeciesCell.FromTerrain(TerrainDefaults.Grass, 5f, SpeciesIds.Plant)
+                .WithEntity(species, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant, metabolism: 0, wiltChance: 1f),
+                [species] = CreateRules(movementSpeed: 0f, metabolism: 0),
+            };
+            var metrics = new SpeciesSimulationMetrics();
+
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+
+            Assert.That(next.GetCell(0, 0).EntityId, Is.EqualTo(source.GetCell(0, 0).EntityId));
+            Assert.That(next.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(0, 0).IsPlantResource, Is.False);
+            Assert.That(metrics.GetActivity(species).Deaths, Is.Zero);
+            Assert.That(metrics.GetActivity(SpeciesIds.Plant).WiltDeaths, Is.EqualTo(1));
+            Assert.That(metrics.DeathEvents, Has.Count.EqualTo(1));
+            var death = metrics.DeathEvents[0];
+            Assert.That(death.Species, Is.EqualTo(SpeciesIds.Plant));
+            Assert.That(death.Cause, Is.EqualTo(SpeciesDeathCause.Wilt));
+            Assert.That(death.EntityId, Is.Zero);
+            Assert.That(death.Age, Is.Zero);
+            Assert.That(death.IsCreature, Is.False);
+        }
+
+        [Test]
+        public void PopulationLimitReportsRemovedLayerOnSharedTiles()
+        {
+            var hare = new SpeciesId("hare");
+            var source = new Grid<SpeciesCell>(1, 1);
+            source.SetCell(0, 0, SpeciesCell.FromTerrain(TerrainDefaults.Grass, 5f, SpeciesIds.Plant)
+                .WithEntity(hare, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant, metabolism: 0),
+                [hare] = CreateRules(movementSpeed: 0f, metabolism: 0),
+            };
+            var removedLayers = new HashSet<bool>();
+            for (var seed = 0; seed < 16; seed++)
+            {
+                var metrics = new SpeciesSimulationMetrics();
+                var next = SpeciesSimulation.Step(source, rules, seed, maxPopulation: 1, metrics: metrics);
+                Assert.That(metrics.DeathEvents, Has.Count.EqualTo(1));
+                var death = metrics.DeathEvents[0];
+                var creatureDied = !next.GetCell(0, 0).IsCreature;
+                removedLayers.Add(creatureDied);
+                Assert.That(death.IsCreature, Is.EqualTo(creatureDied));
+                Assert.That(death.Species, Is.EqualTo(creatureDied ? hare : SpeciesIds.Plant));
+                Assert.That(death.EntityId, Is.EqualTo(creatureDied ? source.GetCell(0, 0).EntityId : 0L));
+                Assert.That(death.Cause, Is.EqualTo(SpeciesDeathCause.PopulationLimit));
+                Assert.That(metrics.GetActivity(death.Species).PopulationLimitRemovals, Is.EqualTo(1));
+                Assert.That(metrics.GetActivity(creatureDied ? SpeciesIds.Plant : hare).Deaths, Is.Zero);
+            }
+            Assert.That(removedLayers, Is.EquivalentTo(new[] { true, false }));
+        }
+
+        [TestCase(SpeciesDeathCause.ResourceConsumed, true)]
+        [TestCase(SpeciesDeathCause.Combat, false)]
+        [TestCase(SpeciesDeathCause.Starvation, false)]
+        public void SharedTileDeathTelemetryPreservesTheRemovedLayersIdentity(SpeciesDeathCause cause, bool resourceLayer)
+        {
+            var hare = new SpeciesId("hare");
+            var cell = SpeciesCell.FromTerrain(TerrainDefaults.Grass, 5f, SpeciesIds.Plant)
+                .WithEntity(hare, health: 1, energy: 5, age: 4, foodEaten: 0, foodReserve: 0f);
+            var metrics = new SpeciesSimulationMetrics();
+
+            typeof(SpeciesSimulationMetrics).GetMethod("RecordDeath", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, new object[] { cell, 2, 3, cause, 0, resourceLayer });
+
+            Assert.That(metrics.DeathEvents, Has.Count.EqualTo(1));
+            var death = metrics.DeathEvents[0];
+            Assert.That(death.Species, Is.EqualTo(resourceLayer ? SpeciesIds.Plant : hare));
+            Assert.That(death.EntityId, Is.EqualTo(resourceLayer ? 0L : cell.EntityId));
+            Assert.That(death.Age, Is.EqualTo(resourceLayer ? 0 : 4));
+            Assert.That(death.IsCreature, Is.EqualTo(!resourceLayer));
+            Assert.That(death.X, Is.EqualTo(2));
+            Assert.That(death.Y, Is.EqualTo(3));
+            Assert.That(death.Cause, Is.EqualTo(cause));
+            Assert.That(metrics.GetActivity(death.Species).Deaths, Is.EqualTo(1));
+            Assert.That(metrics.GetActivity(resourceLayer ? hare : SpeciesIds.Plant).Deaths, Is.Zero);
+        }
+
+        [Test]
+        public void StartingBetweenHungerAndMatingThresholdsDelaysFeedingDespiteAvailableFood()
+        {
+            var hare = new SpeciesId("hare");
+            var cardinal = new GridPattern(new[] { Vector2Int.up, Vector2Int.right, Vector2Int.down, Vector2Int.left });
+            var source = new Grid<SpeciesCell>(3, 3);
+            for (var y = 0; y < source.Height; y++)
+                for (var x = 0; x < source.Width; x++)
+                    source.SetCell(x, y, SpeciesCell.FromTerrain(TerrainDefaults.Grass, 100f, SpeciesIds.Plant));
+            source.SetCell(1, 1, source.GetCell(1, 1)
+                .WithEntity(hare, health: 1, energy: 12, age: 0, foodEaten: 0, foodReserve: 0f));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Plant] = CreateRules(role: SpeciesRole.Plant, metabolism: 0),
+                [hare] = new SpeciesRules(1f, cardinal, EmptyPattern, 0, EmptyPattern, 0,
+                    cardinal, SpeciesIds.Plant, EmptyPattern, 0, reproductionChance: 0f,
+                    metabolism: 1, forageBelowEnergy: 6, maximumEnergy: 48,
+                    foragesUntilFull: true, energyLossIntervalTicks: 8,
+                    matingEnergyThresholdFraction: 0.5f),
+            };
+            var metrics = new SpeciesSimulationMetrics();
+            for (var tick = 1; tick <= 56; tick++)
+            {
+                source = SpeciesSimulation.Step(source, rules, seed: tick, metrics: metrics);
+                Assert.That(metrics.GetActivity(hare).FoodActionSuccesses, Is.Zero, $"tick {tick}");
+            }
+
+            SpeciesSimulation.Step(source, rules, seed: 57, metrics: metrics);
+
+            Assert.That(rules[hare].HasMatingEnergy(12), Is.False);
+            Assert.That(rules[hare].HasMatingEnergy(24), Is.True);
+            Assert.That(metrics.GetActivity(hare).FoodActionSuccesses, Is.GreaterThan(0));
+        }
+
         [Test]
         public void PlantFoodReserveFeedsMultipleHerbivoresBeforeBeingConsumed()
         {
@@ -3986,6 +4108,276 @@ namespace SaltyGame.Tests
             Assert.That(metrics.GetActivity(SpeciesIds.Plant).SeedDropSuccesses, Is.Zero);
         }
 
+        [Test]
+        public void FertileDroppingsNeedsActiveGenomeAndKeepsHareIdentityOnTheTile()
+        {
+            var hare = new SpeciesId("hare");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
+                    right, SpeciesIds.Plant, EmptyPattern, 0,
+                    seedDropChance: 0f, metabolism: 0),
+                [SpeciesIds.Plant] = CreateRules(
+                    role: SpeciesRole.Plant, startingFoodReserve: 3.25f),
+            };
+            var source = new Grid<SpeciesCell>(2, 1);
+            source.SetCell(0, 0, new SpeciesCell(hare, foodReserve: 1f));
+            var ownerId = source.GetCell(0, 0).EntityId;
+            var resolve = typeof(SpeciesSimulation).GetMethod(
+                "ResolveSeedDrops", BindingFlags.Static | BindingFlags.NonPublic);
+            var control = source.Copy();
+            resolve.Invoke(null, new object[] {
+                control, rules, TerrainDefaults.Create(), new ZeroRollRandom(), null, null });
+            Assert.That(control.GetCell(1, 0).IsPlantResource, Is.False);
+            Assert.That(control.GetCell(0, 0).ScentMarker.IsActive, Is.False);
+
+            var active = new GenomeSimulationSnapshot(new[] {
+                new SpeciesGenomeSnapshot(hare, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
+            resolve.Invoke(null, new object[] {
+                source, rules, TerrainDefaults.Create(), new ZeroRollRandom(), null, active });
+            var mark = source.GetCell(0, 0).ScentMarker;
+            Assert.That(source.GetCell(1, 0).IsPlantResource, Is.True);
+            Assert.That(source.GetCell(0, 0).FoodReserve, Is.Zero);
+            Assert.That(mark.OwnerSpeciesId, Is.EqualTo(hare));
+            Assert.That(mark.OwnerEntityId, Is.EqualTo(ownerId));
+            Assert.That(mark.TicksRemaining, Is.EqualTo(SpeciesPerception.DroppingScentDurationTicks));
+            Assert.That(source.GetCell(0, 0).WithoutEntity().ScentMarker.OwnerEntityId,
+                Is.EqualTo(ownerId));
+        }
+
+        [Test]
+        public void RunnerAppliesFertileDroppingsFromFrozenGenomeSnapshot()
+        {
+            var hare = new SpeciesId("hare");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(0f, right, EmptyPattern, 0, EmptyPattern, 0,
+                    right, SpeciesIds.Plant, EmptyPattern, 0,
+                    seedDropChance: 1f, metabolism: 0),
+                [SpeciesIds.Plant] = CreateRules(
+                    role: SpeciesRole.Plant, startingFoodReserve: 3.25f),
+            };
+            var grid = new Grid<SpeciesCell>(2, 1);
+            grid.SetCell(0, 0, new SpeciesCell(hare, foodReserve: 1f));
+            var genome = new GenomeSimulationSnapshot(new[] {
+                new SpeciesGenomeSnapshot(hare, new[] { SpeciesSimulation.FertileDroppingsNodeId }) });
+            var run = new SimulationRunState(grid, hare, seed: 42,
+                durationSeconds: 0.1f, targetTicks: 1, activeGenomeSnapshot: genome);
+            var runner = new SpeciesSimulationRunner(run, rules, stepSeconds: 0.1f);
+
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(run.Cells.GetCell(0, 0).ScentMarker.OwnerEntityId,
+                Is.EqualTo(grid.GetCell(0, 0).EntityId));
+        }
+
+        [Test]
+        public void DroppingScentExpiresAfterFortyTicksAndHasExtendedDetectionRange()
+        {
+            var hare = new SpeciesId("hare");
+            var mark = new SpeciesScentMarker(
+                hare, 77, SpeciesPerception.DroppingScentDurationTicks, isDropping: true);
+            var grid = new Grid<SpeciesCell>(40, 1);
+            grid.SetCell(24, 0, SpeciesCell.Empty.WithScentMarker(mark));
+            Assert.That(SpeciesPerception.TryFindDroppingScent(
+                grid, 0, 0, hare, out _, out _), Is.True);
+            grid.SetCell(24, 0, SpeciesCell.Empty);
+            grid.SetCell(25, 0, SpeciesCell.Empty.WithScentMarker(mark));
+            Assert.That(SpeciesPerception.TryFindDroppingScent(
+                grid, 0, 0, hare, out _, out _), Is.False);
+
+            grid.SetCell(0, 0, SpeciesCell.Empty.WithScentMarker(mark));
+            grid.SetCell(25, 0, SpeciesCell.Empty);
+            for (var tick = 1; tick < SpeciesPerception.DroppingScentDurationTicks; tick++)
+            {
+                grid = SpeciesSimulation.Step(grid, new Dictionary<SpeciesId, SpeciesRules>(), tick);
+            }
+
+            Assert.That(grid.GetCell(0, 0).ScentMarker.TicksRemaining, Is.EqualTo(1));
+            grid = SpeciesSimulation.Step(grid, new Dictionary<SpeciesId, SpeciesRules>(), 41);
+            Assert.That(grid.GetCell(0, 0).ScentMarker.IsActive, Is.False);
+
+            var fox = new SpeciesId("fox");
+            var moving = new Grid<SpeciesCell>(2, 1);
+            moving.SetCell(0, 0, new SpeciesCell(fox, energy: 1)
+                .WithScentMarker(new SpeciesScentMarker(hare, 77, 1, true)));
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var mobileRules = new Dictionary<SpeciesId, SpeciesRules> {
+                [fox] = new SpeciesRules(1f, right, EmptyPattern, 0, EmptyPattern, 0,
+                    EmptyPattern, (SpeciesId?)null, EmptyPattern, 0,
+                    metabolism: 0, role: SpeciesRole.Carnivore) };
+            moving = SpeciesSimulation.Step(moving, mobileRules, 42);
+            Assert.That(moving.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(moving.GetCell(0, 0).ScentMarker.IsActive, Is.False,
+                "Moving off the tile must not restore an already expired marker.");
+
+            var hareMoving = new Grid<SpeciesCell>(2, 1);
+            hareMoving.SetCell(0, 0, new SpeciesCell(hare, energy: 1));
+            var hareId = hareMoving.GetCell(0, 0).EntityId;
+            var hareRules = new Dictionary<SpeciesId, SpeciesRules> {
+                [hare] = new SpeciesRules(1f, right, EmptyPattern, 0, EmptyPattern, 0,
+                    EmptyPattern, (SpeciesId?)null, EmptyPattern, 0, metabolism: 0) };
+            hareMoving = SpeciesSimulation.Step(hareMoving, hareRules, 42);
+            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.OwnerEntityId, Is.EqualTo(hareId));
+            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.IsDropping, Is.False);
+            Assert.That(hareMoving.GetCell(0, 0).ScentMarker.TicksRemaining,
+                Is.EqualTo(SpeciesPerception.BaseScentDurationTicks));
+            Assert.That(hareMoving.GetCell(1, 0).ScentMarker.OwnerEntityId, Is.EqualTo(hareId),
+                "The occupied tile must carry scent so a stationary Hare remains trackable.");
+
+            var hareStanding = new Grid<SpeciesCell>(1, 1);
+            hareStanding.SetCell(0, 0, new SpeciesCell(hare, energy: 1));
+            var standingId = hareStanding.GetCell(0, 0).EntityId;
+            hareStanding = SpeciesSimulation.Step(hareStanding, hareRules, 43);
+            Assert.That(hareStanding.GetCell(0, 0).ScentMarker.OwnerEntityId,
+                Is.EqualTo(standingId));
+        }
+
+        [Test]
+        public void HungryPredatorSniffsDroppingThenSamplesOnlyThatHareAtLongerRange()
+        {
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var foxRules = new SpeciesRules(1f, right, right, 0, EmptyPattern, 0,
+                right, hare, EmptyPattern, 0, metabolism: 0,
+                awareness: new SpeciesAwarenessRules(visionRange: 1),
+                role: SpeciesRole.Carnivore, forageBelowEnergy: 100);
+            var rules = new Dictionary<SpeciesId, SpeciesRules> { [fox] = foxRules };
+            var grid = new Grid<SpeciesCell>(40, 1);
+            var hareCell = new SpeciesCell(hare, energy: 1);
+            grid.SetCell(34, 0, hareCell);
+            grid.SetCell(20, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
+                hare, hareCell.EntityId, SpeciesPerception.DroppingScentDurationTicks, true)));
+            grid.SetCell(0, 0, new SpeciesCell(fox, energy: 0));
+            var scentMetrics = new SpeciesSimulationMetrics();
+            var metricsStart = typeof(SpeciesSimulationMetrics)
+                .GetMethod("CreateSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(scentMetrics, null);
+            var first = SpeciesSimulation.Step(grid, rules, seed: 11, metrics: scentMetrics);
+            var seeking = first.GetCell(1, 0);
+            Assert.That(seeking.ScentMemory.TargetEntityId, Is.EqualTo(hareCell.EntityId));
+            Assert.That(seeking.ScentMemory.X, Is.EqualTo(20));
+            Assert.That(seeking.ScentMemory.SniffedDropping, Is.False);
+            Assert.That(scentMetrics.GetActivity(fox).ScentDroppingDetections, Is.EqualTo(1));
+            Assert.That(scentMetrics.GetActivity(fox).ScentPursuitDecisions, Is.EqualTo(1));
+            var phaseActivity = (ISpeciesSimulationMetricsView)typeof(SpeciesSimulationMetrics)
+                .GetMethod("CreateWindow", BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(scentMetrics, new[] { metricsStart, (object)0, 1 });
+            Assert.That(phaseActivity.GetActivity(fox).ScentDroppingDetections, Is.EqualTo(1));
+            Assert.That(phaseActivity.GetActivity(fox).ScentPursuitDecisions, Is.EqualTo(1));
+
+            var wellFed = grid.Copy();
+            wellFed.SetCell(0, 0, new SpeciesCell(fox, energy: 150));
+            var wellFedNext = wellFed.Copy();
+            SpeciesBehaviorSystem.Update(wellFed, wellFedNext, rules, new System.Random(11));
+            Assert.That(wellFedNext.GetCell(0, 0).ScentMemory.IsActive, Is.False);
+
+            Assert.That(SpeciesPerception.TryFindSniffedTarget(
+                grid, 0, 0, hare, hareCell.EntityId, out _), Is.False,
+                "The live Hare cannot be located remotely without its movement scent.");
+
+            var near = new Grid<SpeciesCell>(40, 1);
+            near.SetCell(20, 0, grid.GetCell(20, 0));
+            near.SetCell(34, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
+                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            near.SetCell(19, 0, new SpeciesCell(fox, energy: 0)
+                .WithEntity(fox, 1, 0, 10, 0, 0f)
+                .WithScentMemory(new SpeciesScentMemory(hareCell.EntityId, 20, 0, 10, false)));
+            var perceived = near.Copy();
+            var sniffMetrics = new SpeciesSimulationMetrics();
+            SpeciesBehaviorSystem.Update(near, perceived, rules, new System.Random(11), sniffMetrics);
+            var sniffed = perceived.GetCell(19, 0).ScentMemory;
+            Assert.That(sniffed.SniffedDropping, Is.True);
+            Assert.That(sniffed.X, Is.EqualTo(34));
+            Assert.That(sniffMetrics.GetActivity(fox).ScentDroppingSniffs, Is.EqualTo(1));
+            Assert.That(sniffMetrics.GetActivity(fox).ScentTrackSamples, Is.EqualTo(1));
+
+            var distant = new Grid<SpeciesCell>(40, 1);
+            distant.SetCell(1, 0, new SpeciesCell(hare, energy: 1));
+            distant.SetCell(36, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
+                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            Assert.That(SpeciesPerception.TryFindSniffedTarget(
+                distant, 0, 0, hare, hareCell.EntityId, out var identified), Is.True);
+            Assert.That(identified.Location.x, Is.EqualTo(36),
+                "The closer Hare must not replace the identified scent owner.");
+            distant.SetCell(36, 0, SpeciesCell.Empty);
+            distant.SetCell(37, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
+                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            Assert.That(SpeciesPerception.TryFindSniffedTarget(
+                distant, 0, 0, hare, hareCell.EntityId, out _), Is.False);
+
+            var movedHare = near.Copy();
+            movedHare.SetCell(34, 0, SpeciesCell.Empty);
+            movedHare.SetCell(35, 0, hareCell.WithScentMarker(new SpeciesScentMarker(
+                hare, hareCell.EntityId, SpeciesPerception.BaseScentDurationTicks, false)));
+            movedHare.SetCell(19, 0, near.GetCell(19, 0)
+                .WithEntity(fox, 1, 0, 11, 0, 0f)
+                .WithScentMemory(sniffed));
+            perceived = movedHare.Copy();
+            SpeciesBehaviorSystem.Update(movedHare, perceived, rules, new System.Random(11));
+            Assert.That(perceived.GetCell(19, 0).ScentMemory.X, Is.EqualTo(34),
+                "Scent position should stay stale between ten-tick samples.");
+            movedHare.SetCell(19, 0, movedHare.GetCell(19, 0)
+                .WithEntity(fox, 1, 0, 20, 0, 0f));
+            perceived = movedHare.Copy();
+            SpeciesBehaviorSystem.Update(movedHare, perceived, rules, new System.Random(11));
+            Assert.That(perceived.GetCell(19, 0).ScentMemory.X, Is.EqualTo(35));
+        }
+
+        [Test]
+        public void HungryPredatorSamplesOrdinaryScentAtShorterRangeButPrefersDroppings()
+        {
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var right = new GridPattern(new[] { Vector2Int.right });
+            var rules = new Dictionary<SpeciesId, SpeciesRules> {
+                [fox] = new SpeciesRules(1f, right, right, 0, EmptyPattern, 0,
+                    right, hare, EmptyPattern, 0, metabolism: 0,
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    role: SpeciesRole.Carnivore, forageBelowEnergy: 100) };
+            var grid = new Grid<SpeciesCell>(30, 1);
+            grid.SetCell(0, 0, new SpeciesCell(fox, energy: 0));
+            grid.SetCell(16, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
+                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+            var next = grid.Copy();
+            var scentMetrics = new SpeciesSimulationMetrics();
+            SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11), scentMetrics);
+            Assert.That(next.GetCell(0, 0).ScentMemory.TargetEntityId, Is.EqualTo(101));
+            Assert.That(next.GetCell(0, 0).ScentMemory.X, Is.EqualTo(16));
+            Assert.That(scentMetrics.GetActivity(fox).ScentOrdinaryDetections, Is.EqualTo(1));
+
+            grid.SetCell(16, 0, SpeciesCell.Empty);
+            grid.SetCell(17, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
+                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+            next = grid.Copy();
+            SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11));
+            Assert.That(next.GetCell(0, 0).ScentMemory.IsActive, Is.False);
+
+            grid.SetCell(16, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
+                hare, 101, SpeciesPerception.BaseScentDurationTicks, false)));
+            grid.SetCell(24, 0, SpeciesCell.Empty.WithScentMarker(new SpeciesScentMarker(
+                hare, 202, SpeciesPerception.DroppingScentDurationTicks, true)));
+            next = grid.Copy();
+            SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11), scentMetrics);
+            Assert.That(next.GetCell(0, 0).ScentMemory.TargetEntityId, Is.EqualTo(202));
+            Assert.That(next.GetCell(0, 0).ScentMemory.X, Is.EqualTo(24));
+            Assert.That(scentMetrics.GetActivity(fox).ScentDroppingDetections, Is.EqualTo(1));
+
+            grid.SetCell(0, 0, grid.GetCell(0, 0).WithEntity(fox, 1, 0, 1, 0, 0f));
+            next = grid.Copy();
+            SpeciesBehaviorSystem.Update(grid, next, rules, new System.Random(11));
+            Assert.That(next.GetCell(0, 0).ScentMemory.IsActive, Is.False,
+                "Scent must not refresh between ten-tick samples.");
+        }
+
+        sealed class ZeroRollRandom : System.Random
+        {
+            public override double NextDouble() => 0d;
+            public override int Next(int maxValue) => 0;
+        }
+
         [TestCase("success", 1, 1)]
         [TestCase("chance-failed", 1, 0)]
         [TestCase("no-reserve", 0, 0)]
@@ -4023,7 +4415,7 @@ namespace SaltyGame.Tests
                 .Invoke(metrics, null);
             var random = new SeedRollRandom();
             var resolve = typeof(SpeciesSimulation).GetMethod("ResolveSeedDrops", BindingFlags.Static | BindingFlags.NonPublic);
-            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics });
+            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics, null });
             var activity = metrics.GetActivity(SpeciesIds.Herbivore);
             Assert.That(random.ChanceRolls, Is.EqualTo(attempts));
             Assert.That(random.LocationRolls, Is.EqualTo(successes));
@@ -4044,7 +4436,7 @@ namespace SaltyGame.Tests
             var afterFirst = typeof(SpeciesSimulationMetrics).GetMethod("CreateSnapshot", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(metrics, null);
             if (successes == 1) grid.SetCell(1, 0, SpeciesCell.Empty);
-            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics });
+            resolve.Invoke(null, new object[] { grid, rules, TerrainDefaults.Create(), random, metrics, null });
             window = (ISpeciesSimulationMetricsView)typeof(SpeciesSimulationMetrics)
                 .GetMethod("CreateWindow", BindingFlags.Instance | BindingFlags.NonPublic)
                 .Invoke(metrics, new[] { afterFirst, (object)1, 2 });
@@ -4468,7 +4860,8 @@ namespace SaltyGame.Tests
             float forageThresholdFraction = 0f,
             float matingEnergyThresholdFraction = 0f,
             float matingEnergyCostFraction = 0f,
-            bool distributeMatingEnergyToOffspring = false)
+            bool distributeMatingEnergyToOffspring = false,
+            float wiltChance = 0f)
         {
             return new SpeciesRules(
                 movementSpeed,
@@ -4494,7 +4887,8 @@ namespace SaltyGame.Tests
                 forageThresholdFraction: forageThresholdFraction,
                 matingEnergyThresholdFraction: matingEnergyThresholdFraction,
                 matingEnergyCostFraction: matingEnergyCostFraction,
-                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring);
+                distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
+                wiltChance: wiltChance);
         }
 
         static SpeciesSimulationMetrics StepWithReproductionMetrics(

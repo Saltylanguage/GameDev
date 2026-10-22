@@ -36,6 +36,58 @@ namespace SaltyGame
             : this;
     }
 
+    public readonly struct SpeciesScentMarker
+    {
+        public SpeciesScentMarker(SpeciesId ownerSpeciesId, long ownerEntityId, int ticksRemaining, bool isDropping)
+        {
+            if (!ownerSpeciesId.IsValid || ownerEntityId <= 0 || ticksRemaining <= 0)
+            {
+                throw new ArgumentException("An active scent needs a species, entity id, and positive lifetime.");
+            }
+
+            OwnerSpeciesId = ownerSpeciesId;
+            OwnerEntityId = ownerEntityId;
+            TicksRemaining = ticksRemaining;
+            IsDropping = isDropping;
+        }
+
+        public SpeciesId OwnerSpeciesId { get; }
+        public long OwnerEntityId { get; }
+        public int TicksRemaining { get; }
+        public bool IsDropping { get; }
+        public bool IsActive => OwnerEntityId > 0 && TicksRemaining > 0;
+        public SpeciesScentMarker Advance() => TicksRemaining > 1
+            ? new SpeciesScentMarker(OwnerSpeciesId, OwnerEntityId, TicksRemaining - 1, IsDropping)
+            : default;
+    }
+
+    public readonly struct SpeciesScentMemory
+    {
+        public SpeciesScentMemory(long targetEntityId, int x, int y, int ticksRemaining, bool sniffedDropping)
+        {
+            if (targetEntityId <= 0 || ticksRemaining <= 0)
+            {
+                throw new ArgumentException("An active scent memory needs an entity id and positive lifetime.");
+            }
+
+            TargetEntityId = targetEntityId;
+            X = x;
+            Y = y;
+            TicksRemaining = ticksRemaining;
+            SniffedDropping = sniffedDropping;
+        }
+
+        public long TargetEntityId { get; }
+        public int X { get; }
+        public int Y { get; }
+        public int TicksRemaining { get; }
+        public bool SniffedDropping { get; }
+        public bool IsActive => TargetEntityId > 0 && TicksRemaining > 0;
+        public SpeciesScentMemory Advance() => TicksRemaining > 1
+            ? new SpeciesScentMemory(TargetEntityId, X, Y, TicksRemaining - 1, SniffedDropping)
+            : default;
+    }
+
     [Obsolete("Use TerrainId and TerrainDefinition instead.")]
     public enum SpeciesTerrain
     {
@@ -104,7 +156,9 @@ namespace SaltyGame
             ForageReservePhase forageReservePhase = ForageReservePhase.Idle,
             int terrainResourceGrowthElapsedTicks = 0,
             decimal crowdingEnergyRemainder = 0m,
-            SpeciesGestation gestation = default)
+            SpeciesGestation gestation = default,
+            SpeciesScentMarker scentMarker = default,
+            SpeciesScentMemory scentMemory = default)
         {
             if (health < 0)
             {
@@ -229,6 +283,8 @@ namespace SaltyGame
             TrackingTargetX = TrackingTargetEntityId > 0 ? trackingTargetX : 0;
             TrackingTargetY = TrackingTargetEntityId > 0 ? trackingTargetY : 0;
             TrackingTicksRemaining = TrackingTargetEntityId > 0 ? trackingTicksRemaining : 0;
+            ScentMarker = scentMarker;
+            ScentMemory = isOccupied && !isResourceSpecies ? scentMemory : default;
             EntityId = isOccupied && !isResourceSpecies
                 ? entityId > 0 ? entityId : AllocateEntityId()
                 : 0L;
@@ -345,6 +401,8 @@ namespace SaltyGame
         public int TrackingTargetX { get; }
         public int TrackingTargetY { get; }
         public int TrackingTicksRemaining { get; }
+        public SpeciesScentMarker ScentMarker { get; }
+        public SpeciesScentMemory ScentMemory { get; }
 
         public SpeciesCell WithEntity(
             SpeciesId species,
@@ -403,7 +461,9 @@ namespace SaltyGame
                     ? ForagePhase
                     : ForageReservePhase.Idle,
                 terrainResourceGrowthElapsedTicks: TerrainResourceGrowthElapsedTicks,
-                gestation: preserveTracking ? Gestation : default);
+                gestation: preserveTracking ? Gestation : default,
+                scentMarker: ScentMarker,
+                scentMemory: preserveTracking ? ScentMemory : default);
         }
 
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
@@ -442,7 +502,9 @@ namespace SaltyGame
                 ForagePhase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                Gestation);
+                Gestation,
+                ScentMarker,
+                ScentMemory);
         }
 
         public SpeciesCell WithAttackCooldown(int ticks)
@@ -486,7 +548,9 @@ namespace SaltyGame
                 ForagePhase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                Gestation);
+                Gestation,
+                ScentMarker,
+                ScentMemory);
         }
 
         public SpeciesCell WithTrackingTarget(long entityId, int x, int y, int ticksRemaining)
@@ -533,13 +597,15 @@ namespace SaltyGame
                 ForagePhase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                Gestation);
+                Gestation,
+                ScentMarker,
+                ScentMemory);
         }
 
         public SpeciesCell WithoutEntity()
         {
             return TerrainId == TerrainIds.Bare
-                ? Empty
+                ? Empty.WithScentMarker(ScentMarker)
                 : new SpeciesCell(
                     resourceSpeciesId.IsValid ? resourceSpeciesId : SpeciesId,
                     false,
@@ -556,7 +622,8 @@ namespace SaltyGame
                     IsPassable,
                     MovementCost,
                     resourceSpeciesId: resourceSpeciesId,
-                    terrainResourceGrowthElapsedTicks: TerrainResourceGrowthElapsedTicks);
+                    terrainResourceGrowthElapsedTicks: TerrainResourceGrowthElapsedTicks,
+                    scentMarker: ScentMarker);
         }
 
         public SpeciesCell WithoutPlantResource()
@@ -565,7 +632,7 @@ namespace SaltyGame
             {
                 if (!IsOccupied)
                 {
-                    return Empty;
+                    return Empty.WithScentMarker(ScentMarker);
                 }
 
                 var bare = TerrainDefaults.Bare;
@@ -596,7 +663,9 @@ namespace SaltyGame
                     trackingTargetY: TrackingTargetY,
                     trackingTicksRemaining: TrackingTicksRemaining,
                     reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining,
-                    gestation: Gestation);
+                    gestation: Gestation,
+                    scentMarker: ScentMarker,
+                    scentMemory: ScentMemory);
             }
 
             return IsOccupied && isResourceSpecies ? WithoutEntity() : this;
@@ -657,7 +726,9 @@ namespace SaltyGame
                 terrainResourceGrowthElapsedTicks: energy > 0f
                     ? TerrainResourceGrowthElapsedTicks
                     : 0,
-                gestation: Gestation);
+                gestation: Gestation,
+                scentMarker: ScentMarker,
+                scentMemory: ScentMemory);
         }
 
         public SpeciesCell WithTerrainResourceGrowthElapsedTicks(int ticks)
@@ -701,7 +772,9 @@ namespace SaltyGame
                 reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining,
                 forageReservePhase: ForagePhase,
                 terrainResourceGrowthElapsedTicks: ticks,
-                gestation: Gestation);
+                gestation: Gestation,
+                scentMarker: ScentMarker,
+                scentMemory: ScentMemory);
         }
 
         public SpeciesCell WithReproductionCooldown(int ticks)
@@ -745,7 +818,9 @@ namespace SaltyGame
                 ForagePhase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                Gestation);
+                Gestation,
+                ScentMarker,
+                ScentMemory);
         }
 
         internal SpeciesCell WithGestation(SpeciesGestation pending)
@@ -784,7 +859,9 @@ namespace SaltyGame
                 ForagePhase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                pending);
+                pending,
+                ScentMarker,
+                ScentMemory);
         }
 
         internal SpeciesCell WithForageReservePhase(ForageReservePhase phase)
@@ -823,7 +900,38 @@ namespace SaltyGame
                 phase,
                 TerrainResourceGrowthElapsedTicks,
                 CrowdingEnergyRemainder,
-                Gestation);
+                Gestation,
+                ScentMarker,
+                ScentMemory);
+        }
+
+        public SpeciesCell WithScentMarker(SpeciesScentMarker marker)
+        {
+            return new SpeciesCell(
+                SpeciesId, IsOccupied, Health, Energy, Age, FoodEaten, FoodReserve, IsAlpha,
+                TerrainId, TerrainEnergy, isResourceSpecies, isResourceTerrain, IsPassable,
+                MovementCost, resourceSpeciesId, BehaviorState, BehaviorStateTicks, EntityId,
+                AttackCooldownTicksRemaining, EnergyRemainder, TrackingTargetEntityId,
+                TrackingTargetX, TrackingTargetY, TrackingTicksRemaining,
+                ReproductionCooldownTicksRemaining, ForagePhase, TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder, Gestation, marker, ScentMemory);
+        }
+
+        public SpeciesCell WithScentMemory(SpeciesScentMemory memory)
+        {
+            if (!IsCreature)
+            {
+                return this;
+            }
+
+            return new SpeciesCell(
+                SpeciesId, IsOccupied, Health, Energy, Age, FoodEaten, FoodReserve, IsAlpha,
+                TerrainId, TerrainEnergy, isResourceSpecies, isResourceTerrain, IsPassable,
+                MovementCost, resourceSpeciesId, BehaviorState, BehaviorStateTicks, EntityId,
+                AttackCooldownTicksRemaining, EnergyRemainder, TrackingTargetEntityId,
+                TrackingTargetX, TrackingTargetY, TrackingTicksRemaining,
+                ReproductionCooldownTicksRemaining, ForagePhase, TerrainResourceGrowthElapsedTicks,
+                CrowdingEnergyRemainder, Gestation, ScentMarker, memory);
         }
     }
 }

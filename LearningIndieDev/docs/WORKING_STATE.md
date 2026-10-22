@@ -5,6 +5,210 @@ become a master changelog.
 
 ## Current focus
 
+**October 22 RG-02 route review and follow-up:** Unity 6000.4.6f1 was Ready and the normal
+Desktop profile route launched. At tick 100 on Forest Edge / Hare, seed 10103,
+54/55 Hares were dead (49 predator kills, 5 starvation, zero births); the
+profile had 0 Field Data, so paid Mutation and population controls were
+unavailable. The current journey graph has no Shop node or discovered Field
+Data shop/session implementation; its runtime is two six-phase cycles, while
+the map header says 13 encounters. The screen stopped refreshing when Unity
+lost focus; runtime values establish the tick-100 result, but the decision
+screen and wall-clock timing need a fresh focused Editor check. Josh confirmed
+Forest Edge starts at 400/20/10, the opening upgrade is free, and Field Data
+becomes available after the first six-phase simulation. The scenario now uses
+400/20/10; phases 1–6 bank Field Data and release it at the first cycle
+boundary. Focused Editor and PlayMode tests pass (1/1 each), including no
+spendable Field Data in phases 1–5 and cycle-boundary release. The shop/session
+integration and route receipt remain unlocated, so RG-02 is still open. No new
+ecology experiment ran. See the [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
+
+**October 21 model-switch planning handoff:** Josh requested a plan here so Luna
+can implement in bounded packets. The
+[remaining Rabbit Genome plan](RABBIT_GENOME_IMPLEMENTATION_PLAN.md) records the
+implemented foundation, 27 candidate slots (8 Trailblazer / 10 Warren / 9 Gardener),
+exact first tasks and later design gates. Start with RG-00: PopulationIntervention
+is built but missing from the portable source-fingerprint list. Then RG-01:
+paid controls are still missing on the nonterminal round-6 result. Continue with
+a normal-route/shop integration review and the food definitions needed for
+Gardener. New mechanic values remain proposals. The prerequisite checklist is
+refreshed to avoid rebuilding completed POC/stat work. This planning turn changed
+only documentation and ran no tests or experiments; board/card scope is unchanged.
+
+**October 21 population decisions and food feedback:** The local playable slice
+adds the six reviewed 10-Field-Data population controls, observed Plant supply
+feedback, and two provisional between-simulation encounters: Rest Stop (up to
+10 Hares / 10 Plants / leave) and Seed Cache (50% +10 Plants / 50% -5 Plants /
+leave). Refill capacity stays 50 +10 per active capacity node; births can exceed
+it and food exhaustion remains possible. Frozen encounters cannot reroll on
+reopening. Accepted population actions are checkpointed and exported separately
+from births/deaths in schema 41. Final EditMode checks pass **404/404**; four
+PlayMode interaction checks pass, including new UI at 720p/1080p and the existing
+Genome-pool and original journey reward routes. Ten final captures were inspected;
+portable build/self-test pass. No new balance panel ran. See the
+[feature contract](POPULATION_DECISIONS_PLAYTEST.md) and
+[handoff](handoffs/2026-10-21-1657-codex-population-decisions-food-feedback.md).
+Changes remain local and uncommitted. Next: play the normal route to evaluate
+choice timing and tune provisional encounters before expanding content.
+
+**October 21 population pool and two Genome nodes:** Josh clarified that food
+exhaustion from unchecked Hares is an intended failure path. The population
+pool is a replenishment/HP allowance, not a round-transition survivor cut:
+base **50**, **+10 per capacity node**, and a separate **+5 starting-Hare** node.
+Both are Warren roots in the existing Gene Lab POC catalog, using its current
+1 Rabbit Data / 2-point convention. Runtime grants clamp to available space;
+above-cap births/survivors remain, and explicit special rules can bypass the
+pool while preserving placement checks. Starting bonuses apply once to fresh
+scenario counts. Profile allocations, frozen runs, checkpoints, portable
+reports and Buy Hare use the same rules. Final focused tests pass **112/112**;
+the Desktop interaction passes at 720p and 1080p with four inspected captures.
+Standalone build and portable self-test pass. See the
+[contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md) and
+[handoff](handoffs/2026-10-21-1424-codex-hare-population-pool-and-genome-nodes.md)
+for final verification. Changes remain local; no new balance panel was run.
+
+**October 21 feeding/Fox ramp comparison complete:** Josh approved all four
+arms: Natural, feeding threshold 25, two initial Foxes plus one every 75 ticks
+through tick 600, and both changes, over 1200 ticks on 12 matched seeds. See the
+[scope](Research/2026-10-21-Feeding-and-Fox-introduction-comparison.md).
+The first baseline attempt inherited journey failure on Hare extinction and
+was rejected for this full-window comparison. Scheduled ecology observation now
+continues after extinction; gameplay and purchase-policy stops remain unchanged.
+Focused checks pass 40/40, standalone build and portable self-test pass.
+All 48 runs reached tick 1200, all 192 Fox arrivals succeeded, and 144 species
+accounts reconcile against the frozen source. Ramp-only reduced opening Hare
+combat deaths from 12.25 to 3.17; earlier feeding advanced births to ticks 49–54.
+Every candidate still lost all Hares and Foxes by two minutes. Combined
+exhausted Plants in every seed at ticks 128–282 and most Hare deaths were
+starvation. Josh's later population-pool decision above establishes depletion
+as an intended failure path; the earlier AI recommendation to normalize
+uncontrolled persistence is not an accepted balance requirement. Production
+balance values were unchanged by that experiment. See
+the [observed results](Research/2026-10-21-Feeding-and-Fox-introduction-results.md),
+[analysis](Research/2026-10-21-Feeding-and-Fox-introduction-analysis-v1.md), and
+[handoff](handoffs/2026-10-21-1139-codex-feeding-fox-ramp-comparison.md).
+
+**October 21 mortality reporting fixed; early Hare losses diagnosed:** Resource
+death callers now identify the removed layer on shared tiles. Wilt, consumption
+and population-cap removal preserve plant identity; actual animal deaths keep
+their entity context. Clean SpeciesDomainTests pass 152/152, including the
+reproduced defects and a food-rich feeding-delay fixture; standalone build and
+self-test pass. Existing reports remain unchanged and still need their recorded
+correction. Analysis of the retained 48-run panel finds zero Hare births through
+tick 100 in every run. Starting energy 12 lies above feeding onset (<6) and
+below mating eligibility (24); the isolated fixture first feeds at tick 57.
+Immediate Fox predation acts during that replacement gap. Production values
+remain unchanged. Next: Josh reviews a one-variable feeding-onset comparison;
+a separate shared-tile diet-target rejection needs intent/regression review
+before broad tuning. See the [diagnosis](Research/2026-10-21-Hare-early-loss-diagnosis.md)
+and [handoff](handoffs/2026-10-21-0431-codex-mortality-attribution-and-early-hare-diagnosis.md).
+
+**October 21 Genome comparison completed:** Josh approved and CellSim completed
+48/48 runs: Natural, Fertile Droppings, Gardener POC and Trailblazer POC on 12
+matched seeds, Forest Edge 36×20, 400/20/10, 600 ticks. Natural loses Hares in
+11/12 seeds and Foxes in all 12. Fertile has the highest mean final Hare count
+but loses Hares in 6/12; Gardener has a lower mean but only 3/12 Hare extinctions
+and joint endpoint presence in 6/12. Trailblazer leaves at most one Hare per
+seed. These are exploratory POC outcomes, not accepted balance margins.
+An existing telemetry defect labels plant wilt under an animal as an animal
+death. The separate derived accounting reassigns 744 such events and reconciles
+all 144 species/run population accounts; raw reports remain unchanged. The
+reporting fix and early-loss diagnosis are now recorded above. Review the
+feeding policy with Josh/Sim before setting production node values.
+See the [observed report](Research/2026-10-21-Rabbit-Genome-build-screening-results.md),
+[AI analysis](Research/2026-10-21-Rabbit-Genome-build-screening-analysis-v1.md),
+and [handoff](handoffs/2026-10-21-0405-codex-rabbit-genome-build-screening.md).
+
+**October 20 multi-node Genome research input:** Step 1 of the post-selection
+plan is complete. CellSim accepts an explicit Rabbit catalog and ordered legal
+allocation, applies the frozen Genome before initial populations and Mutations,
+and writes report schema 38 with full resolved node/ability values. Generic
+phase schedules and Mutation policies carry the snapshot. Portable exports
+freeze the map; two smoke seeds matched Unity reference state, counters,
+choices and timing in the shared .NET runner. Focused runner tests pass 28/28
+and the portable regression self-test passes. An existing double application
+of scheduled initial Mutations was corrected and covered by direct parity.
+Use fresh evidence for old schedules with nonempty initial loadouts. This was
+delivery validation, not the proposed balance comparison. See the
+[handoff](handoffs/2026-10-20-2245-codex-multi-node-genome-research-runner.md).
+The comparison is now recorded in the October 21 entry above. Paired-lockstep
+diagnostics, full Desktop route export and new ability telemetry remain out
+of this completed input slice. Changes remain local on the shared checkout.
+
+**October 20 Gene Lab selection POC:** Josh approved using unfinished content
+to prove the selection flow. Gene Lab now filters branches, selects nodes,
+shows specific purchase blockers and active capacity, saves allocations,
+retains selection through profile refreshes, and resolves the saved build
+after Desktop scene reconstruction. The canonical Desktop test scene uses an
+explicit seven-option POC catalog under `Assets/Data/TestData/Genome/`;
+production Hare content remains Fertile Droppings only. Five provisional stat
+nodes are activatable; Burrows is inspectable but unavailable. Full Lab
+PlayMode 12/12 and focused Genome checks 24/24 passed in clean host runs; screenshots were inspected at
+1280×720 and 1920×1080. See the
+[POC record](Research/2026-10-20-Gene-Lab-selection-POC.md) and
+[handoff](handoffs/2026-10-20-2032-codex-gene-lab-node-selection-poc.md).
+Item 3 is complete as a POC; production offers/economy, arbitrary research
+build selection and missing simulation abilities remain open. Do not remove
+the POC catalog while profiles still have active `poc.hare.*` nodes without
+resetting those allocations or providing a migration. Work remains local.
+
+**October 20 Genome stat-node bridge:** The existing signed-additive species
+attribute registry now executes authored permanent Genome stat nodes. Desktop
+freezes resolved node values, allocation order, and catalog/registry identity
+before a journey. Every participating species receives its Genome before
+initial populations and Mutations; reopening or restarting rebuilds from
+natural rules. The background-species scenario rule handoff and next-journey
+profile refresh are corrected. Runtime 285/285, focused Genome 23/23,
+population 18/18, and Lab PlayMode 11/11 passed. The last suite's tool response
+timed out; its completed JSON/XML and Editor log confirmed the result.
+See the [handoff](handoffs/2026-10-20-1237-codex-genome-stat-node-runtime-bridge.md).
+Item 2 of the Rabbit prerequisite sequence is complete for existing stat
+targets. Next is multiple-node selection/allocation in Gene Lab, followed by
+authored content and explicit ability rules. No new production nodes or prices
+were chosen. Changes remain local; the shared checkout was observed on
+`codex/audio-direction-and-sourcing` at the same baseline `6ffb7b10` during
+this work. This task did not switch branches or commit.
+
+**October 20 journey reward automation:** The live Unity recompile and all 10
+Lab PlayMode tests passed. The new profile-route integration test earns three
+successful journeys through both simulation nodes, checks no failed/early or
+duplicate payout, reloads saved balances, unlocks Gene Lab, and buys Fertile
+Droppings using earned Data. Scene reconstruction and a later failure preserve
+the purchase. See the [automation handoff](handoffs/2026-10-20-1205-codex-automated-journey-rewards-and-gene-lab-unlock.md)
+for the shortened deterministic fixture and retained evidence. This closes the
+automated payout/unlock verification; human play and ecology balance remain open.
+
+**October 17 Fertile Droppings mechanics slice:** Local runtime code now
+recognizes an active `fertile-droppings` Hare Genome ID, adds provisional seed
+chance, leaves a Hare-identified droppings scent after a successful drop, and
+lets hungry carnivores sample ordinary Hare scent on occupied and vacated tiles,
+prioritize and sniff droppings, then follow that Hare's scent at longer range
+every 10 ticks.
+The [mechanics handoff](handoffs/2026-10-17-1545-codex-fertile-droppings-scent-first-slice.md)
+records Josh's agreed scent starting values and the follow-on predator scent
+counters in run, phase, and exported report activity. Josh approved a Gardener
+root at 1 capacity/1 Rabbit Data, with 1 Rabbit Data tree access and a 1
+Research Data reset. Successful profile journeys now record a stable completion
+and grant the approved playtest payout of 1 Rabbit Data plus 1 Research Data in
+one saved profile update; failed or early-ended journeys grant nothing. The
+[Gene Lab handoff](handoffs/2026-10-17-1719-codex-fertile-droppings-gene-lab-offer.md)
+covers the production asset, scene, profile actions, and next-journey snapshot.
+The payout hook now has the October 20 automated profile-route coverage above;
+balance remains open.
+A [20-seed Forest Edge pilot](Research/2026-10-17-fertile-droppings-pilot.md)
+uses the new CellSim synthetic Genome option and finds a strong renewal signal
+with lower mean Fox population and kills at tick 300; it is screening evidence.
+
+**October 17 Rabbit Genome build forecast:** Josh clarified that the proposed
+Trailblazer, Warren, and Gardener node lists are permanent Rabbit Genome
+branches, not the existing temporary Mutation paths. The
+[forecast](Research/2026-10-17-Rabbit-Genome-build-forecast.md) maps all 25
+candidate nodes to current mechanics, gives bounded ecology hypotheses and
+proposes a staged comparison toward the S5 playability gate. It makes no
+production-value, experiment-run, or sprint-scope decision. Scent, burrows,
+plant tiers, migration and other signature rules still need exact contracts.
+The [prerequisite checklist](Research/2026-10-17-Rabbit-Genome-prerequisite-checklist.md)
+tracks shared Genome plumbing and branch-specific rule gaps.
+
 **October 17 Rabbit Genome foundation:** The profile/save and transaction code
 for the accepted P1-029 Rabbit tree contract is implemented locally. It adds
 distinct Rabbit/Research Data, an idempotent completed-run gate, permanent tree

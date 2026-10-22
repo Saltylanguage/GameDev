@@ -133,9 +133,28 @@ namespace SaltyGame
             return true;
         }
 
+        public bool CanChangeBoundaryPopulation(SpeciesId species, int requested, out int actual, out string reason)
+        {
+            actual = 0;
+            reason = "No active simulation.";
+            return runner != null && runner.CanChangeBoundaryPopulation(species, requested, out actual, out reason);
+        }
+
+        public bool TryChangeBoundaryPopulation(SpeciesId species, int requested, string source, out int actual)
+        {
+            actual = 0;
+            return runner != null && runner.TryChangeBoundaryPopulation(species, requested, source, out actual);
+        }
+
         public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
         {
             return runner != null && runner.TryAddBoundaryPopulation(species, amount);
+        }
+
+        public bool TryAddBoundaryPopulation(SpeciesId species, int amount, out int added, bool ignorePopulationPool = false)
+        {
+            added = 0;
+            return runner != null && runner.TryAddBoundaryPopulation(species, amount, out added, ignorePopulationPool);
         }
 
         public bool ContinueWithBoundaryState(
