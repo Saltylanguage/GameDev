@@ -1,16 +1,31 @@
 # Field Data and Journey Loop Design
 
-- **Version:** 1.0
-- **Design reviewed:** 2026-10-15
+- **Version:** 1.1
+- **Design reviewed:** 2026-10-17
 - **Design owner:** Bevin
 - **Scope:** first playable Field Data journey and its internal test protocol
 
 This is the standalone design baseline produced by the Step 1–5 decision
 review. It defines the rules, starter content, paper budget, implementation
 requirements and internal test plan in one place. The decisions and provisional
-test settings are complete for this slice. Implementation and self-play remain
-future work; this document does not claim that the new loop is playable or
-balanced.
+test settings are complete for this slice. Implementation evidence exists for
+the approved route and October 17 correction, with fresh Unity regression and
+rendered checks on October 18. Independent human review remains open, and the
+new loop is not yet balance-approved.
+
+### October 17 behavior correction
+
+Selecting the Field Data test route from the larger Desktop map opens its own
+five-node route preview with visible connected node cards and current-node
+highlighting. Simulation ticks begin only after a separate Start
+action. During the active journey, the route map can be opened from simulation,
+round-decision and shop screens, then closed to return to the same run state.
+Map controls are also available inside the decision and results panels.
+All Field Data income modifiers are shop-only. Free round and node rewards may
+offer species upgrades, but never income modifiers. Hare free species rewards
+use the six approved Hare skill traits; generic attack upgrades are excluded.
+This correction supersedes the earlier design text that allowed income
+modifiers as round or node rewards.
 
 The original item IDs remain in the [design and delivery checklist](FIELD_DATA_DESIGN_PLAN.md).
 Use this document for current Field Data behavior. The checklist tracks work
@@ -38,8 +53,8 @@ authoring those drafts does not complete implementation or testing.
 | 1. Round, wallet and purchase rules | Defined, including reorder prices and boundary cases | Requirements; not runtime-verified |
 | 2. Starter purchases and rewards | Defined with provisional values and reward schedule | Catalog and source comparison; not balanced |
 | 3. Journey budgets | Complete as a synthetic paper comparison | Arithmetic verified; no ecology runs |
-| 4. Playable slice and correctness checks | Scope and acceptance checks defined | Source audit only; implementation and tests pending |
-| 5. Internal test and refinement protocol | Defined, including 200 fixed seeds | Runs, team judgment and follow-up content choice pending |
+| 4. Playable slice and correctness checks | Scope and acceptance checks defined | Implementation evidence exists; October 17 follow-up awaits Unity verification |
+| 5. Internal test and refinement protocol | Defined, including 200 fixed seeds | Automated cohort complete; team judgment and follow-up content choice pending |
 
 Checking a design decision does not complete an implementation or a playtest.
 The next content addition is deliberately deferred until internal findings
@@ -111,12 +126,15 @@ After local round 6 of Simulation 1 or 2:
 1. Evaluate failure, then award the normal final-round population payout.
 2. Complete the node and automatically award its 10-FD clear bonus.
 3. Present the free node-reward choice, or Skip.
-4. Keep population controls available on the simulation results screen.
-5. Let the player enter the shop; population controls are not shop offers.
+4. Show settlement without population controls, then Return to Map.
+5. Wait for the player to click the ready shop node before shopping.
+6. Leaving the shop returns to the map. Resume only after the player clicks
+   the ready simulation node; preserve the same board, tick, balance and upgrades.
 
 After local round 6 of Simulation 3, award the successful final-round payout and
 10-FD clear bonus, then show final journey results. Offer no further population
-purchases or upgrade choices after terminal success.
+purchases or upgrade choices after terminal success. Return to the completed
+map without starting a new journey; starting a new journey is a separate action.
 
 Round payouts and node-clear awards each happen **once per event**. Reopening
 results, repeated Continue actions or returning to a screen cannot pay again.
@@ -179,10 +197,9 @@ With 20 Hares:
 | +1/Hare, then ×2 | (20 + 20) × 2 | 80 FD |
 | ×2, then +1/Hare | (20 × 2) + 20 | 60 FD |
 
-An acquired income upgrade first affects the next round-end payout after
-acquisition, regardless of whether it came from a shop, round reward or node
-reward. It cannot recalculate a settled payout. New income upgrades append to
-the end of the current effective sequence.
+An acquired income upgrade first affects the next round-end payout after its
+shop purchase. It cannot recalculate a settled payout. New income upgrades
+append to the end of the current effective sequence.
 
 Each income modifier declares whether it affects population payouts, node-clear
 FD bonuses, or both. The three starter income upgrades below are
@@ -236,14 +253,15 @@ population controls remain separate simulation actions.
 
 | Offer | Explicit effect | Source eligibility | Shop price |
 | --- | --- | --- | ---: |
-| +1 FD per Hare | Add ending Hare count at this point in a population payout | Round reward; shops from first visit | 20 FD |
-| ×1.5 population payout | Multiply current population payout by 1.5 | Node reward; shops from first visit | 30 FD |
+| +1 FD per Hare | Add ending Hare count at this point in a population payout | Shop only, from first visit | 20 FD |
+| ×1.5 population payout | Multiply current population payout by 1.5 | Shop only, from first visit | 30 FD |
 | ×2 population payout | Multiply current population payout by 2 | Shop only, from second visit | 50 FD |
 
 Income upgrades are positive-only and have no copy cap for now. A distinct
-offer can be taken once. The same upgrade can stack when acquired as a later
-distinct offer, including from another eligible source. Eligible does not mean
-guaranteed: neither shop draws nor reward choices must contain an income item.
+offer can be taken once per shop visit. The same upgrade can stack when it is
+offered at a later shop. Eligible does not mean guaranteed: shop draws need not
+contain an income item. Free round and node rewards contain species upgrades,
+not income modifiers.
 
 ### Shop species changes
 
@@ -309,17 +327,19 @@ unchanged by the reroll.
 | Every successful simulation clear, including Simulation 3 | Automatically award 10 FD after the normal final-round payout |
 | Final journey success | Results only after settlement; no additional upgrade choice |
 
-Round choices mix ordinary species upgrades with eligible +1 FD/Hare. Node
-choices mix ordinary species upgrades with eligible ×1.5 population income.
-Keep ordinary species eligibility and its separate copy/level cap explicit.
+Round and node choices contain the six ordinary Hare skills; income modifiers
+are shop-only. Each ordinary Hare skill can repeat up to its existing catalogue
+level cap (currently 10), independently of the shop's shared three-copy family
+cap. Taking a free skill once does not remove it for the rest of the journey.
 Journey carryover follows the agreed journey upgrade direction; do not restart
 the simulation or discard acquired journey effects at shops. Skip gives no
 reward or penalty in this slice. When fewer than three distinct choices are
-eligible, show the available choices and Skip.
+eligible, show the available choices and Skip. If none remain, explain that no
+eligible mutations remain and allow Skip; never substitute legacy priced offers.
 
-Shop 3× variants do not silently become ordinary free rewards. The income and
-species items compete in the same pick-one reward; taking one passes on the
-others. Rewards are not a second wallet or a permanent Genome purchase.
+Shop 3× variants do not silently become ordinary free rewards. Taking one free
+skill passes on the other offered skills. Rewards are not a second wallet or
+a permanent Genome purchase.
 
 ## Step 3 — Paper budget and what it proves
 
@@ -371,10 +391,10 @@ to support these three explicit income operations.
 | --- | --- |
 | 4.07, 4.18 | Successful rounds and node bonuses settle once; final-tick extinction prevents both; reopened screens/repeated Continue never duplicate awards |
 | 4.08, 4.19 | Six controls obey amount/price, pause window, random valid targets and all-or-nothing charging; block final-selected-individual removal |
-| 4.09–4.11, 4.21 | All three income types and the shop family rules work; source eligibility is correct; upgrades survive both shops and later simulations |
+| 4.09–4.11, 4.21 | All three income types are offered only in eligible shops; species shop rules work; upgrades survive both shops and later simulations |
 | 4.12–4.17 | Payout populations, ordered math, separate award lines, immediate balances, one-click purchase and loss/results displays match this design |
 | 4.20–4.24 | One journey wallet persists through nodes; new journey resets only local state; failure/success exit preserve banked currency and unlocks |
-| 4.25–4.26 | Compare order-dependent sequences on identical inputs; test acquisition timing from each of the three sources; settle/round once |
+| 4.25–4.26 | Compare order-dependent sequences on identical inputs; test shop acquisition timing at each shop; settle/round once |
 | 4.27–4.28 | Reorders preserve instances; random must change order; chosen confirm/cancel is correct; escalation/reset/10× costs charge once; both histories reproduce the calculation |
 
 Also cover capped free rerolls, positive/negative exclusion, net cancellation

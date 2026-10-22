@@ -5,22 +5,28 @@ become a master changelog.
 
 ## Current focus
 
-**October 22 RG-02 route review and follow-up:** Unity 6000.4.6f1 was Ready and the normal
-Desktop profile route launched. At tick 100 on Forest Edge / Hare, seed 10103,
-54/55 Hares were dead (49 predator kills, 5 starvation, zero births); the
-profile had 0 Field Data, so paid Mutation and population controls were
-unavailable. The current journey graph has no Shop node or discovered Field
-Data shop/session implementation; its runtime is two six-phase cycles, while
-the map header says 13 encounters. The screen stopped refreshing when Unity
-lost focus; runtime values establish the tick-100 result, but the decision
-screen and wall-clock timing need a fresh focused Editor check. Josh confirmed
-Forest Edge starts at 400/20/10, the opening upgrade is free, and Field Data
-becomes available after the first six-phase simulation. The scenario now uses
-400/20/10; phases 1–6 bank Field Data and release it at the first cycle
-boundary. Focused Editor and PlayMode tests pass (1/1 each), including no
-spendable Field Data in phases 1–5 and cycle-boundary release. The shop/session
-integration and route receipt remain unlocated, so RG-02 is still open. No new
-ecology experiment ran. See the [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
+**October 22 Field Data and RG-02 integration:** Sim's accepted five-node Field
+Data journey, shop and reroll flow, ordered income controls, interventions, and
+APS accounting are merged with the Rabbit Genome and population-control work.
+Forest Edge remains at 400/20/10. The player wallet is unavailable and cannot
+be spent during the opening six-round simulation; it becomes available at the
+first shop boundary. The audit ledger still records those round receipts. The
+portable build and full journey self-test pass. Unity Editor/PlayMode checks
+could not run because the Editor project is locked/unreachable and its license
+service cannot be reached; a normal-route receipt still needs a fresh Editor
+run. RG-02 remains open pending that route verification. No new ecology
+experiment ran. See the [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
+
+**October 22 Field Data integration:** Sim's published FD implementation is now
+being integrated: the accepted five-node journey, shop and reroll flow, ordered
+income controls, intervention records, and APS accounting are in the merge. The
+matching design/ticket history and verified handoffs are preserved in the
+`FIELD_DATA_*` documents and dated `handoffs/`. The initial Field Data slice was
+published as `e6cadcd`; this integration also includes the later FD2 design
+publication `9f9ed115`. The wallet timing follows Josh's decision: first-six-
+round receipts remain in the audit ledger, while spendable/displayed Field Data
+is zero until the first shop after those six rounds. Portable build and replay
+self-test pass. FD2 remains design-only and is not implemented here.
 
 **October 21 model-switch planning handoff:** Josh requested a plan here so Luna
 can implement in bounded packets. The

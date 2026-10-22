@@ -133,6 +133,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(open, Is.Not.Null);
             open.GetType().GetMethod("Execute")?.Invoke(open, new object[] { "Simulation" });
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            Assert.That(preview.FieldDataSession, Is.Null,
+                "Opening the map must preserve the existing route until the Field Data test route is explicitly selected.");
             Assert.That(simulationViewModel.GetType().GetProperty("JourneyMapVisibility")
                 ?.GetValue(simulationViewModel)?.ToString(), Is.EqualTo("Visible"));
             var back = simulationViewModel.GetType().GetProperty("CloseJourneyMapCommand")
@@ -147,6 +149,591 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
             Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.FieldDataSession, Is.Null,
+                "Selecting a legacy simulation node must continue through the existing route composition.");
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataTestRouteCanBeSelectedFromTheJourneyMapBeforeFirstSimulation()
+        {
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            var shell = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+                .FirstOrDefault(component => component.GetType().FullName == "SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(shell, Is.Not.Null);
+            Assert.That(preview.HasFieldDataTestJourney, Is.True);
+            Assert.That(preview.JourneyMap, Is.Not.Null, "The test route is offered from the existing journey map entry.");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            // Keep this UI/ordering fixture independent of ecology tuning and random free rewards.
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "10100", "2000", "0", "1800", "0.2", "0", "0", "0", false,
+                "300", "200", "0", out var setupError), Is.True, setupError);
+
+            var shellType = shell.GetType();
+            var openMap = shellType.GetProperty("OpenJourneyMapCommand")?.GetValue(shell);
+            Assert.That(openMap, Is.Not.Null);
+            openMap.GetType().GetMethod("Execute")?.Invoke(openMap, new object[] { null });
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(shellType.GetProperty("FieldDataTestRouteVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+
+            var startRoute = shellType.GetProperty("StartFieldDataTestJourneyCommand")?.GetValue(shell);
+            Assert.That(startRoute, Is.Not.Null);
+            startRoute.GetType().GetMethod("Execute")?.Invoke(startRoute, new object[] { null });
+            var stableRules = preview.GetSpeciesRuleEditValues(new SpeciesId("hare"));
+            stableRules.MovementEnabled = false;
+            stableRules.ReproductionEnabled = false;
+            stableRules.Metabolism = "0";
+            Assert.That(preview.TryApplySpeciesRuleEditValues(new SpeciesId("hare"), stableRules, out setupError), Is.True, setupError);
+            Assert.That(preview.ConfiguredFieldDataJourney, Is.Not.Null);
+            Assert.That(preview.FieldDataSession, Is.Null, "Selecting the route must not start the simulation.");
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(shellType.GetProperty("FieldDataTestRouteButtonText")?.GetValue(shell), Is.EqualTo("START THIS ROUTE"));
+            var routeSummary = shellType.GetProperty("JourneyMapSummary")?.GetValue(shell)?.ToString();
+            Assert.That(((Array)shellType.GetProperty("FieldDataRouteNodes")?.GetValue(shell)).Length, Is.EqualTo(5));
+            Assert.That(shellType.GetProperty("FieldDataRouteMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            foreach (var node in new[] { "SIMULATION 1", "SHOP 1", "SIMULATION 2", "SHOP 2", "SIMULATION 3" })
+                Assert.That(routeSummary, Does.Contain(node));
+            ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(preview.FieldDataSession, Is.Null);
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            startRoute.GetType().GetMethod("Execute")?.Invoke(startRoute, new object[] { null });
+            Assert.That(preview.FieldDataSession, Is.Not.Null);
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Running));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.Zero);
+            Assert.That(preview.Run.Tick, Is.Zero);
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Running));
+
+            var runningRun = preview.Run;
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            var mapTick = runningRun.Tick;
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
+            yield return null;
+            yield return null;
+            Assert.That(preview.Run.Tick, Is.EqualTo(mapTick), "The map must pause a running simulation.");
+            ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+            Assert.That(preview.Run, Is.SameAs(runningRun));
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            preview.PauseSimulation();
+            AssertFieldDataMapRoundTrip(shell, preview);
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.FieldDataRoundDecision));
+            AssertFieldDataMapRoundTrip(shell, preview);
+            yield return null;
+            var breakdown = shellType.GetProperty("FieldDataBreakdownText")?.GetValue(shell)?.ToString();
+            Assert.That(breakdown, Does.Contain("All populations at settlement"));
+            Assert.That(breakdown, Does.Contain("Selected population income"));
+            Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Collapsed"), "Population actions wait until the free reward is resolved.");
+
+            ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+            Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(preview.FieldDataSession.TryAddIncomeModifier(
+                new FieldDataIncomeModifierInstance("ui-income-plus", "income-plus-one-per-hare",
+                    FieldDataIncomeOperation.AddPerHare, 1m), out var incomeError, "ui-binding-test"), Is.True, incomeError);
+            Assert.That(preview.FieldDataSession.TryAddIncomeModifier(
+                new FieldDataIncomeModifierInstance("ui-income-times", "income-multiply-one-point-five",
+                    FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m), out incomeError, "ui-binding-test"), Is.True, incomeError);
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+            var retainedRun = preview.Run;
+
+            for (var round = 4; round <= 6; round++)
+            {
+                if (preview.FieldDataSession.GetCurrentRoundRewardChoices()?.Resolved == false)
+                    ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+                ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                preview.PauseSimulation();
+                for (var tick = 0; tick < 100; tick++)
+                    Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True,
+                        $"Round {round}, tick {preview.Run.Tick}, preview {preview.State}, run {preview.Run.Status}, session {preview.FieldDataSession.State}: {preview.FieldDataSession.SettlementError}");
+                if (round < 6)
+                    Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.FieldDataRoundDecision));
+            }
+
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Shop));
+            yield return null;
+            Assert.That(preview.Run, Is.SameAs(retainedRun));
+            Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"),
+                "The node reward is resolved before shop actions become available.");
+            var shopWallet = preview.FieldDataSession.Ledger.Balance;
+            ExecuteShellCommand(shell, "BuyFieldDataShopOffer1Command");
+            ExecuteShellCommand(shell, "StartChosenIncomeReorderCommand");
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(shopWallet));
+            Assert.That(preview.FieldDataSession.ChosenReorderDraft, Is.Null);
+            ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+            Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"),
+                "Resolving the node reward must keep the player at settlement until they return to the map.");
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            EnterAvailableFieldDataNode(shell, 1);
+            Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(shellType.GetProperty("FieldDataShopSummaryText")?.GetValue(shell)?.ToString(), Does.Contain("randomized offers"));
+            Assert.That(shellType.GetProperty("FieldDataRewardChoicesVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            var offers = preview.FieldDataSession.GetCurrentShopVisit().Offers;
+            for (var offerIndex = 0; offerIndex < offers.Count; offerIndex++)
+            {
+                var offer = offers[offerIndex];
+                Assert.That(shellType.GetProperty("CanRerollFieldDataShopOffer" + (offerIndex + 1))?.GetValue(shell),
+                    Is.EqualTo(offer.Locked && !offer.Purchased));
+                Assert.That(shellType.GetProperty("FieldDataShopOffer" + (offerIndex + 1) + "Text")?.GetValue(shell)?.ToString(),
+                    Does.Contain(offer.Kind == FieldDataShopOfferKind.SpeciesEffect ? "Family owned" : "No copy cap"));
+            }
+            ExecuteShellCommand(shell, "StartChosenIncomeReorderCommand");
+            Assert.That(shellType.GetProperty("CanConfirmChosenIncomeReorder")?.GetValue(shell), Is.EqualTo(false),
+                "An unchanged preview cannot be purchased.");
+            var chosenItems = shellType.GetProperty("ChosenIncomeOrderItems")?.GetValue(shell) as System.Collections.IList;
+            Assert.That(chosenItems, Is.Not.Null.And.Not.Empty, "The chosen reorder draft should expose each modifier as an editable row.");
+            Assert.That(chosenItems.Count, Is.GreaterThanOrEqualTo(2));
+            var originalFirst = GetChosenIncomeItemName(chosenItems[0]);
+            var originalSecond = GetChosenIncomeItemName(chosenItems[1]);
+            var firstRow = chosenItems[0];
+            var firstMoveDown = firstRow.GetType().GetProperty("MoveDownCommand")?.GetValue(firstRow);
+            Assert.That(firstMoveDown, Is.Not.Null);
+            firstMoveDown.GetType().GetMethod("Execute")?.Invoke(firstMoveDown, new object[] { null });
+            chosenItems = shellType.GetProperty("ChosenIncomeOrderItems")?.GetValue(shell) as System.Collections.IList;
+            Assert.That(GetChosenIncomeItemName(chosenItems[0]), Is.EqualTo(originalSecond));
+            Assert.That(GetChosenIncomeItemName(chosenItems[1]), Is.EqualTo(originalFirst));
+            ExecuteShellCommand(shell, "CancelChosenIncomeReorderCommand");
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(shopWallet), "Cancelling an edited preview must not charge the wallet.");
+            Assert.That(preview.FieldDataSession.ChosenReorderDraft, Is.Null);
+            ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+            Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Collapsed"), "Completed-node settlement and shops must never offer population controls.");
+            Assert.That(shellType.GetProperty("FieldDataShopOffer1Text")?.GetValue(shell)?.ToString(), Does.Contain("FD"));
+
+            ExecuteShellCommand(shell, "BuyFieldDataShopOffer1Command");
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.LessThan(shopWallet));
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            EnterAvailableFieldDataNode(shell, 2);
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+            Assert.That(preview.FieldDataSession.GlobalRound, Is.EqualTo(7));
+            var roundSevenChoices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
+            Assert.That(roundSevenChoices.Choices, Is.Not.Empty);
+            Assert.That(roundSevenChoices.Choices.All(choice => choice.OrdinaryUpgrade != null
+                && choice.OrdinaryUpgrade.Id != SpeciesUpgradeCatalog.StrongerAttackId), Is.True);
+            Assert.That(shellType.GetProperty("CanPurchaseRewardOption1")?.GetValue(shell), Is.EqualTo(true));
+            var beforeFreeChoice = preview.FieldDataSession.Ledger.Balance;
+            ExecuteShellCommand(shell, "PurchaseRewardOption1Command");
+            Assert.That(roundSevenChoices.Resolved, Is.True);
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(beforeFreeChoice));
+            Assert.That(shellType.GetProperty("CanAddHares")?.GetValue(shell), Is.EqualTo(true));
+            var populationBefore = preview.Run.PopulationHistory.Last().GetCount(preview.PlayerSpecies);
+            ExecuteShellCommand(shell, "AddHaresCommand");
+            Assert.That(preview.Run.PopulationHistory.Last().GetCount(preview.PlayerSpecies), Is.EqualTo(populationBefore + 1));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(beforeFreeChoice - 10));
+
+            ExecuteShellCommand(shell, "RemoveHaresCommand");
+            Assert.That(preview.Run.PopulationHistory.Last().GetCount(preview.PlayerSpecies), Is.EqualTo(populationBefore));
+            var accountingSummary = shellType.GetProperty("ExperimentalHerbivoreStatLineSummary")?.GetValue(shell)?.ToString();
+            Assert.That(accountingSummary, Does.Contain("ADD: " + preview.Run.GetBoundaryPopulationAdded(preview.PlayerSpecies)));
+            Assert.That(accountingSummary, Does.Contain("REM: " + preview.Run.GetBoundaryPopulationRemoved(preview.PlayerSpecies)));
+            Assert.That(accountingSummary, Does.Contain("Reconciled: True").And.Not.Contain("APS: INVALID"));
+
+            // A fully capped future journey must show Skip, never disabled legacy offers.
+            foreach (var reward in SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(preview.PlayerSpecies, null))
+                while (preview.Progression.TryApplyFieldDataReward(reward)) { }
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+            Assert.That(preview.FieldDataSession.GetCurrentRoundRewardChoices().Choices, Is.Empty);
+            for (var slot = 1; slot <= 3; slot++)
+            {
+                Assert.That(shellType.GetProperty("RewardOption" + slot + "Text").GetValue(shell), Is.Empty);
+                Assert.That(shellType.GetProperty("RewardOption" + slot + "Visibility").GetValue(shell).ToString(), Is.EqualTo("Collapsed"));
+            }
+            Assert.That(shellType.GetProperty("FieldDataStatusText").GetValue(shell).ToString(), Does.Contain("No eligible mutations"));
+            Assert.That(shellType.GetProperty("CanContinueWithoutUpgrade").GetValue(shell), Is.EqualTo(true));
+            ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+            Assert.That(shellType.GetProperty("CanContinueJourney").GetValue(shell), Is.EqualTo(true));
+
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataTestRouteCompletesThroughBothShopsOnFixedSeed()
+        {
+            const int testSeed = 10100;
+            journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            var profileSession = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+            if (profileSession == null)
+                profileSession = new GameObject("Field Data success test profile").AddComponent<Helper_ProfileSession>();
+            var shell = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+                .FirstOrDefault(component => component.GetType().FullName == "SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(profileSession, Is.Not.Null);
+            Assert.That(shell, Is.Not.Null);
+            profileSession.SetPlaytimeTracking(false);
+            profileSession.CreateProfile("Field Data success boundary test");
+            profileSession.AddCurrency(113);
+            profileSession.UnlockFeature("field-data-success-preserved-feature");
+            profileSession.UnlockSpecies(new SpeciesId("fox"));
+            profileSession.UnlockGenome(new SpeciesId("fox"));
+            var bankedProfileBefore = profileSession.Current;
+
+            typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, false);
+            typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, testSeed);
+            var authoredScenarioData = ConfigureAuthoredFieldDataScenario(preview);
+            Assert.That(preview.StepInterval, Is.EqualTo(authoredScenarioData.StepInterval));
+
+            var shellType = shell.GetType();
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            Assert.That(preview.Run.Seed, Is.EqualTo(testSeed));
+            var retainedRun = preview.Run;
+            preview.PauseSimulation();
+
+            const int roundsPerSimulation = FieldDataJourneyDefinition.RoundsPerSimulation;
+            const int totalRounds = FieldDataJourneyDefinition.RoundsPerSimulation
+                * FieldDataJourneyDefinition.SimulationCount;
+            for (var round = 1; round <= totalRounds; round++)
+            {
+                for (var tick = 0; tick < FieldDataJourneyDefinition.RoundLengthTicks; tick++)
+                {
+                    if (preview.FieldDataSession.State == FieldDataJourneyFlowState.Failed)
+                        Assert.Fail($"The approved test route seed {testSeed} failed at tick {preview.Run.Tick}.");
+                    Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True,
+                        $"The simulation should advance to route tick {round * FieldDataJourneyDefinition.RoundLengthTicks}.");
+                }
+
+                Assert.That(preview.Run.Tick, Is.EqualTo(round * FieldDataJourneyDefinition.RoundLengthTicks));
+                AssertFieldDataMapRoundTrip(shell, preview);
+                Assert.That(preview.Run, Is.SameAs(retainedRun));
+                var settledAwardCount = preview.FieldDataSession.Ledger.Awards.Count;
+                if (round == roundsPerSimulation || round == 2 * roundsPerSimulation)
+                    Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Shop));
+                else if (round < totalRounds)
+                    Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.RoundDecision));
+
+                if (round == roundsPerSimulation || round == 2 * roundsPerSimulation)
+                {
+                    var shopVisit = preview.FieldDataSession.GetCurrentShopVisit();
+                    Assert.That(shopVisit, Is.Not.Null);
+                    Assert.That(preview.FieldDataSession.GetCurrentShopVisit(), Is.SameAs(shopVisit),
+                        "Re-entering the same shop must retain its original offer set.");
+                    var nodeChoices = preview.FieldDataSession.GetCurrentNodeRewardChoices();
+                    Assert.That(nodeChoices, Is.Not.Null);
+                    Assert.That(preview.FieldDataSession.GetCurrentNodeRewardChoices(), Is.SameAs(nodeChoices),
+                        "Re-entering the node reward decision must retain its original choices.");
+                    Assert.That(preview.FieldDataSession.Ledger.Awards.Count, Is.EqualTo(settledAwardCount),
+                        "Reading a shop again must not settle another award.");
+                }
+
+                if (round < totalRounds)
+                {
+                    ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+                    ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                    if (round % roundsPerSimulation == 0)
+                    {
+                        var balanceBeforeMap = preview.FieldDataSession.Ledger.Balance;
+                        var boundaryTick = preview.Run.Tick;
+                        ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                        ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+                        Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+                        Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+                        ExecuteShellCommand(shell, "BuyFieldDataShopOffer1Command");
+                        yield return null;
+                        Assert.That(preview.Run.Tick, Is.EqualTo(boundaryTick));
+                        Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(balanceBeforeMap));
+                        EnterAvailableFieldDataNode(shell, round / roundsPerSimulation * 2 - 1);
+                        Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+                        AssertFieldDataMapRoundTrip(shell, preview);
+                        ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                        yield return null;
+                        Assert.That(preview.Run.Tick, Is.EqualTo(boundaryTick));
+                        Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+                        EnterAvailableFieldDataNode(shell, round / roundsPerSimulation * 2);
+                    }
+                    var continuedTick = preview.Run.Tick;
+                    var awardsAfterContinue = preview.FieldDataSession.Ledger.Awards.Count;
+                    ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                    Assert.That(preview.Run.Tick, Is.EqualTo(continuedTick),
+                        "A repeated Continue click while the simulation is already running must not advance it.");
+                    Assert.That(preview.FieldDataSession.Ledger.Awards.Count, Is.EqualTo(awardsAfterContinue),
+                        "A repeated Continue click must not duplicate a settled payout.");
+                    preview.PauseSimulation();
+                }
+            }
+
+            yield return null;
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));
+            Assert.That(shellType.GetProperty("ResultsMessageText")?.GetValue(shell)?.ToString(),
+                Does.Contain("Field Data remains").And.Not.Contain("was discarded"));
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(preview.Run.Tick, Is.EqualTo(1800));
+            Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Collapsed"), "Terminal results must not offer population controls.");
+            Assert.That(shellType.GetProperty("PlayNextSimulationText")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("RETURN TO MAP"));
+            var completedRun = preview.Run;
+            var completedAwards = preview.FieldDataSession.Ledger.Awards.Count;
+            var successfulWallet = preview.FieldDataSession.Ledger.Balance;
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded),
+                "A stale Continue click on successful results must not reopen or advance the completed journey.");
+            Assert.That(preview.Run, Is.SameAs(completedRun));
+            Assert.That(preview.FieldDataSession.Ledger.Awards.Count, Is.EqualTo(completedAwards));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(successfulWallet));
+            var permanentCurrencyBeforeRestart = preview.Progression.Currency;
+            var successfulSession = preview.FieldDataSession;
+            var awardsAtExit = successfulSession.Ledger.Awards.Count;
+            ExecuteShellCommand(shell, "PlayNextSimulationCommand");
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(preview.Run, Is.SameAs(completedRun));
+            Assert.That(successfulSession.Ledger.Balance, Is.EqualTo(successfulWallet));
+            Assert.That(shellType.GetProperty("JourneyNewRunVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            ExecuteShellCommand(shell, "StartNewJourneyCommand");
+            Assert.That(successfulSession.Ledger.Balance, Is.Zero);
+            Assert.That(successfulSession.Ledger.Awards.Count, Is.EqualTo(awardsAtExit));
+            EnterAvailableFieldDataNode(shell, 0);
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.Run, Is.Not.SameAs(completedRun));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.EqualTo(permanentCurrencyBeforeRestart));
+            AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataNaturalFailureForfeitsJourneyWalletAndRestartStartsAtZero()
+        {
+            const int failingSeed = 10108;
+            journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            var profileSession = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+            if (profileSession == null)
+                profileSession = new GameObject("Field Data failure test profile").AddComponent<Helper_ProfileSession>();
+            var shell = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+                .FirstOrDefault(component => component.GetType().FullName == "SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(profileSession, Is.Not.Null);
+            Assert.That(shell, Is.Not.Null);
+            profileSession.SetPlaytimeTracking(false);
+            profileSession.CreateProfile("Field Data failure boundary test");
+            profileSession.AddCurrency(73);
+            profileSession.UnlockFeature("field-data-test-preserved-feature");
+            profileSession.UnlockSpecies(new SpeciesId("fox"));
+            profileSession.UnlockGenome(new SpeciesId("fox"));
+            var bankedProfileBefore = profileSession.Current;
+            typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, false);
+            typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, failingSeed);
+            ConfigureAuthoredFieldDataScenario(preview);
+
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            while (preview.FieldDataSession.State != FieldDataJourneyFlowState.Failed
+                && preview.Run.Tick < 600)
+            {
+                if (preview.FieldDataSession.State == FieldDataJourneyFlowState.RoundDecision
+                    || preview.FieldDataSession.State == FieldDataJourneyFlowState.Shop)
+                {
+                    ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+                    ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                    preview.PauseSimulation();
+                    continue;
+                }
+
+                var advanced = preview.AdvanceOneTickWhilePaused();
+                if (!advanced && preview.FieldDataSession.State != FieldDataJourneyFlowState.Failed)
+                    Assert.Fail("The simulation stopped before the expected natural-extinction failure.");
+            }
+
+            var failedSession = preview.FieldDataSession;
+            Assert.That(failedSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed),
+                "The approved failing seed should exercise natural extinction before the next node clear.");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(failedSession.FieldDataLostOnFailure, Is.GreaterThan(0));
+            Assert.That(shell.GetType().GetProperty("PlayNextSimulationText")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("START NEW JOURNEY"));
+            Assert.That(failedSession.Ledger.Balance, Is.Zero);
+            Assert.That(failedSession.Ledger.Awards.Any(award => award.GlobalRound == 3), Is.False,
+                "Extinction during round 3 must not settle that round's population payout.");
+            var permanentCurrencyBeforeRestart = preview.Progression.Currency;
+            var failedRun = preview.Run;
+            AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
+
+            ExecuteShellCommand(shell, "PlayNextSimulationCommand");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running),
+                "The results screen's Start New Journey action should close the failed session and start a fresh route.");
+            Assert.That(preview.FieldDataSession, Is.Not.SameAs(failedSession));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.Zero);
+            Assert.That(preview.Progression.Currency, Is.EqualTo(permanentCurrencyBeforeRestart));
+            Assert.That(preview.Run, Is.Not.SameAs(failedRun));
+            AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataManualAbandonmentUsesEndConfirmationAndPreservesBankedProfileState()
+        {
+            journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
+            yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
+            yield return null;
+            yield return null;
+
+            var preview = UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            var profileSession = UnityEngine.Object.FindAnyObjectByType<Helper_ProfileSession>();
+            if (profileSession == null)
+                profileSession = new GameObject("Field Data abandonment test profile").AddComponent<Helper_ProfileSession>();
+            var shell = UnityEngine.Object.FindObjectsByType<MonoBehaviour>(FindObjectsSortMode.None)
+                .FirstOrDefault(component => component.GetType().FullName == "SaltyGame.VM_SimulationShell");
+            Assert.That(preview, Is.Not.Null);
+            Assert.That(profileSession, Is.Not.Null);
+            Assert.That(shell, Is.Not.Null);
+            profileSession.SetPlaytimeTracking(false);
+            profileSession.CreateProfile("Field Data abandonment boundary test");
+            profileSession.AddCurrency(91);
+            profileSession.UnlockFeature("field-data-abandonment-preserved-feature");
+            profileSession.UnlockSpecies(new SpeciesId("fox"));
+            profileSession.UnlockGenome(new SpeciesId("fox"));
+            var bankedProfileBefore = profileSession.Current;
+            typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, false);
+            typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, 10100);
+            ConfigureAuthoredFieldDataScenario(preview);
+
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++)
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
+            ExecuteShellCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.GreaterThan(0));
+
+            ExecuteShellCommand(shell, "EndCommand");
+            Assert.That(shell.GetType().GetProperty("EndConfirmationVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            ExecuteShellCommand(shell, "ConfirmEndCommand");
+
+            var abandonedSession = preview.FieldDataSession;
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(abandonedSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed));
+            Assert.That(abandonedSession.FieldDataLostOnFailure, Is.GreaterThan(0));
+            Assert.That(abandonedSession.Ledger.Balance, Is.Zero);
+            AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
+
+            ExecuteShellCommand(shell, "PlayNextSimulationCommand");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.Zero);
+            AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
+        }
+
+        static void AssertBankedProfilePreserved(ProfileSessionSnapshot expected, ProfileSessionSnapshot actual)
+        {
+            Assert.That(actual.Currency, Is.EqualTo(expected.Currency));
+            Assert.That(actual.UnlockedSpeciesIds, Is.EqualTo(expected.UnlockedSpeciesIds));
+            Assert.That(actual.UnlockedGenomeSpeciesIds, Is.EqualTo(expected.UnlockedGenomeSpeciesIds));
+            Assert.That(actual.UnlockedFeatureIds, Is.EqualTo(expected.UnlockedFeatureIds));
+            Assert.That(actual.CreateGenomeSnapshot().Fingerprint,
+                Is.EqualTo(expected.CreateGenomeSnapshot().Fingerprint));
+        }
+
+        static void AssertFieldDataMapRoundTrip(MonoBehaviour shell, SpeciesSimulationPreview preview)
+        {
+            var run = preview.Run;
+            var session = preview.FieldDataSession;
+            var state = preview.State;
+            var tick = run.Tick;
+            var balance = session.Ledger.Balance;
+            var shellType = shell.GetType();
+            Assert.That(shellType.GetProperty("JourneyMapHudButtonVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            ExecuteShellCommand(shell, "OpenJourneyMapCommand");
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            ExecuteShellCommand(shell, "CloseJourneyMapCommand");
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            Assert.That(preview.State, Is.EqualTo(state));
+            Assert.That(preview.Run, Is.SameAs(run));
+            Assert.That(preview.FieldDataSession, Is.SameAs(session));
+            Assert.That(run.Tick, Is.EqualTo(tick));
+            Assert.That(session.Ledger.Balance, Is.EqualTo(balance));
+        }
+
+        internal static CellularSimData ConfigureAuthoredFieldDataScenario(SpeciesSimulationPreview preview)
+        {
+            var authoredScenarioData = preview.SelectedScenario.CreateRuntimeData();
+            typeof(SpeciesSimulationPreview).GetField("width", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, authoredScenarioData.Width);
+            typeof(SpeciesSimulationPreview).GetField("height", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, authoredScenarioData.Height);
+            typeof(SpeciesSimulationPreview).GetField("stepInterval", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, authoredScenarioData.StepInterval);
+            typeof(SpeciesSimulationPreview).GetField("wrapEdges", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, authoredScenarioData.WrapEdges);
+            typeof(SpeciesSimulationPreview).GetField("startingPopulationOverrideEnabled", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, false);
+            return authoredScenarioData;
+        }
+
+        internal static void EnterAvailableFieldDataNode(MonoBehaviour shell, int index)
+        {
+            var shellType = shell.GetType();
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            var nodes = (Array)shellType.GetProperty("FieldDataRouteNodes").GetValue(shell);
+            for (var i = 0; i < nodes.Length; i++)
+                Assert.That(nodes.GetValue(i).GetType().GetProperty("CanEnter").GetValue(nodes.GetValue(i)), Is.EqualTo(i == index));
+            var node = nodes.GetValue(index);
+            var enter = node.GetType().GetProperty("EnterCommand").GetValue(node);
+            enter.GetType().GetMethod("Execute").Invoke(enter, new object[] { null });
+            Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+        }
+
+        static void ExecuteShellCommand(MonoBehaviour shell, string commandName)
+        {
+            var command = shell.GetType().GetProperty(commandName)?.GetValue(shell);
+            Assert.That(command, Is.Not.Null, commandName + " must be bound by the simulation shell.");
+            command.GetType().GetMethod("Execute")?.Invoke(command, new object[] { null });
+        }
+
+        static string GetChosenIncomeItemName(object item)
+        {
+            var label = item.GetType().GetProperty("Label")?.GetValue(item)?.ToString() ?? string.Empty;
+            var separator = label.IndexOf(". ", StringComparison.Ordinal);
+            return separator < 0 ? label : label.Substring(separator + 2);
         }
 
         [UnityTest]

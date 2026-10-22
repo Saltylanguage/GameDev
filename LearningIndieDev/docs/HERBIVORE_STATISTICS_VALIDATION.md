@@ -1,5 +1,7 @@
 # Herbivore Slash-Line Measurement Contract
 
+**October20,2026 external-control correction:** `ADD` includes committed paid additions; `REM` records committed player removals. These are separate from natural births/deaths and excluded from biological growth. Omitted `REM` in older reports means zero; frozen historical reports/dictionaries retain their original contract. New Field Data calculations use the formulas below.
+
 The versioned, machine-readable definitions used by new experiment bundles are
 in [`Research/METRIC_DICTIONARY_V1.json`](Research/METRIC_DICTIONARY_V1.json).
 This document remains the detailed validation rationale and historical formula
@@ -33,14 +35,14 @@ metric values to calculate anything.
 
 | Statistic | Formula | Raw inputs | Undefined/invalid handling |
 | --- | --- | --- | --- |
-| FPO | `SPO + ADD + BIR - PREY - STRV - CRWD` | `SPO`, `ADD`, `BIR`, `PREY`, `STRV`, `CRWD` | `ADD` is successful population purchases at phase boundaries. Compare the formula result to the observed final population. A mismatch is an FPO reconciliation failure. |
+| FPO | `SPO + ADD - REM + BIR - PREY - STRV - CRWD` | `SPO`, `ADD`, `REM`, `BIR`, `PREY`, `STRV`, `CRWD` | `ADD` is successful population purchases at phase boundaries. Compare the formula result to the observed final population. A mismatch is an FPO reconciliation failure. |
 | pAVI | `1 - PREY / ECN` | `PREY`, `ECN` | `ECN=0, PREY=0` is N/A. Positive `PREY` with `ECN=0`, negative exposure, or `PREY>ECN` is INVALID. |
 | eAVI | `1 - EHS / HPS` | `EHS`, `HPS` | `HPS=0, EHS=0` is N/A. Positive `EHS` with `HPS=0`, negative exposure, or `EHS>HPS` is INVALID. |
 | predAVG | Average of applicable pAVI and eAVI | pAVI, eAVI | One valid component stands alone. Both N/A is N/A. Any INVALID component makes predAVG INVALID. |
-| sAVI | `1 - STRV / (SPO + ADD + BIR - PREY)` | `STRV`, `SPO`, `ADD`, `BIR`, `PREY` | Zero exposure with zero `STRV` is N/A. Positive `STRV`, negative exposure, or `STRV>denominator` is INVALID. |
-| cAVI | `1 - CRWD / (SPO + ADD + BIR - PREY - STRV)` | `CRWD`, `SPO`, `ADD`, `BIR`, `PREY`, `STRV` | Zero exposure with zero `CRWD` is N/A. Positive `CRWD`, negative exposure, or `CRWD>denominator` is INVALID. |
+| sAVI | `1 - STRV / (SPO + ADD - REM + BIR - PREY)` | `STRV`, `SPO`, `ADD`, `REM`, `BIR`, `PREY` | Zero exposure with zero `STRV` is N/A. Positive `STRV`, negative exposure, or `STRV>denominator` is INVALID. |
+| cAVI | `1 - CRWD / (SPO + ADD - REM + BIR - PREY - STRV)` | `CRWD`, `SPO`, `ADD`, `REM`, `BIR`, `PREY`, `STRV` | Zero exposure with zero `CRWD` is N/A. Positive `CRWD`, negative exposure, or `CRWD>denominator` is INVALID. |
 | bAVG | `BIR / MAT` | `BIR`, `MAT` | `MAT=0, BIR=0` is N/A. Positive `BIR` with `MAT=0`, negative opportunity, or `BIR>MAT` is INVALID. |
-| RFS | `(FPO - SPO - ADD) * bAVG` | `FPO`, `SPO`, `ADD`, `bAVG` | Purchases are excluded from biological growth. Valid `bAVG=0` is a valid zero multiplier when `MAT>0`. N/A bAVG remains N/A; INVALID bAVG remains INVALID. |
+| RFS | `(FPO - SPO - ADD + REM) * bAVG` | `FPO`, `SPO`, `ADD`, `REM`, `bAVG` | Purchases are excluded from biological growth. Valid `bAVG=0` is a valid zero multiplier when `MAT>0`. N/A bAVG remains N/A; INVALID bAVG remains INVALID. |
 | APS | `RFS + predAVG - (1-sAVI) - (1-cAVI)` | RFS, predAVG, sAVI, cAVI | N/A contributions are neutral. Any INVALID component or FPO reconciliation failure makes APS INVALID. |
 
 The game stores raw counts as integers and computed export values as floats.
@@ -55,6 +57,7 @@ rounded check.
 | --- | --- |
 | SPO/FPO | First and final `PopulationHistory` snapshots for the player species. |
 | ADD | Successful boundary population additions recorded by the run state. |
+| REM | Successful player removals recorded by the run state, separate from natural death events. |
 | HPS | At the start of each step containing at least one living carnivore, count every living herbivore once. |
 | EHS | For each step, if at least one herbivore of the species has a carnivore encounter, count every living herbivore of that species once for that step. |
 | ECN | `SpeciesSimulationMetrics.RecordHerbivoreEncounter`, called when a carnivore has a creature target whose role is herbivore. |

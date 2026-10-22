@@ -137,6 +137,7 @@ namespace SaltyGame
         readonly List<SimulationPhaseResult> phaseResults;
         readonly Dictionary<SpeciesId, int> boundaryPopulationAdded = new Dictionary<SpeciesId, int>();
         readonly List<PopulationIntervention> populationInterventions = new List<PopulationIntervention>();
+        readonly Dictionary<SpeciesId, int> boundaryPopulationRemoved = new Dictionary<SpeciesId, int>();
         readonly SpeciesSimulationMetrics metrics;
         SpeciesSimulationMetricsSnapshot phaseMetricsStart;
         SpeciesPopulationSnapshot phasePopulationStart;
@@ -225,7 +226,9 @@ namespace SaltyGame
 
         public int GetBoundaryPopulationRemoved(SpeciesId species)
         {
-            var removed = 0;
+            var removed = boundaryPopulationRemoved.TryGetValue(species, out var recorded)
+                ? recorded
+                : 0;
             foreach (var action in populationInterventions)
                 if (action.Species == species && action.Amount < 0) removed -= action.Amount;
             return removed;
@@ -289,6 +292,32 @@ namespace SaltyGame
             populationHistory[populationHistory.Count - 1] = SpeciesPopulationSnapshot.Create(Cells, Tick);
             boundaryPopulationAdded.TryGetValue(species, out var added);
             boundaryPopulationAdded[species] = added + amount;
+            return true;
+        }
+
+        internal bool InstallFieldDataBoundaryCells(
+            Grid<SpeciesCell> expectedCells,
+            Grid<SpeciesCell> nextCells,
+            SpeciesId species,
+            int populationDelta)
+        {
+            if (Status != SimulationRunStatus.AwaitingDecision
+                || !ReferenceEquals(Cells, expectedCells)
+                || nextCells == null
+                || nextCells.Width != Cells.Width
+                || nextCells.Height != Cells.Height
+                || populationHistory.Count == 0
+                || populationHistory[populationHistory.Count - 1].Tick != Tick)
+            {
+                return false;
+            }
+
+            Cells = nextCells.Copy();
+            populationHistory[populationHistory.Count - 1] = SpeciesPopulationSnapshot.Create(Cells, Tick);
+            // Player controls are external population changes, never natural births or deaths.
+            var changes = populationDelta > 0 ? boundaryPopulationAdded : boundaryPopulationRemoved;
+            changes.TryGetValue(species, out var count);
+            changes[species] = count + Math.Abs(populationDelta);
             return true;
         }
 

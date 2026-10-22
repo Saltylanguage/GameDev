@@ -20,6 +20,12 @@ namespace SaltyGame
         internal SpeciesSimulationRunner Runner => runner;
         public SimulationRunState Run => runner?.Run;
         public float StepSeconds => runner?.StepSeconds ?? 0f;
+        public bool TryGetCurrentRules(SpeciesId species, out SpeciesRules currentRules)
+        {
+            if (runner != null) return runner.TryGetCurrentRules(species, out currentRules);
+            currentRules = null;
+            return false;
+        }
 
         public void SetRunner(SpeciesSimulationRunner nextRunner)
         {
@@ -146,6 +152,23 @@ namespace SaltyGame
             return runner != null && runner.TryChangeBoundaryPopulation(species, requested, source, out actual);
         }
 
+        internal bool ContinueWithFieldDataSpeciesRules(
+            SpeciesId targetSpecies,
+            SpeciesRules targetRules,
+            float preContactAvoidanceChance,
+            string effectsFingerprint,
+            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout)
+        {
+            if (runner == null || runner.Run.Status != SimulationRunStatus.AwaitingDecision
+                || !runner.ContinueWithFieldDataSpeciesRules(targetSpecies, targetRules, preContactAvoidanceChance,
+                    effectsFingerprint, activeUpgradeLoadout))
+                return false;
+
+            accumulatedSeconds = 0f;
+            boundaryRaised = false;
+            return true;
+        }
+
         public bool TryAddBoundaryPopulation(SpeciesId species, int amount)
         {
             return runner != null && runner.TryAddBoundaryPopulation(species, amount);
@@ -155,6 +178,27 @@ namespace SaltyGame
         {
             added = 0;
             return runner != null && runner.TryAddBoundaryPopulation(species, amount, out added, ignorePopulationPool);
+        }
+
+        internal bool TryPrepareFieldDataPopulationChange(
+            FieldDataPopulationInterventionKind kind,
+            int seed,
+            out PreparedFieldDataPopulationChange prepared,
+            out string error)
+        {
+            if (runner == null)
+            {
+                prepared = null;
+                error = "The simulation runner is unavailable.";
+                return false;
+            }
+
+            return runner.TryPrepareFieldDataPopulationChange(kind, seed, out prepared, out error);
+        }
+
+        internal bool CommitFieldDataPopulationChange(PreparedFieldDataPopulationChange prepared)
+        {
+            return runner != null && runner.CommitFieldDataPopulationChange(prepared);
         }
 
         public bool ContinueWithBoundaryState(

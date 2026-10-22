@@ -539,7 +539,7 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Herbivore stat counts cannot be negative.");
             }
 
-            var populationBeforeStarvation = startingPopulation + addedPopulation + births - preyed;
+            var populationBeforeStarvation = startingPopulation + addedPopulation - removedPopulation + births - preyed;
             var populationBeforeCrowding = populationBeforeStarvation - starved;
             var inversePreyedAverageStatus = GetRateStatus(preyed, encounters);
             var inverseEncounterAverageStatus = GetRateStatus(
@@ -778,7 +778,7 @@ namespace SaltyGame
                 throw new ArgumentOutOfRangeException(nameof(startingPopulation), "Predator stat counts cannot be negative.");
             }
 
-            var populationBeforeStarvation = startingPopulation + addedPopulation + births;
+            var populationBeforeStarvation = startingPopulation + addedPopulation - removedPopulation + births;
             var populationBeforeCrowding = populationBeforeStarvation - starved;
             var huntSuccessStatus = GetRateStatus(preyKilled, huntAttempts);
             var preyAccessStatus = GetRateStatus(encounteredPredatorSteps, preyActivePredatorSteps);

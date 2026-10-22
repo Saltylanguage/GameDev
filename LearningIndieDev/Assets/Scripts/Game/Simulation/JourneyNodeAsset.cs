@@ -4,17 +4,6 @@ using UnityEngine;
 
 namespace SaltyGame
 {
-    public enum JourneyNodeKind
-    {
-        Simulation,
-        Condition,
-        Upgrade,
-        Event,
-        Finale,
-        Reward,
-        Refresh,
-    }
-
     [CreateAssetMenu(menuName = "Salty Game/Journey/Node", fileName = "JourneyNode")]
     public sealed class JourneyNodeAsset : ScriptableObject
     {

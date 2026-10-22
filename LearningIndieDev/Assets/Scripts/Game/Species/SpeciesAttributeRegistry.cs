@@ -76,6 +76,7 @@ namespace SaltyGame
         GestationTicks,
         StartingPopulation,
         PopulationPoolCapacity,
+        PreContactAvoidanceChance,
     }
 
     public static class SpeciesAttributeIds
@@ -110,6 +111,7 @@ namespace SaltyGame
         public const string CrowdingTolerance = "crowding.tolerance";
         public const string FleeMovementSpeedBonus = "flee.movement-speed-bonus";
         public const string TrackingPersistenceSteps = "awareness.tracking-persistence-steps";
+        public const string PreContactAvoidanceChance = "avoidance.pre-contact-chance";
     }
 
     public static class SpeciesAttributeRegistry
@@ -223,7 +225,7 @@ namespace SaltyGame
                     reproductionNeighborCount += (int)value;
                     break;
                 case SpeciesAttributeTarget.ReproductionChance:
-                    reproductionChance += value;
+                    reproductionChance = Math.Max(0f, Math.Min(1f, reproductionChance + value));
                     break;
                 case SpeciesAttributeTarget.ReproductionFoodRequired:
                     reproductionFoodRequired += (int)value;
@@ -288,6 +290,8 @@ namespace SaltyGame
                 case SpeciesAttributeTarget.TrackingPersistenceSteps:
                     trackingPersistenceSteps += (int)value;
                     break;
+                case SpeciesAttributeTarget.PreContactAvoidanceChance:
+                    throw new InvalidOperationException("Pre-contact avoidance is resolved through SpeciesExperimentalOptions.");
                     default:
                         throw new ArgumentOutOfRangeException(nameof(definition.Target), definition.Target, "Unknown species attribute target.");
                 }
@@ -371,6 +375,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.CrowdingTolerance, "Crowding Tolerance", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.CrowdingTolerance),
                 Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Move Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
                 Definition(SpeciesAttributeIds.TrackingPersistenceSteps, "Tracking Persistence Steps", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.TrackingPersistenceSteps),
+                Definition(SpeciesAttributeIds.PreContactAvoidanceChance, "Pre-contact Avoidance Chance", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.PreContactAvoidanceChance),
             };
 
             var result = new Dictionary<string, SpeciesAttributeDefinition>(StringComparer.Ordinal);

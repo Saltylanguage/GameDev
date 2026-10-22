@@ -2,11 +2,12 @@
 
 - **Document:** PDD-FD-001, draft 0.1
 - **Prepared:** 2026-10-15
+- **Node-navigation revision:** 2026-10-18 — keep settlement without population controls; return to the map and explicitly select the next node. See the [implementation handoff](handoffs/2026-10-18-fd-node-map-navigation.md).
 - **Readability revision:** 2026-10-16, player-process overview only
-- **Product baseline:** [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
+- **Product baseline:** [Field Data and Journey Loop Design v1.1](FIELD_DATA_JOURNEY_DESIGN.md)
 - **Technical companion:** [Solution Design, SDD-FD-001](FIELD_DATA_SOLUTION_DESIGN.md)
 - **Decision owner:** Bevin; sprint scheduling remains with Salty
-- **Status:** process design for the selected S5 slice; implementation/evidence remain outstanding
+- **Status:** Initial five-node slice accepted by Bevin on October21,2026; APS fix confirmed in play. Further content/polish remain future work. The [acceptance record](FIELD_DATA_SELF_PLAY_REVIEW.md) preserves observations, prior verification and unrecorded metadata.
 - **Delivery:** [Active S5 control](Sprints/S5-control-record.md), October 19-November 15, 2026; all 16 tickets selected, owners/reviewers unassigned by request
 
 ## 1. Purpose and scope
@@ -89,8 +90,8 @@ the simulation. What happens next depends on where you are in the journey:
 
 | After round 6 of… | What you do next |
 | --- | --- |
-| Simulation 1 or 2 | Choose one free node upgrade or Skip. Optionally buy population changes on the results screen, then enter the shop. Buy journey upgrades, reorder income upgrades, or save your Field Data. When ready, continue to the next simulation with the same ecosystem. |
-| Simulation 3 | The journey succeeds. Review your results and leftover Field Data. There are no more upgrade choices or population purchases; leftover Field Data is discarded when you leave the results. |
+| Simulation 1 or 2 | Review settlement and choose one free node upgrade or Skip. No population controls. Return to the map, then click the ready Shop node to begin shopping. Leave the shop for the map, then click the ready Simulation node when you want it to run. |
+| Simulation 3 | The journey succeeds. Review results and leftover Field Data, then return to the completed map. No more upgrades or population controls. Starting a new journey discards leftover Field Data and prepares a fresh route for explicit entry. |
 
 **If your selected species dies out at any point, the journey fails immediately.**
 That includes the final tick of a round: you receive no payout, reward choice or
@@ -101,6 +102,17 @@ Desktop currency and unlocks stay intact.
 The numbered steps below contain the detailed implementation requirements.
 
 ### P-01 — Launch and freeze inputs
+
+**Entry decision, October 16:** Open Simulation from the Desktop into the
+existing larger journey map, then select the Field Data Test Route there.
+Route selection opens a five-node route preview with a separate Start action;
+it does not begin simulation ticks or grant an opening reward. The player can
+return to simulation setup before starting. Keep the larger map available as
+separate content. The player can reopen the selected route map from the running
+simulation, round decisions and shops, then return to the same paused run or
+decision state.
+[FD-T01 entry review](FIELD_DATA_ENTRY_REVIEW.md) records the implementation
+accepted boundary and Bevin's waiver of further review on October 16.
 
 Resolve the chosen scenario, species/Genome state and Field Data definitions.
 Create a new journey identity, one simulation world and one zero-FD progression.
@@ -124,17 +136,17 @@ The same boundary cannot settle again when a screen reopens or Continue repeats.
 
 ### P-04 — Resolve the free reward
 
-After local rounds 1–5, offer three distinct eligible free choices or Skip.
-After Simulation 1 and 2 clear, offer the free node choice instead. Income
-upgrades compete with ordinary species upgrades in one pick-one choice.
-Eligibility does not guarantee an income offer. Skip has no reward or penalty.
-An income acquisition affects the next unsettled round payout, not the one
-just shown. A reward choice is not a purchase from the journey wallet.
+After local rounds 1–5, offer three distinct eligible free species upgrades or
+Skip. After Simulation 1 and 2 clear, offer the free node choice instead.
+Income modifiers are never part of round or node rewards; they appear only in
+randomized shop offers. Skip has no reward or penalty. A reward choice is not a
+purchase from the journey wallet.
 
 ### P-05 — Apply population interventions
 
-At each ordinary round break, and at nonterminal round-6 results before the
-shop, show all six controls with their cost/effect. One click requests one
+At ordinary round breaks after local rounds 1–5, show all six controls with
+their cost/effect. Do not show or permit them at node-end settlement or in a
+shop. One click requests one
 purchase. Validate funds, valid placement/targets and the final-selected-
 individual guard before committing any effect. A rejection changes neither
 balance nor board. Each accepted purchase changes the board and visible wallet
@@ -146,8 +158,9 @@ intervention window. No controls remain after terminal success.
 After its sixth successful round payout, mark the simulation node complete and
 automatically award its provisional 10-FD bonus once. Present population income
 and the bonus as separate entries. For nodes 1 and 2, resolve the node reward,
-allow the result-screen population controls, then enter the shop. Simulation 3
-continues directly to success results after settlement.
+then select Return to Map. The shop stays closed until its ready node is
+clicked. Simulation 3 shows success results after settlement and offers Return
+to Map. Returning to the map does not restart the route or settle rewards again.
 
 ### P-07 — Visit the shop
 
@@ -163,8 +176,9 @@ same-visit exclusions. Keep fewer offers if the pool cannot supply replacements.
 Random and chosen income reorders are available only here. Random executes
 without a preview. Chosen exposes a draft sequence, preview and confirmation;
 cancel commits nothing. Every successful paid reorder of either kind advances
-the shop's shared price step. Leaving the shop resumes the same world; it does
-not recreate the board or progression. Species shop effects begin in the next
+the shop's shared price step. Leaving the shop returns to the map; only clicking
+the ready simulation node resumes the same world. Preserve board, tick, wallet
+and progression while waiting. Species shop effects begin in the next
 simulation and income changes first affect its next unsettled payout.
 
 ### P-08 — End the journey
@@ -172,7 +186,8 @@ simulation and income changes first affect its next unsettled payout.
 On failure or incomplete-route abandonment, capture the remaining FD as the
 amount lost, clear the journey wallet, and show failure results. Do not credit
 or debit banked Desktop currency/unlocks. On success, display the leftover FD
-and discard it when results close. Start a later journey with new local state.
+and retain it when returning to the completed map. Starting a new journey
+closes the finished session, discards the leftover FD and prepares new local state.
 Profile playtime/tick accounting is a separate existing concern; banked-state
 checks must not mistake legitimate time accounting for an economy write.
 
@@ -205,7 +220,7 @@ reviewers remain unassigned for team review; its estimates are provisional.
 | --- | --- | --- |
 | FD-I01 — Establish contracts | Capture current behavior, frozen definition shape and source/test baseline; choose exact integration files from the solution draft | Valid definitions, source/ID mapping, regression baseline and reviewed ownership |
 | FD-I02 — Journey and settlement | Retain one world/progression for the route; implement the one settlement path, wallet lifecycle and terminal rules | Fixtures for all 18 boundaries, last-tick extinction, repeated callbacks, success/failure/reset and protected banked state |
-| FD-I03 — Interventions | Deliver six controls through atomic deterministic population changes | Add/remove by species, capacity, no-charge rejection, final-individual guard and pre-shop round-6 cases |
+| FD-I03 — Interventions | Deliver six controls through atomic deterministic population changes | Add/remove by species, capacity, no-charge rejection, final-individual guard; reject node-end/shop purchases |
 | FD-I04 — Offers and upgrades | Deliver free/shop eligibility, signed shop effects/caps, ordered income, rerolls and reorders | Exact math, opposing cancellation at bounds, source activation timing, seeded offers and all price/charge rules |
 | FD-I05 — Noesis integration | Present receipts, controls, shop and reorder draft in the canonical Desktop route | Runtime interaction, disabled/stale command checks, repeated open/close, full-route continuity and visual review |
 | FD-I06 — Reproducible evidence | Extend the existing runner/report path to execute this same journey domain and its actions | Unity/headless parity for bounded fixtures; versioned manifest, ledger and deterministic replay; no duplicate economy implementation |

@@ -779,7 +779,7 @@ namespace SaltyGame.EditorTests
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 var loaded = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(path).CreateRuntimeData();
                 Assert.That(loaded.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(25));
-                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(35));
+                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
             }
             finally
             {

@@ -2,6 +2,7 @@
 param(
     [Parameter(Mandatory)][string]$OutputPath,
     [string]$ScenarioPath = 'Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset',
+    [string]$FieldDataDefinitionPath,
     [string[]]$ScientificArguments = @('-playerSpeciesId', 'hare', '-runTicks', '700', '-combatMode', 'opposed-roll', '-experimentalFeatures', 'bev-experimental'),
     [ValidateRange(0, 2147483647)][int]$SeedStart = 1,
     [ValidateRange(1, 1000)][int]$ReferenceSeeds = 4,
@@ -42,6 +43,9 @@ $arguments = @('run', $project, '--editor-path', $editor, '--timeout', '600',
     '-executeMethod', 'SaltyGame.EditorTools.CellularSimulationExperimentRunner.ExportPortableFromCommandLine',
     '-logFile', $log, '-scenarioPath', $ScenarioPath, '-portableOutput', $output,
     '-portableSourceCommit', $commit, '-seedStart', [string]$SeedStart, '-seedCount', [string]$ReferenceSeeds) + $ScientificArguments
+if (-not [string]::IsNullOrWhiteSpace($FieldDataDefinitionPath)) {
+    $arguments += @('-fieldDataDefinitionPath', $FieldDataDefinitionPath)
+}
 $cli = Resolve-UnityCliPath
 $cliOutput = & $cli @arguments
 $cliExitCode = $LASTEXITCODE

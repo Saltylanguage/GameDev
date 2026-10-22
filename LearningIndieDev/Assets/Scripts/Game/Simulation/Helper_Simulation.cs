@@ -12,6 +12,8 @@ namespace SaltyGame
     {
         readonly SimulationManager simulationManager = new SimulationManager();
 
+        internal SimulationManager Manager => simulationManager;
+
         public event Action<SimulationRunState> RunCompleted
         {
             add
