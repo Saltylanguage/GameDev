@@ -6008,6 +6008,28 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void ExperimentalPredatorStatLineCountsPaidRemovalOnce()
+        {
+            var statLine = new SpeciesPredatorStatLine(
+                SpeciesIds.Carnivore,
+                startingPopulation: 10,
+                preyActivePredatorSteps: 0,
+                encounteredPredatorSteps: 0,
+                encounters: 0,
+                huntAttempts: 0,
+                preyKilled: 0,
+                starved: 0,
+                mating: 0,
+                births: 0,
+                crowding: 0,
+                finalPopulation: 9,
+                removedPopulation: 1);
+
+            Assert.That(statLine.ExpectedFinalPopulation, Is.EqualTo(9));
+            Assert.That(statLine.PopulationReconciled, Is.True);
+        }
+
+        [Test]
         public void ExperimentalPredatorStatLineInvalidatesImpossibleHuntRate()
         {
             var statLine = new SpeciesPredatorStatLine(

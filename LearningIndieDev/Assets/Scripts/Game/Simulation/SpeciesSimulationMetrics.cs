@@ -548,7 +548,7 @@ namespace SaltyGame
             var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
             var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
             var birthAverageStatus = GetRateStatus(births, mating);
-            var expectedFinalPopulation = populationBeforeCrowding - crowding - removedPopulation;
+            var expectedFinalPopulation = populationBeforeCrowding - crowding;
             var populationReconciled = finalPopulation == expectedFinalPopulation;
 
             var inversePreyedAverage = inversePreyedAverageStatus == SpeciesHerbivoreMetricStatus.Valid
@@ -785,7 +785,7 @@ namespace SaltyGame
             var inverseStarvedAverageStatus = GetRateStatus(starved, populationBeforeStarvation);
             var inverseCrowdingAverageStatus = GetRateStatus(crowding, populationBeforeCrowding);
             var birthAverageStatus = GetRateStatus(births, mating);
-            var expectedFinalPopulation = populationBeforeCrowding - crowding - removedPopulation;
+            var expectedFinalPopulation = populationBeforeCrowding - crowding;
             var populationReconciled = finalPopulation == expectedFinalPopulation;
 
             var huntSuccessAverage = huntSuccessStatus == SpeciesHerbivoreMetricStatus.Valid
