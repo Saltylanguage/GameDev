@@ -10,5 +10,6 @@ namespace SaltyGame
         Finale = 4,
         Reward = 5,
         Shop = 6,
+        Refresh = 7,
     }
 }

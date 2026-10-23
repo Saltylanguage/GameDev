@@ -270,6 +270,7 @@ namespace SaltyGame.EditorTests
             Assert.That((int)JourneyNodeKind.Finale, Is.EqualTo(4));
             Assert.That((int)JourneyNodeKind.Reward, Is.EqualTo(5));
             Assert.That((int)JourneyNodeKind.Shop, Is.EqualTo(6));
+            Assert.That((int)JourneyNodeKind.Refresh, Is.EqualTo(7));
         }
 
         [Test]
