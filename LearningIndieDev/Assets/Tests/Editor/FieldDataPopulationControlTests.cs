@@ -27,9 +27,7 @@ namespace SaltyGame.EditorTests
                 hareCount: 100, foxCount: 4, plantCount: 20, includeFox: true);
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
                 Assert.That(session.TryBuyPopulationControl("accounting", kind, out var receipt, out var error), Is.True, error);
                 Assert.That(session.TryBuyPopulationControl("accounting", kind, out _, out error), Is.True, error);
                 var run = session.Run;
@@ -92,13 +90,15 @@ namespace SaltyGame.EditorTests
                 manager.Advance(10.1f);
                 Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.RoundDecision));
                 Assert.That(session.Ledger.Balance, Is.EqualTo(100));
-                var settledAward = session.Ledger.Awards.Single();
                 Assert.That(session.CanUsePopulationControls, Is.False);
                 Assert.That(session.TryBuyPopulationControl("before-reward", FieldDataPopulationInterventionKind.AddHare,
                     out _, out var blockedError), Is.False);
                 Assert.That(blockedError, Does.Contain("Resolve or skip"));
                 ResolveCurrentReward(session);
                 Assert.That(session.CanUsePopulationControls, Is.True);
+                ReachFirstFundedRoundDecision(manager, session);
+                var settledAward = session.Ledger.Awards.Last();
+                var balanceBeforeControls = session.Ledger.Balance;
 
                 var before = GetCounts(session.Run);
                 var naturalActivityBefore = new[]
@@ -128,12 +128,12 @@ namespace SaltyGame.EditorTests
                     Assert.That(receipt.AffectedPositions.Count, Is.EqualTo(
                         actions[index] == FieldDataPopulationInterventionKind.AddPlants
                             || actions[index] == FieldDataPopulationInterventionKind.RemovePlants ? 5 : 1));
-                    Assert.That(session.Ledger.Balance, Is.EqualTo(90 - index * 10));
+                    Assert.That(session.Ledger.Balance, Is.EqualTo(balanceBeforeControls - (index + 1) * 10));
 
                     Assert.That(session.TryBuyPopulationControl(requestId, actions[index],
                         out var replay, out error), Is.True, error);
                     Assert.That(replay, Is.SameAs(receipt));
-                    Assert.That(session.Ledger.Balance, Is.EqualTo(90 - index * 10));
+                    Assert.That(session.Ledger.Balance, Is.EqualTo(balanceBeforeControls - (index + 1) * 10));
                 }
 
                 var balanceBeforeMismatchedReplay = session.Ledger.Balance;
@@ -202,12 +202,8 @@ namespace SaltyGame.EditorTests
             using (left)
             using (right)
             {
-                Assert.That(left.Begin(), Is.True);
-                Assert.That(right.Begin(), Is.True);
-                leftManager.Advance(10.1f);
-                rightManager.Advance(10.1f);
-                ResolveCurrentReward(left);
-                ResolveCurrentReward(right);
+                ReachFirstFundedRoundDecision(leftManager, left);
+                ReachFirstFundedRoundDecision(rightManager, right);
 
                 var leftCells = left.Run.Cells;
                 var leftBalance = left.Ledger.Balance;
@@ -235,9 +231,7 @@ namespace SaltyGame.EditorTests
             var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
                 var beforeCells = session.Run.Cells;
                 var beforeBalance = session.Ledger.Balance;
                 Assert.That(beforeBalance, Is.GreaterThanOrEqualTo(10));
@@ -258,9 +252,7 @@ namespace SaltyGame.EditorTests
                 hareCount: 20, plantCount: 20, maxPopulationOverride: 40);
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
                 Assert.That(session.Ledger.Balance, Is.GreaterThanOrEqualTo(10));
                 var cellsBefore = session.Run.Cells;
                 var balanceBefore = session.Ledger.Balance;
@@ -281,9 +273,7 @@ namespace SaltyGame.EditorTests
                 hareCount: 20, plantCount: 0, maxPopulationOverride: 21);
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
 
                 var shared = FindCreature(session.Run.Cells, Hare);
                 session.Run.Cells.SetCell(shared.x, shared.y,
@@ -306,9 +296,7 @@ namespace SaltyGame.EditorTests
             var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
 
                 // Leave only four cells without a plant resource. The request must
                 // reject the full five-Plant batch instead of overwriting existing plants.
@@ -359,9 +347,7 @@ namespace SaltyGame.EditorTests
                 shared.cell.WithPlantResource(TerrainDefaults.Grass, plant, 20f));
             using (session)
             {
-                Assert.That(session.Begin(), Is.True);
-                manager.Advance(10.1f);
-                ResolveCurrentReward(session);
+                ReachFirstFundedRoundDecision(manager, session);
                 var sharedCell = session.Run.Cells.GetCell(shared.x, shared.y);
                 var sharedEntity = sharedCell.EntityId;
 
@@ -513,6 +499,38 @@ namespace SaltyGame.EditorTests
             var progression = new SpeciesProgression(new SpeciesDefinition(hare, scenario.SpeciesRules[hare]));
             var session = new FieldDataJourneySession(definition, manager, progression);
             return (definition, manager, progression, session);
+        }
+
+        static void ReachFirstFundedRoundDecision(SimulationManager manager, FieldDataJourneySession session)
+        {
+            if (session.State == FieldDataJourneyFlowState.Ready)
+                Assert.That(session.Begin(), Is.True);
+            if (session.State == FieldDataJourneyFlowState.RoundDecision)
+            {
+                ResolveCurrentReward(session);
+                Assert.That(session.Continue(), Is.True);
+            }
+
+            for (var round = session.GlobalRound + 1; round <= FieldDataJourneyDefinition.RoundsPerSimulation; round++)
+            {
+                manager.Advance(10.1f);
+                if (round < FieldDataJourneyDefinition.RoundsPerSimulation)
+                {
+                    Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.RoundDecision));
+                    ResolveCurrentReward(session);
+                    Assert.That(session.Continue(), Is.True);
+                }
+            }
+
+            Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.Shop));
+            ResolveCurrentReward(session);
+            Assert.That(session.AvailableFieldData, Is.GreaterThan(0));
+            Assert.That(session.BeginShopPurchases(), Is.True);
+            Assert.That(session.Continue(), Is.True);
+            manager.Advance(10.1f);
+            ResolveCurrentReward(session);
+            Assert.That(session.GlobalRound, Is.EqualTo(FieldDataJourneyDefinition.RoundsPerSimulation + 1));
+            Assert.That(session.CanUsePopulationControls, Is.True);
         }
 
         static void ResolveCurrentReward(FieldDataJourneySession session)

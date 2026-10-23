@@ -5,21 +5,21 @@ become a master changelog.
 
 ## Current focus
 
-**October 22 Field Data and RG-02 integration:** Sim's accepted five-node Field
+**October 23 Field Data route verification:** Sim's accepted five-node Field
 Data journey, shop and reroll flow, ordered income controls, interventions, and
 APS accounting are merged with the Rabbit Genome and population-control work.
 Forest Edge remains at 400/20/10. The player wallet is unavailable and cannot
 be spent during the opening six-round simulation; it becomes available at the
-first shop boundary. The audit ledger still records those round receipts. The
-portable build and full journey self-test pass. In a clean isolated checkout,
-focused Unity tests pass: FieldDataJourneySessionTests 25/25 EditMode,
-ProfileJourneyRewardsPayOncePersistAndUnlockGeneLab 1/1 PlayMode, and the
-Desktop visual acceptance capture 1/1. A compile retry found and fixed the
-missing serialized Refresh enum value and an invalid phase payout assertion.
-The visual capture covers the Desktop and current journey map; it does not
-verify the Field Data shop. A normal-route/shop receipt still needs a fresh
-manual Editor run. RG-02 remains open pending that route verification. No new ecology
-experiment ran. See the [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
+first shop boundary. The audit ledger still records those round receipts. A
+shop-route PlayMode test now passes through the first shop, purchase, and next
+simulation (1/1), and the population-control EditMode class passes (16/16).
+The accounting failure was caused by paid removals being deducted twice from
+expected final population; commit `bc864346` fixes both herbivore and predator
+stat lines. Test fixtures now earn spendable Field Data through the opening
+simulation and shop. The original Editor checkout remains locked, so a hands-on
+Editor pass and shop screenshot are still open. RG-02 remains open pending that
+visual route review. No new ecology experiment ran. See the
+[RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
 
 **October 22 Field Data integration:** Sim's published FD implementation is now
 being integrated: the accepted five-node journey, shop and reroll flow, ordered
