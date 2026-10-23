@@ -11,10 +11,14 @@ APS accounting are merged with the Rabbit Genome and population-control work.
 Forest Edge remains at 400/20/10. The player wallet is unavailable and cannot
 be spent during the opening six-round simulation; it becomes available at the
 first shop boundary. The audit ledger still records those round receipts. The
-portable build and full journey self-test pass. Unity Editor/PlayMode checks
-could not run because the Editor project is locked/unreachable and its license
-service cannot be reached; a normal-route receipt still needs a fresh Editor
-run. RG-02 remains open pending that route verification. No new ecology
+portable build and full journey self-test pass. In a clean isolated checkout,
+focused Unity tests pass: FieldDataJourneySessionTests 25/25 EditMode,
+ProfileJourneyRewardsPayOncePersistAndUnlockGeneLab 1/1 PlayMode, and the
+Desktop visual acceptance capture 1/1. A compile retry found and fixed the
+missing serialized Refresh enum value and an invalid phase payout assertion.
+The visual capture covers the Desktop and current journey map; it does not
+verify the Field Data shop. A normal-route/shop receipt still needs a fresh
+manual Editor run. RG-02 remains open pending that route verification. No new ecology
 experiment ran. See the [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
 
 **October 22 Field Data integration:** Sim's published FD implementation is now
@@ -25,8 +29,11 @@ matching design/ticket history and verified handoffs are preserved in the
 published as `e6cadcd`; this integration also includes the later FD2 design
 publication `9f9ed115`. The wallet timing follows Josh's decision: first-six-
 round receipts remain in the audit ledger, while spendable/displayed Field Data
-is zero until the first shop after those six rounds. Portable build and replay
-self-test pass. FD2 remains design-only and is not implemented here.
+is zero until the first shop after those six rounds. Serialized Refresh nodes
+retain a distinct enum value from Shop. Portable build and replay self-test
+pass, as do the focused 25/25 EditMode, 1/1 PlayMode and 1/1 Desktop visual
+acceptance checks in a clean isolated checkout. FD2 remains design-only and is
+not implemented here.
 
 **October 21 model-switch planning handoff:** Josh requested a plan here so Luna
 can implement in bounded packets. The
