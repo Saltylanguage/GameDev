@@ -19,6 +19,7 @@
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesCell.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesDefinition.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesGenomeContract.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Species/FieldDataPermanentProgressionDefinition.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesId.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesProgression.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesRole.cs" />

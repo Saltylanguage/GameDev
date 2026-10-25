@@ -13,9 +13,15 @@ MonoBehaviour:
   m_Name: SafeForaging
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.safe-foraging
-  displayName: Safe Foraging
-  description: Resource branch placeholder; effect contract pending.
+  displayName: Efficient Digestion
+  description: Digestion energy bonus +0.25 while active.
   targetSpeciesId: hare
   prerequisiteNodeIds:
-  - hare.swift-digging
   - hare.keen-hearing
+  - hare.swift-digging
+  rabbitDataPrice: 5
+  capacityPoints: 2
+  branchName: FD2
+  modifiers:
+  - attributeId: digestion.energy-bonus
+    signedValue: 0.25

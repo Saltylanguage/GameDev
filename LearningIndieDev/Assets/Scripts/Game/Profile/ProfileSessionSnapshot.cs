@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace SaltyGame
 {
@@ -13,6 +14,7 @@ namespace SaltyGame
         readonly IReadOnlyList<SpeciesId> unlockedGenomeSpeciesIds;
         readonly IReadOnlyList<string> unlockedFeatureIds;
         readonly IReadOnlyList<string> completedRunIds;
+        readonly IReadOnlyDictionary<SpeciesId, long> speciesDataWallets;
 
         public bool HasLoadedProfile { get; }
         public string ProfileId { get; }
@@ -22,8 +24,9 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesId> UnlockedGenomeSpeciesIds => unlockedGenomeSpeciesIds;
         public IReadOnlyList<string> UnlockedFeatureIds => unlockedFeatureIds;
         public IReadOnlyList<string> CompletedRunIds => completedRunIds;
-        public long Currency { get; }
-        public long RabbitData { get; }
+        public long Currency => ResearchData;
+        public long RabbitData => speciesDataWallets.TryGetValue(new SpeciesId("hare"), out var amount) ? amount : 0;
+        public IReadOnlyDictionary<SpeciesId, long> SpeciesDataWallets => speciesDataWallets;
         public long ResearchData { get; }
         public int CompletedRuns { get; }
         public bool GeneLabUnlocked => CompletedRuns >= 3;
@@ -43,16 +46,17 @@ namespace SaltyGame
             IEnumerable<SpeciesId> unlockedGenomeSpeciesIds = null,
             IEnumerable<string> unlockedFeatureIds = null,
             long rabbitData = 0,
-            long researchData = 0,
+            long? researchData = null,
             int completedRuns = 0,
-            IEnumerable<string> completedRunIds = null)
+            IEnumerable<string> completedRunIds = null,
+            IEnumerable<KeyValuePair<SpeciesId, long>> speciesDataWallets = null)
         {
             if (currency < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(currency));
             }
 
-            if (rabbitData < 0 || researchData < 0 || completedRuns < 0)
+            if (rabbitData < 0 || researchData.GetValueOrDefault() < 0 || completedRuns < 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(rabbitData), "Genome balances and completed runs cannot be negative.");
             }
@@ -70,9 +74,8 @@ namespace SaltyGame
             HasLoadedProfile = hasLoadedProfile;
             ProfileId = profileId ?? string.Empty;
             ProfileName = profileName ?? string.Empty;
-            Currency = currency;
-            RabbitData = rabbitData;
-            ResearchData = researchData;
+            ResearchData = researchData ?? currency;
+            this.speciesDataWallets = CopySpeciesDataWallets(speciesDataWallets, rabbitData);
             CompletedRuns = completedRuns;
             SimulationTicks = simulationTicks;
             PlayTimeMilliseconds = playTimeMilliseconds;
@@ -159,7 +162,7 @@ namespace SaltyGame
                     PlayTimeMilliseconds,
                     unlockedSpeciesIds,
                     unlockedGenomeSpeciesIds,
-                    unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                    unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
             }
 
             nextProfiles.Add(nextProfile);
@@ -173,28 +176,28 @@ namespace SaltyGame
                 PlayTimeMilliseconds,
                 unlockedSpeciesIds,
                 unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithLoaded(bool isLoaded)
         {
             return new ProfileSessionSnapshot(isLoaded, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithCurrency(long amount)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 amount, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, amount, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithTime(long simulationTicks, long playTimeMilliseconds)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, simulationTicks, playTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithUnlockedSpecies(SpeciesId speciesId)
@@ -212,7 +215,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, nextIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithUnlockedGenome(SpeciesId speciesId)
@@ -230,7 +233,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, nextIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithUnlockedFeature(string featureId)
@@ -248,7 +251,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds,
-                unlockedGenomeSpeciesIds, nextIds, RabbitData, ResearchData, CompletedRuns, completedRunIds);
+                unlockedGenomeSpeciesIds, nextIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
         }
 
         public ProfileSessionSnapshot WithGenomeEconomy(
@@ -265,10 +268,48 @@ namespace SaltyGame
                 next = next.WithUnlockedGenome(new SpeciesId("hare"));
             }
 
+            var wallets = new Dictionary<SpeciesId, long>(next.SpeciesDataWallets);
+            var hare = new SpeciesId("hare");
+            if (rabbitData != 0 || wallets.ContainsKey(hare))
+            {
+                wallets[hare] = rabbitData;
+            }
+
             return new ProfileSessionSnapshot(next.HasLoadedProfile, next.ProfileId, next.ProfileName,
                 next.GenomeProfiles, next.Currency, next.SimulationTicks, next.PlayTimeMilliseconds,
                 next.UnlockedSpeciesIds, next.UnlockedGenomeSpeciesIds, next.UnlockedFeatureIds,
-                rabbitData, researchData, completedRuns, nextCompletedRunIds ?? completedRunIds);
+                rabbitData, researchData, completedRuns, nextCompletedRunIds ?? completedRunIds, wallets);
+        }
+
+        static IReadOnlyDictionary<SpeciesId, long> CopySpeciesDataWallets(
+            IEnumerable<KeyValuePair<SpeciesId, long>> wallets, long rabbitData)
+        {
+            var copied = new Dictionary<SpeciesId, long>();
+            if (wallets != null)
+            {
+                foreach (var wallet in wallets)
+                {
+                    if (!wallet.Key.IsValid || wallet.Value < 0 || copied.ContainsKey(wallet.Key))
+                    {
+                        throw new ArgumentException("Species wallets need unique valid IDs and nonnegative balances.", nameof(wallets));
+                    }
+
+                    copied.Add(wallet.Key, wallet.Value);
+                }
+            }
+
+            var hare = new SpeciesId("hare");
+            if (rabbitData != 0)
+            {
+                if (copied.TryGetValue(hare, out var amount) && amount != rabbitData)
+                {
+                    throw new ArgumentException("Rabbit compatibility balance conflicts with the Hare wallet.", nameof(rabbitData));
+                }
+
+                copied[hare] = rabbitData;
+            }
+
+            return new ReadOnlyDictionary<SpeciesId, long>(copied);
         }
 
         static IReadOnlyList<SpeciesId> CopySpeciesIds(IEnumerable<SpeciesId> ids, string parameterName)

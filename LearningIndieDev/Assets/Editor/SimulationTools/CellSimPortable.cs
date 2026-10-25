@@ -31,6 +31,7 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesCell.cs",
             "Assets/Scripts/Game/Species/SpeciesDefinition.cs",
             "Assets/Scripts/Game/Species/SpeciesGenomeContract.cs",
+            "Assets/Scripts/Game/Species/FieldDataPermanentProgressionDefinition.cs",
             "Assets/Scripts/Game/Species/SpeciesId.cs",
             "Assets/Scripts/Game/Species/SpeciesProgression.cs",
             "Assets/Scripts/Game/Species/SpeciesRole.cs",

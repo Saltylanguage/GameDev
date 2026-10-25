@@ -5,7 +5,21 @@
 - **Prepared:** 2026-10-21
 - **PDD:** [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md)
 - **Ticket breakdown:** [FD2 implementation tickets](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md)
+- **First-test values:** [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
 - **Source baseline inspected:** `BevBranch`, 2026-10-21
+
+**October 24 implementation:** The isolated `codex/fd2-t01-integration` checkout
+now has the approved executable starter definition, Unity-authored assets and
+the profile v4 compatibility foundation. See the
+[integration handoff](handoffs/2026-10-24-2158-codex-fd2-t01-approved-definition-and-profile-integration.md).
+These changes do not implement the later settlement/purchase/reset UI tickets.
+
+**October 24 reconciliation:** The [T01 review](FIELD_DATA_PERMANENT_PROGRESSION_T01_REVIEW.md)
+compares incoming `7ac2a54` with local T02. The [tuning sheet v0.2](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
+contains supported effects/display names approved by Bevin on October 24.
+Retain FD2 permanent node ownership, owned prerequisites and no-refund reset.
+The incoming schema-v3 profile shape differs from T02's schema-v3 shape; an
+explicit compatible migration is required before integration.
 
 ## 1. Design intent and current source
 
@@ -64,13 +78,25 @@ The serialized record needs:
   research level/rate, species deposit, Research bonus, pre/post balances, and
   schema/design version.
 
-Migrate profile store version 2 to the new version once, copying legacy
-`currency` to `researchData`, setting species balances to zero, and preserving
-all other profile values. Migration must be repeat-safe: if save interruption
-causes the old record to load again, the conversion still produces one
-Research Data balance and no duplicate currency. Retain the project's backup
-and recovery behavior. A new profile starts at zero for all balances and with
-no Genome licenses.
+The integrated profile store is version 4. Recognize the older shapes explicitly:
+
+- v2: copy generic currency into Research Data; species wallets start at zero.
+- local v3: preserve researchData and speciesDataWallets as already migrated.
+- incoming Rabbit v3: migrate Rabbit Data into the Hare species wallet and
+  combine its distinct generic Currency and Research Data balances with checked
+  addition. Preserve allocations, completed-run IDs/counts and Genome state.
+- v4: use the canonical species wallets and Research Data; compatibility
+  Currency/RabbitData getters project these balances.
+
+The installed Newtonsoft JSON reader preserves missing-field distinctions
+that JsonUtility fills with defaults. Reject ambiguous mixed shapes, negative
+balances and overflowing sums for recovery. Retain the original store verbatim
+in migrationSourceJson in v4, and preserve the existing recovery key when
+occupied; write it before migration when free. Migration must be
+repeat-safe: if save interruption causes the old record to load again, the
+conversion still produces one Research Data balance and no duplicate
+currency. A new profile
+starts at zero for all balances and with no Genome licenses.
 
 Use stable `SpeciesId` values; do not key currencies by display name or enum
 position. Extend snapshot copy/with methods to preserve new fields, and update
@@ -93,11 +119,10 @@ Research Data bonus = 10
 
 The 10-FD-per-species-data exchange and 10 Research Data bonus are provisional
 first-test settings. To avoid floating point, represent the multiplier as a
-bounded rational or checked integer numerator/denominator and floor only at the
-specified final result. Confirm with product whether flooring occurs before or
-after the percentage multiplier; the default design above floors once after
-the multiplier. The settlement ticket must record the exact resolution before
-shipping that calculator. Check overflow and both wallet additions before
+bounded rational or checked integer numerator/denominator and floor at the
+specified two stages: first floor the FD exchange, then floor the research
+multiplier result. This is the tuning sheet's recorded rule; for example,
+19 FD at research level 1 yields 1 species data. Check overflow and both wallet additions before
 changing either wallet or recording the receipt. Commit both deposits and the
 receipt as one profile update.
 
@@ -122,10 +147,9 @@ transaction identity. Purchase costs Research Data and increase with each
 level. Each level multiplies species deposit by 1.10; a level purchased after a
 settled journey cannot retroactively alter that receipt.
 
-The exact cap and cost schedule are intentionally unresolved product tuning.
-Keep them in a small validated definition, not scattered constants. Until the
-values are agreed, show the feature as design-in-progress rather than silently
-choosing a progression curve. A purchase is atomic: check level cap and
+The first-test cap and costs are now recorded in the tuning sheet: three levels
+priced at 10, 20 and 30 RD. Keep those values in the validated definition, not
+scattered constants. They are initial tuning, not measured balance. A purchase is atomic: check level cap and
 balance, deduct, then increment and persist together.
 
 ## 6. Genome license, permanent node purchases, active loadout
@@ -134,9 +158,12 @@ Treat the existing `unlockedNodeIds` as permanent node ownership and
 `activeNodeIds` as the current allocation. Add/extend a validated catalog for
 path license cost, node cost, prerequisite IDs, and active capacity cost. The
 initial catalog includes Hare only. Provisional prices are 10 Hare Data for
-the Hare path license and 5 Hare Data per eligible node; the actual small node
-set, effects, and any per-node capacity cost need finalization against authored
-catalog data and SG-005 before implementation is called done.
+the Hare path license and 5 Hare Data per eligible node. The first slice uses
+all five existing Hare placeholder IDs and preserves their authored
+prerequisites. Each costs 2 points of the existing 8-point active capacity.
+The tuning sheet now proposes five supported incoming effects and clearer
+display names. They await review; the local assets remain placeholders. Review
+against SG-005 before authoring the final definition.
 
 Path license grants access to inspect/buy from the tree and has no gameplay
 effect itself. A node purchase requires the path license, an owned species
@@ -150,16 +177,18 @@ inactive.
 Reset takes a selected species ID and fixed Research Data fee. It clears that
 species' active selections, leaves its licenses and all permanently unlocked
 nodes intact, and refunds no Species Data. After one reset the player may freely
-select any owned nodes within the 8-point capacity. Reset of an already-empty
+select any owned nodes within the 8-point capacity. The first-test reset fee is
+20 Research Data. Reset of an already-empty
 loadout should be rejected or clearly defined at implementation time; avoid
 charging for a no-op without an explicit product decision.
 
 Every launched simulation receives the validated active Genome snapshot. Lab
-changes affect only a later launch. For FD2, implement the Hare catalog using
-existing authored supported effects; do not invent new stat behaviors. If the
-existing catalog has no sufficiently defined effects, make selecting the
-first implementation subset a prerequisite ticket rather than fabricating
-effects.
+changes affect only a later launch. Validate prerequisite ownership before
+freezing active nodes; owned prerequisites do not also have to occupy active
+capacity. The incoming POC resolver requires active prerequisites and needs a
+separate FD2 adaptation, as described in the T01 review. Keep the five local
+assets effectless until the proposed mappings are approved and supported
+runtime integration is verified.
 
 ## 7. UI and player flow
 
@@ -207,9 +236,11 @@ human acceptance remains; unit tests do not establish player clarity or balance.
   whole-number rule and explicit examples.
 - Existing Genome data is metadata-first and some UI remains preview-only;
   node effects/costs may not yet be purchase-ready.
-- The Research upgrade cap, cost curve, reset fee, exact Hare node selection,
-  and specific node effects are not decided. Keep these as explicit content
-  tuning, not hidden engineering assumptions.
+- First-test conversion research is capped at three levels, priced at 10, 20,
+  and 30 Research Data; the reset fee is 20 Research Data. These are tuning
+  baselines, not balance findings. The five-node Hare selection and capacity
+  costs are recorded in the [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md),
+  while specific node effects now have a proposed supported mapping awaiting review.
 - Settlement receipt retention must preserve exactly-once behavior across
   profile backup/recovery and journey history retention.
 

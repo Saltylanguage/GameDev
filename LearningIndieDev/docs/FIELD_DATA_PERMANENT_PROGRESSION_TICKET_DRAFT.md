@@ -1,7 +1,7 @@
 # FD2 — Permanent Progression Ticket Draft
 
 - **Prepared:** 2026-10-21
-- **Status:** Published to Trello on 2026-10-21; actionable breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
+- **Status:** Published to Trello on 2026-10-21; T01 numeric baseline now captured in the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). Hare gameplay effects remain pending Salty's core-mechanics push. Breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
 - **Owners/reviewers:** Bevin (Trello account: Nick Nevins)
 - **Sprint placement:** Not assigned here; sprint planning belongs to Salty
 - **Estimates:** Omitted; size/capacity has not been planned
@@ -27,36 +27,97 @@
 
 ### FD2-T01 — Freeze first-slice progression content and tuning
 
+**October 24 implementation verified:** Bevin approved the five effects and
+display names. `FieldDataPermanentProgressionDefinition` now supplies the
+versioned values; Unity authored the five existing assets with their GUIDs
+preserved. Definition/adapter checks pass, along with 497 clean EditMode tests
+(one dedicated-fixture skip). Both new migration PlayMode tests pass; seven
+full-PlayMode failures reproduce identically on unchanged incoming ProjectMain.
+T01 is technically ready for closeout in the isolated worktree. The live card
+has not been changed in this implementation turn. See the
+[integration handoff](handoffs/2026-10-24-2158-codex-fd2-t01-approved-definition-and-profile-integration.md).
+
+**October 24 review prepared:** [Tuning sheet v0.2](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
+now proposes supported effects and truthful display names for all five existing
+IDs. [The reconciliation review](FIELD_DATA_PERMANENT_PROGRESSION_T01_REVIEW.md)
+records the 36-assertion isolated portable check, unreachable final-node issue
+under incoming active prerequisites, differing purchase/reset rules and schema-v3
+save shapes, and the integration sequence. Existing FD2 economy and permanent
+ownership are retained. Effects/names still need approval; no asset authoring
+or integrated runtime definition is claimed. T01 remains In Progress.
+
+**Dependency refresh (2026-10-24):** Live card remains In Progress/incomplete.
+Fresh origin/ProjectMain at `7ac2a54` includes Salty's Rabbit Genome mechanics
+(`be98b03`), so the push is now available remotely. The five FD2 placeholder
+effects are not yet reconciled with that catalog or reviewed against SG-005.
+Incoming POC IDs, license/node prices and reset semantics differ from this
+sheet. The incoming code is not merged into local BevBranch; T01 remains open.
+
 **Outcome:** One reviewed, versioned first-test definition supplies every price,
 cap, prerequisite and supported Hare node effect used by FD2.
 
-**Work:** Confirm the existing Hare node subset/effects against the Genome
-catalog and SG-005. Record the Hare license baseline (10 Hare Data), node price
-(5 Hare Data each), Research reset fee, conversion-upgrade maximum level and
-per-level Research Data costs. Confirm conversion rounding with examples.
-Preserve 10 FD → 1 Hare Data, +10% multiplicative payout per upgrade level and
-10 Research Data per successful journey as provisional test baselines unless
-the implementation review changes them.
+**Trello status:** In Progress as of 2026-10-21. The numeric baseline and five-node
+topology are recorded; effect mapping remains pending Salty's core-mechanics push.
+
+**Work:** Freeze the recorded first-test baselines: Hare license 10 Hare Data;
+node price 5 Hare Data each; all five placeholder node IDs with existing
+prerequisites and 2 capacity points each; 8-point loadout capacity; 20 RD reset
+fee; and three conversion-research levels priced at 10/20/30 RD. Preserve 10
+FD → 1 Hare Data, +10% multiplicative payout per upgrade level and 10 Research
+Data per successful journey as provisional test baselines. Keep node effects
+undefined until Salty's core-mechanics changes are pushed, then map each node
+to a supported effect and review against SG-005. See the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md).
 
 **Acceptance:** All consumed values are in one validated definition; every
-node has stable ID, supported effect, prerequisite, cost and capacity cost;
-Research cap/fees/costs and rounding examples are explicit; unresolved values
-are not silently embedded in code.
+every node has stable ID, prerequisite, cost and capacity cost; conversion
+research prices/cap, reset fee and rounding examples are explicit; and no
+unsupported effect is invented. The ticket remains open until core mechanics
+are available and supported node effects are reviewed.
 
 ### FD2-T02 — Migrate profiles to separate permanent wallets
+
+**Approved board closeout (2026-10-24):** Bevin approved closure after the 26
+focused Unity passes. Live Trello card is complete in Done, and the additive
+verification comment was posted and read back. Proof:
+`artifacts/fd2-t02-20261024/trello-t02-done.png`. Source remains local and
+uncommitted/unpushed. Incoming ProjectMain also changes profile schema v3;
+integration and save-format reconciliation remain future work, and the local
+test evidence does not validate that unmerged code.
 
 **Outcome:** Profiles store Research Data and species-data balances separately
 while retaining their existing Genome progress.
 
-**Work:** Upgrade the version-2 profile schema. Copy legacy generic currency to
-Research Data; initialize species balances to zero; preserve profile identity,
+**Verified locally (2026-10-24):** Startup resolved; current Unity assemblies
+compiled. Focused Live EditMode GenomeContractTests pass 17/17 and Main Menu
+PlayMode tests pass 9/9, with zero failures/skips. This supersedes the pending
+verification checkpoints below. T02 is ready for review/board closeout; source
+is uncommitted/unpushed and no Trello update occurred. See the
+[verified handoff](handoffs/2026-10-24-2040-codex-fd2-t02-verified-wallet-migration.md).
+
+**Local status (2026-10-22):** Implementation is in the working tree on
+`BevBranch`. Verification is pending because the live Unity test command
+discovered zero tests and the existing PlayMode assembly predates the change.
+Do not close the ticket or publish until the updated tests compile and pass.
+
+**Continuation (2026-10-24):** Recovery is flushed before replacement and Currency
+projects ResearchData directly. Six EditMode cases now cover migration replay,
+existing recovery preservation, snapshot copies and invalid wallets. A .NET check
+passes 30 snapshot assertions; Unity serialization and the focused Unity suites
+remain pending behind the Editor's "Recovering Scene Backups" window. Live card
+is still in Upcoming Work; no board change, commit or push occurred. See the
+[handoff](handoffs/2026-10-24-2025-codex-fd2-t02-migration-recovery-and-validation.md).
+
+**Work:** Migrate the current version-2 profile store to version 3. Copy legacy
+generic currency to Research Data; retain the raw v2 JSON when no recovery
+copy exists; initialize species balances to zero; preserve profile identity,
 species unlocks, Genome path access, unlocked/active nodes, and other profile
 data. Ensure new profiles start with zero permanent balances and locked paths.
 
 **Acceptance:** A version-2 profile migrates once with the full generic balance
 in Research Data; all Genome state survives; reloading/retrying migration does
-not duplicate value; new profiles have all-zero wallets; focused serialization,
-backup/recovery and snapshot-copy tests pass.
+not duplicate value; the original v2 JSON remains recoverable; new profiles
+have all-zero wallets; focused serialization, backup/recovery and snapshot-copy
+tests pass.
 
 ### FD2-T03 — Calculate the success settlement receipt
 

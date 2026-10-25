@@ -217,6 +217,82 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator VersionTwoProfilesMigrateCurrencyAndPreserveProgressionOnce()
+        {
+            ClearProfiles();
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey,
+                "{\"version\":2,\"profiles\":[{\"id\":\"legacy\",\"name\":\"Legacy Researcher\","
+                + "\"genomeProfiles\":[{\"speciesId\":\"hare\",\"unlockedNodeIds\":[\"hare.guard\"],"
+                + "\"activeNodeIds\":[\"hare.guard\"]}],\"currency\":73,\"simulationTicks\":42,"
+                + "\"playTimeMilliseconds\":1234,\"unlockedSpeciesIds\":[\"hare\",\"fox\"],"
+                + "\"unlockedGenomeSpeciesIds\":[\"hare\"],\"unlockedFeatureIds\":[\"gene-lab\"]}],"
+                + "\"lastLoadedProfileId\":\"legacy\"}");
+            PlayerPrefs.Save();
+            yield return LoadMainMenu();
+
+            var session = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
+            Assert.That(session, Is.Not.Null);
+            Assert.That(session.Current.ProfileId, Is.EqualTo("legacy"));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(73));
+            Assert.That(session.Current.Currency, Is.EqualTo(73));
+            Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
+            Assert.That(session.Current.SimulationTicks, Is.EqualTo(42));
+            Assert.That(session.Current.PlayTimeMilliseconds, Is.EqualTo(1234));
+            CollectionAssert.AreEqual(
+                new[] { new SpeciesId("hare"), new SpeciesId("fox") },
+                session.Current.UnlockedSpeciesIds);
+            CollectionAssert.AreEqual(new[] { new SpeciesId("hare") },
+                session.Current.UnlockedGenomeSpeciesIds);
+            CollectionAssert.AreEqual(new[] { "gene-lab" }, session.Current.UnlockedFeatureIds);
+            Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out var genome), Is.True);
+            CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.UnlockedNodeIds);
+            CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
+
+            var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
+            StringAssert.Contains("\"version\":4", migratedStore);
+            StringAssert.Contains("\"researchData\":73", migratedStore);
+            StringAssert.Contains("\"currency\":73",
+                PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
+            session.Reload();
+            Assert.That(session.Current.ResearchData, Is.EqualTo(73));
+            Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
+
+            var freshProfile = session.CreateProfile("Fresh Researcher");
+            Assert.That(freshProfile.ResearchData, Is.Zero);
+            Assert.That(freshProfile.SpeciesDataWallets, Is.Empty);
+            Assert.That(freshProfile.UnlockedGenomeSpeciesIds, Is.Empty);
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator VersionThreeSpeciesWalletsSurviveProfileCopiesAndReloads()
+        {
+            ClearProfiles();
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey,
+                "{\"version\":3,\"profiles\":[{\"id\":\"wallets\",\"name\":\"Wallets\","
+                + "\"researchData\":42,\"speciesDataWallets\":[{\"speciesId\":\"hare\",\"balance\":19},"
+                + "{\"speciesId\":\"fox\",\"balance\":0}]}],\"lastLoadedProfileId\":\"wallets\"}");
+            PlayerPrefs.Save();
+            yield return LoadMainMenu();
+
+            var session = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
+            Assert.That(session, Is.Not.Null);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(42));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("hare")], Is.EqualTo(19));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.Zero);
+
+            session.UnlockFeature("snapshot-copy-check");
+            session.Reload();
+            Assert.That(session.Current.ResearchData, Is.EqualTo(42));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("hare")], Is.EqualTo(19));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.Zero);
+            StringAssert.Contains("\"speciesId\":\"hare\",\"balance\":19",
+                PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+            ClearProfiles();
+        }
+
+        [UnityTest]
         public IEnumerator QuitConfirmationIsAVisualState()
         {
             ClearProfiles();

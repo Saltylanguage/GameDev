@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace SaltyGame
@@ -9,7 +10,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 3;
+        const int StoreVersion = 4;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -32,6 +33,13 @@ namespace SaltyGame
         }
 
         [Serializable]
+        sealed class SpeciesDataWalletRecord
+        {
+            public string speciesId;
+            public long balance;
+        }
+
+        [Serializable]
         sealed class ProfileRecord
         {
             public string id;
@@ -40,6 +48,8 @@ namespace SaltyGame
             public long currency;
             public long rabbitData;
             public long researchData;
+            // Null distinguishes incoming Rabbit-v3 saves from local species-wallet-v3 saves.
+            public List<SpeciesDataWalletRecord> speciesDataWallets;
             public int completedRuns;
             public List<string> completedRunIds = new List<string>();
             public long simulationTicks;
@@ -55,6 +65,7 @@ namespace SaltyGame
             public int version;
             public List<ProfileRecord> profiles = new List<ProfileRecord>();
             public string lastLoadedProfileId;
+            public string migrationSourceJson;
         }
 
         readonly List<ProfileSessionSnapshot> profiles = new List<ProfileSessionSnapshot>();
@@ -63,6 +74,7 @@ namespace SaltyGame
         double autosaveElapsedSeconds;
         bool applicationFocused = true;
         bool applicationPaused;
+        string migrationSourceJson = string.Empty;
 
         public event Action<ProfileSessionSnapshot> SnapshotChanged;
 
@@ -488,6 +500,7 @@ namespace SaltyGame
             profiles.Clear();
             Current = ProfileSessionSnapshot.Empty;
             LoadWarning = string.Empty;
+            migrationSourceJson = string.Empty;
             pendingSimulationTicks = 0;
             pendingPlayTimeMilliseconds = 0;
             autosaveElapsedSeconds = 0;
@@ -502,7 +515,8 @@ namespace SaltyGame
             ProfileStore store;
             try
             {
-                store = JsonUtility.FromJson<ProfileStore>(storedJson);
+                // JsonUtility fills missing lists, hiding the two incompatible v3 wallet shapes.
+                store = JsonConvert.DeserializeObject<ProfileStore>(storedJson);
             }
             catch (Exception)
             {
@@ -517,6 +531,9 @@ namespace SaltyGame
                 NotifyChanged();
                 return;
             }
+
+            migrationSourceJson = store.version < StoreVersion
+                ? storedJson : store.migrationSourceJson ?? string.Empty;
 
             var invalidProfileFound = false;
             var seenProfileIds = new HashSet<string>(StringComparer.Ordinal);
@@ -583,12 +600,13 @@ namespace SaltyGame
 
                 try
                 {
+                    ResolveWallets(record, store.version, out var researchData, out var wallets);
                     profiles.Add(new ProfileSessionSnapshot(
                         false,
                         record.id,
                         string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name,
                         genomeProfiles,
-                        record.currency,
+                        researchData,
                         record.simulationTicks,
                         record.playTimeMilliseconds,
                         store.version == 0
@@ -596,12 +614,17 @@ namespace SaltyGame
                             : ParseSpeciesIds(record.unlockedSpeciesIds),
                         ParseSpeciesIds(record.unlockedGenomeSpeciesIds),
                         record.unlockedFeatureIds,
-                        record.rabbitData,
-                        record.researchData,
+                        0,
+                        researchData,
                         record.completedRuns,
-                        record.completedRunIds));
+                        record.completedRunIds,
+                        wallets));
                 }
                 catch (ArgumentException)
+                {
+                    invalidProfileFound = true;
+                }
+                catch (OverflowException)
                 {
                     invalidProfileFound = true;
                 }
@@ -609,14 +632,19 @@ namespace SaltyGame
 
             if (invalidProfileFound)
             {
-                PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
-                PlayerPrefs.Save();
+                PreserveRecovery(storedJson);
                 LoadWarning = "Some profile data could not be loaded. The original save was preserved for recovery.";
             }
 
             if (!string.IsNullOrEmpty(store.lastLoadedProfileId))
             {
                 SelectLoadedProfileWithoutSaving(store.lastLoadedProfileId);
+            }
+
+            if (store.version < StoreVersion && !invalidProfileFound)
+            {
+                PreserveRecovery(storedJson);
+                Save();
             }
 
             NotifyChanged();
@@ -681,6 +709,7 @@ namespace SaltyGame
             {
                 version = StoreVersion,
                 lastLoadedProfileId = Current.HasLoadedProfile ? Current.ProfileId : string.Empty,
+                migrationSourceJson = migrationSourceJson,
             };
 
             for (var index = 0; index < profiles.Count; index++)
@@ -690,9 +719,8 @@ namespace SaltyGame
                 {
                     id = profile.ProfileId,
                     name = profile.ProfileName,
-                    currency = profile.Currency,
-                    rabbitData = profile.RabbitData,
                     researchData = profile.ResearchData,
+                    speciesDataWallets = ToRecords(profile.SpeciesDataWallets),
                     completedRuns = profile.CompletedRuns,
                     completedRunIds = new List<string>(profile.CompletedRunIds),
                     simulationTicks = profile.SimulationTicks,
@@ -794,10 +822,89 @@ namespace SaltyGame
             return ids;
         }
 
+        static void ResolveWallets(ProfileRecord record, int version,
+            out long researchData, out List<KeyValuePair<SpeciesId, long>> wallets)
+        {
+            if (record.currency < 0 || record.rabbitData < 0 || record.researchData < 0)
+            {
+                throw new ArgumentException("Profile balances cannot be negative.");
+            }
+
+            wallets = new List<KeyValuePair<SpeciesId, long>>();
+            if (version < 3)
+            {
+                if (record.rabbitData != 0 || record.researchData != 0 || record.speciesDataWallets != null)
+                {
+                    throw new ArgumentException("Legacy profile contains ambiguous wallet fields.");
+                }
+
+                researchData = record.currency;
+                return;
+            }
+
+            if (version == 3 && record.speciesDataWallets == null)
+            {
+                // Incoming v3 stored these as distinct balances; retain both under FD2's RD meaning.
+                researchData = checked(record.currency + record.researchData);
+                if (record.rabbitData != 0)
+                {
+                    wallets.Add(new KeyValuePair<SpeciesId, long>(new SpeciesId("hare"), record.rabbitData));
+                }
+
+                return;
+            }
+
+            if (record.speciesDataWallets == null || record.currency != 0 || record.rabbitData != 0
+                || (version == 3 && (record.completedRuns != 0
+                    || record.completedRunIds?.Count > 0
+                    || record.genomeProfiles?.Any(genome => genome?.allocations?.Count > 0) == true)))
+            {
+                throw new ArgumentException("Profile mixes incompatible species-wallet and Rabbit-wallet formats.");
+            }
+
+            researchData = record.researchData;
+            foreach (var wallet in record.speciesDataWallets)
+            {
+                if (wallet == null || string.IsNullOrWhiteSpace(wallet.speciesId))
+                {
+                    throw new ArgumentException("Species wallets require a valid species ID.");
+                }
+
+                wallets.Add(new KeyValuePair<SpeciesId, long>(new SpeciesId(wallet.speciesId), wallet.balance));
+            }
+        }
+
+        static List<SpeciesDataWalletRecord> ToRecords(IReadOnlyDictionary<SpeciesId, long> wallets)
+        {
+            var records = new List<SpeciesDataWalletRecord>();
+            foreach (var wallet in wallets)
+            {
+                records.Add(new SpeciesDataWalletRecord { speciesId = wallet.Key.Value, balance = wallet.Value });
+            }
+
+            return records;
+        }
+
+        static void PreserveRecovery(string storedJson)
+        {
+            if (!PlayerPrefs.HasKey(RecoveryStoreKey))
+            {
+                PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
+                PlayerPrefs.Save();
+            }
+        }
+
         void BackUpUnreadableStore(string storedJson)
         {
-            PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
-            PlayerPrefs.DeleteKey(StoreKey);
+            migrationSourceJson = storedJson;
+            var canRemoveStore = !PlayerPrefs.HasKey(RecoveryStoreKey)
+                || PlayerPrefs.GetString(RecoveryStoreKey) == storedJson;
+            PreserveRecovery(storedJson);
+            if (canRemoveStore)
+            {
+                PlayerPrefs.DeleteKey(StoreKey);
+            }
+
             PlayerPrefs.Save();
             LoadWarning = "Profile data could not be loaded. The original save was preserved for recovery.";
         }

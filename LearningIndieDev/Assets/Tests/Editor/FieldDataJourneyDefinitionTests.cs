@@ -279,7 +279,7 @@ namespace SaltyGame.EditorTests
             var map = AssetDatabase.LoadAssetAtPath<JourneyMapAsset>(
                 "Assets/Data/ProductionData/CellularSimulation/Species/Journey/ForestEdgeJourney.asset");
             Assert.That(map, Is.Not.Null);
-            Assert.That(map.Nodes.Count, Is.EqualTo(29));
+            Assert.That(map.Nodes.Count, Is.EqualTo(31));
             Assert.That(map.ValidateOverlayLayout(out var error), Is.True, error);
             Assert.That(map.Nodes.All(node => node.Kind != JourneyNodeKind.Shop), Is.True);
         }

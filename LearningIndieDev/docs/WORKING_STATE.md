@@ -5,6 +5,20 @@ become a master changelog.
 
 ## Current focus
 
+**October 24 isolated FD2-T01 and profile integration:** Bevin approved all five
+effects/display names. The managed checkout on `codex/fd2-t01-integration`, based
+on incoming `7ac2a54`, now has a single executable FD2 definition, Unity-authored
+five-node assets preserving GUIDs, an owned-prerequisite freeze adapter, and
+profile v4 migration for v2 and both v3 formats. Clean EditMode passes 497 tests
+with one dedicated parity-fixture skip. Profile tests pass 33/33; full PlayMode
+passes 51, skips six graphics checks and has seven failures reproduced with
+identical messages on untouched incoming ProjectMain (49 pass/6 skip/7 fail).
+Both new migration PlayMode tests pass. Portable Release build/self-test pass.
+The original active BevBranch source remains unchanged. T01 is technically
+ready for board closeout; no Trello mutation or push occurred. Later FD2
+settlement/purchase/reset UI wiring remains separate. See the
+[handoff](handoffs/2026-10-24-2158-codex-fd2-t01-approved-definition-and-profile-integration.md).
+
 **October 23 Field Data route verification:** Sim's accepted five-node Field
 Data journey, shop and reroll flow, ordered income controls, interventions, and
 APS accounting are merged with the Rabbit Genome and population-control work.
