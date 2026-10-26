@@ -121,6 +121,9 @@ namespace SaltyGame.Tests
             originalProfileSave = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
             hadRecoverySave = PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey);
             originalRecoverySave = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.Save();
         }
 
         [TearDown]

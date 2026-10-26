@@ -121,6 +121,15 @@ tests pass.
 
 ### FD2-T03 — Calculate the success settlement receipt
 
+**October 26 implementation verified locally:** `FieldDataSettlement` produces
+the immutable breakdown using the canonical definition and frozen level; it
+changes no wallet. All 37 focused tests pass. Full clean EditMode passes 534,
+fails zero and skips one parity-manifest fixture; portable build/self-test pass.
+The existing profile test fixture now isolates its inputs and restores both
+stored preferences. T03 is technically ready for scoped review/closeout; no
+live card update occurred. See the
+[T03 handoff](handoffs/2026-10-26-1229-codex-fd2-t03-deterministic-success-settlement.md).
+
 **Outcome:** A deterministic calculator converts leftover FD and produces a
 complete immutable settlement breakdown.
 

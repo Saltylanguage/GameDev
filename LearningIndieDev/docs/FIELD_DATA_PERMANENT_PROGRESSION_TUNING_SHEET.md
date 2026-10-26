@@ -53,7 +53,7 @@ for evidence, rule conflicts and the integration sequence.
 | Timing | Active loadout applies to journeys launched after the change | Approved rule |
 
 The first-slice map retains all five existing IDs and their prerequisite links.
-The proposed display names describe the supported effect directly. Each effect
+The approved display names describe the supported effect directly. Each effect
 is one signed additive modifier; no burrowing, hearing-specific sensing, or new
 ability is implied by the older placeholder name.
 
@@ -71,14 +71,15 @@ permanent purchase eligibility, as in the FD2 SDD; it does not also consume
 active capacity. With all five owned, a legal loadout can use up to four.
 Requiring the entire prerequisite chain active would make Population Reserves
 unusable: all five nodes would cost ten points. The incoming resolver and
-purchase checks must be adapted to the FD2 ownership rule before these nodes
-can run. Do not weaken the shared POC catalog's rules globally.
+purchase checks must use the FD2 ownership rule before these nodes can run in
+the player flow. T01 supplies the owned-prerequisite freeze adapter; later
+tickets wire purchases and launch. The shared POC catalog's rules stay strict.
 
 Population Reserves raises the incoming ordinary replenishment limit from 50
 to 60 while active. It does not add ten Hares, cap births, cull an above-limit
 population, or replenish each round. Incoming POC values are source mechanics,
-not approved FD2 balance. The five local assets remain metadata-only under
-`Assets/Data/TestData/Genome/HareGenome`; this proposal changes no asset or GUID.
+not approved FD2 balance. T01 authored the five approved assets under
+`Assets/Data/TestData/Genome/HareGenome`, preserving their existing GUIDs.
 
 Source counterparts at incoming `7ac2a54` are `ToughHide.asset`,
 `LongVision.asset`, `LongStride.asset`, `EfficientDigestion.asset`, and

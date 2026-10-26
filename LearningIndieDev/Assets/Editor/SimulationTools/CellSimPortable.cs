@@ -44,6 +44,7 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesUpgradePredictionInputAdapter.cs",
             "Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs",
             "Assets/Scripts/Game/Simulation/FieldDataIncome.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataSettlement.cs",
             "Assets/Scripts/Game/Simulation/FieldDataIncomeReordering.cs",
             "Assets/Scripts/Game/Simulation/FieldDataJourneyDefinition.cs",
             "Assets/Scripts/Game/Simulation/FieldDataPortableDefinition.cs",

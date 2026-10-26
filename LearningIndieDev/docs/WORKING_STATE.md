@@ -5,6 +5,19 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T03 calculator verified:** Resumed from local `03cd29e`; fetched
+origin/ProjectMain remains `7ac2a54`. The pure settlement calculator now creates
+an immutable receipt from final leftover FD, the frozen research level and
+permanent balances. It uses the approved two floors, grants 10 RD even at zero
+FD, validates known selected species, and checks both wallet additions without
+mutating input. Focused tests pass 37/37. Full clean EditMode passes 534, fails
+zero and skips one retained-manifest parity fixture. An existing profile fixture
+now clears its test inputs after preserving them; exact profile/recovery values
+were unchanged across the rerun. Portable Release build and self-test pass.
+T04 persistence/retry and T10 UI wiring remain. No push, active-checkout source
+integration or live Trello edit occurred. See the
+[T03 handoff](handoffs/2026-10-26-1229-codex-fd2-t03-deterministic-success-settlement.md).
+
 **October 24 isolated FD2-T01 and profile integration:** Bevin approved all five
 effects/display names. The managed checkout on `codex/fd2-t01-integration`, based
 on incoming `7ac2a54`, now has a single executable FD2 definition, Unity-authored
