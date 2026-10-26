@@ -10,7 +10,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 5;
+        const int StoreVersion = 6;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -77,6 +77,7 @@ namespace SaltyGame
             public long currency;
             public long rabbitData;
             public long researchData;
+            public int? conversionResearchLevel;
             // Null distinguishes incoming Rabbit-v3 saves from local species-wallet-v3 saves.
             public List<SpeciesDataWalletRecord> speciesDataWallets;
             public int completedRuns;
@@ -107,7 +108,7 @@ namespace SaltyGame
         bool applicationPaused;
         string migrationSourceJson = string.Empty;
         IProfileSessionStorage storage = new PlayerPrefsProfileSessionStorage();
-        bool settlingFieldData;
+        bool committingProgression;
 
         public event Action<ProfileSessionSnapshot> SnapshotChanged;
 
@@ -382,11 +383,49 @@ namespace SaltyGame
 
         public bool TrySettleFieldDataJourney(string profileId, string journeyId,
             FieldDataJourneyFlowState state, SpeciesId selectedSpeciesId, long leftoverFieldData,
+            out FieldDataSettlementReceipt receipt, out string error)
+        {
+            return TrySettleFieldDataJourney(profileId, journeyId, state, selectedSpeciesId,
+                leftoverFieldData, Current.ConversionResearchLevel, out receipt, out error);
+        }
+
+        public bool TryPurchaseConversionResearch(string profileId, int expectedLevel, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || Current.ConversionResearchLevel != expectedLevel)
+            {
+                error = "Research purchase requires the same loaded profile and unchanged research level.";
+                return false;
+            }
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (expectedLevel >= definition.MaximumResearchLevel)
+            {
+                error = "Conversion research is already at its maximum level.";
+                return false;
+            }
+            var price = definition.ConversionResearchPrices[expectedLevel];
+            if (Current.ResearchData < price)
+            {
+                error = "Not enough Research Data for the next conversion level.";
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithConversionResearch(Current.ResearchData - price,
+                    expectedLevel + 1), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TrySettleFieldDataJourney(string profileId, string journeyId,
+            FieldDataJourneyFlowState state, SpeciesId selectedSpeciesId, long leftoverFieldData,
             int researchLevel, out FieldDataSettlementReceipt receipt, out string error)
         {
             receipt = null;
             error = null;
-            if (settlingFieldData || !Current.HasLoadedProfile || Current.ProfileId != profileId
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
                 || string.IsNullOrWhiteSpace(journeyId))
             {
                 error = "Settlement requires the journey's loaded profile, identity and no operation in progress.";
@@ -408,11 +447,16 @@ namespace SaltyGame
                 return false;
             }
 
-            settlingFieldData = true;
+            committingProgression = true;
             try
             {
                 if (pending == null)
                 {
+                    if (researchLevel != Current.ConversionResearchLevel)
+                    {
+                        error = "A new settlement must use the profile's current conversion research level.";
+                        return false;
+                    }
                     if (!FieldDataSettlement.TryCalculate(definition, journeyId, state, selectedSpeciesId,
                         leftoverFieldData, researchLevel, Current.SpeciesDataWallets, Current.ResearchData,
                         out _, out error)) return false;
@@ -447,7 +491,7 @@ namespace SaltyGame
             }
             finally
             {
-                settlingFieldData = false;
+                committingProgression = false;
             }
         }
 
@@ -467,13 +511,20 @@ namespace SaltyGame
 
         bool TryCommitSettlement(ProfileSessionSnapshot next, out string error)
         {
+            if (TryCommitProfile(next, out error)) return true;
+            error = "Settlement is pending: " + error;
+            return false;
+        }
+
+        bool TryCommitProfile(ProfileSessionSnapshot next, out string error)
+        {
             try
             {
                 WriteStore(SerializeStore(next));
             }
             catch (Exception exception)
             {
-                error = "Settlement is pending because the profile could not be saved: " + exception.Message;
+                error = "The profile could not be saved: " + exception.Message;
                 return false;
             }
             ApplyCurrent(next);
@@ -754,6 +805,7 @@ namespace SaltyGame
                 {
                     ResolveWallets(record, store.version, out var researchData, out var wallets);
                     ReadSettlementState(record, store.version, out var receipts, out var pending);
+                    var researchLevel = ReadConversionResearchLevel(record, store.version);
                     profiles.Add(new ProfileSessionSnapshot(
                         false,
                         record.id,
@@ -771,7 +823,7 @@ namespace SaltyGame
                         researchData,
                         record.completedRuns,
                         record.completedRunIds,
-                        wallets, receipts, pending));
+                        wallets, receipts, pending, researchLevel));
                 }
                 catch (FormatException)
                 {
@@ -888,6 +940,7 @@ namespace SaltyGame
                     id = profile.ProfileId,
                     name = profile.ProfileName,
                     researchData = profile.ResearchData,
+                    conversionResearchLevel = profile.ConversionResearchLevel,
                     speciesDataWallets = ToRecords(profile.SpeciesDataWallets),
                     completedRuns = profile.CompletedRuns,
                     completedRunIds = new List<string>(profile.CompletedRunIds),
@@ -1103,6 +1156,20 @@ namespace SaltyGame
                 researchDataBefore = receipt.ResearchDataBefore,
                 researchDataAfter = receipt.ResearchDataAfter,
             };
+        }
+
+        static int ReadConversionResearchLevel(ProfileRecord record, int version)
+        {
+            if (version < 6)
+            {
+                if (record.conversionResearchLevel.GetValueOrDefault() != 0)
+                    throw new FormatException("Legacy profile contains unrecognized conversion research.");
+                return 0;
+            }
+            if (!record.conversionResearchLevel.HasValue || record.conversionResearchLevel < 0
+                || record.conversionResearchLevel > FieldDataPermanentProgressionDefinition.CreateStarter().MaximumResearchLevel)
+                throw new FormatException("Missing or invalid conversion research level.");
+            return record.conversionResearchLevel.Value;
         }
 
         static void ReadSettlementState(ProfileRecord record, int version,

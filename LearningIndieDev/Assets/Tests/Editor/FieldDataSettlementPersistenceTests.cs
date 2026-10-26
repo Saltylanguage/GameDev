@@ -56,7 +56,8 @@ namespace SaltyGame.Tests
             session = NewSession(storage);
             profileId = session.CreateProfile("Settlement fixture").ProfileId;
             session.AddRabbitData(7);
-            session.AddResearchData(30);
+            session.AddResearchData(40);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var error), Is.True, error);
         }
 
         [TearDown]
@@ -106,7 +107,7 @@ namespace SaltyGame.Tests
             Assert.That(prior, Is.SameAs(receipt));
             Assert.That(storage.SaveCalls, Is.EqualTo(writes));
             AssertPaid(session, 18, 40, 1);
-            Assert.That(Settle("success-2", out _, out error, 0, 0), Is.True, error);
+            Assert.That(Settle("success-2", out _, out error, 0, 1), Is.True, error);
             AssertPaid(session, 18, 50, 2);
         }
 
@@ -231,7 +232,10 @@ namespace SaltyGame.Tests
                 snapshot.WithUnlockedFeature("test"), snapshot.WithGenomeProfile(new SpeciesGenomeProfile(hare)),
                 snapshot.WithGenomeEconomy(snapshot.RabbitData, snapshot.ResearchData, snapshot.CompletedRuns) };
             foreach (var copy in copies)
+            {
                 Assert.That(copy.SettlementReceipts.Single(), Is.SameAs(receipt));
+                Assert.That(copy.ConversionResearchLevel, Is.EqualTo(1));
+            }
             session.Reload();
             Assert.That(session.Current.SettlementReceipts.Single().SpeciesDataAfter, Is.EqualTo(receipt.SpeciesDataAfter));
         }
@@ -312,7 +316,7 @@ namespace SaltyGame.Tests
             AssertPaid(session, 7, 20, 0);
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
             Assert.That(session.Current.CompletedRunIds.Single(), Is.EqualTo("legacy"));
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(5));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(6));
             Assert.That((string)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["migrationSourceJson"], Is.EqualTo("earlier raw save"));
         }
 
@@ -331,6 +335,7 @@ namespace SaltyGame.Tests
                 Assert.That(Settle("process-reload", out var prior, out var readError, 9999, 3), Is.True, readError);
                 Assert.That(prior.LeftoverFieldData, Is.EqualTo(100));
                 AssertPaid(session, 18, 40, 1);
+                Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
                 Assert.That(storage.SaveCalls, Is.EqualTo(saves));
                 return;
             }
@@ -338,6 +343,253 @@ namespace SaltyGame.Tests
             if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
             var reopened = NewSession(storage.Restart());
             AssertPaid(reopened, 18, 40, 1);
+        }
+
+        void StartResearch(long balance, int level = 0)
+        {
+            storage = new Storage();
+            session = NewSession(storage);
+            profileId = session.CreateProfile("Conversion research fixture").ProfileId;
+            session.AddRabbitData(7);
+            var earlierCosts = level == 0 ? 0 : level == 1 ? 10 : level == 2 ? 30 : 60;
+            session.AddResearchData(balance + earlierCosts);
+            for (var current = 0; current < level; current++)
+                Assert.That(session.TryPurchaseConversionResearch(profileId, current, out var error), Is.True, error);
+        }
+
+        [TestCase(0, 0L, false, 0L)]
+        [TestCase(0, 9L, false, 0L)]
+        [TestCase(0, 10L, true, 10L)]
+        [TestCase(0, 11L, true, 10L)]
+        [TestCase(1, 19L, false, 0L)]
+        [TestCase(1, 20L, true, 20L)]
+        [TestCase(2, 29L, false, 0L)]
+        [TestCase(2, 30L, true, 30L)]
+        [TestCase(3, 100L, false, 0L)]
+        public void ResearchChargesTheApprovedPriceAndPersistsLevelAndDeductionTogether(int level, long balance, bool succeeds, long price)
+        {
+            StartResearch(balance, level);
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseConversionResearch(profileId, level, out var error), Is.EqualTo(succeeds), error);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(level + (succeeds ? 1 : 0)));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(balance - price));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(7));
+            Assert.That(session.Current.SettlementReceipts, Is.Empty);
+            Assert.That(session.Current.CompletedRuns, Is.Zero);
+            Assert.That(storage.SaveCalls - saves, Is.EqualTo(succeeds ? 1 : 0));
+            if (succeeds)
+            {
+                var saved = JObject.Parse(storage.Writes.Last())["profiles"][0];
+                Assert.That((int)saved["conversionResearchLevel"], Is.EqualTo(level + 1));
+                Assert.That((long)saved["researchData"], Is.EqualTo(balance - price));
+            }
+            var reboot = NewSession(storage.Restart());
+            Assert.That(reboot.Current.ConversionResearchLevel, Is.EqualTo(session.Current.ConversionResearchLevel));
+            Assert.That(reboot.Current.ResearchData, Is.EqualTo(balance - price));
+        }
+
+        [Test]
+        public void ResearchRejectsStaleCallbacksWrongProfilesAndReentrantRequestsWithoutAnotherCharge()
+        {
+            StartResearch(60);
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseConversionResearch("another-profile", 0, out _), Is.False);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, -1, out _), Is.False);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out _), Is.False);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            var reentered = true;
+            session.SnapshotChanged += value => reentered = session.TryPurchaseConversionResearch(profileId,
+                value.ConversionResearchLevel, out _);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var error), Is.True, error);
+            Assert.That(reentered, Is.False);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out _), Is.False);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ResearchFailurePublishesNoPurchaseAndInMemoryRetryChargesOnce(bool persistThenThrow)
+        {
+            StartResearch(60);
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persistThenThrow;
+            var published = false;
+            session.SnapshotChanged += _ => published = true;
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var error), Is.False);
+            StringAssert.Contains("could not be saved", error);
+            Assert.That(published, Is.False);
+            Assert.That(session.Current.ConversionResearchLevel, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(60));
+            storage.FailOnSave = -1;
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out error), Is.True, error);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void ResearchRestartAfterAnUncertainSaveCannotBuyTheSameLevelTwice(bool persisted)
+        {
+            StartResearch(60);
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persisted;
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out _), Is.False);
+            var rebootStorage = storage.Restart();
+            var reboot = NewSession(rebootStorage);
+            Assert.That(reboot.TryPurchaseConversionResearch(profileId, 0, out _), Is.EqualTo(!persisted));
+            Assert.That(reboot.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(reboot.Current.ResearchData, Is.EqualTo(50));
+            var saves = rebootStorage.SaveCalls;
+            Assert.That(reboot.TryPurchaseConversionResearch(profileId, 0, out _), Is.False);
+            Assert.That(rebootStorage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void ResearchOnlyAffectsFutureSettlementsAndNeverRepricesPendingOrCompletedReceipts()
+        {
+            StartResearch(1000);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "before-research", FieldDataJourneyFlowState.Succeeded,
+                hare, 1000, out var original, out var error), Is.True, error);
+            Assert.That(original.ConversionResearchLevel, Is.Zero);
+            Assert.That(original.SpeciesDataDeposit, Is.EqualTo(100));
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out error), Is.True, error);
+            storage.FailOnSave = storage.SaveCalls + 2;
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "pending-at-one", FieldDataJourneyFlowState.Succeeded,
+                hare, 1000, out _, out _), Is.False);
+            storage.FailOnSave = -1;
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out error), Is.True, error);
+            Assert.That(session.Current.PendingSettlement.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out var pending, out error), Is.True, error);
+            Assert.That(pending.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(pending.SpeciesDataDeposit, Is.EqualTo(110));
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "after-research", FieldDataJourneyFlowState.Succeeded,
+                hare, 1000, out var after, out error), Is.True, error);
+            Assert.That(after.ConversionResearchLevel, Is.EqualTo(2));
+            Assert.That(after.SpeciesDataDeposit, Is.EqualTo(121));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(338));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(1000));
+            session.Reload();
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(2));
+            Assert.That(session.Current.SettlementReceipts[0].ConversionResearchLevel, Is.Zero);
+            Assert.That(session.Current.SettlementReceipts[0].SpeciesDataDeposit, Is.EqualTo(100));
+            Assert.That(session.Current.SettlementReceipts[1].SpeciesDataDeposit, Is.EqualTo(110));
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "before-research", FieldDataJourneyFlowState.Succeeded,
+                hare, 9999, out var prior, out error), Is.True, error);
+            Assert.That(prior.SpeciesDataDeposit, Is.EqualTo(100));
+        }
+
+        [Test]
+        public void ResearchIsSharedWithinOneProfileAndNeverChargesASpeciesWalletOrAnotherProfile()
+        {
+            StartResearch(60);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            ((JArray)json["profiles"][0]["speciesDataWallets"]).Add(new JObject { ["speciesId"] = "fox", ["balance"] = 400 });
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            session.Reload();
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var error), Is.True, error);
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(7));
+            var other = session.CreateProfile("Independent research").ProfileId;
+            Assert.That(session.Current.ConversionResearchLevel, Is.Zero);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out _), Is.False);
+            session.SelectProfile(profileId);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+        }
+
+        [Test]
+        public void ResearchSettlementCannotClaimAnUnpurchasedLevel()
+        {
+            StartResearch(100);
+            var saves = storage.SaveCalls;
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "spoofed", FieldDataJourneyFlowState.Succeeded,
+                hare, 100, 3, out _, out _), Is.False);
+            Assert.That(session.Current.PendingSettlement, Is.Null);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "legitimate", FieldDataJourneyFlowState.Succeeded,
+                hare, 100, out var receipt, out var error), Is.True, error);
+            Assert.That(receipt.ConversionResearchLevel, Is.Zero);
+            Assert.That(receipt.SpeciesDataDeposit, Is.EqualTo(10));
+        }
+
+        [TestCase(-1)]
+        [TestCase(4)]
+        public void ResearchSnapshotRejectsOutOfRangeLevels(int level)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => new ProfileSessionSnapshot(true, "id", "Invalid research",
+                conversionResearchLevel: level));
+        }
+
+        [TestCase("missing")]
+        [TestCase("null")]
+        [TestCase("negative")]
+        [TestCase("over-cap")]
+        public void ResearchCorruptLevelIsPreservedForRecoveryInsteadOfResettingPurchases(string corruption)
+        {
+            StartResearch(60);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            var profile = (JObject)json["profiles"][0];
+            if (corruption == "missing") profile.Remove("conversionResearchLevel");
+            if (corruption == "null") profile["conversionResearchLevel"] = null;
+            if (corruption == "negative") profile["conversionResearchLevel"] = -1;
+            if (corruption == "over-cap") profile["conversionResearchLevel"] = 4;
+            var original = json.ToString();
+            storage.SetString(Helper_ProfileSession.StoreKey, original);
+            storage.SetString(Helper_ProfileSession.RecoveryStoreKey, "prior recovery");
+            session.Reload();
+            Assert.That(session.HasProfiles, Is.False);
+            Assert.That(session.LoadWarning, Is.Not.Empty);
+            Assert.That(storage.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(original));
+            Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("prior recovery"));
+        }
+
+        [Test]
+        public void ResearchVersionFiveMigrationDefaultsToZeroWithoutChangingAnOldReceipt()
+        {
+            Assert.That(Settle("old-receipt", out _, out var error), Is.True, error);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["version"] = 5;
+            ((JObject)json["profiles"][0]).Remove("conversionResearchLevel");
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            session.Reload();
+            Assert.That(session.Current.ConversionResearchLevel, Is.Zero);
+            Assert.That(session.Current.SettlementReceipts.Single().ConversionResearchLevel, Is.EqualTo(1));
+            AssertPaid(session, 18, 40, 1);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "old-receipt", FieldDataJourneyFlowState.Succeeded,
+                hare, 9999, out var prior, out error), Is.True, error);
+            Assert.That(prior.SpeciesDataDeposit, Is.EqualTo(11));
+            AssertPaid(session, 18, 40, 1);
+        }
+
+        [Test]
+        public void ResearchProcessReloadCheckpoint()
+        {
+            var phase = Environment.GetEnvironmentVariable("FD2_RESEARCH_RELOAD_PHASE");
+            var path = Environment.GetEnvironmentVariable("FD2_RESEARCH_RELOAD_PATH");
+            if (phase == "read")
+            {
+                storage.SetString(Helper_ProfileSession.StoreKey, File.ReadAllText(path));
+                storage.Save();
+                session.Reload();
+                profileId = session.Current.ProfileId;
+                Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+                Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+                var saves = storage.SaveCalls;
+                Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out _), Is.False);
+                Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+                Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out var error), Is.True, error);
+                Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(2));
+                Assert.That(session.Current.ResearchData, Is.EqualTo(30));
+                return;
+            }
+            StartResearch(60);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var writeError), Is.True, writeError);
+            if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(50));
         }
 
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)

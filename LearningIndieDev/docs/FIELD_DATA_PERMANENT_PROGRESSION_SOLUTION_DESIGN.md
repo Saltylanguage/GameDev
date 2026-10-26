@@ -78,7 +78,7 @@ The serialized record needs:
   research level/rate, species deposit, Research bonus, pre/post balances, and
   schema/design version.
 
-The integrated profile store is version 5. Recognize the older shapes explicitly:
+The integrated profile store is version 6. Recognize the older shapes explicitly:
 
 - v2: copy generic currency into Research Data; species wallets start at zero.
 - local v3: preserve researchData and speciesDataWallets as already migrated.
@@ -90,6 +90,9 @@ The integrated profile store is version 5. Recognize the older shapes explicitly
 - v5: retain those wallets, plus a required settlement-receipt list and optional
   pending success inputs. Older versions migrate with an empty receipt list;
   completed-run IDs are retained, and cannot be paid again as FD2 settlements.
+- v6: also persist the shared per-profile conversion research level. v0-v5
+  default to level zero without repricing old receipts or pending successes.
+  A missing/null/out-of-range v6 level is corrupt data, not a free reset.
 
 The installed Newtonsoft JSON reader preserves missing-field distinctions
 that JsonUtility fills with defaults. Reject ambiguous mixed shapes, negative
@@ -175,6 +178,22 @@ The first-test cap and costs are now recorded in the tuning sheet: three levels
 priced at 10, 20 and 30 RD. Keep those values in the validated definition, not
 scattered constants. They are initial tuning, not measured balance. A purchase is atomic: check level cap and
 balance, deduct, then increment and persist together.
+
+**T05 implementation (2026-10-26):** `TryPurchaseConversionResearch` receives
+the owning profile ID and expected current level. Together these identify the
+one allowed purchase for that level. A stale/repeated request, profile change,
+insufficient RD, cap or save failure publishes no purchased state; retry must
+keep the original expected level rather than reading a newly advanced level.
+The existing profile commit path saves the deduction and level in one JSON
+replacement before notifying observers. Species wallets are never charged.
+
+Fresh settlement calls derive their level from the saved profile. The older
+explicit-level overload rejects unpurchased/stale levels for a new journey;
+existing receipts and pending successes keep their frozen level. Buying more
+research while a success is pending cannot improve that pending award. All
+snapshot-copy paths retain the level, journal and pending inputs. Research is
+shared across species within a profile, independent between profiles. T11
+still owns the visible Genome Lab purchase controls and retry presentation.
 
 ## 6. Genome license, permanent node purchases, active loadout
 

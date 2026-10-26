@@ -175,6 +175,15 @@ the failure path leaves permanent balances unchanged.
 
 ### FD2-T05 — Add conversion research purchases
 
+**October 26 implementation verified locally:** Schema v6 retains conversion
+research level; purchases atomically save the 10/20/30 RD deduction and next
+level, with a cap of three and profile/expected-level duplicate protection.
+Fresh settlements use owned research; pending/prior receipts are unchanged.
+Focused research 25/25, full EditMode 582 passed/zero failed/one parity skip,
+distinct-process write/read and focused PlayMode 4/4 pass. Player controls are
+still T11. See the
+[T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
+
 **Outcome:** A shared Genome Lab research upgrade raises later species-wallet
 settlements.
 

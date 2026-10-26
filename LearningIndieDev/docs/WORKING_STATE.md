@@ -5,6 +5,19 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T05 research verified:** Schema v6 stores the shared conversion
+research level. Atomic purchases charge 10/20/30 RD up to level three and require
+the same profile/expected level, preventing duplicate or stale callbacks from
+buying another level. Fresh settlements derive the owned level; pending and
+completed receipts stay frozen. Full clean EditMode: 582 passed, zero failed,
+one parity skip, including 25 new research cases and all 23 prior persistence
+cases. Two distinct process write/read checks and 4/4 focused PlayMode cases
+pass. Profile/recovery values are unchanged; portable build/self-test pass.
+T05 was moved to live In Progress before implementation; closeout follows the
+local checkpoint. T01-T04 remain complete in Done. Next T06 licenses the Hare
+path; T10/T11 still own player results and visible Gene Lab controls. See the
+[T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
+
 **October 26 FD2-T04 persistence verified:** Schema v5 retains a per-profile
 receipt journal and pending success inputs. The new settlement API saves the
 unpaid result first, then both deposits/completion/receipt together; duplicates

@@ -250,7 +250,7 @@ namespace SaltyGame.PlayModeTests
             CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
 
             var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
-            StringAssert.Contains("\"version\":5", migratedStore);
+            StringAssert.Contains("\"version\":6", migratedStore);
             StringAssert.Contains("\"researchData\":73", migratedStore);
             StringAssert.Contains("\"currency\":73",
                 PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
@@ -301,7 +301,8 @@ namespace SaltyGame.PlayModeTests
             session.SetPlaytimeTracking(false);
             var profileId = session.CreateProfile("FD2 settlement").ProfileId;
             session.AddRabbitData(7);
-            session.AddResearchData(30);
+            session.AddResearchData(40);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var purchaseError), Is.True, purchaseError);
             Assert.That(session.TrySettleFieldDataJourney(profileId, "scene-reload", FieldDataJourneyFlowState.Succeeded,
                 new SpeciesId("hare"), 100, 1, out _, out var error), Is.True, error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(18));
@@ -319,6 +320,40 @@ namespace SaltyGame.PlayModeTests
             Assert.That(session.Current.RabbitData, Is.EqualTo(18));
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator ConversionResearchSurvivesSceneReloadAndOnlyBoostsFutureSettlements()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("Conversion research").ProfileId;
+            session.AddResearchData(60);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out var error), Is.True, error);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "level-one", FieldDataJourneyFlowState.Succeeded,
+                new SpeciesId("hare"), 100, out _, out error), Is.True, error);
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(11));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(60));
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 0, out _), Is.False);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out error), Is.True, error);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "level-two", FieldDataJourneyFlowState.Succeeded,
+                new SpeciesId("hare"), 100, out _, out error), Is.True, error);
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(2));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(23));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+            Assert.That(session.Current.SettlementReceipts[0].ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.SettlementReceipts[0].SpeciesDataDeposit, Is.EqualTo(11));
+            Assert.That(session.Current.SettlementReceipts[1].SpeciesDataDeposit, Is.EqualTo(12));
             ClearProfiles();
         }
 
