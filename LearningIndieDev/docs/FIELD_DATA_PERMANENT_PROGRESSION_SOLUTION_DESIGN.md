@@ -73,12 +73,12 @@ The serialized record needs:
 - stable species IDs paired with species-data balances;
 - permanent path-license species IDs or a validated equivalent;
 - existing per-species unlocked and active node IDs;
-- a bounded list/map of unique journey settlement receipts, each with profile
-  identity, journey identity, selected species, source leftover FD, conversion
+- a list/map of unique journey settlement receipts under their profile, with
+  journey identity, selected species, source leftover FD, conversion
   research level/rate, species deposit, Research bonus, pre/post balances, and
   schema/design version.
 
-The integrated profile store is version 4. Recognize the older shapes explicitly:
+The integrated profile store is version 5. Recognize the older shapes explicitly:
 
 - v2: copy generic currency into Research Data; species wallets start at zero.
 - local v3: preserve researchData and speciesDataWallets as already migrated.
@@ -87,11 +87,14 @@ The integrated profile store is version 4. Recognize the older shapes explicitly
   addition. Preserve allocations, completed-run IDs/counts and Genome state.
 - v4: use the canonical species wallets and Research Data; compatibility
   Currency/RabbitData getters project these balances.
+- v5: retain those wallets, plus a required settlement-receipt list and optional
+  pending success inputs. Older versions migrate with an empty receipt list;
+  completed-run IDs are retained, and cannot be paid again as FD2 settlements.
 
 The installed Newtonsoft JSON reader preserves missing-field distinctions
 that JsonUtility fills with defaults. Reject ambiguous mixed shapes, negative
 balances and overflowing sums for recovery. Retain the original store verbatim
-in migrationSourceJson in v4, and preserve the existing recovery key when
+in migrationSourceJson, and preserve the existing recovery key when
 occupied; write it before migration when free. Migration must be
 repeat-safe: if save interruption causes the old record to load again, the
 conversion still produces one Research Data balance and no duplicate
@@ -134,6 +137,27 @@ never show an uncommitted deposit as final and never create a second receipt.
 Receipts must survive app restart and results-screen reentry. Define a safe
 retention policy so duplicate protection is not lost while old journeys can
 still be reopened.
+
+**T04 implementation (2026-10-26):** `TrySettleFieldDataJourney` requires the
+journey's loaded profile ID. It returns a stored receipt before recalculating;
+otherwise it persists the frozen unpaid success first, then replaces the same
+profile-store JSON with both deposits, completion identity and receipt together.
+Only a successful save publishes the paid snapshot. A failed write restores the
+writable cache and leaves the pending success in memory; retry uses its original
+species/FD/level. A reload cannot discard an unsaved pending result while storage
+continues failing. Once pending is saved, a new process can resume it. No system
+can promise to recover a newly observed success after termination if its first
+write never reached storage; the caller must keep that result pending and retry.
+
+Receipts are retained for the lifetime of the profile, without eviction. This
+deliberately favors duplicate protection over a premature size cap. If the
+prototype outgrows one profile record, move receipts to a durable indexed store
+without dropping old journey identities or the ability to return prior receipts.
+Missing, duplicate, inconsistent or unsupported-version receipt data rejects
+the whole store for recovery instead of silently losing payment protection.
+The existing Newtonsoft dependency writes explicit null pending records as well
+as reading the versioned data. An injectable storage boundary tests failed and
+uncertain saves; it does not add a package or second production store.
 
 Failure only clears/disposes the journey-local FD session and presents the
 lost-FD amount. It must not touch Research Data, species wallets, licenses or

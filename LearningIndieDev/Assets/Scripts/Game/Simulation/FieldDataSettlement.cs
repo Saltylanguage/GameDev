@@ -9,7 +9,10 @@ namespace SaltyGame
         internal FieldDataSettlementReceipt(string journeyId, SpeciesId selectedSpeciesId,
             long leftoverFieldData, int researchLevel, long multiplierNumerator,
             long multiplierDenominator, long baseSpeciesData, long speciesDataDeposit,
-            long speciesDataBefore, long speciesDataAfter, long researchDataBefore, long researchDataAfter)
+            long speciesDataBefore, long speciesDataAfter, long researchDataBefore, long researchDataAfter,
+            string definitionVersion = FieldDataPermanentProgressionDefinition.Version,
+            int fieldDataPerSpeciesData = FieldDataPermanentProgressionDefinition.FieldDataPerSpeciesData,
+            long researchDataBonus = FieldDataPermanentProgressionDefinition.SuccessResearchData)
         {
             JourneyId = journeyId;
             SelectedSpeciesId = selectedSpeciesId;
@@ -23,19 +26,22 @@ namespace SaltyGame
             SpeciesDataAfter = speciesDataAfter;
             ResearchDataBefore = researchDataBefore;
             ResearchDataAfter = researchDataAfter;
+            DefinitionVersion = definitionVersion;
+            FieldDataPerSpeciesData = fieldDataPerSpeciesData;
+            ResearchDataBonus = researchDataBonus;
         }
 
-        public string DefinitionVersion => FieldDataPermanentProgressionDefinition.Version;
+        public string DefinitionVersion { get; }
         public string JourneyId { get; }
         public SpeciesId SelectedSpeciesId { get; }
         public long LeftoverFieldData { get; }
-        public int FieldDataPerSpeciesData => FieldDataPermanentProgressionDefinition.FieldDataPerSpeciesData;
+        public int FieldDataPerSpeciesData { get; }
         public int ConversionResearchLevel { get; }
         public long MultiplierNumerator { get; }
         public long MultiplierDenominator { get; }
         public long BaseSpeciesData { get; }
         public long SpeciesDataDeposit { get; }
-        public long ResearchDataBonus => FieldDataPermanentProgressionDefinition.SuccessResearchData;
+        public long ResearchDataBonus { get; }
         public long SpeciesDataBefore { get; }
         public long SpeciesDataAfter { get; }
         public long ResearchDataBefore { get; }

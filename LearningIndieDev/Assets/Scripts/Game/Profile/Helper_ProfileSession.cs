@@ -10,7 +10,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 4;
+        const int StoreVersion = 5;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -40,6 +40,35 @@ namespace SaltyGame
         }
 
         [Serializable]
+        sealed class SettlementRecord
+        {
+            public string journeyId;
+            public string speciesId;
+            public long leftoverFieldData;
+            public int researchLevel;
+            public string definitionVersion;
+            public int fieldDataPerSpeciesData;
+            public long multiplierNumerator;
+            public long multiplierDenominator;
+            public long baseSpeciesData;
+            public long speciesDataDeposit;
+            public long researchDataBonus;
+            public long speciesDataBefore;
+            public long speciesDataAfter;
+            public long researchDataBefore;
+            public long researchDataAfter;
+        }
+
+        [Serializable]
+        sealed class PendingSettlementRecord
+        {
+            public string journeyId;
+            public string speciesId;
+            public long leftoverFieldData;
+            public int researchLevel;
+        }
+
+        [Serializable]
         sealed class ProfileRecord
         {
             public string id;
@@ -57,6 +86,8 @@ namespace SaltyGame
             public List<string> unlockedSpeciesIds = new List<string>();
             public List<string> unlockedGenomeSpeciesIds = new List<string>();
             public List<string> unlockedFeatureIds = new List<string>();
+            public List<SettlementRecord> settlementReceipts;
+            public PendingSettlementRecord pendingSettlement;
         }
 
         [Serializable]
@@ -75,6 +106,8 @@ namespace SaltyGame
         bool applicationFocused = true;
         bool applicationPaused;
         string migrationSourceJson = string.Empty;
+        IProfileSessionStorage storage = new PlayerPrefsProfileSessionStorage();
+        bool settlingFieldData;
 
         public event Action<ProfileSessionSnapshot> SnapshotChanged;
 
@@ -82,6 +115,14 @@ namespace SaltyGame
         public ProfileSessionSnapshot Current { get; private set; } = ProfileSessionSnapshot.Empty;
         public bool HasProfiles => profiles.Count > 0;
         public string LoadWarning { get; private set; } = string.Empty;
+
+        public void InitializeStorage(IProfileSessionStorage profileStorage)
+        {
+            if (profiles.Count != 0 || Current.HasLoadedProfile)
+                throw new InvalidOperationException("Storage must be configured before loading profiles.");
+            storage = profileStorage ?? throw new ArgumentNullException(nameof(profileStorage));
+            Load();
+        }
 
         void Awake()
         {
@@ -144,6 +185,15 @@ namespace SaltyGame
         public void Reload()
         {
             Flush();
+            if (Current.PendingSettlement != null)
+            {
+                try { Save(); }
+                catch (Exception exception)
+                {
+                    LoadWarning = "Pending success is retained in memory: " + exception.Message;
+                    return;
+                }
+            }
             Load();
         }
 
@@ -330,6 +380,108 @@ namespace SaltyGame
                 GenomeContract.ResearchDataPerSuccessfulJourney);
         }
 
+        public bool TrySettleFieldDataJourney(string profileId, string journeyId,
+            FieldDataJourneyFlowState state, SpeciesId selectedSpeciesId, long leftoverFieldData,
+            int researchLevel, out FieldDataSettlementReceipt receipt, out string error)
+        {
+            receipt = null;
+            error = null;
+            if (settlingFieldData || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || string.IsNullOrWhiteSpace(journeyId))
+            {
+                error = "Settlement requires the journey's loaded profile, identity and no operation in progress.";
+                return false;
+            }
+
+            if (Current.TryGetSettlement(journeyId, out receipt)) return true;
+            if (state != FieldDataJourneyFlowState.Succeeded || Current.CompletedRunIds.Contains(journeyId))
+            {
+                error = "The journey must be successful and not previously paid by the legacy completion flow.";
+                return false;
+            }
+
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var pending = Current.PendingSettlement;
+            if (pending != null && pending.JourneyId != journeyId)
+            {
+                error = "Resolve the profile's pending settlement before starting another.";
+                return false;
+            }
+
+            settlingFieldData = true;
+            try
+            {
+                if (pending == null)
+                {
+                    if (!FieldDataSettlement.TryCalculate(definition, journeyId, state, selectedSpeciesId,
+                        leftoverFieldData, researchLevel, Current.SpeciesDataWallets, Current.ResearchData,
+                        out _, out error)) return false;
+                    pending = new PendingFieldDataSettlement(journeyId, selectedSpeciesId, leftoverFieldData, researchLevel);
+                }
+                var unpaid = Current.WithPendingSettlement(pending);
+                if (!TryCommitSettlement(unpaid, out error))
+                {
+                    // Keep the frozen success in memory even if its first durable write failed.
+                    ApplyCurrent(unpaid);
+                    NotifyChanged();
+                    return false;
+                }
+
+                if (Current.ProfileId != profileId || Current.PendingSettlement?.JourneyId != journeyId)
+                {
+                    error = "The loaded profile changed; retry on the journey's original profile.";
+                    return false;
+                }
+                if (!FieldDataSettlement.TryCalculate(definition, pending.JourneyId, state,
+                    pending.SelectedSpeciesId, pending.LeftoverFieldData, pending.ConversionResearchLevel,
+                    Current.SpeciesDataWallets, Current.ResearchData, out var calculated, out error)) return false;
+                var paid = Current.WithSettlement(calculated);
+                if (!TryCommitSettlement(paid, out error)) return false;
+                receipt = calculated;
+                return true;
+            }
+            catch (OverflowException)
+            {
+                error = "The settlement exceeds the supported profile range.";
+                return false;
+            }
+            finally
+            {
+                settlingFieldData = false;
+            }
+        }
+
+        public bool TryRetryPendingFieldDataSettlement(string profileId,
+            out FieldDataSettlementReceipt receipt, out string error)
+        {
+            var pending = Current.PendingSettlement;
+            if (pending == null)
+            {
+                receipt = null;
+                error = "There is no pending Field Data settlement.";
+                return false;
+            }
+            return TrySettleFieldDataJourney(profileId, pending.JourneyId, FieldDataJourneyFlowState.Succeeded,
+                pending.SelectedSpeciesId, pending.LeftoverFieldData, pending.ConversionResearchLevel, out receipt, out error);
+        }
+
+        bool TryCommitSettlement(ProfileSessionSnapshot next, out string error)
+        {
+            try
+            {
+                WriteStore(SerializeStore(next));
+            }
+            catch (Exception exception)
+            {
+                error = "Settlement is pending because the profile could not be saved: " + exception.Message;
+                return false;
+            }
+            ApplyCurrent(next);
+            NotifyChanged();
+            error = null;
+            return true;
+        }
+
         bool RecordRunCompletion(string completionId, long rabbitDataReward, long researchDataReward)
         {
             if (string.IsNullOrWhiteSpace(completionId))
@@ -505,13 +657,13 @@ namespace SaltyGame
             pendingPlayTimeMilliseconds = 0;
             autosaveElapsedSeconds = 0;
 
-            if (!PlayerPrefs.HasKey(StoreKey))
+            if (!storage.HasKey(StoreKey))
             {
                 NotifyChanged();
                 return;
             }
 
-            var storedJson = PlayerPrefs.GetString(StoreKey);
+            var storedJson = storage.GetString(StoreKey);
             ProfileStore store;
             try
             {
@@ -532,8 +684,8 @@ namespace SaltyGame
                 return;
             }
 
-            migrationSourceJson = store.version < StoreVersion
-                ? storedJson : store.migrationSourceJson ?? string.Empty;
+            migrationSourceJson = !string.IsNullOrEmpty(store.migrationSourceJson)
+                ? store.migrationSourceJson : store.version < StoreVersion ? storedJson : string.Empty;
 
             var invalidProfileFound = false;
             var seenProfileIds = new HashSet<string>(StringComparer.Ordinal);
@@ -601,6 +753,7 @@ namespace SaltyGame
                 try
                 {
                     ResolveWallets(record, store.version, out var researchData, out var wallets);
+                    ReadSettlementState(record, store.version, out var receipts, out var pending);
                     profiles.Add(new ProfileSessionSnapshot(
                         false,
                         record.id,
@@ -618,7 +771,16 @@ namespace SaltyGame
                         researchData,
                         record.completedRuns,
                         record.completedRunIds,
-                        wallets));
+                        wallets, receipts, pending));
+                }
+                catch (FormatException)
+                {
+                    // Losing a receipt could pay an old journey again, so reject the whole store.
+                    BackUpUnreadableStore(storedJson);
+                    profiles.Clear();
+                    Current = ProfileSessionSnapshot.Empty;
+                    NotifyChanged();
+                    return;
                 }
                 catch (ArgumentException)
                 {
@@ -705,6 +867,11 @@ namespace SaltyGame
 
         void Save()
         {
+            WriteStore(SerializeStore());
+        }
+
+        string SerializeStore(ProfileSessionSnapshot replacement = null)
+        {
             var store = new ProfileStore
             {
                 version = StoreVersion,
@@ -714,7 +881,8 @@ namespace SaltyGame
 
             for (var index = 0; index < profiles.Count; index++)
             {
-                var profile = profiles[index];
+                var profile = replacement != null && profiles[index].ProfileId == replacement.ProfileId
+                    ? replacement : profiles[index];
                 store.profiles.Add(new ProfileRecord
                 {
                     id = profile.ProfileId,
@@ -728,6 +896,14 @@ namespace SaltyGame
                     unlockedSpeciesIds = ToStrings(profile.UnlockedSpeciesIds),
                     unlockedGenomeSpeciesIds = ToStrings(profile.UnlockedGenomeSpeciesIds),
                     unlockedFeatureIds = new List<string>(profile.UnlockedFeatureIds),
+                    settlementReceipts = profile.SettlementReceipts.Select(ToRecord).ToList(),
+                    pendingSettlement = profile.PendingSettlement == null ? null : new PendingSettlementRecord
+                    {
+                        journeyId = profile.PendingSettlement.JourneyId,
+                        speciesId = profile.PendingSettlement.SelectedSpeciesId.Value,
+                        leftoverFieldData = profile.PendingSettlement.LeftoverFieldData,
+                        researchLevel = profile.PendingSettlement.ConversionResearchLevel,
+                    },
                 });
                 var record = store.profiles[store.profiles.Count - 1];
                 for (var genomeIndex = 0; genomeIndex < profile.GenomeProfiles.Count; genomeIndex++)
@@ -752,8 +928,25 @@ namespace SaltyGame
                 }
             }
 
-            PlayerPrefs.SetString(StoreKey, JsonUtility.ToJson(store));
-            PlayerPrefs.Save();
+            return JsonConvert.SerializeObject(store);
+        }
+
+        void WriteStore(string json)
+        {
+            var existed = storage.HasKey(StoreKey);
+            var previous = storage.GetString(StoreKey);
+            try
+            {
+                storage.SetString(StoreKey, json);
+                storage.Save();
+            }
+            catch
+            {
+                // Do not leave an unpaid transaction's replacement in the writable cache.
+                if (existed) storage.SetString(StoreKey, previous);
+                else storage.DeleteKey(StoreKey);
+                throw;
+            }
         }
 
         void RequireLoadedProfile()
@@ -783,6 +976,13 @@ namespace SaltyGame
 
         void CommitCurrent(ProfileSessionSnapshot nextProfile)
         {
+            ApplyCurrent(nextProfile);
+            Save();
+            NotifyChanged();
+        }
+
+        void ApplyCurrent(ProfileSessionSnapshot nextProfile)
+        {
             Current = nextProfile;
             for (var index = 0; index < profiles.Count; index++)
             {
@@ -793,8 +993,6 @@ namespace SaltyGame
                 }
             }
 
-            Save();
-            NotifyChanged();
         }
 
         static List<string> ToStrings(IReadOnlyList<SpeciesId> ids)
@@ -885,27 +1083,103 @@ namespace SaltyGame
             return records;
         }
 
-        static void PreserveRecovery(string storedJson)
+        static SettlementRecord ToRecord(FieldDataSettlementReceipt receipt)
         {
-            if (!PlayerPrefs.HasKey(RecoveryStoreKey))
+            return new SettlementRecord
             {
-                PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
-                PlayerPrefs.Save();
+                journeyId = receipt.JourneyId,
+                speciesId = receipt.SelectedSpeciesId.Value,
+                leftoverFieldData = receipt.LeftoverFieldData,
+                researchLevel = receipt.ConversionResearchLevel,
+                definitionVersion = receipt.DefinitionVersion,
+                fieldDataPerSpeciesData = receipt.FieldDataPerSpeciesData,
+                multiplierNumerator = receipt.MultiplierNumerator,
+                multiplierDenominator = receipt.MultiplierDenominator,
+                baseSpeciesData = receipt.BaseSpeciesData,
+                speciesDataDeposit = receipt.SpeciesDataDeposit,
+                researchDataBonus = receipt.ResearchDataBonus,
+                speciesDataBefore = receipt.SpeciesDataBefore,
+                speciesDataAfter = receipt.SpeciesDataAfter,
+                researchDataBefore = receipt.ResearchDataBefore,
+                researchDataAfter = receipt.ResearchDataAfter,
+            };
+        }
+
+        static void ReadSettlementState(ProfileRecord record, int version,
+            out List<FieldDataSettlementReceipt> receipts, out PendingFieldDataSettlement pending)
+        {
+            receipts = new List<FieldDataSettlementReceipt>();
+            pending = null;
+            try
+            {
+                if (version < 5)
+                {
+                    if (record.settlementReceipts?.Count > 0 || record.pendingSettlement != null)
+                        throw new FormatException("Legacy profile contains an unrecognized settlement journal.");
+                    return;
+                }
+                if (record.settlementReceipts == null)
+                    throw new FormatException("The settlement journal is missing.");
+                var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+                var ids = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var saved in record.settlementReceipts)
+                {
+                    if (saved == null || !ids.Add(saved.journeyId)
+                        || record.completedRunIds?.Contains(saved.journeyId) != true)
+                        throw new FormatException("Invalid or duplicate completed settlement identity.");
+                    var species = new SpeciesId(saved.speciesId);
+                    if (!FieldDataSettlement.TryCalculate(definition, saved.journeyId, FieldDataJourneyFlowState.Succeeded,
+                        species, saved.leftoverFieldData, saved.researchLevel,
+                        new Dictionary<SpeciesId, long> { [species] = saved.speciesDataBefore },
+                        saved.researchDataBefore, out var receipt, out _)
+                        || JsonUtility.ToJson(saved) != JsonUtility.ToJson(ToRecord(receipt)))
+                        throw new FormatException("Invalid settlement arithmetic or definition version.");
+                    receipts.Add(receipt);
+                }
+                var savedPending = record.pendingSettlement;
+                if (savedPending != null)
+                {
+                    var species = new SpeciesId(savedPending.speciesId);
+                    if (record.completedRunIds?.Contains(savedPending.journeyId) == true
+                        || !FieldDataSettlement.TryCalculate(definition, savedPending.journeyId,
+                            FieldDataJourneyFlowState.Succeeded, species, savedPending.leftoverFieldData,
+                            savedPending.researchLevel, new Dictionary<SpeciesId, long>(), 0, out _, out _))
+                        throw new FormatException("Invalid pending settlement.");
+                    pending = new PendingFieldDataSettlement(savedPending.journeyId, species,
+                        savedPending.leftoverFieldData, savedPending.researchLevel);
+                }
+            }
+            catch (ArgumentException exception)
+            {
+                throw new FormatException("Invalid settlement journal.", exception);
+            }
+            catch (OverflowException exception)
+            {
+                throw new FormatException("Invalid settlement journal.", exception);
+            }
+        }
+
+        void PreserveRecovery(string storedJson)
+        {
+            if (!storage.HasKey(RecoveryStoreKey))
+            {
+                storage.SetString(RecoveryStoreKey, storedJson);
+                storage.Save();
             }
         }
 
         void BackUpUnreadableStore(string storedJson)
         {
             migrationSourceJson = storedJson;
-            var canRemoveStore = !PlayerPrefs.HasKey(RecoveryStoreKey)
-                || PlayerPrefs.GetString(RecoveryStoreKey) == storedJson;
+            var canRemoveStore = !storage.HasKey(RecoveryStoreKey)
+                || storage.GetString(RecoveryStoreKey) == storedJson;
             PreserveRecovery(storedJson);
             if (canRemoveStore)
             {
-                PlayerPrefs.DeleteKey(StoreKey);
+                storage.DeleteKey(StoreKey);
             }
 
-            PlayerPrefs.Save();
+            storage.Save();
             LoadWarning = "Profile data could not be loaded. The original save was preserved for recovery.";
         }
 

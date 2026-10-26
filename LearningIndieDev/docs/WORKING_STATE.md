@@ -5,6 +5,20 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T04 persistence verified:** Schema v5 retains a per-profile
+receipt journal and pending success inputs. The new settlement API saves the
+unpaid result first, then both deposits/completion/receipt together; duplicates
+return the prior receipt, failed saves stay pending, and profile switches or
+legacy completion IDs cannot receive another payment. All 23 persistence tests
+pass inside a full clean EditMode run of 557 passes, zero failures and one parity
+skip. Two distinct Editor-process write/read checks pass, plus 3/3 focused
+PlayMode scene-reload/migration cases. Profile/recovery values are unchanged.
+Portable Release build/self-test pass. T01 and T03 are now verified complete
+in live Trello Done with additive evidence comments; T04 closeout follows this
+checkpoint. Code remains local in the isolated branch. T05 research purchases
+and T10 player results wiring remain. See the
+[T04 handoff](handoffs/2026-10-26-1254-codex-fd2-t04-exactly-once-settlement-persistence.md).
+
 **October 26 FD2-T03 calculator verified:** Resumed from local `03cd29e`; fetched
 origin/ProjectMain remains `7ac2a54`. The pure settlement calculator now creates
 an immutable receipt from final leftover FD, the frozen research level and

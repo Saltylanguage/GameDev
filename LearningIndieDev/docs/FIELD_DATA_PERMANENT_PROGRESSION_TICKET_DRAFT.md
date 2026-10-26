@@ -145,6 +145,15 @@ invalid inputs and species destination.
 
 ### FD2-T04 — Persist success settlement exactly once
 
+**October 26 implementation verified locally:** Profile schema v5 retains frozen
+pending inputs and lifetime receipts. Payment saves both deposits and the receipt
+together; same profile/journey returns the prior receipt without writing. Save
+failure and uncertain-save retry, profile switches, corrupted journals and old
+formats have focused coverage. Full EditMode: 557 passed, zero failed, one parity
+skip (23 T04 cases). Two distinct-process checks and 3/3 focused PlayMode cases
+pass. No push or player-results wiring is implied. See the
+[T04 handoff](handoffs/2026-10-26-1254-codex-fd2-t04-exactly-once-settlement-persistence.md).
+
 **Outcome:** Repeated callbacks, results entry, app reload and save retry cannot
 pay the same journey twice.
 

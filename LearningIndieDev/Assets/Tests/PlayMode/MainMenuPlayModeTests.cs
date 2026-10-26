@@ -250,7 +250,7 @@ namespace SaltyGame.PlayModeTests
             CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
 
             var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
-            StringAssert.Contains("\"version\":4", migratedStore);
+            StringAssert.Contains("\"version\":5", migratedStore);
             StringAssert.Contains("\"researchData\":73", migratedStore);
             StringAssert.Contains("\"currency\":73",
                 PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
@@ -289,6 +289,36 @@ namespace SaltyGame.PlayModeTests
             Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.Zero);
             StringAssert.Contains("\"speciesId\":\"hare\",\"balance\":19",
                 PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator FieldDataSettlementSurvivesSceneReloadWithoutPayingTheJourneyAgain()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("FD2 settlement").ProfileId;
+            session.AddRabbitData(7);
+            session.AddResearchData(30);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "scene-reload", FieldDataJourneyFlowState.Succeeded,
+                new SpeciesId("hare"), 100, 1, out _, out var error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(18));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(1));
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "scene-reload", FieldDataJourneyFlowState.Succeeded,
+                new SpeciesId("hare"), 9999, 3, out var prior, out error), Is.True, error);
+            Assert.That(prior.LeftoverFieldData, Is.EqualTo(100));
+            Assert.That(prior.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(18));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
             ClearProfiles();
         }
 

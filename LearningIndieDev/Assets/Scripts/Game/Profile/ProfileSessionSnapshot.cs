@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace SaltyGame
 {
@@ -15,6 +16,7 @@ namespace SaltyGame
         readonly IReadOnlyList<string> unlockedFeatureIds;
         readonly IReadOnlyList<string> completedRunIds;
         readonly IReadOnlyDictionary<SpeciesId, long> speciesDataWallets;
+        readonly IReadOnlyList<FieldDataSettlementReceipt> settlementReceipts;
 
         public bool HasLoadedProfile { get; }
         public string ProfileId { get; }
@@ -28,6 +30,8 @@ namespace SaltyGame
         public long RabbitData => speciesDataWallets.TryGetValue(new SpeciesId("hare"), out var amount) ? amount : 0;
         public IReadOnlyDictionary<SpeciesId, long> SpeciesDataWallets => speciesDataWallets;
         public long ResearchData { get; }
+        public IReadOnlyList<FieldDataSettlementReceipt> SettlementReceipts => settlementReceipts;
+        public PendingFieldDataSettlement PendingSettlement { get; }
         public int CompletedRuns { get; }
         public bool GeneLabUnlocked => CompletedRuns >= 3;
         public long SimulationTicks { get; }
@@ -49,7 +53,9 @@ namespace SaltyGame
             long? researchData = null,
             int completedRuns = 0,
             IEnumerable<string> completedRunIds = null,
-            IEnumerable<KeyValuePair<SpeciesId, long>> speciesDataWallets = null)
+            IEnumerable<KeyValuePair<SpeciesId, long>> speciesDataWallets = null,
+            IEnumerable<FieldDataSettlementReceipt> settlementReceipts = null,
+            PendingFieldDataSettlement pendingSettlement = null)
         {
             if (currency < 0)
             {
@@ -83,6 +89,25 @@ namespace SaltyGame
             this.unlockedGenomeSpeciesIds = CopySpeciesIds(unlockedGenomeSpeciesIds, nameof(unlockedGenomeSpeciesIds));
             this.unlockedFeatureIds = CopyFeatureIds(unlockedFeatureIds);
             this.completedRunIds = CopyFeatureIds(completedRunIds, "Completed run");
+            var receipts = new List<FieldDataSettlementReceipt>();
+            var receiptIds = new HashSet<string>(StringComparer.Ordinal);
+            if (settlementReceipts != null)
+            {
+                foreach (var receipt in settlementReceipts)
+                {
+                    if (receipt == null || !receiptIds.Add(receipt.JourneyId)
+                        || !this.completedRunIds.Contains(receipt.JourneyId))
+                        throw new ArgumentException("Settlement receipts must be unique completed journeys.", nameof(settlementReceipts));
+                    receipts.Add(receipt);
+                }
+            }
+            this.settlementReceipts = receipts.AsReadOnly();
+            if (pendingSettlement != null && (string.IsNullOrWhiteSpace(pendingSettlement.JourneyId)
+                || !pendingSettlement.SelectedSpeciesId.IsValid || pendingSettlement.LeftoverFieldData < 0
+                || pendingSettlement.ConversionResearchLevel < 0
+                || this.completedRunIds.Contains(pendingSettlement.JourneyId)))
+                throw new ArgumentException("Pending settlement must be an unpaid valid journey.", nameof(pendingSettlement));
+            PendingSettlement = pendingSettlement;
             if (this.completedRunIds.Count > completedRuns)
             {
                 throw new ArgumentException("Completed run ids cannot exceed the recorded run count.", nameof(completedRunIds));
@@ -136,6 +161,40 @@ namespace SaltyGame
             return catalog == null ? snapshot : snapshot.Resolve(catalog);
         }
 
+        public bool TryGetSettlement(string journeyId, out FieldDataSettlementReceipt receipt)
+        {
+            receipt = settlementReceipts.FirstOrDefault(value => value.JourneyId == journeyId);
+            return receipt != null;
+        }
+
+        internal ProfileSessionSnapshot WithPendingSettlement(PendingFieldDataSettlement pending)
+        {
+            return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
+                Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
+                unlockedFeatureIds, 0, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets,
+                settlementReceipts, pending);
+        }
+
+        internal ProfileSessionSnapshot WithSettlement(FieldDataSettlementReceipt receipt)
+        {
+            if (receipt == null || PendingSettlement?.JourneyId != receipt.JourneyId
+                || receipt.SelectedSpeciesId != PendingSettlement.SelectedSpeciesId
+                || receipt.LeftoverFieldData != PendingSettlement.LeftoverFieldData
+                || receipt.ConversionResearchLevel != PendingSettlement.ConversionResearchLevel)
+                throw new ArgumentException("A matching pending success is required.", nameof(receipt));
+            speciesDataWallets.TryGetValue(receipt.SelectedSpeciesId, out var before);
+            if (before != receipt.SpeciesDataBefore || ResearchData != receipt.ResearchDataBefore)
+                throw new ArgumentException("Settlement balances have changed.", nameof(receipt));
+            var wallets = new Dictionary<SpeciesId, long>(speciesDataWallets)
+                { [receipt.SelectedSpeciesId] = receipt.SpeciesDataAfter };
+            var receipts = new List<FieldDataSettlementReceipt>(settlementReceipts) { receipt };
+            var completed = new List<string>(completedRunIds) { receipt.JourneyId };
+            return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
+                receipt.ResearchDataAfter, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds,
+                unlockedGenomeSpeciesIds, unlockedFeatureIds, 0, receipt.ResearchDataAfter,
+                checked(CompletedRuns + 1), completed, wallets, receipts);
+        }
+
         public ProfileSessionSnapshot WithGenomeProfile(SpeciesGenomeProfile nextProfile)
         {
             if (nextProfile == null)
@@ -162,7 +221,7 @@ namespace SaltyGame
                     PlayTimeMilliseconds,
                     unlockedSpeciesIds,
                     unlockedGenomeSpeciesIds,
-                    unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                    unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
             }
 
             nextProfiles.Add(nextProfile);
@@ -176,28 +235,28 @@ namespace SaltyGame
                 PlayTimeMilliseconds,
                 unlockedSpeciesIds,
                 unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithLoaded(bool isLoaded)
         {
             return new ProfileSessionSnapshot(isLoaded, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithCurrency(long amount)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 amount, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, amount, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, amount, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithTime(long simulationTicks, long playTimeMilliseconds)
         {
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, simulationTicks, playTimeMilliseconds, unlockedSpeciesIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithUnlockedSpecies(SpeciesId speciesId)
@@ -215,7 +274,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, nextIds, unlockedGenomeSpeciesIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithUnlockedGenome(SpeciesId speciesId)
@@ -233,7 +292,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds, nextIds,
-                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedFeatureIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithUnlockedFeature(string featureId)
@@ -251,7 +310,7 @@ namespace SaltyGame
 
             return new ProfileSessionSnapshot(HasLoadedProfile, ProfileId, ProfileName, genomeProfiles,
                 Currency, SimulationTicks, PlayTimeMilliseconds, unlockedSpeciesIds,
-                unlockedGenomeSpeciesIds, nextIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets);
+                unlockedGenomeSpeciesIds, nextIds, RabbitData, ResearchData, CompletedRuns, completedRunIds, speciesDataWallets, settlementReceipts, PendingSettlement);
         }
 
         public ProfileSessionSnapshot WithGenomeEconomy(
@@ -278,7 +337,7 @@ namespace SaltyGame
             return new ProfileSessionSnapshot(next.HasLoadedProfile, next.ProfileId, next.ProfileName,
                 next.GenomeProfiles, next.Currency, next.SimulationTicks, next.PlayTimeMilliseconds,
                 next.UnlockedSpeciesIds, next.UnlockedGenomeSpeciesIds, next.UnlockedFeatureIds,
-                rabbitData, researchData, completedRuns, nextCompletedRunIds ?? completedRunIds, wallets);
+                rabbitData, researchData, completedRuns, nextCompletedRunIds ?? completedRunIds, wallets, next.SettlementReceipts, next.PendingSettlement);
         }
 
         static IReadOnlyDictionary<SpeciesId, long> CopySpeciesDataWallets(
