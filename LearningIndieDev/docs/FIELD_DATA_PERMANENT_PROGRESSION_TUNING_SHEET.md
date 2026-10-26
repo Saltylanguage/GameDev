@@ -2,7 +2,7 @@
 
 - **Version:** 1.0 (approved first-test definition)
 - **Updated:** 2026-10-24
-- **Status:** Approved and authored in the isolated integration checkout; definition and compatibility checks pass. Shared-board closeout remains separate.
+- **Status:** Approved and authored in the isolated integration checkout; definition and compatibility checks pass. T01 marked complete in Trello Done with verified evidence on 2026-10-26; code remains local.
 - **Owner:** Bevin
 - **Related:** [Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) | [Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md) | [T01 ticket](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md#fd2-t01--freeze-first-slice-progression-content-and-tuning)
 

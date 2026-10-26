@@ -25,6 +25,13 @@
 
 ## Ticket details
 
+**Live board closeout, 2026-10-26:** Bevin instructed that Trello be updated as
+tickets finish. T01, T03 and T04 are now marked complete in Done with verification
+comments posted and read back; T02 remains complete in Done. T04 code commit is
+`ec30f70`, still local on `codex/fd2-t01-integration`. Earlier ticket paragraphs
+below retain their dated implementation/approval history. Proof is
+`artifacts/fd2-board-20261026/fd2-t01-t04-done.png`.
+
 ### FD2-T01 — Freeze first-slice progression content and tuning
 
 **October 24 implementation verified:** Bevin approved the five effects and

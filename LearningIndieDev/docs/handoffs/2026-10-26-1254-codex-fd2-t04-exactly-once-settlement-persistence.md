@@ -60,8 +60,11 @@ wallets/history and retains receipts for the life of the profile.
   were marked complete, moved to Done, and verification comments read back:
   T01 `#comment-6adf826daf004653e279a9ce`; T03
   `#comment-6adf82b327c86fd384a48e6b`. Original descriptions are preserved.
-  T04 was moved to In Progress before implementation; closeout follows verified
-  evidence and the local checkpoint commit.
+  T04 was moved to In Progress before implementation, then marked complete and
+  moved to Done after local code commit `ec30f70` and verification. Its comment
+  `#comment-6adf869f342cff9a0a5cf986` was read back. T02 remains complete in Done.
+  Proof: `artifacts/fd2-board-20261026/fd2-t01-t04-done.png`. No description was
+  replaced, and no publication/remote code integration is implied.
 
 ## Validation
 

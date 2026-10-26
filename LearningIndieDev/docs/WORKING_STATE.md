@@ -13,9 +13,11 @@ legacy completion IDs cannot receive another payment. All 23 persistence tests
 pass inside a full clean EditMode run of 557 passes, zero failures and one parity
 skip. Two distinct Editor-process write/read checks pass, plus 3/3 focused
 PlayMode scene-reload/migration cases. Profile/recovery values are unchanged.
-Portable Release build/self-test pass. T01 and T03 are now verified complete
-in live Trello Done with additive evidence comments; T04 closeout follows this
-checkpoint. Code remains local in the isolated branch. T05 research purchases
+Portable Release build/self-test pass. Code commit `ec30f70` is local in the
+isolated branch. Under Bevin's instruction to update Trello as tickets finish,
+T01, T03 and T04 are now marked complete in live Done with additive verification
+comments posted and read back; T02 remains complete in Done. Proof is
+`artifacts/fd2-board-20261026/fd2-t01-t04-done.png`. T05 research purchases
 and T10 player results wiring remain. See the
 [T04 handoff](handoffs/2026-10-26-1254-codex-fd2-t04-exactly-once-settlement-persistence.md).
 
