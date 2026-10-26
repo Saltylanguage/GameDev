@@ -54,7 +54,10 @@ pending and completed receipts retain their original conversion terms.
 - T11 still owns visible Genome Lab controls/retry presentation; T10 still owns
   player result integration. This ticket completes the persistence/domain API.
 - The user authorized updating Trello as tickets finish. T05 was moved to
-  In Progress before implementation; completion closeout follows validation.
+  In Progress before implementation, then marked complete and moved to Done
+  after code commit `e32367b` and validation. Verification comment
+  `#comment-6adf94b8e042c6406100f639` was posted and read back; original description
+  is preserved. Proof: `artifacts/fd2-board-20261026/t05-done.png`.
 
 ## Validation
 
@@ -79,8 +82,12 @@ pending and completed receipts retain their original conversion terms.
   after another scene reload.
 - Exact profile/recovery preference names, registry types and values match
   the pre-validation capture. Their contents were not displayed/published.
-- Diff hygiene passed. The incidental Unity ProBuilder line-ending change
-  is excluded from the feature; no project configuration change is intended.
+- Diff hygiene passed. The incidental Unity ProBuilder line-ending change was
+  restored; no project configuration change is included. An empty worktree
+  `index.lock`, older than six minutes with no Git process running, initially
+  blocked checkpointing. Verified its worktree owner, preserved a copy under
+  the ignored evidence folder and removed only that stale operational lock;
+  the source and index contents were preserved, and local commit succeeded.
 
 ## Risks and incomplete work
 

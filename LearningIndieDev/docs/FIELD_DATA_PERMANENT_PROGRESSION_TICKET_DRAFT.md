@@ -181,7 +181,8 @@ level, with a cap of three and profile/expected-level duplicate protection.
 Fresh settlements use owned research; pending/prior receipts are unchanged.
 Focused research 25/25, full EditMode 582 passed/zero failed/one parity skip,
 distinct-process write/read and focused PlayMode 4/4 pass. Player controls are
-still T11. See the
+still T11. Code commit `e32367b` is local; the live card is now complete in Done
+with verification comment posted and read back on October 26. See the
 [T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
 
 **Outcome:** A shared Genome Lab research upgrade raises later species-wallet

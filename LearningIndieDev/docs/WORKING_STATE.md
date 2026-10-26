@@ -13,8 +13,10 @@ completed receipts stay frozen. Full clean EditMode: 582 passed, zero failed,
 one parity skip, including 25 new research cases and all 23 prior persistence
 cases. Two distinct process write/read checks and 4/4 focused PlayMode cases
 pass. Profile/recovery values are unchanged; portable build/self-test pass.
-T05 was moved to live In Progress before implementation; closeout follows the
-local checkpoint. T01-T04 remain complete in Done. Next T06 licenses the Hare
+T05 code commit `e32367b` is local. Its card is now marked complete in live Done
+with verification comment `#comment-6adf94b8e042c6406100f639` posted and read back;
+proof is `artifacts/fd2-board-20261026/t05-done.png`. T01-T04 remain complete in
+Done. No push or active-checkout source integration occurred. Next T06 licenses the Hare
 path; T10/T11 still own player results and visible Gene Lab controls. See the
 [T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
 
