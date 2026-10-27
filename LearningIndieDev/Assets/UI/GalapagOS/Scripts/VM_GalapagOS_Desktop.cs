@@ -13,6 +13,7 @@ namespace SaltyGame
         [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
         [SerializeField] string genomeSpeciesId = "hare";
         Helper_ProfileSession profileSession;
+        bool permanentGenomeEconomy;
         public GenomeCatalogSnapshot GenomeCatalog => genomeCatalogProvider == null
             ? GenomeCatalogSnapshot.Empty : genomeCatalogProvider.Snapshot;
 
@@ -66,11 +67,12 @@ namespace SaltyGame
             simulationLauncher = launch;
         }
 
-        public void BindProfileSession(Helper_ProfileSession session)
+        public void BindProfileSession(Helper_ProfileSession session, bool permanentEconomy = false)
         {
             if (profileSession != null)
                 profileSession.SnapshotChanged -= HandleProfileSnapshotChanged;
             profileSession = session;
+            permanentGenomeEconomy = permanentEconomy;
             if (profileSession != null)
                 profileSession.SnapshotChanged += HandleProfileSnapshotChanged;
             HandleProfileSnapshotChanged(profileSession?.Current);
@@ -209,7 +211,8 @@ namespace SaltyGame
                     : genomeCatalogProvider.Snapshot,
                 profile: profileSession?.Current,
                 selectedSpecies: selectedSpecies,
-                profileSession: profileSession);
+                profileSession: profileSession,
+                permanentEconomy: permanentGenomeEconomy);
         }
 
         SpeciesId? GetSelectedGenomeSpecies()

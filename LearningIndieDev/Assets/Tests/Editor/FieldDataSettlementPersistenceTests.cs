@@ -1650,6 +1650,145 @@ namespace SaltyGame.Tests
             Assert.That(session.Current.SettlementReceipts, Is.Empty);
         }
 
+        [Test]
+        public void GeneLabPermanentQuotesLicenseAndResearchWithoutJourneyGates()
+        {
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(session.Current.CompletedRuns, Is.Zero);
+            Assert.That(lab.CanLicense, Is.False);
+            Assert.That(lab.LicenseReason, Does.Contain("Needs 10 Hare Data"));
+            session.AddRabbitData(13);
+            lab.Bind(session.Current);
+            Assert.That(lab.LicenseReason, Is.EqualTo("Hare Data: 20 -> 10."));
+            Assert.That(lab.License(), Is.True, lab.Status);
+            Assert.That(lab.License(), Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(lab.ResearchReason, Is.EqualTo("Research Data: 30 -> 10."));
+            Assert.That(lab.Research(), Is.True, lab.Status);
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(2));
+            Assert.That(lab.CanResearch, Is.False);
+            session.AddResearchData(20);
+            lab.Bind(session.Current);
+            Assert.That(lab.Research(), Is.True, lab.Status);
+            Assert.That(lab.ResearchText, Does.Contain("3 / 3"));
+            Assert.That(lab.Research(), Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+        }
+
+        [Test]
+        public void GeneLabPermanentNodesUseOwnedPrerequisitesAndCatalogCapacity()
+        {
+            StartLoadout();
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(lab.CapacityText, Is.EqualTo("8 / 8"));
+            const string tail = "hare.warren-network";
+            Assert.That(lab.IsOwned(tail), Is.True);
+            Assert.That(lab.NodeState(tail), Does.Contain("INACTIVE"));
+            Assert.That(lab.CanBuyNode(tail), Is.False);
+            Assert.That(lab.CanToggle(tail), Is.False);
+            Assert.That(lab.Reset(), Is.True, lab.Status);
+            Assert.That(lab.Toggle(tail), Is.True);
+            Assert.That(lab.Apply(), Is.True, lab.Status);
+            Assert.That(lab.CapacityText, Is.EqualTo("2 / 8"));
+            Assert.That(lab.NodeState(tail), Does.Contain("ACTIVE"));
+            var saved = session.Current;
+            Assert.That(lab.Toggle("hare.guarded-burrow"), Is.False);
+            Assert.That(lab.Apply(), Is.False);
+            Assert.That(session.Current, Is.SameAs(saved));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+        }
+
+        [Test]
+        public void GeneLabPermanentDraftSurvivesBalanceRefreshAndRejectsOverCapacity()
+        {
+            StartLoadout();
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(lab.Reset(), Is.True, lab.Status);
+            foreach (var node in lab.Catalog.SpeciesMaps.Single().Nodes) Assert.That(lab.Toggle(node.Id), Is.True);
+            Assert.That(lab.SelectedCapacity, Is.EqualTo(10));
+            Assert.That(lab.CanApply, Is.False);
+            Assert.That(lab.Apply(), Is.False);
+            Assert.That(lab.Status, Does.Contain("exceeds"));
+            session.AddResearchData(1);
+            lab.Bind(session.Current);
+            Assert.That(lab.SelectedCapacity, Is.EqualTo(10));
+            Assert.That(lab.Toggle("hare.guarded-burrow"), Is.True);
+            Assert.That(lab.Apply(), Is.True, lab.Status);
+            Assert.That(lab.CapacityText, Is.EqualTo("8 / 8"));
+        }
+
+        [TestCase("license")]
+        [TestCase("research")]
+        [TestCase("node")]
+        [TestCase("reset")]
+        [TestCase("apply")]
+        public void GeneLabPermanentSaveFailureKeepsStateAndRetryUsesSameIntent(string action)
+        {
+            StartLoadout();
+            var lab = new FieldDataGenomeLab(session);
+            if (action == "license" || action == "node")
+            {
+                profileId = session.CreateProfile("Fresh UI owner").ProfileId;
+                session.AddRabbitData(20);
+                if (action == "node") Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.True);
+                lab = new FieldDataGenomeLab(session);
+            }
+            if (action == "apply")
+            {
+                Assert.That(lab.Reset(), Is.True);
+                Assert.That(lab.Toggle("hare.warren-network"), Is.True);
+            }
+            var before = session.Current;
+            System.Func<bool> attempt = action == "license" ? lab.License : action == "research" ? lab.Research
+                : action == "node" ? () => lab.BuyNode("hare.guarded-burrow") : action == "reset" ? lab.Reset : lab.Apply;
+            storage.FailOnSave = storage.SaveCalls + 1;
+            Assert.That(attempt(), Is.False);
+            Assert.That(lab.Status, Does.Contain("storage failure"));
+            Assert.That(session.Current, Is.SameAs(before));
+            storage.FailOnSave = -1;
+            Assert.That(attempt(), Is.True, lab.Status);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(session.Current.ResearchData));
+            Assert.That(reopened.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(session.Current.CreateGenomeSnapshot().Fingerprint));
+        }
+
+        [Test]
+        public void GeneLabPermanentRejectsChangedProfileAndClearsItsDraft()
+        {
+            StartLoadout();
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(lab.Reset(), Is.True);
+            Assert.That(lab.Toggle("hare.warren-network"), Is.True);
+            session.CreateProfile("Other UI owner");
+            session.AddResearchData(100);
+            var before = session.Current;
+            Assert.That(lab.Research(), Is.False);
+            Assert.That(lab.Apply(), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            lab.Bind(session.Current);
+            Assert.That(lab.SelectedCapacity, Is.Zero);
+            Assert.That(lab.CanResearch, Is.False);
+            Assert.That(lab.ResearchReason, Does.Contain("Reopen Gene Lab"));
+        }
+
+        [Test]
+        public void GeneLabPermanentStaleSelectionCannotApplyAfterAnotherResetGeneration()
+        {
+            StartLoadout();
+            var lab = new FieldDataGenomeLab(session);
+            Assert.That(lab.Reset(), Is.True);
+            Assert.That(lab.Toggle("hare.warren-network"), Is.True);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, new[] { "hare.guarded-burrow" }, out _), Is.True);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.True);
+            var before = session.Current;
+            Assert.That(lab.Apply(), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            lab.Bind(session.Current);
+            Assert.That(lab.SelectedCapacity, Is.Zero);
+            Assert.That(lab.CanApply, Is.False);
+        }
+
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)
         {
             Assert.That(target.Current.RabbitData, Is.EqualTo(speciesData));
