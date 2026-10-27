@@ -16,7 +16,9 @@ passed/zero failed/one parity skip; independent Editor write/read checks,
 focused PlayMode8/8 and portable build/self-test pass. Exact original preferences
 and four source hashes are unchanged; original Editor reports ready. Work is
 local on `codex/fd2-t01-integration`, with no push or original-source integration.
-T08 is In Progress pending board closeout; T01-T07 remain Done. Next T09 freezes
+T08 code commit `d90c2f5` is local. Its card is complete in live Done, with
+verification comment `#comment-6ae013d687320fb2409a962e` posted and read back;
+proof: `artifacts/fd2-board-20261026/t08-done.png`. T01-T07 remain Done. Next T09 freezes
 the FD2 loadout into the next launch; visible controls remain T11. See the
 [T08 handoff](handoffs/2026-10-26-2254-codex-fd2-t08-reset-and-arrange-permanent-loadouts.md).
 

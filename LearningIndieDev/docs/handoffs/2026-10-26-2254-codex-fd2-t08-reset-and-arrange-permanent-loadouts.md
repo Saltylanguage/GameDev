@@ -92,8 +92,12 @@ charge again after nodes have been reactivated.
   match the protected capture. All four original source hashes are unchanged.
   Original Editor reports ready through the CLI. Diff hygiene passes; Unity's
   incidental ProBuilder line-ending change was restored, with no setting change.
-- Live T08 is In Progress pending the verification comment/Done closeout after
-  the local implementation commit. Counts/source hashes are retained in
+- Code commit `d90c2f5` remains local. Live T08 moved Upcoming Work -> In Progress
+  -> Done and is marked complete. The original description is unchanged, and
+  the verification comment was posted and visibly read back:
+  https://trello.com/c/TZe1J7oQ/144-fd2-t08-reset-and-arrange-an-active-genome-loadout#comment-6ae013d687320fb2409a962e.
+  Screenshot: `artifacts/fd2-board-20261026/t08-done.png`. T01-T07 remain Done.
+  Counts/source hashes are retained in
   `artifacts/fd2-t08-20261026/validation-summary.json`.
 - Repository handoff validation still reports 73 historical journal issues;
   none names the new T08 handoff. Diagnostic: `handoff-validation.log` in the

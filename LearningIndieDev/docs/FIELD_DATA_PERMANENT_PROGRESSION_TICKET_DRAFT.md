@@ -253,7 +253,12 @@ match catalog records.
 
 ### FD2-T08 — Reset and arrange an active loadout
 
-**October 26 decision:** Bevin selected a 20 RD reset for each replacement
+**October 26 decision and closeout:** Code commit `d90c2f5` is local; T08 is
+complete in live Done with verification comment
+`#comment-6ae013d687320fb2409a962e` posted and read back. All36 new cases,
+full EditMode666 passed/zero failed/one parity skip, independent-process checks
+and focused PlayMode8/8 pass. Proof: `artifacts/fd2-board-20261026/t08-done.png`.
+Bevin selected a 20 RD reset for each replacement
 loadout. Free selection applies from an empty loadout; after applying a nonempty
 selection, a different selection needs another paid clear. Identical selection
 is a no-op, and an empty reset is rejected without a fee. The existing POC
