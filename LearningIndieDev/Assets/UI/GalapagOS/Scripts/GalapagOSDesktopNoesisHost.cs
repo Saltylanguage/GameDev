@@ -136,6 +136,12 @@ namespace SaltyGame
                     Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
                     return false;
                 }
+                simulationPreview.BindGenomeLaunchSource(() =>
+                {
+                    if (!profileSession.Current.HasLoadedProfile || profileSession.Current.ProfileId != profile.ProfileId)
+                        throw new System.InvalidOperationException("The journey's original profile must still be loaded.");
+                    return profileSession.Current.CreateLaunchGenomeSnapshot(viewModel.GenomeCatalog);
+                });
             }
 
             simulationViewModel.Initialize(simulationPreview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
@@ -148,7 +154,7 @@ namespace SaltyGame
         {
             try
             {
-                snapshot = profileSession.Current.CreateGenomeSnapshot(viewModel.GenomeCatalog);
+                snapshot = profileSession.Current.CreateLaunchGenomeSnapshot(viewModel.GenomeCatalog);
                 return true;
             }
             catch (System.Exception exception) when (exception is System.ArgumentException
@@ -260,6 +266,7 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            if (simulationPreview != null) simulationPreview.BindGenomeLaunchSource(null);
             SpeciesSimulationPreview.RunCompleted -= HandleRunCompleted;
             TrackSimulationTicks();
             if (profileLaunchActive && profileSession != null)

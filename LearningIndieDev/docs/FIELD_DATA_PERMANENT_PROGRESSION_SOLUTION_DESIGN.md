@@ -285,6 +285,27 @@ approved effects are authored and covered by the FD2 resolver; purchase tests
 verify the saved selections resolve to those exact catalog records. This does
 not establish next-launch player wiring or balance acceptance.
 
+**T09 launch integration (2026-10-27):** `CreateLaunchGenomeSnapshot` resolves
+permanent Hare profiles through the versioned T01 definition and its
+owned-prerequisite/capacity validator. A reset generation or a canonical owned
+Hare node identifies this permanent path; active selections also require the
+license and must not mix refundable POC allocations. The existing authoring
+provider still supplies POC/other-species maps until T11. If it supplies a map
+containing FD2 IDs, that whole map must match the canonical definition. POC-only
+profiles keep the strict active-parent resolver. Each species retains its own
+resolved values and catalog fingerprint, independent of player selection.
+
+The Desktop explicitly binds a profile-owned capture callback to the preview.
+Immediately before the first simulation starts, it captures the latest saved
+profile, validates natural-rule application for all participating species, and
+rebases the opening ordered Mutations onto those rules. This includes launches
+through the journey map, the Field Data test route and direct next-journey
+commands; a changed loaded profile blocks launch. The callback is not invoked
+during a running/continuing journey. Frozen values/order/fingerprints remain in
+the run, phase checkpoint and result, while reset/rearrangement affects only a
+later launch. Configuring the Field Data test route retains the prepared Genome
+instead of clearing it. This is launch integration, not ecology/balance approval.
+
 ## 7. UI and player flow
 
 Use the existing GalapagOS Desktop's Gene Lab window, its view-model, and

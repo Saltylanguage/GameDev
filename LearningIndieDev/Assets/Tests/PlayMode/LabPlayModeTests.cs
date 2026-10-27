@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
 using UnityEngine;
@@ -670,6 +671,179 @@ namespace SaltyGame.PlayModeTests
                 yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "population-02-full-pool", simulationCamera);
             preview.ContinueWithoutUpgrade();
             Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("hare")), Is.EqualTo(60));
+        }
+
+        static void SeedFD2LaunchProfile(Helper_ProfileSession session)
+        {
+            session.SetPlaytimeTracking(false);
+            var id = session.CreateProfile("FD2 launch automation").ProfileId;
+            session.AddRabbitData(60);
+            session.AddResearchData(200);
+            Assert.That(session.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
+            var nodes = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes;
+            foreach (var node in nodes.Take(4))
+                Assert.That(session.TryPurchaseHareGenomeNode(id, node.Id, out error), Is.True, error);
+            var hare = new SpeciesId("hare");
+            Assert.That(session.TryResetGenomeLoadout(id, hare, 0, out error), Is.True, error);
+            Assert.That(session.TryPurchaseHareGenomeNode(id, nodes[4].Id, out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(id, hare, 1, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(id, hare, 2, nodes.Take(4).Select(node => node.Id), out error), Is.True, error);
+        }
+
+        [UnityTest]
+        public IEnumerator FD2GenomeLaunchRefreshesAtFirstTickPreservesOpeningMutationAndFreezesThroughTheJourney()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var id = session.Current.ProfileId;
+            var hare = new SpeciesId("hare");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var desktop = root.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            ConfigureShortRewardJourney(preview);
+            Assert.That(preview.TrySetActiveGenomeBeforeJourney(GenomeSimulationSnapshot.Empty, out var error), Is.True, error);
+            var natural = preview.ActiveSpeciesRules[hare];
+            OpenDesktopApp(desktop, "Simulation");
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            var opening = preview.Progression.AppliedRunUpgrades.Single();
+            Assert.That(session.TryResetGenomeLoadout(id, hare, 2, out error), Is.True, error);
+            var selected = new[] { "hare.warren-network", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            Assert.That(session.TryArrangeGenomeLoadout(id, hare, 3, selected, out error), Is.True, error);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True, preview.SettingsMessage);
+            preview.PauseSimulation();
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(hare).ActiveNodeIds, Is.EqualTo(selected));
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(preview.Progression.AppliedRunUpgrades.Single().Fingerprint, Is.EqualTo(opening.Fingerprint));
+            var expectedBase = preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(hare).ApplyToNaturalRules(natural);
+            var expected = new SpeciesProgression(new SpeciesDefinition(hare, expectedBase));
+            Assert.That(expected.TryApplyRunUpgrade(opening), Is.True);
+            Assert.That(preview.ActiveSpeciesRules[hare].BlockAmount, Is.EqualTo(expected.CurrentRules.BlockAmount));
+            Assert.That(preview.ActiveSpeciesRules[hare].MovementSpeed, Is.EqualTo(expected.CurrentRules.MovementSpeed));
+            Assert.That(preview.ActiveSpeciesRules[hare].DigestionEnergyBonus, Is.EqualTo(expected.CurrentRules.DigestionEnergyBonus));
+            var frozen = preview.Run.ActiveGenomeSnapshot.Fingerprint;
+            Assert.That(session.TryResetGenomeLoadout(id, hare, 3, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(id, hare, 4, new[] { "hare.guarded-burrow" }, out error), Is.True, error);
+            Assert.That(preview.TrySetActiveGenomeBeforeJourney(GenomeSimulationSnapshot.Empty, out _), Is.False);
+            Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
+            Assert.That(preview.Run.CreateCheckpoint().Restore().ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(frozen));
+            preview.ContinueWithoutUpgrade();
+            Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(frozen));
+            preview.PauseSimulation();
+            for (var phase = 2; phase <= 6; phase++)
+            {
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(frozen));
+                if (phase < 6)
+                {
+                    preview.ContinueWithoutUpgrade();
+                    preview.PauseSimulation();
+                }
+            }
+            Assert.That(preview.ChooseJourneyNode("seedfall"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            preview.EndSimulation();
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            preview.PlayNextSimulation();
+            preview.PauseSimulation();
+            Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.Not.EqualTo(frozen));
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(hare).ActiveNodeIds, Is.EqualTo(new[] { "hare.guarded-burrow" }));
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
+            Assert.That(preview.ActiveSpeciesRules[hare].BlockAmount, Is.EqualTo(natural.BlockAmount + 1));
+            Assert.That(preview.ActiveSpeciesRules[hare].MovementSpeed, Is.EqualTo(natural.MovementSpeed));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2GenomeLaunchAppliesToBackgroundHaresWhenFoxIsThePlayer()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            root.GetComponent<Helper_ProfileSession>().SetPlaytimeTracking(false);
+            ConfigureShortRewardJourney(preview);
+            Assert.That(preview.TrySetActiveGenomeBeforeJourney(GenomeSimulationSnapshot.Empty, out var error), Is.True, error);
+            Assert.That(preview.TrySetPlayerSpecies("fox", out error), Is.True, error);
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations("8", "8", "10100", "64", "0", "12", "0.1",
+                "0", "0", "0", false, "20", "4", "2", out error), Is.True, error);
+            var hare = new SpeciesId("hare");
+            var natural = preview.ActiveSpeciesRules[hare];
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            preview.PauseSimulation();
+            Assert.That(preview.Run.PlayerSpeciesId, Is.EqualTo(new SpeciesId("fox")));
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(hare).ActiveNodeIds.Count, Is.EqualTo(4));
+            Assert.That(preview.ActiveSpeciesRules[hare].BlockAmount, Is.EqualTo(natural.BlockAmount + 1));
+            Assert.That(preview.ActiveSpeciesRules[hare].Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange + 2));
+            Assert.That(preview.ActiveSpeciesRules[hare].MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
+            var backgroundHares = 0;
+            for (var y = 0; y < preview.Run.Cells.Height; y++)
+                for (var x = 0; x < preview.Run.Cells.Width; x++)
+                    if (preview.Run.Cells.GetCell(x, y).SpeciesId == hare) backgroundHares++;
+            Assert.That(backgroundHares, Is.GreaterThan(0));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2GenomeLaunchSurvivesTestRouteConfigurationAndNextJourneyReset()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            var prepared = preview.ActiveGenomeSnapshot.Fingerprint;
+            Assert.That(preview.TryConfigureFieldDataTestJourney(out var error), Is.True, error);
+            Assert.That(preview.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(prepared));
+            preview.StartSimulation();
+            preview.PauseSimulation();
+            Assert.That(preview.FieldDataSession, Is.Not.Null);
+            Assert.That(preview.FieldDataSession.Run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(prepared));
+            var hare = new SpeciesId("hare");
+            Assert.That(session.TryResetGenomeLoadout(session.Current.ProfileId, hare, 2, out error), Is.True, error);
+            Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(prepared));
+            Assert.That(preview.AbandonFieldDataJourney(), Is.True);
+            preview.PlayNextSimulation();
+            preview.PauseSimulation();
+            Assert.That(preview.FieldDataSession.Run.ActiveGenomeSnapshot.GetSpeciesGenome(hare).ActiveNodeIds, Is.Empty);
+            Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.Not.EqualTo(prepared));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2GenomeLaunchRejectsAChangedProfileBeforeTheFirstSimulationStarts()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            var prepared = preview.Run.ActiveGenomeSnapshot.Fingerprint;
+            session.CreateProfile("Different launch owner");
+            preview.StartSimulation();
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Ready));
+            Assert.That(preview.SettingsMessage, Does.Contain("original profile"));
+            Assert.That(preview.Run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(prepared));
         }
 
         [UnityTest]

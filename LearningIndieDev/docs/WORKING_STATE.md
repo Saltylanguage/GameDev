@@ -5,6 +5,23 @@ become a master changelog.
 
 ## Current focus
 
+**October 27 FD2-T09 launch freezing verified:** Permanent Hare ownership uses
+the canonical FD2 resolver; POC/other-species catalogs retain their own rules.
+Desktop explicitly captures the owning profile at first simulation start,
+including direct next-journey commands. Opening Mutations/map choices are retained,
+and every participating species gets its own Genome effects. Running journeys,
+phases/checkpoints/results retain frozen values after profile changes. Field
+Data route configuration retains the prepared Genome. All13 new domain cases
+pass; full clean EditMode679 passed/zero failed/one parity skip. Related
+PlayMode17/18 pass, including all4 new T09 cases and existing reward/unlock
+journeys; the sole failure is the unchanged incoming population-control
+expected114/actual90 baseline. Portable build/self-test pass. Exact original
+preferences and four source hashes are unchanged; original Editor reports ready.
+Work remains local on `codex/fd2-t01-integration`, with no push/source integration.
+T09 is In Progress pending board closeout; T01-T08 remain Done. Next T10 wires
+settlement/failure results; visible Lab controls remain T11. See the
+[T09 handoff](handoffs/2026-10-26-2315-codex-fd2-t09-freeze-permanent-genome-at-launch.md).
+
 **October 26 FD2-T08 reset/arrangement verified:** Bevin confirmed a fresh
 20 RD reset for each replacement loadout. Reset clears active Hare nodes without
 refund or ownership loss; free full selection applies from empty, and a changed

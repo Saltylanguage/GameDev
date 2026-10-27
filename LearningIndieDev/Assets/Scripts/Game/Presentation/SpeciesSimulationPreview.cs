@@ -392,6 +392,7 @@ namespace SaltyGame
         string chosenJourneyNodeDisplayName;
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
+        Func<GenomeSimulationSnapshot> genomeLaunchSource;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
         SimulationRunResult result;
@@ -1110,22 +1111,49 @@ namespace SaltyGame
             previewState = SpeciesPreviewState.Rewards;
         }
 
+        public void BindGenomeLaunchSource(Func<GenomeSimulationSnapshot> source)
+        {
+            genomeLaunchSource = source;
+        }
+
         public void StartSimulation()
         {
             if (Run != null && Run.Status == SimulationRunStatus.Ready)
             {
+                var refreshProfileGenome = !sessionStarted && genomeLaunchSource != null;
                 if (!sessionStarted
-                    && !(journeyActive && journeyCurrentNode?.Kind == JourneyNodeKind.Simulation
-                        && journeyCurrentNode.Row == 1))
+                    && (refreshProfileGenome || !(journeyActive && journeyCurrentNode?.Kind == JourneyNodeKind.Simulation
+                        && journeyCurrentNode.Row == 1)))
                 {
-                    if (SelectedScenario == null)
+                    var openingJourneyNode = refreshProfileGenome && journeyActive && journeyCurrentNode?.Row == 1
+                        ? journeyCurrentNode : null;
+                    var openingVisitedNodes = openingJourneyNode == null ? null : journeyVisitedNodeIds.ToArray();
+                    if (refreshProfileGenome)
+                    {
+                        try
+                        {
+                            var natural = CreateRulesFromDrafts();
+                            var captured = genomeLaunchSource().IncludeSpecies(natural.Keys);
+                            var effective = captured.ApplyToNaturalRules(natural);
+                            captured.ApplyToStartingPopulations(CreateSimulationData());
+                            activeGenomeSnapshot = captured;
+                            rules = effective;
+                        }
+                        catch (Exception exception) when (exception is ArgumentException
+                            || exception is InvalidOperationException || exception is OverflowException)
+                        {
+                            settingsMessage = "Genome launch rejected: " + exception.Message;
+                            return;
+                        }
+                    }
+                    else if (SelectedScenario == null)
                     {
                         rules = activeGenomeSnapshot.ApplyToNaturalRules(CreateRulesFromDrafts());
                     }
 
                     var startingUpgrades = progression?.AppliedRunUpgrades.ToArray()
                         ?? Array.Empty<SpeciesUpgradeSnapshot>();
-                    var startingRules = startingUpgrades.Length > 0
+                    var startingRules = startingUpgrades.Length > 0 && !refreshProfileGenome
                         ? progression.Definition.Rules
                         : rules[playerSpecies];
                     ResetExpeditionProgression(startingRules);
@@ -1148,6 +1176,12 @@ namespace SaltyGame
                     };
                     runNumber = 0;
                     PrepareNextRun();
+                    if (openingJourneyNode != null)
+                    {
+                        // Re-seeding at first start must retain the opening map choice.
+                        journeyCurrentNode = openingJourneyNode;
+                        foreach (var id in openingVisitedNodes) journeyVisitedNodeIds.Add(id);
+                    }
                 }
 
                 if (fieldDataJourneyDefinition != null)
@@ -1214,10 +1248,12 @@ namespace SaltyGame
                 return false;
             }
 
+            var preparedGenome = activeGenomeSnapshot;
             fieldDataJourneyDefinition = definition;
             continuousPhasesEnabled = true;
             phaseLengthTicks = definition.RoundLength;
             ResetToStart();
+            if (!TrySetActiveGenomeBeforeJourney(preparedGenome, out validationMessage)) return false;
             settingsMessage = "Field Data journey configured; the prepared run will retain one 18-round simulation session.";
             return true;
         }

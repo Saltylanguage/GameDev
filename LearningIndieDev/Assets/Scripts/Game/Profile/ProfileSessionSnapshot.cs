@@ -167,6 +167,35 @@ namespace SaltyGame
             return catalog == null ? snapshot : snapshot.Resolve(catalog);
         }
 
+        /// <summary>Freeze permanent FD2 Hare ownership and retain the POC resolver for other catalogs.</summary>
+        public GenomeSimulationSnapshot CreateLaunchGenomeSnapshot(GenomeCatalogSnapshot catalog)
+        {
+            if (catalog == null) throw new ArgumentNullException(nameof(catalog));
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var snapshots = new List<SpeciesGenomeSnapshot>();
+            foreach (var genome in genomeProfiles)
+            {
+                var permanentHare = genome.SpeciesId == definition.HareMap.SpeciesId
+                    && (genome.ResetGeneration > 0 || genome.UnlockedNodeIds.Any(id => definition.HareMap.TryGetNode(id, out _)));
+                if (permanentHare)
+                {
+                    if (genome.Allocations.Count != 0
+                        || (genome.ActiveNodeIds.Count > 0 && !unlockedGenomeSpeciesIds.Contains(genome.SpeciesId)))
+                        throw new InvalidOperationException("An active FD2 Hare loadout requires its path license and permanent ownership without POC allocations.");
+                    var authored = catalog.GetSpeciesMap(genome.SpeciesId);
+                    if (authored != null && authored.Nodes.Any(node => definition.HareMap.TryGetNode(node.Id, out _)))
+                        definition.ValidateAuthoredMap(authored);
+                    snapshots.Add(definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(genome.SpeciesId));
+                }
+                else
+                {
+                    snapshots.Add(new GenomeSimulationSnapshot(new[] { genome.CreateSnapshot() })
+                        .Resolve(catalog).GetSpeciesGenome(genome.SpeciesId));
+                }
+            }
+            return new GenomeSimulationSnapshot(snapshots);
+        }
+
         public bool TryGetSettlement(string journeyId, out FieldDataSettlementReceipt receipt)
         {
             receipt = settlementReceipts.FirstOrDefault(value => value.JourneyId == journeyId);

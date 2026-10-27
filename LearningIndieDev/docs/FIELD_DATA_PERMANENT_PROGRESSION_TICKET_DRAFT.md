@@ -279,6 +279,15 @@ empty loadout follows the T01 definition.
 
 ### FD2-T09 — Apply Genome loadout to the next launch
 
+**October 27 implementation:** Permanent Hare loadouts use the canonical FD2
+owned-prerequisite resolver; other/POC profiles keep their existing catalog rules.
+The Desktop binds a profile-owned first-start capture, so direct next-journey
+commands also refresh the saved configuration. Opening Mutations are retained,
+all participating species receive their own resolved effects, and active
+journeys keep their frozen values through phases/checkpoints/results. Field Data
+test-route configuration retains its prepared Genome. Detailed validation and
+board closeout are recorded in the T09 handoff.
+
 **Outcome:** The current active Genome configuration is frozen into the next
 simulation/journey and does not mutate a run already in progress.
 
