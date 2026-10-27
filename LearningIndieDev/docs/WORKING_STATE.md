@@ -5,6 +5,25 @@ become a master changelog.
 
 ## Current focus
 
+**October 27 FD2-T10 settlement results verified:** The accepted18-round Field
+Data journey now shows the persisted permanent receipt: leftover FD, rate,
+frozen research, species deposit, +10RD and before/after wallets. Failure shows
+forfeiture and permanent retention. Pending results explicitly confirm no paid
+deposit and guard exits/start/reset until retry saves; pending reload and result
+reentry preserve exactly-once payment. Older POC rewards remain unchanged.
+New domain11/11 and scene3/3 pass, including a repeated final scene run. Full
+EditMode690 passed/zero failed/one existing parity skip. Rendered saved/pending/
+failure views inspected at1280x720; portable build/self-test pass. Related
+PlayMode21/24 pass: the population-control baseline and two older fixed-seed
+route failures remain. Both route failures reproduce exactly against pre-T10
+HEAD26ca438, including tick882. Exact original preferences/four source hashes
+are unchanged; original Editor is ready. Code `1b7d9ab` remains local with no
+push or original-source integration. T10 is complete in live Done; evidence
+comment `#comment-6ae0c7bb937b17df3d1fc85d` was posted/read back, description
+preserved. Proof: `artifacts/fd2-board-20261027/t10-done.png`.
+Next T11 wires visible Gene Lab controls; T12 retains end-to-end acceptance.
+See the [T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md).
+
 **October 27 FD2-T09 launch freezing verified:** Permanent Hare ownership uses
 the canonical FD2 resolver; POC/other-species catalogs retain their own rules.
 Desktop explicitly captures the owning profile at first simulation start,

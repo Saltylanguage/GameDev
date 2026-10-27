@@ -78,7 +78,7 @@ The serialized record needs:
   research level/rate, species deposit, Research bonus, pre/post balances, and
   schema/design version.
 
-The integrated profile store is version 6. Recognize the older shapes explicitly:
+The integrated profile store is version 7. Recognize the older shapes explicitly:
 
 - v2: copy generic currency into Research Data; species wallets start at zero.
 - local v3: preserve researchData and speciesDataWallets as already migrated.
@@ -171,6 +171,24 @@ Failure only clears/disposes the journey-local FD session and presents the
 lost-FD amount. It must not touch Research Data, species wallets, licenses or
 node state.
 
+**T10 implementation (2026-10-27):** The accepted 18-round Field Data journey
+binds one profile-owned `FieldDataPermanentResults` presenter from the Desktop.
+Terminal success submits the unique journey ID, selected species and leftover
+FD to the existing settlement API. The UI publishes the returned saved receipt:
+source FD, base rate, two-stage conversion, frozen research level/rational
+multiplier, species deposit, fixed RD bonus and both before/after balances.
+Zero leftover still displays the saved RD bonus. Failure displays forfeited FD
+and retained permanent balances/unlocks without invoking settlement.
+
+An unpaid result displays no confirmed deposit. Close, Desktop return, map/next
+journey and direct preview restart/start are guarded until the same transaction
+saves. Retry uses the original profile and journal inputs; duplicate callbacks
+or receipt reentry cannot pay again. A saved pending journal reopens as pending
+results after reload. The v7 profile store remains authoritative; no new save
+schema or UI wallet calculation is introduced. The older 12-phase POC journey
+retains its legacy reward path; it is not converted to FD2 by this ticket.
+See the [T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md).
+
 ## 5. Conversion research
 
 Add one shared conversion-research record to profile state: current level,
@@ -198,7 +216,7 @@ existing receipts and pending successes keep their frozen level. Buying more
 research while a success is pending cannot improve that pending award. All
 snapshot-copy paths retain the level, journal and pending inputs. Research is
 shared across species within a profile, independent between profiles. T11
-still owns the visible Genome Lab purchase controls and retry presentation.
+still owns the visible Genome Lab purchase controls; T10 owns settlement retry presentation.
 
 ## 6. Genome license, permanent node purchases, active loadout
 

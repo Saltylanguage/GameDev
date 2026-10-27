@@ -308,6 +308,22 @@ catalog.
 
 ### FD2-T10 — Show permanent settlement and failure results
 
+**October 27 T10 implementation:** The accepted 18-round Field Data journey
+now presents its saved receipt or an explicit unpaid retry state. Saved results
+show source FD, rate/research level, species deposit, +10 RD and both before/after
+balances, including zero-FD success. Failure shows forfeiture and retained
+permanent state. Pending results block exits and restart until the same saved
+transaction succeeds; reload/reentry never pays a second time. The older POC
+journey keeps its existing reward path. New domain11/11 and scene3/3 pass;
+full EditMode690 passed/zero failed/one existing parity skip. All three rendered
+screens were inspected at1280x720. Portable build/self-test pass. See the
+[T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md)
+for broader regressions and board closeout. T10 is complete in live Done; code
+`1b7d9ab` remains local. Verification comment
+`#comment-6ae0c7bb937b17df3d1fc85d` was posted/read back; related PlayMode21/24
+pass with all3 failures verified against baseline. Proof:
+`artifacts/fd2-board-20261027/t10-done.png`.
+
 **Outcome:** Journey results explain the permanent economy outcome accurately.
 
 **Work:** Success view shows leftover FD, rate/research level, species deposit,
