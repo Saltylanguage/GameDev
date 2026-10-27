@@ -5,6 +5,25 @@ become a master changelog.
 
 ## Current focus
 
+**October 27 FD2-T12 automated acceptance complete; human review pending:**
+Four end-to-end cases pass: zero-wallet earned progression plus v2, local v3
+and incoming Rabbit v3 migration. Three real18-round successes fund Research,
+license, four nodes, a20 RD reset and free replacement; reload/next launch
+retain the selection and confirmed End forfeits only20 new FD. Duplicate
+callbacks/reloads never pay twice. A real reopen auto-start defect was fixed:
+configured Field Data journeys now wait at the map for explicit start.
+Full EditMode700 passed/zero failed/one existing parity skip. All29 focused
+scene cases pass within33 total; the same4 wider baseline failures remain.
+Final graphics4/4 and ten1280x720 captures inspected. Portable build/self-test
+pass. Exact original preferences/four source hashes unchanged; original Editor
+ready. Controlled survival settings are documented, with no ecology/balance,
+player-build or full PlayMode green claim. Code `ada1759` is local/unpushed.
+T12 stays incomplete in live In Progress until Bevin confirms screen clarity;
+evidence comment `#comment-6ae10ab7d93167a216017b9b` was posted/read back,
+original description preserved. Proof: `artifacts/fd2-board-20261027/t12-awaiting-review.png`.
+See the [acceptance review](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md) and
+[T12 handoff](handoffs/2026-10-27-1613-codex-fd2-t12-permanent-progression-end-to-end-acceptance.md).
+
 **October 27 FD2-T11 Gene Lab controls verified:** MainMenu profile launch
 now uses the permanent Hare catalog and shared Research purchases. Wallets,
 prices, resulting balances, prerequisites, owned/active/draft states and capacity

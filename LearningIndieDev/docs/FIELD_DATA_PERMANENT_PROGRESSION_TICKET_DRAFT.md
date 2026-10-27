@@ -371,6 +371,17 @@ the ViewModel.
 
 ### FD2-T12 — Verify migration and end-to-end permanent progression
 
+**October 27 automated checkpoint; human clarity review pending:** Code
+`ada1759` verifies four earned/migrated complete loops and fixes the Field Data
+reopen auto-start defect. Full EditMode700 pass/0 fail/1 existing skip;29 focused
+scene cases pass, with4 exact baseline failures in the broader33-case run.
+Final graphics4/4 and ten current captures inspected. Original preferences/source
+preserved; no push/source integration. T12 is incomplete in live In Progress
+because its explicit human-clarity criterion remains open. Automated evidence
+comment `#comment-6ae10ab7d93167a216017b9b` posted/read back, description retained.
+[Review the concrete screens and remaining balance questions](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md).
+
+
 **Outcome:** The team can complete and inspect a new and migrated profile's
 permanent progression loop.
 

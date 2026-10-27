@@ -384,6 +384,18 @@ Then validate a complete success flow, a failed flow, and a migrated profile
 through the actual Desktop/Gene Lab screens. Record what tests ran and what
 human acceptance remains; unit tests do not establish player clarity or balance.
 
+**T12 automated verification (2026-10-27):** Four end-to-end cases exercise a
+zero-wallet profile and all three supported legacy wallet shapes through saved
+success, Lab purchases/reset/reload and next-launch freezing. A new-profile
+case earns every permanent unit through actual journey settlement. Duplicate
+callbacks cannot change old receipts. Confirmed End retains earned permanent
+progress. Reopening a configured Field Data journey now waits at the map;
+the previous POC-only check auto-started it. Full domain and focused scene
+checks pass; exact controlled fixture settings and remaining wider failures
+are in the [acceptance report](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md).
+Human screen-clarity confirmation remains pending; this does not approve
+production ecology, tuning, a release or publishing the isolated source.
+
 ## 9. Risks and decision points
 
 - Save atomicity: the two wallets and the receipt must not diverge across a
