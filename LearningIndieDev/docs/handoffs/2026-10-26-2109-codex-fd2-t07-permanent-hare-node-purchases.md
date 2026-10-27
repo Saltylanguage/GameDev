@@ -76,8 +76,11 @@ the node. The full proposed loadout must have all owned ancestors and fit the
 - Original Editor remains ready with Play Mode stopped. Diff hygiene passes;
   restored Unity's incidental ProBuilder line-ending rewrite. No setting change.
 - Revision hashes and counts are retained in `validation-summary.json` under
-  the same artifact directory. Live T07 was moved Upcoming Work -> In Progress;
-  completion comment/Done closeout follows the local implementation commit.
+  the same artifact directory. Code commit `c58f7b5` is local. Live T07 moved
+  Upcoming Work -> In Progress -> Done and is marked complete. Its original
+  description is unchanged; the verification comment was posted and visibly
+  read back: https://trello.com/c/bYWmUPYV/143-fd2-t07-purchase-permanent-hare-nodes#comment-6adffac4ab95c50adf0bc641.
+  Screenshot: `artifacts/fd2-board-20261026/t07-done.png`. T01-T06 remain Done.
 
 ## Risks and incomplete work
 

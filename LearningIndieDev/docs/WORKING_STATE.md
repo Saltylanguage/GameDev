@@ -14,8 +14,10 @@ full clean EditMode630 passed/zero failed/one parity skip. Independent Editor
 write/read checkpoints, focused PlayMode7/7 and portable build/self-test pass.
 Original profile/recovery preferences and all four original source hashes are
 unchanged; original Editor is ready/stopped. Work is local on
-`codex/fd2-t01-integration`, with no push or source integration. Live T07 is In
-Progress pending evidence closeout; T01-T06 remain Done. Next T08 resets/arranges
+`codex/fd2-t01-integration`, with no push or source integration. Code commit
+`c58f7b5` is local. Live T07 is complete in Done, with verification comment
+`#comment-6adffac4ab95c50adf0bc641` posted and visibly read back; T01-T06 remain
+Done. Proof: `artifacts/fd2-board-20261026/t07-done.png`. Next T08 resets/arranges
 the permanent loadout; T09/T11 own launch/UI wiring. See the
 [T07 handoff](handoffs/2026-10-26-2109-codex-fd2-t07-permanent-hare-node-purchases.md).
 
