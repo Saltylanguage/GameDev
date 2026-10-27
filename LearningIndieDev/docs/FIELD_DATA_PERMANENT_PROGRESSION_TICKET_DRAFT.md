@@ -224,6 +224,16 @@ survives restart; a journey remains launchable with no license.
 
 ### FD2-T07 — Purchase permanent Hare nodes
 
+**October 26 implementation:** `TryPurchaseHareGenomeNode` validates the owning
+profile, canonical node/price, license, permanently owned ancestors and full
+catalog capacity. It saves 5 Hare Data deduction, permanent ownership and
+activation together with the existing atomic profile commit path. No refundable
+POC allocation or schema change is added. Owned inactive duplicates, other
+wallets, invalid IDs, capacity overflow and failed saves cannot publish a
+purchase. Player controls remain T11; T08/T11 use catalog capacity rather than
+the POC profile's one-point fallback. Validation/board closeout is recorded in
+the T07 handoff.
+
 **Outcome:** Eligible Hare Genome nodes become permanently owned and active
 without exceeding capacity.
 

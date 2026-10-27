@@ -385,6 +385,44 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator PermanentHareNodesSurviveSceneReloadWithTheirPriceCapacityAndCatalogEffects()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("Permanent Hare nodes").ProfileId;
+            session.AddRabbitData(40);
+            session.AddResearchData(37);
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
+            var active = new[] { "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            foreach (var id in active)
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out var genome), Is.True);
+            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(active));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(active));
+            Assert.That(genome.Allocations, Is.Empty);
+            var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
+            var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
+            var effective = frozen.GetSpeciesGenome(new SpeciesId("hare")).ApplyToNaturalRules(natural);
+            Assert.That(effective.BlockAmount, Is.EqualTo(natural.BlockAmount + 1));
+            Assert.That(effective.Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange + 2));
+            Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
+            Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus + 0.25f));
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, active[0], out _), Is.False);
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.False);
+            StringAssert.Contains("capacity", error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(37));
+            ClearProfiles();
+        }
+
+        [UnityTest]
         public IEnumerator HareJourneyCanLaunchWithoutAPathLicense()
         {
             ClearProfiles();

@@ -582,6 +582,63 @@ namespace SaltyGame
             finally { committingProgression = false; }
         }
 
+        public bool TryPurchaseHareGenomeNode(string profileId, string nodeId, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId)
+            {
+                error = "A Hare Genome purchase requires the same loaded profile and no operation in progress.";
+                return false;
+            }
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var hare = definition.HareMap.SpeciesId;
+            if (!Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                error = "The Hare Genome path license is required.";
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(nodeId) || !definition.HareMap.TryGetNode(nodeId, out var node))
+            {
+                error = "The node must belong to the FD2 Hare Genome catalog.";
+                return false;
+            }
+            Current.TryGetGenomeProfile(hare, out var profile);
+            if (profile != null && (profile.IsNodeUnlocked(node.Id) || profile.IsNodeActive(node.Id)))
+            {
+                error = "The Hare Genome node is already owned or allocated.";
+                return false;
+            }
+            Current.SpeciesDataWallets.TryGetValue(hare, out var balance);
+            if (balance < node.RabbitDataPrice)
+            {
+                error = "Not enough Hare Data for this Genome node.";
+                return false;
+            }
+            var unlocked = profile == null ? new List<string>() : new List<string>(profile.UnlockedNodeIds);
+            var active = profile == null ? new List<string>() : new List<string>(profile.ActiveNodeIds);
+            unlocked.Add(node.Id);
+            active.Add(node.Id);
+            SpeciesGenomeProfile nextProfile;
+            try
+            {
+                nextProfile = new SpeciesGenomeProfile(hare, unlocked, active, profile?.Allocations);
+                // FD2 uses owned prerequisites and catalog capacity, not the POC's active-parent/one-point fallback.
+                definition.FreezeOwnedLoadout(nextProfile);
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
+            {
+                error = exception.Message;
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(balance - node.RabbitDataPrice,
+                    Current.ResearchData, Current.CompletedRuns, nextProfile), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
         public bool TryPurchaseRabbitGenomeLicense(long rabbitDataPrice, out string reason)
         {
             reason = string.Empty;

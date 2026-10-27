@@ -227,6 +227,21 @@ the first funded successful journey; ordinary journey launch needs no license.
 The POC's price-parameter/three-run method remains for the existing UI until T11
 wires the FD2 operation. No save-schema change is needed for this existing flag.
 
+**T07 implementation (2026-10-26):** `TryPurchaseHareGenomeNode(profileId, nodeId)`
+accepts only IDs in the canonical T01 Hare map. It requires the matching loaded
+profile and path license, charges the catalog's 5 Hare Data price, and saves
+deduction, permanent `unlockedNodeIds` and immediate activation together before
+publication. Duplicate owned/inactive nodes and existing POC allocations cannot
+be purchased again. The existing FD2 resolver checks all owned ancestors and
+the full proposed active loadout against catalog capacity (2 points per node,
+8 total), including already active nodes. Rejected requests and failed saves
+publish no purchase. Other wallets, research, Genomes and settlement state stay
+intact. Existing v6 fields suffice; no migration or new refundable allocation is
+introduced. Unknown/incompatible legacy active state is preserved and rejected
+instead of silently reinterpreted. T08/T11 must derive FD2 capacity from the
+catalog; the POC profile's `CapacityUsed` fallback counts legacy IDs as one point.
+The POC purchase and visible Gene Lab controls remain separate until T11.
+
 Reset takes a selected species ID and fixed Research Data fee. It clears that
 species' active selections, leaves its licenses and all permanently unlocked
 nodes intact, and refunds no Species Data. After one reset the player may freely
@@ -239,9 +254,10 @@ Every launched simulation receives the validated active Genome snapshot. Lab
 changes affect only a later launch. Validate prerequisite ownership before
 freezing active nodes; owned prerequisites do not also have to occupy active
 capacity. The incoming POC resolver requires active prerequisites and needs a
-separate FD2 adaptation, as described in the T01 review. Keep the five local
-assets effectless until the proposed mappings are approved and supported
-runtime integration is verified.
+separate FD2 adaptation at T09, as described in the T01 review. T01's five
+approved effects are authored and covered by the FD2 resolver; purchase tests
+verify the saved selections resolve to those exact catalog records. This does
+not establish next-launch player wiring or balance acceptance.
 
 ## 7. UI and player flow
 

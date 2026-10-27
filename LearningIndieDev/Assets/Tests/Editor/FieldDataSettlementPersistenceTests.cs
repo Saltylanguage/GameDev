@@ -800,6 +800,298 @@ namespace SaltyGame.Tests
             Assert.That(reopened.Current.RabbitData, Is.Zero);
         }
 
+        void StartNodes(long balance = 40)
+        {
+            StartLicense(balance);
+            session.UnlockGenome(hare);
+        }
+
+        [TestCase(0L, false)]
+        [TestCase(4L, false)]
+        [TestCase(5L, true)]
+        [TestCase(6L, true)]
+        [TestCase(long.MaxValue, true)]
+        public void HareNodePurchaseChargesFiveAndPersistsPermanentOwnershipWithActivation(long balance, bool succeeds)
+        {
+            StartNodes(balance);
+            var saves = storage.SaveCalls;
+            var before = session.Current;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.EqualTo(succeeds), error);
+            if (!succeeds)
+            {
+                Assert.That(session.Current, Is.SameAs(before));
+                Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+                return;
+            }
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+            var paid = JObject.Parse(storage.Writes.Last())["profiles"][0];
+            Assert.That((long)paid["speciesDataWallets"].Single(wallet => (string)wallet["speciesId"] == "hare")["balance"], Is.EqualTo(balance - 5));
+            Assert.That(paid["genomeProfiles"][0]["unlockedNodeIds"].Values<string>(), Is.EqualTo(new[] { "hare.guarded-burrow" }));
+            Assert.That(paid["genomeProfiles"][0]["activeNodeIds"].Values<string>(), Is.EqualTo(new[] { "hare.guarded-burrow" }));
+            Assert.That(paid["genomeProfiles"][0]["allocations"], Is.Empty);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(balance - 5));
+            Assert.That(reopened.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(genome.IsNodeUnlocked("hare.guarded-burrow"), Is.True);
+            Assert.That(genome.IsNodeActive("hare.guarded-burrow"), Is.True);
+            Assert.That(genome.Allocations, Is.Empty);
+            Assert.That(reopened.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(30));
+            Assert.That(reopened.Current.ConversionResearchLevel, Is.EqualTo(1));
+        }
+
+        [TestCase("hare.guarded-burrow", SpeciesAttributeIds.BlockAmount, 1f)]
+        [TestCase("hare.keen-hearing", SpeciesAttributeIds.VisionRange, 2f)]
+        [TestCase("hare.swift-digging", SpeciesAttributeIds.MovementSpeed, 0.25f)]
+        [TestCase("hare.safe-foraging", SpeciesAttributeIds.DigestionEnergyBonus, 0.25f)]
+        [TestCase("hare.warren-network", SpeciesAttributeIds.PopulationPoolCapacity, 10f)]
+        public void HareNodePurchaseUsesOwnedInactivePrerequisitesAndExactCatalogEffects(string id, string attribute, float amount)
+        {
+            StartNodes(5);
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var owned = definition.HareMap.Nodes.Select(node => node.Id).Where(nodeId => nodeId != id).ToArray();
+            Assert.That(session.TrySetGenomeConfiguration(hare, owned, Array.Empty<string>(), out var error), Is.True, error);
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
+            session.Reload();
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { id }));
+            var frozen = definition.FreezeOwnedLoadout(genome).GetSpeciesGenome(hare);
+            Assert.That(frozen.CatalogFingerprint, Is.EqualTo(definition.Catalog.Fingerprint));
+            Assert.That(frozen.ResolvedNodes.Single().Fingerprint, Is.EqualTo(definition.HareMap.GetNode(id).Fingerprint));
+            Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().AttributeId, Is.EqualTo(attribute));
+            Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().SignedValue, Is.EqualTo(amount));
+        }
+
+        [TestCase(null)]
+        [TestCase("")]
+        [TestCase(" ")]
+        [TestCase("fox.guarded-burrow")]
+        [TestCase("hare.unknown")]
+        public void HareNodePurchaseRejectsUnknownAndOtherSpeciesIdsWithoutWriting(string id)
+        {
+            StartNodes();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out var error), Is.False);
+            Assert.That(error, Is.Not.Empty);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase("hare.keen-hearing", "")]
+        [TestCase("hare.safe-foraging", "hare.guarded-burrow,hare.keen-hearing")]
+        [TestCase("hare.warren-network", "hare.guarded-burrow,hare.safe-foraging")]
+        public void HareNodePurchaseRequiresAllOwnedAncestors(string id, string ownedIds)
+        {
+            StartNodes();
+            Assert.That(session.TrySetGenomeConfiguration(hare, ownedIds.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries),
+                Array.Empty<string>(), out var error), Is.True, error);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.False);
+            StringAssert.Contains("prerequisite", error);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareNodePurchaseNeverSpendsOtherWalletsOrResearchData(bool includeEmptyHareWallet)
+        {
+            StartLicense(0, long.MaxValue, includeEmptyHareWallet);
+            session.UnlockGenome(hare);
+            session.AddResearchData(long.MaxValue - session.Current.ResearchData);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareNodePurchaseNeedsLicenseAndMatchingLoadedProfileAndRejectsNotificationReentry()
+        {
+            StartLicense(40);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            session.UnlockGenome(hare);
+            saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode("other-profile", "hare.guarded-burrow", out _), Is.False);
+            Assert.That(NewSession(new Storage()).TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            var notifications = 0;
+            session.SnapshotChanged += snapshot =>
+            {
+                notifications++;
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out _), Is.False);
+            };
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
+            Assert.That(notifications, Is.EqualTo(1));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(35));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareNodePurchaseRejectsOwnedDuplicatesWhetherActiveOrInactive(bool deactivate)
+        {
+            StartNodes();
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
+            if (deactivate)
+                Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, Array.Empty<string>(), out error), Is.True, error);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareNodePurchaseAllowsExactlyEightCatalogPointsAndRejectsTheFifthWithoutCharging()
+        {
+            StartNodes();
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var ids = definition.HareMap.Nodes.Select(node => node.Id).ToArray();
+            foreach (var id in ids.Take(4))
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out var error), Is.True, error);
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(ids.Take(4)));
+            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(ids.Take(4)));
+            Assert.That(genome.ActiveNodeIds.Sum(id => definition.HareMap.GetNode(id).CapacityPoints), Is.EqualTo(8));
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, ids[4], out var reason), Is.False);
+            StringAssert.Contains("capacity", reason);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(20));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareNodeSaveFailurePublishesNoPurchaseAndRetryChargesOnce(bool persistThenThrow)
+        {
+            StartNodes(5);
+            var before = session.Current;
+            var notifications = 0;
+            session.SnapshotChanged += snapshot => notifications++;
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persistThenThrow;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.False);
+            StringAssert.Contains("saved", error);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(notifications, Is.Zero);
+            storage.FailOnSave = -1;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(notifications, Is.EqualTo(1));
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareNodeRestartAfterUncertainSaveChargesOnlyOnce(bool persisted)
+        {
+            StartNodes(5);
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persisted;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out _), Is.False);
+            var reboot = NewSession(storage.Restart());
+            Assert.That(reboot.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.EqualTo(!persisted), error);
+            Assert.That(reboot.Current.RabbitData, Is.Zero);
+            reboot.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.IsNodeUnlocked("hare.guarded-burrow"), Is.True);
+            Assert.That(genome.IsNodeActive("hare.guarded-burrow"), Is.True);
+        }
+
+        [Test]
+        public void HareNodePurchasePreservesOtherGenomesResearchHistoryAndPendingSuccess()
+        {
+            StartNodes();
+            var fox = new SpeciesId("fox");
+            Assert.That(session.TrySetGenomeConfiguration(fox, new[] { "fox.legacy" }, new[] { "fox.legacy" }, out var error), Is.True, error);
+            Assert.That(Settle("node-history", out var receipt, out error), Is.True, error);
+            storage.FailOnSave = storage.SaveCalls + 2;
+            Assert.That(Settle("node-pending", out _, out _), Is.False);
+            storage.FailOnSave = -1;
+            var before = session.Current;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 5));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(before.ResearchData));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(before.ConversionResearchLevel));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(before.CompletedRuns));
+            Assert.That(session.Current.SettlementReceipts.Single(), Is.SameAs(receipt));
+            Assert.That(session.Current.PendingSettlement, Is.SameAs(before.PendingSettlement));
+            Assert.That(session.Current.SpeciesDataWallets[fox], Is.EqualTo(400));
+            session.Reload();
+            Assert.That(session.Current.TryGetGenomeProfile(fox, out var foxGenome), Is.True);
+            Assert.That(foxGenome.ActiveNodeIds, Is.EqualTo(new[] { "fox.legacy" }));
+            Assert.That(session.Current.PendingSettlement.JourneyId, Is.EqualTo("node-pending"));
+            Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData - 5 + 11));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareNodePurchasePreservesAndRejectsIncompatibleLegacyActiveState(bool refundableAllocation)
+        {
+            StartNodes();
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            var id = refundableAllocation ? "hare.guarded-burrow" : "hare.unknown-legacy";
+            json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
+            {
+                ["speciesId"] = "hare",
+                ["unlockedNodeIds"] = refundableAllocation ? new JArray() : new JArray(id),
+                ["activeNodeIds"] = new JArray(id),
+                ["allocations"] = refundableAllocation ? new JArray(new JObject
+                {
+                    ["nodeId"] = id, ["rabbitDataSpent"] = 1, ["capacityPoints"] = 2,
+                }) : new JArray(),
+            });
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.False);
+            Assert.That(error, Is.Not.Empty);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareNodeProcessReloadCheckpoint()
+        {
+            var phase = Environment.GetEnvironmentVariable("FD2_NODE_RELOAD_PHASE");
+            var path = Environment.GetEnvironmentVariable("FD2_NODE_RELOAD_PATH");
+            if (phase == "read")
+            {
+                storage.SetString(Helper_ProfileSession.StoreKey, File.ReadAllText(path));
+                storage.Save();
+                session.Reload();
+                profileId = session.Current.ProfileId;
+            }
+            else
+            {
+                StartNodes(10);
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out var error), Is.True, error);
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out error), Is.True, error);
+                if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
+            }
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.RabbitData, Is.Zero);
+            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.UnlockedNodeIds, Is.EqualTo(new[] { "hare.guarded-burrow", "hare.keen-hearing" }));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(genome.UnlockedNodeIds));
+            var writes = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out _), Is.False);
+            Assert.That(storage.SaveCalls, Is.EqualTo(writes));
+        }
+
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)
         {
             Assert.That(target.Current.RabbitData, Is.EqualTo(speciesData));

@@ -5,6 +5,20 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T07 permanent Hare nodes verified:** The new FD2 purchase
+charges canonical 5 Hare Data, permanently unlocks and activates in one saved
+transaction. Matching profile, Hare path license, owned ancestors and the full
+8-point catalog capacity are required. Permanent purchases create no refundable
+POC allocations. All32 new node cases/all96 profile transaction cases pass;
+full clean EditMode630 passed/zero failed/one parity skip. Independent Editor
+write/read checkpoints, focused PlayMode7/7 and portable build/self-test pass.
+Original profile/recovery preferences and all four original source hashes are
+unchanged; original Editor is ready/stopped. Work is local on
+`codex/fd2-t01-integration`, with no push or source integration. Live T07 is In
+Progress pending evidence closeout; T01-T06 remain Done. Next T08 resets/arranges
+the permanent loadout; T09/T11 own launch/UI wiring. See the
+[T07 handoff](handoffs/2026-10-26-2109-codex-fd2-t07-permanent-hare-node-purchases.md).
+
 **October 26 FD2-T06 Hare license verified:** The FD2 purchase charges canonical
 10 Hare Data once, saves the fee/license flag together, preserves all other
 wallets/research/Genomes/settlement state and grants no node effect. No schema
