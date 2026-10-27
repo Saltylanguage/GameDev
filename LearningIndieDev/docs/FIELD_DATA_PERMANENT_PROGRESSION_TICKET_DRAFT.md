@@ -279,7 +279,13 @@ empty loadout follows the T01 definition.
 
 ### FD2-T09 — Apply Genome loadout to the next launch
 
-**October 27 implementation:** Permanent Hare loadouts use the canonical FD2
+**October 27 implementation and closeout:** Code commit `8d9cf30` remains local.
+T09 is complete in live Done with verification comment
+`#comment-6ae0bed4662be98c593cf2a8` posted/read back. New domain13/13 and new
+PlayMode4/4 pass; full EditMode679 pass/zero failed/one skip. Related PlayMode
+17/18 pass with only the identical incoming population-control failure remaining.
+Proof: `artifacts/fd2-board-20261027/t09-done.png`.
+Permanent Hare loadouts use the canonical FD2
 owned-prerequisite resolver; other/POC profiles keep their existing catalog rules.
 The Desktop binds a profile-owned first-start capture, so direct next-journey
 commands also refresh the saved configuration. Opening Mutations are retained,

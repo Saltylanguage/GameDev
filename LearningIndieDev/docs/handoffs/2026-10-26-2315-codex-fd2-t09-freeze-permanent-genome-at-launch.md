@@ -85,7 +85,12 @@ validation and board closeout are on October27.
 - Exact original profile/recovery preference names/types/values and all four
   source hashes match the protected checkpoints. The original Editor reports
   ready through the CLI. Diff hygiene passes; Unity's incidental ProBuilder
-  line-ending rewrite was restored. Live T09 is In Progress pending closeout.
+  line-ending rewrite was restored. Code commit `8d9cf30` is local. T09 moved
+  Upcoming Work -> In Progress -> Done and is marked complete. Its original
+  description remains intact; verification comment was posted and visibly
+  read back on October27:
+  https://trello.com/c/4vwCZxSH/145-fd2-t09-apply-genome-loadout-to-the-next-launch#comment-6ae0bed4662be98c593cf2a8.
+  Screenshot: `artifacts/fd2-board-20261027/t09-done.png`. T01-T08 remain Done.
 - Handoff validator reports73 historical journal issues, none naming T09;
   retained `handoff-validation.log` in the artifact folder. A stale empty Git
   index lock was removed only after checking its worktree owner, age over six

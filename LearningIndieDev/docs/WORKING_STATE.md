@@ -18,7 +18,9 @@ journeys; the sole failure is the unchanged incoming population-control
 expected114/actual90 baseline. Portable build/self-test pass. Exact original
 preferences and four source hashes are unchanged; original Editor reports ready.
 Work remains local on `codex/fd2-t01-integration`, with no push/source integration.
-T09 is In Progress pending board closeout; T01-T08 remain Done. Next T10 wires
+T09 code commit `8d9cf30` is local. Its card is complete in live Done with
+verification comment `#comment-6ae0bed4662be98c593cf2a8` posted/read back;
+proof: `artifacts/fd2-board-20261027/t09-done.png`. T01-T08 remain Done. Next T10 wires
 settlement/failure results; visible Lab controls remain T11. See the
 [T09 handoff](handoffs/2026-10-26-2315-codex-fd2-t09-freeze-permanent-genome-at-launch.md).
 
