@@ -81,6 +81,10 @@ the node. The full proposed loadout must have all owned ancestors and fit the
   description is unchanged; the verification comment was posted and visibly
   read back: https://trello.com/c/bYWmUPYV/143-fd2-t07-purchase-permanent-hare-nodes#comment-6adffac4ab95c50adf0bc641.
   Screenshot: `artifacts/fd2-board-20261026/t07-done.png`. T01-T06 remain Done.
+- `tools/Test-Handoffs.ps1` reports the same 73 historical journal issues
+  recorded before T07; none names this handoff. Retained diagnostic:
+  `artifacts/fd2-t07-20261026/handoff-validation.log`. This is not a green
+  repository-wide documentation-validation claim.
 
 ## Risks and incomplete work
 
