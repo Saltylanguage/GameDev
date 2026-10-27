@@ -253,6 +253,13 @@ match catalog records.
 
 ### FD2-T08 — Reset and arrange an active loadout
 
+**October 26 decision:** Bevin selected a 20 RD reset for each replacement
+loadout. Free selection applies from an empty loadout; after applying a nonempty
+selection, a different selection needs another paid clear. Identical selection
+is a no-op, and an empty reset is rejected without a fee. The existing POC
+refund flow remains separate. Implementation and verification are recorded in
+the T08 handoff.
+
 **Outcome:** A player can rebuild one species' active configuration without
 losing purchased nodes.
 

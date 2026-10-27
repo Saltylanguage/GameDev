@@ -93,6 +93,11 @@ The integrated profile store is version 6. Recognize the older shapes explicitly
 - v6: also persist the shared per-profile conversion research level. v0-v5
   default to level zero without repricing old receipts or pending successes.
   A missing/null/out-of-range v6 level is corrupt data, not a free reset.
+- v7: also persist a nonnegative reset generation per species Genome. Pre-v7
+  Genomes start at zero without changing ownership, active selections, wallets,
+  research or settlement state. Current-version invalid Genome records are
+  preserved for recovery and rejected as a store, so reset duplicate protection
+  cannot be silently dropped.
 
 The installed Newtonsoft JSON reader preserves missing-field distinctions
 that JsonUtility fills with defaults. Reject ambiguous mixed shapes, negative
@@ -249,6 +254,27 @@ select any owned nodes within the 8-point capacity. The first-test reset fee is
 20 Research Data. Reset of an already-empty
 loadout should be rejected or clearly defined at implementation time; avoid
 charging for a no-op without an explicit product decision.
+
+**T08 decision and implementation (2026-10-26):** Bevin selected a new 20 RD
+reset for each replacement loadout, rather than permanent free rearrangement
+after the first reset. `TryResetGenomeLoadout(profileId, speciesId,
+expectedResetGeneration)` saves the fee, empty active selection and incremented
+generation together. Empty resets are rejected without a fee. The new FD2 API
+supports the canonical Hare map and rejects refundable POC allocations without
+converting them. Permanent ownership, license and Species Data stay intact.
+
+`TryArrangeGenomeLoadout` accepts the same profile/species/reset generation and
+a complete ordered selection of owned nodes. It is free while the loadout is
+empty and validates owned ancestors and catalog capacity before saving. Once a
+nonempty selection is applied, any different selection (including reordered or
+empty choices) requires another paid reset. Repeating the identical valid
+selection is a no-op with no save/charge. Empty-to-empty selection is also a
+no-op, leaving the free choice available. The caller can edit a local draft
+before applying; no persisted editing mode or new UI is introduced. A stale reset
+callback cannot charge again even after reactivation because the saved generation
+has advanced. Save failures publish no cleared/arranged state, and retry retains
+the original generation. T11 must use these APIs rather than the trusted legacy
+configuration/POC setters. T09 still owns next-launch integration.
 
 Every launched simulation receives the validated active Genome snapshot. Lab
 changes affect only a later launch. Validate prerequisite ownership before

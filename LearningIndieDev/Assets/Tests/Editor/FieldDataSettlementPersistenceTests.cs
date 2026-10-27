@@ -316,7 +316,7 @@ namespace SaltyGame.Tests
             AssertPaid(session, 7, 20, 0);
             Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
             Assert.That(session.Current.CompletedRunIds.Single(), Is.EqualTo("legacy"));
-            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(6));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(7));
             Assert.That((string)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["migrationSourceJson"], Is.EqualTo("earlier raw save"));
         }
 
@@ -1045,6 +1045,7 @@ namespace SaltyGame.Tests
             json["profiles"][0]["genomeProfiles"] = new JArray(new JObject
             {
                 ["speciesId"] = "hare",
+                ["resetGeneration"] = 0,
                 ["unlockedNodeIds"] = refundableAllocation ? new JArray() : new JArray(id),
                 ["activeNodeIds"] = new JArray(id),
                 ["allocations"] = refundableAllocation ? new JArray(new JObject
@@ -1090,6 +1091,438 @@ namespace SaltyGame.Tests
             var writes = storage.SaveCalls;
             Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.keen-hearing", out _), Is.False);
             Assert.That(storage.SaveCalls, Is.EqualTo(writes));
+        }
+
+        void StartLoadout(long researchData = 60)
+        {
+            StartNodes(40);
+            var ids = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes.Select(node => node.Id).ToArray();
+            Assert.That(session.TrySetGenomeConfiguration(hare, ids, ids.Take(4), out var error), Is.True, error);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["profiles"][0]["researchData"] = researchData;
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+        }
+
+        [TestCase(0L, false)]
+        [TestCase(19L, false)]
+        [TestCase(20L, true)]
+        [TestCase(21L, true)]
+        [TestCase(long.MaxValue, true)]
+        public void HareResetChargesExactlyTwentyOnceAndNeverRefundsSpeciesData(long researchData, bool succeeds)
+        {
+            StartLoadout(researchData);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.EqualTo(succeeds), error);
+            if (!succeeds)
+            {
+                Assert.That(session.Current, Is.SameAs(before));
+                Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+                return;
+            }
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(researchData - 20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds, Is.Empty);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(researchData - 20));
+            Assert.That(reopened.Current.TryGetGenomeProfile(hare, out genome), Is.True);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds, Is.Empty);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+            Assert.That(reopened.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+        }
+
+        [Test]
+        public void HareResetRejectsEmptyLoadoutsWithoutACharge()
+        {
+            StartNodes();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, Array.Empty<string>(), out var error), Is.True, error);
+            before = session.Current;
+            saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareResetSaveFailurePublishesNoFeeOrClearAndRetryChargesOnce(bool persistThenThrow)
+        {
+            StartLoadout();
+            var before = session.Current;
+            var notifications = 0;
+            session.SnapshotChanged += snapshot => notifications++;
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persistThenThrow;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.False);
+            StringAssert.Contains("saved", error);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(notifications, Is.Zero);
+            storage.FailOnSave = -1;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(notifications, Is.EqualTo(1));
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareResetRestartAfterUncertainSaveDeductsOnlyOnce(bool persisted)
+        {
+            StartLoadout();
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persisted;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.EqualTo(!persisted), error);
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
+            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.ActiveNodeIds, Is.Empty);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void HareResetRequiresItsProfileLicenseSupportedSpeciesAndOriginalGeneration()
+        {
+            StartLoadout();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout("other", hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, new SpeciesId("fox"), 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, default, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, -1, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(NewSession(new Storage()).TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["profiles"][0]["unlockedGenomeSpeciesIds"] = new JArray("fox");
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+            before = session.Current;
+            saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareResetRetainsOtherSpeciesAndFrozenSettlementState()
+        {
+            StartLoadout();
+            var fox = new SpeciesId("fox");
+            Assert.That(session.TrySetGenomeConfiguration(fox, new[] { "fox.legacy" }, new[] { "fox.legacy" }, out var error), Is.True, error);
+            Assert.That(Settle("before-reset", out var history, out error), Is.True, error);
+            storage.FailOnSave = storage.SaveCalls + 2;
+            Assert.That(Settle("pending-reset", out _, out _), Is.False);
+            storage.FailOnSave = -1;
+            var before = session.Current;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(before.CompletedRuns));
+            Assert.That(session.Current.SettlementReceipts.Single(), Is.SameAs(history));
+            Assert.That(session.Current.PendingSettlement, Is.SameAs(before.PendingSettlement));
+            session.Reload();
+            session.Current.TryGetGenomeProfile(fox, out var genome);
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "fox.legacy" }));
+            Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
+            session.Current.TryGetGenomeProfile(hare, out genome);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+            Assert.That(genome.ActiveNodeIds, Is.Empty);
+        }
+
+        [Test]
+        public void HareResetGenerationSurvivesLegacyCopiesAndRejectsLateDuplicateAfterReactivation()
+        {
+            StartLoadout();
+            var reentered = false;
+            session.SnapshotChanged += snapshot =>
+            {
+                reentered = true;
+                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            };
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(reentered, Is.True);
+            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" }, new[] { "hare.guarded-burrow" }, out error), Is.True, error);
+            session.AddRabbitData(1);
+            session.Reload();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+            Assert.That(genome.WithActiveNodeIds(genome.ActiveNodeIds).ResetGeneration, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void HareResetVersionSixMigrationKeepsAllPurchasedStateAndStartsResetGenerationAtZero()
+        {
+            StartLoadout();
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["version"] = 6;
+            ((JObject)json["profiles"][0]["genomeProfiles"][0]).Remove("resetGeneration");
+            var raw = json.ToString();
+            storage.SetString(Helper_ProfileSession.StoreKey, raw);
+            storage.Save();
+            session.Reload();
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds.Count, Is.EqualTo(4));
+            Assert.That(genome.ResetGeneration, Is.Zero);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(60));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That((int)JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey))["version"], Is.EqualTo(7));
+            Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.Not.Empty);
+            session.Reload();
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+        }
+
+        [TestCase("missing", false)]
+        [TestCase("null", false)]
+        [TestCase("negative", false)]
+        [TestCase("missing", true)]
+        [TestCase("null", true)]
+        [TestCase("negative", true)]
+        public void HareResetCorruptGenerationIsPreservedRatherThanLosingDuplicateProtection(string corruption, bool recoveryOccupied)
+        {
+            StartLoadout();
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            var genome = (JObject)json["profiles"][0]["genomeProfiles"][0];
+            if (corruption == "missing") genome.Remove("resetGeneration");
+            else genome["resetGeneration"] = corruption == "null" ? JValue.CreateNull() : new JValue(-1);
+            var raw = json.ToString();
+            storage.Cached.Remove(Helper_ProfileSession.RecoveryStoreKey);
+            if (recoveryOccupied) storage.SetString(Helper_ProfileSession.RecoveryStoreKey, "earlier recovery");
+            storage.SetString(Helper_ProfileSession.StoreKey, raw);
+            storage.Save();
+            session.Reload();
+            Assert.That(session.Current.HasLoadedProfile, Is.False);
+            Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo(recoveryOccupied ? "earlier recovery" : raw));
+            Assert.That(storage.HasKey(Helper_ProfileSession.StoreKey), Is.EqualTo(recoveryOccupied));
+            if (recoveryOccupied) Assert.That(storage.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(raw));
+        }
+
+        [Test]
+        public void HareResetRejectsAnExhaustedGenerationWithoutCharging()
+        {
+            StartLoadout();
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["profiles"][0]["genomeProfiles"][0]["resetGeneration"] = long.MaxValue;
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, long.MaxValue, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareArrangementRequiresPaidClearForEachReplacementAndNeverRepurchasesOwnedNodes()
+        {
+            StartLoadout();
+            var active = new[] { "hare.warren-network", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, active, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, Array.Empty<string>(), out error), Is.True, error);
+            saves = storage.SaveCalls;
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out error), Is.True, error);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
+            session.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(active));
+            Assert.That(genome.Allocations, Is.Empty);
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var frozen = definition.FreezeOwnedLoadout(genome);
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(frozen.GetSpeciesGenome(hare).ActiveNodeIds, Has.No.Member("hare.guarded-burrow"));
+            saves = storage.SaveCalls;
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out error), Is.True, error);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active.Take(3), out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active.Reverse(), out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out error), Is.True, error);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(20));
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, active, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, active.Take(2), out error), Is.True, error);
+            session.Reload();
+            session.Current.TryGetGenomeProfile(hare, out genome);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(2));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(active.Take(2)));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
+        }
+
+        [TestCase("null")]
+        [TestCase("unknown")]
+        [TestCase("duplicate")]
+        [TestCase("locked")]
+        [TestCase("missing-ancestor")]
+        [TestCase("over-capacity")]
+        public void HareArrangementRejectsInvalidSelectionsAtomically(string invalid)
+        {
+            StartLoadout();
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            var all = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes.Select(node => node.Id).ToArray();
+            if (invalid == "locked" || invalid == "missing-ancestor")
+            {
+                var owned = invalid == "locked" ? all.Take(1) : all.Skip(1);
+                Assert.That(session.TrySetGenomeConfiguration(hare, owned, Array.Empty<string>(), out error), Is.True, error);
+            }
+            var selection = invalid == "null" ? null
+                : invalid == "unknown" ? new[] { "fox.unknown" }
+                : invalid == "duplicate" ? new[] { all[0], all[0] }
+                : invalid == "locked" ? new[] { all[1] }
+                : invalid == "missing-ancestor" ? new[] { all[4] } : all;
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selection, out error), Is.False);
+            Assert.That(error, Is.Not.Empty);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareArrangementFailureKeepsThePaidResetAndFreeRetryDoesNotChargeAgain(bool persistThenThrow)
+        {
+            StartLoadout();
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            var before = session.Current;
+            var selected = new[] { "hare.warren-network" };
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persistThenThrow;
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.False);
+            StringAssert.Contains("saved", error);
+            Assert.That(session.Current, Is.SameAs(before));
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.True, error);
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(40));
+            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void HareArrangementRejectsOtherProfilesSpeciesStaleRequestsAndReentry()
+        {
+            StartLoadout();
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            var selected = new[] { "hare.warren-network" };
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryArrangeGenomeLoadout("other", hare, 1, selected, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, new SpeciesId("fox"), 1, selected, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, selected, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            session.SnapshotChanged += snapshot =>
+            {
+                Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out _), Is.False);
+                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+            };
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, selected, out error), Is.True, error);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves + 1));
+        }
+
+        [Test]
+        public void HareResetAndArrangementProcessReloadCheckpoint()
+        {
+            var phase = Environment.GetEnvironmentVariable("FD2_LOADOUT_RELOAD_PHASE");
+            var path = Environment.GetEnvironmentVariable("FD2_LOADOUT_RELOAD_PATH");
+            if (phase == "read")
+            {
+                storage.SetString(Helper_ProfileSession.StoreKey, File.ReadAllText(path));
+                storage.Save();
+                session.Reload();
+                profileId = session.Current.ProfileId;
+            }
+            else
+            {
+                StartLoadout();
+                Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+                if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
+            }
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 1, new[] { "hare.warren-network" }, out var arrangeError), Is.True, arrangeError);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(40));
+            reopened.Current.TryGetGenomeProfile(hare, out var genome);
+            Assert.That(genome.ResetGeneration, Is.EqualTo(1));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.warren-network" }));
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+        }
+
+        [Test]
+        public void HareResetAndArrangementDoNotReinterpretRefundablePocAllocations()
+        {
+            StartLoadout();
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            json["profiles"][0]["genomeProfiles"][0]["allocations"] = new JArray(new JObject
+            {
+                ["nodeId"] = "hare.guarded-burrow", ["rabbitDataSpent"] = 1, ["capacityPoints"] = 2,
+            });
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+            Assert.That(session.Current.HasLoadedProfile, Is.True);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 0, new[] { "hare.guarded-burrow" }, out _), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase("allocation")]
+        [TestCase("duplicate-species")]
+        [TestCase("missing-species")]
+        public void HareResetVersionSevenNeverDropsCorruptGenomeRecordsAndTheirResetIdentity(string invalid)
+        {
+            StartLoadout();
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out var error), Is.True, error);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            var genomes = (JArray)json["profiles"][0]["genomeProfiles"];
+            if (invalid == "allocation") genomes[0]["allocations"] = new JArray(JValue.CreateNull());
+            else if (invalid == "duplicate-species") genomes.Add(genomes[0].DeepClone());
+            else genomes[0]["speciesId"] = "";
+            var raw = json.ToString();
+            storage.SetString(Helper_ProfileSession.RecoveryStoreKey, "prior recovery");
+            storage.SetString(Helper_ProfileSession.StoreKey, raw);
+            storage.Save();
+            session.Reload();
+            Assert.That(session.Current.HasLoadedProfile, Is.False);
+            Assert.That(storage.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(raw));
+            Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("prior recovery"));
         }
 
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)

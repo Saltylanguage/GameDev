@@ -250,7 +250,7 @@ namespace SaltyGame.PlayModeTests
             CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
 
             var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
-            StringAssert.Contains("\"version\":6", migratedStore);
+            StringAssert.Contains("\"version\":7", migratedStore);
             StringAssert.Contains("\"researchData\":73", migratedStore);
             StringAssert.Contains("\"currency\":73",
                 PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
@@ -419,6 +419,53 @@ namespace SaltyGame.PlayModeTests
             StringAssert.Contains("capacity", error);
             Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             Assert.That(session.Current.ResearchData, Is.EqualTo(37));
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator PermanentHareResetAndReplacementSurviveSceneReloadWithoutRefundOrDuplicateFee()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("Permanent replacement").ProfileId;
+            session.AddRabbitData(50);
+            session.AddResearchData(60);
+            var hare = new SpeciesId("hare");
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
+            foreach (var id in new[] { "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" })
+                Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(20));
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.True, error);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out error), Is.True, error);
+            var selected = new[] { "hare.warren-network", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, selected, out error), Is.True, error);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
+            Assert.That(genome.ResetGeneration, Is.EqualTo(2));
+            var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, selected, out error), Is.True, error);
+            Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, new[] { selected[0] }, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
+            Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
             ClearProfiles();
         }
 

@@ -10,7 +10,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 6;
+        const int StoreVersion = 7;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -22,6 +22,7 @@ namespace SaltyGame
             public List<string> unlockedNodeIds = new List<string>();
             public List<string> activeNodeIds = new List<string>();
             public List<GenomeAllocationRecord> allocations = new List<GenomeAllocationRecord>();
+            public long? resetGeneration;
         }
 
         [Serializable]
@@ -621,7 +622,8 @@ namespace SaltyGame
             SpeciesGenomeProfile nextProfile;
             try
             {
-                nextProfile = new SpeciesGenomeProfile(hare, unlocked, active, profile?.Allocations);
+                nextProfile = new SpeciesGenomeProfile(hare, unlocked, active, profile?.Allocations,
+                    profile?.ResetGeneration ?? 0);
                 // FD2 uses owned prerequisites and catalog capacity, not the POC's active-parent/one-point fallback.
                 definition.FreezeOwnedLoadout(nextProfile);
             }
@@ -636,6 +638,82 @@ namespace SaltyGame
                 return TryCommitProfile(Current.WithGenomeEconomy(balance - node.RabbitDataPrice,
                     Current.ResearchData, Current.CompletedRuns, nextProfile), out error);
             }
+            finally { committingProgression = false; }
+        }
+
+        public bool TryResetGenomeLoadout(string profileId, SpeciesId speciesId,
+            long expectedResetGeneration, out string error)
+        {
+            error = null;
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || speciesId != definition.HareMap.SpeciesId || !Current.UnlockedGenomeSpeciesIds.Contains(speciesId)
+                || !Current.TryGetGenomeProfile(speciesId, out var profile))
+            {
+                error = "Reset requires the same loaded profile, supported species license and no operation in progress.";
+                return false;
+            }
+            if (profile.ResetGeneration != expectedResetGeneration || profile.ResetGeneration == long.MaxValue)
+            {
+                error = "The Genome reset request is stale or exceeds the supported reset range.";
+                return false;
+            }
+            if (profile.ActiveNodeIds.Count == 0 || profile.Allocations.Count != 0)
+            {
+                error = "Reset requires a nonempty permanent Genome loadout without refundable POC allocations.";
+                return false;
+            }
+            if (Current.ResearchData < FieldDataPermanentProgressionDefinition.ResetResearchDataFee)
+            {
+                error = "Not enough Research Data for the Genome reset.";
+                return false;
+            }
+            var nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
+                resetGeneration: profile.ResetGeneration + 1);
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(Current.RabbitData,
+                    Current.ResearchData - FieldDataPermanentProgressionDefinition.ResetResearchDataFee,
+                    Current.CompletedRuns, nextProfile), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TryArrangeGenomeLoadout(string profileId, SpeciesId speciesId,
+            long expectedResetGeneration, IEnumerable<string> activeNodeIds, out string error)
+        {
+            error = null;
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || speciesId != definition.HareMap.SpeciesId || !Current.UnlockedGenomeSpeciesIds.Contains(speciesId)
+                || !Current.TryGetGenomeProfile(speciesId, out var profile)
+                || profile.ResetGeneration != expectedResetGeneration || profile.Allocations.Count != 0)
+            {
+                error = "Arrangement requires the same loaded profile, supported license and current reset request.";
+                return false;
+            }
+            SpeciesGenomeProfile nextProfile;
+            try
+            {
+                if (activeNodeIds == null) throw new ArgumentException("Choose the owned Genome nodes to activate.");
+                nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
+                    activeNodeIds, resetGeneration: profile.ResetGeneration);
+                definition.FreezeOwnedLoadout(nextProfile);
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
+            {
+                error = exception.Message;
+                return false;
+            }
+            if (profile.ActiveNodeIds.SequenceEqual(nextProfile.ActiveNodeIds)) return true;
+            if (profile.ActiveNodeIds.Count != 0)
+            {
+                error = "Reset the active Genome loadout before applying a replacement selection.";
+                return false;
+            }
+            committingProgression = true;
+            try { return TryCommitProfile(Current.WithGenomeProfile(nextProfile), out error); }
             finally { committingProgression = false; }
         }
 
@@ -735,7 +813,8 @@ namespace SaltyGame
                 : new List<GenomeNodeAllocation>(profile.Allocations);
             active.Add(node.Id);
             allocations.Add(new GenomeNodeAllocation(node.Id, rabbitDataPrice, capacityPoints));
-            var nextProfile = new SpeciesGenomeProfile(hare, profile?.UnlockedNodeIds, active, allocations);
+            var nextProfile = new SpeciesGenomeProfile(hare, profile?.UnlockedNodeIds, active, allocations,
+                profile?.ResetGeneration ?? 0);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - rabbitDataPrice,
                 Current.ResearchData, Current.CompletedRuns, nextProfile));
@@ -778,7 +857,8 @@ namespace SaltyGame
                 return false;
             }
 
-            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds);
+            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds,
+                resetGeneration: profile.ResetGeneration);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(rabbitData,
                 Current.ResearchData - researchDataFee, Current.CompletedRuns, nextProfile));
@@ -839,6 +919,7 @@ namespace SaltyGame
                 }
 
                 var genomeProfiles = new List<SpeciesGenomeProfile>();
+                var invalidGenomeFound = false;
                 var seenGenomeSpecies = new HashSet<SpeciesId>();
                 if (record.genomeProfiles != null)
                 {
@@ -847,6 +928,7 @@ namespace SaltyGame
                         var genomeRecord = record.genomeProfiles[genomeIndex];
                         if (genomeRecord == null || string.IsNullOrWhiteSpace(genomeRecord.speciesId))
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                             continue;
                         }
@@ -856,6 +938,7 @@ namespace SaltyGame
                             var genomeSpeciesId = new SpeciesId(genomeRecord.speciesId);
                             if (!seenGenomeSpecies.Add(genomeSpeciesId))
                             {
+                                invalidGenomeFound = true;
                                 invalidProfileFound = true;
                                 continue;
                             }
@@ -871,21 +954,38 @@ namespace SaltyGame
                                 }
                             }
 
+                            if (store.version >= 7 && (!genomeRecord.resetGeneration.HasValue
+                                || genomeRecord.resetGeneration.Value < 0))
+                            {
+                                throw new ArgumentException("Genome reset generation is missing or invalid.");
+                            }
                             genomeProfiles.Add(new SpeciesGenomeProfile(
                                 genomeSpeciesId,
                                 genomeRecord.unlockedNodeIds,
                                 genomeRecord.activeNodeIds,
-                                allocations));
+                                allocations, store.version < 7 ? 0 : genomeRecord.resetGeneration.Value));
                         }
                         catch (ArgumentException)
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                         }
                         catch (OverflowException)
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                         }
                     }
+                }
+
+                if (store.version >= 7 && invalidGenomeFound)
+                {
+                    // Dropping a Genome would also drop its reset duplicate protection.
+                    BackUpUnreadableStore(storedJson);
+                    profiles.Clear();
+                    Current = ProfileSessionSnapshot.Empty;
+                    NotifyChanged();
+                    return;
                 }
 
                 try
@@ -983,8 +1083,8 @@ namespace SaltyGame
             try
             {
                 Flush();
-                if (Current.TryGetGenomeProfile(speciesId, out var existingProfile)
-                    && existingProfile.Allocations.Count > 0)
+                Current.TryGetGenomeProfile(speciesId, out var existingProfile);
+                if (existingProfile != null && existingProfile.Allocations.Count > 0)
                 {
                     validationMessage = "Purchased Genome allocations must be changed through purchase or reset.";
                     return false;
@@ -993,7 +1093,7 @@ namespace SaltyGame
                 var nextProfile = Current.WithGenomeProfile(new SpeciesGenomeProfile(
                     speciesId,
                     unlockedNodeIds,
-                    activeNodeIds));
+                    activeNodeIds, resetGeneration: existingProfile?.ResetGeneration ?? 0));
                 CommitCurrent(nextProfile);
                 return true;
             }
@@ -1054,6 +1154,7 @@ namespace SaltyGame
                         speciesId = genomeProfile.SpeciesId.Value,
                         unlockedNodeIds = new List<string>(genomeProfile.UnlockedNodeIds),
                         activeNodeIds = new List<string>(genomeProfile.ActiveNodeIds),
+                        resetGeneration = genomeProfile.ResetGeneration,
                     });
                     var genomeRecord = record.genomeProfiles[record.genomeProfiles.Count - 1];
                     foreach (var allocation in genomeProfile.Allocations)

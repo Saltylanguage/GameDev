@@ -50,6 +50,7 @@ for evidence, rule conflicts and the integration sequence.
 | Active capacity | 8 points per Hare loadout | Existing Genome contract |
 | Node capacity cost | 2 points for each first-slice node; at most four of five fit at once | Agreed first-test setting |
 | Reset | 20 RD; clears the selected species' active loadout; refunds no Hare Data; permanent node unlocks remain | Agreed first-test setting |
+| Replacement selection | Each replacement requires a new paid reset. Select the full owned loadout freely from empty, then apply once; identical selection is a no-op. Empty reset is rejected without a charge. | Bevin confirmed 2026-10-26 for T08 |
 | Timing | Active loadout applies to journeys launched after the change | Approved rule |
 
 The first-slice map retains all five existing IDs and their prerequisite links.

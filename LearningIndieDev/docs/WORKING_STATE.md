@@ -5,6 +5,21 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T08 reset/arrangement verified:** Bevin confirmed a fresh
+20 RD reset for each replacement loadout. Reset clears active Hare nodes without
+refund or ownership loss; free full selection applies from empty, and a changed
+selection after application requires another paid reset. Identical selection
+is a no-op. Schema v7 preserves a per-Genome reset generation for stale-callback
+protection; v6/older migrate at zero, while corrupt v7 records are recovered.
+All36 new cases/all132 profile transaction cases pass. Full clean EditMode666
+passed/zero failed/one parity skip; independent Editor write/read checks,
+focused PlayMode8/8 and portable build/self-test pass. Exact original preferences
+and four source hashes are unchanged; original Editor reports ready. Work is
+local on `codex/fd2-t01-integration`, with no push or original-source integration.
+T08 is In Progress pending board closeout; T01-T07 remain Done. Next T09 freezes
+the FD2 loadout into the next launch; visible controls remain T11. See the
+[T08 handoff](handoffs/2026-10-26-2254-codex-fd2-t08-reset-and-arrange-permanent-loadouts.md).
+
 **October 26 FD2-T07 permanent Hare nodes verified:** The new FD2 purchase
 charges canonical 5 Hare Data, permanently unlocks and activates in one saved
 transaction. Matching profile, Hare path license, owned ancestors and the full
