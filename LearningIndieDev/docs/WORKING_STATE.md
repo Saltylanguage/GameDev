@@ -5,6 +5,19 @@ become a master changelog.
 
 ## Current focus
 
+**October 26 FD2-T06 Hare license verified:** The FD2 purchase charges canonical
+10 Hare Data once, saves the fee/license flag together, preserves all other
+wallets/research/Genomes/settlement state and grants no node effect. No schema
+change beyond existing v6 is needed. Focused license16/16; full clean EditMode
+598 passed/zero failed/one parity skip, with all64 profile transaction cases
+passing. Distinct-process write/read checks and focused PlayMode6/6 pass,
+including real PlayerPrefs ownership reload and an unlicensed fresh journey
+advancing its first simulation. Exact profile/recovery values are unchanged;
+portable build/self-test pass. T06 is in live In Progress pending the local
+checkpoint/closeout; T01-T05 remain Done. Next T07 buys permanent nodes; visible
+Gene Lab wiring remains T11. See the
+[T06 handoff](handoffs/2026-10-26-2050-codex-fd2-t06-hare-genome-path-license.md).
+
 **October 26 FD2-T05 research verified:** Schema v6 stores the shared conversion
 research level. Atomic purchases charge 10/20/30 RD up to level three and require
 the same profile/expected level, preventing duplicate or stale callbacks from

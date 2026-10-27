@@ -552,6 +552,36 @@ namespace SaltyGame
             return true;
         }
 
+        public bool TryPurchaseHareGenomeLicense(string profileId, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId)
+            {
+                error = "A Hare Genome license requires the same loaded profile and no operation in progress.";
+                return false;
+            }
+            var hare = new SpeciesId("hare");
+            if (Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                error = "The Hare Genome path license is already owned.";
+                return false;
+            }
+            Current.SpeciesDataWallets.TryGetValue(hare, out var balance);
+            if (balance < FieldDataPermanentProgressionDefinition.HareLicensePrice)
+            {
+                error = "Not enough Hare Data for the Hare Genome path license.";
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(
+                    balance - FieldDataPermanentProgressionDefinition.HareLicensePrice,
+                    Current.ResearchData, Current.CompletedRuns, unlockRabbitTree: true), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
         public bool TryPurchaseRabbitGenomeLicense(long rabbitDataPrice, out string reason)
         {
             reason = string.Empty;

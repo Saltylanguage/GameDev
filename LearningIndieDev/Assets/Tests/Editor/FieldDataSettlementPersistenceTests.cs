@@ -592,6 +592,214 @@ namespace SaltyGame.Tests
             Assert.That(reopened.Current.ResearchData, Is.EqualTo(50));
         }
 
+        void StartLicense(long hareData, long foxData = 400, bool includeHareWallet = true)
+        {
+            StartResearch(30, 1);
+            var json = JObject.Parse(storage.GetString(Helper_ProfileSession.StoreKey));
+            var wallets = (JArray)json["profiles"][0]["speciesDataWallets"];
+            wallets.Clear();
+            if (includeHareWallet) wallets.Add(new JObject { ["speciesId"] = "hare", ["balance"] = hareData });
+            wallets.Add(new JObject { ["speciesId"] = "fox", ["balance"] = foxData });
+            storage.SetString(Helper_ProfileSession.StoreKey, json.ToString());
+            storage.Save();
+            session.Reload();
+            session.UnlockGenome(new SpeciesId("fox"));
+        }
+
+        [TestCase(0L, false, 0L)]
+        [TestCase(9L, false, 9L)]
+        [TestCase(10L, true, 0L)]
+        [TestCase(11L, true, 1L)]
+        [TestCase(long.MaxValue, true, long.MaxValue - 10)]
+        public void HareLicenseChargesExactlyTenOnceAndGrantsAccessWithoutNodeEffects(long before, bool succeeds, long after)
+        {
+            StartLicense(before);
+            var saves = storage.SaveCalls;
+            var fingerprint = session.Current.CreateGenomeSnapshot().Fingerprint;
+            Assert.That(session.Current.GeneLabUnlocked, Is.False);
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.EqualTo(succeeds), error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds.Contains(hare), Is.EqualTo(succeeds));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds.Contains(new SpeciesId("fox")), Is.True);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(after));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(30));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(fingerprint));
+            Assert.That(session.Current.GenomeProfiles, Is.Empty);
+            Assert.That(session.Current.CompletedRuns, Is.Zero);
+            Assert.That(storage.SaveCalls - saves, Is.EqualTo(succeeds ? 1 : 0));
+            if (succeeds)
+            {
+                var saved = JObject.Parse(storage.Writes.Last())["profiles"][0];
+                Assert.That(saved["unlockedGenomeSpeciesIds"].Values<string>(), Does.Contain("hare"));
+                Assert.That((long)saved["speciesDataWallets"][0]["balance"], Is.EqualTo(after));
+                saves = storage.SaveCalls;
+                Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+                Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+                var reopened = NewSession(storage.Restart());
+                Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+                Assert.That(reopened.Current.RabbitData, Is.EqualTo(after));
+                Assert.That(reopened.Current.GenomeProfiles, Is.Empty);
+            }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareLicenseCannotBeFundedByOtherSpeciesOrResearchData(bool includeHareWallet)
+        {
+            StartLicense(0, long.MaxValue, includeHareWallet);
+            session.AddResearchData(long.MaxValue - session.Current.ResearchData);
+            var original = storage.GetString(Helper_ProfileSession.StoreKey);
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.False);
+            StringAssert.Contains("Hare Data", error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(long.MaxValue));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(long.MaxValue));
+            Assert.That(storage.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(original));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareLicenseFailurePublishesNoUnlockAndRetryChargesOnce(bool persistThenThrow)
+        {
+            StartLicense(10);
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persistThenThrow;
+            var notified = false;
+            session.SnapshotChanged += _ => notified = true;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.False);
+            StringAssert.Contains("could not be saved", error);
+            Assert.That(notified, Is.False);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            storage.FailOnSave = -1;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(session.Current.RabbitData, Is.Zero);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void HareLicenseRestartAfterUncertainSaveCannotPayTwice(bool persisted)
+        {
+            StartLicense(10);
+            storage.FailOnSave = storage.SaveCalls + 1;
+            storage.PersistThenThrow = persisted;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            var rebootStorage = storage.Restart();
+            var reboot = NewSession(rebootStorage);
+            Assert.That(reboot.TryPurchaseHareGenomeLicense(profileId, out _), Is.EqualTo(!persisted));
+            Assert.That(reboot.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(reboot.Current.RabbitData, Is.Zero);
+            var saves = rebootStorage.SaveCalls;
+            Assert.That(reboot.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(rebootStorage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareLicenseRequiresItsLoadedProfileAndRejectsReentry()
+        {
+            StartLicense(10);
+            var originalId = profileId;
+            var otherId = session.CreateProfile("Other license owner").ProfileId;
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeLicense(originalId, out _), Is.False);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            session.SelectProfile(originalId);
+            var reentered = true;
+            session.SnapshotChanged += snapshot => reentered = session.TryPurchaseHareGenomeLicense(originalId, out _);
+            Assert.That(session.TryPurchaseHareGenomeLicense(originalId, out var error), Is.True, error);
+            Assert.That(reentered, Is.False);
+            session.SelectProfile(otherId);
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Has.No.Member(hare));
+            Assert.That(session.Current.RabbitData, Is.Zero);
+        }
+
+        [Test]
+        public void HareLicenseRecognizesLegacyOwnershipWithoutChargingAgain()
+        {
+            StartLicense(10);
+            session.UnlockGenome(hare);
+            var saves = storage.SaveCalls;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void HareLicensePreservesExistingGenomesResearchReceiptsAndPendingSuccess()
+        {
+            StartLicense(20);
+            Assert.That(session.TrySetGenomeConfiguration(hare, new[] { "hare.guarded-burrow" },
+                new[] { "hare.guarded-burrow" }, out var error), Is.True, error);
+            Assert.That(Settle("history-before-license", out var history, out error), Is.True, error);
+            storage.FailOnSave = storage.SaveCalls + 2;
+            Assert.That(Settle("pending-before-license", out _, out _), Is.False);
+            storage.FailOnSave = -1;
+            var before = session.Current.CreateGenomeSnapshot().Fingerprint;
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(21));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.SettlementReceipts.Single(), Is.SameAs(history));
+            Assert.That(session.Current.PendingSettlement.JourneyId, Is.EqualTo("pending-before-license"));
+            Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(before));
+            session.Reload();
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(before));
+            Assert.That(session.TryRetryPendingFieldDataSettlement(profileId, out _, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(32));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(50));
+            Assert.That(session.Current.SpeciesDataWallets[new SpeciesId("fox")], Is.EqualTo(400));
+        }
+
+        [Test]
+        public void HareLicenseCanUseDataFromTheFirstSuccessfulJourneyWithoutTheLegacyThreeRunGate()
+        {
+            profileId = session.CreateProfile("Fresh first journey").ProfileId;
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            Assert.That(session.Current.ConversionResearchLevel, Is.Zero);
+            Assert.That(session.TrySettleFieldDataJourney(profileId, "first-success", FieldDataJourneyFlowState.Succeeded,
+                hare, 100, out _, out var error), Is.True, error);
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(1));
+            Assert.That(session.Current.GeneLabUnlocked, Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(10));
+            Assert.That(session.Current.GenomeProfiles, Is.Empty);
+        }
+
+        [Test]
+        public void HareLicenseProcessReloadCheckpoint()
+        {
+            var phase = Environment.GetEnvironmentVariable("FD2_LICENSE_RELOAD_PHASE");
+            var path = Environment.GetEnvironmentVariable("FD2_LICENSE_RELOAD_PATH");
+            if (phase == "read")
+            {
+                storage.SetString(Helper_ProfileSession.StoreKey, File.ReadAllText(path));
+                storage.Save();
+                session.Reload();
+                profileId = session.Current.ProfileId;
+                Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+                Assert.That(session.Current.RabbitData, Is.Zero);
+                var saves = storage.SaveCalls;
+                Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+                Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+                Assert.That(session.Current.GenomeProfiles, Is.Empty);
+                return;
+            }
+            StartLicense(10);
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
+            if (phase == "write") File.WriteAllText(path, storage.Durable[Helper_ProfileSession.StoreKey]);
+            var reopened = NewSession(storage.Restart());
+            Assert.That(reopened.Current.UnlockedGenomeSpeciesIds, Does.Contain(hare));
+            Assert.That(reopened.Current.RabbitData, Is.Zero);
+        }
+
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)
         {
             Assert.That(target.Current.RabbitData, Is.EqualTo(speciesData));

@@ -202,11 +202,10 @@ Treat the existing `unlockedNodeIds` as permanent node ownership and
 path license cost, node cost, prerequisite IDs, and active capacity cost. The
 initial catalog includes Hare only. Provisional prices are 10 Hare Data for
 the Hare path license and 5 Hare Data per eligible node. The first slice uses
-all five existing Hare placeholder IDs and preserves their authored
+all five existing Hare IDs and preserves their authored
 prerequisites. Each costs 2 points of the existing 8-point active capacity.
-The tuning sheet now proposes five supported incoming effects and clearer
-display names. They await review; the local assets remain placeholders. Review
-against SG-005 before authoring the final definition.
+The tuning sheet records the five supported effects/display names approved on
+October 24 and authored by T01 with existing IDs/GUIDs preserved.
 
 Path license grants access to inspect/buy from the tree and has no gameplay
 effect itself. A node purchase requires the path license, an owned species
@@ -216,6 +215,17 @@ fails, make no balance or profile change. On success, deduct species data,
 add permanent ownership, and add it to active configuration in one profile
 update. At full capacity, block purchase; do not silently unlock but leave
 inactive.
+
+**T06 implementation (2026-10-26):** `TryPurchaseHareGenomeLicense(profileId)`
+uses the canonical 10 Hare Data price and existing saved license flag. It checks
+the loaded profile and Hare wallet, then saves deduction/license together before
+publication. Duplicate or legacy ownership, insufficient/missing Hare Data,
+wrong profile, reentry and failed writes do not publish a purchase. Other species
+wallets, Research Data/level, existing Genomes and settlement history/pending
+inputs are preserved. The license grants no node effect. It can be bought after
+the first funded successful journey; ordinary journey launch needs no license.
+The POC's price-parameter/three-run method remains for the existing UI until T11
+wires the FD2 operation. No save-schema change is needed for this existing flag.
 
 Reset takes a selected species ID and fixed Research Data fee. It clears that
 species' active selections, leaves its licenses and all permanently unlocked

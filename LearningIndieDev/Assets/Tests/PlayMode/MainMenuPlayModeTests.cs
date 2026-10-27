@@ -358,6 +358,71 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator HareGenomeLicenseSurvivesSceneReloadWithoutAnotherChargeOrNodeEffects()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("Hare license").ProfileId;
+            session.AddRabbitData(10);
+            session.AddResearchData(37);
+            Assert.That(session.Current.CompletedRuns, Is.Zero);
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(37));
+            Assert.That(session.Current.GenomeProfiles, Is.Empty);
+            yield return LoadMainMenu();
+            session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Does.Contain(new SpeciesId("hare")));
+            Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out _), Is.False);
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.EqualTo(37));
+            Assert.That(session.Current.GenomeProfiles, Is.Empty);
+            ClearProfiles();
+        }
+
+        [UnityTest]
+        public IEnumerator HareJourneyCanLaunchWithoutAPathLicense()
+        {
+            ClearProfiles();
+            yield return LoadMainMenu();
+            var viewModel = FindViewModel();
+            SetProperty(viewModel, "ProfileNameInput", "Unlicensed launch");
+            ExecuteCommand(viewModel, "OpenProfileSelectionCommand");
+            ExecuteCommand(viewModel, "CreateInitialProfileCommand");
+            var menuSession = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
+            menuSession.SetPlaytimeTracking(false);
+            Assert.That(menuSession.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+            Assert.That(menuSession.Current.GenomeProfiles, Is.Empty);
+            var profileId = menuSession.Current.ProfileId;
+            ExecuteCommand(viewModel, "ContinueCommand");
+            var deadline = Time.realtimeSinceStartup + 3f;
+            while (SceneManager.GetActiveScene().name != DesktopScene && Time.realtimeSinceStartup < deadline)
+                yield return null;
+            Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(DesktopScene));
+            var desktop = GameObject.Find("GalapagOS Desktop Test Camera");
+            var session = desktop.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+            var preview = Object.FindAnyObjectByType<SpeciesSimulationPreview>();
+            Assert.That(preview, Is.Not.Null);
+            var openSimulation = GetCommand(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "OpenDesktopIconCommand");
+            openSimulation.GetType().GetMethod("Execute")?.Invoke(openSimulation, new object[] { "Simulation" });
+            Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
+            Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
+            Assert.That(preview.ChooseJourneyNode("first-cycle"), Is.True);
+            deadline = Time.realtimeSinceStartup + 3f;
+            while (preview.Run.Tick < 2 && Time.realtimeSinceStartup < deadline) yield return null;
+            Assert.That(preview.Run.Tick, Is.GreaterThanOrEqualTo(2));
+            Assert.That(session.Current.UnlockedGenomeSpeciesIds, Is.Empty);
+            ClearProfiles();
+        }
+
+        [UnityTest]
         public IEnumerator QuitConfirmationIsAVisualState()
         {
             ClearProfiles();

@@ -199,6 +199,15 @@ non-retroactivity.
 
 ### FD2-T06 — Unlock the Hare Genome path
 
+**October 26 implementation verified locally:** `TryPurchaseHareGenomeLicense`
+charges exactly 10 Hare Data and saves access together, rejects duplicate/wrong
+profile/insufficient/reentrant purchases and preserves other data. No node effect
+is granted; the existing license flag uses schema v6. Focused license16/16,
+full EditMode598 passed/zero failed/one parity skip, distinct-process write/read
+and focused PlayMode6/6 pass, including unlicensed journey launch. Visible
+Gene Lab controls remain T11. See the
+[T06 handoff](handoffs/2026-10-26-2050-codex-fd2-t06-hare-genome-path-license.md).
+
 **Outcome:** A player can use Hare Data to permanently license the Hare Genome
 tree after earning it through a Hare-selected successful journey.
 
