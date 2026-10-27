@@ -1525,6 +1525,131 @@ namespace SaltyGame.Tests
             Assert.That(storage.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("prior recovery"));
         }
 
+        [TestCase(0, 0)]
+        [TestCase(9, 0)]
+        [TestCase(10, 1)]
+        [TestCase(100, 11)]
+        public void PermanentResultsDisplayTheSavedReceiptAndNeverPayAgainOnReentry(int leftover, int deposited)
+        {
+            var results = new FieldDataPermanentResults(session);
+            Assert.That(results.ShowSuccess("display-success", hare, leftover), Is.True, results.Error);
+            Assert.That(results.IsPending, Is.False);
+            Assert.That(results.CanLeave, Is.True);
+            Assert.That(results.Title, Does.Contain("saved"));
+            Assert.That(results.Receipt, Is.SameAs(session.Current.SettlementReceipts.Single()));
+            Assert.That(results.Details, Does.Contain($"Unspent Field Data: {leftover}"));
+            Assert.That(results.Details, Does.Contain("10 FD = 1 Hare Data"));
+            Assert.That(results.Details, Does.Contain("level 1 (x11/10)"));
+            Assert.That(results.Details, Does.Contain($"Hare Data: +{deposited} (7 -> {7 + deposited})"));
+            Assert.That(results.Details, Does.Contain("Research Data: +10 (30 -> 40)"));
+            var saves = storage.SaveCalls;
+            Assert.That(results.ShowSuccess("display-success", hare, 9999), Is.True);
+            Assert.That(results.Retry(), Is.True);
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            var reopened = NewSession(storage.Restart());
+            var recovered = new FieldDataPermanentResults(reopened);
+            Assert.That(recovered.ShowSuccess("display-success", hare, 9999), Is.True, recovered.Error);
+            Assert.That(recovered.Receipt.LeftoverFieldData, Is.EqualTo(leftover));
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(7 + deposited));
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(reopened.Current.CompletedRuns, Is.EqualTo(1));
+        }
+
+        [TestCase(1, false)]
+        [TestCase(2, false)]
+        [TestCase(2, true)]
+        public void PermanentResultsPendingStateNeverConfirmsPaymentAndRetryKeepsFrozenTerms(int failingWrite, bool persisted)
+        {
+            var results = new FieldDataPermanentResults(session);
+            storage.FailOnSave = storage.SaveCalls + failingWrite;
+            storage.PersistThenThrow = persisted;
+            Assert.That(results.ShowSuccess("display-pending", hare, 100), Is.False);
+            Assert.That(results.IsPending, Is.True);
+            Assert.That(results.CanLeave, Is.False);
+            Assert.That(results.Receipt, Is.Null);
+            Assert.That(results.Summary, Does.Contain("No permanent deposit is confirmed"));
+            Assert.That(results.Details, Does.Not.Contain("Research Data: +"));
+            Assert.That(results.ClearForNextJourney(), Is.False);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(7));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(30));
+            storage.FailOnSave = -1;
+            session.AddResearchData(20);
+            Assert.That(session.TryPurchaseConversionResearch(profileId, 1, out var error), Is.True, error);
+            Assert.That(results.Retry(), Is.True, results.Error);
+            Assert.That(results.Receipt.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(results.Receipt.SpeciesDataDeposit, Is.EqualTo(11));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(18));
+            Assert.That(results.CanLeave, Is.True);
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void PermanentResultsRecoverPendingOrPaidAfterAnUncertainSaveWithoutAnotherDeposit(bool persisted)
+        {
+            var results = new FieldDataPermanentResults(session);
+            storage.FailOnSave = storage.SaveCalls + 2;
+            storage.PersistThenThrow = persisted;
+            Assert.That(results.ShowSuccess("display-reboot", hare, 100), Is.False);
+            var restartedStorage = storage.Restart();
+            var reopened = NewSession(restartedStorage);
+            var recovered = new FieldDataPermanentResults(reopened);
+            if (!persisted)
+            {
+                Assert.That(recovered.IsPending, Is.True);
+                Assert.That(recovered.CanLeave, Is.False);
+                Assert.That(recovered.Error, Does.Contain("recovered"));
+                Assert.That(recovered.Retry(), Is.True, recovered.Error);
+            }
+            else Assert.That(recovered.ShowSuccess("display-reboot", hare, 100), Is.True, recovered.Error);
+            Assert.That(reopened.Current.RabbitData, Is.EqualTo(18));
+            Assert.That(reopened.Current.ResearchData, Is.EqualTo(40));
+            Assert.That(reopened.Current.CompletedRuns, Is.EqualTo(1));
+            var saves = restartedStorage.SaveCalls;
+            Assert.That(recovered.Retry(), Is.True);
+            Assert.That(restartedStorage.SaveCalls, Is.EqualTo(saves));
+        }
+
+        [Test]
+        public void PermanentResultsFailureShowsForfeitureAndRetainsAllPermanentStateWithoutSaving()
+        {
+            StartLoadout();
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            var results = new FieldDataPermanentResults(session);
+            results.ShowFailure("display-failure", hare, 125);
+            Assert.That(results.IsSuccess, Is.False);
+            Assert.That(results.IsPending, Is.False);
+            Assert.That(results.CanLeave, Is.True);
+            Assert.That(results.Receipt, Is.Null);
+            Assert.That(results.Title, Does.Contain("failed"));
+            Assert.That(results.Summary, Does.Contain("125 Field Data forfeited").And.Contain("No permanent data awarded"));
+            Assert.That(results.Details, Does.Contain("Hare Data retained: 40").And.Contain("Research Data retained: 60"));
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(results.Retry(), Is.False);
+            Assert.That(results.ClearForNextJourney(), Is.True);
+        }
+
+        [Test]
+        public void PermanentResultsCannotPayAnotherLoadedProfileOrReplaceAnUnpaidJourney()
+        {
+            var results = new FieldDataPermanentResults(session);
+            var original = profileId;
+            var other = session.CreateProfile("Other results owner").ProfileId;
+            Assert.That(results.ShowSuccess("display-owner", hare, 100), Is.False);
+            Assert.That(results.CanLeave, Is.False);
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            Assert.That(session.SelectProfile(original), Is.True);
+            Assert.That(results.ShowSuccess("wrong-journey", hare, 9999), Is.False);
+            Assert.That(results.Retry(), Is.True, results.Error);
+            Assert.That(results.Receipt.JourneyId, Is.EqualTo("display-owner"));
+            Assert.That(results.Receipt.ConversionResearchLevel, Is.EqualTo(1));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(18));
+            Assert.That(session.SelectProfile(other), Is.True);
+            Assert.That(session.Current.SettlementReceipts, Is.Empty);
+        }
+
         static void AssertPaid(Helper_ProfileSession target, long speciesData, long researchData, int receiptCount)
         {
             Assert.That(target.Current.RabbitData, Is.EqualTo(speciesData));

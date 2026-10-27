@@ -142,6 +142,7 @@ namespace SaltyGame
                         throw new System.InvalidOperationException("The journey's original profile must still be loaded.");
                     return profileSession.Current.CreateLaunchGenomeSnapshot(viewModel.GenomeCatalog);
                 });
+                simulationPreview.BindPermanentResults(new FieldDataPermanentResults(profileSession));
             }
 
             simulationViewModel.Initialize(simulationPreview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
@@ -254,6 +255,7 @@ namespace SaltyGame
 
         void CloseSimulation()
         {
+            if (!simulationPreview.TryLeavePermanentResults()) return;
             simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
             simulationBoard?.ClearFoxHuntCue();
             simulationBoard?.ClearMatingCue();
@@ -267,6 +269,7 @@ namespace SaltyGame
         void OnDestroy()
         {
             if (simulationPreview != null) simulationPreview.BindGenomeLaunchSource(null);
+            if (simulationPreview != null) simulationPreview.BindPermanentResults(null);
             SpeciesSimulationPreview.RunCompleted -= HandleRunCompleted;
             TrackSimulationTicks();
             if (profileLaunchActive && profileSession != null)

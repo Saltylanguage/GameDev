@@ -673,6 +673,214 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Run.PopulationHistory[preview.Run.PopulationHistory.Count - 1].GetCount(new SpeciesId("hare")), Is.EqualTo(60));
         }
 
+        sealed class ResultsStorage : IProfileSessionStorage
+        {
+            public readonly Dictionary<string, string> Values = new Dictionary<string, string>();
+            public int Saves;
+            public int FailOnSave = -1;
+            public bool HasKey(string key) => Values.ContainsKey(key);
+            public string GetString(string key) => Values.TryGetValue(key, out var value) ? value : string.Empty;
+            public void SetString(string key, string value) => Values[key] = value;
+            public void DeleteKey(string key) => Values.Remove(key);
+            public void Save()
+            {
+                Saves++;
+                if (Saves == FailOnSave) throw new System.IO.IOException("Results persistence test failure.");
+            }
+        }
+
+        static Helper_ProfileSession NewResultsProfile(ResultsStorage storage, out GameObject owner)
+        {
+            owner = new GameObject("Isolated permanent results profile");
+            owner.SetActive(false);
+            var session = owner.AddComponent<Helper_ProfileSession>();
+            session.InitializeStorage(storage);
+            session.SetPlaytimeTracking(false);
+            if (!session.Current.HasLoadedProfile) SeedFD2LaunchProfile(session);
+            return session;
+        }
+
+        static void RunPermanentResultsJourney(SpeciesSimulationPreview preview)
+        {
+            preview.PauseSimulation();
+            for (var round = 1; round <= 18; round++)
+            {
+                for (var tick = 0; tick < FieldDataJourneyDefinition.RoundLengthTicks; tick++)
+                    Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True, $"Round {round}, tick {preview.Run.Tick}, state {preview.State}");
+                if (round == 18) break;
+                var session = preview.FieldDataSession;
+                var choices = session.GetCurrentRoundRewardChoices() ?? session.GetCurrentNodeRewardChoices();
+                if (choices != null && !choices.Resolved)
+                    Assert.That(session.ResolveRewardChoice(choices.SourceId,
+                        choices.Choices.Count > 0 ? choices.Choices[0].Id : "skip", out var error), Is.True, error);
+                Assert.That(session.Continue(), Is.True);
+                preview.PauseSimulation();
+            }
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2PermanentResultsShowSavedReceiptAndReturnToDesktopWithoutAnotherPayment()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            var profile = menu.GetComponent<Helper_ProfileSession>();
+            SeedFD2LaunchProfile(profile);
+            Assert.That(profile.TryPurchaseConversionResearch(profile.Current.ProfileId, 0, out var error), Is.True, error);
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            profile = root.GetComponent<Helper_ProfileSession>();
+            profile.SetPlaytimeTracking(false);
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
+            Assert.That(preview.TryConfigureFieldDataTestJourney(out error), Is.True, error);
+            ExecuteCommand(shell, "CloseJourneyMapCommand");
+            var before = profile.Current;
+            preview.StartSimulation();
+            RunPermanentResultsJourney(preview);
+            yield return null;
+            var results = preview.PermanentResults;
+            var receipt = profile.Current.SettlementReceipts.Single();
+            Assert.That(results.Receipt, Is.SameAs(receipt));
+            Assert.That(receipt.LeftoverFieldData, Is.EqualTo(preview.FieldDataSession.Ledger.Balance));
+            Assert.That(receipt.SpeciesDataBefore, Is.EqualTo(before.RabbitData));
+            Assert.That(receipt.ResearchDataBefore, Is.EqualTo(before.ResearchData));
+            Assert.That(GetProperty(shell, "ResultsTitleText").ToString(), Does.Contain("settlement saved"));
+            Assert.That(GetProperty(shell, "ResultsMessageText").ToString(), Does.Not.Contain("discarded"));
+            Assert.That(GetProperty(shell, "PermanentSettlementDetailsText"), Is.EqualTo(results.Details));
+            Assert.That(GetProperty(shell, "CanReturnToLab"), Is.EqualTo(true));
+            var output = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+            if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "t10-saved-results", GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>());
+            ExecuteCommand(shell, "RetryPermanentSettlementCommand");
+            Assert.That(profile.Current.SettlementReceipts.Count, Is.EqualTo(1));
+            var wallets = profile.Current;
+            ExecuteCommand(shell, "ReturnToLabCommand");
+            Assert.That(root.GetComponent<Camera>().enabled, Is.True);
+            Assert.That(profile.Current.RabbitData, Is.EqualTo(wallets.RabbitData));
+            Assert.That(profile.Current.ResearchData, Is.EqualTo(wallets.ResearchData));
+            profile.Reload();
+            Assert.That(profile.Current.SettlementReceipts.Count, Is.EqualTo(1));
+            Assert.That(profile.Current.RabbitData, Is.EqualTo(receipt.SpeciesDataAfter));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2PermanentResultsPendingSaveBlocksEveryExitAndRetryPaysOnlyOnce()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            var storage = new ResultsStorage();
+            var profile = NewResultsProfile(storage, out var owner);
+            try
+            {
+                preview.BindGenomeLaunchSource(() => profile.Current.CreateLaunchGenomeSnapshot(GenomeCatalogSnapshot.Empty));
+                preview.BindPermanentResults(new FieldDataPermanentResults(profile));
+                SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
+                Assert.That(preview.TryConfigureFieldDataTestJourney(out var error), Is.True, error);
+                ExecuteCommand(shell, "CloseJourneyMapCommand");
+                var before = profile.Current;
+                storage.FailOnSave = storage.Saves + 2;
+                preview.StartSimulation();
+                RunPermanentResultsJourney(preview);
+                yield return null;
+                Assert.That(preview.PermanentResults.IsPending, Is.True);
+                Assert.That(GetProperty(shell, "CanReturnToLab"), Is.EqualTo(false));
+                Assert.That(GetProperty(shell, "CanCloseWindow"), Is.EqualTo(false));
+                Assert.That(GetProperty(shell, "CanPlayNextSimulation"), Is.EqualTo(false));
+                Assert.That(GetProperty(shell, "PermanentSettlementDetailsText").ToString(), Does.Not.Contain("Research Data: +"));
+                ExecuteCommand(shell, "ReturnToLabCommand");
+                ExecuteCommand(shell, "CloseWindowCommand");
+                ExecuteCommand(shell, "PlayNextSimulationCommand");
+                preview.PlayNextSimulation();
+                Assert.That(root.GetComponent<Camera>().enabled, Is.False);
+                Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+                Assert.That(profile.Current.RabbitData, Is.EqualTo(before.RabbitData));
+                Assert.That(profile.Current.ResearchData, Is.EqualTo(before.ResearchData));
+                var output = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+                if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                    yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "t10-pending-results", GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>());
+                storage.FailOnSave = -1;
+                ExecuteCommand(shell, "RetryPermanentSettlementCommand");
+                Assert.That(preview.PermanentResults.IsPending, Is.False);
+                Assert.That(GetProperty(shell, "CanReturnToLab"), Is.EqualTo(true));
+                Assert.That(profile.Current.SettlementReceipts.Count, Is.EqualTo(1));
+                var saves = storage.Saves;
+                ExecuteCommand(shell, "RetryPermanentSettlementCommand");
+                Assert.That(storage.Saves, Is.EqualTo(saves));
+                ExecuteCommand(shell, "ReturnToLabCommand");
+                Assert.That(root.GetComponent<Camera>().enabled, Is.True);
+            }
+            finally { UnityEngine.Object.Destroy(owner); }
+        }
+
+        [UnityTest]
+        public IEnumerator FD2PermanentResultsFailureRetainsWalletsAndPendingJournalCanReopenForRetry()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            SeedFD2LaunchProfile(menu.GetComponent<Helper_ProfileSession>());
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+            var profile = root.GetComponent<Helper_ProfileSession>();
+            profile.SetPlaytimeTracking(false);
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
+            Assert.That(preview.TryConfigureFieldDataTestJourney(out var error), Is.True, error);
+            ExecuteCommand(shell, "CloseJourneyMapCommand");
+            var before = profile.Current;
+            preview.StartSimulation();
+            preview.PauseSimulation();
+            for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            var lost = preview.FieldDataSession.Ledger.Balance;
+            Assert.That(preview.AbandonFieldDataJourney(), Is.True);
+            yield return null;
+            Assert.That(preview.PermanentResults.Summary, Does.Contain($"{lost} Field Data forfeited"));
+            Assert.That(GetProperty(shell, "ResultsMessageText").ToString(), Does.Contain("No permanent data awarded"));
+            Assert.That(profile.Current.RabbitData, Is.EqualTo(before.RabbitData));
+            Assert.That(profile.Current.ResearchData, Is.EqualTo(before.ResearchData));
+            Assert.That(profile.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(before.CreateGenomeSnapshot().Fingerprint));
+            var output = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+            if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "t10-failure-results", GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>());
+            ExecuteCommand(shell, "ReturnToLabCommand");
+            Assert.That(root.GetComponent<Camera>().enabled, Is.True);
+            var storage = new ResultsStorage();
+            var isolated = NewResultsProfile(storage, out var owner);
+            try
+            {
+                storage.FailOnSave = storage.Saves + 2;
+                Assert.That(isolated.TrySettleFieldDataJourney(isolated.Current.ProfileId, "recovered-ui-success",
+                    FieldDataJourneyFlowState.Succeeded, new SpeciesId("hare"), 100, out _, out _), Is.False);
+                storage.FailOnSave = -1;
+                isolated.Reload();
+                preview.BindPermanentResults(new FieldDataPermanentResults(isolated));
+                OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+                yield return null;
+                Assert.That(GetProperty(shell, "RetryPermanentSettlementVisibility").ToString(), Is.EqualTo("Visible"));
+                Assert.That(GetProperty(shell, "CanReturnToLab"), Is.EqualTo(false));
+                ExecuteCommand(shell, "RetryPermanentSettlementCommand");
+                Assert.That(GetProperty(shell, "ResultsTitleText").ToString(), Does.Contain("saved"));
+                Assert.That(isolated.Current.SettlementReceipts.Count, Is.EqualTo(1));
+            }
+            finally { UnityEngine.Object.Destroy(owner); }
+        }
+
         static void SeedFD2LaunchProfile(Helper_ProfileSession session)
         {
             session.SetPlaytimeTracking(false);

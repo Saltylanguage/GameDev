@@ -393,6 +393,7 @@ namespace SaltyGame
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         Func<GenomeSimulationSnapshot> genomeLaunchSource;
+        FieldDataPermanentResults permanentResults;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
         SimulationRunResult result;
@@ -427,6 +428,25 @@ namespace SaltyGame
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public FieldDataJourneySession FieldDataSession => fieldDataJourneySession;
+        public FieldDataPermanentResults PermanentResults => permanentResults;
+        public bool CanLeavePermanentResults => permanentResults?.CanLeave != false;
+
+        public void BindPermanentResults(FieldDataPermanentResults results)
+        {
+            permanentResults = results;
+            if (results?.IsPending == true) previewState = SpeciesPreviewState.Results;
+        }
+
+        public bool TryLeavePermanentResults()
+        {
+            if (!CanLeavePermanentResults) return false;
+            if (permanentResults?.IsPresented != true || fieldDataJourneySession == null) return true;
+            if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Succeeded)
+                return fieldDataJourneySession.TryExitSuccessfulResults(out _);
+            if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Failed)
+                return fieldDataJourneySession.TryExitFailedResults();
+            return fieldDataJourneySession.State == FieldDataJourneyFlowState.Closed;
+        }
         public FieldDataJourneyDefinition ConfiguredFieldDataJourney => fieldDataJourneyDefinition;
         public SpeciesProgression Progression => progression;
         public bool LastExpeditionFailed => lastExpeditionFailed;
@@ -1118,6 +1138,7 @@ namespace SaltyGame
 
         public void StartSimulation()
         {
+            if (!CanLeavePermanentResults) return;
             if (Run != null && Run.Status == SimulationRunStatus.Ready)
             {
                 var refreshProfileGenome = !sessionStarted && genomeLaunchSource != null;
@@ -1295,6 +1316,10 @@ namespace SaltyGame
                     break;
                 case FieldDataJourneyFlowState.Succeeded:
                 case FieldDataJourneyFlowState.Failed:
+                    if (session.State == FieldDataJourneyFlowState.Succeeded)
+                        permanentResults?.ShowSuccess(runCompletionId, session.Run.PlayerSpeciesId, session.AvailableFieldData);
+                    else
+                        permanentResults?.ShowFailure(runCompletionId, session.Run.PlayerSpeciesId, session.FieldDataLostOnFailure);
                     result = SimulationRunResults.Create(session.Run, rewardsEligible: session.State == FieldDataJourneyFlowState.Succeeded);
                     lastExpeditionFailed = session.State == FieldDataJourneyFlowState.Failed;
                     previewState = SpeciesPreviewState.Results;
@@ -2569,6 +2594,7 @@ namespace SaltyGame
 
         public void PlayNextSimulation(bool startImmediately = true)
         {
+            if (!CanLeavePermanentResults) return;
             if (fieldDataJourneySession != null)
             {
                 if (previewState != SpeciesPreviewState.Results)
@@ -2594,6 +2620,7 @@ namespace SaltyGame
 
             if (previewState == SpeciesPreviewState.Results)
             {
+                permanentResults?.ClearForNextJourney();
                 // Field Data ends with a journey; standalone expeditions retain their existing carryover.
                 var carriedCurrency = journeyActive ? 0 : progression?.Currency ?? 0;
                 rules = activeGenomeSnapshot.ApplyToNaturalRules(CreateRulesFromDrafts());
@@ -2611,6 +2638,8 @@ namespace SaltyGame
 
         public void ResetToStart()
         {
+            if (!CanLeavePermanentResults) return;
+            permanentResults?.ClearForNextJourney();
             DisposeFieldDataJourneySession();
             if (randomizeSeedOnStart)
             {
