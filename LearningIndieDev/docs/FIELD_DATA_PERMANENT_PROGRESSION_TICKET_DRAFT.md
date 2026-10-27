@@ -337,6 +337,25 @@ payment; result reentry does not pay again.
 
 ### FD2-T11 — Wire the Gene Lab permanent economy UI
 
+**October 27 implementation:** MainMenu profile launch uses permanent Hare
+controls and shared Research purchases. The existing window shows canonical
+prices, pre/post-wallet quotes, prerequisites, ownership/active/draft state and
+8-point capacity. Reset charges20 RD without refund; select owned nodes from
+empty and apply once for free. Save failure, wrong profile, stale generation,
+insufficient funds and over-capacity selections are rejected with explanations.
+Existing refundable POC profiles retain labeled legacy controls until their
+legacy reset; direct authoring-scene entry remains POC. The five-node catalog
+cannot drift to the POC map on authoring refresh. New domain10/10 and new
+scene4/4 pass; full EditMode700 pass/zero fail/one existing parity skip. Related
+PlayMode25/29 pass with4 verified baseline failures, including the old preview
+catalog-count assertion. Portable build/self-test pass. Details and board
+closeout: [T11 handoff](handoffs/2026-10-27-1522-codex-fd2-t11-gene-lab-permanent-economy-ui.md).
+T11 is complete in live Done. Local code `f2a8565`; verification comment
+`#comment-6ae0ff1fafaa9b0d7ede7fef` posted/read back. Proof:
+`artifacts/fd2-board-20261027/t11-done.png`. Final graphics4/4 and seven
+rendered captures inspected; original profile/source state preserved.
+
+
 **Outcome:** The existing Gene Lab provides usable Research and Hare Genome
 wallet/purchase/loadout controls.
 

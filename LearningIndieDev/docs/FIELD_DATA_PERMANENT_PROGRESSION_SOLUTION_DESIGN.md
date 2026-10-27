@@ -339,6 +339,30 @@ returns to the Desktop. The failure result displays the forfeited FD and
 retained permanent balances/unlocks. Starting another journey must not
 accidentally re-settle a closed one.
 
+**T11 implementation (2026-10-27):** MainMenu profile launch now composes the
+permanent Gene Lab workflow. The window displays shared Research Data, Hare
+Data, current conversion level, canonical path/node prices, resulting wallet
+balances, owned/active/selected states, prerequisites and catalog capacity.
+`FieldDataGenomeLab` owns quotes and transaction orchestration through the
+existing profile APIs; ViewModels bind display values and commands only.
+
+A reset costs20 RD with no refund and retains all node ownership. While the
+saved active selection is empty, the player builds a draft of owned nodes and
+applies it once for free. Each later replacement needs another paid reset.
+Over-capacity drafts cannot apply. Balance/time refreshes retain drafts;
+profile/reset-generation changes invalidate them. Only successful saves publish
+purchases or active selections; errors explain the failed action and allow retry.
+Canonical catalog order is used when applying the full selection; the approved
+five effects are independent additive changes, and no Mutation order changes.
+
+Direct authoring-scene entry retains POC preview behavior. A profile with
+refundable Hare allocations automatically retains labeled legacy controls and
+its existing refund/reset transaction. Closing/reopening after that legacy reset
+selects permanent controls. This avoids reinterpreting migrated ownership.
+The canonical five-node UI remains stable when the POC authoring catalog refreshes;
+T09 continues to freeze every participating species at first simulation start.
+See the [T11 handoff](handoffs/2026-10-27-1522-codex-fd2-t11-gene-lab-permanent-economy-ui.md).
+
 ## 8. Verification
 
 Add focused domain tests for:

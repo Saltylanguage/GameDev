@@ -5,6 +5,26 @@ become a master changelog.
 
 ## Current focus
 
+**October 27 FD2-T11 Gene Lab controls verified:** MainMenu profile launch
+now uses the permanent Hare catalog and shared Research purchases. Wallets,
+prices, resulting balances, prerequisites, owned/active/draft states and capacity
+are shown. Each replacement requires a fresh20 RD reset with no refund; select
+owned nodes from empty and apply once for free. Save errors/retry, stale profile
+and reset generation, insufficient funds and over-capacity states are explained.
+Legacy refundable Hare allocations retain labeled POC controls until their
+legacy reset; direct authoring-scene entry stays POC. Running T09 snapshots
+remain frozen. New domain10/10 and scene4/4 pass; focused T11/POC8/8. Full
+EditMode700 passed/zero failed/one existing parity skip. Final graphics4/4 and
+seven1280x720 captures inspected, including scrolling and pinned save errors.
+Portable build/self-test pass. Related PlayMode25/29 pass; all4 failures exactly
+match retained baseline messages (POC7-vs-9 options, population114-vs-90,
+natural failure reaches Shop, seed10100 fails tick882). Exact original prefs and
+four source hashes unchanged; original Editor ready. Code `f2a8565` is local,
+no push or original-source integration. T11 is complete in live Done, comment
+`#comment-6ae0ff1fafaa9b0d7ede7fef` posted/read back, description preserved.
+Proof: `artifacts/fd2-board-20261027/t11-done.png`. Next T12 end-to-end acceptance.
+See the [T11 handoff](handoffs/2026-10-27-1522-codex-fd2-t11-gene-lab-permanent-economy-ui.md).
+
 **October 27 FD2-T10 settlement results verified:** The accepted18-round Field
 Data journey now shows the persisted permanent receipt: leftover FD, rate,
 frozen research, species deposit, +10RD and before/after wallets. Failure shows
