@@ -46,7 +46,10 @@ existing atomic profile commit path.
   existing node state is preserved. First-slice price stays 10 Hare Data from
   the approved canonical definition, not a new tuning decision.
 - The user authorized updating Trello as tickets finish. T06 was moved to
-  In Progress before implementation; closeout follows the verified checkpoint.
+  In Progress before implementation, then marked complete and moved to Done
+  after code commit `2e6fcd8` and validation. Verification comment
+  `#comment-6adff66df4b9147e647dac68` was posted and read back; the original
+  description is preserved. Proof: `artifacts/fd2-board-20261026/t06-done.png`.
 - Visible Gene Lab controls remain T11; permanent node purchase is T07. Ordinary
   journeys remain available without a license or active Genome nodes.
 

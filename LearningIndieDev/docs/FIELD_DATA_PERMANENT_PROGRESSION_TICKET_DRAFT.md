@@ -208,6 +208,9 @@ and focused PlayMode6/6 pass, including unlicensed journey launch. Visible
 Gene Lab controls remain T11. See the
 [T06 handoff](handoffs/2026-10-26-2050-codex-fd2-t06-hare-genome-path-license.md).
 
+Code commit `2e6fcd8` remains local. T06 is marked complete in live Trello Done
+with verification comment posted and read back on October 26.
+
 **Outcome:** A player can use Hare Data to permanently license the Hare Genome
 tree after earning it through a Hare-selected successful journey.
 

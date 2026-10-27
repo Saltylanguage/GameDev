@@ -13,8 +13,10 @@ change beyond existing v6 is needed. Focused license16/16; full clean EditMode
 passing. Distinct-process write/read checks and focused PlayMode6/6 pass,
 including real PlayerPrefs ownership reload and an unlicensed fresh journey
 advancing its first simulation. Exact profile/recovery values are unchanged;
-portable build/self-test pass. T06 is in live In Progress pending the local
-checkpoint/closeout; T01-T05 remain Done. Next T07 buys permanent nodes; visible
+portable build/self-test pass. T06 code commit `2e6fcd8` remains local; its card
+is complete in live Done with comment `#comment-6adff66df4b9147e647dac68` posted
+and read back. Proof: `artifacts/fd2-board-20261026/t06-done.png`. T01-T05 remain
+Done. No push or active-checkout source integration occurred. Next T07 buys permanent nodes; visible
 Gene Lab wiring remains T11. See the
 [T06 handoff](handoffs/2026-10-26-2050-codex-fd2-t06-hare-genome-path-license.md).
 
