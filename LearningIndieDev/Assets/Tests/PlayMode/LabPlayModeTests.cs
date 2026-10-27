@@ -942,6 +942,298 @@ namespace SaltyGame.PlayModeTests
             Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
         }
 
+        static void ConfigurePermanentAcceptanceJourney(GameObject root)
+        {
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            OpenDesktopApp(root.GetComponent("SaltyGame.VM_GalapagOS_Desktop"), "Simulation");
+            Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready), "Opening the next Field Data journey must wait at the map for an explicit start.");
+            Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                "36", "20", "10100", "0", "0", "1800", "0.1", "0", "0", "0", false,
+                "200", "20", "0", out var error), Is.True, error);
+            var hare = new SpeciesId("hare");
+            var rules = preview.GetSpeciesRuleEditValues(hare);
+            rules.MovementEnabled = false;
+            rules.ReproductionEnabled = false;
+            rules.Metabolism = "0";
+            rules.StartingEnergy = "100";
+            rules.MaximumEnergy = "100";
+            Assert.That(preview.TryApplySpeciesRuleEditValues(hare, rules, out error), Is.True, error);
+            Assert.That(preview.TryConfigureFieldDataTestJourney(out error), Is.True, error);
+            ExecuteCommand(root.GetComponent("SaltyGame.VM_SimulationShell"), "StartFieldDataTestJourneyCommand");
+            preview.PauseSimulation();
+            Assert.That(preview.Run.Status, Is.EqualTo(SimulationRunStatus.Paused));
+            Assert.That(preview.Run.PopulationHistory[0].GetCount(hare), Is.EqualTo(20));
+        }
+
+        static IEnumerator CompletePermanentAcceptanceJourney(GameObject root)
+        {
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var shell = (MonoBehaviour)root.GetComponent("SaltyGame.VM_SimulationShell");
+            for (var round = 1; round <= 18; round++)
+            {
+                for (var tick = 0; tick < 100; tick++)
+                    Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True, $"Acceptance round {round}, tick {preview.Run.Tick}");
+                Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("hare")), Is.EqualTo(20));
+                if (round == 18) break;
+                ExecuteCommand(shell, "ContinueWithoutUpgradeCommand");
+                ExecuteCommand(shell, "ContinueJourneyCommand");
+                if (round % 6 == 0)
+                {
+                    SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode(shell, round / 6 * 2 - 1);
+                    Assert.That(GetProperty(shell, "FieldDataShopVisibility").ToString(), Is.EqualTo("Visible"));
+                    ExecuteCommand(shell, "ContinueJourneyCommand");
+                    SpeciesPresentationPlayModeTests.EnterAvailableFieldDataNode(shell, round / 6 * 2);
+                }
+                preview.PauseSimulation();
+                yield return null;
+            }
+            yield return null;
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));
+            Assert.That(preview.PermanentResults.IsPending, Is.False, preview.PermanentResults.Error);
+            Assert.That(preview.PermanentResults.Receipt.LeftoverFieldData, Is.EqualTo(390));
+            Assert.That(preview.PermanentResults.Receipt.ResearchDataBonus, Is.EqualTo(10));
+        }
+
+        static IEnumerator CapturePermanentAcceptance(GameObject root, string name, bool simulation = false)
+        {
+            var output = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+            if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, name,
+                    simulation ? GameObject.Find("GalapagOS Simulation View").GetComponent<Camera>() : root.GetComponent<Camera>());
+        }
+
+        static void AssertAcceptanceReceiptCannotPayAgain(Helper_ProfileSession session, SpeciesSimulationPreview preview)
+        {
+            var receipt = preview.PermanentResults.Receipt;
+            var before = session.Current;
+            Assert.That(session.TrySettleFieldDataJourney(before.ProfileId, receipt.JourneyId,
+                FieldDataJourneyFlowState.Succeeded, new SpeciesId("hare"), 999999, out var duplicate, out var error), Is.True, error);
+            Assert.That(duplicate.LeftoverFieldData, Is.EqualTo(receipt.LeftoverFieldData));
+            Assert.That(session.Current, Is.SameAs(before));
+            session.Reload();
+            Assert.That(session.Current.RabbitData, Is.EqualTo(before.RabbitData));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(before.ResearchData));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(before.CompletedRuns));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2AcceptanceNewProfileEarnsPurchasesResetsReloadsLaunchesAndRetainsProgressOnFailure()
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            var session = menu.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var profileId = session.CreateProfile("FD2 zero-wallet acceptance").ProfileId;
+            Assert.That(session.Current.RabbitData, Is.Zero);
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            Assert.That(session.Current.GenomeProfiles, Is.Empty);
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+            var desktop = root.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            var nodes = FieldDataPermanentProgressionDefinition.CreateStarter().HareMap.Nodes;
+            ConfigurePermanentAcceptanceJourney(root);
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds, Is.Empty);
+            yield return CompletePermanentAcceptanceJourney(root);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(39));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(10));
+            yield return CapturePermanentAcceptance(root, "t12-01-first-earned-success", true);
+            AssertAcceptanceReceiptCannotPayAgain(session, preview);
+            ExecuteCommand(shell, "ReturnToLabCommand");
+            OpenDesktopApp(desktop, "Gene Lab");
+            yield return null;
+            yield return null;
+            var window = ((IList)GetProperty(desktop, "OpenDesktopWindows"))[0];
+            var lab = GetProperty(window, "GenomeLab");
+            var content = root.GetComponent<NoesisView>().Content;
+            ExecuteGeneAction(content, lab, "PurchaseResearchCommand");
+            ExecuteGeneAction(content, lab, "PurchaseLicenseCommand");
+            yield return null;
+            foreach (var node in nodes.Take(4))
+            {
+                SelectGeneButton(content, node.Id);
+                yield return null;
+                ExecuteGeneAction(content, lab, "PurchaseNodeCommand");
+                yield return null;
+            }
+            Assert.That(session.Current.RabbitData, Is.EqualTo(9));
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            Assert.That(GetProperty(lab, "CanResetGenome"), Is.False);
+            yield return CapturePermanentAcceptance(root, "t12-02-earned-genome-purchases");
+            ExecuteCommand(window, "CloseCommand");
+            for (var journey = 2; journey <= 3; journey++)
+            {
+                ConfigurePermanentAcceptanceJourney(root);
+                yield return CompletePermanentAcceptanceJourney(root);
+                Assert.That(preview.PermanentResults.Receipt.ConversionResearchLevel, Is.EqualTo(1));
+                Assert.That(preview.PermanentResults.Receipt.SpeciesDataDeposit, Is.EqualTo(42));
+                Assert.That(session.Current.CompletedRuns, Is.EqualTo(journey));
+                AssertAcceptanceReceiptCannotPayAgain(session, preview);
+                ExecuteCommand(shell, "ReturnToLabCommand");
+            }
+            Assert.That(session.Current.RabbitData, Is.EqualTo(93));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(20));
+            OpenDesktopApp(desktop, "Gene Lab");
+            yield return null;
+            window = ((IList)GetProperty(desktop, "OpenDesktopWindows"))[0];
+            lab = GetProperty(window, "GenomeLab");
+            ExecuteGeneAction(content, lab, "ResetGenomeCommand");
+            yield return null;
+            SelectGeneButton(content, nodes[1].Id);
+            ExecuteGeneAction(content, lab, "ToggleLoadoutNodeCommand");
+            yield return null;
+            ExecuteGeneAction(content, lab, "ApplyLoadoutCommand");
+            Assert.That(session.Current.RabbitData, Is.EqualTo(93));
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            yield return null;
+            yield return CapturePermanentAcceptance(root, "t12-03-earned-reset-and-saved-loadout");
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            menu = GameObject.Find("Main Camera");
+            session = menu.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(93));
+            Assert.That(session.Current.ResearchData, Is.Zero);
+            Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(3));
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            root = GameObject.Find("GalapagOS Desktop Test Camera");
+            session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            preview = root.GetComponent<SpeciesSimulationPreview>();
+            shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+            ConfigurePermanentAcceptanceJourney(root);
+            Assert.That(preview.Run.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds,
+                Is.EqualTo(new[] { nodes[1].Id }));
+            var beforeFailure = session.Current;
+            for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+            ExecuteCommand(shell, "ContinueWithoutUpgradeCommand");
+            ExecuteCommand(shell, "ContinueJourneyCommand");
+            preview.PauseSimulation();
+            ExecuteCommand(shell, "EndCommand");
+            Assert.That(GetProperty(shell, "EndConfirmationVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(shell, "ConfirmEndCommand");
+            yield return null;
+            Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed));
+            Assert.That(preview.FieldDataSession.FieldDataLostOnFailure, Is.EqualTo(20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(beforeFailure.RabbitData));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(beforeFailure.ResearchData));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(3));
+            Assert.That(session.Current.CreateGenomeSnapshot().Fingerprint, Is.EqualTo(beforeFailure.CreateGenomeSnapshot().Fingerprint));
+            yield return CapturePermanentAcceptance(root, "t12-04-failure-keeps-earned-profile", true);
+            ExecuteCommand(shell, "ReturnToLabCommand");
+            session.Reload();
+            Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(3));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(93));
+        }
+
+        [UnityTest]
+        public IEnumerator FD2AcceptanceVersionTwoMigrationCompletesThePermanentLoop() => PermanentMigrationAcceptance("v2");
+
+        [UnityTest]
+        public IEnumerator FD2AcceptanceLocalVersionThreeMigrationCompletesThePermanentLoop() => PermanentMigrationAcceptance("local-v3");
+
+        [UnityTest]
+        public IEnumerator FD2AcceptanceIncomingRabbitVersionThreeMigrationCompletesThePermanentLoop() => PermanentMigrationAcceptance("incoming-v3");
+
+        static IEnumerator PermanentMigrationAcceptance(string shape)
+        {
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            foreach (var profile in Object.FindObjectsByType<Helper_ProfileSession>(FindObjectsSortMode.None))
+            {
+                profile.SetPlaytimeTracking(false);
+                profile.enabled = false;
+            }
+            var balances = shape == "v2" ? @",""currency"":73"
+                : shape == "local-v3" ? @",""researchData"":42,""speciesDataWallets"":[{""speciesId"":""hare"",""balance"":19},{""speciesId"":""fox"",""balance"":7}]"
+                : @",""currency"":5,""researchData"":70,""rabbitData"":9";
+            var source = @"{""version"":" + (shape == "v2" ? "2" : "3")
+                + @",""profiles"":[{""id"":""migrated-acceptance"",""name"":""Migrated permanent acceptance""" + balances
+                + @",""genomeProfiles"":[{""speciesId"":""hare"",""unlockedNodeIds"":[""hare.guarded-burrow""],""activeNodeIds"":[""hare.guarded-burrow""]},{""speciesId"":""fox"",""unlockedNodeIds"":[""fox.retained-unlock""],""activeNodeIds"":[]}],""simulationTicks"":42,""playTimeMilliseconds"":1234,""unlockedSpeciesIds"":[""hare"",""fox""],""unlockedGenomeSpeciesIds"":[""hare""],""unlockedFeatureIds"":[""gene-lab"",""retained-feature""],""completedRuns"":2,""completedRunIds"":[""legacy-one"",""legacy-two""]}],""lastLoadedProfileId"":""migrated-acceptance""}";
+            if (shape == "local-v3") source = source.Replace(@",""completedRuns"":2,""completedRunIds"":[""legacy-one"",""legacy-two""]", string.Empty);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, source);
+            PlayerPrefs.Save();
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            var menu = GameObject.Find("Main Camera");
+            var session = menu.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            var original = session.Current;
+            Assert.That(original.ResearchData, Is.EqualTo(shape == "v2" ? 73 : shape == "local-v3" ? 42 : 75));
+            Assert.That(original.RabbitData, Is.EqualTo(shape == "v2" ? 0 : shape == "local-v3" ? 19 : 9));
+            Assert.That(original.SimulationTicks, Is.EqualTo(42));
+            Assert.That(original.PlayTimeMilliseconds, Is.GreaterThanOrEqualTo(1234));
+            Assert.That(original.CompletedRuns, Is.EqualTo(shape == "local-v3" ? 0 : 2));
+            StringAssert.Contains("\"version\":7", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+            var recovery = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+            Assert.That(recovery, Is.EqualTo(source));
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            var root = GameObject.Find("GalapagOS Desktop Test Camera");
+            session = root.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            ConfigurePermanentAcceptanceJourney(root);
+            yield return CompletePermanentAcceptanceJourney(root);
+            var preview = root.GetComponent<SpeciesSimulationPreview>();
+            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 39));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(original.ResearchData + 10));
+            Assert.That(session.Current.CompletedRuns, Is.EqualTo(original.CompletedRuns + 1));
+            AssertAcceptanceReceiptCannotPayAgain(session, preview);
+            yield return CapturePermanentAcceptance(root, "t12-" + shape + "-migrated-success", true);
+            ExecuteCommand(root.GetComponent("SaltyGame.VM_SimulationShell"), "ReturnToLabCommand");
+            var desktop = root.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+            OpenDesktopApp(desktop, "Gene Lab");
+            yield return null;
+            yield return null;
+            var lab = GetProperty(((IList)GetProperty(desktop, "OpenDesktopWindows"))[0], "GenomeLab");
+            var content = root.GetComponent<NoesisView>().Content;
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
+            ExecuteGeneAction(content, lab, "PurchaseResearchCommand");
+            yield return null;
+            SelectGeneButton(content, "hare.keen-hearing");
+            yield return null;
+            ExecuteGeneAction(content, lab, "PurchaseNodeCommand");
+            yield return null;
+            ExecuteGeneAction(content, lab, "ResetGenomeCommand");
+            yield return null;
+            ExecuteGeneAction(content, lab, "ToggleLoadoutNodeCommand");
+            yield return null;
+            ExecuteGeneAction(content, lab, "ApplyLoadoutCommand");
+            yield return null;
+            yield return CapturePermanentAcceptance(root, "t12-" + shape + "-migrated-loadout");
+            yield return SceneManager.LoadSceneAsync(MainMenuScene);
+            yield return null;
+            menu = GameObject.Find("Main Camera");
+            session = menu.GetComponent<Helper_ProfileSession>();
+            session.SetPlaytimeTracking(false);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(original.RabbitData + 34));
+            Assert.That(session.Current.ResearchData, Is.EqualTo(original.ResearchData - 20));
+            Assert.That(session.Current.ConversionResearchLevel, Is.EqualTo(1));
+            if (shape != "local-v3") Assert.That(session.Current.CompletedRunIds, Does.Contain("legacy-one").And.Contain("legacy-two"));
+            Assert.That(session.Current.SettlementReceipts.Count, Is.EqualTo(1));
+            CollectionAssert.AreEqual(original.UnlockedSpeciesIds, session.Current.UnlockedSpeciesIds);
+            CollectionAssert.AreEqual(original.UnlockedFeatureIds, session.Current.UnlockedFeatureIds);
+            Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("fox"), out var fox), Is.True);
+            CollectionAssert.AreEqual(new[] { "fox.retained-unlock" }, fox.UnlockedNodeIds);
+            session.Current.SpeciesDataWallets.TryGetValue(new SpeciesId("fox"), out var foxData);
+            Assert.That(foxData, Is.EqualTo(shape == "local-v3" ? 7 : 0));
+            Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo(recovery));
+            ExecuteCommand(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand");
+            yield return WaitForProfileDesktop();
+            root = GameObject.Find("GalapagOS Desktop Test Camera");
+            ConfigurePermanentAcceptanceJourney(root);
+            Assert.That(root.GetComponent<SpeciesSimulationPreview>().Run.ActiveGenomeSnapshot
+                .GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds, Is.EqualTo(new[] { "hare.keen-hearing" }));
+        }
+
         sealed class ResultsStorage : IProfileSessionStorage
         {
             public readonly Dictionary<string, string> Values = new Dictionary<string, string>();

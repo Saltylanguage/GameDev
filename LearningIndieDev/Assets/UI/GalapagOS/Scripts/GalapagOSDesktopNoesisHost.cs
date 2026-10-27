@@ -227,13 +227,13 @@ namespace SaltyGame
             // scenarios keep the prepared live-board launch behavior.
             if (preparingNextJourney)
             {
-                if (!simulationPreview.JourneyActive)
+                if (!simulationPreview.JourneyActive && simulationPreview.ConfiguredFieldDataJourney == null)
                 {
                     simulationPreview.StartSimulation();
                 }
                 simulationBoardViewModel.Initialize(simulationPreview);
                 ApplyBoardSnapshot();
-                if (simulationPreview.JourneyActive)
+                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
@@ -241,7 +241,7 @@ namespace SaltyGame
             else if (simulationPreview.State == SpeciesPreviewState.Ready
                 && simulationViewModel.CanStart)
             {
-                if (simulationPreview.JourneyActive)
+                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
