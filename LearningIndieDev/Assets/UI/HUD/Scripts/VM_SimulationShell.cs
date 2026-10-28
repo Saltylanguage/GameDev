@@ -1975,7 +1975,7 @@ namespace SaltyGame
             if (session == null) return string.Empty;
             var builder = new StringBuilder();
             var round = session.GlobalRound;
-            builder.Append("ROUND ").Append(round).Append(" · FIELD DATA ").Append(session.AvailableFieldData).Append(" FD\n");
+            builder.Append("ROUND ").Append(round).Append(" · AVAILABLE ").Append(session.AvailableFieldData).Append(" FD\n");
             FieldDataAwardReceipt payout = null;
             FieldDataAwardReceipt node = null;
             foreach (var award in session.Ledger.Awards)

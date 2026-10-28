@@ -10,6 +10,14 @@
 - Date: 2026-10-28
 - Supersedes: none
 
+> **Correction, October 28:** The population restoration described below was an
+> integration mistake. A later October 22 decision selected 400 Plants / 20
+> Hares / 10 Foxes for launch; `be98b03` authored it. The 400/55/20 screen
+> remains valid for that exact tested setup, not for the intended launch setting.
+> Bevin chose to stop the live 55/20 run and correct the setting.
+> Later the same day, Bevin explicitly chose 55/20 for continued playtesting
+> after rapid Hare collapse on 20/10; see the later choice below.
+
 ## Integration
 
 User authorized review and integration of completed FD2, followed by normal
@@ -43,8 +51,8 @@ rewritten by the integration.
 ## Authored starting population
 
 The incoming history changed Forest Edge from the previously approved 400 Plants,
-55 Hares and 20 Foxes to the 400/20/10 research fixture. Restored the approved
-asset exactly in `a2035b35fb1f45411977d9c4de0892746bef7e32`, preserving its
+55 Hares and 20 Foxes to 400/20/10. Mistakenly restored the older
+asset in `a2035b35fb1f45411977d9c4de0892746bef7e32`, preserving its
 metadata. Updated the stale default expectations in the population override test
 in `28de090`; its override assertions remain intact.
 
@@ -57,7 +65,7 @@ in `28de090`; its override assertions remain intact.
   PlayerPrefs namespace: 21 passed and four failed. All four test names had
   failed in the prior baseline; three messages are identical. The fixed-seed
   success test now fails at tick 237, versus tick 882 historically, with the
-  approved starting population restored. This is not a full PlayMode pass.
+  older starting population restored. This is not a full PlayMode pass.
 - Portable Release build and self-test passed in the rehearsal. The temporary
   product name was restored; the real profile preference keys and all five
   recovery files matched their snapshots after the earlier integrated test.
@@ -95,3 +103,50 @@ play remains pending Bevin's choice of a new test profile or an existing profile
 no manual gameplay or fun acceptance is claimed for this integration. No tuning,
 player-build, production balance or publication approval is implied by the
 screen. The integration is local and has not been pushed.
+
+## Live-play correction and banked Field Data
+
+On October 28 Bevin observed the first checkpoint showing 16 FD awarded but
+0 available. The actual session ledger had banked 16; the October 22 decision
+withholds first-simulation earnings until the end of six rounds. The previous
+display did not explain this. The breakdown now distinguishes available from
+banked Field Data and states when the bank becomes available. Gameplay rules
+and payout calculations are unchanged.
+
+Bevin chose to stop the incorrectly configured 55/20 run. The 400/20/10
+October 22 scenario and matching test expectations were restored locally.
+Isolated population configuration EditMode 41/41 and targeted UI PlayMode 1/1
+passed; the integrated Editor compiled without errors. The restarted live
+20/10 run reached round 1 and shows 9 banked, 0 available, matching the live
+ledger. Bevin's clarity response and the full normal-play outcome remain
+pending. Correction posted on T12:
+https://trello.com/c/wxVgh3Q6/148-fd2-t12-verify-migration-and-end-to-end-permanent-progression#comment-6ae25bb53963925ac37fe55a
+
+## Updated Field Data timing decision
+
+After reviewing the clarified display, Bevin confirmed on October 28 that Field
+Data should be spendable at each round-end pause, including the first simulation,
+superseding the October 22 delay for the Field Data test route. The session now
+exposes settled ledger funds immediately, while failed and closed journeys
+continue to expose zero; mutation choices still must be resolved before paid
+population controls and controls still cost 10 FD. The temporary banked-until-
+Simulation-1 explanation is removed. Focused journey/session and population
+control EditMode: 41/41; focused route UI PlayMode: 1/1; original integrated
+Editor compiled without errors. These were isolated from the user's profile.
+Live restart and manual first-round purchase verification remain pending. The
+legacy POC journey is separate and was not changed. No balance approval.
+
+## Later playtest population choice
+
+After restarting on 400/20/10, Bevin reported that Hare collapse occurred too
+quickly to test or play and explicitly chose to return to 400 Plants / 55 Hares /
+20 Foxes for continued playtesting on October 28. This supersedes the earlier
+launch setting for this current playtest; it is not balance acceptance. The
+new per-round Field Data spending rule remains in place. The previous 400-run
+55/20 screen still applies only to its exact no-purchase/no-reward-choice
+setup and cannot establish the outcome of this interactive playthrough.
+
+At the restarted 55/20 round-one pause, 16 FD was available. Bevin bought a
+population control and said it worked; the live session confirmed 6 FD left
+and one intervention. The journey continued; full playthrough and balance
+acceptance remain pending.
