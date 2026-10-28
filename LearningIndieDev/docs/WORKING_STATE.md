@@ -5,6 +5,22 @@ become a master changelog.
 
 ## Current focus
 
+**October 27 evening T12 complete after live review:** Bevin explicitly accepted
+T12 result/Gene Lab clarity after success,manual purchases,paid reset/free
+replacement and failure. Live review exposed a purchase trap: buying a new node
+after reset immediately activated it and ended free selection. Local code
+`330d94d` requires applying the replacement first and explains why. Full
+EditMode701 passed/0 failed/1 existing skip;focused graphics8/8 and final guard
+capture1/1 pass. The actual user-selected build reloads and launches;confirmed
+End forfeits20 newFD and retains172Hare/0RD,fiveowned,fouractive,five receipts.
+Demo Editor closed;temporary storage/helper/import residue cleaned;original
+exact profile keys/four source hashes unchanged. No push,merge,original-source
+integration,player-build or balance acceptance. T12 is marked complete in live Done; final acceptance comment
+`#comment-6ae1567563aaa80267e1df6a` posted/read back,description preserved.
+Proof:`artifacts/fd2-board-20261027/t12-done.png`. Preserve earlier dated
+evidence below as history. See the
+[reset-correction handoff](handoffs/2026-10-27-2147-codex-fd2-t12-protect-reset-selection.md).
+
 **October 27 FD2-T12 automated acceptance complete; human review pending:**
 Four end-to-end cases pass: zero-wallet earned progression plus v2, local v3
 and incoming Rabbit v3 migration. Three real18-round successes fund Research,

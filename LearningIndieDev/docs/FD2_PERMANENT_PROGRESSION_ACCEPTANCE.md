@@ -1,24 +1,51 @@
 # FD2 permanent progression acceptance
 
-**Checkpoint:** 2026-10-27 | Owner/reviewer: Bevin | Automated work complete;
-human clarity review pending. This is a functional integration report, not a
-balance or release approval. All implementation remains local and unpushed in
+**Checkpoint:** 2026-10-27 | Owner/reviewer: Bevin | Automated acceptance and
+live human clarity review complete. Bevin explicitly accepted T12 clarity at
+the end of the success/Gene Lab/reset/replacement/failure walkthrough. This
+accepts functional screen clarity, with balance, release and push approval
+remaining separate. Implementation remains local and unpushed on
 `codex/fd2-t01-integration`.
 
 [Ticket](https://trello.com/c/wxVgh3Q6/148-fd2-t12-verify-migration-and-end-to-end-permanent-progression)
 | [Handoff](handoffs/2026-10-27-1613-codex-fd2-t12-permanent-progression-end-to-end-acceptance.md)
 
+## Live review update - October 27 evening
+
+Bevin accepted the live saved-success receipt and Gene Lab wallet/owned-active
+labels. These were scoped acceptances; Bevin later accepted the full clarity check. During manual
+reset selection, buying the fifth node immediately activated it and ended the
+empty-loadout replacement window. Previously owned inactive nodes then needed
+another paid reset. The live state was88 Hare Data,0 RD,all five nodes owned,
+Population Reserves alone active; capture `live-selection-blocker.png`.
+
+The correction blocks new-node purchases while a paid reset remains empty,
+explaining that the replacement must be applied first because buying activates
+a node. Existing purchase/activation and20 RD replacement rules remain intact.
+A regression case verifies no save/charge/selection loss from a blocked purchase,
+then free owned selection and a later ordinary purchase. A bound scene case
+checks the disabled control. Full EditMode701 passed/zero failed/one existing skip; focused graphics8/8
+and final bound-control capture1/1 pass. Code `330d94d` remains local.
+Renewed manual selection/application succeeded. Bevin said "okay yes that
+worked". The saved active nodes are Tough Hide,Long Vision,Long Stride and
+Population Reserves; Efficient Digestion stays owned/inactive. A real End/Confirm
+failure then forfeited20 FD and retained172 Hare/0 RD,allfive owned,four active
+andfive receipts. Live reload confirmed the selected build before launch.
+Final acceptance: "Yes — accept T12 clarity" on2026-10-27,21:55 EDT.
+Temporary demo source/helper/import residue was removed and the owned demo
+Editor closed gracefully; demo save archived under ignored artifacts.
+
 ## Concrete human review
 
 T12 explicitly requires: "human review confirms result and Gene Lab clarity."
-Please review these current1280x720 captures from the actual end-to-end test:
+The completed live review supplemented these1280x720 automated captures:
 
 1. [First earned success](../artifacts/fd2-t12-20261027/visuals-final/t12-01-first-earned-success.png):390 FD converts to39 Hare Data; fixed10 RD bonus; both wallets start at0. Is the award and saved status clear?
 2. [Failure preserves progress](../artifacts/fd2-t12-20261027/visuals-final/t12-04-failure-keeps-earned-profile.png):confirmed End forfeits20 FD while retaining93 Hare Data,0 RD, license and four owned nodes. Is forfeiture versus permanent retention clear?
 3. [Saved replacement loadout](../artifacts/fd2-t12-20261027/visuals-final/t12-03-earned-reset-and-saved-loadout.png):Research1/3, four nodes owned but only Long Vision active,2/8 points,93 Hare Data/0 RD. Are ownership/active state, the20 RD reset, disabled reasons and next-journey application clear?
 
-- [ ] Bevin confirms the results and Gene Lab are clear enough for T12.
-- Human decision/date/evidence: pending; no approval inferred from automated screenshots.
+- [x] Bevin confirms the results and Gene Lab are clear enough for T12.
+- Human decision/date/evidence: Bevin,2026-10-27 evening,explicit "Yes — accept T12 clarity" after live review. Final [failure capture](../artifacts/fd2-t12-20261027/live-final-failure.png); [reset correction](../artifacts/fd2-t12-20261027/reset-fix-visuals/t12-reset-protects-free-selection.png).
 
 When this document is read from the original checkout, its ignored evidence
 lives in the isolated project at
@@ -61,7 +88,7 @@ Data/0 RD. A later confirmed End loses only20 new FD.
 - POC catalog-count7-vs-9 and population-control114-vs-90 assertions also remain baseline failures. Exact messages match T11 evidence.
 - Exchange10 FD, success10 RD, Research10/20/30, license10 Hare, nodes5 Hare and reset20 RD remain approved first-test settings, not measured balance.
 - These tests explicitly select the existing Field Data route control; the older POC route remains available. No default-route product decision is made here.
-- No player build, human clarity acceptance, full PlayMode green result, performance measurement, fun or balance approval is claimed.
+- No player build, full PlayMode green result, performance measurement, fun or balance approval is claimed.
 
 ## Provenance
 
@@ -69,3 +96,8 @@ Data/0 RD. A later confirmed End loses only20 new FD.
 - Code/tests: `ada175980a31d5d8f095a107de15bf15b2146e5e`.
 - Unity6000.4.6f1, isolated direct batch CLI. Logs/XML/source hashes and exact baseline comparisons are retained in `artifacts/fd2-t12-20261027/`.
 - Original profile/recovery preferences and four protected original source hashes remain unchanged; original Editor reports ready.
+
+
+## Trello closeout
+
+T12 is marked complete in live Done. [Explicit acceptance and verification comment](https://trello.com/c/wxVgh3Q6/148-fd2-t12-verify-migration-and-end-to-end-permanent-progression#comment-6ae1567563aaa80267e1df6a) posted and visibly read back;original description preserved. Proof:`artifacts/fd2-board-20261027/t12-done.png`.
