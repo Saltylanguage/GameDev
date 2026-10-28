@@ -680,8 +680,8 @@ namespace SaltyGame.EditorTests
             Assert.That(data.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(2));
             var authored = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
             Assert.That(authored.StartingPopulations[new SpeciesId("plant")], Is.EqualTo(400));
-            Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(20));
-            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(10));
+            Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(55));
+            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
         }
 
         [TestCase("hare=-1")]
