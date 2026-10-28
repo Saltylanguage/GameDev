@@ -1700,6 +1700,31 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void GeneLabPermanentUnappliedResetBlocksPurchasesWithoutLosingFreeSelection()
+        {
+            StartNodes(40);
+            var lab = new FieldDataGenomeLab(session);
+            var ids = lab.Catalog.SpeciesMaps.Single().Nodes.Select(node => node.Id).ToArray();
+            foreach (var id in ids.Take(4)) Assert.That(lab.BuyNode(id), Is.True, lab.Status);
+            Assert.That(lab.Reset(), Is.True, lab.Status);
+            Assert.That(lab.Toggle(ids[1]), Is.True);
+            var before = session.Current;
+            var saves = storage.SaveCalls;
+            Assert.That(lab.CanBuyNode(ids[4]), Is.False);
+            Assert.That(lab.NodeReason(ids[4]), Does.Contain("Apply your replacement"));
+            Assert.That(lab.BuyNode(ids[4]), Is.False);
+            Assert.That(session.Current, Is.SameAs(before));
+            Assert.That(storage.SaveCalls, Is.EqualTo(saves));
+            Assert.That(lab.SelectedCapacity, Is.EqualTo(2));
+            Assert.That(lab.CanApply, Is.True);
+            Assert.That(lab.Apply(), Is.True, lab.Status);
+            Assert.That(lab.CanBuyNode(ids[4]), Is.True);
+            Assert.That(lab.BuyNode(ids[4]), Is.True, lab.Status);
+            Assert.That(lab.CapacityText, Is.EqualTo("4 / 8"));
+            Assert.That(lab.NodeState(ids[0]), Does.Contain("INACTIVE"));
+        }
+
+        [Test]
         public void GeneLabPermanentDraftSurvivesBalanceRefreshAndRejectsOverCapacity()
         {
             StartLoadout();

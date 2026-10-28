@@ -740,6 +740,20 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             Assert.That(session.Current.RabbitData, Is.EqualTo(30), "Reset never refunds permanent purchases.");
             Assert.That(session.Current.ResearchData, Is.EqualTo(170));
+            Assert.That(GetProperty(lab, "CanPurchaseNode"), Is.False);
+            Assert.That(GetProperty(lab, "NodeReasonText").ToString(), Does.Contain("Apply your replacement"));
+            var blockedPurchase = GetProperty(lab, "PurchaseNodeCommand");
+            var blockedButton = FindGeneControl<Noesis.Button>(content, button => object.ReferenceEquals(button.Command, blockedPurchase));
+            Assert.That(blockedButton.IsEnabled, Is.False, "Buying a new node must not consume an unfinished reset.");
+            if (output != null && SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "t12-reset-protects-free-selection", root.GetComponent<Camera>());
+            SelectGeneButton(content, ids[0]);
+            ExecuteGeneAction(content, lab, "ToggleLoadoutNodeCommand");
+            yield return null;
+            ExecuteGeneAction(content, lab, "ApplyLoadoutCommand");
+            yield return null;
+            SelectGeneButton(content, ids[4]);
+            yield return null;
             ExecuteGeneAction(content, lab, "PurchaseNodeCommand");
             yield return null;
             ExecuteGeneAction(content, lab, "ResetGenomeCommand");

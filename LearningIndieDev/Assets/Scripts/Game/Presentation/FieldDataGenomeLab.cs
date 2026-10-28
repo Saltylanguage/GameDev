@@ -80,7 +80,9 @@ namespace SaltyGame
         public string NodeState(string id) => genome?.IsNodeActive(id) == true ? "OWNED · ACTIVE"
             : IsOwned(id) ? IsSelected(id) ? "OWNED · SELECTED" : "OWNED · INACTIVE"
             : !HasLicense ? "PATH LOCKED" : "NOT OWNED";
+        bool HasUnappliedReset => genome != null && genome.ResetGeneration > 0 && genome.ActiveNodeIds.Count == 0;
         public string NodeOffer(string id) => IsOwned(id) ? "PERMANENTLY OWNED"
+            : HasUnappliedReset ? "APPLY REPLACEMENT FIRST"
             : $"BUY + ACTIVATE · {FieldDataPermanentProgressionDefinition.NodePrice} HARE DATA";
         public string NodeReason(string id)
         {
@@ -90,6 +92,7 @@ namespace SaltyGame
             if (IsOwned(id)) return genome.ActiveNodeIds.Count == 0
                 ? "Permanently owned. Add or remove it in the selection below; applying is free."
                 : "Permanently owned. Change the active loadout through a paid reset.";
+            if (HasUnappliedReset) return "Apply your replacement selection before buying a new node. Buying also activates it.";
             var missing = node.PrerequisiteNodeIds.Where(parent => !IsOwned(parent))
                 .Select(parent => definition.HareMap.GetNode(parent).DisplayName).ToArray();
             if (missing.Length > 0) return "Own first: " + string.Join(", ", missing) + ".";
@@ -99,7 +102,7 @@ namespace SaltyGame
             catch (InvalidOperationException error) { return error.Message; }
             return SpendQuote(HareData, node.RabbitDataPrice, "Hare Data");
         }
-        public bool CanBuyNode(string id) => OwnerReason == null && HasLicense && !IsOwned(id)
+        public bool CanBuyNode(string id) => OwnerReason == null && HasLicense && !IsOwned(id) && !HasUnappliedReset
             && definition.HareMap.TryGetNode(id ?? string.Empty, out var node) && HareData >= node.RabbitDataPrice
             && node.PrerequisiteNodeIds.All(IsOwned) && CapacityUsed + node.CapacityPoints <= definition.ActiveCapacity;
         public string ArrangementReason => OwnerReason ?? (!HasLicense ? "Unlock the Hare path first."
