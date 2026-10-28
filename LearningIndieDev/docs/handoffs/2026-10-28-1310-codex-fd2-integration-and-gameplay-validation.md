@@ -150,3 +150,19 @@ At the restarted 55/20 round-one pause, 16 FD was available. Bevin bought a
 population control and said it worked; the live session confirmed 6 FD left
 and one intervention. The journey continued; full playthrough and balance
 acceptance remain pending.
+
+## Owner acceptance and remaining design — October 28
+
+Bevin said the current state visually seems to work and pass and he is fine
+with it as it stands. In the live playthrough he confirmed Simulation 1, Shop 1,
+a round-one population purchase and the reopened Gene Lab balances. Noesis
+trial expiry interrupted review of the result screen and uninterrupted return;
+the saved receipt itself was verified. This is acceptance of the current state,
+not final balance, release or publication approval. Fox extinction remains a
+follow-up from one interactive run.
+
+Bevin also identified substantial future design work: define what the Gene Lab
+actually does, how it should work, and how its permanent progression differs
+from Mutations and Field Data-funded choices during a run. The implemented FD2
+first slice is the current working baseline, not a final design for that work.
+Do not infer new mechanics, prices or product decisions from this observation.
