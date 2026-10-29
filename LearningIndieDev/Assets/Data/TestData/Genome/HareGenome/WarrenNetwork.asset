@@ -13,9 +13,16 @@ MonoBehaviour:
   m_Name: WarrenNetwork
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.warren-network
-  displayName: Warren Network
-  description: Resilience branch placeholder; effect contract pending.
+  displayName: Population Reserves
+  description: Ordinary replenishment capacity +10 while active. Does not spawn Hares
+    or limit births.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.guarded-burrow
   - hare.safe-foraging
+  rabbitDataPrice: 5
+  capacityPoints: 2
+  branchName: FD2
+  modifiers:
+  - attributeId: population.pool-capacity
+    signedValue: 10

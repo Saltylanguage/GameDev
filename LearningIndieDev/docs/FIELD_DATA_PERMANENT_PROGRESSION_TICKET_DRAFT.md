@@ -1,7 +1,7 @@
 # FD2 — Permanent Progression Ticket Draft
 
 - **Prepared:** 2026-10-21
-- **Status:** Published to Trello on 2026-10-21; actionable breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
+- **Status:** Published to Trello on 2026-10-21; T01 numeric baseline now captured in the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md). Hare gameplay effects remain pending Salty's core-mechanics push. Breakdown derived from [PDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md) and [SDD-FD-002](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
 - **Owners/reviewers:** Bevin (Trello account: Nick Nevins)
 - **Sprint placement:** Not assigned here; sprint planning belongs to Salty
 - **Estimates:** Omitted; size/capacity has not been planned
@@ -25,40 +25,117 @@
 
 ## Ticket details
 
+**Live board closeout, 2026-10-26:** Bevin instructed that Trello be updated as
+tickets finish. T01, T03 and T04 are now marked complete in Done with verification
+comments posted and read back; T02 remains complete in Done. T04 code commit is
+`ec30f70`, still local on `codex/fd2-t01-integration`. Earlier ticket paragraphs
+below retain their dated implementation/approval history. Proof is
+`artifacts/fd2-board-20261026/fd2-t01-t04-done.png`.
+
 ### FD2-T01 — Freeze first-slice progression content and tuning
+
+**October 24 implementation verified:** Bevin approved the five effects and
+display names. `FieldDataPermanentProgressionDefinition` now supplies the
+versioned values; Unity authored the five existing assets with their GUIDs
+preserved. Definition/adapter checks pass, along with 497 clean EditMode tests
+(one dedicated-fixture skip). Both new migration PlayMode tests pass; seven
+full-PlayMode failures reproduce identically on unchanged incoming ProjectMain.
+T01 is technically ready for closeout in the isolated worktree. The live card
+has not been changed in this implementation turn. See the
+[integration handoff](handoffs/2026-10-24-2158-codex-fd2-t01-approved-definition-and-profile-integration.md).
+
+**October 24 review prepared:** [Tuning sheet v0.2](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
+now proposes supported effects and truthful display names for all five existing
+IDs. [The reconciliation review](FIELD_DATA_PERMANENT_PROGRESSION_T01_REVIEW.md)
+records the 36-assertion isolated portable check, unreachable final-node issue
+under incoming active prerequisites, differing purchase/reset rules and schema-v3
+save shapes, and the integration sequence. Existing FD2 economy and permanent
+ownership are retained. Effects/names still need approval; no asset authoring
+or integrated runtime definition is claimed. T01 remains In Progress.
+
+**Dependency refresh (2026-10-24):** Live card remains In Progress/incomplete.
+Fresh origin/ProjectMain at `7ac2a54` includes Salty's Rabbit Genome mechanics
+(`be98b03`), so the push is now available remotely. The five FD2 placeholder
+effects are not yet reconciled with that catalog or reviewed against SG-005.
+Incoming POC IDs, license/node prices and reset semantics differ from this
+sheet. The incoming code is not merged into local BevBranch; T01 remains open.
 
 **Outcome:** One reviewed, versioned first-test definition supplies every price,
 cap, prerequisite and supported Hare node effect used by FD2.
 
-**Work:** Confirm the existing Hare node subset/effects against the Genome
-catalog and SG-005. Record the Hare license baseline (10 Hare Data), node price
-(5 Hare Data each), Research reset fee, conversion-upgrade maximum level and
-per-level Research Data costs. Confirm conversion rounding with examples.
-Preserve 10 FD → 1 Hare Data, +10% multiplicative payout per upgrade level and
-10 Research Data per successful journey as provisional test baselines unless
-the implementation review changes them.
+**Trello status:** In Progress as of 2026-10-21. The numeric baseline and five-node
+topology are recorded; effect mapping remains pending Salty's core-mechanics push.
+
+**Work:** Freeze the recorded first-test baselines: Hare license 10 Hare Data;
+node price 5 Hare Data each; all five placeholder node IDs with existing
+prerequisites and 2 capacity points each; 8-point loadout capacity; 20 RD reset
+fee; and three conversion-research levels priced at 10/20/30 RD. Preserve 10
+FD → 1 Hare Data, +10% multiplicative payout per upgrade level and 10 Research
+Data per successful journey as provisional test baselines. Keep node effects
+undefined until Salty's core-mechanics changes are pushed, then map each node
+to a supported effect and review against SG-005. See the [tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md).
 
 **Acceptance:** All consumed values are in one validated definition; every
-node has stable ID, supported effect, prerequisite, cost and capacity cost;
-Research cap/fees/costs and rounding examples are explicit; unresolved values
-are not silently embedded in code.
+every node has stable ID, prerequisite, cost and capacity cost; conversion
+research prices/cap, reset fee and rounding examples are explicit; and no
+unsupported effect is invented. The ticket remains open until core mechanics
+are available and supported node effects are reviewed.
 
 ### FD2-T02 — Migrate profiles to separate permanent wallets
+
+**Approved board closeout (2026-10-24):** Bevin approved closure after the 26
+focused Unity passes. Live Trello card is complete in Done, and the additive
+verification comment was posted and read back. Proof:
+`artifacts/fd2-t02-20261024/trello-t02-done.png`. Source remains local and
+uncommitted/unpushed. Incoming ProjectMain also changes profile schema v3;
+integration and save-format reconciliation remain future work, and the local
+test evidence does not validate that unmerged code.
 
 **Outcome:** Profiles store Research Data and species-data balances separately
 while retaining their existing Genome progress.
 
-**Work:** Upgrade the version-2 profile schema. Copy legacy generic currency to
-Research Data; initialize species balances to zero; preserve profile identity,
+**Verified locally (2026-10-24):** Startup resolved; current Unity assemblies
+compiled. Focused Live EditMode GenomeContractTests pass 17/17 and Main Menu
+PlayMode tests pass 9/9, with zero failures/skips. This supersedes the pending
+verification checkpoints below. T02 is ready for review/board closeout; source
+is uncommitted/unpushed and no Trello update occurred. See the
+[verified handoff](handoffs/2026-10-24-2040-codex-fd2-t02-verified-wallet-migration.md).
+
+**Local status (2026-10-22):** Implementation is in the working tree on
+`BevBranch`. Verification is pending because the live Unity test command
+discovered zero tests and the existing PlayMode assembly predates the change.
+Do not close the ticket or publish until the updated tests compile and pass.
+
+**Continuation (2026-10-24):** Recovery is flushed before replacement and Currency
+projects ResearchData directly. Six EditMode cases now cover migration replay,
+existing recovery preservation, snapshot copies and invalid wallets. A .NET check
+passes 30 snapshot assertions; Unity serialization and the focused Unity suites
+remain pending behind the Editor's "Recovering Scene Backups" window. Live card
+is still in Upcoming Work; no board change, commit or push occurred. See the
+[handoff](handoffs/2026-10-24-2025-codex-fd2-t02-migration-recovery-and-validation.md).
+
+**Work:** Migrate the current version-2 profile store to version 3. Copy legacy
+generic currency to Research Data; retain the raw v2 JSON when no recovery
+copy exists; initialize species balances to zero; preserve profile identity,
 species unlocks, Genome path access, unlocked/active nodes, and other profile
 data. Ensure new profiles start with zero permanent balances and locked paths.
 
 **Acceptance:** A version-2 profile migrates once with the full generic balance
 in Research Data; all Genome state survives; reloading/retrying migration does
-not duplicate value; new profiles have all-zero wallets; focused serialization,
-backup/recovery and snapshot-copy tests pass.
+not duplicate value; the original v2 JSON remains recoverable; new profiles
+have all-zero wallets; focused serialization, backup/recovery and snapshot-copy
+tests pass.
 
 ### FD2-T03 — Calculate the success settlement receipt
+
+**October 26 implementation verified locally:** `FieldDataSettlement` produces
+the immutable breakdown using the canonical definition and frozen level; it
+changes no wallet. All 37 focused tests pass. Full clean EditMode passes 534,
+fails zero and skips one parity-manifest fixture; portable build/self-test pass.
+The existing profile test fixture now isolates its inputs and restores both
+stored preferences. T03 is technically ready for scoped review/closeout; no
+live card update occurred. See the
+[T03 handoff](handoffs/2026-10-26-1229-codex-fd2-t03-deterministic-success-settlement.md).
 
 **Outcome:** A deterministic calculator converts leftover FD and produces a
 complete immutable settlement breakdown.
@@ -75,6 +152,15 @@ invalid inputs and species destination.
 
 ### FD2-T04 — Persist success settlement exactly once
 
+**October 26 implementation verified locally:** Profile schema v5 retains frozen
+pending inputs and lifetime receipts. Payment saves both deposits and the receipt
+together; same profile/journey returns the prior receipt without writing. Save
+failure and uncertain-save retry, profile switches, corrupted journals and old
+formats have focused coverage. Full EditMode: 557 passed, zero failed, one parity
+skip (23 T04 cases). Two distinct-process checks and 3/3 focused PlayMode cases
+pass. No push or player-results wiring is implied. See the
+[T04 handoff](handoffs/2026-10-26-1254-codex-fd2-t04-exactly-once-settlement-persistence.md).
+
 **Outcome:** Repeated callbacks, results entry, app reload and save retry cannot
 pay the same journey twice.
 
@@ -88,6 +174,16 @@ simulated failure/retry and process reload preserve one receipt and one deposit;
 the failure path leaves permanent balances unchanged.
 
 ### FD2-T05 — Add conversion research purchases
+
+**October 26 implementation verified locally:** Schema v6 retains conversion
+research level; purchases atomically save the 10/20/30 RD deduction and next
+level, with a cap of three and profile/expected-level duplicate protection.
+Fresh settlements use owned research; pending/prior receipts are unchanged.
+Focused research 25/25, full EditMode 582 passed/zero failed/one parity skip,
+distinct-process write/read and focused PlayMode 4/4 pass. Player controls are
+still T11. Code commit `e32367b` is local; the live card is now complete in Done
+with verification comment posted and read back on October 26. See the
+[T05 handoff](handoffs/2026-10-26-1351-codex-fd2-t05-conversion-research-purchases.md).
 
 **Outcome:** A shared Genome Lab research upgrade raises later species-wallet
 settlements.
@@ -103,6 +199,18 @@ non-retroactivity.
 
 ### FD2-T06 — Unlock the Hare Genome path
 
+**October 26 implementation verified locally:** `TryPurchaseHareGenomeLicense`
+charges exactly 10 Hare Data and saves access together, rejects duplicate/wrong
+profile/insufficient/reentrant purchases and preserves other data. No node effect
+is granted; the existing license flag uses schema v6. Focused license16/16,
+full EditMode598 passed/zero failed/one parity skip, distinct-process write/read
+and focused PlayMode6/6 pass, including unlicensed journey launch. Visible
+Gene Lab controls remain T11. See the
+[T06 handoff](handoffs/2026-10-26-2050-codex-fd2-t06-hare-genome-path-license.md).
+
+Code commit `2e6fcd8` remains local. T06 is marked complete in live Trello Done
+with verification comment posted and read back on October 26.
+
 **Outcome:** A player can use Hare Data to permanently license the Hare Genome
 tree after earning it through a Hare-selected successful journey.
 
@@ -115,6 +223,20 @@ balance, duplicate license and wrong wallet leave state unchanged; license
 survives restart; a journey remains launchable with no license.
 
 ### FD2-T07 — Purchase permanent Hare nodes
+
+**October 26 implementation and closeout:** Code commit `c58f7b5` remains local;
+T07 is marked complete in live Done with verification comment
+`#comment-6adffac4ab95c50adf0bc641` posted and read back. All32 new node cases,
+full EditMode630 passed/zero failed/one parity skip, independent process checks
+and focused PlayMode7/7 pass. `TryPurchaseHareGenomeNode` validates the owning
+profile, canonical node/price, license, permanently owned ancestors and full
+catalog capacity. It saves 5 Hare Data deduction, permanent ownership and
+activation together with the existing atomic profile commit path. No refundable
+POC allocation or schema change is added. Owned inactive duplicates, other
+wallets, invalid IDs, capacity overflow and failed saves cannot publish a
+purchase. Player controls remain T11; T08/T11 use catalog capacity rather than
+the POC profile's one-point fallback. Validation/board closeout is recorded in
+the T07 handoff. Board proof: `artifacts/fd2-board-20261026/t07-done.png`.
 
 **Outcome:** Eligible Hare Genome nodes become permanently owned and active
 without exceeding capacity.
@@ -131,6 +253,18 @@ match catalog records.
 
 ### FD2-T08 — Reset and arrange an active loadout
 
+**October 26 decision and closeout:** Code commit `d90c2f5` is local; T08 is
+complete in live Done with verification comment
+`#comment-6ae013d687320fb2409a962e` posted and read back. All36 new cases,
+full EditMode666 passed/zero failed/one parity skip, independent-process checks
+and focused PlayMode8/8 pass. Proof: `artifacts/fd2-board-20261026/t08-done.png`.
+Bevin selected a 20 RD reset for each replacement
+loadout. Free selection applies from an empty loadout; after applying a nonempty
+selection, a different selection needs another paid clear. Identical selection
+is a no-op, and an empty reset is rejected without a fee. The existing POC
+refund flow remains separate. Implementation and verification are recorded in
+the T08 handoff.
+
 **Outcome:** A player can rebuild one species' active configuration without
 losing purchased nodes.
 
@@ -144,6 +278,21 @@ locked-node configurations are rejected atomically; reset fee behavior for an
 empty loadout follows the T01 definition.
 
 ### FD2-T09 — Apply Genome loadout to the next launch
+
+**October 27 implementation and closeout:** Code commit `8d9cf30` remains local.
+T09 is complete in live Done with verification comment
+`#comment-6ae0bed4662be98c593cf2a8` posted/read back. New domain13/13 and new
+PlayMode4/4 pass; full EditMode679 pass/zero failed/one skip. Related PlayMode
+17/18 pass with only the identical incoming population-control failure remaining.
+Proof: `artifacts/fd2-board-20261027/t09-done.png`.
+Permanent Hare loadouts use the canonical FD2
+owned-prerequisite resolver; other/POC profiles keep their existing catalog rules.
+The Desktop binds a profile-owned first-start capture, so direct next-journey
+commands also refresh the saved configuration. Opening Mutations are retained,
+all participating species receive their own resolved effects, and active
+journeys keep their frozen values through phases/checkpoints/results. Field Data
+test-route configuration retains its prepared Genome. Detailed validation and
+board closeout are recorded in the T09 handoff.
 
 **Outcome:** The current active Genome configuration is frozen into the next
 simulation/journey and does not mutate a run already in progress.
@@ -159,6 +308,22 @@ catalog.
 
 ### FD2-T10 — Show permanent settlement and failure results
 
+**October 27 T10 implementation:** The accepted 18-round Field Data journey
+now presents its saved receipt or an explicit unpaid retry state. Saved results
+show source FD, rate/research level, species deposit, +10 RD and both before/after
+balances, including zero-FD success. Failure shows forfeiture and retained
+permanent state. Pending results block exits and restart until the same saved
+transaction succeeds; reload/reentry never pays a second time. The older POC
+journey keeps its existing reward path. New domain11/11 and scene3/3 pass;
+full EditMode690 passed/zero failed/one existing parity skip. All three rendered
+screens were inspected at1280x720. Portable build/self-test pass. See the
+[T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md)
+for broader regressions and board closeout. T10 is complete in live Done; code
+`1b7d9ab` remains local. Verification comment
+`#comment-6ae0c7bb937b17df3d1fc85d` was posted/read back; related PlayMode21/24
+pass with all3 failures verified against baseline. Proof:
+`artifacts/fd2-board-20261027/t10-done.png`.
+
 **Outcome:** Journey results explain the permanent economy outcome accurately.
 
 **Work:** Success view shows leftover FD, rate/research level, species deposit,
@@ -171,6 +336,25 @@ still shows bonus; failure shows no deposit; retry-pending state cannot imply
 payment; result reentry does not pay again.
 
 ### FD2-T11 — Wire the Gene Lab permanent economy UI
+
+**October 27 implementation:** MainMenu profile launch uses permanent Hare
+controls and shared Research purchases. The existing window shows canonical
+prices, pre/post-wallet quotes, prerequisites, ownership/active/draft state and
+8-point capacity. Reset charges20 RD without refund; select owned nodes from
+empty and apply once for free. Save failure, wrong profile, stale generation,
+insufficient funds and over-capacity selections are rejected with explanations.
+Existing refundable POC profiles retain labeled legacy controls until their
+legacy reset; direct authoring-scene entry remains POC. The five-node catalog
+cannot drift to the POC map on authoring refresh. New domain10/10 and new
+scene4/4 pass; full EditMode700 pass/zero fail/one existing parity skip. Related
+PlayMode25/29 pass with4 verified baseline failures, including the old preview
+catalog-count assertion. Portable build/self-test pass. Details and board
+closeout: [T11 handoff](handoffs/2026-10-27-1522-codex-fd2-t11-gene-lab-permanent-economy-ui.md).
+T11 is complete in live Done. Local code `f2a8565`; verification comment
+`#comment-6ae0ff1fafaa9b0d7ede7fef` posted/read back. Proof:
+`artifacts/fd2-board-20261027/t11-done.png`. Final graphics4/4 and seven
+rendered captures inspected; original profile/source state preserved.
+
 
 **Outcome:** The existing Gene Lab provides usable Research and Hare Genome
 wallet/purchase/loadout controls.
@@ -186,6 +370,17 @@ success refreshes state; no wallet or settlement calculation lives in XAML or
 the ViewModel.
 
 ### FD2-T12 — Verify migration and end-to-end permanent progression
+
+**October 27 automated checkpoint; human clarity review pending:** Code
+`ada1759` verifies four earned/migrated complete loops and fixes the Field Data
+reopen auto-start defect. Full EditMode700 pass/0 fail/1 existing skip;29 focused
+scene cases pass, with4 exact baseline failures in the broader33-case run.
+Final graphics4/4 and ten current captures inspected. Original preferences/source
+preserved; no push/source integration. T12 is incomplete in live In Progress
+because its explicit human-clarity criterion remains open. Automated evidence
+comment `#comment-6ae10ab7d93167a216017b9b` posted/read back, description retained.
+[Review the concrete screens and remaining balance questions](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md).
+
 
 **Outcome:** The team can complete and inspect a new and migrated profile's
 permanent progression loop.

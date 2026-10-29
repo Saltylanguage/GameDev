@@ -13,8 +13,14 @@ MonoBehaviour:
   m_Name: SwiftDigging
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.swift-digging
-  displayName: Swift Digging
-  description: Movement branch placeholder; effect contract pending.
+  displayName: Long Stride
+  description: Movement speed +0.25 while active.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.guarded-burrow
+  rabbitDataPrice: 5
+  capacityPoints: 2
+  branchName: FD2
+  modifiers:
+  - attributeId: movement.speed
+    signedValue: 0.25

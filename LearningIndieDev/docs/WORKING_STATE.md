@@ -37,6 +37,12 @@ qualitative route feedback, not a reproducible route record. No new ecology
 experiment ran. See the
 [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
 
+**October 27 FD2-T12 permanent progression:** T12 passed live review after the
+Gene Lab reset/replacement flow was clarified. Purchases after reset now require
+applying the replacement first. The recorded acceptance covers successful and
+failed runs, persistence, Research purchases, and reset behavior; see the
+[T12 handoff](handoffs/2026-10-27-2147-codex-fd2-t12-protect-reset-selection.md).
+
 **October 22 Field Data integration:** Sim's published FD implementation is now
 being integrated: the accepted five-node journey, shop and reroll flow, ordered
 income controls, intervention records, and APS accounting are in the merge. The

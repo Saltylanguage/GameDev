@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Newtonsoft.Json;
 using UnityEngine;
 
 namespace SaltyGame
@@ -9,7 +10,7 @@ namespace SaltyGame
     {
         public const string StoreKey = "SaltyGame.ProfileSession";
         public const string RecoveryStoreKey = StoreKey + ".Recovery";
-        const int StoreVersion = 3;
+        const int StoreVersion = 7;
         const double AutosaveSeconds = 30d;
 
         [SerializeField] bool trackPlaytime = true;
@@ -21,6 +22,7 @@ namespace SaltyGame
             public List<string> unlockedNodeIds = new List<string>();
             public List<string> activeNodeIds = new List<string>();
             public List<GenomeAllocationRecord> allocations = new List<GenomeAllocationRecord>();
+            public long? resetGeneration;
         }
 
         [Serializable]
@@ -32,6 +34,42 @@ namespace SaltyGame
         }
 
         [Serializable]
+        sealed class SpeciesDataWalletRecord
+        {
+            public string speciesId;
+            public long balance;
+        }
+
+        [Serializable]
+        sealed class SettlementRecord
+        {
+            public string journeyId;
+            public string speciesId;
+            public long leftoverFieldData;
+            public int researchLevel;
+            public string definitionVersion;
+            public int fieldDataPerSpeciesData;
+            public long multiplierNumerator;
+            public long multiplierDenominator;
+            public long baseSpeciesData;
+            public long speciesDataDeposit;
+            public long researchDataBonus;
+            public long speciesDataBefore;
+            public long speciesDataAfter;
+            public long researchDataBefore;
+            public long researchDataAfter;
+        }
+
+        [Serializable]
+        sealed class PendingSettlementRecord
+        {
+            public string journeyId;
+            public string speciesId;
+            public long leftoverFieldData;
+            public int researchLevel;
+        }
+
+        [Serializable]
         sealed class ProfileRecord
         {
             public string id;
@@ -40,6 +78,9 @@ namespace SaltyGame
             public long currency;
             public long rabbitData;
             public long researchData;
+            public int? conversionResearchLevel;
+            // Null distinguishes incoming Rabbit-v3 saves from local species-wallet-v3 saves.
+            public List<SpeciesDataWalletRecord> speciesDataWallets;
             public int completedRuns;
             public List<string> completedRunIds = new List<string>();
             public long simulationTicks;
@@ -47,6 +88,8 @@ namespace SaltyGame
             public List<string> unlockedSpeciesIds = new List<string>();
             public List<string> unlockedGenomeSpeciesIds = new List<string>();
             public List<string> unlockedFeatureIds = new List<string>();
+            public List<SettlementRecord> settlementReceipts;
+            public PendingSettlementRecord pendingSettlement;
         }
 
         [Serializable]
@@ -55,6 +98,7 @@ namespace SaltyGame
             public int version;
             public List<ProfileRecord> profiles = new List<ProfileRecord>();
             public string lastLoadedProfileId;
+            public string migrationSourceJson;
         }
 
         readonly List<ProfileSessionSnapshot> profiles = new List<ProfileSessionSnapshot>();
@@ -63,6 +107,9 @@ namespace SaltyGame
         double autosaveElapsedSeconds;
         bool applicationFocused = true;
         bool applicationPaused;
+        string migrationSourceJson = string.Empty;
+        IProfileSessionStorage storage = new PlayerPrefsProfileSessionStorage();
+        bool committingProgression;
 
         public event Action<ProfileSessionSnapshot> SnapshotChanged;
 
@@ -70,6 +117,14 @@ namespace SaltyGame
         public ProfileSessionSnapshot Current { get; private set; } = ProfileSessionSnapshot.Empty;
         public bool HasProfiles => profiles.Count > 0;
         public string LoadWarning { get; private set; } = string.Empty;
+
+        public void InitializeStorage(IProfileSessionStorage profileStorage)
+        {
+            if (profiles.Count != 0 || Current.HasLoadedProfile)
+                throw new InvalidOperationException("Storage must be configured before loading profiles.");
+            storage = profileStorage ?? throw new ArgumentNullException(nameof(profileStorage));
+            Load();
+        }
 
         void Awake()
         {
@@ -132,6 +187,15 @@ namespace SaltyGame
         public void Reload()
         {
             Flush();
+            if (Current.PendingSettlement != null)
+            {
+                try { Save(); }
+                catch (Exception exception)
+                {
+                    LoadWarning = "Pending success is retained in memory: " + exception.Message;
+                    return;
+                }
+            }
             Load();
         }
 
@@ -318,6 +382,158 @@ namespace SaltyGame
                 GenomeContract.ResearchDataPerSuccessfulJourney);
         }
 
+        public bool TrySettleFieldDataJourney(string profileId, string journeyId,
+            FieldDataJourneyFlowState state, SpeciesId selectedSpeciesId, long leftoverFieldData,
+            out FieldDataSettlementReceipt receipt, out string error)
+        {
+            return TrySettleFieldDataJourney(profileId, journeyId, state, selectedSpeciesId,
+                leftoverFieldData, Current.ConversionResearchLevel, out receipt, out error);
+        }
+
+        public bool TryPurchaseConversionResearch(string profileId, int expectedLevel, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || Current.ConversionResearchLevel != expectedLevel)
+            {
+                error = "Research purchase requires the same loaded profile and unchanged research level.";
+                return false;
+            }
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (expectedLevel >= definition.MaximumResearchLevel)
+            {
+                error = "Conversion research is already at its maximum level.";
+                return false;
+            }
+            var price = definition.ConversionResearchPrices[expectedLevel];
+            if (Current.ResearchData < price)
+            {
+                error = "Not enough Research Data for the next conversion level.";
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithConversionResearch(Current.ResearchData - price,
+                    expectedLevel + 1), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TrySettleFieldDataJourney(string profileId, string journeyId,
+            FieldDataJourneyFlowState state, SpeciesId selectedSpeciesId, long leftoverFieldData,
+            int researchLevel, out FieldDataSettlementReceipt receipt, out string error)
+        {
+            receipt = null;
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || string.IsNullOrWhiteSpace(journeyId))
+            {
+                error = "Settlement requires the journey's loaded profile, identity and no operation in progress.";
+                return false;
+            }
+
+            if (Current.TryGetSettlement(journeyId, out receipt)) return true;
+            if (state != FieldDataJourneyFlowState.Succeeded || Current.CompletedRunIds.Contains(journeyId))
+            {
+                error = "The journey must be successful and not previously paid by the legacy completion flow.";
+                return false;
+            }
+
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var pending = Current.PendingSettlement;
+            if (pending != null && pending.JourneyId != journeyId)
+            {
+                error = "Resolve the profile's pending settlement before starting another.";
+                return false;
+            }
+
+            committingProgression = true;
+            try
+            {
+                if (pending == null)
+                {
+                    if (researchLevel != Current.ConversionResearchLevel)
+                    {
+                        error = "A new settlement must use the profile's current conversion research level.";
+                        return false;
+                    }
+                    if (!FieldDataSettlement.TryCalculate(definition, journeyId, state, selectedSpeciesId,
+                        leftoverFieldData, researchLevel, Current.SpeciesDataWallets, Current.ResearchData,
+                        out _, out error)) return false;
+                    pending = new PendingFieldDataSettlement(journeyId, selectedSpeciesId, leftoverFieldData, researchLevel);
+                }
+                var unpaid = Current.WithPendingSettlement(pending);
+                if (!TryCommitSettlement(unpaid, out error))
+                {
+                    // Keep the frozen success in memory even if its first durable write failed.
+                    ApplyCurrent(unpaid);
+                    NotifyChanged();
+                    return false;
+                }
+
+                if (Current.ProfileId != profileId || Current.PendingSettlement?.JourneyId != journeyId)
+                {
+                    error = "The loaded profile changed; retry on the journey's original profile.";
+                    return false;
+                }
+                if (!FieldDataSettlement.TryCalculate(definition, pending.JourneyId, state,
+                    pending.SelectedSpeciesId, pending.LeftoverFieldData, pending.ConversionResearchLevel,
+                    Current.SpeciesDataWallets, Current.ResearchData, out var calculated, out error)) return false;
+                var paid = Current.WithSettlement(calculated);
+                if (!TryCommitSettlement(paid, out error)) return false;
+                receipt = calculated;
+                return true;
+            }
+            catch (OverflowException)
+            {
+                error = "The settlement exceeds the supported profile range.";
+                return false;
+            }
+            finally
+            {
+                committingProgression = false;
+            }
+        }
+
+        public bool TryRetryPendingFieldDataSettlement(string profileId,
+            out FieldDataSettlementReceipt receipt, out string error)
+        {
+            var pending = Current.PendingSettlement;
+            if (pending == null)
+            {
+                receipt = null;
+                error = "There is no pending Field Data settlement.";
+                return false;
+            }
+            return TrySettleFieldDataJourney(profileId, pending.JourneyId, FieldDataJourneyFlowState.Succeeded,
+                pending.SelectedSpeciesId, pending.LeftoverFieldData, pending.ConversionResearchLevel, out receipt, out error);
+        }
+
+        bool TryCommitSettlement(ProfileSessionSnapshot next, out string error)
+        {
+            if (TryCommitProfile(next, out error)) return true;
+            error = "Settlement is pending: " + error;
+            return false;
+        }
+
+        bool TryCommitProfile(ProfileSessionSnapshot next, out string error)
+        {
+            try
+            {
+                WriteStore(SerializeStore(next));
+            }
+            catch (Exception exception)
+            {
+                error = "The profile could not be saved: " + exception.Message;
+                return false;
+            }
+            ApplyCurrent(next);
+            NotifyChanged();
+            error = null;
+            return true;
+        }
+
         bool RecordRunCompletion(string completionId, long rabbitDataReward, long researchDataReward)
         {
             if (string.IsNullOrWhiteSpace(completionId))
@@ -335,6 +551,170 @@ namespace SaltyGame
                 checked(Current.CompletedRuns + 1),
                 nextCompletedRunIds: completedRunIds));
             return true;
+        }
+
+        public bool TryPurchaseHareGenomeLicense(string profileId, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId)
+            {
+                error = "A Hare Genome license requires the same loaded profile and no operation in progress.";
+                return false;
+            }
+            var hare = new SpeciesId("hare");
+            if (Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                error = "The Hare Genome path license is already owned.";
+                return false;
+            }
+            Current.SpeciesDataWallets.TryGetValue(hare, out var balance);
+            if (balance < FieldDataPermanentProgressionDefinition.HareLicensePrice)
+            {
+                error = "Not enough Hare Data for the Hare Genome path license.";
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(
+                    balance - FieldDataPermanentProgressionDefinition.HareLicensePrice,
+                    Current.ResearchData, Current.CompletedRuns, unlockRabbitTree: true), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TryPurchaseHareGenomeNode(string profileId, string nodeId, out string error)
+        {
+            error = null;
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId)
+            {
+                error = "A Hare Genome purchase requires the same loaded profile and no operation in progress.";
+                return false;
+            }
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var hare = definition.HareMap.SpeciesId;
+            if (!Current.UnlockedGenomeSpeciesIds.Contains(hare))
+            {
+                error = "The Hare Genome path license is required.";
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(nodeId) || !definition.HareMap.TryGetNode(nodeId, out var node))
+            {
+                error = "The node must belong to the FD2 Hare Genome catalog.";
+                return false;
+            }
+            Current.TryGetGenomeProfile(hare, out var profile);
+            if (profile != null && (profile.IsNodeUnlocked(node.Id) || profile.IsNodeActive(node.Id)))
+            {
+                error = "The Hare Genome node is already owned or allocated.";
+                return false;
+            }
+            Current.SpeciesDataWallets.TryGetValue(hare, out var balance);
+            if (balance < node.RabbitDataPrice)
+            {
+                error = "Not enough Hare Data for this Genome node.";
+                return false;
+            }
+            var unlocked = profile == null ? new List<string>() : new List<string>(profile.UnlockedNodeIds);
+            var active = profile == null ? new List<string>() : new List<string>(profile.ActiveNodeIds);
+            unlocked.Add(node.Id);
+            active.Add(node.Id);
+            SpeciesGenomeProfile nextProfile;
+            try
+            {
+                nextProfile = new SpeciesGenomeProfile(hare, unlocked, active, profile?.Allocations,
+                    profile?.ResetGeneration ?? 0);
+                // FD2 uses owned prerequisites and catalog capacity, not the POC's active-parent/one-point fallback.
+                definition.FreezeOwnedLoadout(nextProfile);
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
+            {
+                error = exception.Message;
+                return false;
+            }
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(balance - node.RabbitDataPrice,
+                    Current.ResearchData, Current.CompletedRuns, nextProfile), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TryResetGenomeLoadout(string profileId, SpeciesId speciesId,
+            long expectedResetGeneration, out string error)
+        {
+            error = null;
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || speciesId != definition.HareMap.SpeciesId || !Current.UnlockedGenomeSpeciesIds.Contains(speciesId)
+                || !Current.TryGetGenomeProfile(speciesId, out var profile))
+            {
+                error = "Reset requires the same loaded profile, supported species license and no operation in progress.";
+                return false;
+            }
+            if (profile.ResetGeneration != expectedResetGeneration || profile.ResetGeneration == long.MaxValue)
+            {
+                error = "The Genome reset request is stale or exceeds the supported reset range.";
+                return false;
+            }
+            if (profile.ActiveNodeIds.Count == 0 || profile.Allocations.Count != 0)
+            {
+                error = "Reset requires a nonempty permanent Genome loadout without refundable POC allocations.";
+                return false;
+            }
+            if (Current.ResearchData < FieldDataPermanentProgressionDefinition.ResetResearchDataFee)
+            {
+                error = "Not enough Research Data for the Genome reset.";
+                return false;
+            }
+            var nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
+                resetGeneration: profile.ResetGeneration + 1);
+            committingProgression = true;
+            try
+            {
+                return TryCommitProfile(Current.WithGenomeEconomy(Current.RabbitData,
+                    Current.ResearchData - FieldDataPermanentProgressionDefinition.ResetResearchDataFee,
+                    Current.CompletedRuns, nextProfile), out error);
+            }
+            finally { committingProgression = false; }
+        }
+
+        public bool TryArrangeGenomeLoadout(string profileId, SpeciesId speciesId,
+            long expectedResetGeneration, IEnumerable<string> activeNodeIds, out string error)
+        {
+            error = null;
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            if (committingProgression || !Current.HasLoadedProfile || Current.ProfileId != profileId
+                || speciesId != definition.HareMap.SpeciesId || !Current.UnlockedGenomeSpeciesIds.Contains(speciesId)
+                || !Current.TryGetGenomeProfile(speciesId, out var profile)
+                || profile.ResetGeneration != expectedResetGeneration || profile.Allocations.Count != 0)
+            {
+                error = "Arrangement requires the same loaded profile, supported license and current reset request.";
+                return false;
+            }
+            SpeciesGenomeProfile nextProfile;
+            try
+            {
+                if (activeNodeIds == null) throw new ArgumentException("Choose the owned Genome nodes to activate.");
+                nextProfile = new SpeciesGenomeProfile(speciesId, profile.UnlockedNodeIds,
+                    activeNodeIds, resetGeneration: profile.ResetGeneration);
+                definition.FreezeOwnedLoadout(nextProfile);
+            }
+            catch (Exception exception) when (exception is ArgumentException || exception is InvalidOperationException)
+            {
+                error = exception.Message;
+                return false;
+            }
+            if (profile.ActiveNodeIds.SequenceEqual(nextProfile.ActiveNodeIds)) return true;
+            if (profile.ActiveNodeIds.Count != 0)
+            {
+                error = "Reset the active Genome loadout before applying a replacement selection.";
+                return false;
+            }
+            committingProgression = true;
+            try { return TryCommitProfile(Current.WithGenomeProfile(nextProfile), out error); }
+            finally { committingProgression = false; }
         }
 
         public bool TryPurchaseRabbitGenomeLicense(long rabbitDataPrice, out string reason)
@@ -433,7 +813,8 @@ namespace SaltyGame
                 : new List<GenomeNodeAllocation>(profile.Allocations);
             active.Add(node.Id);
             allocations.Add(new GenomeNodeAllocation(node.Id, rabbitDataPrice, capacityPoints));
-            var nextProfile = new SpeciesGenomeProfile(hare, profile?.UnlockedNodeIds, active, allocations);
+            var nextProfile = new SpeciesGenomeProfile(hare, profile?.UnlockedNodeIds, active, allocations,
+                profile?.ResetGeneration ?? 0);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - rabbitDataPrice,
                 Current.ResearchData, Current.CompletedRuns, nextProfile));
@@ -529,7 +910,8 @@ namespace SaltyGame
                 return false;
             }
 
-            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds);
+            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds,
+                resetGeneration: profile.ResetGeneration);
             Flush();
             CommitCurrent(Current.WithGenomeEconomy(rabbitData,
                 Current.ResearchData - researchDataFee, Current.CompletedRuns, nextProfile));
@@ -541,21 +923,23 @@ namespace SaltyGame
             profiles.Clear();
             Current = ProfileSessionSnapshot.Empty;
             LoadWarning = string.Empty;
+            migrationSourceJson = string.Empty;
             pendingSimulationTicks = 0;
             pendingPlayTimeMilliseconds = 0;
             autosaveElapsedSeconds = 0;
 
-            if (!PlayerPrefs.HasKey(StoreKey))
+            if (!storage.HasKey(StoreKey))
             {
                 NotifyChanged();
                 return;
             }
 
-            var storedJson = PlayerPrefs.GetString(StoreKey);
+            var storedJson = storage.GetString(StoreKey);
             ProfileStore store;
             try
             {
-                store = JsonUtility.FromJson<ProfileStore>(storedJson);
+                // JsonUtility fills missing lists, hiding the two incompatible v3 wallet shapes.
+                store = JsonConvert.DeserializeObject<ProfileStore>(storedJson);
             }
             catch (Exception)
             {
@@ -571,6 +955,9 @@ namespace SaltyGame
                 return;
             }
 
+            migrationSourceJson = !string.IsNullOrEmpty(store.migrationSourceJson)
+                ? store.migrationSourceJson : store.version < StoreVersion ? storedJson : string.Empty;
+
             var invalidProfileFound = false;
             var seenProfileIds = new HashSet<string>(StringComparer.Ordinal);
             for (var index = 0; index < store.profiles.Count; index++)
@@ -585,6 +972,7 @@ namespace SaltyGame
                 }
 
                 var genomeProfiles = new List<SpeciesGenomeProfile>();
+                var invalidGenomeFound = false;
                 var seenGenomeSpecies = new HashSet<SpeciesId>();
                 if (record.genomeProfiles != null)
                 {
@@ -593,6 +981,7 @@ namespace SaltyGame
                         var genomeRecord = record.genomeProfiles[genomeIndex];
                         if (genomeRecord == null || string.IsNullOrWhiteSpace(genomeRecord.speciesId))
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                             continue;
                         }
@@ -602,6 +991,7 @@ namespace SaltyGame
                             var genomeSpeciesId = new SpeciesId(genomeRecord.speciesId);
                             if (!seenGenomeSpecies.Add(genomeSpeciesId))
                             {
+                                invalidGenomeFound = true;
                                 invalidProfileFound = true;
                                 continue;
                             }
@@ -617,31 +1007,51 @@ namespace SaltyGame
                                 }
                             }
 
+                            if (store.version >= 7 && (!genomeRecord.resetGeneration.HasValue
+                                || genomeRecord.resetGeneration.Value < 0))
+                            {
+                                throw new ArgumentException("Genome reset generation is missing or invalid.");
+                            }
                             genomeProfiles.Add(new SpeciesGenomeProfile(
                                 genomeSpeciesId,
                                 genomeRecord.unlockedNodeIds,
                                 genomeRecord.activeNodeIds,
-                                allocations));
+                                allocations, store.version < 7 ? 0 : genomeRecord.resetGeneration.Value));
                         }
                         catch (ArgumentException)
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                         }
                         catch (OverflowException)
                         {
+                            invalidGenomeFound = true;
                             invalidProfileFound = true;
                         }
                     }
                 }
 
+                if (store.version >= 7 && invalidGenomeFound)
+                {
+                    // Dropping a Genome would also drop its reset duplicate protection.
+                    BackUpUnreadableStore(storedJson);
+                    profiles.Clear();
+                    Current = ProfileSessionSnapshot.Empty;
+                    NotifyChanged();
+                    return;
+                }
+
                 try
                 {
+                    ResolveWallets(record, store.version, out var researchData, out var wallets);
+                    ReadSettlementState(record, store.version, out var receipts, out var pending);
+                    var researchLevel = ReadConversionResearchLevel(record, store.version);
                     profiles.Add(new ProfileSessionSnapshot(
                         false,
                         record.id,
                         string.IsNullOrEmpty(record.name) ? "Unnamed Profile" : record.name,
                         genomeProfiles,
-                        record.currency,
+                        researchData,
                         record.simulationTicks,
                         record.playTimeMilliseconds,
                         store.version == 0
@@ -649,12 +1059,26 @@ namespace SaltyGame
                             : ParseSpeciesIds(record.unlockedSpeciesIds),
                         ParseSpeciesIds(record.unlockedGenomeSpeciesIds),
                         record.unlockedFeatureIds,
-                        record.rabbitData,
-                        record.researchData,
+                        0,
+                        researchData,
                         record.completedRuns,
-                        record.completedRunIds));
+                        record.completedRunIds,
+                        wallets, receipts, pending, researchLevel));
+                }
+                catch (FormatException)
+                {
+                    // Losing a receipt could pay an old journey again, so reject the whole store.
+                    BackUpUnreadableStore(storedJson);
+                    profiles.Clear();
+                    Current = ProfileSessionSnapshot.Empty;
+                    NotifyChanged();
+                    return;
                 }
                 catch (ArgumentException)
+                {
+                    invalidProfileFound = true;
+                }
+                catch (OverflowException)
                 {
                     invalidProfileFound = true;
                 }
@@ -662,14 +1086,19 @@ namespace SaltyGame
 
             if (invalidProfileFound)
             {
-                PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
-                PlayerPrefs.Save();
+                PreserveRecovery(storedJson);
                 LoadWarning = "Some profile data could not be loaded. The original save was preserved for recovery.";
             }
 
             if (!string.IsNullOrEmpty(store.lastLoadedProfileId))
             {
                 SelectLoadedProfileWithoutSaving(store.lastLoadedProfileId);
+            }
+
+            if (store.version < StoreVersion && !invalidProfileFound)
+            {
+                PreserveRecovery(storedJson);
+                Save();
             }
 
             NotifyChanged();
@@ -707,8 +1136,8 @@ namespace SaltyGame
             try
             {
                 Flush();
-                if (Current.TryGetGenomeProfile(speciesId, out var existingProfile)
-                    && existingProfile.Allocations.Count > 0)
+                Current.TryGetGenomeProfile(speciesId, out var existingProfile);
+                if (existingProfile != null && existingProfile.Allocations.Count > 0)
                 {
                     validationMessage = "Purchased Genome allocations must be changed through purchase or reset.";
                     return false;
@@ -717,7 +1146,7 @@ namespace SaltyGame
                 var nextProfile = Current.WithGenomeProfile(new SpeciesGenomeProfile(
                     speciesId,
                     unlockedNodeIds,
-                    activeNodeIds));
+                    activeNodeIds, resetGeneration: existingProfile?.ResetGeneration ?? 0));
                 CommitCurrent(nextProfile);
                 return true;
             }
@@ -730,22 +1159,29 @@ namespace SaltyGame
 
         void Save()
         {
+            WriteStore(SerializeStore());
+        }
+
+        string SerializeStore(ProfileSessionSnapshot replacement = null)
+        {
             var store = new ProfileStore
             {
                 version = StoreVersion,
                 lastLoadedProfileId = Current.HasLoadedProfile ? Current.ProfileId : string.Empty,
+                migrationSourceJson = migrationSourceJson,
             };
 
             for (var index = 0; index < profiles.Count; index++)
             {
-                var profile = profiles[index];
+                var profile = replacement != null && profiles[index].ProfileId == replacement.ProfileId
+                    ? replacement : profiles[index];
                 store.profiles.Add(new ProfileRecord
                 {
                     id = profile.ProfileId,
                     name = profile.ProfileName,
-                    currency = profile.Currency,
-                    rabbitData = profile.RabbitData,
                     researchData = profile.ResearchData,
+                    conversionResearchLevel = profile.ConversionResearchLevel,
+                    speciesDataWallets = ToRecords(profile.SpeciesDataWallets),
                     completedRuns = profile.CompletedRuns,
                     completedRunIds = new List<string>(profile.CompletedRunIds),
                     simulationTicks = profile.SimulationTicks,
@@ -753,6 +1189,14 @@ namespace SaltyGame
                     unlockedSpeciesIds = ToStrings(profile.UnlockedSpeciesIds),
                     unlockedGenomeSpeciesIds = ToStrings(profile.UnlockedGenomeSpeciesIds),
                     unlockedFeatureIds = new List<string>(profile.UnlockedFeatureIds),
+                    settlementReceipts = profile.SettlementReceipts.Select(ToRecord).ToList(),
+                    pendingSettlement = profile.PendingSettlement == null ? null : new PendingSettlementRecord
+                    {
+                        journeyId = profile.PendingSettlement.JourneyId,
+                        speciesId = profile.PendingSettlement.SelectedSpeciesId.Value,
+                        leftoverFieldData = profile.PendingSettlement.LeftoverFieldData,
+                        researchLevel = profile.PendingSettlement.ConversionResearchLevel,
+                    },
                 });
                 var record = store.profiles[store.profiles.Count - 1];
                 for (var genomeIndex = 0; genomeIndex < profile.GenomeProfiles.Count; genomeIndex++)
@@ -763,6 +1207,7 @@ namespace SaltyGame
                         speciesId = genomeProfile.SpeciesId.Value,
                         unlockedNodeIds = new List<string>(genomeProfile.UnlockedNodeIds),
                         activeNodeIds = new List<string>(genomeProfile.ActiveNodeIds),
+                        resetGeneration = genomeProfile.ResetGeneration,
                     });
                     var genomeRecord = record.genomeProfiles[record.genomeProfiles.Count - 1];
                     foreach (var allocation in genomeProfile.Allocations)
@@ -777,8 +1222,25 @@ namespace SaltyGame
                 }
             }
 
-            PlayerPrefs.SetString(StoreKey, JsonUtility.ToJson(store));
-            PlayerPrefs.Save();
+            return JsonConvert.SerializeObject(store);
+        }
+
+        void WriteStore(string json)
+        {
+            var existed = storage.HasKey(StoreKey);
+            var previous = storage.GetString(StoreKey);
+            try
+            {
+                storage.SetString(StoreKey, json);
+                storage.Save();
+            }
+            catch
+            {
+                // Do not leave an unpaid transaction's replacement in the writable cache.
+                if (existed) storage.SetString(StoreKey, previous);
+                else storage.DeleteKey(StoreKey);
+                throw;
+            }
         }
 
         void RequireLoadedProfile()
@@ -808,6 +1270,13 @@ namespace SaltyGame
 
         void CommitCurrent(ProfileSessionSnapshot nextProfile)
         {
+            ApplyCurrent(nextProfile);
+            Save();
+            NotifyChanged();
+        }
+
+        void ApplyCurrent(ProfileSessionSnapshot nextProfile)
+        {
             Current = nextProfile;
             for (var index = 0; index < profiles.Count; index++)
             {
@@ -818,8 +1287,6 @@ namespace SaltyGame
                 }
             }
 
-            Save();
-            NotifyChanged();
         }
 
         static List<string> ToStrings(IReadOnlyList<SpeciesId> ids)
@@ -847,11 +1314,180 @@ namespace SaltyGame
             return ids;
         }
 
+        static void ResolveWallets(ProfileRecord record, int version,
+            out long researchData, out List<KeyValuePair<SpeciesId, long>> wallets)
+        {
+            if (record.currency < 0 || record.rabbitData < 0 || record.researchData < 0)
+            {
+                throw new ArgumentException("Profile balances cannot be negative.");
+            }
+
+            wallets = new List<KeyValuePair<SpeciesId, long>>();
+            if (version < 3)
+            {
+                if (record.rabbitData != 0 || record.researchData != 0 || record.speciesDataWallets != null)
+                {
+                    throw new ArgumentException("Legacy profile contains ambiguous wallet fields.");
+                }
+
+                researchData = record.currency;
+                return;
+            }
+
+            if (version == 3 && record.speciesDataWallets == null)
+            {
+                // Incoming v3 stored these as distinct balances; retain both under FD2's RD meaning.
+                researchData = checked(record.currency + record.researchData);
+                if (record.rabbitData != 0)
+                {
+                    wallets.Add(new KeyValuePair<SpeciesId, long>(new SpeciesId("hare"), record.rabbitData));
+                }
+
+                return;
+            }
+
+            if (record.speciesDataWallets == null || record.currency != 0 || record.rabbitData != 0
+                || (version == 3 && (record.completedRuns != 0
+                    || record.completedRunIds?.Count > 0
+                    || record.genomeProfiles?.Any(genome => genome?.allocations?.Count > 0) == true)))
+            {
+                throw new ArgumentException("Profile mixes incompatible species-wallet and Rabbit-wallet formats.");
+            }
+
+            researchData = record.researchData;
+            foreach (var wallet in record.speciesDataWallets)
+            {
+                if (wallet == null || string.IsNullOrWhiteSpace(wallet.speciesId))
+                {
+                    throw new ArgumentException("Species wallets require a valid species ID.");
+                }
+
+                wallets.Add(new KeyValuePair<SpeciesId, long>(new SpeciesId(wallet.speciesId), wallet.balance));
+            }
+        }
+
+        static List<SpeciesDataWalletRecord> ToRecords(IReadOnlyDictionary<SpeciesId, long> wallets)
+        {
+            var records = new List<SpeciesDataWalletRecord>();
+            foreach (var wallet in wallets)
+            {
+                records.Add(new SpeciesDataWalletRecord { speciesId = wallet.Key.Value, balance = wallet.Value });
+            }
+
+            return records;
+        }
+
+        static SettlementRecord ToRecord(FieldDataSettlementReceipt receipt)
+        {
+            return new SettlementRecord
+            {
+                journeyId = receipt.JourneyId,
+                speciesId = receipt.SelectedSpeciesId.Value,
+                leftoverFieldData = receipt.LeftoverFieldData,
+                researchLevel = receipt.ConversionResearchLevel,
+                definitionVersion = receipt.DefinitionVersion,
+                fieldDataPerSpeciesData = receipt.FieldDataPerSpeciesData,
+                multiplierNumerator = receipt.MultiplierNumerator,
+                multiplierDenominator = receipt.MultiplierDenominator,
+                baseSpeciesData = receipt.BaseSpeciesData,
+                speciesDataDeposit = receipt.SpeciesDataDeposit,
+                researchDataBonus = receipt.ResearchDataBonus,
+                speciesDataBefore = receipt.SpeciesDataBefore,
+                speciesDataAfter = receipt.SpeciesDataAfter,
+                researchDataBefore = receipt.ResearchDataBefore,
+                researchDataAfter = receipt.ResearchDataAfter,
+            };
+        }
+
+        static int ReadConversionResearchLevel(ProfileRecord record, int version)
+        {
+            if (version < 6)
+            {
+                if (record.conversionResearchLevel.GetValueOrDefault() != 0)
+                    throw new FormatException("Legacy profile contains unrecognized conversion research.");
+                return 0;
+            }
+            if (!record.conversionResearchLevel.HasValue || record.conversionResearchLevel < 0
+                || record.conversionResearchLevel > FieldDataPermanentProgressionDefinition.CreateStarter().MaximumResearchLevel)
+                throw new FormatException("Missing or invalid conversion research level.");
+            return record.conversionResearchLevel.Value;
+        }
+
+        static void ReadSettlementState(ProfileRecord record, int version,
+            out List<FieldDataSettlementReceipt> receipts, out PendingFieldDataSettlement pending)
+        {
+            receipts = new List<FieldDataSettlementReceipt>();
+            pending = null;
+            try
+            {
+                if (version < 5)
+                {
+                    if (record.settlementReceipts?.Count > 0 || record.pendingSettlement != null)
+                        throw new FormatException("Legacy profile contains an unrecognized settlement journal.");
+                    return;
+                }
+                if (record.settlementReceipts == null)
+                    throw new FormatException("The settlement journal is missing.");
+                var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+                var ids = new HashSet<string>(StringComparer.Ordinal);
+                foreach (var saved in record.settlementReceipts)
+                {
+                    if (saved == null || !ids.Add(saved.journeyId)
+                        || record.completedRunIds?.Contains(saved.journeyId) != true)
+                        throw new FormatException("Invalid or duplicate completed settlement identity.");
+                    var species = new SpeciesId(saved.speciesId);
+                    if (!FieldDataSettlement.TryCalculate(definition, saved.journeyId, FieldDataJourneyFlowState.Succeeded,
+                        species, saved.leftoverFieldData, saved.researchLevel,
+                        new Dictionary<SpeciesId, long> { [species] = saved.speciesDataBefore },
+                        saved.researchDataBefore, out var receipt, out _)
+                        || JsonUtility.ToJson(saved) != JsonUtility.ToJson(ToRecord(receipt)))
+                        throw new FormatException("Invalid settlement arithmetic or definition version.");
+                    receipts.Add(receipt);
+                }
+                var savedPending = record.pendingSettlement;
+                if (savedPending != null)
+                {
+                    var species = new SpeciesId(savedPending.speciesId);
+                    if (record.completedRunIds?.Contains(savedPending.journeyId) == true
+                        || !FieldDataSettlement.TryCalculate(definition, savedPending.journeyId,
+                            FieldDataJourneyFlowState.Succeeded, species, savedPending.leftoverFieldData,
+                            savedPending.researchLevel, new Dictionary<SpeciesId, long>(), 0, out _, out _))
+                        throw new FormatException("Invalid pending settlement.");
+                    pending = new PendingFieldDataSettlement(savedPending.journeyId, species,
+                        savedPending.leftoverFieldData, savedPending.researchLevel);
+                }
+            }
+            catch (ArgumentException exception)
+            {
+                throw new FormatException("Invalid settlement journal.", exception);
+            }
+            catch (OverflowException exception)
+            {
+                throw new FormatException("Invalid settlement journal.", exception);
+            }
+        }
+
+        void PreserveRecovery(string storedJson)
+        {
+            if (!storage.HasKey(RecoveryStoreKey))
+            {
+                storage.SetString(RecoveryStoreKey, storedJson);
+                storage.Save();
+            }
+        }
+
         void BackUpUnreadableStore(string storedJson)
         {
-            PlayerPrefs.SetString(RecoveryStoreKey, storedJson);
-            PlayerPrefs.DeleteKey(StoreKey);
-            PlayerPrefs.Save();
+            migrationSourceJson = storedJson;
+            var canRemoveStore = !storage.HasKey(RecoveryStoreKey)
+                || storage.GetString(RecoveryStoreKey) == storedJson;
+            PreserveRecovery(storedJson);
+            if (canRemoveStore)
+            {
+                storage.DeleteKey(StoreKey);
+            }
+
+            storage.Save();
             LoadWarning = "Profile data could not be loaded. The original save was preserved for recovery.";
         }
 

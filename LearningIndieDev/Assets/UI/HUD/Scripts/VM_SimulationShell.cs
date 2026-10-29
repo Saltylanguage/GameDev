@@ -452,6 +452,7 @@ namespace SaltyGame
         public DelegateCommand ConfirmChosenIncomeReorderCommand { get; private set; }
         public DelegateCommand CancelChosenIncomeReorderCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
+        public DelegateCommand RetryPermanentSettlementCommand { get; private set; }
         public DelegateCommand OpenJourneyMapCommand { get; private set; }
         public DelegateCommand StartFieldDataTestJourneyCommand { get; private set; }
         public DelegateCommand CloseJourneyMapCommand { get; private set; }
@@ -770,9 +771,12 @@ namespace SaltyGame
         public string SelectedUpgradeSummaryText => selectedUpgradeSummaryText;
         public string ResultsTitleText => resultsTitleText;
         public string ResultsMessageText => resultsMessageText;
+        public string PermanentSettlementDetailsText => preview?.PermanentResults?.Details ?? string.Empty;
+        public Visibility PermanentSettlementVisibility => preview?.PermanentResults?.IsPresented == true ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility RetryPermanentSettlementVisibility => preview?.PermanentResults?.IsPending == true ? Visibility.Visible : Visibility.Collapsed;
         public string PlayNextSimulationText => playNextSimulationText;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
-        public bool CanReturnToLab => resultsVisibility == Visibility.Visible
+        public bool CanReturnToLab => preview?.CanLeavePermanentResults != false && resultsVisibility == Visibility.Visible
             && (desktopClose != null
                 || (sceneTransition != null
                     && profileSession?.Current?.HasLoadedProfile == true));
@@ -781,7 +785,7 @@ namespace SaltyGame
             : "RETURN TO LAB";
         // Closing stays disabled during active states; the player must use the
         // separate confirmed End flow before returning to the Lab.
-        public bool CanCloseWindow => (lastState == SpeciesPreviewState.Ready
+        public bool CanCloseWindow => preview?.CanLeavePermanentResults != false && (lastState == SpeciesPreviewState.Ready
                 || lastState == SpeciesPreviewState.Results)
             && (desktopClose != null
                 || (sceneTransition != null
@@ -1349,7 +1353,7 @@ namespace SaltyGame
             CancelChosenIncomeReorderCommand = new DelegateCommand(CancelChosenIncomeReorder);
             PlayNextSimulationCommand = new DelegateCommand(() =>
             {
-                if (preview == null)
+                if (preview == null || !preview.CanLeavePermanentResults)
                 {
                     return;
                 }
@@ -1364,9 +1368,15 @@ namespace SaltyGame
                     preview.PlayNextSimulation();
                 }
             });
+            RetryPermanentSettlementCommand = new DelegateCommand(() =>
+            {
+                preview?.PermanentResults?.Retry();
+                Refresh(true);
+            });
             StartFieldDataTestJourneyCommand = new DelegateCommand(StartFieldDataTestJourney);
             OpenJourneyMapCommand = new DelegateCommand(() =>
             {
+                if (preview?.CanLeavePermanentResults == false) return;
                 if (preview != null
                     && (preview.JourneyMap != null || preview.ConfiguredFieldDataJourney != null)
                     && (preview.State == SpeciesPreviewState.Ready
@@ -1694,7 +1704,8 @@ namespace SaltyGame
                 && run?.SupportsContinuation == true;
             Set(
                 ref resultsTitleText,
-                preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
+                preview.PermanentResults?.IsPresented == true ? preview.PermanentResults.Title
+                : preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
                     ? "Cycle complete"
                     : isContinuousRun
                     ? preview.LastExpeditionFailed
@@ -1706,7 +1717,8 @@ namespace SaltyGame
                 nameof(ResultsTitleText));
             Set(
                 ref resultsMessageText,
-                fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Failed
+                preview.PermanentResults?.IsPresented == true ? preview.PermanentResults.Summary
+                : fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Failed
                     ? $"Journey failed. {fieldDataSession.FieldDataLostOnFailure} Field Data was lost."
                     : fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Succeeded
                         ? $"Journey complete. {fieldDataSession.AvailableFieldData} Field Data remains. It will be discarded when you leave this journey."
@@ -1722,6 +1734,9 @@ namespace SaltyGame
                             ? "The expedition is complete. Start a new expedition when ready."
                             : "The player update is applied. Continue into the next run when ready.",
                 nameof(ResultsMessageText));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PermanentSettlementDetailsText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PermanentSettlementVisibility)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RetryPermanentSettlementVisibility)));
             Set(ref journeyResultSummaryText,
                 preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
                     ? BuildJourneyResultSummary(run)
@@ -1799,7 +1814,7 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddPlants)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemovePlants)));
             Set(ref canPlayNextSimulation,
-                state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision,
+                preview.CanLeavePermanentResults && (state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision),
                 nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
@@ -1960,7 +1975,7 @@ namespace SaltyGame
             if (session == null) return string.Empty;
             var builder = new StringBuilder();
             var round = session.GlobalRound;
-            builder.Append("ROUND ").Append(round).Append(" · FIELD DATA ").Append(session.AvailableFieldData).Append(" FD\n");
+            builder.Append("ROUND ").Append(round).Append(" · AVAILABLE ").Append(session.AvailableFieldData).Append(" FD\n");
             FieldDataAwardReceipt payout = null;
             FieldDataAwardReceipt node = null;
             foreach (var award in session.Ledger.Awards)
@@ -2386,7 +2401,7 @@ namespace SaltyGame
 
         void ReturnToLab()
         {
-            if (CanReturnToLab)
+            if (CanReturnToLab && preview?.TryLeavePermanentResults() != false)
             {
                 if (desktopClose != null)
                 {
@@ -2400,6 +2415,7 @@ namespace SaltyGame
 
         void CloseWindow()
         {
+            if (preview?.TryLeavePermanentResults() == false) return;
             if (desktopClose != null)
             {
                 if (CanCloseWindow)

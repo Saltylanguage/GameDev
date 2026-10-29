@@ -13,7 +13,13 @@ MonoBehaviour:
   m_Name: GuardedBurrow
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.guarded-burrow
-  displayName: Guarded Burrow
-  description: Genome node details pending effect contract.
+  displayName: Tough Hide
+  description: Block +1 while active.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
+  rabbitDataPrice: 5
+  capacityPoints: 2
+  branchName: FD2
+  modifiers:
+  - attributeId: combat.block
+    signedValue: 1

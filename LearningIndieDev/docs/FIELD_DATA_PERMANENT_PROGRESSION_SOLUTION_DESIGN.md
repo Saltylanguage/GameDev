@@ -5,7 +5,21 @@
 - **Prepared:** 2026-10-21
 - **PDD:** [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md)
 - **Ticket breakdown:** [FD2 implementation tickets](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md)
+- **First-test values:** [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
 - **Source baseline inspected:** `BevBranch`, 2026-10-21
+
+**October 24 implementation:** The isolated `codex/fd2-t01-integration` checkout
+now has the approved executable starter definition, Unity-authored assets and
+the profile v4 compatibility foundation. See the
+[integration handoff](handoffs/2026-10-24-2158-codex-fd2-t01-approved-definition-and-profile-integration.md).
+These changes do not implement the later settlement/purchase/reset UI tickets.
+
+**October 24 reconciliation:** The [T01 review](FIELD_DATA_PERMANENT_PROGRESSION_T01_REVIEW.md)
+compares incoming `7ac2a54` with local T02. The [tuning sheet v0.2](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
+contains supported effects/display names approved by Bevin on October 24.
+Retain FD2 permanent node ownership, owned prerequisites and no-refund reset.
+The incoming schema-v3 profile shape differs from T02's schema-v3 shape; an
+explicit compatible migration is required before integration.
 
 ## 1. Design intent and current source
 
@@ -59,18 +73,41 @@ The serialized record needs:
 - stable species IDs paired with species-data balances;
 - permanent path-license species IDs or a validated equivalent;
 - existing per-species unlocked and active node IDs;
-- a bounded list/map of unique journey settlement receipts, each with profile
-  identity, journey identity, selected species, source leftover FD, conversion
+- a list/map of unique journey settlement receipts under their profile, with
+  journey identity, selected species, source leftover FD, conversion
   research level/rate, species deposit, Research bonus, pre/post balances, and
   schema/design version.
 
-Migrate profile store version 2 to the new version once, copying legacy
-`currency` to `researchData`, setting species balances to zero, and preserving
-all other profile values. Migration must be repeat-safe: if save interruption
-causes the old record to load again, the conversion still produces one
-Research Data balance and no duplicate currency. Retain the project's backup
-and recovery behavior. A new profile starts at zero for all balances and with
-no Genome licenses.
+The integrated profile store is version 7. Recognize the older shapes explicitly:
+
+- v2: copy generic currency into Research Data; species wallets start at zero.
+- local v3: preserve researchData and speciesDataWallets as already migrated.
+- incoming Rabbit v3: migrate Rabbit Data into the Hare species wallet and
+  combine its distinct generic Currency and Research Data balances with checked
+  addition. Preserve allocations, completed-run IDs/counts and Genome state.
+- v4: use the canonical species wallets and Research Data; compatibility
+  Currency/RabbitData getters project these balances.
+- v5: retain those wallets, plus a required settlement-receipt list and optional
+  pending success inputs. Older versions migrate with an empty receipt list;
+  completed-run IDs are retained, and cannot be paid again as FD2 settlements.
+- v6: also persist the shared per-profile conversion research level. v0-v5
+  default to level zero without repricing old receipts or pending successes.
+  A missing/null/out-of-range v6 level is corrupt data, not a free reset.
+- v7: also persist a nonnegative reset generation per species Genome. Pre-v7
+  Genomes start at zero without changing ownership, active selections, wallets,
+  research or settlement state. Current-version invalid Genome records are
+  preserved for recovery and rejected as a store, so reset duplicate protection
+  cannot be silently dropped.
+
+The installed Newtonsoft JSON reader preserves missing-field distinctions
+that JsonUtility fills with defaults. Reject ambiguous mixed shapes, negative
+balances and overflowing sums for recovery. Retain the original store verbatim
+in migrationSourceJson, and preserve the existing recovery key when
+occupied; write it before migration when free. Migration must be
+repeat-safe: if save interruption causes the old record to load again, the
+conversion still produces one Research Data balance and no duplicate
+currency. A new profile
+starts at zero for all balances and with no Genome licenses.
 
 Use stable `SpeciesId` values; do not key currencies by display name or enum
 position. Extend snapshot copy/with methods to preserve new fields, and update
@@ -93,11 +130,10 @@ Research Data bonus = 10
 
 The 10-FD-per-species-data exchange and 10 Research Data bonus are provisional
 first-test settings. To avoid floating point, represent the multiplier as a
-bounded rational or checked integer numerator/denominator and floor only at the
-specified final result. Confirm with product whether flooring occurs before or
-after the percentage multiplier; the default design above floors once after
-the multiplier. The settlement ticket must record the exact resolution before
-shipping that calculator. Check overflow and both wallet additions before
+bounded rational or checked integer numerator/denominator and floor at the
+specified two stages: first floor the FD exchange, then floor the research
+multiplier result. This is the tuning sheet's recorded rule; for example,
+19 FD at research level 1 yields 1 species data. Check overflow and both wallet additions before
 changing either wallet or recording the receipt. Commit both deposits and the
 receipt as one profile update.
 
@@ -110,9 +146,48 @@ Receipts must survive app restart and results-screen reentry. Define a safe
 retention policy so duplicate protection is not lost while old journeys can
 still be reopened.
 
+**T04 implementation (2026-10-26):** `TrySettleFieldDataJourney` requires the
+journey's loaded profile ID. It returns a stored receipt before recalculating;
+otherwise it persists the frozen unpaid success first, then replaces the same
+profile-store JSON with both deposits, completion identity and receipt together.
+Only a successful save publishes the paid snapshot. A failed write restores the
+writable cache and leaves the pending success in memory; retry uses its original
+species/FD/level. A reload cannot discard an unsaved pending result while storage
+continues failing. Once pending is saved, a new process can resume it. No system
+can promise to recover a newly observed success after termination if its first
+write never reached storage; the caller must keep that result pending and retry.
+
+Receipts are retained for the lifetime of the profile, without eviction. This
+deliberately favors duplicate protection over a premature size cap. If the
+prototype outgrows one profile record, move receipts to a durable indexed store
+without dropping old journey identities or the ability to return prior receipts.
+Missing, duplicate, inconsistent or unsupported-version receipt data rejects
+the whole store for recovery instead of silently losing payment protection.
+The existing Newtonsoft dependency writes explicit null pending records as well
+as reading the versioned data. An injectable storage boundary tests failed and
+uncertain saves; it does not add a package or second production store.
+
 Failure only clears/disposes the journey-local FD session and presents the
 lost-FD amount. It must not touch Research Data, species wallets, licenses or
 node state.
+
+**T10 implementation (2026-10-27):** The accepted 18-round Field Data journey
+binds one profile-owned `FieldDataPermanentResults` presenter from the Desktop.
+Terminal success submits the unique journey ID, selected species and leftover
+FD to the existing settlement API. The UI publishes the returned saved receipt:
+source FD, base rate, two-stage conversion, frozen research level/rational
+multiplier, species deposit, fixed RD bonus and both before/after balances.
+Zero leftover still displays the saved RD bonus. Failure displays forfeited FD
+and retained permanent balances/unlocks without invoking settlement.
+
+An unpaid result displays no confirmed deposit. Close, Desktop return, map/next
+journey and direct preview restart/start are guarded until the same transaction
+saves. Retry uses the original profile and journal inputs; duplicate callbacks
+or receipt reentry cannot pay again. A saved pending journal reopens as pending
+results after reload. The v7 profile store remains authoritative; no new save
+schema or UI wallet calculation is introduced. The older 12-phase POC journey
+retains its legacy reward path; it is not converted to FD2 by this ticket.
+See the [T10 handoff](handoffs/2026-10-27-1137-codex-fd2-t10-permanent-settlement-results-and-retry.md).
 
 ## 5. Conversion research
 
@@ -122,11 +197,26 @@ transaction identity. Purchase costs Research Data and increase with each
 level. Each level multiplies species deposit by 1.10; a level purchased after a
 settled journey cannot retroactively alter that receipt.
 
-The exact cap and cost schedule are intentionally unresolved product tuning.
-Keep them in a small validated definition, not scattered constants. Until the
-values are agreed, show the feature as design-in-progress rather than silently
-choosing a progression curve. A purchase is atomic: check level cap and
+The first-test cap and costs are now recorded in the tuning sheet: three levels
+priced at 10, 20 and 30 RD. Keep those values in the validated definition, not
+scattered constants. They are initial tuning, not measured balance. A purchase is atomic: check level cap and
 balance, deduct, then increment and persist together.
+
+**T05 implementation (2026-10-26):** `TryPurchaseConversionResearch` receives
+the owning profile ID and expected current level. Together these identify the
+one allowed purchase for that level. A stale/repeated request, profile change,
+insufficient RD, cap or save failure publishes no purchased state; retry must
+keep the original expected level rather than reading a newly advanced level.
+The existing profile commit path saves the deduction and level in one JSON
+replacement before notifying observers. Species wallets are never charged.
+
+Fresh settlement calls derive their level from the saved profile. The older
+explicit-level overload rejects unpurchased/stale levels for a new journey;
+existing receipts and pending successes keep their frozen level. Buying more
+research while a success is pending cannot improve that pending award. All
+snapshot-copy paths retain the level, journal and pending inputs. Research is
+shared across species within a profile, independent between profiles. T11
+still owns the visible Genome Lab purchase controls; T10 owns settlement retry presentation.
 
 ## 6. Genome license, permanent node purchases, active loadout
 
@@ -134,9 +224,11 @@ Treat the existing `unlockedNodeIds` as permanent node ownership and
 `activeNodeIds` as the current allocation. Add/extend a validated catalog for
 path license cost, node cost, prerequisite IDs, and active capacity cost. The
 initial catalog includes Hare only. Provisional prices are 10 Hare Data for
-the Hare path license and 5 Hare Data per eligible node; the actual small node
-set, effects, and any per-node capacity cost need finalization against authored
-catalog data and SG-005 before implementation is called done.
+the Hare path license and 5 Hare Data per eligible node. The first slice uses
+all five existing Hare IDs and preserves their authored
+prerequisites. Each costs 2 points of the existing 8-point active capacity.
+The tuning sheet records the five supported effects/display names approved on
+October 24 and authored by T01 with existing IDs/GUIDs preserved.
 
 Path license grants access to inspect/buy from the tree and has no gameplay
 effect itself. A node purchase requires the path license, an owned species
@@ -147,19 +239,90 @@ add permanent ownership, and add it to active configuration in one profile
 update. At full capacity, block purchase; do not silently unlock but leave
 inactive.
 
+**T06 implementation (2026-10-26):** `TryPurchaseHareGenomeLicense(profileId)`
+uses the canonical 10 Hare Data price and existing saved license flag. It checks
+the loaded profile and Hare wallet, then saves deduction/license together before
+publication. Duplicate or legacy ownership, insufficient/missing Hare Data,
+wrong profile, reentry and failed writes do not publish a purchase. Other species
+wallets, Research Data/level, existing Genomes and settlement history/pending
+inputs are preserved. The license grants no node effect. It can be bought after
+the first funded successful journey; ordinary journey launch needs no license.
+The POC's price-parameter/three-run method remains for the existing UI until T11
+wires the FD2 operation. No save-schema change is needed for this existing flag.
+
+**T07 implementation (2026-10-26):** `TryPurchaseHareGenomeNode(profileId, nodeId)`
+accepts only IDs in the canonical T01 Hare map. It requires the matching loaded
+profile and path license, charges the catalog's 5 Hare Data price, and saves
+deduction, permanent `unlockedNodeIds` and immediate activation together before
+publication. Duplicate owned/inactive nodes and existing POC allocations cannot
+be purchased again. The existing FD2 resolver checks all owned ancestors and
+the full proposed active loadout against catalog capacity (2 points per node,
+8 total), including already active nodes. Rejected requests and failed saves
+publish no purchase. Other wallets, research, Genomes and settlement state stay
+intact. Existing v6 fields suffice; no migration or new refundable allocation is
+introduced. Unknown/incompatible legacy active state is preserved and rejected
+instead of silently reinterpreted. T08/T11 must derive FD2 capacity from the
+catalog; the POC profile's `CapacityUsed` fallback counts legacy IDs as one point.
+The POC purchase and visible Gene Lab controls remain separate until T11.
+
 Reset takes a selected species ID and fixed Research Data fee. It clears that
 species' active selections, leaves its licenses and all permanently unlocked
 nodes intact, and refunds no Species Data. After one reset the player may freely
-select any owned nodes within the 8-point capacity. Reset of an already-empty
+select any owned nodes within the 8-point capacity. The first-test reset fee is
+20 Research Data. Reset of an already-empty
 loadout should be rejected or clearly defined at implementation time; avoid
 charging for a no-op without an explicit product decision.
 
+**T08 decision and implementation (2026-10-26):** Bevin selected a new 20 RD
+reset for each replacement loadout, rather than permanent free rearrangement
+after the first reset. `TryResetGenomeLoadout(profileId, speciesId,
+expectedResetGeneration)` saves the fee, empty active selection and incremented
+generation together. Empty resets are rejected without a fee. The new FD2 API
+supports the canonical Hare map and rejects refundable POC allocations without
+converting them. Permanent ownership, license and Species Data stay intact.
+
+`TryArrangeGenomeLoadout` accepts the same profile/species/reset generation and
+a complete ordered selection of owned nodes. It is free while the loadout is
+empty and validates owned ancestors and catalog capacity before saving. Once a
+nonempty selection is applied, any different selection (including reordered or
+empty choices) requires another paid reset. Repeating the identical valid
+selection is a no-op with no save/charge. Empty-to-empty selection is also a
+no-op, leaving the free choice available. The caller can edit a local draft
+before applying; no persisted editing mode or new UI is introduced. A stale reset
+callback cannot charge again even after reactivation because the saved generation
+has advanced. Save failures publish no cleared/arranged state, and retry retains
+the original generation. T11 must use these APIs rather than the trusted legacy
+configuration/POC setters. T09 still owns next-launch integration.
+
 Every launched simulation receives the validated active Genome snapshot. Lab
-changes affect only a later launch. For FD2, implement the Hare catalog using
-existing authored supported effects; do not invent new stat behaviors. If the
-existing catalog has no sufficiently defined effects, make selecting the
-first implementation subset a prerequisite ticket rather than fabricating
-effects.
+changes affect only a later launch. Validate prerequisite ownership before
+freezing active nodes; owned prerequisites do not also have to occupy active
+capacity. The incoming POC resolver requires active prerequisites and needs a
+separate FD2 adaptation at T09, as described in the T01 review. T01's five
+approved effects are authored and covered by the FD2 resolver; purchase tests
+verify the saved selections resolve to those exact catalog records. This does
+not establish next-launch player wiring or balance acceptance.
+
+**T09 launch integration (2026-10-27):** `CreateLaunchGenomeSnapshot` resolves
+permanent Hare profiles through the versioned T01 definition and its
+owned-prerequisite/capacity validator. A reset generation or a canonical owned
+Hare node identifies this permanent path; active selections also require the
+license and must not mix refundable POC allocations. The existing authoring
+provider still supplies POC/other-species maps until T11. If it supplies a map
+containing FD2 IDs, that whole map must match the canonical definition. POC-only
+profiles keep the strict active-parent resolver. Each species retains its own
+resolved values and catalog fingerprint, independent of player selection.
+
+The Desktop explicitly binds a profile-owned capture callback to the preview.
+Immediately before the first simulation starts, it captures the latest saved
+profile, validates natural-rule application for all participating species, and
+rebases the opening ordered Mutations onto those rules. This includes launches
+through the journey map, the Field Data test route and direct next-journey
+commands; a changed loaded profile blocks launch. The callback is not invoked
+during a running/continuing journey. Frozen values/order/fingerprints remain in
+the run, phase checkpoint and result, while reset/rearrangement affects only a
+later launch. Configuring the Field Data test route retains the prepared Genome
+instead of clearing it. This is launch integration, not ecology/balance approval.
 
 ## 7. UI and player flow
 
@@ -175,6 +338,30 @@ The successful journey result displays its immutable receipt before the player
 returns to the Desktop. The failure result displays the forfeited FD and
 retained permanent balances/unlocks. Starting another journey must not
 accidentally re-settle a closed one.
+
+**T11 implementation (2026-10-27):** MainMenu profile launch now composes the
+permanent Gene Lab workflow. The window displays shared Research Data, Hare
+Data, current conversion level, canonical path/node prices, resulting wallet
+balances, owned/active/selected states, prerequisites and catalog capacity.
+`FieldDataGenomeLab` owns quotes and transaction orchestration through the
+existing profile APIs; ViewModels bind display values and commands only.
+
+A reset costs20 RD with no refund and retains all node ownership. While the
+saved active selection is empty, the player builds a draft of owned nodes and
+applies it once for free. Each later replacement needs another paid reset.
+Over-capacity drafts cannot apply. Balance/time refreshes retain drafts;
+profile/reset-generation changes invalidate them. Only successful saves publish
+purchases or active selections; errors explain the failed action and allow retry.
+Canonical catalog order is used when applying the full selection; the approved
+five effects are independent additive changes, and no Mutation order changes.
+
+Direct authoring-scene entry retains POC preview behavior. A profile with
+refundable Hare allocations automatically retains labeled legacy controls and
+its existing refund/reset transaction. Closing/reopening after that legacy reset
+selects permanent controls. This avoids reinterpreting migrated ownership.
+The canonical five-node UI remains stable when the POC authoring catalog refreshes;
+T09 continues to freeze every participating species at first simulation start.
+See the [T11 handoff](handoffs/2026-10-27-1522-codex-fd2-t11-gene-lab-permanent-economy-ui.md).
 
 ## 8. Verification
 
@@ -197,6 +384,18 @@ Then validate a complete success flow, a failed flow, and a migrated profile
 through the actual Desktop/Gene Lab screens. Record what tests ran and what
 human acceptance remains; unit tests do not establish player clarity or balance.
 
+**T12 automated verification (2026-10-27):** Four end-to-end cases exercise a
+zero-wallet profile and all three supported legacy wallet shapes through saved
+success, Lab purchases/reset/reload and next-launch freezing. A new-profile
+case earns every permanent unit through actual journey settlement. Duplicate
+callbacks cannot change old receipts. Confirmed End retains earned permanent
+progress. Reopening a configured Field Data journey now waits at the map;
+the previous POC-only check auto-started it. Full domain and focused scene
+checks pass; exact controlled fixture settings and remaining wider failures
+are in the [acceptance report](FD2_PERMANENT_PROGRESSION_ACCEPTANCE.md).
+Human screen-clarity confirmation remains pending; this does not approve
+production ecology, tuning, a release or publishing the isolated source.
+
 ## 9. Risks and decision points
 
 - Save atomicity: the two wallets and the receipt must not diverge across a
@@ -207,9 +406,11 @@ human acceptance remains; unit tests do not establish player clarity or balance.
   whole-number rule and explicit examples.
 - Existing Genome data is metadata-first and some UI remains preview-only;
   node effects/costs may not yet be purchase-ready.
-- The Research upgrade cap, cost curve, reset fee, exact Hare node selection,
-  and specific node effects are not decided. Keep these as explicit content
-  tuning, not hidden engineering assumptions.
+- First-test conversion research is capped at three levels, priced at 10, 20,
+  and 30 Research Data; the reset fee is 20 Research Data. These are tuning
+  baselines, not balance findings. The five-node Hare selection and capacity
+  costs are recorded in the [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md),
+  while specific node effects now have a proposed supported mapping awaiting review.
 - Settlement receipt retention must preserve exactly-once behavior across
   profile backup/recovery and journey history retention.
 

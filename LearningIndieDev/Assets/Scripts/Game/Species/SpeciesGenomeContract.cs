@@ -68,13 +68,16 @@ namespace SaltyGame
             SpeciesId speciesId,
             IEnumerable<string> unlockedNodeIds = null,
             IEnumerable<string> activeNodeIds = null,
-            IEnumerable<GenomeNodeAllocation> allocations = null)
+            IEnumerable<GenomeNodeAllocation> allocations = null,
+            long resetGeneration = 0)
         {
             if (!speciesId.IsValid)
             {
                 throw new ArgumentException("Genome species id is required.", nameof(speciesId));
             }
 
+            if (resetGeneration < 0) throw new ArgumentOutOfRangeException(nameof(resetGeneration));
+            ResetGeneration = resetGeneration;
             SpeciesId = speciesId;
             this.unlockedNodeIds = CopyIds(unlockedNodeIds, nameof(unlockedNodeIds));
             this.activeNodeIds = CopyIds(activeNodeIds, nameof(activeNodeIds));
@@ -139,6 +142,7 @@ namespace SaltyGame
         public IReadOnlyList<string> ActiveNodeIds => activeNodeIds;
         public IReadOnlyList<GenomeNodeAllocation> Allocations => allocations;
         public int CapacityUsed { get; }
+        public long ResetGeneration { get; }
 
         public bool IsNodeUnlocked(string nodeId)
         {
@@ -168,7 +172,7 @@ namespace SaltyGame
 
         public SpeciesGenomeProfile WithActiveNodeIds(IEnumerable<string> nextActiveNodeIds)
         {
-            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations);
+            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations, ResetGeneration);
         }
 
         public SpeciesGenomeSnapshot CreateSnapshot()

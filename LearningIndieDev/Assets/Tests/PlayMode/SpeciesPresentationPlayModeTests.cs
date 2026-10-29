@@ -230,6 +230,8 @@ namespace SaltyGame.PlayModeTests
             var breakdown = shellType.GetProperty("FieldDataBreakdownText")?.GetValue(shell)?.ToString();
             Assert.That(breakdown, Does.Contain("All populations at settlement"));
             Assert.That(breakdown, Does.Contain("Selected population income"));
+            Assert.That(breakdown, Does.Contain($"AVAILABLE {preview.FieldDataSession.Ledger.Balance} FD"));
+            Assert.That(breakdown, Does.Contain($"Balance after transactions: {preview.FieldDataSession.Ledger.Balance} FD"));
             Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("Collapsed"), "Population actions wait until the free reward is resolved.");
 

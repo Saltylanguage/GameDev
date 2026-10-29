@@ -619,7 +619,7 @@
                     <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                       <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="26" Height="26" Margin="0,0,9,0" />
-                      <TextBlock Text="RABBIT DATA" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                      <TextBlock Text="HARE DATA" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
                       <TextBlock Text="{Binding GenomeLab.RabbitDataBalanceText}" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                     </StackPanel>
                     <Border Grid.Column="3" Background="{DynamicResource Chrono_Sand}" Margin="0,3" />
@@ -640,54 +640,20 @@
                     <ColumnDefinition Width="326" />
                   </Grid.ColumnDefinitions>
 
-                  <Border Grid.Column="0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7">
-                    <Grid>
-                      <Grid.RowDefinitions>
-                        <RowDefinition Height="214" />
-                        <RowDefinition Height="52" />
-                        <RowDefinition Height="*" />
-                      </Grid.RowDefinitions>
-                      <Border Margin="14" Background="#FFF8E5" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6">
-                        <Grid>
-                          <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="146" Height="146" Stretch="Uniform" VerticalAlignment="Center" />
-                          <TextBlock Text="HARE" Margin="0,0,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" HorizontalAlignment="Center" VerticalAlignment="Bottom" />
-                        </Grid>
-                      </Border>
-                      <Border Grid.Row="1" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="0,2,0,2" Padding="14,0">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                          <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="25" Height="25" Margin="0,0,9,0" />
-                          <TextBlock Text="SPECIES" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" VerticalAlignment="Center" />
+                  <Border Grid.Column="0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="14">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                      <StackPanel>
+                        <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.128}" Width="116" Height="116" Stretch="Uniform" />
+                        <TextBlock Text="HARE" FontSize="23" FontWeight="Bold" HorizontalAlignment="Center" Foreground="{DynamicResource Chrono_TreeBark}" />
+                        <StackPanel Visibility="{Binding GenomeLab.PermanentControlsVisibility}" Margin="0,20,0,0">
+                          <TextBlock Text="{Binding GenomeLab.ResearchLevelText}" FontSize="17" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
+                          <TextBlock Text="Each level multiplies species settlement by 1.10. Existing receipts stay fixed." Margin="0,10,0,0" FontSize="15" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <Button Content="{Binding GenomeLab.ResearchOfferText}" Command="{Binding GenomeLab.PurchaseResearchCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseResearch}" Margin="0,12,0,0" Height="38" FontSize="14" Style="{StaticResource GalapagOS.Button.Primary}" />
+                          <TextBlock Text="{Binding GenomeLab.ResearchReasonText}" Margin="0,6,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="Research Data is shared across species. Hare Data funds this path and its permanent nodes." Margin="0,18,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
                         </StackPanel>
-                      </Border>
-                      <StackPanel Grid.Row="2" Margin="10">
-                        <Border Height="66" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="10">
-                          <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                            <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="42" Height="42" />
-                            <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
-                            <TextBlock Grid.Column="2" Text="FERN" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
-                          </Grid>
-                        </Border>
-                        <Border Height="76" Margin="0,7,0,0" Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="3" CornerRadius="7" Padding="9">
-                          <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /></Grid.ColumnDefinitions>
-                            <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="50" Height="50" />
-                            <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
-                            <TextBlock Grid.Column="2" Text="HARE" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="19" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
-                            <Ellipse Grid.Column="3" Width="11" Height="11" Fill="{DynamicResource Chrono_Olive}" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" />
-                          </Grid>
-                        </Border>
-                        <Border Height="66" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="10">
-                          <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="52" /><ColumnDefinition Width="1" /><ColumnDefinition Width="*" /><ColumnDefinition Width="18" /></Grid.ColumnDefinitions>
-                            <Image Source="{StaticResource GalapagOS.Image.Species.Fox.64}" Width="48" Height="48" />
-                            <Border Grid.Column="1" Background="{DynamicResource Chrono_Sand}" Margin="0,2" />
-                            <TextBlock Grid.Column="2" Text="FOX" Margin="12,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="18" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
-                            <Ellipse Grid.Column="3" Width="10" Height="10" Fill="#9B9271" Stroke="{DynamicResource Chrono_TreeBark}" StrokeThickness="1" />
-                          </Grid>
-                        </Border>
                       </StackPanel>
-                    </Grid>
+                    </ScrollViewer>
                   </Border>
 
                   <Border Grid.Column="2" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="12">
@@ -714,7 +680,7 @@
                       <Viewbox Grid.Row="2" Stretch="Uniform">
                         <Grid Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
                           <Canvas Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
-                            <TextBlock Canvas.Left="24" Canvas.Top="10" Text="PROOF OF CONCEPT · UNBALANCED VALUES" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <TextBlock Canvas.Left="24" Canvas.Top="10" Text="{Binding GenomeLab.EconomyModeText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <TextBlock Canvas.Left="24" Canvas.Top="27" Text="{Binding GenomeCatalogStateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" Foreground="{DynamicResource Chrono_Olive}" />
 
                             <ItemsControl Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}" ItemsSource="{Binding GenomeTreeSegments}">
@@ -789,40 +755,31 @@
                     </Grid>
                   </Border>
 
-                  <Border Grid.Column="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="16">
+                  <Border Grid.Column="4" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="7" Padding="14">
                     <Grid>
-                      <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="1" />
-                        <RowDefinition Height="0" />
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="Auto" />
-                      </Grid.RowDefinitions>
-                      <TextBlock Text="{Binding SelectedGenomeNode.DisplayName}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="24" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
-                      <StackPanel Margin="0,42,0,0">
-                        <Border Background="{DynamicResource Chrono_Olive}" CornerRadius="4" Padding="10,5" HorizontalAlignment="Left">
-                          <TextBlock Text="{Binding SelectedGenomeNode.StateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_VanillaCream}" />
-                        </Border>
-                        <TextBlock Text="{Binding SelectedGenomeNode.BranchText}" Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="15" FontWeight="Bold" Foreground="#8A5596" />
-                        <TextBlock Text="{Binding SelectedGenomeNode.Description}" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="16" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding SelectedGenomeNode.PrerequisiteText}" Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
-                      </StackPanel>
-                      <Border Grid.Row="1" Background="{DynamicResource Chrono_Sand}" />
-
-                      <Border Grid.Row="3" Margin="0,12,0,0" Background="{DynamicResource Chrono_VanillaCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="14">
-                        <StackPanel>
-                          <StackPanel Orientation="Horizontal"><Image Source="{StaticResource GalapagOS.Image.Icon.Flask}" Width="25" Height="25" Margin="0,0,9,0" /><TextBlock Text="BIOME IMPACT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="#7B5732" VerticalAlignment="Center" /></StackPanel>
-                          <TextBlock Text="{Binding SelectedGenomeNode.BiomeImpactText}" Margin="4,12,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
+                      <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                      <StackPanel>
+                        <TextBlock Text="{Binding SelectedGenomeNode.DisplayName}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SelectedGenomeNode.StateText}" FontSize="15" FontWeight="Bold" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_Olive}" />
+                        <TextBlock Text="{Binding SelectedGenomeNode.Description}" FontSize="16" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding SelectedGenomeNode.CapacityText}" FontSize="14" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_Olive}" />
+                        <TextBlock Text="{Binding SelectedGenomeNode.PrerequisiteText}" FontSize="14" Margin="0,6,0,10" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
+                        <Button Content="{Binding GenomeLab.LicenseOfferText}" Command="{Binding GenomeLab.PurchaseLicenseCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseLicense}" Height="36" FontSize="13" Style="{StaticResource GalapagOS.Button.Primary}" />
+                        <TextBlock Text="{Binding GenomeLab.LicenseReasonText}" FontSize="13" Margin="0,4,0,10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <Button Content="{Binding GenomeLab.NodeOfferText}" Command="{Binding GenomeLab.PurchaseNodeCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseNode}" Height="36" FontSize="13" Style="{StaticResource GalapagOS.Button.Primary}" />
+                        <TextBlock Text="{Binding GenomeLab.NodeReasonText}" FontSize="13" Margin="0,4,0,10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <Button Content="{Binding GenomeLab.ResetOfferText}" Command="{Binding GenomeLab.ResetGenomeCommand}" IsEnabled="{Binding GenomeLab.CanResetGenome}" Height="36" FontSize="13" Style="{StaticResource GalapagOS.Button.Primary}" />
+                        <TextBlock Text="{Binding GenomeLab.ResetReasonText}" FontSize="13" Margin="0,4,0,10" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <StackPanel Visibility="{Binding GenomeLab.PermanentControlsVisibility}">
+                          <TextBlock Text="{Binding GenomeLab.SelectionText}" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
+                          <Button Content="{Binding GenomeLab.ToggleLoadoutText}" Command="{Binding GenomeLab.ToggleLoadoutNodeCommand}" IsEnabled="{Binding GenomeLab.CanToggleLoadoutNode}" Height="34" FontSize="13" Margin="0,5,0,0" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                          <Button Content="APPLY SELECTED LOADOUT - FREE" Command="{Binding GenomeLab.ApplyLoadoutCommand}" IsEnabled="{Binding GenomeLab.CanApplyLoadout}" Height="34" FontSize="13" Margin="0,5,0,0" Style="{StaticResource GalapagOS.Button.Primary}" />
+                          <TextBlock Text="{Binding GenomeLab.ArrangementReasonText}" FontSize="13" Margin="0,4,0,10" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
                         </StackPanel>
-                      </Border>
-
-                      <StackPanel Grid.Row="5">
-                        <Button Content="{Binding GenomeLab.LicenseOfferText}" Command="{Binding GenomeLab.PurchaseLicenseCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseLicense}" Height="32" FontSize="14" Style="{StaticResource GalapagOS.Button.Primary}" />
-                        <Button Content="{Binding GenomeLab.NodeOfferText}" Command="{Binding GenomeLab.PurchaseNodeCommand}" IsEnabled="{Binding GenomeLab.CanPurchaseNode}" Height="32" FontSize="14" Margin="0,4,0,0" Style="{StaticResource GalapagOS.Button.Primary}" />
-                        <Button Content="{Binding GenomeLab.ResetOfferText}" Command="{Binding GenomeLab.ResetGenomeCommand}" IsEnabled="{Binding GenomeLab.CanResetGenome}" Height="32" FontSize="14" Margin="0,4,0,0" Style="{StaticResource GalapagOS.Button.Primary}" />
-                        <TextBlock Text="{Binding GenomeLab.ActionStatusText}" Margin="0,7,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" />
                       </StackPanel>
+                    </ScrollViewer>
+                      <TextBlock Grid.Row="1" Text="{Binding GenomeLab.ActionStatusText}" Margin="0,8,0,0" FontSize="15" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
                     </Grid>
                   </Border>
                 </Grid>

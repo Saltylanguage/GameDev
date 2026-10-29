@@ -256,8 +256,12 @@ uncertainty or regression risk.
   its path license and nodes use Hare Data, unlocked nodes remain permanent,
   active configuration stays within the existing capacity of 8, and a paid
   Research Data reset clears only the active Hare loadout without refunding
-  node costs. Exact research cap/costs, reset fee and first Hare catalog are
-  still implementation tuning. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
+  node costs. The first-test settings are recorded in the [FD2 tuning
+  sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md): three conversion
+  levels cost 10/20/30 Research Data; reset costs 20 Research Data; and the
+  five Hare nodes each cost 5 Hare Data and use 2 capacity points. Their
+  supported effects were approved for the first slice; these values remain
+  test settings rather than measured balance. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
   [FD2 Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md),
   and [FD2 ticket draft](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md).
   All 12 FD2 tickets were published to the board's 🎯 Upcoming Work list on 2026-10-21, assigned to Bevin (Nick Nevins) and marked Owner/Reviewer: Bevin; no sprint placement was made. The ticket draft contains the verified card links.

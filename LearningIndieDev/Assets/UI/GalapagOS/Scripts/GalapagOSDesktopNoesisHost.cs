@@ -71,8 +71,8 @@ namespace SaltyGame
 
             view.Content.DataContext = viewModel;
             viewModel.BindSimulationLauncher(OpenSimulation);
-            viewModel.BindProfileSession(profileSession);
             var hasProfileRoute = Helper_SceneTransition.TryConsumeDesktopProfile(out var profileId);
+            viewModel.BindProfileSession(profileSession, permanentEconomy: hasProfileRoute);
             if (hasProfileRoute
                 && (profileSession == null
                     || !profileSession.Current.HasLoadedProfile
@@ -136,6 +136,13 @@ namespace SaltyGame
                     Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
                     return false;
                 }
+                simulationPreview.BindGenomeLaunchSource(() =>
+                {
+                    if (!profileSession.Current.HasLoadedProfile || profileSession.Current.ProfileId != profile.ProfileId)
+                        throw new System.InvalidOperationException("The journey's original profile must still be loaded.");
+                    return profileSession.Current.CreateLaunchGenomeSnapshot(viewModel.GenomeCatalog);
+                });
+                simulationPreview.BindPermanentResults(new FieldDataPermanentResults(profileSession));
             }
 
             simulationViewModel.Initialize(simulationPreview, animalAtlas, terrainAtlas, foxSprite, rabbitSprite);
@@ -148,7 +155,7 @@ namespace SaltyGame
         {
             try
             {
-                snapshot = profileSession.Current.CreateGenomeSnapshot(viewModel.GenomeCatalog);
+                snapshot = profileSession.Current.CreateLaunchGenomeSnapshot(viewModel.GenomeCatalog);
                 return true;
             }
             catch (System.Exception exception) when (exception is System.ArgumentException
@@ -220,13 +227,13 @@ namespace SaltyGame
             // scenarios keep the prepared live-board launch behavior.
             if (preparingNextJourney)
             {
-                if (!simulationPreview.JourneyActive)
+                if (!simulationPreview.JourneyActive && simulationPreview.ConfiguredFieldDataJourney == null)
                 {
                     simulationPreview.StartSimulation();
                 }
                 simulationBoardViewModel.Initialize(simulationPreview);
                 ApplyBoardSnapshot();
-                if (simulationPreview.JourneyActive)
+                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
@@ -234,7 +241,7 @@ namespace SaltyGame
             else if (simulationPreview.State == SpeciesPreviewState.Ready
                 && simulationViewModel.CanStart)
             {
-                if (simulationPreview.JourneyActive)
+                if (simulationPreview.JourneyActive || simulationPreview.ConfiguredFieldDataJourney != null)
                 {
                     simulationViewModel.OpenJourneyMapCommand.Execute(null);
                 }
@@ -248,6 +255,7 @@ namespace SaltyGame
 
         void CloseSimulation()
         {
+            if (!simulationPreview.TryLeavePermanentResults()) return;
             simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
             simulationBoard?.ClearFoxHuntCue();
             simulationBoard?.ClearMatingCue();
@@ -260,6 +268,8 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            if (simulationPreview != null) simulationPreview.BindGenomeLaunchSource(null);
+            if (simulationPreview != null) simulationPreview.BindPermanentResults(null);
             SpeciesSimulationPreview.RunCompleted -= HandleRunCompleted;
             TrackSimulationTicks();
             if (profileLaunchActive && profileSession != null)

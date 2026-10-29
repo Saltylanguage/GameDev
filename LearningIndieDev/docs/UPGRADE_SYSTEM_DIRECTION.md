@@ -22,6 +22,20 @@ Balance guideline:
 > implementation. See the [P1-029 design
 > handoff](handoffs/2026-10-01-0154-codex-p1-029-first-hare-genome-contract.md).
 
+## FD2 progression override - 2026-10-21, implemented first slice
+
+The approved FD2 direction supersedes the older Rabbit progression rules below
+where they conflict. A fresh profile starts with Genome paths locked, but may
+start a journey without a license; a successful journey can fund the selected
+species license. This replaces the older three-completed-runs Gene Lab gate.
+Genome nodes are permanently unlocked, while only the active loadout is reset.
+Each replacement requires a 20 Research Data reset with no species-data refund.
+The first test uses 8 capacity points and 2 per Hare node. Five Hare nodes and
+their supported effects were approved for this slice; the prices and effects
+are initial test settings, not balance approval. See the [FD2 tuning
+sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md) and [FD2 Process
+Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md).
+
 ## Two upgrade systems
 
 The October 21 [population Genome contract](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md)

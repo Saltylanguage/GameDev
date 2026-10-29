@@ -96,6 +96,11 @@ namespace SaltyGame.EditorTests
                 Assert.That(blockedError, Does.Contain("Resolve or skip"));
                 ResolveCurrentReward(session);
                 Assert.That(session.CanUsePopulationControls, Is.True);
+                Assert.That(session.AvailableFieldData, Is.EqualTo(100));
+                Assert.That(session.TryBuyPopulationControl("first-round", FieldDataPopulationInterventionKind.AddHare,
+                    out var firstReceipt, out var firstError), Is.True, firstError);
+                Assert.That(firstReceipt.Cost, Is.EqualTo(10));
+                Assert.That(session.AvailableFieldData, Is.EqualTo(90));
                 ReachFirstFundedRoundDecision(manager, session);
                 var settledAward = session.Ledger.Awards.Last();
                 var balanceBeforeControls = session.Ledger.Balance;
@@ -151,7 +156,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(session.TryBuyPopulationControl("extra-hare-2",
                     FieldDataPopulationInterventionKind.AddHare, out _, out distinctError), Is.True, distinctError);
                 Assert.That(GetCount(session.Run, Hare), Is.EqualTo(before[Hare] + 2));
-                Assert.That(session.PopulationInterventions.Count, Is.EqualTo(actions.Length + 2));
+                Assert.That(session.PopulationInterventions.Count, Is.EqualTo(actions.Length + 3));
                 Assert.That(settledAward.PopulationCounts[Hare], Is.EqualTo(before[Hare]),
                     "Later population controls must not rewrite an already-settled payout snapshot.");
                 Assert.That(new[]

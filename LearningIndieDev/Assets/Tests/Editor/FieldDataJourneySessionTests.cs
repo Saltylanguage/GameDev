@@ -109,8 +109,8 @@ namespace SaltyGame.EditorTests
                         ? FieldDataJourneyFlowState.Shop
                         : FieldDataJourneyFlowState.RoundDecision));
                     Assert.That(session.AvailableFieldData,
-                        Is.EqualTo(boundary < 6 ? 0 : session.Ledger.Balance),
-                        "Field Data becomes available only after the first six-round simulation.");
+                        Is.EqualTo(session.Ledger.Balance),
+                        "Each settled round's Field Data is available at its decision.");
                     if (boundary == 6 || boundary == 12)
                     {
                         var pausedBoard = run.Cells;

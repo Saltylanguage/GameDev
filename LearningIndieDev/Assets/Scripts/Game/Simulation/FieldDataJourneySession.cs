@@ -96,8 +96,7 @@ namespace SaltyGame
         public SimulationRunState Run => retainedRun;
         public SpeciesProgression Progression => progression;
         public int GlobalRound => retainedRun.Tick / Definition.RoundLength;
-        public int AvailableFieldData => GlobalRound >= FieldDataJourneyDefinition.RoundsPerSimulation
-            && State != FieldDataJourneyFlowState.Failed
+        public int AvailableFieldData => State != FieldDataJourneyFlowState.Failed
             && State != FieldDataJourneyFlowState.Closed
                 ? Ledger.Balance
                 : 0;

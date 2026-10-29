@@ -392,6 +392,8 @@ namespace SaltyGame
         string chosenJourneyNodeDisplayName;
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
+        Func<GenomeSimulationSnapshot> genomeLaunchSource;
+        FieldDataPermanentResults permanentResults;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
         SimulationRunResult result;
@@ -426,6 +428,25 @@ namespace SaltyGame
 
         public SimulationRunState Run => simulationHelper?.Run ?? simulationManager?.Run;
         public FieldDataJourneySession FieldDataSession => fieldDataJourneySession;
+        public FieldDataPermanentResults PermanentResults => permanentResults;
+        public bool CanLeavePermanentResults => permanentResults?.CanLeave != false;
+
+        public void BindPermanentResults(FieldDataPermanentResults results)
+        {
+            permanentResults = results;
+            if (results?.IsPending == true) previewState = SpeciesPreviewState.Results;
+        }
+
+        public bool TryLeavePermanentResults()
+        {
+            if (!CanLeavePermanentResults) return false;
+            if (permanentResults?.IsPresented != true || fieldDataJourneySession == null) return true;
+            if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Succeeded)
+                return fieldDataJourneySession.TryExitSuccessfulResults(out _);
+            if (fieldDataJourneySession.State == FieldDataJourneyFlowState.Failed)
+                return fieldDataJourneySession.TryExitFailedResults();
+            return fieldDataJourneySession.State == FieldDataJourneyFlowState.Closed;
+        }
         public FieldDataJourneyDefinition ConfiguredFieldDataJourney => fieldDataJourneyDefinition;
         public SpeciesProgression Progression => progression;
         public bool LastExpeditionFailed => lastExpeditionFailed;
@@ -1110,22 +1131,50 @@ namespace SaltyGame
             previewState = SpeciesPreviewState.Rewards;
         }
 
+        public void BindGenomeLaunchSource(Func<GenomeSimulationSnapshot> source)
+        {
+            genomeLaunchSource = source;
+        }
+
         public void StartSimulation()
         {
+            if (!CanLeavePermanentResults) return;
             if (Run != null && Run.Status == SimulationRunStatus.Ready)
             {
+                var refreshProfileGenome = !sessionStarted && genomeLaunchSource != null;
                 if (!sessionStarted
-                    && !(journeyActive && journeyCurrentNode?.Kind == JourneyNodeKind.Simulation
-                        && journeyCurrentNode.Row == 1))
+                    && (refreshProfileGenome || !(journeyActive && journeyCurrentNode?.Kind == JourneyNodeKind.Simulation
+                        && journeyCurrentNode.Row == 1)))
                 {
-                    if (SelectedScenario == null)
+                    var openingJourneyNode = refreshProfileGenome && journeyActive && journeyCurrentNode?.Row == 1
+                        ? journeyCurrentNode : null;
+                    var openingVisitedNodes = openingJourneyNode == null ? null : journeyVisitedNodeIds.ToArray();
+                    if (refreshProfileGenome)
+                    {
+                        try
+                        {
+                            var natural = CreateRulesFromDrafts();
+                            var captured = genomeLaunchSource().IncludeSpecies(natural.Keys);
+                            var effective = captured.ApplyToNaturalRules(natural);
+                            captured.ApplyToStartingPopulations(CreateSimulationData());
+                            activeGenomeSnapshot = captured;
+                            rules = effective;
+                        }
+                        catch (Exception exception) when (exception is ArgumentException
+                            || exception is InvalidOperationException || exception is OverflowException)
+                        {
+                            settingsMessage = "Genome launch rejected: " + exception.Message;
+                            return;
+                        }
+                    }
+                    else if (SelectedScenario == null)
                     {
                         rules = activeGenomeSnapshot.ApplyToNaturalRules(CreateRulesFromDrafts());
                     }
 
                     var startingUpgrades = progression?.AppliedRunUpgrades.ToArray()
                         ?? Array.Empty<SpeciesUpgradeSnapshot>();
-                    var startingRules = startingUpgrades.Length > 0
+                    var startingRules = startingUpgrades.Length > 0 && !refreshProfileGenome
                         ? progression.Definition.Rules
                         : rules[playerSpecies];
                     ResetExpeditionProgression(startingRules);
@@ -1148,6 +1197,12 @@ namespace SaltyGame
                     };
                     runNumber = 0;
                     PrepareNextRun();
+                    if (openingJourneyNode != null)
+                    {
+                        // Re-seeding at first start must retain the opening map choice.
+                        journeyCurrentNode = openingJourneyNode;
+                        foreach (var id in openingVisitedNodes) journeyVisitedNodeIds.Add(id);
+                    }
                 }
 
                 if (fieldDataJourneyDefinition != null)
@@ -1214,10 +1269,12 @@ namespace SaltyGame
                 return false;
             }
 
+            var preparedGenome = activeGenomeSnapshot;
             fieldDataJourneyDefinition = definition;
             continuousPhasesEnabled = true;
             phaseLengthTicks = definition.RoundLength;
             ResetToStart();
+            if (!TrySetActiveGenomeBeforeJourney(preparedGenome, out validationMessage)) return false;
             settingsMessage = "Field Data journey configured; the prepared run will retain one 18-round simulation session.";
             return true;
         }
@@ -1259,6 +1316,10 @@ namespace SaltyGame
                     break;
                 case FieldDataJourneyFlowState.Succeeded:
                 case FieldDataJourneyFlowState.Failed:
+                    if (session.State == FieldDataJourneyFlowState.Succeeded)
+                        permanentResults?.ShowSuccess(runCompletionId, session.Run.PlayerSpeciesId, session.AvailableFieldData);
+                    else
+                        permanentResults?.ShowFailure(runCompletionId, session.Run.PlayerSpeciesId, session.FieldDataLostOnFailure);
                     result = SimulationRunResults.Create(session.Run, rewardsEligible: session.State == FieldDataJourneyFlowState.Succeeded);
                     lastExpeditionFailed = session.State == FieldDataJourneyFlowState.Failed;
                     previewState = SpeciesPreviewState.Results;
@@ -2533,6 +2594,7 @@ namespace SaltyGame
 
         public void PlayNextSimulation(bool startImmediately = true)
         {
+            if (!CanLeavePermanentResults) return;
             if (fieldDataJourneySession != null)
             {
                 if (previewState != SpeciesPreviewState.Results)
@@ -2558,6 +2620,7 @@ namespace SaltyGame
 
             if (previewState == SpeciesPreviewState.Results)
             {
+                permanentResults?.ClearForNextJourney();
                 // Field Data ends with a journey; standalone expeditions retain their existing carryover.
                 var carriedCurrency = journeyActive ? 0 : progression?.Currency ?? 0;
                 rules = activeGenomeSnapshot.ApplyToNaturalRules(CreateRulesFromDrafts());
@@ -2575,6 +2638,8 @@ namespace SaltyGame
 
         public void ResetToStart()
         {
+            if (!CanLeavePermanentResults) return;
+            permanentResults?.ClearForNextJourney();
             DisposeFieldDataJourneySession();
             if (randomizeSeedOnStart)
             {
