@@ -5,7 +5,7 @@ become a master changelog.
 
 ## Current focus
 
-**October 23 Field Data route verification:** Sim's accepted five-node Field
+**October 29 Field Data route verification:** Sim's accepted five-node Field
 Data journey, shop and reroll flow, ordered income controls, interventions, and
 APS accounting are merged with the Rabbit Genome and population-control work.
 Forest Edge remains at 400/20/10. The player wallet is unavailable and cannot
@@ -17,8 +17,11 @@ The accounting failure was caused by paid removals being deducted twice from
 expected final population; commit `bc864346` fixes both herbivore and predator
 stat lines. Test fixtures now earn spendable Field Data through the opening
 simulation and shop. The original Editor checkout remains locked, so a hands-on
-Editor pass and shop screenshot are still open. RG-02 remains open pending that
-visual route review. No new ecology experiment ran. See the
+Editor pass and shop screenshot were still open at the time of this note. On
+October 29, Josh reported completing the journey manually and said the flow made
+sense. No confusion or fairness issue was reported. Exact run settings, choices,
+and wallet receipts were not supplied, so this is qualitative route feedback,
+not a reproducible route record. No new ecology experiment ran. See the
 [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
 
 **October 22 Field Data integration:** Sim's published FD implementation is now

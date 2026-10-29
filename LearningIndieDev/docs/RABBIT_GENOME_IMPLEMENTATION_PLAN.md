@@ -8,22 +8,19 @@ change Trello cards, other developers' scope, or production balance.
 
 ## Current packet execution
 
-RG-00 and RG-01 code and focused regression coverage are in the shared dirty
-checkout. The portable batch build and self-test pass, and the XAML/project XML
-parse. Unity logs exposed test assembly compile errors, which have been fixed in
-source. Focused Unity tests and the required 720p/1080p cycle-result captures
-remain pending. Josh authorized RG-02 to proceed before those checks. The live
-Desktop route review is recorded in
-[`2026-10-22-RG-02-normal-route-review.md`](Research/2026-10-22-RG-02-normal-route-review.md).
-RG-02 identified an unaffordable first paid response, a 55/35 Desktop start that
-differs from the earlier 20/10 screen, and no Field Data shop/session path in
-the available local checkouts. Josh confirmed Forest Edge should use 400/20/10,
-the opening upgrade stays free, and Field Data becomes available after the first
-six-phase simulation. The scenario now uses those counts and banks the first
-simulation's Field Data until its cycle boundary. The operative FD-T04/09/12/13
-shop/session implementation and route receipts remain unlocated. See the
-[RG-00/RG-01 handoff](handoffs/2026-10-21-1820-codex-rabbit-genome-rg00-rg01.md)
-for its still-pending visual verification.
+RG-00 and RG-01 code and focused regression coverage are in the shared checkout.
+The Field Data journey, shops, interventions and accounting are integrated.
+Focused checks pass: the population-control EditMode class 16/16 and the route
+through the first shop into Simulation 2 1/1. Commit `bc864346` fixes the paid
+population-removal accounting defect; `7ac2a545` aligns the tests with the
+wallet unlock rule. On October 29, Josh reported manually completing the journey
+and said the flow made sense. This is qualitative feedback; exact settings,
+choices and wallet receipts were not recorded. RG-02's route experience is
+validated, while reproducible end-to-end receipt evidence remains open. The
+[RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md) contains
+the earlier observations. The required RG-00/RG-01 720p/1080p cycle-result
+captures still need confirmation; see the
+[RG-00/RG-01 handoff](handoffs/2026-10-21-1820-codex-rabbit-genome-rg00-rg01.md).
 
 ## Outcome
 
@@ -69,7 +66,7 @@ can use this document directly; no new chat or delegation is required.
 | --- | --- | --- |
 | RG-00 | Include the new population code in portable provenance | Ready; start here |
 | RG-01 | Make population controls available on the first cycle's result | Ready; follows RG-00 |
-| RG-02 | Review the normal-length route and reconcile its shop/session path | Baseline and first Field Data timing implemented and covered by focused tests; shop/session integration and full route receipts remain open |
+| RG-02 | Review the normal-length route and reconcile its shop/session path | Shop/session integrated; automated route passes and Josh reports the manual journey made sense; exact run configuration, choices and receipts are not recorded |
 | RG-03 | Complete the agreed stat-only POC offers | Existing targets are ready; new values, prerequisites and costs need Josh's approval |
 | RG-04 | Add a food model that supports distinct edible Plants | Design gate G1; core Gardener dependency |
 | RG-05 | Deliver Gardener abilities one at a time | RG-04 plus node-specific decisions |
