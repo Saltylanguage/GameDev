@@ -19,9 +19,10 @@ stat lines. Test fixtures now earn spendable Field Data through the opening
 simulation and shop. The original Editor checkout remains locked, so a hands-on
 Editor pass and shop screenshot were still open at the time of this note. On
 October 29, Josh reported completing the journey manually and said the flow made
-sense. No confusion or fairness issue was reported. Exact run settings, choices,
-and wallet receipts were not supplied, so this is qualitative route feedback,
-not a reproducible route record. No new ecology experiment ran. See the
+sense. No specific choice, confusion point, or fairness judgment was described.
+Exact run settings, choices, and wallet receipts were not supplied, so this is
+qualitative route feedback, not a reproducible route record. No new ecology
+experiment ran. See the
 [RG-02 route review](Research/2026-10-22-RG-02-normal-route-review.md).
 
 **October 22 Field Data integration:** Sim's published FD implementation is now
