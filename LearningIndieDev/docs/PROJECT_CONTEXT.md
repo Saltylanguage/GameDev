@@ -70,6 +70,20 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **Rabbit Genome playtest nodes (October 29):** Faster Gestation is a
+  Trailblazer root costing 1 Rabbit Data and 2 capacity points to unlock; each
+  of its three ranks costs another capacity point and 1 Rabbit Data, reducing
+  gestation by 15%. Increased Minimum Litter is now a one-rank Warren root
+  costing 1 Rabbit Data and 1 capacity point, adding 1 to minimum litter while
+  leaving maximum litter unchanged. High Crowding is a Trailblazer root at the
+  existing +0.1 crowding-energy-reduction effect, costing 1 Rabbit Data and 2
+  capacity points. The production test catalog also exposes
+  Long Stride, Long Vision, Tough Hide, Larger Litters, Efficient Digestion,
+  Founding Hares, and Population Reserves under their existing POC IDs. These
+  are provisional playtest offers, not balance targets. Avoidance still needs
+  a Genome-to-simulation input path. See the [Genome
+  implementation plan](RABBIT_GENOME_IMPLEMENTATION_PLAN.md#rg-03--finish-stat-only-offers-before-adding-structural-mechanics).
+
 - **Population decisions playtest slice (October 21, 2026):** Local round-boundary
   controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
   and +/-5 Plants. Rejected changes cost nothing; paid removals are recorded

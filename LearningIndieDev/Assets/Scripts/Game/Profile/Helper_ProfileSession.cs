@@ -440,6 +440,59 @@ namespace SaltyGame
             return true;
         }
 
+        public bool TryUpgradeRabbitGenomeNode(SpeciesGenomeMapSnapshot map, string nodeId, out string reason)
+        {
+            reason = string.Empty;
+            if (map == null) throw new ArgumentNullException(nameof(map));
+            var hare = new SpeciesId("hare");
+            if (map.SpeciesId != hare || string.IsNullOrWhiteSpace(nodeId)
+                || !map.TryGetNode(nodeId, out var node) || !node.IsPurchasable)
+            {
+                reason = "The node must belong to the Rabbit Genome catalog.";
+                return false;
+            }
+            if (!Current.HasLoadedProfile || !Current.UnlockedGenomeSpeciesIds.Contains(hare)
+                || !Current.TryGetGenomeProfile(hare, out var profile)
+                || !profile.TryGetAllocation(node.Id, out var allocation))
+            {
+                reason = "Activate the Genome node before upgrading it.";
+                return false;
+            }
+            if (allocation.CapacityPoints >= node.MaximumCapacityPoints)
+            {
+                reason = "The Genome node is at maximum rank.";
+                return false;
+            }
+            if (profile.CapacityUsed >= GenomeContract.ActiveCapacity)
+            {
+                reason = "The active Genome has no room for this node.";
+                return false;
+            }
+            if (Current.RabbitData < node.RabbitDataPrice)
+            {
+                reason = $"Not enough Rabbit Data. Each rank costs {node.RabbitDataPrice}.";
+                return false;
+            }
+
+            var allocations = new List<GenomeNodeAllocation>(profile.Allocations);
+            for (var index = 0; index < allocations.Count; index++)
+            {
+                if (allocations[index].NodeId == node.Id)
+                {
+                    allocations[index] = new GenomeNodeAllocation(node.Id,
+                        checked(allocation.RabbitDataSpent + node.RabbitDataPrice),
+                        allocation.CapacityPoints + 1);
+                    break;
+                }
+            }
+            var nextProfile = new SpeciesGenomeProfile(hare, profile.UnlockedNodeIds,
+                profile.ActiveNodeIds, allocations);
+            Flush();
+            CommitCurrent(Current.WithGenomeEconomy(Current.RabbitData - node.RabbitDataPrice, Current.ResearchData,
+                Current.CompletedRuns, nextProfile));
+            return true;
+        }
+
         public bool TryResetRabbitGenome(long researchDataFee, out string reason)
         {
             reason = string.Empty;

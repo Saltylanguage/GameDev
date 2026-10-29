@@ -42,6 +42,7 @@ the accepted triggers, severities, statuses or waivers below.
 - **Why it matters:** Different consumers could interpret the same modifier differently, producing inconsistent gameplay, previews, and research results.
 - **Evidence:** User decision: positive values (with an optional `+`) increase an attribute and `-` decreases it; no other operations or range/clamping syntax are supported in V1; current `SpeciesUpgrade` is positive additive-only.
 - **Smallest mitigation:** Keep each V1 modifier as a stable attribute ID plus one signed numeric value; treat omitted/`+` as positive and `-` as negative; reject unsupported operation syntax and validate attribute-specific numeric constraints in the registry.
+- **Scoped playtest exception (2026-10-29):** Josh approved Faster Gestation as a three-rank Genome node, reducing natural Rabbit gestation by 15% per rank. Each rank costs 1 Rabbit Data; capacity costs 2/3/4 points cumulatively. This uses an explicit `fast-gestation` rule in the frozen Genome snapshot, not a generalized modifier operation. Keep its rounding, lower bound, rank allocation, and fingerprint covered by focused tests; other non-additive operations remain out of scope.
 - **Owner:** Josh
 - **Recorded:** 2026-09-03, user-confirmed planning decision
 

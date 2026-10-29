@@ -15,3 +15,13 @@ MonoBehaviour:
   speciesId: hare
   upgrades:
   - {fileID: 11400000, guid: bbc4085e78434182b40ba609f6c40d31, type: 2}
+  - {fileID: 11400000, guid: 4b2e7641e5b747559b5f4dd429ad692e, type: 2}
+  - {fileID: 11400000, guid: d9eec72d8d7e2544c8a11c3bad9f32f5, type: 2}
+  - {fileID: 11400000, guid: a6098fe2abf0c3b4d811193619db8208, type: 2}
+  - {fileID: 11400000, guid: 7c16cd3d25707374f80f4e560dcf1894, type: 2}
+  - {fileID: 11400000, guid: dab7f7383e8fcb24a8d6ca8c3574f1aa, type: 2}
+  - {fileID: 11400000, guid: b616b4a7b2f6f4940bac257f1f3deb8e, type: 2}
+  - {fileID: 11400000, guid: 19e662a8e2fb2f146b44135b46ee4ec0, type: 2}
+  - {fileID: 11400000, guid: 53040cda0157d9a4eb5896b3a673df21, type: 2}
+  - {fileID: 11400000, guid: 214d42ecc90211542b2e55184034e4b0, type: 2}
+  - {fileID: 11400000, guid: e45d6ea18a258204a9bf301eedd198d4, type: 2}

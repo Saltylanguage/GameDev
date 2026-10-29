@@ -34,6 +34,73 @@ namespace SaltyGame.Tests
             return rules;
         }
 
+        [TestCase(2, 41)]
+        [TestCase(3, 34)]
+        [TestCase(4, 26)]
+        public void FasterGestationUsesSavedCapacityAsRank(int capacityPoints, int expectedTicks)
+        {
+            var hare = GenomeContract.RabbitSpeciesId;
+            var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
+                "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
+                capacityPoints: 2, maximumRanks: 3);
+            var profile = new SpeciesGenomeProfile(hare, activeNodeIds: new[] { node.Id },
+                allocations: new[] { new GenomeNodeAllocation(node.Id, 1, capacityPoints) });
+            var catalog = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(hare, new[] { node }) });
+            var frozen = GenomeSimulationSnapshot.Create(new[] { profile }).Resolve(catalog);
+
+            Assert.That(frozen.GetSpeciesGenome(hare).GetAllocationCapacityPoints(node.Id), Is.EqualTo(capacityPoints));
+            Assert.That(frozen.ApplyToNaturalRules(PopulationRules())[hare].GestationTicks,
+                Is.EqualTo(expectedTicks));
+        }
+
+        [Test]
+        public void FasterGestationRanksSpendCapacityOnceAndSurviveProfileReload()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            var first = new GameObject("Faster Gestation Profile");
+            var second = new GameObject("Reloaded Faster Gestation Profile");
+            try
+            {
+                var session = first.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.CreateProfile("Gestation");
+                session.AddRabbitData(10);
+                session.TryPurchaseRabbitGenomeLicense(1, out _);
+                session.RecordSuccessfulJourney("gestation-1");
+                session.RecordSuccessfulJourney("gestation-2");
+                session.RecordSuccessfulJourney("gestation-3");
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(1, out _), Is.True);
+
+                var hare = GenomeContract.RabbitSpeciesId;
+                var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
+                    "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
+                    capacityPoints: 2, maximumRanks: 3);
+                var map = new SpeciesGenomeMapSnapshot(hare, new[] { node });
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, node.Id, 1, 2, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.False);
+                Assert.That(session.Current.RabbitData, Is.EqualTo(9));
+
+                var reloaded = second.AddComponent<Helper_ProfileSession>();
+                reloaded.Reload();
+                Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out var profile), Is.True);
+                Assert.That(profile.CapacityUsed, Is.EqualTo(4));
+                Assert.That(profile.TryGetAllocation(node.Id, out var allocation), Is.True);
+                Assert.That(allocation.CapacityPoints, Is.EqualTo(4));
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(9));
+                Assert.That(reloaded.TryResetRabbitGenome(1, out _), Is.True);
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(12));
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
         [Test]
         public void PopulationPoolClampsGrantsRecordsActualAdditionsAndAllowsExplicitExceptions()
         {

@@ -93,13 +93,61 @@ namespace SaltyGame.EditorTests
                 "Assets/Data/Genome/HareGenome.asset");
             Assert.That(map, Is.Not.Null);
             Assert.That(map.TryCreateSnapshot(out var snapshot, out var reason), Is.True, reason);
-            Assert.That(snapshot.Nodes, Has.Count.EqualTo(1));
-            var node = snapshot.Nodes[0];
+            Assert.That(snapshot.Nodes, Has.Count.EqualTo(11));
+            var node = snapshot.GetNode("fertile-droppings");
             Assert.That(node.Id, Is.EqualTo("fertile-droppings"));
             Assert.That(node.BranchName, Is.EqualTo("Gardener"));
             Assert.That(node.PrerequisiteNodeIds, Is.Empty);
             Assert.That(node.RabbitDataPrice, Is.EqualTo(1));
             Assert.That(node.CapacityPoints, Is.EqualTo(1));
+            var gestation = snapshot.GetNode(GenomeContract.FastGestationNodeId);
+            Assert.That(gestation, Is.Not.Null);
+            Assert.That(gestation.BranchName, Is.EqualTo("Trailblazer"));
+            Assert.That(gestation.RabbitDataPrice, Is.EqualTo(1));
+            Assert.That(gestation.CapacityPoints, Is.EqualTo(2));
+            Assert.That(gestation.MaximumRanks, Is.EqualTo(3));
+
+            var minimumLitter = snapshot.GetNode("increased-minimum-litter");
+            Assert.That(minimumLitter.BranchName, Is.EqualTo("Warren"));
+            Assert.That(minimumLitter.PrerequisiteNodeIds, Is.Empty);
+            Assert.That(minimumLitter.RabbitDataPrice, Is.EqualTo(1));
+            Assert.That(minimumLitter.CapacityPoints, Is.EqualTo(1));
+            Assert.That(minimumLitter.MaximumRanks, Is.EqualTo(1));
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(
+                "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset").CreateRuntimeData();
+            var natural = scenario.SpeciesRules[GenomeContract.RabbitSpeciesId];
+            var upgraded = minimumLitter.Apply(natural);
+            Assert.That(upgraded.LitterMinimum, Is.EqualTo(natural.LitterMinimum + 1));
+            Assert.That(upgraded.LitterMaximum, Is.EqualTo(natural.LitterMaximum));
+
+            var longStride = snapshot.GetNode("poc.hare.long-stride");
+            var longVision = snapshot.GetNode("poc.hare.long-vision");
+            var toughHide = snapshot.GetNode("poc.hare.tough-hide");
+            var largerLitters = snapshot.GetNode("poc.hare.larger-litters");
+            var efficientDigestion = snapshot.GetNode("poc.hare.efficient-digestion");
+            var foundingHares = snapshot.GetNode("poc.hare.starting-population");
+            var populationReserves = snapshot.GetNode("poc.hare.population-pool");
+            var highCrowding = snapshot.GetNode("high-crowding");
+            Assert.That(longStride.BranchName, Is.EqualTo("Trailblazer"));
+            Assert.That(longVision.PrerequisiteNodeIds, Does.Contain(longStride.Id));
+            Assert.That(toughHide.BranchName, Is.EqualTo("Warren"));
+            Assert.That(largerLitters.PrerequisiteNodeIds, Does.Contain(toughHide.Id));
+            Assert.That(efficientDigestion.PrerequisiteNodeIds, Does.Contain(node.Id));
+            Assert.That(highCrowding.BranchName, Is.EqualTo("Trailblazer"));
+            Assert.That(highCrowding.RabbitDataPrice, Is.EqualTo(1));
+            Assert.That(highCrowding.CapacityPoints, Is.EqualTo(2));
+            Assert.That(highCrowding.MaximumRanks, Is.EqualTo(1));
+            Assert.That(highCrowding.Apply(natural).CrowdingEnergyReduction,
+                Is.EqualTo(natural.CrowdingEnergyReduction + 0.1f));
+            Assert.That(foundingHares, Is.Not.Null);
+            Assert.That(populationReserves, Is.Not.Null);
+            Assert.That(longStride.Apply(natural).MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
+            Assert.That(longVision.Apply(natural).Awareness.VisionRange,
+                Is.EqualTo(natural.Awareness.VisionRange + 2));
+            Assert.That(toughHide.Apply(natural).BlockAmount, Is.EqualTo(natural.BlockAmount + 1));
+            Assert.That(largerLitters.Apply(natural).LitterMaximum, Is.EqualTo(natural.LitterMaximum + 1));
+            Assert.That(efficientDigestion.Apply(natural).DigestionEnergyBonus,
+                Is.EqualTo(natural.DigestionEnergyBonus + 0.25f));
         }
 
         [Test]

@@ -5,6 +5,18 @@ become a master changelog.
 
 ## Current focus
 
+**October 29 Rabbit Genome POC:** The production test catalog now offers eleven
+selectable nodes, including the existing POC stats/lifecycle effects, Faster
+Gestation, and Increased Minimum Litter. Existing POC IDs are preserved. The
+minimum-litter node costs 1 Rabbit Data and 1 capacity point; Forest Edge's
+minimum rises from 2 to 3. The expanded Genome authoring suite passes 5/5 in an
+isolated Unity project copy; no desktop Editor or active game was controlled.
+These values are provisional playtest baselines, not production balance targets.
+High Crowding uses the existing +0.1 reduction to extra crowding energy loss.
+Avoidance still needs a Genome-to-simulation integration path; Gardener food
+abilities remain behind the food-model gate. See the
+[implementation plan](RABBIT_GENOME_IMPLEMENTATION_PLAN.md#rg-03--finish-stat-only-offers-before-adding-structural-mechanics).
+
 **October 29 Field Data route verification:** Sim's accepted five-node Field
 Data journey, shop and reroll flow, ordered income controls, interventions, and
 APS accounting are merged with the Rabbit Genome and population-control work.

@@ -78,7 +78,9 @@ namespace SaltyGame
             : !SelectedNode.IsPurchasable ? "PREVIEW ONLY"
             : profile != null && profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
                 && genome.IsNodeActive(SelectedNode.NodeId)
-                ? $"ACTIVE · {SelectedNode.CapacityPoints} POINTS"
+                ? GetSelectedNodeRank(genome) < SelectedNode.MaximumRanks
+                    ? $"UPGRADE · RANK {GetSelectedNodeRank(genome) + 1}/{SelectedNode.MaximumRanks} / {SelectedNode.RabbitDataPrice} DATA +1 POINT"
+                    : $"RANK {GetSelectedNodeRank(genome)}/{SelectedNode.MaximumRanks} · {GetSelectedNodePoints(genome)} POINTS"
                 : $"ACTIVATE · {SelectedNode.RabbitDataPrice} DATA / {SelectedNode.CapacityPoints} POINTS";
         public string ResetOfferText => $"RESET · {GenomeContract.RabbitResetResearchDataFee} RESEARCH DATA";
         string actionResult;
@@ -118,10 +120,10 @@ namespace SaltyGame
                 return "Preview only. This node's mechanic is not implemented.";
             }
             profile.TryGetGenomeProfile(GenomeContract.RabbitSpeciesId, out var genome);
-            if (genome != null && genome.IsNodeActive(node.NodeId))
-            {
-                return "Already active. Reset the allocation to change your build.";
-            }
+            var isActive = genome != null && genome.IsNodeActive(node.NodeId);
+            var currentPoints = isActive ? GetSelectedNodePoints(genome) : 0;
+            if (isActive && currentPoints >= node.MaximumCapacityPoints)
+                return "This Genome node is at maximum rank.";
             var missing = node.PrerequisiteNodeIds.Where(id => genome == null || !genome.IsNodeActive(id))
                 .Select(id => ResolveSpeciesMap().GetNode(id).DisplayName).ToArray();
             if (missing.Length > 0)
@@ -129,9 +131,10 @@ namespace SaltyGame
                 return $"Activate first: {string.Join(", ", missing)}.";
             }
             var free = GenomeContract.ActiveCapacity - (genome?.CapacityUsed ?? 0);
-            if (free < node.CapacityPoints)
+            if (free < (isActive ? 1 : node.CapacityPoints))
             {
-                return $"Needs {node.CapacityPoints} capacity; {free} available. Reset to reallocate.";
+                var needed = isActive ? 1 : node.CapacityPoints;
+                return $"Needs {needed} capacity; {free} available. Reset to reallocate.";
             }
             if (profile.RabbitData < node.RabbitDataPrice)
             {
@@ -191,11 +194,23 @@ namespace SaltyGame
                 return;
             }
             var node = SelectedNode;
-            var succeeded = profileSession.TryPurchaseRabbitGenomeNode(
-                ResolveSpeciesMap(), node.NodeId, node.RabbitDataPrice, node.CapacityPoints, out var reason);
+            var isActive = profile.TryGetGenomeProfile(GenomeContract.RabbitSpeciesId, out var genome)
+                && genome.IsNodeActive(node.NodeId);
+            var succeeded = isActive
+                ? profileSession.TryUpgradeRabbitGenomeNode(ResolveSpeciesMap(), node.NodeId, out var reason)
+                : profileSession.TryPurchaseRabbitGenomeNode(ResolveSpeciesMap(), node.NodeId,
+                    node.RabbitDataPrice, node.CapacityPoints, out reason);
             BindProfile(profileSession.Current);
-            SetActionResult(succeeded ? $"{node.DisplayName} active for the next journey." : reason);
+            SetActionResult(succeeded ? $"{node.DisplayName} updated for the next journey." : reason);
         }
+
+        int GetSelectedNodeRank(SpeciesGenomeProfile genome) =>
+            genome.TryGetAllocation(SelectedNode.NodeId, out var allocation)
+                ? SelectedNode.GetRank(allocation.CapacityPoints) : 1;
+
+        int GetSelectedNodePoints(SpeciesGenomeProfile genome) =>
+            genome.TryGetAllocation(SelectedNode.NodeId, out var allocation)
+                ? allocation.CapacityPoints : SelectedNode.CapacityPoints;
 
         void ResetGenome(object _)
         {
@@ -457,6 +472,8 @@ namespace SaltyGame
 
     public sealed class GenomeLabNodeViewModel : INotifyPropertyChanged
     {
+        readonly GenomeUpgradeNodeSnapshot node;
+
         public GenomeLabNodeViewModel(
             GenomeUpgradeNodeSnapshot node,
             ProfileSessionSnapshot profile = null,
@@ -470,6 +487,7 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(node));
             }
 
+            this.node = node;
             NodeId = node.Id;
             DisplayName = node.DisplayName;
             Description = string.IsNullOrWhiteSpace(node.Description)
@@ -506,6 +524,9 @@ namespace SaltyGame
         public string StateText { get; }
         public long RabbitDataPrice { get; }
         public int CapacityPoints { get; }
+        public int MaximumRanks => node.MaximumRanks;
+        public int MaximumCapacityPoints => node.MaximumCapacityPoints;
+        public int GetRank(int allocationCapacityPoints) => node.GetRank(allocationCapacityPoints);
         public bool IsPurchasable { get; }
         public IReadOnlyList<string> PrerequisiteNodeIds { get; }
         public string BranchText { get; }
