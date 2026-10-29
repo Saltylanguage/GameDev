@@ -32,6 +32,10 @@
             <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
             <Setter Property="BorderThickness" Value="4" />
           </DataTrigger>
+          <DataTrigger Binding="{Binding IsConcept}" Value="True">
+            <Setter Property="Background" Value="#FFE2D9C4" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
+          </DataTrigger>
           <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource Chrono_TreeBark}" /></Trigger>
           <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource Chrono_TreeBark}" /></Trigger>
         </Style.Triggers>
@@ -716,7 +720,17 @@
                                     <StackPanel HorizontalAlignment="Center">
                                       <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="24" Height="24" HorizontalAlignment="Center" />
                                       <TextBlock Text="{Binding DisplayName}" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" />
-                                      <Border Margin="0,4,0,0" Background="{DynamicResource Chrono_Lime}" CornerRadius="3" Padding="5,2" HorizontalAlignment="Center">
+                                      <Border Margin="0,4,0,0" CornerRadius="3" Padding="5,2" HorizontalAlignment="Center">
+                                        <Border.Style>
+                                          <Style TargetType="Border">
+                                            <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
+                                            <Style.Triggers>
+                                              <DataTrigger Binding="{Binding IsConcept}" Value="True">
+                                                <Setter Property="Background" Value="#FFE2D9C4" />
+                                              </DataTrigger>
+                                            </Style.Triggers>
+                                          </Style>
+                                        </Border.Style>
                                         <TextBlock Text="{Binding StateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                                       </Border>
                                     </StackPanel>

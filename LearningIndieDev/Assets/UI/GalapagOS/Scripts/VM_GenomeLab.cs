@@ -21,6 +21,13 @@ namespace SaltyGame
         const float TreeHeaderHeight = 42f;
         const float ConnectorThickness = 4f;
         const string AllBranches = "All branches";
+        static readonly HashSet<string> PermanentConceptNodeIds = new HashSet<string>(StringComparer.Ordinal)
+        {
+            GenomeContract.FastGestationNodeId,
+            SpeciesSimulation.FertileDroppingsNodeId,
+            "high-crowding",
+            "increased-minimum-litter",
+        };
 
         GenomeCatalogSnapshot catalog;
         ProfileSessionSnapshot profile;
@@ -90,7 +97,9 @@ namespace SaltyGame
         public string ResearchReasonText => permanent?.ResearchReason ?? string.Empty;
         public bool CanPurchaseResearch => permanent?.CanResearch == true;
         public string LicenseReasonText => permanent?.LicenseReason ?? ActionStatusText;
-        public string NodeReasonText => permanent?.NodeReason(selectedNodeId) ?? ActionStatusText;
+        public string NodeReasonText => permanent != null && SelectedNode?.IsConcept == true
+            ? "Concept preview only. Permanent price and loadout rules are not set."
+            : permanent?.NodeReason(selectedNodeId) ?? ActionStatusText;
         public string ResetReasonText => permanent?.ResetReason ?? ActionStatusText;
         public string ArrangementReasonText => permanent?.ArrangementReason ?? string.Empty;
         public string SelectionText => permanent?.SelectionText ?? string.Empty;
@@ -98,7 +107,8 @@ namespace SaltyGame
         public bool CanToggleLoadoutNode => permanent?.CanToggle(selectedNodeId) == true;
         public bool CanApplyLoadout => permanent?.CanApply == true;
         public string LicenseOfferText => permanent?.LicenseOffer ?? $"TREE ACCESS · {GenomeContract.RabbitTreeLicensePrice} DATA";
-        public string NodeOfferText => permanent != null ? permanent.NodeOffer(selectedNodeId) : SelectedNode == null
+        public string NodeOfferText => permanent != null && SelectedNode?.IsConcept == true ? "CONCEPT · LOCKED"
+            : permanent != null ? permanent.NodeOffer(selectedNodeId) : SelectedNode == null
             ? "NO NODE SELECTED"
             : !SelectedNode.IsPurchasable ? "PREVIEW ONLY"
             : profile != null && profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
@@ -115,7 +125,9 @@ namespace SaltyGame
             && profile.HasLoadedProfile && profile.GeneLabUnlocked
             && SpeciesIdText == GenomeContract.RabbitSpeciesId.Value
             && !HasRabbitLicense && profile.RabbitData >= GenomeContract.RabbitTreeLicensePrice;
-        public bool CanPurchaseNode => permanent != null ? permanent.CanBuyNode(selectedNodeId) : GetPurchaseBlockReason() == null;
+        public bool CanPurchaseNode => permanent != null
+            ? SelectedNode?.IsConcept != true && permanent.CanBuyNode(selectedNodeId)
+            : GetPurchaseBlockReason() == null;
 
         string GetPurchaseBlockReason()
         {
@@ -293,9 +305,22 @@ namespace SaltyGame
 
         public void BindCatalog(GenomeCatalogSnapshot nextCatalog)
         {
-            catalog = permanent == null ? nextCatalog ?? GenomeCatalogSnapshot.Empty : new GenomeCatalogSnapshot(
-                permanent.Catalog.SpeciesMaps.Concat(
-                    (nextCatalog?.SpeciesMaps ?? Array.Empty<SpeciesGenomeMapSnapshot>()).Where(map => map.SpeciesId.Value != "hare")));
+            if (permanent == null)
+            {
+                catalog = nextCatalog ?? GenomeCatalogSnapshot.Empty;
+            }
+            else
+            {
+                var hareMap = permanent.Catalog.GetSpeciesMap(new SpeciesId("hare"));
+                var concepts = nextCatalog?.GetSpeciesMap(new SpeciesId("hare"))?.Nodes
+                    .Where(node => PermanentConceptNodeIds.Contains(node.Id)
+                        && !hareMap.TryGetNode(node.Id, out _)) ?? Array.Empty<GenomeUpgradeNodeSnapshot>();
+                var maps = permanent.Catalog.SpeciesMaps.Where(map => map.SpeciesId.Value != "hare")
+                    .Concat(nextCatalog?.SpeciesMaps.Where(map => map.SpeciesId.Value != "hare")
+                        ?? Array.Empty<SpeciesGenomeMapSnapshot>())
+                    .Concat(new[] { new SpeciesGenomeMapSnapshot(hareMap.SpeciesId, hareMap.Nodes.Concat(concepts)) });
+                catalog = new GenomeCatalogSnapshot(maps);
+            }
             var speciesMap = ResolveSpeciesMap();
             var branches = new[] { AllBranches }.Concat((speciesMap?.Nodes ?? Array.Empty<GenomeUpgradeNodeSnapshot>())
                 .Select(node => node.BranchName).Where(name => !string.IsNullOrEmpty(name)).Distinct()).ToArray();
@@ -309,7 +334,7 @@ namespace SaltyGame
             }
             if (!BranchNames.Contains(selectedBranch))
             {
-                selectedBranch = branches.Length > 1 ? branches[1] : AllBranches;
+                selectedBranch = permanent != null ? AllBranches : branches.Length > 1 ? branches[1] : AllBranches;
             }
             Nodes.Clear();
             GenomeTreeSegments.Clear();
@@ -340,7 +365,8 @@ namespace SaltyGame
                     var layout = nodeLayouts[node.Id];
                     Nodes.Add(new GenomeLabNodeViewModel(node, profile, layout.Left, layout.Top, SelectNode,
                         prerequisiteText: string.Join(", ", node.PrerequisiteNodeIds.Select(id => speciesMap.GetNode(id).DisplayName)),
-                        stateText: permanent?.NodeState(node.Id)));
+                        stateText: permanent?.NodeState(node.Id),
+                        isConcept: permanent != null && PermanentConceptNodeIds.Contains(node.Id)));
                     AddTreeSegments(node, nodeLayouts);
                 }
 
@@ -532,7 +558,8 @@ namespace SaltyGame
             float top = 0f,
             Action<string> select = null,
             string prerequisiteText = null,
-            string stateText = null)
+            string stateText = null,
+            bool isConcept = false)
         {
             if (node == null)
             {
@@ -540,6 +567,7 @@ namespace SaltyGame
             }
 
             this.node = node;
+            IsConcept = isConcept;
             NodeId = node.Id;
             DisplayName = node.DisplayName;
             Description = string.IsNullOrWhiteSpace(node.Description)
@@ -548,7 +576,7 @@ namespace SaltyGame
             PrerequisiteText = node.PrerequisiteNodeIds.Count == 0
                 ? "ROOT NODE"
                 : $"REQUIRES · {prerequisiteText ?? string.Join(", ", node.PrerequisiteNodeIds)}";
-            StateText = stateText ?? GetStateText(node, profile);
+            StateText = isConcept ? "CONCEPT · LOCKED" : stateText ?? GetStateText(node, profile);
             RabbitDataPrice = node.RabbitDataPrice;
             CapacityPoints = node.CapacityPoints;
             IsPurchasable = node.IsPurchasable;
@@ -579,7 +607,10 @@ namespace SaltyGame
         public int MaximumRanks => node.MaximumRanks;
         public int MaximumCapacityPoints => node.MaximumCapacityPoints;
         public int GetRank(int allocationCapacityPoints) => node.GetRank(allocationCapacityPoints);
-        public string CapacityText => $"{CapacityPoints} ACTIVE POINTS";
+        public string CapacityText => IsConcept
+            ? "PERMANENT COST AND LOADOUT RULES TBD"
+            : $"{CapacityPoints} ACTIVE POINTS";
+        public bool IsConcept { get; }
         public bool IsPurchasable { get; }
         public IReadOnlyList<string> PrerequisiteNodeIds { get; }
         public string BranchText { get; }

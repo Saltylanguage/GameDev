@@ -82,7 +82,7 @@ namespace SaltyGame.EditorTests
                     previews++;
                 }
             }
-            Assert.That(purchasable, Is.EqualTo(8));
+            Assert.That(purchasable, Is.EqualTo(11));
             Assert.That(previews, Is.EqualTo(1));
         }
 

@@ -467,7 +467,7 @@ namespace SaltyGame.PlayModeTests
             branches.SelectedItem = "Trailblazer";
             yield return null;
             Assert.That(GetProperty(lab, "SelectedBranch"), Is.EqualTo("Trailblazer"));
-            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(2));
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(4));
             SelectGeneButton(content, "poc.hare.long-stride");
             Assert.That(GetProperty(lab, "CanPurchaseNode"), Is.False);
             Assert.That(GetProperty(lab, "ActionStatusText"), Does.Contain("Rabbit Data"));
@@ -708,13 +708,32 @@ namespace SaltyGame.PlayModeTests
             var window = ((IList)GetProperty(desktop, "OpenDesktopWindows"))[0];
             var lab = GetProperty(window, "GenomeLab");
             var content = root.GetComponent<NoesisView>().Content;
-            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
-            window.GetType().GetMethod("RefreshGenomeCatalog").Invoke(window, new object[] { GenomeCatalogSnapshot.Empty });
-            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(9));
             Assert.That(GetProperty(lab, "CanPurchaseLicense"), Is.True, "FD2 has no three-journey license gate.");
             Assert.That(GetProperty(lab, "LicenseReasonText").ToString(), Does.Contain("60 -> 50"));
             ExecuteGeneAction(content, lab, "PurchaseResearchCommand");
             ExecuteGeneAction(content, lab, "PurchaseLicenseCommand");
+            yield return null;
+            var concept = "fast-gestation";
+            SelectGeneButton(content, concept);
+            var conceptNode = GetProperty(lab, "SelectedNode");
+            Assert.That(GetProperty(conceptNode, "IsConcept"), Is.True);
+            Assert.That(GetProperty(conceptNode, "StateText"), Is.EqualTo("CONCEPT · LOCKED"));
+            Assert.That(GetProperty(conceptNode, "CapacityText"), Does.Contain("RULES TBD"));
+            Assert.That(GetProperty(lab, "NodeOfferText"), Is.EqualTo("CONCEPT · LOCKED"));
+            Assert.That(GetProperty(lab, "NodeReasonText"), Does.Contain("preview only"));
+            Assert.That(GetProperty(lab, "CanPurchaseNode"), Is.False);
+            var dataBeforeConceptPurchase = session.Current.RabbitData;
+            ExecuteCommand(lab, "PurchaseNodeCommand");
+            Assert.That(session.Current.RabbitData, Is.EqualTo(dataBeforeConceptPurchase));
+            var conceptOutput = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+            if (conceptOutput != null)
+            {
+                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(conceptOutput,
+                    "genome-permanent-concept-locked", root.GetComponent<Camera>());
+            }
+            window.GetType().GetMethod("RefreshGenomeCatalog").Invoke(window, new object[] { GenomeCatalogSnapshot.Empty });
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
             yield return null;
             Assert.That(session.Current.ResearchData, Is.EqualTo(190));
             Assert.That(session.Current.RabbitData, Is.EqualTo(50));
@@ -953,7 +972,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             lab = GetProperty(((IList)GetProperty(desktop, "OpenDesktopWindows"))[0], "GenomeLab");
             Assert.That(GetProperty(lab, "PermanentControlsVisibility").ToString(), Is.EqualTo("Visible"));
-            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(9));
         }
 
         static void ConfigurePermanentAcceptanceJourney(GameObject root)
@@ -1209,7 +1228,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             var lab = GetProperty(((IList)GetProperty(desktop, "OpenDesktopWindows"))[0], "GenomeLab");
             var content = root.GetComponent<NoesisView>().Content;
-            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(5));
+            Assert.That(((IList)GetProperty(lab, "Nodes")).Count, Is.EqualTo(9));
             ExecuteGeneAction(content, lab, "PurchaseResearchCommand");
             yield return null;
             SelectGeneButton(content, "hare.keen-hearing");

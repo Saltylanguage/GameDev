@@ -5,6 +5,15 @@ become a master changelog.
 
 ## Current focus
 
+**October 29 permanent Gene Lab concept preview:** The Sim/FD2 Gene Lab now
+shows Faster Gestation, Fertile Droppings, High Crowding, and Increased Minimum
+Litter alongside the permanent five-node tree. These four nodes are visibly
+locked concepts; purchasing and loadout controls remain disabled, and the panel
+states that their permanent prices and loadout rules are undecided. The legacy
+POC source catalog supplies their descriptions and branch labels. The focused
+permanent Gene Lab PlayMode and graphics visual checks pass 1/1 each, and the
+locked-concept screen was inspected at 1920×1080.
+
 **October 29 Rabbit Genome POC:** The production test catalog now offers eleven
 selectable nodes, including the existing POC stats/lifecycle effects, Faster
 Gestation, and Increased Minimum Litter. Existing POC IDs are preserved. The
