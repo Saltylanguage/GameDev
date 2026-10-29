@@ -40,6 +40,32 @@
           <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="{DynamicResource Chrono_TreeBark}" /></Trigger>
         </Style.Triggers>
       </Style>
+      <Style x:Key="Genome.NodeIcon" TargetType="Image">
+        <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.32}" />
+        <Style.Triggers>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.keen-hearing">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.safe-foraging">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.warren-network">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.Sprout}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="fast-gestation">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.64}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="fertile-droppings">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.Sprout}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="high-crowding">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="increased-minimum-litter">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" />
+          </DataTrigger>
+        </Style.Triggers>
+      </Style>
     </ResourceDictionary>
   </Page.Resources>
 
@@ -716,11 +742,12 @@
                               </ItemsControl.ItemContainerStyle>
                               <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                  <Button Width="156" Height="112" Command="{Binding SelectCommand}" Style="{StaticResource Genome.NodeButton}">
+                                  <Button Width="170" Height="144" Command="{Binding SelectCommand}" Style="{StaticResource Genome.NodeButton}">
                                     <StackPanel HorizontalAlignment="Center">
-                                      <Image Source="{StaticResource GalapagOS.Image.Icon.Sprout}" Width="24" Height="24" HorizontalAlignment="Center" />
-                                      <TextBlock Text="{Binding DisplayName}" Margin="0,4,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" />
-                                      <Border Margin="0,4,0,0" CornerRadius="3" Padding="5,2" HorizontalAlignment="Center">
+                                      <Image Style="{StaticResource Genome.NodeIcon}" Width="46" Height="46" HorizontalAlignment="Center" />
+                                      <TextBlock Text="{Binding BranchText}" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_Olive}" TextAlignment="Center" TextWrapping="Wrap" />
+                                      <TextBlock Text="{Binding DisplayName}" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" />
+                                      <Border Margin="0,3,0,0" CornerRadius="3" Padding="5,2" HorizontalAlignment="Center">
                                         <Border.Style>
                                           <Style TargetType="Border">
                                             <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />

@@ -13,10 +13,10 @@ namespace SaltyGame
     /// </summary>
     public sealed class GenomeLabViewModel : INotifyPropertyChanged
     {
-        internal const float NodeWidth = 156f;
-        internal const float NodeHeight = 112f;
-        const float ColumnGap = 92f;
-        const float RowGap = 28f;
+        internal const float NodeWidth = 170f;
+        internal const float NodeHeight = 144f;
+        const float ColumnGap = 72f;
+        const float RowGap = 20f;
         const float TreePadding = 24f;
         const float TreeHeaderHeight = 42f;
         const float ConnectorThickness = 4f;
@@ -359,7 +359,8 @@ namespace SaltyGame
 
                 var visibleNodes = speciesMap.Nodes.Where(node => selectedBranch == AllBranches
                     || node.BranchName == selectedBranch).ToArray();
-                var nodeLayouts = CreateNodeLayouts(speciesMap, visibleNodes, out var treeWidth, out var treeHeight);
+                var nodeLayouts = CreateNodeLayouts(speciesMap, visibleNodes, permanent != null,
+                    out var treeWidth, out var treeHeight);
                 foreach (var node in visibleNodes)
                 {
                     var layout = nodeLayouts[node.Id];
@@ -413,11 +414,20 @@ namespace SaltyGame
         Dictionary<string, GenomeNodeLayout> CreateNodeLayouts(
             SpeciesGenomeMapSnapshot speciesMap,
             IEnumerable<GenomeUpgradeNodeSnapshot> visibleNodes,
+            bool includePermanentConcepts,
             out float treeWidth,
             out float treeHeight)
         {
+            var visible = visibleNodes.ToArray();
+            var concepts = includePermanentConcepts
+                ? visible.Where(node => PermanentConceptNodeIds.Contains(node.Id))
+                    .OrderBy(node => node.BranchName).ThenBy(node => node.DisplayName).ToArray()
+                : Array.Empty<GenomeUpgradeNodeSnapshot>();
+            var treeNodes = includePermanentConcepts
+                ? visible.Where(node => !PermanentConceptNodeIds.Contains(node.Id)).ToArray()
+                : visible;
             var depths = new Dictionary<string, int>(StringComparer.Ordinal);
-            foreach (var node in visibleNodes)
+            foreach (var node in treeNodes)
             {
                 GetNodeDepth(node.Id, speciesMap, depths);
             }
@@ -426,7 +436,7 @@ namespace SaltyGame
             var layouts = new Dictionary<string, GenomeNodeLayout>(StringComparer.Ordinal);
             var maxDepth = 0;
             var maxRows = 0;
-            foreach (var node in visibleNodes)
+            foreach (var node in treeNodes)
             {
                 var depth = depths[node.Id];
                 var row = nextRowsByDepth.TryGetValue(depth, out var nextRow)
@@ -450,6 +460,24 @@ namespace SaltyGame
                 + TreePadding * 2f
                 + maxRows * NodeHeight
                 + Math.Max(0, maxRows - 1) * RowGap;
+
+            if (concepts.Length > 0)
+            {
+                var columns = Math.Min(2, concepts.Length);
+                var rows = (concepts.Length + columns - 1) / columns;
+                var conceptsTop = treeHeight + RowGap;
+                for (var index = 0; index < concepts.Length; index++)
+                {
+                    var column = index % columns;
+                    var row = index / columns;
+                    layouts.Add(concepts[index].Id, new GenomeNodeLayout(
+                        TreePadding + column * (NodeWidth + ColumnGap),
+                        conceptsTop + row * (NodeHeight + RowGap)));
+                }
+                treeWidth = Math.Max(treeWidth,
+                    TreePadding * 2f + columns * NodeWidth + Math.Max(0, columns - 1) * ColumnGap);
+                treeHeight = conceptsTop + rows * NodeHeight + Math.Max(0, rows - 1) * RowGap;
+            }
             return layouts;
         }
 
