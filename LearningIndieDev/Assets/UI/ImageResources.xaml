@@ -21,6 +21,31 @@
     <BitmapImage x:Key="GalapagOS.Image.Icon.Sprout"
                  UriSource="GalapagOS/Art/Icons/GalapagOS_Icon_Sprout.png" />
 
+    <BitmapImage x:Key="GalapagOS.Image.Genome.Burrowing"
+                 UriSource="GalapagOS/Art/Icons/Genome/Burrowing.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.EfficientDigestion"
+                 UriSource="GalapagOS/Art/Icons/Genome/EfficientDigestion.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.EscapeInstinct"
+                 UriSource="GalapagOS/Art/Icons/Genome/EscapeInstinct.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.FasterGestation"
+                 UriSource="GalapagOS/Art/Icons/Genome/FasterGestation.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.FertileDroppings"
+                 UriSource="GalapagOS/Art/Icons/Genome/FertileDroppings.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.HighCrowding"
+                 UriSource="GalapagOS/Art/Icons/Genome/HighCrowding.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.LongStride"
+                 UriSource="GalapagOS/Art/Icons/Genome/LongStride.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.LongVision"
+                 UriSource="GalapagOS/Art/Icons/Genome/LongVision.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.MinimumLitter"
+                 UriSource="GalapagOS/Art/Icons/Genome/MinimumLitter.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.PopulationReserves"
+                 UriSource="GalapagOS/Art/Icons/Genome/PopulationReserves.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.SeedSpreading"
+                 UriSource="GalapagOS/Art/Icons/Genome/SeedSpreading.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Genome.ToughHide"
+                 UriSource="GalapagOS/Art/Icons/Genome/ToughHide.png" />
+
     <BitmapImage x:Key="GalapagOS.Image.Species.Fox.32"
                  UriSource="../Art/Species/Animals/Standardized/32/Animals_01_Fox.png" />
     <BitmapImage x:Key="GalapagOS.Image.Species.Fox.64"

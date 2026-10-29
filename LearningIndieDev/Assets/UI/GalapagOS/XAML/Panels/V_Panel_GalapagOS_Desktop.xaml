@@ -44,25 +44,79 @@
         <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.32}" />
         <Style.Triggers>
           <DataTrigger Binding="{Binding NodeId}" Value="hare.keen-hearing">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongVision}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="hare.safe-foraging">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.guarded-burrow">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.swift-digging">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.long-stride">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.long-vision">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongVision}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.tough-hide">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.efficient-digestion">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.larger-litters">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.starting-population">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.population-pool">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="population-reserves">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="hare.warren-network">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.Sprout}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="fast-gestation">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.64}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FasterGestation}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="fertile-droppings">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.Sprout}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FertileDroppings}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="high-crowding">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.CrystalBlue}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.HighCrowding}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="increased-minimum-litter">
-            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Icon.FlowerPurple}" />
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="long-stride">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="long-vision">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongVision}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="tough-hide">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="efficient-digestion">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="population-reserves">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="burrowing">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="escape-instinct">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EscapeInstinct}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="seed-spreading">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" />
           </DataTrigger>
         </Style.Triggers>
       </Style>
