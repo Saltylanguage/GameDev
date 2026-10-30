@@ -15,7 +15,8 @@ in a compact two-column group beneath the connected tree and now use dedicated,
 transparent pixel-art sprites for the genome traits instead of repeating generic
 species and plant icons. The focused permanent Gene Lab PlayMode and graphics
 visual checks passed before the custom sprites were added; the sprite replacement
-has not yet been re-imported or visually captured in Unity.
+uses Chrono's in-game rabbit sprite as its art reference. Unity import and an
+updated Gene Lab capture are still pending.
 
 **October 29 Rabbit Genome POC:** The production test catalog now offers eleven
 selectable nodes, including the existing POC stats/lifecycle effects, Faster
