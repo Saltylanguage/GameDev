@@ -15,13 +15,13 @@
       </ResourceDictionary.MergedDictionaries>
       <Style x:Key="Genome.NodeButton" TargetType="Button">
         <Setter Property="Background" Value="#FFF8E5" />
-        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Sand}" />
         <Setter Property="BorderThickness" Value="2" />
-        <Setter Property="Padding" Value="8" />
+        <Setter Property="Padding" Value="7" />
         <Setter Property="Template">
           <Setter.Value>
             <ControlTemplate TargetType="Button">
-              <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" Padding="{TemplateBinding Padding}">
+              <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7" Padding="{TemplateBinding Padding}">
                 <ContentPresenter Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center" />
               </Border>
             </ControlTemplate>
@@ -29,8 +29,9 @@
         </Setter>
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsSelected}" Value="True">
-            <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
-            <Setter Property="BorderThickness" Value="4" />
+            <Setter Property="Background" Value="#FFFFF1CE" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
+            <Setter Property="BorderThickness" Value="3" />
           </DataTrigger>
           <DataTrigger Binding="{Binding IsConcept}" Value="True">
             <Setter Property="Background" Value="#FFE2D9C4" />
@@ -761,7 +762,7 @@
                         <TextBlock Text="BRANCH" Margin="0,0,10,0" VerticalAlignment="Center" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="13" Foreground="{DynamicResource Chrono_Olive}" />
                         <ComboBox ItemsSource="{Binding GenomeLab.BranchNames}" SelectedItem="{Binding GenomeLab.SelectedBranch, Mode=TwoWay}" Width="190" Height="30" />
                       </StackPanel>
-                      <Viewbox Grid.Row="2" Stretch="Uniform">
+                      <ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
                         <Grid Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
                           <Canvas Width="{Binding GenomeTreeWidth}" Height="{Binding GenomeTreeHeight}">
                             <TextBlock Canvas.Left="24" Canvas.Top="10" Text="{Binding GenomeLab.EconomyModeText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
@@ -796,32 +797,43 @@
                               </ItemsControl.ItemContainerStyle>
                               <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                  <Button Width="170" Height="144" Command="{Binding SelectCommand}" Style="{StaticResource Genome.NodeButton}">
-                                    <StackPanel HorizontalAlignment="Center">
-                                      <Image Style="{StaticResource Genome.NodeIcon}" Width="46" Height="46" HorizontalAlignment="Center" />
-                                      <TextBlock Text="{Binding BranchText}" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" Foreground="{DynamicResource Chrono_Olive}" TextAlignment="Center" TextWrapping="Wrap" />
-                                      <TextBlock Text="{Binding DisplayName}" Margin="0,2,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" />
-                                      <Border Margin="0,3,0,0" CornerRadius="3" Padding="5,2" HorizontalAlignment="Center">
-                                        <Border.Style>
-                                          <Style TargetType="Border">
-                                            <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
-                                            <Style.Triggers>
-                                              <DataTrigger Binding="{Binding IsConcept}" Value="True">
-                                                <Setter Property="Background" Value="#FFE2D9C4" />
-                                              </DataTrigger>
-                                            </Style.Triggers>
-                                          </Style>
-                                        </Border.Style>
-                                        <TextBlock Text="{Binding StateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                                  <Button Width="218" Height="250" Command="{Binding SelectCommand}" Style="{StaticResource Genome.NodeButton}">
+                                    <Grid>
+                                      <Grid.RowDefinitions>
+                                        <RowDefinition Height="14" />
+                                        <RowDefinition Height="40" />
+                                        <RowDefinition Height="82" />
+                                        <RowDefinition Height="*" />
+                                        <RowDefinition Height="18" />
+                                        <RowDefinition Height="30" />
+                                      </Grid.RowDefinitions>
+                                      <TextBlock Grid.Row="0" Text="{Binding BranchText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_Olive}" TextAlignment="Center" />
+                                      <TextBlock Grid.Row="1" Text="{Binding DisplayName}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                      <Image Grid.Row="2" Style="{StaticResource Genome.NodeIcon}" Width="78" Height="78" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                      <TextBlock Grid.Row="3" Text="{Binding Description}" Margin="3,4" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="11" Foreground="{DynamicResource Chrono_TreeBark}" TextAlignment="Center" TextWrapping="Wrap" VerticalAlignment="Center" />
+                                      <TextBlock Grid.Row="4" Text="{Binding StateText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" TextAlignment="Center" />
+                                      <Border Grid.Row="5" CornerRadius="4" Padding="5,4" HorizontalAlignment="Stretch" Background="{DynamicResource Chrono_Olive}">
+                                        <TextBlock FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_VanillaCream}" TextAlignment="Center" VerticalAlignment="Center">
+                                          <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                              <Setter Property="Text" Value="SELECT NODE" />
+                                              <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                  <Setter Property="Text" Value="SELECTED" />
+                                                </DataTrigger>
+                                              </Style.Triggers>
+                                            </Style>
+                                          </TextBlock.Style>
+                                        </TextBlock>
                                       </Border>
-                                    </StackPanel>
+                                    </Grid>
                                   </Button>
                                 </DataTemplate>
                               </ItemsControl.ItemTemplate>
                             </ItemsControl>
                           </Canvas>
                         </Grid>
-                      </Viewbox>
+                      </ScrollViewer>
 
                       <Border Grid.Row="3" Background="#FFF8E5" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6" Padding="12,7">
                         <Grid>

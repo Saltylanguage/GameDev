@@ -13,10 +13,10 @@ namespace SaltyGame
     /// </summary>
     public sealed class GenomeLabViewModel : INotifyPropertyChanged
     {
-        internal const float NodeWidth = 170f;
-        internal const float NodeHeight = 144f;
-        const float ColumnGap = 72f;
-        const float RowGap = 20f;
+        internal const float NodeWidth = 218f;
+        internal const float NodeHeight = 250f;
+        const float ColumnGap = 40f;
+        const float RowGap = 22f;
         const float TreePadding = 24f;
         const float TreeHeaderHeight = 42f;
         const float ConnectorThickness = 4f;

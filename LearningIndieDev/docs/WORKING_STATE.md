@@ -10,13 +10,12 @@ shows Faster Gestation, Fertile Droppings, High Crowding, and Increased Minimum
 Litter alongside the permanent five-node tree. These four nodes are visibly
 locked concepts; purchasing and loadout controls remain disabled, and the panel
 states that their permanent prices and loadout rules are undecided. The legacy
-POC source catalog supplies their descriptions and branch labels. Node cards sit
-in a compact two-column group beneath the connected tree and now use dedicated,
-transparent pixel-art sprites for the genome traits instead of repeating generic
-species and plant icons. The focused permanent Gene Lab PlayMode and graphics
-visual checks passed before the custom sprites were added; the sprite replacement
-uses Chrono's in-game rabbit sprite as its art reference. Unity import and an
-updated Gene Lab capture are still pending.
+POC source catalog supplies their descriptions and branch labels. The connected
+tree now uses larger illustrated cards with a title, description, status, and
+selection footer, styled after the journey-choice cards. A scroll area preserves
+the larger node size as the tree grows. Twelve transparent trait sprites use
+Chrono's in-game rabbit as their art reference. The focused Gene Lab checks were
+run before these card changes; an updated Unity capture is still pending.
 
 **October 29 Rabbit Genome POC:** The production test catalog now offers eleven
 selectable nodes, including the existing POC stats/lifecycle effects, Faster
