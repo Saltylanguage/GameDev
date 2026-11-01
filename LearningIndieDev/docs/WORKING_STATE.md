@@ -5,6 +5,16 @@ become a master changelog.
 
 ## Current focus
 
+**November 1 handoff to Sim:** The latest `ProjectMain` and `BevBranch` work is
+already merged into `codex/audio-direction-and-sourcing`; the branch was even
+with its origin after fetch. This week's work brought the approved Field Data
+shop/economy and permanent Hare progression together, retained wallet gating
+until the first shop, and added four locked Genome concepts with Chrono-style
+trait sprites and illustrated cards. See the
+[weekly handoff](handoffs/2026-11-01-codex-sim-weekly-handoff.md) for commits,
+verification, and remaining work. Updated capture of the card layout remains
+open. The Gene Lab concept prices and loadout rules are still undecided.
+
 **October 29 permanent Gene Lab concept preview:** The Sim/FD2 Gene Lab now
 shows Faster Gestation, Fertile Droppings, High Crowding, and Increased Minimum
 Litter alongside the permanent five-node tree. These four nodes are visibly
