@@ -5,14 +5,14 @@ become a master changelog.
 
 ## Current focus
 
-**November 1 one-week coverage handoff to Sim:** Josh is away for a week. Sim
-is taking over from pushed branch `codex/audio-direction-and-sourcing` at
-`f1a42876`. Main and Sim's latest branch work are already merged. The
-[coverage handoff](handoffs/2026-11-01-codex-sim-weekly-handoff.md) summarizes
-the settled Field Data direction, current locked Genome concepts, next
-verification step, and decisions to leave for Josh. Updated capture of the
-Gene Lab card layout remains open; permanent concept prices and loadout rules
-are undecided.
+**November 1 context for Sim while Josh is away:** Josh will be unavailable for
+a week and cannot address open items or upcoming changes during that period.
+This is context on his work, not a transfer of ownership or a task assignment;
+Sim's priorities remain his own. The
+[context note](handoffs/2026-11-01-codex-sim-weekly-handoff.md) records the
+current Field Data direction, locked Genome concepts, and known open questions.
+The Gene Lab card capture remains open; permanent concept prices and loadout
+rules are undecided.
 
 **October 29 permanent Gene Lab concept preview:** The Sim/FD2 Gene Lab now
 shows Faster Gestation, Fertile Droppings, High Crowding, and Increased Minimum

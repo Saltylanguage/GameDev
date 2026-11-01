@@ -1,4 +1,4 @@
-# One-week coverage handoff to Sim
+# Context for Sim while Josh is away
 
 [Working state](../WORKING_STATE.md) | Status: ready-for-review
 
@@ -6,25 +6,27 @@
 - Handoff ID: 2026-11-01-codex-sim-weekly-handoff
 - Owner: codex
 - Branch: codex/audio-direction-and-sourcing
-- Baseline commit: f1a42876
+- Baseline commit: 6d66b4d8
 - Date: 2026-11-01
 - Supersedes: none
 
 ## Summary
 
-Josh is taking a one-week break. Sim is taking over during that time; this note
-is the short operational context so work can continue without mistaking
-proposals for decisions or repeating completed integration. Start from the
-pushed `codex/audio-direction-and-sourcing` branch at `f1a42876`. It already
-contains the latest fetched `ProjectMain` and `BevBranch` tips, including Sim's
-Field Data shop/economy work. The branch was fetched and confirmed even with
-origin at handoff time.
+Josh will be away for a week and won't be available to address these open items
+or work on upcoming changes during that time. This note provides context on
+his recent work so it is easier to distinguish completed work, current
+implementation, and undecided ideas.
 
-The immediate focus is to continue the Rabbit Genome and Gene Lab work, verify
-the new card presentation, and leave a clear record of anything that needs
-Josh's decision when he returns. This is a coverage handoff, not a request to
-reopen completed Field Data integration or to treat concept-only nodes as
-approved economy design.
+This note does not transfer ownership of Josh's work, assign its open items to
+Sim, or change Sim's priorities. Sim can continue his own work as planned; the
+items below are context, not a task list. If future work runs into a question
+that needs Josh's input, record it for his return rather than assuming
+responsibility for deciding or implementing it on his behalf.
+
+The pushed `codex/audio-direction-and-sourcing` branch at `6d66b4d8` contains
+the recent work and the latest fetched `ProjectMain` and `BevBranch` tips,
+including Sim's Field Data shop/economy work. The branch was fetched and
+confirmed even with origin at handoff time.
 
 ## Changes
 
@@ -76,20 +78,17 @@ approved economy design.
 
 ## Risks and incomplete work
 
-- Capture and inspect the updated Gene Lab at the target resolutions.
-- Decide how permanent Genome prices, licenses, capacity, and loadouts should
-  work before enabling purchase of the four concepts.
-- Continue Genome implementation from
-  `RABBIT_GENOME_IMPLEMENTATION_PLAN.md`; resolve the avoidance input path and
-  food-model prerequisites before claiming those branches are gameplay-ready.
-- The new illustrated-card layout has no updated Unity capture yet; the earlier
-  focused Gene Lab checks predate this styling change. Capture and review it
-  before describing the visual pass as verified.
+- The updated Gene Lab still needs a Unity capture at target resolutions; the
+  earlier focused checks predate the illustrated-card styling.
+- Permanent Genome prices, licenses, capacity, and loadouts for the four
+  concepts are undecided, so those concepts remain locked.
+- The Genome implementation plan remains at
+  `RABBIT_GENOME_IMPLEMENTATION_PLAN.md`. Avoidance lacks a Genome-to-simulation
+  input path, and Gardener food upgrades depend on the food model. Neither
+  branch should be described as gameplay-ready yet.
 
 ## Next useful step
 
-First, capture and review the illustrated Gene Lab at the target resolutions.
-Then continue only the Genome implementation steps already defined in the plan.
-Write down new economy or mechanic questions for Josh instead of silently
-resolving the locked concepts' permanent prices, licenses, capacity, or loadout
-rules during coverage.
+This note assigns no work to Sim. The items above are context only; Sim can
+follow his existing priorities. Josh can resume the unresolved Genome and UI
+items when he returns, using this note and the linked plan as context.
