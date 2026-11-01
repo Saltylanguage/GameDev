@@ -1,4 +1,4 @@
-# Weekly handoff to Sim
+# One-week coverage handoff to Sim
 
 [Working state](../WORKING_STATE.md) | Status: ready-for-review
 
@@ -6,17 +6,25 @@
 - Handoff ID: 2026-11-01-codex-sim-weekly-handoff
 - Owner: codex
 - Branch: codex/audio-direction-and-sourcing
-- Baseline commit: b95941eb
+- Baseline commit: f1a42876
 - Date: 2026-11-01
 - Supersedes: none
 
 ## Summary
 
-This week's work integrates Sim's Field Data shop/economy with the Rabbit
-Genome playtest work, then improves the Gene Lab presentation so the planned
-Genome branches and traits can be reviewed in-game. The feature branch includes
-the latest fetched `ProjectMain` and `BevBranch` tips. Its origin was fetched
-and confirmed even with the local branch before this handoff was prepared.
+Josh is taking a one-week break. Sim is taking over during that time; this note
+is the short operational context so work can continue without mistaking
+proposals for decisions or repeating completed integration. Start from the
+pushed `codex/audio-direction-and-sourcing` branch at `f1a42876`. It already
+contains the latest fetched `ProjectMain` and `BevBranch` tips, including Sim's
+Field Data shop/economy work. The branch was fetched and confirmed even with
+origin at handoff time.
+
+The immediate focus is to continue the Rabbit Genome and Gene Lab work, verify
+the new card presentation, and leave a clear record of anything that needs
+Josh's decision when he returns. This is a coverage handoff, not a request to
+reopen completed Field Data integration or to treat concept-only nodes as
+approved economy design.
 
 ## Changes
 
@@ -37,6 +45,12 @@ and confirmed even with the local branch before this handoff was prepared.
 
 ## Decisions and assumptions
 
+- Settled direction to preserve during coverage: Forest Edge starts at 400
+  Plants / 20 Hares / 10 Foxes; Field Data receipts from the opening
+  simulation remain auditable, but the spendable wallet opens at the first
+  shop. Josh manually completed the journey and said the flow made sense.
+- Keep the four new permanent Gene Lab concepts visibly locked until their
+  permanent prices and loadout rules are explicitly decided.
 - Faster Gestation, Fertile Droppings, High Crowding, and Increased Minimum
   Litter are concept-only in the permanent Gene Lab view. The concepts cannot
   be purchased or loaded there. Their permanent prices and loadout rules remain
@@ -44,8 +58,9 @@ and confirmed even with the local branch before this handoff was prepared.
 - Playtest catalog values and node costs remain provisional. Avoidance still
   lacks a Genome-to-simulation input path; Gardener food upgrades depend on the
   food model being ready.
-- This handoff records the week of October 25 through November 1, 2026. It is a
-  summary of project state, not a replacement for detailed ticket handoffs.
+- This handoff covers the week beginning November 1, 2026. It supplements the
+  detailed ticket and feature handoffs; those remain the source for exact
+  acceptance evidence.
 
 ## Validation
 
@@ -67,12 +82,14 @@ and confirmed even with the local branch before this handoff was prepared.
 - Continue Genome implementation from
   `RABBIT_GENOME_IMPLEMENTATION_PLAN.md`; resolve the avoidance input path and
   food-model prerequisites before claiming those branches are gameplay-ready.
-- Two October 10 S4 XML reports and a Unity-generated `InitTestScene` remain
-  local and were not included in the push. They are not part of this week's
-  implementation handoff.
+- The new illustrated-card layout has no updated Unity capture yet; the earlier
+  focused Gene Lab checks predate this styling change. Capture and review it
+  before describing the visual pass as verified.
 
 ## Next useful step
 
-Have Sim review the illustrated Gene Lab direction and current locked concepts,
-then capture the updated view and agree which Genome mechanics are next to
-implement. Keep permanent economy rules explicit before enabling purchases.
+First, capture and review the illustrated Gene Lab at the target resolutions.
+Then continue only the Genome implementation steps already defined in the plan.
+Write down new economy or mechanic questions for Josh instead of silently
+resolving the locked concepts' permanent prices, licenses, capacity, or loadout
+rules during coverage.
