@@ -3,6 +3,14 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 9 planning update:** Josh approved [S6 — The Fun Pass](Sprints/S6-control-record.md)
+for November 16–29. It is the official next-sprint direction, with kickoff and
+task allocation pending; [S5](Sprints/S5-control-record.md) remains active through
+November 15. The [publication handoff](handoffs/2026-11-09-codex-s6-fun-pass-plan.md)
+records the October 29 `ProjectMain` baseline and the need to reconcile Sim's
+local November GLJP source/evidence before implementation. The older dated
+checkpoints below remain history, not a current-status claim.
+
 ## Current focus
 
 **October 29 Field Data route verification:** Sim's accepted five-node Field
