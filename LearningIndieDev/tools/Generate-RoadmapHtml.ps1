@@ -36,7 +36,7 @@ function Inline([string] $Text) {
     })
     $Text = Html $Text
     $Text = [regex]::Replace($Text, '\*\*(.+?)\*\*', '<strong>$1</strong>')
-    for ($n = 0; $n -lt $tokens.Count; $n++) {
+    for ($n = $tokens.Count - 1; $n -ge 0; $n--) {
         $Text = $Text.Replace($tokens[$n], $values[$n])
     }
     $Text
@@ -149,6 +149,7 @@ $titleMatch = [regex]::Match($sourceText, '(?m)^#\s+(.+?)\s*$')
 $title = if ($titleMatch.Success) { $titleMatch.Groups[1].Value } else { 'Product Roadmap' }
 $safeTitle = Html $title
 $body = Render $sourceText
+if ($body -match 'TOK\d+END') { throw 'ROADMAP.html contains an unresolved inline token.' }
 
 $html = [System.Text.StringBuilder]::new()
 $shell = @(

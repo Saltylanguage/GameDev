@@ -70,6 +70,15 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 9, 2026 sprint direction:** Josh approved
+  [S6 — The Fun Pass](Sprints/S6-control-record.md) for November 16–29, following
+  the November 15 S5 boundary. The immediate M2 question is whether one complete
+  Hare journey offers consequential choices, readable pressure, distinct
+  strategies, and a reason to replay. Use short, reproducible November-build
+  comparisons to guide playtests; automated correctness does not establish fun.
+  The older S6 persistence/Genome forecast is superseded. S6 kickoff and
+  integration of Sim's local November GLJP work are still pending.
+
 - **Population decisions playtest slice (October 21, 2026):** Local round-boundary
   controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
   and +/-5 Plants. Rejected changes cost nothing; paid removals are recorded
@@ -160,8 +169,8 @@ uncertainty or regression risk.
   small species/scenario roster, separate player and developer experiences,
   visual direction, audio feedback, and the first persistent roguelike unlock
   loop. [`ROADMAP.md`](../ROADMAP.md) records their dependencies and gates.
-- [`ROADMAP.md`](../ROADMAP.md) version 2.4 is the active production baseline
-  as of 2026-10-15: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
+- **October 16 roadmap checkpoint (historical):** [`ROADMAP.md`](../ROADMAP.md)
+  version 2.4 was the production baseline then: M0 and M1 are complete, Sprint 2 is closed, and Sprint 3
   closed on 2026-09-29. S3 delivered a safe, recoverable Forest Edge game-state
   loop, understandable Mutation effects, and bounded visual polish/UI
   integration. Josh accepted M1 using distributed retained evidence; later
@@ -182,7 +191,8 @@ uncertainty or regression risk.
   57–95h Field Data range exceeds the conservative 80h sprint floor by 15h at
   its upper end before unestimated ecology/playability work. Permanent content
   remains separate; simulation corrections are candidates for the meeting.
-  S6/S7 dates need reforecasting after the extended S5. The
+  S6/S7 dates still needed reforecasting at that checkpoint; the November 9
+  S6 plan above supersedes that forecast. The
   October 16 [FD-T01 entry decision](FIELD_DATA_ENTRY_REVIEW.md) retains the
   larger map as the Desktop Simulation entry; the five-node Field Data test
   is selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
