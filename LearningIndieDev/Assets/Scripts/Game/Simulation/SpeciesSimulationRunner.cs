@@ -222,7 +222,8 @@ namespace SaltyGame
                 featureId,
                 experimentalOptions.FoxAttackCooldownTicks,
                 preContactAvoidanceChance,
-                experimentalOptions.CoupledSpeciesResponsesEnabled);
+                experimentalOptions.CoupledSpeciesResponsesEnabled,
+                experimentalOptions.FoxOrdinaryMovementScentEnabled);
             if (!InstallBoundaryState(nextRules, nextOptions, activeUpgradeLoadout ?? Run.UpgradeLoadout)) return false;
             if (!string.IsNullOrWhiteSpace(effectsFingerprint))
                 Run.SetRulesetFingerprint(CombineFingerprint(Run.RulesetFingerprint, effectsFingerprint));
@@ -531,30 +532,26 @@ namespace SaltyGame
             }
 
             Run.Metrics.BeginTick(Run.Tick + 1);
-            var next = simulationData == null
-                ? SpeciesSimulation.Step(
-                    Run.Cells,
-                    rules,
-                    Run.Seed + Run.Tick,
-                    maxPopulation,
-                    metrics: Run.Metrics,
-                    combatResolutionMode: combatResolutionMode,
-                    attackOpportunityMode: attackOpportunityMode,
-                    experimentalOptions: experimentalOptions,
-                    previousSource: previousCells,
-                    stepIntervalSeconds: stepSeconds,
-                    genomeSnapshot: Run.ActiveGenomeSnapshot)
-                : SpeciesSimulation.Step(
-                    Run.Cells,
-                    simulationData,
-                    Run.Seed + Run.Tick,
-                    Run.Metrics,
-                    combatResolutionMode,
-                    attackOpportunityMode,
-                    experimentalOptions,
-                    previousSource: previousCells,
-                    genomeSnapshot: Run.ActiveGenomeSnapshot);
-            previousCells = Run.Cells;
+            var activeRules = simulationData?.SpeciesRules ?? rules;
+            var lineage = Run.GetHareJourneyLineage();
+            var source = Run.PrepareHareBurrows(activeRules, lineage);
+            var next = SpeciesSimulation.StepWithLineage(
+                source,
+                activeRules,
+                Run.Seed + Run.Tick,
+                simulationData?.MaxPopulation ?? maxPopulation,
+                simulationData?.TerrainDefinitions,
+                simulationData?.AlphaOffspringRules,
+                Run.Metrics,
+                combatResolutionMode,
+                attackOpportunityMode,
+                experimentalOptions,
+                previousCells,
+                simulationData?.StepInterval ?? stepSeconds,
+                Run.ActiveGenomeSnapshot,
+                lineage,
+                Run.HiddenHareCount);
+            previousCells = source;
             Run.Advance(next, stepSeconds);
             if (stopOnPlayerExtinction && Run.SupportsContinuation
                 && Run.Status != SimulationRunStatus.Complete

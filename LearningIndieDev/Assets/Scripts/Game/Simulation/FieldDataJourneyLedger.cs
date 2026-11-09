@@ -239,7 +239,7 @@ namespace SaltyGame
             }
 
             var totalRounds = FieldDataJourneyDefinition.RoundsPerSimulation
-                * FieldDataJourneyDefinition.SimulationCount;
+                * definition.RouteSimulationCount;
             if (globalRound < 1 || globalRound > totalRounds
                 || tick != checked(globalRound * definition.RoundLength))
             {
@@ -286,7 +286,7 @@ namespace SaltyGame
         {
             discarded = 0;
             var totalRounds = FieldDataJourneyDefinition.RoundsPerSimulation
-                * FieldDataJourneyDefinition.SimulationCount;
+                * definition.RouteSimulationCount;
             for (var round = 1; round <= totalRounds; round++)
             {
                 if (!awards.ContainsKey(AwardIdentity(round, FieldDataAwardKind.PopulationPayout)))
@@ -295,7 +295,7 @@ namespace SaltyGame
                 }
             }
 
-            for (var node = 1; node <= FieldDataJourneyDefinition.SimulationCount; node++)
+            for (var node = 1; node <= definition.RouteSimulationCount; node++)
             {
                 var clearRound = node * FieldDataJourneyDefinition.RoundsPerSimulation;
                 if (!awards.ContainsKey(AwardIdentity(clearRound, FieldDataAwardKind.NodeClear)))

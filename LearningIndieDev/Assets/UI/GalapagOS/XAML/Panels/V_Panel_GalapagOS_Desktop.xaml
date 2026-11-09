@@ -29,9 +29,9 @@
         </Setter>
         <Style.Triggers>
           <DataTrigger Binding="{Binding IsSelected}" Value="True">
-            <Setter Property="Background" Value="#FFFFF1CE" />
+            <Setter Property="Background" Value="{DynamicResource Chrono_Lime}" />
             <Setter Property="BorderBrush" Value="{DynamicResource Chrono_Olive}" />
-            <Setter Property="BorderThickness" Value="3" />
+            <Setter Property="BorderThickness" Value="4" />
           </DataTrigger>
           <DataTrigger Binding="{Binding IsConcept}" Value="True">
             <Setter Property="Background" Value="#FFE2D9C4" />
@@ -74,6 +74,12 @@
           <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.starting-population">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.founding-hares">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.seed-dispersal">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" />
+          </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="poc.hare.population-pool">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.PopulationReserves}" />
           </DataTrigger>
@@ -90,6 +96,9 @@
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FertileDroppings}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="high-crowding">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.HighCrowding}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.crowding-tolerance">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.HighCrowding}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="increased-minimum-litter">
@@ -113,8 +122,20 @@
           <DataTrigger Binding="{Binding NodeId}" Value="burrowing">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" />
           </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.burrowing">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" />
+          </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="escape-instinct">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EscapeInstinct}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.escape-instinct">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EscapeInstinct}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.increased-minimum-litter">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
+          </DataTrigger>
+          <DataTrigger Binding="{Binding NodeId}" Value="hare.larger-litters">
+            <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" />
           </DataTrigger>
           <DataTrigger Binding="{Binding NodeId}" Value="seed-spreading">
             <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" />
@@ -867,7 +888,18 @@
                       <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                       <StackPanel>
-                        <TextBlock Text="{Binding SelectedGenomeNode.DisplayName}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                        <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0,0,0,8">
+                          <Grid VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="72" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                            <ContentControl Content="{Binding SelectedGenomeNode}" Width="72" Height="72" HorizontalAlignment="Center" VerticalAlignment="Center">
+                              <ContentControl.ContentTemplate><DataTemplate><Image Style="{StaticResource Genome.NodeIcon}" Width="72" Height="72" Stretch="Uniform" /></DataTemplate></ContentControl.ContentTemplate>
+                            </ContentControl>
+                            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10,0,0,0">
+                              <TextBlock Text="{Binding SelectedGenomeNode.BranchText}" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
+                              <TextBlock Text="{Binding SelectedGenomeNode.DisplayName}" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                            </StackPanel>
+                          </Grid>
+                        </Border>
                         <TextBlock Text="{Binding SelectedGenomeNode.StateText}" FontSize="15" FontWeight="Bold" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_Olive}" />
                         <TextBlock Text="{Binding SelectedGenomeNode.Description}" FontSize="16" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding SelectedGenomeNode.CapacityText}" FontSize="14" Margin="0,6,0,0" Foreground="{DynamicResource Chrono_Olive}" />

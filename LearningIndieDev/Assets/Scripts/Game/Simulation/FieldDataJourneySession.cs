@@ -46,6 +46,7 @@ namespace SaltyGame
         bool disposed;
         bool shopPurchasesStarted;
         int successfulPopulationInterventionCount;
+        readonly Dictionary<int, int> purchasedHaresBySimulation = new Dictionary<int, int>();
 
         public event Action<FieldDataJourneySession> StateChanged;
         public event Action<FieldDataJourneySession> Updated;
@@ -71,15 +72,15 @@ namespace SaltyGame
                     nameof(simulationManager));
             }
 
+            var routeRounds = FieldDataJourneyDefinition.RoundsPerSimulation * definition.RouteSimulationCount;
             if (!retainedRun.SupportsContinuation
                 || retainedRun.Status != SimulationRunStatus.Ready
                 || retainedRun.PhaseLengthTicks != definition.RoundLength
-                || retainedRun.TargetTicks != definition.RoundLength
-                    * FieldDataJourneyDefinition.RoundsPerSimulation
-                    * FieldDataJourneyDefinition.SimulationCount)
+                || retainedRun.TargetTicks != definition.RoundLength * routeRounds)
             {
                 throw new ArgumentException(
-                    "The prepared run must use the Field Data round length and complete 18-round route.",
+                    "The prepared run must use the Field Data round length and complete the route's "
+                    + routeRounds.ToString(System.Globalization.CultureInfo.InvariantCulture) + "-round length.",
                     nameof(simulationManager));
             }
 
@@ -129,6 +130,26 @@ namespace SaltyGame
             ? 0
             : (GlobalRound - 1) / FieldDataJourneyDefinition.RoundsPerSimulation;
 
+        public int PurchasedHaresThisSimulation => purchasedHaresBySimulation.TryGetValue(SimulationIndex, out var count) ? count : 0;
+        public int HarePurchaseAllowance
+        {
+            get
+            {
+                var genome = retainedRun.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("hare"));
+                if (genome.HasActiveNode("hare.warren-network"))
+                    return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(genome.PopulationReservesRank);
+                foreach (var node in genome.ResolvedNodes)
+                {
+                    if (node.Id != "hare.warren-network" && node.Id != "poc.hare.population-pool") continue;
+                    var points = genome.GetAllocationCapacityPoints(node.Id);
+                    return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(
+                        node.GetRank(points > 0 ? points : node.CapacityPoints));
+                }
+                return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(0);
+            }
+        }
+        public int HarePurchasesRemaining => Math.Max(0, HarePurchaseAllowance - PurchasedHaresThisSimulation);
+
         public bool Begin()
         {
             return !disposed
@@ -162,20 +183,15 @@ namespace SaltyGame
 
         public FieldDataRewardChoiceSet GetCurrentNodeRewardChoices()
         {
-            if (State != FieldDataJourneyFlowState.Shop || retainedRun.Tick <= 0
-                || retainedRun.Tick % (Definition.RoundLength * FieldDataJourneyDefinition.RoundsPerSimulation) != 0)
+            if (State != FieldDataJourneyFlowState.Shop || !TryGetCompletedShopSimulation(out var node))
                 return null;
-            var node = retainedRun.Tick / (Definition.RoundLength * FieldDataJourneyDefinition.RoundsPerSimulation);
-            if (node < 1 || node >= FieldDataJourneyDefinition.SimulationCount) return null;
             return GetOrCreateRewardChoiceSet("node-" + node, FieldDataIncomeSource.NodeReward);
         }
 
         public FieldDataShopVisit GetCurrentShopVisit()
         {
-            if (State != FieldDataJourneyFlowState.Shop || retainedRun.Tick <= 0
-                || retainedRun.Tick % (Definition.RoundLength * FieldDataJourneyDefinition.RoundsPerSimulation) != 0)
+            if (State != FieldDataJourneyFlowState.Shop || !TryGetCompletedShopSimulation(out var visitNumber))
                 return null;
-            var visitNumber = retainedRun.Tick / (Definition.RoundLength * FieldDataJourneyDefinition.RoundsPerSimulation);
             if (shopVisits.TryGetValue(visitNumber, out var existing)) return existing;
 
             var candidates = CreateShopCandidates(visitNumber);
@@ -244,6 +260,11 @@ namespace SaltyGame
             else
             {
                 var income = selected.IncomeOffer.Value;
+                if (!CanAcquireIncome(income.Operation, income.Value))
+                {
+                    error = "This income upgrade is already owned or requires the previous payout tier.";
+                    return false;
+                }
                 var instance = new FieldDataIncomeModifierInstance(
                     "shop-" + visit.VisitNumber + "-" + requestId,
                     income.Id,
@@ -514,7 +535,7 @@ namespace SaltyGame
                 if (!TryAddIncomeModifier(instance, out error, sourceId)) return false;
             }
             else if (selected?.OrdinaryUpgrade != null
-                && !progression.TryApplyFieldDataReward(selected.OrdinaryUpgrade))
+                && !progression.TryApplyFieldDataReward(selected.OrdinaryUpgrade, retainedRun.HasStarterBurrowing))
             {
                 error = "The ordinary species upgrade is no longer eligible.";
                 return false;
@@ -543,7 +564,7 @@ namespace SaltyGame
                 || retainedRun.Status != SimulationRunStatus.AwaitingDecision
                 || retainedRun.Tick % Definition.RoundLength != 0
                 || GlobalRound >= FieldDataJourneyDefinition.RoundsPerSimulation
-                    * FieldDataJourneyDefinition.SimulationCount
+                    * Definition.RouteSimulationCount
                 || (requiredChoice != null && !requiredChoice.Resolved))
             {
                 return false;
@@ -638,6 +659,11 @@ namespace SaltyGame
 
             var quantity = Math.Abs(control.Amount);
             var species = new SpeciesId(control.SpeciesId);
+            if (kind == FieldDataPopulationInterventionKind.AddHare && quantity > HarePurchasesRemaining)
+            {
+                error = "The Hare purchase allowance for this simulation node has been used.";
+                return false;
+            }
             var currentSnapshot = retainedRun.PopulationHistory[retainedRun.PopulationHistory.Count - 1];
             if (control.Amount < 0
                 && string.Equals(control.SpeciesId, Definition.SelectedSpeciesId, StringComparison.Ordinal)
@@ -684,6 +710,8 @@ namespace SaltyGame
                 balanceAfter,
                 prepared.Positions);
             populationInterventions.Add(requestId, receipt);
+            if (kind == FieldDataPopulationInterventionKind.AddHare)
+                purchasedHaresBySimulation[SimulationIndex] = checked(PurchasedHaresThisSimulation + quantity);
             successfulPopulationInterventionCount++;
             Updated?.Invoke(this);
             return true;
@@ -707,11 +735,28 @@ namespace SaltyGame
             {
                 return false;
             }
-
-            orderedIncomeModifiers.Add(modifier);
+            if (!CanAcquireIncome(modifier.Operation, modifier.Value))
+            {
+                error = "This income upgrade is already owned or requires the previous payout tier.";
+                return false;
+            }
+            var previousTier = orderedIncomeModifiers.FindIndex(value =>
+                value.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout);
+            if (modifier.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout && previousTier >= 0)
+                orderedIncomeModifiers[previousTier] = modifier;
+            else
+                orderedIncomeModifiers.Add(modifier);
             incomeAcquisitionHistory.Add(new FieldDataIncomeAcquisitionRecord(
                 incomeAcquisitionHistory.Count + 1, modifier.InstanceId, modifier.OfferId, sourceId ?? string.Empty));
             return true;
+        }
+
+        bool CanAcquireIncome(FieldDataIncomeOperation operation, decimal value)
+        {
+            if (operation == FieldDataIncomeOperation.AddPerHare)
+                return !orderedIncomeModifiers.Exists(modifier => modifier.Operation == operation);
+            var current = orderedIncomeModifiers.Find(modifier => modifier.Operation == operation).Value;
+            return value == (current == 0m ? 1.5m : current == 1.5m ? 1.75m : current == 1.75m ? 2m : 0m);
         }
 
         public bool TryBuySpeciesEffect(
@@ -741,7 +786,11 @@ namespace SaltyGame
                 return false;
             }
 
-            var shopVisit = retainedRun.Tick / (Definition.RoundLength * FieldDataJourneyDefinition.RoundsPerSimulation);
+            if (!TryGetCompletedShopSimulation(out var shopVisit))
+            {
+                error = "The selected species-effect offer is unavailable at this shop.";
+                return false;
+            }
             foreach (var offer in Definition.SignedSpeciesOffers)
             {
                 if (!string.Equals(offer.Id, offerId, StringComparison.Ordinal)
@@ -829,8 +878,10 @@ namespace SaltyGame
                 return;
             }
 
-            var nextState = run.Tick % (Definition.RoundLength
-                * FieldDataJourneyDefinition.RoundsPerSimulation) == 0
+            var completedRounds = run.Tick / Definition.RoundLength;
+            var completedSimulation = completedRounds / FieldDataJourneyDefinition.RoundsPerSimulation;
+            var nextState = completedRounds % FieldDataJourneyDefinition.RoundsPerSimulation == 0
+                && Definition.OpensShopAfterSimulation(completedSimulation)
                 ? FieldDataJourneyFlowState.Shop
                 : FieldDataJourneyFlowState.RoundDecision;
             TrySettleCurrentRound(run);
@@ -892,6 +943,16 @@ namespace SaltyGame
             return true;
         }
 
+        bool TryGetCompletedShopSimulation(out int completedSimulation)
+        {
+            completedSimulation = 0;
+            if (retainedRun.Tick <= 0 || retainedRun.Tick % Definition.RoundLength != 0) return false;
+            var completedRounds = retainedRun.Tick / Definition.RoundLength;
+            if (completedRounds % FieldDataJourneyDefinition.RoundsPerSimulation != 0) return false;
+            completedSimulation = completedRounds / FieldDataJourneyDefinition.RoundsPerSimulation;
+            return Definition.OpensShopAfterSimulation(completedSimulation);
+        }
+
         bool TrySettleCurrentRound(SimulationRunState run)
         {
             if (run == null || run.Tick <= 0 || run.Tick % Definition.RoundLength != 0
@@ -938,10 +999,9 @@ namespace SaltyGame
         List<FieldDataShopOffer> CreateShopCandidates(int visitNumber)
         {
             var candidates = new List<FieldDataShopOffer>();
-            foreach (var species in Definition.SignedSpeciesOffers)
-                if (species.FirstShopVisit <= visitNumber) candidates.Add(new FieldDataShopOffer(species));
             foreach (var income in Definition.IncomeOffers)
-                if (income.FirstShopVisit <= visitNumber && income.ShopCost > 0)
+                if (income.FirstShopVisit <= visitNumber && income.ShopCost > 0
+                    && CanAcquireIncome(income.Operation, income.Value))
                     candidates.Add(new FieldDataShopOffer(income));
             return candidates;
         }
@@ -1092,10 +1152,16 @@ namespace SaltyGame
         bool IsOrdinaryRewardEligible(SpeciesUpgradeSnapshot snapshot)
         {
             if (snapshot == null || snapshot.TargetSpecies != retainedRun.PlayerSpeciesId
-                || !snapshot.CanApplyAfterRunStart || snapshot.PopulationToAdd != 0)
+                || !snapshot.CanApplyAfterRunStart || snapshot.PopulationToAdd != 0
+                || !progression.IsMutationResearched(snapshot.Id)
+                || !progression.CanApplyBurrowMutation(snapshot.Id, retainedRun.HasStarterBurrowing))
                 return false;
             var currentLevel = progression.GetUpgradeLevel(snapshot.Id);
             if (currentLevel >= SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(snapshot.TargetSpecies, snapshot.Id)) return false;
+            if (snapshot.Id == SpeciesUpgradeCatalog.ReproductiveDriveId && progression.CurrentRules.ReproductionChance >= 1f)
+                return false;
+            if (!SpeciesUpgradeCatalog.PreservesLitterBounds(progression.CurrentRules, snapshot))
+                return false;
             foreach (var prerequisite in snapshot.PrerequisiteUpgradeIds)
                 if (progression.GetUpgradeLevel(prerequisite) == 0) return false;
             foreach (var excluded in snapshot.ExcludedUpgradeIds)

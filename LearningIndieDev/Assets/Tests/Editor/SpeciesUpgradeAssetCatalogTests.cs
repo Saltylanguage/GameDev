@@ -78,10 +78,11 @@ namespace SaltyGame.EditorTests
             Assert.That(hareAsset, Is.Not.Null);
 
             var rules = hareAsset.CreateRules();
+            Assert.That(rules.ReproductionChance, Is.EqualTo(0.5f).Within(0.0001f));
             Assert.That(rules.StartingEnergy, Is.EqualTo(12));
             Assert.That(rules.MaximumEnergy, Is.EqualTo(48));
             Assert.That(rules.EnergyValue, Is.EqualTo(96));
-            Assert.That(rules.ReproductionChance, Is.EqualTo(1f));
+            Assert.That(rules.ReproductionChance, Is.EqualTo(0.5f).Within(0.0001f));
             Assert.That(rules.MatingEnergyThresholdFraction, Is.EqualTo(0.5f));
             Assert.That(rules.MatingEnergyCostFraction, Is.EqualTo(0.5f));
             Assert.That(rules.MaxReproductionGroupSize, Is.EqualTo(7));

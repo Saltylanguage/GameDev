@@ -14,12 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.guarded-burrow
   displayName: Tough Hide
-  description: Block +1 while active.
+  description: Unlocks Tough Hide as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
   rabbitDataPrice: 5
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: FD2
-  modifiers:
-  - attributeId: combat.block
-    signedValue: 1
+  modifiers: []

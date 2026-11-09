@@ -14,6 +14,55 @@ namespace SaltyGame.EditorTests
         const string DefinitionPath = "Assets/Data/TestData/FieldDataStarterDefinition.asset";
         const string ScenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
 
+        [TestCase(0, false, 10)]
+        [TestCase(1, true, 15)]
+        [TestCase(2, true, 20)]
+        [TestCase(3, true, 25)]
+        [TestCase(4, true, 30)]
+        [TestCase(5, true, 35)]
+        [TestCase(5, false, 10)]
+        public void FrozenPopulationReservesRankControlsJourneyAllowance(int rank, bool equipped, int expected)
+        {
+            var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
+            var owned = rank == 0 ? new string[0] : definition.HareMap.Nodes.Select(node => node.Id).ToArray();
+            var active = equipped ? new[] { "hare.warren-network" } : new string[0];
+            var profile = new SpeciesGenomeProfile(Hare, owned, active, populationReservesRank: rank);
+            var snapshot = definition.FreezeOwnedLoadout(profile);
+            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4, activeGenome: snapshot);
+            using (session)
+            {
+                Assert.That(session.HarePurchaseAllowance, Is.EqualTo(expected));
+                Assert.That(session.Begin(), Is.True);
+                manager.Advance(10.1f);
+                var restored = session.Run.CreateCheckpoint().Restore();
+                Assert.That(restored.ActiveGenomeSnapshot.GetSpeciesGenome(Hare).PopulationReservesRank,
+                    Is.EqualTo(equipped ? rank : 0));
+            }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void RoundOffersRequireResearchAndEmptyResearchCanSkip(bool researched)
+        {
+            var (_, manager, progression, session) = CreateSessionParts(hareCount: 20, plantCount: 4,
+                mutationResearch: id => researched && id == SpeciesUpgradeCatalog.ToughHideId);
+            using (session)
+            {
+                session.SetOrdinaryRewardPool(SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(Hare, null));
+                Assert.That(session.Begin(), Is.True);
+                manager.Advance(10.1f);
+                var choices = session.GetCurrentRoundRewardChoices();
+                Assert.That(choices.Choices.Count, Is.EqualTo(researched ? 1 : 0));
+                Assert.That(session.ResolveRewardChoice(choices.SourceId, "upgrade-" + SpeciesUpgradeCatalog.SeedDispersalId, out _), Is.False);
+                Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(Hare)), Is.False);
+                if (researched)
+                    Assert.That(choices.Choices.Single().OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ToughHideId));
+                Assert.That(session.ResolveRewardChoice(choices.SourceId, "skip", out _), Is.True);
+                Assert.That(session.CanUsePopulationControls, Is.True);
+                Assert.That(session.Continue(), Is.True);
+            }
+        }
+
         [TestCase(FieldDataPopulationInterventionKind.AddHare, 1, 0)]
         [TestCase(FieldDataPopulationInterventionKind.RemoveHare, 0, 1)]
         [TestCase(FieldDataPopulationInterventionKind.AddFox, 1, 0)]
@@ -62,6 +111,65 @@ namespace SaltyGame.EditorTests
                     Assert.That((int)report.GetType().GetField("REM").GetValue(report), Is.EqualTo(removed));
                     Assert.That((bool)report.GetType().GetField("fpoReconciled").GetValue(report), Is.True);
                 }
+            }
+        }
+
+        [Test]
+        public void IncomeUpgradesAreOneTimeAndPayoutTiersReplaceRatherThanCompound()
+        {
+            var (_, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
+            using (session)
+            {
+                Assert.That(session.Begin(), Is.True);
+                manager.Advance(10.1f);
+                Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("add", "add",
+                    FieldDataIncomeOperation.AddPerHare, 1m), out _), Is.True);
+                Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("add-again", "add",
+                    FieldDataIncomeOperation.AddPerHare, 1m), out _), Is.False);
+                Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("skip", "tier3",
+                    FieldDataIncomeOperation.MultiplyPopulationPayout, 2m), out _), Is.False);
+                foreach (var tier in new[] { 1.5m, 1.75m, 2m })
+                {
+                    Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("tier-" + tier, "tier",
+                        FieldDataIncomeOperation.MultiplyPopulationPayout, tier), out var error), Is.True, error);
+                    Assert.That(session.CurrentIncomeExecutionOrder.Count, Is.EqualTo(2));
+                    Assert.That(FieldDataIncome.TryCalculate(20, 20, session.CurrentIncomeExecutionOrder,
+                        out var receipt, out error), Is.True, error);
+                    Assert.That(receipt.Award, Is.EqualTo((int)(40m * tier)));
+                }
+                Assert.That(session.TryAddIncomeModifier(new FieldDataIncomeModifierInstance("repeat", "tier3",
+                    FieldDataIncomeOperation.MultiplyPopulationPayout, 2m), out _), Is.False);
+            }
+        }
+
+        [Test]
+        public void HareAllowanceCountsGrossPurchasesAndResetsAtTheNextSimulationNode()
+        {
+            var (_, manager, _, session) = CreateSessionParts(hareCount: 200, plantCount: 4);
+            using (session)
+            {
+                Assert.That(session.Begin(), Is.True);
+                manager.Advance(10.1f);
+                ResolveCurrentReward(session);
+                for (var i = 0; i < 10; i++)
+                    Assert.That(session.TryBuyPopulationControl("hare-" + i,
+                        FieldDataPopulationInterventionKind.AddHare, out _, out var error), Is.True, error);
+                Assert.That(session.PurchasedHaresThisSimulation, Is.EqualTo(10));
+                Assert.That(session.HarePurchasesRemaining, Is.Zero);
+                Assert.That(session.TryBuyPopulationControl("hare-0",
+                    FieldDataPopulationInterventionKind.AddHare, out _, out _), Is.True);
+                Assert.That(session.PurchasedHaresThisSimulation, Is.EqualTo(10));
+                Assert.That(session.TryBuyPopulationControl("remove",
+                    FieldDataPopulationInterventionKind.RemoveHare, out _, out _), Is.True);
+                var balance = session.AvailableFieldData;
+                var population = GetCount(session.Run, Hare);
+                Assert.That(session.TryBuyPopulationControl("over-limit",
+                    FieldDataPopulationInterventionKind.AddHare, out _, out _), Is.False);
+                Assert.That(session.AvailableFieldData, Is.EqualTo(balance));
+                Assert.That(GetCount(session.Run, Hare), Is.EqualTo(population));
+                ReachFirstFundedRoundDecision(manager, session);
+                Assert.That(session.PurchasedHaresThisSimulation, Is.Zero);
+                Assert.That(session.HarePurchasesRemaining, Is.EqualTo(10));
             }
         }
 
@@ -429,7 +537,8 @@ namespace SaltyGame.EditorTests
 
         static (FieldDataJourneyDefinition, SimulationManager, SpeciesProgression, FieldDataJourneySession)
             CreateSessionParts(int hareCount, int plantCount, int foxCount = 0, bool includeFox = false,
-                int maxPopulationOverride = 0)
+                int maxPopulationOverride = 0, System.Func<string, bool> mutationResearch = null,
+                GenomeSimulationSnapshot activeGenome = null)
         {
             var asset = AssetDatabase.LoadAssetAtPath<FieldDataJourneyDefinitionAsset>(DefinitionPath);
             Assert.That(asset.TryResolve(out var definition, out var error), Is.True, error);
@@ -492,16 +601,17 @@ namespace SaltyGame.EditorTests
                     });
             }
 
-            scenario = scenario.WithRunTicks(1800, 0.1f);
+            var targetTicks = definition.RoundLength * definition.RoundsPerNode * definition.RouteSimulationCount;
+            scenario = scenario.WithRunTicks(targetTicks, 0.1f);
             var run = new SimulationRunState(
-                SpeciesInitialGridFactory.Create(scenario, 10100), hare, 10100, 180f, 1800);
+                SpeciesInitialGridFactory.Create(scenario, 10100), hare, 10100, scenario.RunDurationSeconds, targetTicks, activeGenome);
             run.ConfigureContinuousPhases(100);
             var manager = new SimulationManager();
             manager.SetRunner(maxPopulationOverride > 0
                 ? new SpeciesSimulationRunner(run, scenario.SpeciesRules,
                     scenario.StepInterval, maxPopulation: maxPopulationOverride)
                 : new SpeciesSimulationRunner(run, scenario));
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, scenario.SpeciesRules[hare]));
+            var progression = new SpeciesProgression(new SpeciesDefinition(hare, scenario.SpeciesRules[hare]), mutationResearch);
             var session = new FieldDataJourneySession(definition, manager, progression);
             return (definition, manager, progression, session);
         }

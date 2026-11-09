@@ -175,6 +175,10 @@ namespace SaltyGame
             var snapshots = new List<SpeciesGenomeSnapshot>();
             foreach (var genome in genomeProfiles)
             {
+                // Older saves may contain oversized legacy selections. Preserve the
+                // profile, but require the player to reduce it before launching.
+                if (genome.CapacityUsed > GenomeContract.ActiveCapacity)
+                    throw new InvalidOperationException("The active Genome exceeds eight equipped nodes.");
                 var permanentHare = genome.SpeciesId == definition.HareMap.SpeciesId
                     && (genome.ResetGeneration > 0 || genome.UnlockedNodeIds.Any(id => definition.HareMap.TryGetNode(id, out _)));
                 if (permanentHare)

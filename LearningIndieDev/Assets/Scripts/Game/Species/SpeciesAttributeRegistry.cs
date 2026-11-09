@@ -77,6 +77,7 @@ namespace SaltyGame
         StartingPopulation,
         PopulationPoolCapacity,
         PreContactAvoidanceChance,
+        PredatorDetectionRangeBonus,
     }
 
     public static class SpeciesAttributeIds
@@ -111,6 +112,7 @@ namespace SaltyGame
         public const string CrowdingTolerance = "crowding.tolerance";
         public const string FleeMovementSpeedBonus = "flee.movement-speed-bonus";
         public const string TrackingPersistenceSteps = "awareness.tracking-persistence-steps";
+        public const string PredatorDetectionRangeBonus = "awareness.predator-detection-range-bonus";
         public const string PreContactAvoidanceChance = "avoidance.pre-contact-chance";
     }
 
@@ -122,7 +124,7 @@ namespace SaltyGame
             CreateDefinitionList(definitions);
         static readonly string registryFingerprint = CreateFingerprint(definitions);
 
-        public const string Version = "species-attribute-registry-v7";
+        public const string Version = "species-attribute-registry-v8";
         public static string Fingerprint => registryFingerprint;
         public static IReadOnlyList<SpeciesAttributeDefinition> All => allDefinitions;
 
@@ -192,6 +194,7 @@ namespace SaltyGame
             var metabolism = rules.Metabolism;
             var visionRange = rules.Awareness.VisionRange;
             var intelligence = rules.Awareness.Intelligence;
+            var predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus;
             var maximumEnergy = rules.MaximumEnergy;
             var litterMinimum = rules.LitterMinimum;
             var litterMaximum = rules.LitterMaximum;
@@ -260,6 +263,9 @@ namespace SaltyGame
                 case SpeciesAttributeTarget.VisionRange:
                     visionRange += (int)value;
                     break;
+                case SpeciesAttributeTarget.PredatorDetectionRangeBonus:
+                    predatorDetectionRangeBonus += (int)value;
+                    break;
                 case SpeciesAttributeTarget.Intelligence:
                     intelligence += (int)value;
                     break;
@@ -318,7 +324,7 @@ namespace SaltyGame
                 seedDropChance,
                 energyValue,
                 metabolism,
-                new SpeciesAwarenessRules(visionRange, intelligence),
+                new SpeciesAwarenessRules(visionRange, intelligence, predatorDetectionRangeBonus),
                 rules.Role,
                 forageBelowEnergy,
                 maximumEnergy,
@@ -376,6 +382,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.FleeMovementSpeedBonus, "Move Speed Bonus", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.FleeMovementSpeedBonus),
                 Definition(SpeciesAttributeIds.TrackingPersistenceSteps, "Tracking Persistence Steps", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.TrackingPersistenceSteps),
                 Definition(SpeciesAttributeIds.PreContactAvoidanceChance, "Pre-contact Avoidance Chance", SpeciesAttributeValueKind.Float, SpeciesAttributeTarget.PreContactAvoidanceChance),
+                Definition(SpeciesAttributeIds.PredatorDetectionRangeBonus, "Predator Detection Range Bonus", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.PredatorDetectionRangeBonus),
             };
 
             var result = new Dictionary<string, SpeciesAttributeDefinition>(StringComparer.Ordinal);

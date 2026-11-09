@@ -253,6 +253,14 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void LitterMutationRanksHaveApprovedCaps()
+        {
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.LargerMaximumLitterId),
+                Is.EqualTo(SpeciesUpgradeCatalog.LargerMaximumLitterMaxLevel));
+        }
+
+        [Test]
         public void ExperimentalOptionsRequireBundleAndAffectRunProvenance()
         {
             Assert.Throws<System.ArgumentException>(() => new SpeciesExperimentalOptions(

@@ -119,6 +119,7 @@ namespace SaltyGame
             [Header("Awareness")]
             [SerializeField, Min(0)] internal int visionRange;
             [SerializeField, Min(0)] internal int intelligence;
+            [SerializeField, Min(0)] internal int predatorDetectionRangeBonus;
             [SerializeField, Min(0)] internal int maximumEnergy;
             [SerializeField, Min(1)] internal int litterMinimum = 1;
             [SerializeField, Min(1)] internal int litterMaximum = 1;
@@ -155,7 +156,7 @@ namespace SaltyGame
                     seedDropChance,
                     energyValue,
                     metabolism,
-                    new SpeciesAwarenessRules(visionRange, intelligence),
+                    new SpeciesAwarenessRules(visionRange, intelligence, predatorDetectionRangeBonus),
                     role,
                     forageBelowEnergy,
                     maximumEnergy,
@@ -208,6 +209,7 @@ namespace SaltyGame
                     energyLossIntervalTicks = rules.EnergyLossIntervalTicks,
                     visionRange = rules.Awareness.VisionRange,
                     intelligence = rules.Awareness.Intelligence,
+                    predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus,
                     maximumEnergy = rules.MaximumEnergy,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,

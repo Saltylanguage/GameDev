@@ -104,7 +104,7 @@ namespace SaltyGame.EditorTests
             Assert.That(gestation, Is.Not.Null);
             Assert.That(gestation.BranchName, Is.EqualTo("Trailblazer"));
             Assert.That(gestation.RabbitDataPrice, Is.EqualTo(1));
-            Assert.That(gestation.CapacityPoints, Is.EqualTo(2));
+            Assert.That(gestation.CapacityPoints, Is.EqualTo(1));
             Assert.That(gestation.MaximumRanks, Is.EqualTo(3));
 
             var minimumLitter = snapshot.GetNode("increased-minimum-litter");
@@ -135,7 +135,7 @@ namespace SaltyGame.EditorTests
             Assert.That(efficientDigestion.PrerequisiteNodeIds, Does.Contain(node.Id));
             Assert.That(highCrowding.BranchName, Is.EqualTo("Trailblazer"));
             Assert.That(highCrowding.RabbitDataPrice, Is.EqualTo(1));
-            Assert.That(highCrowding.CapacityPoints, Is.EqualTo(2));
+            Assert.That(highCrowding.CapacityPoints, Is.EqualTo(1));
             Assert.That(highCrowding.MaximumRanks, Is.EqualTo(1));
             Assert.That(highCrowding.Apply(natural).CrowdingEnergyReduction,
                 Is.EqualTo(natural.CrowdingEnergyReduction + 0.1f));

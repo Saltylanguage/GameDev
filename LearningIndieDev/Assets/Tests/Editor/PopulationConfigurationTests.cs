@@ -125,7 +125,7 @@ namespace SaltyGame.EditorTests
             Assert.That(report.rulesetFingerprint, Is.EqualTo(effective.Fingerprint));
             Assert.That(report.genomeInput.fingerprint, Is.EqualTo(genome.Fingerprint));
             Assert.That(report.genomeInput.catalogFingerprint, Is.EqualTo(catalog.Fingerprint));
-            Assert.That(report.genomeInput.capacityUsed, Is.EqualTo(3));
+            Assert.That(report.genomeInput.capacityUsed, Is.EqualTo(2));
             Assert.That(report.genomeInput.capacityLimit, Is.EqualTo(8));
             Assert.That(report.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "fertile-droppings", "poc.hare.efficient-digestion" }));
             Assert.That(report.genomeInput.nodes[1].modifiers[0].id, Is.EqualTo(SpeciesAttributeIds.DigestionEnergyBonus));
@@ -138,7 +138,6 @@ namespace SaltyGame.EditorTests
         [TestCase("poc.hare.efficient-digestion")]
         [TestCase("poc.hare.efficient-digestion,fertile-droppings")]
         [TestCase("poc.hare.tough-hide,poc.hare.burrows-preview")]
-        [TestCase("fertile-droppings,poc.hare.efficient-digestion,poc.hare.long-stride,poc.hare.long-vision,poc.hare.tough-hide")]
         public void RabbitGenomeResearchRejectsUnknownMissingPrerequisitePreviewAndOverCapacityBuilds(string ids)
         {
             var error = Assert.Throws<TargetInvocationException>(() => GenomeHeader(FrozenGenomeFixture(), GenomeArguments(ids)));

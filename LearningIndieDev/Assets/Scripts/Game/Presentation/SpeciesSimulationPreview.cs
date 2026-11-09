@@ -205,6 +205,7 @@ namespace SaltyGame
                 VisionRangeText = rules.Awareness.VisionRange.ToString(CultureInfo.InvariantCulture);
                 Intelligence = rules.Awareness.Intelligence;
                 IntelligenceText = rules.Awareness.Intelligence.ToString(CultureInfo.InvariantCulture);
+                PredatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus;
                 TrackingPersistenceSteps = rules.TrackingPersistenceSteps;
                 BehaviorStateRules = rules.BehaviorStateRules.ToArray();
                 ReproductionEnabled = rules.ReproductionChance > 0f;
@@ -271,6 +272,7 @@ namespace SaltyGame
             public string VisionRangeText;
             public int Intelligence;
             public string IntelligenceText;
+            public int PredatorDetectionRangeBonus;
             public int TrackingPersistenceSteps;
             public SpeciesBehaviorStateRule[] BehaviorStateRules;
             public bool WiltEnabled;
@@ -309,6 +311,7 @@ namespace SaltyGame
             public int maxPopulation;
             public int minPopulation;
             public bool coupledSpeciesResponsesEnabled;
+            public bool foxOrdinaryMovementScentEnabled;
             public SpeciesRuleDraft plant;
             public SpeciesRuleDraft herbivore;
             public SpeciesRuleDraft carnivore;
@@ -360,6 +363,8 @@ namespace SaltyGame
         [SerializeField] bool bevExperimentalFeaturesEnabled = true;
         [SerializeField, Min(0)] int foxAttackCooldownTicks;
         [SerializeField] bool coupledSpeciesResponsesEnabled;
+        [SerializeField, Tooltip("Experimental: allow Foxes to acquire ordinary Hare movement scent. Hare movement markers and dropping scent remain available either way.")]
+        bool foxOrdinaryMovementScentEnabled;
 
         static readonly SpeciesUpgrade[] LegacyRewardOptions =
         {
@@ -392,6 +397,15 @@ namespace SaltyGame
         string chosenJourneyNodeDisplayName;
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
+        Func<string, bool> mutationResearch;
+        bool mutationResearchFromProfile;
+
+        public void BindMutationResearch(ProfileSessionSnapshot profile)
+        {
+            mutationResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, playerSpecies);
+            mutationResearchFromProfile = profile != null;
+            if (!sessionStarted && progression != null) ResetExpeditionProgression(progression.Definition.Rules);
+        }
         Func<GenomeSimulationSnapshot> genomeLaunchSource;
         FieldDataPermanentResults permanentResults;
         [SerializeField] Helper_Simulation simulationHelper;
@@ -596,7 +610,7 @@ namespace SaltyGame
         public JourneyNodeAsset JourneyCurrentNode => journeyCurrentNode;
         public JourneyNodeAsset JourneyPendingNode => journeyPendingNode;
         public int JourneyRewardOptionCount => journeyPendingNode?.Kind == JourneyNodeKind.Reward
-            ? journeyRewardOptions.Length
+            ? Math.Max(1, journeyRewardOptions.Length)
             : journeyPendingNode?.Kind == JourneyNodeKind.Condition ? 1
             : journeyPendingNode != null && journeyEncounters.TryGetValue(journeyPendingNode.NodeId, out var encounter)
                 ? encounter.Kind == JourneyNodeKind.Refresh ? 3 : 2 : 0;
@@ -1177,7 +1191,10 @@ namespace SaltyGame
                     var startingRules = startingUpgrades.Length > 0 && !refreshProfileGenome
                         ? progression.Definition.Rules
                         : rules[playerSpecies];
+                    var standaloneCurrency = !journeyActive && fieldDataJourneyDefinition == null
+                        ? progression?.Currency ?? 0 : 0;
                     ResetExpeditionProgression(startingRules);
+                    progression.AddCurrency(standaloneCurrency);
                     journeyStartingUpgrades.Clear();
                     foreach (var upgrade in startingUpgrades)
                     {
@@ -1236,7 +1253,7 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot[] CreateFieldDataOrdinaryRewardPool()
         {
-            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions);
+            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
         }
 
         /// <summary>Opts this preview into the approved Field Data route before its first run starts.</summary>
@@ -2379,11 +2396,6 @@ namespace SaltyGame
                     }
                 }
 
-                if (offers.Count == 0)
-                {
-                    return false;
-                }
-
                 journeyRewardOptions = offers.ToArray();
             }
             else if (node.Kind != JourneyNodeKind.Condition && !journeyEncounters.ContainsKey(nodeId))
@@ -2423,11 +2435,13 @@ namespace SaltyGame
 
         public string GetJourneyRewardOptionDisplayName(int index)
         {
+            if (journeyPendingNode?.Kind == JourneyNodeKind.Reward && journeyRewardOptions.Length == 0 && index == 0)
+                return "CONTINUE WITHOUT A MUTATION\nResearch capabilities in the Gene Lab to unlock journey choices.";
             if (journeyPendingNode?.Kind == JourneyNodeKind.Reward
                 && index >= 0 && index < journeyRewardOptions.Length)
             {
                 var upgrade = journeyRewardOptions[index];
-                return $"{SpeciesUpgradeCatalog.GetDisplayName(upgrade.Id)}  |  Lv {progression.GetUpgradeLevel(upgrade.Id) + 1}\n{GetHerbivoreMutationDescription(upgrade.Id)}";
+                return $"{GetHerbivoreMutationName(upgrade.Id)}  |  Lv {progression.GetUpgradeLevel(upgrade.Id) + 1}\n{GetHerbivoreMutationDescription(upgrade.Id)}";
             }
 
             if (journeyPendingNode?.Kind == JourneyNodeKind.Condition
@@ -2468,6 +2482,15 @@ namespace SaltyGame
 
             if (node.Kind == JourneyNodeKind.Reward)
             {
+                if (journeyRewardOptions.Length == 0)
+                {
+                    PrepareNextRun();
+                    journeyCurrentNode = node;
+                    journeyVisitedNodeIds.Add(node.NodeId);
+                    journeyPendingNode = null;
+                    phaseRewardMessage = "No researched Mutations available. Continue to the simulation.";
+                    return true;
+                }
                 var upgrade = journeyRewardOptions[index];
                 if (!progression.TryApplyFreeUpgrade(CreateFreeBoundaryMutation(upgrade)))
                 {
@@ -2695,6 +2718,7 @@ namespace SaltyGame
                 maxPopulation = maxPopulation,
                 minPopulation = minPopulation,
                 coupledSpeciesResponsesEnabled = coupledSpeciesResponsesEnabled,
+                foxOrdinaryMovementScentEnabled = foxOrdinaryMovementScentEnabled,
                 plant = GetRuleDraftOrDefault(SpeciesIds.Plant),
                 herbivore = GetRuleDraftOrDefault(SpeciesIds.Herbivore),
                 carnivore = GetRuleDraftOrDefault(SpeciesIds.Carnivore),
@@ -2771,6 +2795,7 @@ namespace SaltyGame
             maxPopulation = Mathf.Max(0, saved.maxPopulation);
             minPopulation = Mathf.Max(0, saved.minPopulation);
             coupledSpeciesResponsesEnabled = saved.coupledSpeciesResponsesEnabled;
+            foxOrdinaryMovementScentEnabled = saved.foxOrdinaryMovementScentEnabled;
             // Saved defaults may come from a different scenario. Do not add
             // canonical species that are not present in the active scenario.
             if (saved.plant != null && ruleDrafts.ContainsKey(SpeciesIds.Plant))
@@ -2799,7 +2824,8 @@ namespace SaltyGame
 
         void ResetExpeditionProgression(SpeciesRules playerRules)
         {
-            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules));
+            progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
+                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile);
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
@@ -2846,7 +2872,7 @@ namespace SaltyGame
                 && journeyMap.AppliesTo(SelectedScenario, playerSpecies);
             SnapshotJourneyConditions();
             var phaseCount = fieldDataJourneyDefinition != null
-                ? FieldDataJourneyDefinition.RoundsPerSimulation * FieldDataJourneyDefinition.SimulationCount
+                ? FieldDataJourneyDefinition.RoundsPerSimulation * fieldDataJourneyDefinition.RouteSimulationCount
                 : ContinuousExpeditionPhaseCount * (journeyActive ? JourneyPrototypeCycleCount : 1);
             var continuousRun = continuousPhasesEnabled
                 && phaseLengthTicks > 0
@@ -2999,6 +3025,8 @@ namespace SaltyGame
                         continue;
                     }
 
+                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationResearched(snapshot.Id))
+                        continue;
                     authoredOptions.Add(snapshot);
                 }
 
@@ -3013,7 +3041,9 @@ namespace SaltyGame
             if (!bevExperimentalFeaturesEnabled
                 || !rules.TryGetValue(playerSpecies, out var playerRules))
             {
-                rewardOptions = LegacyRewardOptions;
+                rewardOptions = LegacyRewardOptions.Where(upgrade =>
+                    upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
+                    || progression == null || progression.IsMutationResearched(upgrade.Id)).ToArray();
                 return;
             }
 
@@ -3057,10 +3087,13 @@ namespace SaltyGame
             return string.Format(
                 CultureInfo.InvariantCulture,
                 "{0}  |  LV {1}\n{2}\nFREE",
-                SpeciesUpgradeCatalog.GetDisplayName(upgradeId),
+                GetHerbivoreMutationName(upgradeId),
                 level,
                 GetHerbivoreMutationDescription(upgradeId));
         }
+
+        static string GetHerbivoreMutationName(string upgradeId) => upgradeId == SpeciesUpgradeCatalog.FasterMovementId
+            ? "LONG STRIDE" : SpeciesUpgradeCatalog.GetDisplayName(upgradeId);
 
         static string GetHerbivoreMutationDescription(string upgradeId)
         {
@@ -3080,6 +3113,14 @@ namespace SaltyGame
                     return "Make successful reproduction more likely.";
                 case SpeciesUpgradeCatalog.ThreatExposureId:
                     return "Evade predator attacks more often.";
+                case SpeciesUpgradeCatalog.LargerMinimumLitterId:
+                    return "Raise the smallest litter size for this journey.";
+                case SpeciesUpgradeCatalog.LargerMaximumLitterId:
+                    return "Raise the largest litter size for this journey.";
+                case SpeciesUpgradeCatalog.LongVisionId:
+                    return "See farther during this journey.";
+                case SpeciesUpgradeCatalog.KeenSensesId:
+                    return "Detect predators from farther away.";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(upgradeId), upgradeId, "Unknown Hare Mutation.");
             }
@@ -3125,7 +3166,8 @@ namespace SaltyGame
                     SpeciesExperimentalOptions.BevExperimentalFeaturesId,
                     foxAttackCooldownTicks,
                     progression?.PreContactAvoidanceChance ?? 0f,
-                    coupledSpeciesResponsesEnabled)
+                    coupledSpeciesResponsesEnabled,
+                    foxOrdinaryMovementScentEnabled)
                 : SpeciesExperimentalOptions.None;
         }
 
@@ -3136,6 +3178,7 @@ namespace SaltyGame
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
+                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationResearched(upgrade.Id))
                 || (progression.GetUpgradeLevel(upgrade.Id) > 0
                     && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
                         || upgrade.PopulationToAdd == 0))
@@ -3315,7 +3358,7 @@ namespace SaltyGame
                     seedDropChance: draft.SeedDropEnabled ? draft.SeedDropChance : 0f,
                     energyValue: draft.EnergyValue,
                     metabolism: draft.Metabolism,
-                    awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence),
+                    awareness: new SpeciesAwarenessRules(draft.VisionRange, draft.Intelligence, draft.PredatorDetectionRangeBonus),
                     role: draft.Role,
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,

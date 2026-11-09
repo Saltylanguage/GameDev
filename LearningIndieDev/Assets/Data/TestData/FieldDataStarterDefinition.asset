@@ -30,6 +30,12 @@ MonoBehaviour:
     nextNodeId: simulation-3
   - id: simulation-3
     kind: 0
+    nextNodeId: shop-3
+  - id: shop-3
+    kind: 6
+    nextNodeId: simulation-4
+  - id: simulation-4
+    kind: 0
     nextNodeId:
   populationControls:
   - id: add-hares
@@ -78,6 +84,13 @@ MonoBehaviour:
     sources: 4
     firstShopVisit: 2
     shopCost: 50
+  - id: income-multiply-one-point-seven-five
+    displayName: x1.75 population payout
+    operation: 1
+    value: "1.75"
+    sources: 4
+    firstShopVisit: 2
+    shopCost: 40
   signedSpeciesOffers:
   - id: hare-long-stride-plus
     familyId: long-stride

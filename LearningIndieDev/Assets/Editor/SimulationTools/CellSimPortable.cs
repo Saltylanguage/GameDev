@@ -32,6 +32,8 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesDefinition.cs",
             "Assets/Scripts/Game/Species/SpeciesGenomeContract.cs",
             "Assets/Scripts/Game/Species/FieldDataPermanentProgressionDefinition.cs",
+            "Assets/Scripts/Game/Profile/ProfileSessionSnapshot.cs",
+            "Assets/Scripts/Game/Profile/ProfileSessionStorage.cs",
             "Assets/Scripts/Game/Species/SpeciesId.cs",
             "Assets/Scripts/Game/Species/SpeciesProgression.cs",
             "Assets/Scripts/Game/Species/SpeciesRole.cs",
@@ -69,6 +71,8 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Simulation/SpeciesSimulation.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationRunner.cs",
+            "Assets/Scripts/Game/Simulation/HareLineage.cs",
+            "Assets/Scripts/Game/Simulation/HareBurrows.cs",
             "Assets/Editor/SimulationTools/CellularSimulationExperimentRunner.cs",
             "Assets/Editor/SimulationTools/SimulationReportSerialization.cs",
             "Assets/Editor/SimulationTools/CellSimPortable.cs"
@@ -154,6 +158,13 @@ namespace SaltyGame.EditorTools
             return PortableHash(builder.ToString());
         }
 
+        public static string PortableRunStateDigest(SimulationRunState run)
+        {
+            var surface = PortableStateDigest(run.Cells);
+            var hareJourneyState = run.GetHareJourneyStateFingerprint();
+            return hareJourneyState == null ? surface : PortableHash(surface + "|" + hareJourneyState);
+        }
+
         public static SpeciesGenomeMapSnapshot CaptureRabbitGenomeCatalog(string assetPath)
         {
 #if !CELLSIM_STANDALONE
@@ -225,6 +236,7 @@ namespace SaltyGame.EditorTools
                 catalogPath = catalogPath, catalogFingerprint = rabbit.CatalogFingerprint,
                 fingerprint = genome.Fingerprint, capacityLimit = GenomeContract.ActiveCapacity,
                 capacityUsed = rabbit.ResolvedNodes.Sum(node => node.CapacityPoints),
+                populationReservesRank = rabbit.PopulationReservesRank,
                 orderedNodeIds = rabbit.ActiveNodeIds.ToArray(),
                 nodes = rabbit.ResolvedNodes.Select(GenomeNodeData.Create).ToArray(),
                 fertileDroppings = rabbit.HasActiveNode(SpeciesSimulation.FertileDroppingsNodeId)
@@ -645,6 +657,7 @@ namespace SaltyGame.EditorTools
             public string id, displayName, description, speciesId, branchName, fingerprint;
             public string[] prerequisites;
             public int capacityPoints;
+            public int maximumRanks = 1;
             public long rabbitDataPrice;
             public ModifierData[] modifiers;
 
@@ -654,6 +667,7 @@ namespace SaltyGame.EditorTools
                 speciesId = node.TargetSpecies.Value, branchName = node.BranchName, fingerprint = node.Fingerprint,
                 prerequisites = node.PrerequisiteNodeIds.ToArray(), capacityPoints = node.CapacityPoints,
                 rabbitDataPrice = node.RabbitDataPrice,
+                maximumRanks = node.MaximumRanks,
                 modifiers = node.Modifiers.Select(value => new ModifierData { id = value.AttributeId, value = value.SignedValue }).ToArray(),
             };
 
@@ -665,7 +679,7 @@ namespace SaltyGame.EditorTools
                 }
                 var node = new GenomeUpgradeNodeSnapshot(id, displayName, description, new SpeciesId(speciesId),
                     prerequisites, rabbitDataPrice, capacityPoints, branchName,
-                    modifiers.Select(value => new SpeciesUpgradeModifier(value.id, value.value)));
+                    modifiers.Select(value => new SpeciesUpgradeModifier(value.id, value.value)), Math.Max(1, maximumRanks));
                 if (node.Fingerprint != fingerprint)
                 {
                     throw new InvalidOperationException("Frozen Genome node fingerprint mismatch: " + id);
@@ -678,7 +692,7 @@ namespace SaltyGame.EditorTools
         {
             public string contractVersion, genomeContractVersion, nodeContractVersion, registryFingerprint;
             public string catalogPath, catalogFingerprint, fingerprint;
-            public int capacityUsed, capacityLimit;
+            public int capacityUsed, capacityLimit, populationReservesRank;
             public string[] orderedNodeIds;
             public GenomeNodeData[] nodes;
             public FertileDroppingsInputRecord fertileDroppings;

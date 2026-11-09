@@ -169,7 +169,7 @@ internal static class Program
         var selected = new SpeciesId(definition.SelectedSpeciesId);
         if (!data.SpeciesRules.TryGetValue(selected, out var selectedRules))
             throw new InvalidDataException("The selected Field Data species is absent from the portable scenario.");
-        var targetTicks = checked(definition.RoundLength * definition.RoundsPerNode * FieldDataJourneyDefinition.SimulationCount);
+        var targetTicks = checked(definition.RoundLength * definition.RoundsPerNode * definition.RouteSimulationCount);
         ValidateReplaySchedule(schedule, targetTicks);
         var run = new SimulationRunState(SpeciesInitialGridFactory.Create(data, seed), selected,
             seed, data.RunDurationSeconds, targetTicks);
@@ -253,7 +253,7 @@ internal static class Program
                 });
             }
             boundary.balanceAfterActions = session.Ledger.Balance;
-            boundary.boardDigestAfterActions = PortableBoardDigest(run.Cells);
+            boundary.boardDigestAfterActions = SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableRunStateDigest(run);
             boundary.incomeOrderAfterActions = session.CurrentIncomeExecutionOrder
                 .Select(item => item.InstanceId).ToArray();
             if (session.State == FieldDataJourneyFlowState.Succeeded) break;
@@ -263,7 +263,7 @@ internal static class Program
         }
 
         result.finalTick = run.Tick;
-        result.finalBoardDigest = PortableBoardDigest(run.Cells);
+        result.finalBoardDigest = SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableRunStateDigest(run);
         replayTimer.Stop();
         result.automatedRuntimeMilliseconds = replayTimer.Elapsed.TotalMilliseconds;
         foreach (var action in schedule.actions.Where(action => !executedActions.Contains(action)))
@@ -451,9 +451,6 @@ internal static class Program
         return record;
     }
 
-    static string PortableBoardDigest(Grid<SpeciesCell> cells) => (string)typeof(SaltyGame.EditorTools.CellularSimulationExperimentRunner)
-        .GetMethod("PortableStateDigest", BindingFlags.Static | BindingFlags.NonPublic).Invoke(null, new object[] { cells });
-
     static FieldDataReplayBoundary CreateReplayBoundary(FieldDataJourneySession session, SimulationRunState run)
     {
         var snapshot = run.PopulationHistory[run.PopulationHistory.Count - 1];
@@ -462,7 +459,7 @@ internal static class Program
             tick = run.Tick, globalRound = session.GlobalRound, flowState = session.State.ToString(),
             populations = snapshot.Counts.ToDictionary(pair => pair.Key.Value, pair => pair.Value, StringComparer.Ordinal),
             balanceBeforeActions = session.Ledger.Balance,
-            boardDigestBeforeActions = PortableBoardDigest(run.Cells),
+            boardDigestBeforeActions = SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableRunStateDigest(run),
             pendingRewardChoices = (session.GetCurrentRoundRewardChoices() ?? session.GetCurrentNodeRewardChoices())?.Choices
                 .Select(choice => choice.Id).ToArray() ?? Array.Empty<string>(),
             incomeOrderBeforeActions = session.CurrentIncomeExecutionOrder.Select(item => item.InstanceId).ToArray(),
@@ -918,6 +915,7 @@ internal static class Program
             .WithGestation(new SpeciesGestation(48, 2, mate.EntityId, 30)));
         gestationCells.SetCell(1, 0, mate);
         if (stateDigest(gestationCells) != expectedDigest) throw new Exception("Gestation digest depends on process-wide entity labels.");
+        VerifyPortableBurrowDigest(stateDigest);
         var data = new CellularSimData(8, 8, new Dictionary<SpeciesId, float>
         { [SpeciesIds.Plant] = .3f, [SpeciesIds.Herbivore] = .1f, [SpeciesIds.Carnivore] = .03f }, SpeciesRuleDefaults.Create(), 4f, .1f);
         var snapshot = PortableSnapshot.Create(data);
@@ -1011,8 +1009,59 @@ internal static class Program
         restored.width++; rejected = false;
         try { restored.Restore(); } catch (InvalidOperationException) { rejected = true; }
         if (!rejected) throw new Exception("Corrupt snapshot accepted.");
+        var hareResearch = new SpeciesId("hare");
+        var noResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(null, hareResearch);
+        var ownedGenome = new SpeciesGenomeProfile(hareResearch,
+            new[] { "hare.keen-hearing" }, Array.Empty<string>());
+        var ownedProfile = new ProfileSessionSnapshot(true, "self-test", "Self test", new[] { ownedGenome });
+        var ownedResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(ownedProfile, hareResearch);
+        if (noResearch(SpeciesUpgradeCatalog.LongVisionId)
+            || !ownedResearch(SpeciesUpgradeCatalog.LongVisionId)
+            || !ownedResearch(SpeciesUpgradeCatalog.KeenSensesId)
+            || ownedResearch(SpeciesUpgradeCatalog.SeedDispersalId))
+            throw new Exception("Standalone research eligibility did not preserve profile ownership boundaries.");
         RunJourneyReplaySelfTest();
-        Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; gestation state digest and entity normalization; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity.");
+        Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; gestation and hidden-burrow state digests; entity normalization; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity; profile research eligibility.");
+    }
+
+    static void VerifyPortableBurrowDigest(Func<Grid<SpeciesCell>, string> surfaceDigest)
+    {
+        var hare = new SpeciesId("hare");
+        var fox = new SpeciesId("fox");
+        var noMovement = new GridPattern(Array.Empty<UnityEngine.Vector2Int>());
+        var hareRules = new SpeciesRules(movementSpeed: 0f, movementPattern: noMovement,
+            attackPattern: noMovement, attackAmount: 0, blockPattern: noMovement, blockAmount: 0,
+            dietPattern: noMovement, dietTarget: null, reproductionPattern: noMovement,
+            reproductionNeighborCount: 0, reproductionChance: 0f, reproductionFoodRequired: 1,
+            metabolism: 0, role: SpeciesRole.Herbivore);
+        var foxRules = new SpeciesRules(movementSpeed: 0f, movementPattern: noMovement,
+            attackPattern: GridPatternTemplates.CreateMooreRange(1), attackAmount: 100,
+            blockPattern: noMovement, blockAmount: 0, dietPattern: noMovement, dietTarget: hare,
+            reproductionPattern: noMovement, reproductionNeighborCount: 0,
+            reproductionChance: 0f, reproductionFoodRequired: 1, metabolism: 0,
+            role: SpeciesRole.Carnivore);
+        var cells = new Grid<SpeciesCell>(7, 7);
+        cells.SetCell(3, 3, new SpeciesCell(hare, energy: 48));
+        var run = new SimulationRunState(cells, hare, seed: 75, durationSeconds: 100f);
+        run.ConfigureContinuousPhases(10);
+        var rules = new Dictionary<SpeciesId, SpeciesRules> { [hare] = hareRules, [fox] = foxRules };
+        var burrowing = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare,
+                Array.Empty<SpeciesUpgradeSnapshot>(), id => id == SpeciesUpgradeCatalog.BurrowingId)
+            .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.BurrowingId);
+        var simulation = new SpeciesSimulationRunner(run, rules, 0.1f,
+            upgradeLoadout: new[] { burrowing });
+
+        if (!simulation.AdvanceOneTick()) throw new Exception("Burrowing digest fixture could not dig.");
+        run.Cells.SetCell(4, 3, new SpeciesCell(fox, energy: 100));
+        if (!simulation.AdvanceOneTick() || run.HiddenHareCount != 1)
+            throw new Exception("Burrowing digest fixture could not hide the Hare.");
+
+        var surfaceOnly = new SimulationRunState(run.Cells.Copy(), hare, seed: 75, durationSeconds: 100f);
+        if (surfaceDigest(run.Cells) != surfaceDigest(surfaceOnly.Cells))
+            throw new Exception("Burrowing digest fixture did not preserve identical visible boards.");
+        if (PortableRunStateDigest(run) == PortableRunStateDigest(surfaceOnly))
+            throw new Exception("Portable run digest omitted hidden Hare and Burrow state.");
+        Console.WriteLine("PASS: portable run digest distinguishes identical surface boards with hidden Hare and Burrow state.");
     }
 
     static void RunJourneyReplaySelfTest()
@@ -1051,6 +1100,8 @@ internal static class Program
                 FieldDataIncomeSource.Shop, 1, 20),
             new FieldDataIncomeOffer("multiply-1-5", "×1.5 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m,
                 FieldDataIncomeSource.Shop, 1, 30),
+            new FieldDataIncomeOffer("multiply-1-75", "×1.75 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.75m,
+                FieldDataIncomeSource.Shop, 2, 40),
             new FieldDataIncomeOffer("multiply-2", "×2 payout", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m,
                 FieldDataIncomeSource.Shop, 2, 50),
         };
@@ -1084,8 +1135,8 @@ internal static class Program
                 exitSuccessfulResults = true,
                 actions = new[]
                 {
+                    new FieldDataReplayAction { tick = 100, type = "population", requestId = "before-reward-resolved", controlKind = "AddHare" },
                     new FieldDataReplayAction { tick = 100, type = "resolve-choice", choiceId = "skip", humanDecisionTimeMilliseconds = 247 },
-                    new FieldDataReplayAction { tick = 100, type = "population", requestId = "before-first-simulation", controlKind = "AddHare" },
                     new FieldDataReplayAction { tick = 700, type = "resolve-choice", choiceId = "skip" },
                     new FieldDataReplayAction { tick = 700, type = "population", requestId = "buy-hare-1", controlKind = "AddHare" },
                     new FieldDataReplayAction { tick = 701, type = "population", requestId = "off-boundary", controlKind = "AddHare" },
@@ -1108,8 +1159,8 @@ internal static class Program
                 throw new Exception("Full journey replay, settlement count, node awards or success exit failed.");
             var actions = output.GetProperty("scheduledActions").EnumerateArray()
                 .Where(action => action.GetProperty("type").GetString() != "auto-skip-choice").ToArray();
-            if (actions.Length != 5 || actions[0].GetProperty("status").GetString() != "succeeded"
-                || actions[1].GetProperty("status").GetString() != "rejected"
+            if (actions.Length != 5 || actions[0].GetProperty("status").GetString() != "rejected"
+                || actions[1].GetProperty("status").GetString() != "succeeded"
                 || actions[2].GetProperty("status").GetString() != "succeeded"
                 || actions[3].GetProperty("status").GetString() != "succeeded"
                 || actions[3].GetProperty("cost").GetInt32() != 10
@@ -1118,7 +1169,7 @@ internal static class Program
                 || actions[3].GetProperty("affectedPositions").GetArrayLength() != 1
                 || actions[4].GetProperty("status").GetString() != "not-executed"
                 || !output.GetProperty("humanDecisionTimeCaptured").GetBoolean()
-                || actions[0].GetProperty("humanDecisionTimeMilliseconds").GetInt32() != 247
+                || actions[1].GetProperty("humanDecisionTimeMilliseconds").GetInt32() != 247
                 || !output.TryGetProperty("firstAffordable", out var affordability) || affordability.GetArrayLength() == 0)
                 throw new Exception("Replay action status, decision timing or affordability evidence failed: " + output.GetProperty("scheduledActions")
                     + " affordability=" + (output.TryGetProperty("firstAffordable", out var recorded) ? recorded.GetArrayLength() : -1));
@@ -1132,6 +1183,50 @@ internal static class Program
                 .Single(boundary => boundary.GetProperty("tick").GetInt32() == 800);
             if (boundary800.GetProperty("populations").GetProperty("hare").GetInt32() != 21)
                 throw new Exception("A successful replay intervention did not change the next board boundary.");
+            portable.fieldDataDefinition = FieldDataPortableDefinition.Create(definition.WithSimulationCount(4));
+            File.WriteAllText(snapshotPath, JsonSerializer.Serialize(portable, Json));
+            var longerSchedule = new FieldDataReplaySchedule
+            {
+                schemaVersion = 1,
+                exitSuccessfulResults = true,
+                actions = new[]
+                {
+                    new FieldDataReplayAction { tick = 600, type = "resolve-choice", choiceId = "skip" },
+                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-plus", offerId = "flat-hare" },
+                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-tier-15", offerId = "multiply-1-5" },
+                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-repeat-15", offerId = "multiply-1-5" },
+                    new FieldDataReplayAction { tick = 600, type = "shop-offer", requestId = "long-tier-175-early", offerId = "multiply-1-75" },
+                    new FieldDataReplayAction { tick = 1200, type = "resolve-choice", choiceId = "skip" },
+                    new FieldDataReplayAction { tick = 1200, type = "shop-offer", requestId = "long-tier-2-early", offerId = "multiply-2" },
+                    new FieldDataReplayAction { tick = 1200, type = "shop-offer", requestId = "long-tier-175", offerId = "multiply-1-75" },
+                    new FieldDataReplayAction { tick = 1800, type = "resolve-choice", choiceId = "skip" },
+                    new FieldDataReplayAction { tick = 1800, type = "shop-offer", requestId = "long-tier-2", offerId = "multiply-2" },
+                },
+            };
+            File.WriteAllText(actionPath, JsonSerializer.Serialize(longerSchedule, Json));
+            var longerPath = Path.Combine(directory, "longer.json");
+            JourneyReplay(snapshotPath, 42, actionPath, longerPath);
+            using var longer = JsonDocument.Parse(File.ReadAllText(longerPath));
+            var longResult = longer.RootElement;
+            var purchases = longResult.GetProperty("scheduledActions").EnumerateArray()
+                .Where(action => action.GetProperty("type").GetString() == "shop-offer").ToArray();
+            var payouts = longResult.GetProperty("populationAwards").EnumerateArray().ToArray();
+            if (longResult.GetProperty("finalTick").GetInt32() != 2400
+                || longResult.GetProperty("terminalState").GetString() != "Closed"
+                || longResult.GetProperty("nodeClearAwards").GetArrayLength() != 4
+                || payouts.Length != 24 || purchases.Length != 7
+                || purchases.Count(action => action.GetProperty("status").GetString() == "succeeded") != 4
+                || purchases.Count(action => action.GetProperty("status").GetString() == "rejected") != 3
+                || new[] { "long-repeat-15", "long-tier-175-early", "long-tier-2-early" }.Any(id =>
+                    !purchases.Any(action => action.GetProperty("requestId").GetString() == id
+                        && action.GetProperty("status").GetString() == "rejected"))
+                || purchases.Where(action => action.GetProperty("status").GetString() == "rejected")
+                    .Any(action => action.GetProperty("balanceBefore").GetInt32() != action.GetProperty("balanceAfter").GetInt32())
+                || payouts[6].GetProperty("amount").GetInt32() != 60
+                || payouts[12].GetProperty("amount").GetInt32() != 70
+                || payouts[18].GetProperty("amount").GetInt32() != 80)
+                throw new Exception("Portable four-simulation journey or sequential shop payouts failed.");
+            Console.WriteLine("PASS: portable four-simulation journey; three shops; sequential 1.5x, 1.75x and 2x replacement payouts.");
             Console.WriteLine("PASS: full 18-round Field Data replay; 18 exactly-once population awards; three node awards; successful-result discard; deterministic boundaries; scheduled and incomplete action statuses; first-affordability and human-time provenance.");
         }
         finally

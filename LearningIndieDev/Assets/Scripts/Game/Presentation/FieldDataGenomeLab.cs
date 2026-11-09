@@ -71,40 +71,53 @@ namespace SaltyGame
             }
         }
 
-        int Capacity(IEnumerable<string> ids) => ids.Sum(id => definition.HareMap.TryGetNode(id, out var node) ? node.CapacityPoints : 0);
+        int Capacity(IEnumerable<string> ids) => ids.Count();
         static string SpendQuote(long balance, long cost, string currency) => balance < cost
             ? $"Needs {cost} {currency}; you have {balance}."
             : $"{currency}: {balance} -> {balance - cost}.";
         public bool IsOwned(string id) => genome?.IsNodeUnlocked(id) == true;
         public bool IsSelected(string id) => selection.Contains(id);
-        public string NodeState(string id) => genome?.IsNodeActive(id) == true ? "OWNED · ACTIVE"
-            : IsOwned(id) ? IsSelected(id) ? "OWNED · SELECTED" : "OWNED · INACTIVE"
+        public string NodeState(string id) => genome?.IsNodeActive(id) == true ? "OWNED · EQUIPPED"
+            : IsOwned(id) ? IsSelected(id) ? "OWNED · SELECTED" : "OWNED · UNEQUIPPED"
             : !HasLicense ? "PATH LOCKED" : "NOT OWNED";
         bool HasUnappliedReset => genome != null && genome.ResetGeneration > 0 && genome.ActiveNodeIds.Count == 0;
-        public string NodeOffer(string id) => IsOwned(id) ? "PERMANENTLY OWNED"
+        public string NodeOffer(string id) => id == "hare.warren-network" && IsOwned(id)
+            ? genome.PopulationReservesRank >= FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
+                ? "RANK 5 / 5 · MAXIMUM" : $"RESEARCH RANK {genome.PopulationReservesRank + 1} / 5 · {FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1)} HARE DATA"
+            : IsOwned(id) ? "PERMANENTLY OWNED"
             : HasUnappliedReset ? "APPLY REPLACEMENT FIRST"
-            : $"BUY + ACTIVATE · {FieldDataPermanentProgressionDefinition.NodePrice} HARE DATA";
+            : CapacityUsed >= definition.ActiveCapacity ? $"RESEARCH · {FieldDataPermanentProgressionDefinition.NodePrice} DATA"
+            : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? $"BUY · {FieldDataPermanentProgressionDefinition.NodePrice} DATA (TEST)"
+            : $"BUY + EQUIP · {FieldDataPermanentProgressionDefinition.NodePrice} HARE DATA";
         public string NodeReason(string id)
         {
             if (OwnerReason != null) return OwnerReason;
             if (!HasLicense) return "Unlock the Hare path first.";
             if (!definition.HareMap.TryGetNode(id ?? string.Empty, out var node)) return "Select a Hare Genome node.";
+            if (id == "hare.warren-network" && IsOwned(id))
+                return $"Rank {genome.PopulationReservesRank} / 5 · {FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(genome.PopulationReservesRank)} purchased Hares per simulation node. One active capacity point at any rank.";
             if (IsOwned(id)) return genome.ActiveNodeIds.Count == 0
                 ? "Permanently owned. Add or remove it in the selection below; applying is free."
                 : "Permanently owned. Change the active loadout through a paid reset.";
-            if (HasUnappliedReset) return "Apply your replacement selection before buying a new node. Buying also activates it.";
+            if (HasUnappliedReset) return "Apply your replacement selection before buying a new node.";
             var missing = node.PrerequisiteNodeIds.Where(parent => !IsOwned(parent))
                 .Select(parent => definition.HareMap.GetNode(parent).DisplayName).ToArray();
             if (missing.Length > 0) return "Own first: " + string.Join(", ", missing) + ".";
-            var active = (genome?.ActiveNodeIds ?? Array.Empty<string>()).Concat(new[] { id });
+            var active = genome?.ActiveNodeIds ?? Array.Empty<string>();
+            if (CapacityUsed < definition.ActiveCapacity) active = active.Concat(new[] { id }).ToArray();
             try { definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(definition.HareMap.SpeciesId,
                 (genome?.UnlockedNodeIds ?? Array.Empty<string>()).Concat(new[] { id }), active)); }
             catch (InvalidOperationException error) { return error.Message; }
-            return SpendQuote(HareData, node.RabbitDataPrice, "Hare Data");
+            return SpendQuote(HareData, node.RabbitDataPrice, "Hare Data")
+                + (CapacityUsed >= definition.ActiveCapacity ? " Loadout full: research is owned but not equipped." : " Buying also equips this Genome node.")
+                + (FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? " Price and path are provisional." : string.Empty);
         }
-        public bool CanBuyNode(string id) => OwnerReason == null && HasLicense && !IsOwned(id) && !HasUnappliedReset
+        public bool CanBuyNode(string id) => OwnerReason == null && HasLicense &&
+            ((id == "hare.warren-network" && IsOwned(id) && genome.PopulationReservesRank < FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
+                && HareData >= FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1))
+            || (!IsOwned(id) && !HasUnappliedReset
             && definition.HareMap.TryGetNode(id ?? string.Empty, out var node) && HareData >= node.RabbitDataPrice
-            && node.PrerequisiteNodeIds.All(IsOwned) && CapacityUsed + node.CapacityPoints <= definition.ActiveCapacity;
+            && node.PrerequisiteNodeIds.All(IsOwned)));
         public string ArrangementReason => OwnerReason ?? (!HasLicense ? "Unlock the Hare path first."
             : genome == null || genome.ActiveNodeIds.Count > 0 ? "Pay for a reset before choosing a replacement loadout."
             : SelectedCapacity > definition.ActiveCapacity ? "Selection exceeds 8 points; remove a node."
@@ -128,7 +141,10 @@ namespace SaltyGame
         public bool BuyNode(string id)
         {
             if (!CanBuyNode(id)) return Reject(NodeReason(id));
-            return Complete(session.TryPurchaseHareGenomeNode(profileId, id, out var error), error, "Node owned and active for the next journey.");
+            var message = IsOwned(id) ? "Population Reserves rank saved."
+                : CapacityUsed >= definition.ActiveCapacity ? "Research saved. Loadout full, so the Genome node was not equipped."
+                : "Purchase saved. Genome node equipped for the next journey.";
+            return Complete(session.TryPurchaseHareGenomeNode(profileId, id, out var error), error, message);
         }
         public bool Reset()
         {

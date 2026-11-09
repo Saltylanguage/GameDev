@@ -12,11 +12,15 @@ namespace SaltyGame
         readonly List<string> orderedUpgradeIds = new List<string>();
         readonly List<SpeciesUpgradeSnapshot> appliedRunUpgrades =
             new List<SpeciesUpgradeSnapshot>();
+        readonly Func<string, bool> mutationResearch;
 
-        public SpeciesProgression(SpeciesDefinition definition)
+        public SpeciesProgression(SpeciesDefinition definition, Func<string, bool> mutationResearch = null,
+            bool usesGeneLabResearch = false)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             CurrentRules = definition.Rules;
+            this.mutationResearch = mutationResearch;
+            UsesGeneLabResearch = usesGeneLabResearch && mutationResearch != null;
         }
 
         public SpeciesDefinition Definition { get; }
@@ -26,6 +30,8 @@ namespace SaltyGame
         public int PurchasedUpgradeCount { get; private set; }
         public IReadOnlyList<string> OrderedUpgradeIds => orderedUpgradeIds.AsReadOnly();
         public IReadOnlyList<SpeciesUpgradeSnapshot> AppliedRunUpgrades => appliedRunUpgrades.AsReadOnly();
+        public bool UsesGeneLabResearch { get; }
+        public bool IsMutationResearched(string id) => mutationResearch == null || mutationResearch(id);
 
         public int GetUpgradeLevel(string upgradeId)
         {
@@ -96,7 +102,8 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            return GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
+            return IsMutationResearched(upgrade.Id)
+                && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
                 && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
                     || CurrentRules.ReproductionChance + upgrade.Value <= 1f);
         }
@@ -118,18 +125,19 @@ namespace SaltyGame
             var nextLevel = GetUpgradeLevel(upgrade.Id) + 1;
             var nextRules = CurrentRules;
             var nextAvoidanceChance = PreContactAvoidanceChance;
+            var snapshot = upgrade.CreateSnapshot(Definition.Id);
             if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
             {
                 nextAvoidanceChance = SpeciesUpgradeCatalog.GetThreatExposureAvoidanceChance(nextLevel);
             }
             else
             {
-                nextRules = upgrade.Apply(CurrentRules);
+                snapshot = CreateRankedMutationSnapshot(snapshot, nextLevel);
+                nextRules = snapshot.Apply(CurrentRules);
             }
 
             // Match the experiment runner's legacy provenance: catalog snapshots
             // describe the upgrade; resolved rules/options retain level effects.
-            var snapshot = upgrade.CreateSnapshot(Definition.Id);
             CurrentRules = nextRules;
             PreContactAvoidanceChance = nextAvoidanceChance;
             var upgradeId = SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id)
@@ -147,8 +155,20 @@ namespace SaltyGame
             return TryApplyRunUpgrade(upgrade, levelLimit);
         }
 
-        public bool TryApplyFieldDataReward(SpeciesUpgradeSnapshot upgrade)
+        internal bool CanApplyBurrowMutation(string id, bool hasStarterBurrowing)
         {
+            if (id == SpeciesUpgradeCatalog.BurrowingId) return !hasStarterBurrowing;
+            if (id == SpeciesUpgradeCatalog.SharedBurrowsId || id == SpeciesUpgradeCatalog.ExpandedBurrowsId)
+                return hasStarterBurrowing || GetUpgradeLevel(SpeciesUpgradeCatalog.BurrowingId) > 0;
+            return true;
+        }
+
+        public bool TryApplyFieldDataReward(SpeciesUpgradeSnapshot upgrade, bool hasStarterBurrowing = false)
+        {
+            if (upgrade == null || !IsMutationResearched(upgrade.Id)
+                || !CanApplyBurrowMutation(upgrade.Id, hasStarterBurrowing)) return false;
+            if (upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId && CurrentRules.ReproductionChance >= 1f)
+                return false;
             return TryApplyRunUpgrade(upgrade, upgrade == null ? 1
                 : SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(Definition.Id, upgrade.Id));
         }
@@ -182,20 +202,49 @@ namespace SaltyGame
                 }
             }
 
-            var nextAvoidanceChance = PreContactAvoidanceChance + upgrade.PreContactAvoidanceChanceBonus;
-            if (nextAvoidanceChance > 1f)
+            var effectiveUpgrade = CreateRankedMutationSnapshot(upgrade, currentLevel + 1);
+            var nextAvoidanceChance = PreContactAvoidanceChance + effectiveUpgrade.PreContactAvoidanceChanceBonus;
+            if (nextAvoidanceChance > 1f || !SpeciesUpgradeCatalog.PreservesLitterBounds(CurrentRules, effectiveUpgrade))
             {
                 return false;
             }
 
-            var nextRules = upgrade.Apply(CurrentRules);
+            var nextRules = effectiveUpgrade.Apply(CurrentRules);
             CurrentRules = nextRules;
             PreContactAvoidanceChance = nextAvoidanceChance;
             purchasedUpgradeLevels[upgrade.Id] = currentLevel + 1;
             orderedUpgradeIds.Add(upgrade.Id);
-            appliedRunUpgrades.Add(upgrade);
+            appliedRunUpgrades.Add(effectiveUpgrade);
             PurchasedUpgradeCount++;
             return true;
+        }
+
+        SpeciesUpgradeSnapshot CreateRankedMutationSnapshot(SpeciesUpgradeSnapshot upgrade, int level)
+        {
+            if (upgrade.Id != SpeciesUpgradeCatalog.LargerMaximumLitterId
+                || level != SpeciesUpgradeCatalog.LargerMaximumLitterMaxLevel
+                || CurrentRules.LitterMinimum >= 2)
+            {
+                return upgrade;
+            }
+
+            var modifiers = new List<SpeciesUpgradeModifier>(upgrade.Modifiers)
+            {
+                new SpeciesUpgradeModifier(
+                    SpeciesAttributeIds.LitterMinimum,
+                    2 - CurrentRules.LitterMinimum),
+            };
+            return new SpeciesUpgradeSnapshot(
+                upgrade.Id,
+                upgrade.DisplayName,
+                upgrade.Description,
+                upgrade.TargetSpecies,
+                upgrade.Cost,
+                modifiers,
+                upgrade.PrerequisiteUpgradeIds,
+                upgrade.ExcludedUpgradeIds,
+                upgrade.PopulationToAdd,
+                upgrade.PreContactAvoidanceChanceBonus);
         }
 
         public void SetRules(SpeciesRules rules)

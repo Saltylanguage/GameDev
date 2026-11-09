@@ -136,6 +136,7 @@ namespace SaltyGame
                     Debug.LogError($"Desktop Simulation launch was rejected: {validationMessage}", this);
                     return false;
                 }
+                simulationPreview.BindMutationResearch(profile);
                 simulationPreview.BindGenomeLaunchSource(() =>
                 {
                     if (!profileSession.Current.HasLoadedProfile || profileSession.Current.ProfileId != profile.ProfileId)
@@ -192,6 +193,8 @@ namespace SaltyGame
                     Debug.LogError($"Desktop Genome launch was rejected: {genomeMessage}", this);
                     return;
                 }
+                if (simulationPreview.JourneyCurrentNode == null)
+                    simulationPreview.BindMutationResearch(profileSession.Current);
             }
 
             desktopCamera.enabled = false;

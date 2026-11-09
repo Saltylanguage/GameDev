@@ -9,6 +9,108 @@ namespace SaltyGame.Tests
     [Category("Simulation")]
     public sealed class FieldDataPermanentProgressionTests
     {
+        [TestCase(0, 10)]
+        [TestCase(1, 15)]
+        [TestCase(2, 20)]
+        [TestCase(3, 25)]
+        [TestCase(4, 30)]
+        [TestCase(5, 35)]
+        public void PopulationReservesRanksSetThePerNodeHarePurchaseAllowance(int rank, int allowance)
+        {
+            Assert.That(FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(rank), Is.EqualTo(allowance));
+            if (rank > 0)
+                Assert.That(FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(rank), Is.EqualTo(rank * 5));
+        }
+
+        [Test]
+        public void PopulationReservesRejectsRanksOutsideTheApprovedRange()
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(-1));
+            Assert.Throws<ArgumentOutOfRangeException>(() => FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(6));
+            Assert.Throws<ArgumentOutOfRangeException>(() => FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(0));
+            Assert.Throws<ArgumentOutOfRangeException>(() => FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(6));
+        }
+
+        [Test]
+        public void MutationResearchUsesOwnershipNotEquipmentAndFreezesTheProfile()
+        {
+            var hare = new SpeciesId("hare");
+            var empty = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(null, hare);
+            Assert.That(empty(SpeciesUpgradeCatalog.ToughHideId), Is.False);
+            Assert.That(empty(SpeciesUpgradeCatalog.KeenSensesId), Is.False);
+            var genome = new SpeciesGenomeProfile(hare,
+                new[] { "hare.guarded-burrow", "hare.keen-hearing" }, Array.Empty<string>());
+            var profile = new ProfileSessionSnapshot(true, "research", "Research", new[] { genome });
+            var eligibility = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            Assert.That(eligibility(SpeciesUpgradeCatalog.ToughHideId), Is.True);
+            Assert.That(eligibility(SpeciesUpgradeCatalog.KeenSensesId), Is.True);
+            Assert.That(eligibility(SpeciesUpgradeCatalog.LongVisionId), Is.True);
+            Assert.That(eligibility(SpeciesUpgradeCatalog.EfficientDigestionId), Is.False);
+            Assert.That(eligibility(SpeciesUpgradeCatalog.SeedDispersalId), Is.False);
+            var progression = new SpeciesProgression(new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligibility);
+            Assert.That(progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ToughHideId), Is.Zero);
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.SeedDispersalId).CreateSnapshot(hare)), Is.False);
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(hare)), Is.True);
+            var beforeVision = progression.CurrentRules.Awareness.VisionRange;
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LongVisionId).CreateSnapshot(hare)), Is.True);
+            Assert.That(progression.CurrentRules.Awareness.VisionRange, Is.EqualTo(beforeVision + SpeciesUpgradeCatalog.LongVisionTiles));
+            Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LongVisionId).CreateSnapshot(hare)), Is.False);
+            Assert.That(empty(SpeciesUpgradeCatalog.ToughHideId), Is.False, "Another profile's research must not change the frozen empty policy.");
+        }
+
+        [Test]
+        public void HeightenedSensesResearchMakesBothMutationsAvailableAtPhaseAndFieldDataRewards()
+        {
+            var hare = new SpeciesId("hare");
+            var profile = new ProfileSessionSnapshot(true, "senses", "Senses", new[]
+            {
+                new SpeciesGenomeProfile(hare, new[] { "hare.keen-hearing" }, Array.Empty<string>())
+            });
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var ids = new[] { SpeciesUpgradeCatalog.LongVisionId, SpeciesUpgradeCatalog.KeenSensesId };
+            var fieldData = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
+            foreach (var id in ids)
+            {
+                Assert.That(eligible(id), Is.True);
+                Assert.That(fieldData.Any(value => value.Id == id), Is.True);
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, 42,
+                    upgrade => eligible(upgrade.Id));
+                Assert.That(offer.Any(value => value.Id == id), Is.True);
+            }
+        }
+
+        [Test]
+        public void LegacyPrototypeAllocationRemainsEligibleAfterProfileMigration()
+        {
+            var hare = new SpeciesId("hare");
+            const string legacyId = "poc.hare.tough-hide";
+            var genome = new SpeciesGenomeProfile(hare, activeNodeIds: new[] { legacyId },
+                allocations: new[] { new GenomeNodeAllocation(legacyId, 5, 2) });
+            var profile = new ProfileSessionSnapshot(true, "legacy", "Legacy", new[] { genome });
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            Assert.That(eligible(SpeciesUpgradeCatalog.ToughHideId), Is.True);
+            Assert.That(eligible(SpeciesUpgradeCatalog.SeedDispersalId), Is.False);
+        }
+
+        [Test]
+        public void LongStrideResearchMakesItsMovementMutationAvailableWithoutEquippingIt()
+        {
+            var hare = new SpeciesId("hare");
+            var genome = new SpeciesGenomeProfile(hare,
+                new[] { "hare.guarded-burrow", "hare.swift-digging" }, Array.Empty<string>());
+            var profile = new ProfileSessionSnapshot(true, "stride", "Stride", new[] { genome });
+            var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
+            var stride = pool.Single(value => value.Id == SpeciesUpgradeCatalog.FasterMovementId);
+            Assert.That(stride.DisplayName, Is.EqualTo("LONG STRIDE"));
+            Assert.That(eligible(stride.Id), Is.True);
+            var progression = new SpeciesProgression(new SpeciesDefinition(hare,
+                SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligible);
+            var before = progression.CurrentRules.MovementSpeed;
+            Assert.That(progression.TryApplyFieldDataReward(stride), Is.True);
+            Assert.That(progression.CurrentRules.MovementSpeed, Is.GreaterThan(before));
+        }
+
         [Test]
         public void EveryOwnedLoadoutWithinCapacityCanUseTheFinalNodeWithoutActiveParents()
         {
@@ -17,29 +119,24 @@ namespace SaltyGame.Tests
             var owned = nodes.Select(node => node.Id).ToArray();
             var validCount = 0;
             var terminalCount = 0;
-            for (var mask = 0; mask < 32; mask++)
+            for (var mask = 0; mask < 1 << nodes.Count; mask++)
             {
                 var active = nodes.Where((node, index) => (mask & (1 << index)) != 0)
                     .Select(node => node.Id).ToArray();
+                if (active.Length > GenomeContract.ActiveCapacity) continue;
                 var profile = new SpeciesGenomeProfile(new SpeciesId("hare"), owned, active);
-                if (active.Length == 5)
-                {
-                    Assert.Throws<InvalidOperationException>(() => definition.FreezeOwnedLoadout(profile));
-                    continue;
-                }
-
                 var frozen = definition.FreezeOwnedLoadout(profile);
                 CollectionAssert.AreEqual(active, frozen.GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds);
                 validCount++;
                 if (active.Contains("hare.warren-network")) terminalCount++;
             }
 
-            Assert.That(validCount, Is.EqualTo(31));
-            Assert.That(terminalCount, Is.EqualTo(15));
+            Assert.That(validCount, Is.EqualTo(39203));
+            Assert.That(terminalCount, Is.EqualTo(16384));
         }
 
         [Test]
-        public void FrozenOwnedLoadoutAppliesOnlyActiveEffectsAndKeepsThePocResolverStrict()
+        public void FrozenResearchLoadoutDoesNotGrantPermanentStatsAndKeepsThePocResolverStrict()
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var hare = new SpeciesId("hare");
@@ -49,10 +146,10 @@ namespace SaltyGame.Tests
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var effective = frozen.GetSpeciesGenome(hare).ApplyToNaturalRules(natural);
             Assert.That(effective.BlockAmount, Is.EqualTo(natural.BlockAmount));
-            Assert.That(effective.Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange + 2));
-            Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
-            Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus + 0.25f));
-            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(effective.Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange));
+            Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed));
+            Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus));
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
             Assert.That(frozen.GetSpeciesGenome(hare).CatalogFingerprint, Is.EqualTo(definition.Catalog.Fingerprint));
             Assert.Throws<InvalidOperationException>(() => new GenomeSimulationSnapshot(new[]
                 { new SpeciesGenomeSnapshot(hare, active) }).Resolve(definition.Catalog));
@@ -79,11 +176,11 @@ namespace SaltyGame.Tests
                 unlockedGenomeSpeciesIds: licensed ? new[] { genome.SpeciesId } : Array.Empty<SpeciesId>());
         }
 
-        [TestCase("hare.guarded-burrow", SpeciesAttributeIds.BlockAmount, 1f)]
-        [TestCase("hare.keen-hearing", SpeciesAttributeIds.VisionRange, 2f)]
-        [TestCase("hare.swift-digging", SpeciesAttributeIds.MovementSpeed, 0.25f)]
-        [TestCase("hare.safe-foraging", SpeciesAttributeIds.DigestionEnergyBonus, 0.25f)]
-        [TestCase("hare.warren-network", SpeciesAttributeIds.PopulationPoolCapacity, 10f)]
+        [TestCase("hare.guarded-burrow", null, 0f)]
+        [TestCase("hare.keen-hearing", null, 0f)]
+        [TestCase("hare.swift-digging", null, 0f)]
+        [TestCase("hare.safe-foraging", null, 0f)]
+        [TestCase("hare.warren-network", null, 0f)]
         public void FD2LaunchFreezesEveryApprovedNodeWithInactiveOwnedAncestors(string id, string attribute, float value)
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
@@ -91,8 +188,12 @@ namespace SaltyGame.Tests
             var frozen = LaunchProfile(genome).CreateLaunchGenomeSnapshot(GenomeCatalogSnapshot.Empty).GetSpeciesGenome(genome.SpeciesId);
             Assert.That(frozen.ActiveNodeIds, Is.EqualTo(new[] { id }));
             Assert.That(frozen.CatalogFingerprint, Is.EqualTo(definition.Catalog.Fingerprint));
-            Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().AttributeId, Is.EqualTo(attribute));
-            Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().SignedValue, Is.EqualTo(value));
+            if (attribute == null) Assert.That(frozen.ResolvedNodes.Single().Modifiers, Is.Empty);
+            else
+            {
+                Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().AttributeId, Is.EqualTo(attribute));
+                Assert.That(frozen.ResolvedNodes.Single().Modifiers.Single().SignedValue, Is.EqualTo(value));
+            }
             Assert.That(frozen.ResolvedNodes.Single().Fingerprint, Is.EqualTo(definition.HareMap.GetNode(id).Fingerprint));
         }
 
@@ -101,15 +202,13 @@ namespace SaltyGame.Tests
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var owned = definition.HareMap.Nodes.Select(node => node.Id).ToArray();
-            for (var mask = 0; mask < 32; mask++)
+            for (var mask = 0; mask < 1 << owned.Length; mask++)
             {
                 var selected = owned.Where((id, index) => (mask & (1 << index)) != 0).Reverse().ToArray();
+                if (selected.Length > GenomeContract.ActiveCapacity) continue;
                 var profile = LaunchProfile(new SpeciesGenomeProfile(new SpeciesId("hare"), owned, selected));
-                if (selected.Length == 5)
-                    Assert.Throws<InvalidOperationException>(() => profile.CreateLaunchGenomeSnapshot(definition.Catalog));
-                else
-                    Assert.That(profile.CreateLaunchGenomeSnapshot(definition.Catalog).GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds,
-                        Is.EqualTo(selected));
+                Assert.That(profile.CreateLaunchGenomeSnapshot(definition.Catalog).GetSpeciesGenome(new SpeciesId("hare")).ActiveNodeIds,
+                    Is.EqualTo(selected));
             }
         }
 
@@ -156,14 +255,14 @@ namespace SaltyGame.Tests
                 [fox] = defaults[SpeciesIds.Carnivore],
             };
             var effective = frozen.ApplyToNaturalRules(natural);
-            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
             Assert.That(effective[fox].Awareness.VisionRange, Is.EqualTo(natural[fox].Awareness.VisionRange + 3));
             Assert.That(effective[hare].BlockAmount, Is.EqualTo(natural[hare].BlockAmount));
             Assert.That(effective[SpeciesIds.Plant], Is.SameAs(natural[SpeciesIds.Plant]));
             var changed = profile.WithGenomeProfile(new SpeciesGenomeProfile(hare,
                 definition.HareMap.Nodes.Select(node => node.Id), resetGeneration: 1)).CreateLaunchGenomeSnapshot(catalog);
             Assert.That(changed.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
-            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
             Assert.That(changed.GetSpeciesGenome(fox).Fingerprint, Is.EqualTo(frozen.GetSpeciesGenome(fox).Fingerprint));
         }
 
@@ -212,7 +311,7 @@ namespace SaltyGame.Tests
             Assert.That(run.ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(fingerprint));
             Assert.That(run.CreateCheckpoint().Restore().ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(fingerprint));
             Assert.That(SimulationRunResults.Create(run).ActiveGenomeSnapshot.Fingerprint, Is.EqualTo(fingerprint));
-            Assert.That(run.ActiveGenomeSnapshot.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(run.ActiveGenomeSnapshot.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
             Assert.That(next.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
         }
 

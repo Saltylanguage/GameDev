@@ -8,14 +8,14 @@ namespace SaltyGame.EditorTests
     public sealed class FieldDataPermanentProgressionAssetTests
     {
         [Test]
-        public void ApprovedFiveNodeAssetCatalogMatchesTheSingleRuntimeDefinition()
+        public void AuthoredCatalogMatchesTheSingleRuntimeDefinition()
         {
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
                 FieldDataPermanentProgressionDefinition.HareMapPath);
             Assert.That(map, Is.Not.Null);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             Assert.DoesNotThrow(() => definition.ValidateAuthoredMap(map.CreateSnapshot()));
-            Assert.That(map.Upgrades, Has.Length.EqualTo(5));
+            Assert.That(map.Upgrades, Has.Length.EqualTo(definition.HareMap.Nodes.Count));
             foreach (var node in map.Upgrades)
             {
                 Assert.That(node.UpgradeId, Does.StartWith("hare."));

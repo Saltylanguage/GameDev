@@ -24,9 +24,6 @@ namespace SaltyGame
         static readonly HashSet<string> PermanentConceptNodeIds = new HashSet<string>(StringComparer.Ordinal)
         {
             GenomeContract.FastGestationNodeId,
-            SpeciesSimulation.FertileDroppingsNodeId,
-            "high-crowding",
-            "increased-minimum-litter",
         };
 
         GenomeCatalogSnapshot catalog;
@@ -114,9 +111,9 @@ namespace SaltyGame
             : profile != null && profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
                 && genome.IsNodeActive(SelectedNode.NodeId)
                 ? GetSelectedNodeRank(genome) < SelectedNode.MaximumRanks
-                    ? $"UPGRADE · RANK {GetSelectedNodeRank(genome) + 1}/{SelectedNode.MaximumRanks} / {SelectedNode.RabbitDataPrice} DATA +1 POINT"
-                    : $"RANK {GetSelectedNodeRank(genome)}/{SelectedNode.MaximumRanks} · {GetSelectedNodePoints(genome)} POINTS"
-                : $"ACTIVATE · {SelectedNode.RabbitDataPrice} DATA / {SelectedNode.CapacityPoints} POINTS";
+                    ? $"UPGRADE · RANK {GetSelectedNodeRank(genome) + 1}/{SelectedNode.MaximumRanks} / {SelectedNode.RabbitDataPrice} DATA · 1 POINT TOTAL"
+                    : $"RANK {GetSelectedNodeRank(genome)}/{SelectedNode.MaximumRanks} · 1 POINT"
+                : $"ACTIVATE · {SelectedNode.RabbitDataPrice} DATA / 1 POINT";
         public string ResetOfferText => permanent?.ResetOffer ?? $"RESET · {GenomeContract.RabbitResetResearchDataFee} RESEARCH DATA";
         string actionResult;
         public string ActionStatusText => permanent != null ? permanent.Status ?? string.Empty : !string.IsNullOrEmpty(actionResult) ? actionResult
@@ -158,8 +155,7 @@ namespace SaltyGame
             }
             profile.TryGetGenomeProfile(GenomeContract.RabbitSpeciesId, out var genome);
             var isActive = genome != null && genome.IsNodeActive(node.NodeId);
-            var currentPoints = isActive ? GetSelectedNodePoints(genome) : 0;
-            if (isActive && currentPoints >= node.MaximumCapacityPoints)
+            if (isActive && GetSelectedNodeRank(genome) >= node.MaximumRanks)
                 return "This Genome node is at maximum rank.";
             var missing = node.PrerequisiteNodeIds.Where(id => genome == null || !genome.IsNodeActive(id))
                 .Select(id => ResolveSpeciesMap().GetNode(id).DisplayName).ToArray();
@@ -168,10 +164,9 @@ namespace SaltyGame
                 return $"Activate first: {string.Join(", ", missing)}.";
             }
             var free = GenomeContract.ActiveCapacity - (genome?.CapacityUsed ?? 0);
-            if (free < (isActive ? 1 : node.CapacityPoints))
+            if (!isActive && free < 1)
             {
-                var needed = isActive ? 1 : node.CapacityPoints;
-                return $"Needs {needed} capacity; {free} available. Reset to reallocate.";
+                return $"Needs 1 capacity; {free} available. Reset to reallocate.";
             }
             if (profile.RabbitData < node.RabbitDataPrice)
             {
@@ -247,11 +242,7 @@ namespace SaltyGame
 
         int GetSelectedNodeRank(SpeciesGenomeProfile genome) =>
             genome.TryGetAllocation(SelectedNode.NodeId, out var allocation)
-                ? SelectedNode.GetRank(allocation.CapacityPoints) : 1;
-
-        int GetSelectedNodePoints(SpeciesGenomeProfile genome) =>
-            genome.TryGetAllocation(SelectedNode.NodeId, out var allocation)
-                ? allocation.CapacityPoints : SelectedNode.CapacityPoints;
+                ? allocation.Rank : 1;
 
         void ResetGenome(object _)
         {
@@ -609,13 +600,35 @@ namespace SaltyGame
             CapacityPoints = node.CapacityPoints;
             IsPurchasable = node.IsPurchasable;
             PrerequisiteNodeIds = node.PrerequisiteNodeIds;
-            BranchText = string.IsNullOrEmpty(node.BranchName) ? "GENOME NODE" : $"{node.BranchName.ToUpperInvariant()} · GENOME";
-            BiomeImpactText = node.Id == "fertile-droppings"
+            BranchText = node.Id == "hare.founding-hares" || node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
+                ? "STARTER GENE"
+                : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(node.Id) ? "RESEARCH · TEST PRICE"
+                : string.IsNullOrEmpty(node.BranchName) ? "GENOME NODE" : $"{node.BranchName.ToUpperInvariant()} · GENOME";
+            string mutationUnlock = node.Id switch
+            {
+                "hare.guarded-burrow" => "Tough Hide",
+                "hare.keen-hearing" => "Long Vision and Keen Senses",
+                "hare.swift-digging" => "movement",
+                "hare.safe-foraging" => "Efficient Digestion",
+                "hare.seed-dispersal" or "hare.crowding-tolerance" or "hare.reproductive-drive" or "hare.escape-instinct"
+                    or "hare.increased-minimum-litter" or "hare.larger-litters"
+                    or FieldDataPermanentProgressionDefinition.BurrowingNodeId
+                    or FieldDataPermanentProgressionDefinition.SharedBurrowsNodeId
+                    or FieldDataPermanentProgressionDefinition.ExpandedBurrowsNodeId => node.DisplayName,
+                _ => null,
+            };
+            BiomeImpactText = node.Id == "hare.warren-network"
+                ? "Raises the purchased Hare allowance per simulation node. Births and existing Hares are not limited."
+                : node.Id == "fertile-droppings"
                 ? "Droppings may regrow grass but leave scent that hungry predators can follow."
                 : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.PopulationPoolCapacity)
                     ? "Raises player replenishment capacity. Natural births can still exceed the pool and consume more food."
                 : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.StartingPopulation)
                     ? "More Hares at launch increase food demand and encounters with predators."
+                : node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
+                    ? "Equip this starter gene to begin the next journey with Burrowing."
+                : mutationUnlock != null
+                    ? $"Research unlocks {mutationUnlock} journey choices even when this node is unequipped."
                 : node.Modifiers.Count > 0
                     ? "Applies to every Hare next journey. Playtest values; ecology balance is not established."
                     : "Preview only. This mechanic is not available yet.";
@@ -637,7 +650,7 @@ namespace SaltyGame
         public int GetRank(int allocationCapacityPoints) => node.GetRank(allocationCapacityPoints);
         public string CapacityText => IsConcept
             ? "PERMANENT COST AND LOADOUT RULES TBD"
-            : $"{CapacityPoints} ACTIVE POINTS";
+            : "1 ACTIVE POINT";
         public bool IsConcept { get; }
         public bool IsPurchasable { get; }
         public IReadOnlyList<string> PrerequisiteNodeIds { get; }

@@ -519,6 +519,16 @@ namespace SaltyGame
                 scentMemory: preserveTracking ? ScentMemory : default);
         }
 
+        internal SpeciesCell PlaceCreatureOn(SpeciesCell tile)
+        {
+            return new SpeciesCell(SpeciesId, true, Health, Energy, Age, FoodEaten, FoodReserve, IsAlpha,
+                tile.TerrainId, tile.TerrainEnergy, false, tile.isResourceTerrain, tile.IsPassable,
+                tile.MovementCost, tile.resourceSpeciesId, BehaviorState, BehaviorStateTicks, EntityId,
+                AttackCooldownTicksRemaining, EnergyRemainder, TrackingTargetEntityId, TrackingTargetX,
+                TrackingTargetY, TrackingTicksRemaining, ReproductionCooldownTicksRemaining, ForagePhase,
+                tile.TerrainResourceGrowthElapsedTicks, CrowdingEnergyRemainder, Gestation, tile.ScentMarker, ScentMemory);
+        }
+
         public SpeciesCell WithBehaviorState(SpeciesBehaviorState state, int ticks = 0)
         {
             if (!IsCreature)

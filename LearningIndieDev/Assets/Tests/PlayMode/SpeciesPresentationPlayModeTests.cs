@@ -172,6 +172,11 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                 "36", "20", "10100", "2000", "0", "1800", "0.2", "0", "0", "0", false,
                 "300", "200", "0", out var setupError), Is.True, setupError);
+            // Exercise an exhaustible research pool; litter rank limits are not yet authored.
+            Func<string, bool> research = id => id != SpeciesUpgradeCatalog.LargerMinimumLitterId
+                && id != SpeciesUpgradeCatalog.LargerMaximumLitterId;
+            typeof(SpeciesSimulationPreview).GetField("mutationResearch", BindingFlags.Instance | BindingFlags.NonPublic)
+                .SetValue(preview, research);
 
             var shellType = shell.GetType();
             var openMap = shellType.GetProperty("OpenJourneyMapCommand")?.GetValue(shell);
@@ -194,9 +199,13 @@ namespace SaltyGame.PlayModeTests
             Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
             Assert.That(shellType.GetProperty("FieldDataTestRouteButtonText")?.GetValue(shell), Is.EqualTo("START THIS ROUTE"));
             var routeSummary = shellType.GetProperty("JourneyMapSummary")?.GetValue(shell)?.ToString();
-            Assert.That(((Array)shellType.GetProperty("FieldDataRouteNodes")?.GetValue(shell)).Length, Is.EqualTo(5));
+            Assert.That(((Array)shellType.GetProperty("FieldDataRouteNodes")?.GetValue(shell)).Length, Is.EqualTo(7));
             Assert.That(shellType.GetProperty("FieldDataRouteMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
-            foreach (var node in new[] { "SIMULATION 1", "SHOP 1", "SIMULATION 2", "SHOP 2", "SIMULATION 3" })
+            foreach (var node in new[]
+            {
+                "SIMULATION 1", "SHOP 1", "SIMULATION 2", "SHOP 2",
+                "SIMULATION 3", "SHOP 3", "SIMULATION 4",
+            })
                 Assert.That(routeSummary, Does.Contain(node));
             ExecuteShellCommand(shell, "CloseJourneyMapCommand");
             Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
@@ -232,6 +241,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(breakdown, Does.Contain("Selected population income"));
             Assert.That(breakdown, Does.Contain($"AVAILABLE {preview.FieldDataSession.Ledger.Balance} FD"));
             Assert.That(breakdown, Does.Contain($"Balance after transactions: {preview.FieldDataSession.Ledger.Balance} FD"));
+            Assert.That(shellType.GetProperty("FieldDataMutationCardCaption")?.GetValue(shell), Is.EqualTo("THIS JOURNEY ONLY"));
             Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("Collapsed"), "Population actions wait until the free reward is resolved.");
 
@@ -241,9 +251,6 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.FieldDataSession.TryAddIncomeModifier(
                 new FieldDataIncomeModifierInstance("ui-income-plus", "income-plus-one-per-hare",
                     FieldDataIncomeOperation.AddPerHare, 1m), out var incomeError, "ui-binding-test"), Is.True, incomeError);
-            Assert.That(preview.FieldDataSession.TryAddIncomeModifier(
-                new FieldDataIncomeModifierInstance("ui-income-times", "income-multiply-one-point-five",
-                    FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m), out incomeError, "ui-binding-test"), Is.True, incomeError);
             ExecuteShellCommand(shell, "ContinueJourneyCommand");
             preview.PauseSimulation();
             for (var tick = 0; tick < 100; tick++)
@@ -286,7 +293,6 @@ namespace SaltyGame.PlayModeTests
             ExecuteShellCommand(shell, "ContinueJourneyCommand");
             EnterAvailableFieldDataNode(shell, 1);
             Assert.That(shellType.GetProperty("FieldDataShopVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
-            Assert.That(shellType.GetProperty("FieldDataShopSummaryText")?.GetValue(shell)?.ToString(), Does.Contain("randomized offers"));
             Assert.That(shellType.GetProperty("FieldDataRewardChoicesVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
             var offers = preview.FieldDataSession.GetCurrentShopVisit().Offers;
             for (var offerIndex = 0; offerIndex < offers.Count; offerIndex++)
@@ -295,8 +301,18 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(shellType.GetProperty("CanRerollFieldDataShopOffer" + (offerIndex + 1))?.GetValue(shell),
                     Is.EqualTo(offer.Locked && !offer.Purchased));
                 Assert.That(shellType.GetProperty("FieldDataShopOffer" + (offerIndex + 1) + "Text")?.GetValue(shell)?.ToString(),
-                    Does.Contain(offer.Kind == FieldDataShopOfferKind.SpeciesEffect ? "Family owned" : "No copy cap"));
+                    Does.Contain(offer.Kind == FieldDataShopOfferKind.SpeciesEffect ? "Family owned" : "One-time"));
+                Assert.That(shellType.GetProperty("FieldDataShopReroll" + (offerIndex + 1) + "Visibility")?.GetValue(shell)?.ToString(),
+                    Is.EqualTo(offer.Kind == FieldDataShopOfferKind.SpeciesEffect ? "Visible" : "Collapsed"));
             }
+            var payoutOfferIndex = -1;
+            for (var offerIndex = 0; offerIndex < offers.Count; offerIndex++)
+                if (offers[offerIndex].Id == "income-multiply-one-point-five") payoutOfferIndex = offerIndex;
+            Assert.That(payoutOfferIndex, Is.GreaterThanOrEqualTo(0), "The unowned payout tier should be offered.");
+            Assert.That(shellType.GetProperty("FieldDataShopOffer" + (payoutOfferIndex + 1) + "Text")?.GetValue(shell)?.ToString(), Does.Contain("FD"));
+            ExecuteShellCommand(shell, "BuyFieldDataShopOffer" + (payoutOfferIndex + 1) + "Command");
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.LessThan(shopWallet));
+            var walletAfterPurchase = preview.FieldDataSession.Ledger.Balance;
             ExecuteShellCommand(shell, "StartChosenIncomeReorderCommand");
             Assert.That(shellType.GetProperty("CanConfirmChosenIncomeReorder")?.GetValue(shell), Is.EqualTo(false),
                 "An unchanged preview cannot be purchased.");
@@ -313,15 +329,11 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetChosenIncomeItemName(chosenItems[0]), Is.EqualTo(originalSecond));
             Assert.That(GetChosenIncomeItemName(chosenItems[1]), Is.EqualTo(originalFirst));
             ExecuteShellCommand(shell, "CancelChosenIncomeReorderCommand");
-            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(shopWallet), "Cancelling an edited preview must not charge the wallet.");
+            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.EqualTo(walletAfterPurchase), "Cancelling an edited preview must not charge the wallet.");
             Assert.That(preview.FieldDataSession.ChosenReorderDraft, Is.Null);
             ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
             Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("Collapsed"), "Completed-node settlement and shops must never offer population controls.");
-            Assert.That(shellType.GetProperty("FieldDataShopOffer1Text")?.GetValue(shell)?.ToString(), Does.Contain("FD"));
-
-            ExecuteShellCommand(shell, "BuyFieldDataShopOffer1Command");
-            Assert.That(preview.FieldDataSession.Ledger.Balance, Is.LessThan(shopWallet));
             ExecuteShellCommand(shell, "ContinueJourneyCommand");
             EnterAvailableFieldDataNode(shell, 2);
             preview.PauseSimulation();
@@ -352,21 +364,23 @@ namespace SaltyGame.PlayModeTests
             Assert.That(accountingSummary, Does.Contain("REM: " + preview.Run.GetBoundaryPopulationRemoved(preview.PlayerSpecies)));
             Assert.That(accountingSummary, Does.Contain("Reconciled: True").And.Not.Contain("APS: INVALID"));
 
-            // A fully capped future journey must show Skip, never disabled legacy offers.
-            foreach (var reward in SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(preview.PlayerSpecies, null))
+            // An exhausted reward pool must show Skip, never disabled legacy offers.
+            foreach (var reward in SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(preview.PlayerSpecies, null, research))
                 while (preview.Progression.TryApplyFieldDataReward(reward)) { }
             ExecuteShellCommand(shell, "ContinueJourneyCommand");
             preview.PauseSimulation();
             for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
             ExecuteShellCommand(shell, "OpenJourneyMapCommand");
             ExecuteShellCommand(shell, "CloseJourneyMapCommand");
-            Assert.That(preview.FieldDataSession.GetCurrentRoundRewardChoices().Choices, Is.Empty);
+            var remainingChoices = preview.FieldDataSession.GetCurrentRoundRewardChoices().Choices;
+            Assert.That(remainingChoices.Select(choice => choice.OrdinaryUpgrade?.Id ?? choice.Id), Is.Empty);
             for (var slot = 1; slot <= 3; slot++)
             {
                 Assert.That(shellType.GetProperty("RewardOption" + slot + "Text").GetValue(shell), Is.Empty);
                 Assert.That(shellType.GetProperty("RewardOption" + slot + "Visibility").GetValue(shell).ToString(), Is.EqualTo("Collapsed"));
             }
-            Assert.That(shellType.GetProperty("FieldDataStatusText").GetValue(shell).ToString(), Does.Contain("No eligible mutations"));
+            Assert.That(shellType.GetProperty("FieldDataStatusText").GetValue(shell).ToString(),
+                Does.Contain("No Mutations available").And.Contain("future journey"));
             Assert.That(shellType.GetProperty("CanContinueWithoutUpgrade").GetValue(shell), Is.EqualTo(true));
             ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
             Assert.That(shellType.GetProperty("CanContinueJourney").GetValue(shell), Is.EqualTo(true));
@@ -374,7 +388,14 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FieldDataTestRouteCompletesThroughBothShopsOnFixedSeed()
+        public IEnumerator FieldDataTestRouteCompletesThroughAllShopsOnFixedSeed() =>
+            ExerciseFieldDataRouteThroughResults(useAuthoredEcology: true);
+
+        [UnityTest]
+        public IEnumerator FieldDataTestRouteReachesResultsAndRestartsWithStableHares() =>
+            ExerciseFieldDataRouteThroughResults(useAuthoredEcology: false);
+
+        IEnumerator ExerciseFieldDataRouteThroughResults(bool useAuthoredEcology)
         {
             const int testSeed = 10100;
             journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
@@ -403,26 +424,56 @@ namespace SaltyGame.PlayModeTests
                 ?.SetValue(preview, false);
             typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.SetValue(preview, testSeed);
-            var authoredScenarioData = ConfigureAuthoredFieldDataScenario(preview);
-            Assert.That(preview.StepInterval, Is.EqualTo(authoredScenarioData.StepInterval));
+            if (useAuthoredEcology)
+            {
+                var authoredScenarioData = ConfigureAuthoredFieldDataScenario(preview);
+                Assert.That(preview.StepInterval, Is.EqualTo(authoredScenarioData.StepInterval));
+            }
+            else
+            {
+                Assert.That(preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
+                    "36", "20", testSeed.ToString(CultureInfo.InvariantCulture), "2000", "0", "1800",
+                    "0.2", "0", "0", "0", false, "300", "200", "0", out var setupError), Is.True, setupError);
+            }
 
             var shellType = shell.GetType();
             ExecuteShellCommand(shell, "OpenJourneyMapCommand");
             ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            if (!useAuthoredEcology)
+            {
+                var hare = new SpeciesId("hare");
+                var stableRules = preview.GetSpeciesRuleEditValues(hare);
+                stableRules.MovementEnabled = false;
+                stableRules.ReproductionEnabled = false;
+                stableRules.Metabolism = "0";
+                Assert.That(preview.TryApplySpeciesRuleEditValues(hare, stableRules, out var rulesError), Is.True, rulesError);
+            }
             ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
             Assert.That(preview.Run.Seed, Is.EqualTo(testSeed));
             var retainedRun = preview.Run;
             preview.PauseSimulation();
 
             const int roundsPerSimulation = FieldDataJourneyDefinition.RoundsPerSimulation;
-            const int totalRounds = FieldDataJourneyDefinition.RoundsPerSimulation
-                * FieldDataJourneyDefinition.SimulationCount;
+            Assert.That(preview.FieldDataSession.Definition.RouteSimulationCount, Is.EqualTo(4));
+            var totalRounds = roundsPerSimulation * preview.FieldDataSession.Definition.RouteSimulationCount;
             for (var round = 1; round <= totalRounds; round++)
             {
                 for (var tick = 0; tick < FieldDataJourneyDefinition.RoundLengthTicks; tick++)
                 {
                     if (preview.FieldDataSession.State == FieldDataJourneyFlowState.Failed)
-                        Assert.Fail($"The approved test route seed {testSeed} failed at tick {preview.Run.Tick}.");
+                    {
+                        var terminalPopulation = preview.Run.PopulationHistory.Last();
+                        var firstRecentSnapshot = Math.Max(0, preview.Run.PopulationHistory.Count - 12);
+                        var recentPopulationSummary = string.Join(" | ", preview.Run.PopulationHistory
+                            .Skip(firstRecentSnapshot)
+                            .Select(snapshot => $"{snapshot.Tick}: plants={snapshot.Plants}, "
+                                + $"hares={snapshot.GetCount(preview.Run.PlayerSpeciesId)}, "
+                                + $"foxes={snapshot.GetCount(new SpeciesId("fox"))}"));
+                        var fixture = useAuthoredEcology ? "Authored ecology" : "Stable Hare fixture";
+                        Assert.Fail($"{fixture}, seed {testSeed}, failed at tick {preview.Run.Tick} "
+                            + $"(run tick {terminalPopulation.Tick}; recent populations: {recentPopulationSummary}; "
+                            + $"simulation status: {preview.Run.Status}).");
+                    }
                     Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True,
                         $"The simulation should advance to route tick {round * FieldDataJourneyDefinition.RoundLengthTicks}.");
                 }
@@ -431,12 +482,13 @@ namespace SaltyGame.PlayModeTests
                 AssertFieldDataMapRoundTrip(shell, preview);
                 Assert.That(preview.Run, Is.SameAs(retainedRun));
                 var settledAwardCount = preview.FieldDataSession.Ledger.Awards.Count;
-                if (round == roundsPerSimulation || round == 2 * roundsPerSimulation)
+                var shopBoundary = round < totalRounds && round % roundsPerSimulation == 0;
+                if (shopBoundary)
                     Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Shop));
                 else if (round < totalRounds)
                     Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.RoundDecision));
 
-                if (round == roundsPerSimulation || round == 2 * roundsPerSimulation)
+                if (shopBoundary)
                 {
                     var shopVisit = preview.FieldDataSession.GetCurrentShopVisit();
                     Assert.That(shopVisit, Is.Not.Null);
@@ -491,7 +543,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(shellType.GetProperty("ResultsMessageText")?.GetValue(shell)?.ToString(),
                 Does.Contain("Field Data remains").And.Not.Contain("was discarded"));
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
-            Assert.That(preview.Run.Tick, Is.EqualTo(1800));
+            Assert.That(preview.Run.Tick, Is.EqualTo(totalRounds * FieldDataJourneyDefinition.RoundLengthTicks));
             Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("Collapsed"), "Terminal results must not offer population controls.");
             Assert.That(shellType.GetProperty("PlayNextSimulationText")?.GetValue(shell)?.ToString(),
@@ -527,7 +579,9 @@ namespace SaltyGame.PlayModeTests
         [UnityTest]
         public IEnumerator FieldDataNaturalFailureForfeitsJourneyWalletAndRestartStartsAtZero()
         {
-            const int failingSeed = 10108;
+            // Keep this wallet-forfeiture fixture stable while ordinary Fox scent
+            // remains an explicit opt-in; a separate route acceptance covers the default.
+            const int failingSeed = 10100;
             journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
             yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
             yield return null;
@@ -553,44 +607,57 @@ namespace SaltyGame.PlayModeTests
                 ?.SetValue(preview, false);
             typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.SetValue(preview, failingSeed);
+            typeof(SpeciesSimulationPreview).GetField("foxOrdinaryMovementScentEnabled", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.SetValue(preview, true);
             ConfigureAuthoredFieldDataScenario(preview);
 
             ExecuteShellCommand(shell, "OpenJourneyMapCommand");
             ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
             ExecuteShellCommand(shell, "StartFieldDataTestJourneyCommand");
+            Assert.That(preview.Run.Seed, Is.EqualTo(failingSeed), "The failure fixture must run the intended seed.");
             preview.PauseSimulation();
-            for (var tick = 0; tick < 100; tick++)
-                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
-            ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
-            ExecuteShellCommand(shell, "ContinueJourneyCommand");
-            preview.PauseSimulation();
-            while (preview.FieldDataSession.State != FieldDataJourneyFlowState.Failed
-                && preview.Run.Tick < 600)
+            var session = preview.FieldDataSession;
+            var roundLength = session.Definition.RoundLength;
+            var routeTickLimit = session.Definition.RouteSimulationCount
+                * FieldDataJourneyDefinition.RoundsPerSimulation * roundLength;
+            while (session.State != FieldDataJourneyFlowState.Failed && preview.Run.Tick < routeTickLimit)
             {
-                if (preview.FieldDataSession.State == FieldDataJourneyFlowState.RoundDecision
-                    || preview.FieldDataSession.State == FieldDataJourneyFlowState.Shop)
+                if (session.State == FieldDataJourneyFlowState.RoundDecision || session.State == FieldDataJourneyFlowState.Shop)
                 {
+                    var atShop = session.State == FieldDataJourneyFlowState.Shop;
                     ExecuteShellCommand(shell, "ContinueWithoutUpgradeCommand");
                     ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                    if (atShop)
+                    {
+                        var nextSimulationNode = session.GlobalRound / FieldDataJourneyDefinition.RoundsPerSimulation * 2;
+                        EnterAvailableFieldDataNode(shell, nextSimulationNode - 1);
+                        ExecuteShellCommand(shell, "ContinueJourneyCommand");
+                        EnterAvailableFieldDataNode(shell, nextSimulationNode);
+                    }
                     preview.PauseSimulation();
-                    continue;
+                    Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.Running),
+                        $"The wallet fixture must resume at tick {preview.Run.Tick} before it can advance.");
+                    yield return null;
                 }
 
+                var before = preview.Run.Tick;
                 var advanced = preview.AdvanceOneTickWhilePaused();
-                if (!advanced && preview.FieldDataSession.State != FieldDataJourneyFlowState.Failed)
-                    Assert.Fail("The simulation stopped before the expected natural-extinction failure.");
+                if (session.State != FieldDataJourneyFlowState.Failed)
+                    Assert.That(advanced && preview.Run.Tick > before, Is.True,
+                        $"The wallet fixture stopped advancing at tick {before} ({session.State}).");
             }
 
             var failedSession = preview.FieldDataSession;
             Assert.That(failedSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed),
-                "The approved failing seed should exercise natural extinction before the next node clear.");
+                "The fixture seed should exercise natural extinction before the next node clear.");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
             Assert.That(failedSession.FieldDataLostOnFailure, Is.GreaterThan(0));
             Assert.That(shell.GetType().GetProperty("PlayNextSimulationText")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("START NEW JOURNEY"));
             Assert.That(failedSession.Ledger.Balance, Is.Zero);
-            Assert.That(failedSession.Ledger.Awards.Any(award => award.GlobalRound == 3), Is.False,
-                "Extinction during round 3 must not settle that round's population payout.");
+            var failedRound = (failedSession.Run.Tick - 1) / roundLength + 1;
+            Assert.That(failedSession.Ledger.Awards.Any(award => award.GlobalRound == failedRound), Is.False,
+                "The extinction round must not settle a population payout.");
             var permanentCurrencyBeforeRestart = preview.Progression.Currency;
             var failedRun = preview.Run;
             AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
@@ -861,6 +928,117 @@ namespace SaltyGame.PlayModeTests
             {
                 boardType.GetMethod("SetSnapshot").Invoke(board, new[] { previousSnapshot });
                 boardType.GetMethod("SetForestEdgeFlourishes").Invoke(board, new[] { previousFlourishes });
+                camera.targetTexture = previousTarget;
+                RenderTexture.active = previousActive;
+                UnityEngine.Object.DestroyImmediate(capture);
+                UnityEngine.Object.DestroyImmediate(target);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator BurrowMarkerRendersThroughHidingAndEmergence()
+        {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null)
+                Assert.Ignore("Burrow marker rendering requires a graphics device.");
+
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            yield return null;
+            UnityEngine.Object.FindAnyObjectByType<SpeciesSimulationPreview>().PauseSimulation();
+            var host = GameObject.Find("Cellular Automata Prototype").GetComponent("SaltyGame.SpeciesSimulationNoesisHost");
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var board = (Noesis.FrameworkElement)host.GetType().GetField("simulationBoard", flags).GetValue(host);
+            var boardType = board.GetType();
+            var previousSnapshot = boardType.GetField("snapshot", flags).GetValue(board);
+            var camera = GameObject.Find("Prototype Camera").GetComponent<Camera>();
+            var previousTarget = camera.targetTexture;
+            var previousActive = RenderTexture.active;
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var none = new GridPattern(Array.Empty<Vector2Int>());
+            SpeciesRules StationaryRules(GridPattern attackPattern, SpeciesId? prey, SpeciesRole role) => new SpeciesRules(
+                movementSpeed: 0f, movementPattern: none, attackPattern: attackPattern,
+                attackAmount: prey.HasValue ? 100 : 0, blockPattern: none, blockAmount: 0,
+                dietPattern: none, dietTarget: prey, reproductionPattern: none,
+                reproductionNeighborCount: 0, reproductionChance: 0f, reproductionFoodRequired: 1,
+                metabolism: 0, role: role);
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = StationaryRules(none, null, SpeciesRole.Herbivore),
+                [fox] = StationaryRules(GridPatternTemplates.CreateMooreRange(1), hare, SpeciesRole.Carnivore),
+            };
+            var grid = new Grid<SpeciesCell>(8, 8);
+            var owner = new SpeciesCell(hare, energy: 48);
+            grid.SetCell(3, 3, owner);
+            var run = new SimulationRunState(grid, hare, seed: 17, durationSeconds: 100f);
+            run.ConfigureContinuousPhases(300);
+            var burrowing = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(
+                    hare, Array.Empty<SpeciesUpgradeSnapshot>(), id => id == SpeciesUpgradeCatalog.BurrowingId)
+                .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.BurrowingId);
+            var runner = new SpeciesSimulationRunner(run, rules, 0.1f, upgradeLoadout: new[] { burrowing });
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            var dug = SimulationBoardSnapshot.Create(run, rules, hare);
+            Assert.That(dug.GetCell(3, 3).EntityId, Is.EqualTo(owner.EntityId));
+            run.Cells.SetCell(4, 3, new SpeciesCell(fox, energy: 100));
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            var hidden = SimulationBoardSnapshot.Create(run, rules, hare);
+            Assert.That(run.HiddenHareCount, Is.EqualTo(1));
+            Assert.That(hidden.GetCell(3, 3).IsCreature, Is.False);
+            run.Cells.SetCell(4, 3, SpeciesCell.Empty);
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            var emerged = SimulationBoardSnapshot.Create(run, rules, hare);
+            Assert.That(run.HiddenHareCount, Is.Zero);
+            Assert.That(emerged.GetCell(3, 3).EntityId, Is.EqualTo(owner.EntityId));
+            while (run.Tick < 201) Assert.That(runner.AdvanceOneTick(), Is.True);
+            var collapsed = SimulationBoardSnapshot.Create(run, rules, hare);
+            Assert.That(collapsed.GetCell(3, 3).EntityId, Is.EqualTo(owner.EntityId));
+            var frames = new[]
+            {
+                (Name: "01-dug", Snapshot: dug, HasMarker: true),
+                (Name: "02-hidden", Snapshot: hidden, HasMarker: true),
+                (Name: "03-emerged", Snapshot: emerged, HasMarker: true),
+                (Name: "04-collapsed", Snapshot: collapsed, HasMarker: false),
+            };
+            var target = new RenderTexture(Screen.width, Screen.height, 24);
+            var capture = new Texture2D(target.width, target.height, TextureFormat.RGBA32, false);
+            try
+            {
+                var output = GalapagOSVisualAcceptanceTests.TryGetVisualOutputDirectory();
+                var samples = new Dictionary<string, Color>();
+                foreach (var frame in frames)
+                {
+                    Assert.That(frame.Snapshot.HasBurrowAt(3, 3), Is.EqualTo(frame.HasMarker), frame.Name);
+                    boardType.GetMethod("SetSnapshot").Invoke(board, new object[] { frame.Snapshot });
+                    camera.targetTexture = target;
+                    yield return null;
+                    yield return null;
+                    camera.Render();
+                    RenderTexture.active = target;
+                    capture.ReadPixels(new Rect(0, 0, target.width, target.height), 0, 0);
+                    capture.Apply();
+
+                    var layout = new object[] { board.ActualWidth, board.ActualHeight, 0f, 0f, 0f };
+                    boardType.GetMethod("GetBoardLayout", flags).Invoke(board, layout);
+                    var point = board.PointToScreen(new Noesis.Point(
+                        (float)layout[3] + 3.76f * (float)layout[2],
+                        (float)layout[4] + (frame.Snapshot.Height - 4f + 0.74f) * (float)layout[2]));
+                    samples.Add(frame.Name, capture.GetPixel((int)point.X, target.height - 1 - (int)point.Y));
+
+                    if (output != null)
+                        yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, frame.Name, camera);
+                }
+                var unmarked = samples["04-collapsed"];
+                foreach (var frame in frames.Where(frame => frame.HasMarker))
+                {
+                    var color = samples[frame.Name];
+                    Assert.That(color.r, Is.GreaterThan(color.g + 0.05f), frame.Name);
+                    Assert.That(color.grayscale, Is.LessThan(unmarked.grayscale - 0.1f),
+                        $"{frame.Name} should have a darker marker than the same point after collapse.");
+                }
+            }
+            finally
+            {
+                boardType.GetMethod("SetSnapshot").Invoke(board, new[] { previousSnapshot });
                 camera.targetTexture = previousTarget;
                 RenderTexture.active = previousActive;
                 UnityEngine.Object.DestroyImmediate(capture);
@@ -1935,7 +2113,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.CanPurchaseReward(rewardIndex), Is.False);
 
             var earnedFieldData = preview.Progression.Currency;
-            preview.PlayNextSimulation();
+            preview.PlayNextSimulation(startImmediately: false);
+            Assert.That(preview.Progression.Currency, Is.EqualTo(earnedFieldData), "Preparing the next standalone run preserves its balance.");
+            preview.StartSimulation();
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.Not.SameAs(run));
             Assert.That(preview.Progression.PurchasedUpgradeCount, Is.Zero);
@@ -2004,7 +2184,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FoxOfferHidesBroodDriveWhenItsHareResponseIsCapped()
+        public IEnumerator FoxOfferKeepsBroodDriveWhenItsHareResponseIsNotCapped()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -2027,10 +2207,10 @@ namespace SaltyGame.PlayModeTests
             }
 
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.PhaseDecision));
-            Assert.That(preview.ActiveSpeciesRules[new SpeciesId("hare")].ReproductionChance, Is.EqualTo(1f));
+            Assert.That(preview.ActiveSpeciesRules[new SpeciesId("hare")].ReproductionChance, Is.EqualTo(0.5f));
             Assert.That(preview.RewardOptionCount, Is.EqualTo(3));
-            Assert.That(preview.GetRewardOptionId(0), Is.Not.EqualTo(SpeciesUpgradeCatalog.BroodDriveId));
-            Assert.That(preview.GetRewardOptionId(1), Is.Not.EqualTo(SpeciesUpgradeCatalog.BroodDriveId));
+            Assert.That(Enumerable.Range(0, preview.RewardOptionCount)
+                .Select(preview.GetRewardOptionId), Does.Contain(SpeciesUpgradeCatalog.BroodDriveId));
             Assert.That(preview.CanPurchaseReward(0), Is.True);
             Assert.That(preview.PurchaseReward(0), Is.True);
         }
@@ -2104,7 +2284,8 @@ namespace SaltyGame.PlayModeTests
                 var originalRules = preview.Progression.CurrentRules;
                 preview.Progression.AddCurrency(100);
                 Assert.That(preview.Progression.CanApplyFreeUpgrade(
-                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)), Is.False);
+                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)), Is.True,
+                    "The approved 0.5 Hare baseline leaves room for Reproductive Drive.");
                 var upgrade = SpeciesUpgradeCatalog.Create(ids[skillIndex]);
                 // Preload one level, then exercise every in-expedition choice.
                 Assert.That(preview.Progression.TryPurchase(upgrade), Is.True);

@@ -14,15 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.warren-network
   displayName: Population Reserves
-  description: Ordinary replenishment capacity +10 while active. Does not spawn Hares
-    or limit births.
+  description: Raises purchased Hare allowance by 5 per rank for each simulation node.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.guarded-burrow
   - hare.safe-foraging
   rabbitDataPrice: 5
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: FD2
-  modifiers:
-  - attributeId: population.pool-capacity
-    signedValue: 10
+  modifiers: []

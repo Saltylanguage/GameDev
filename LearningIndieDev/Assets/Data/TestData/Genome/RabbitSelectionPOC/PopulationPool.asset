@@ -19,7 +19,7 @@ MonoBehaviour:
   targetSpeciesId: hare
   prerequisiteNodeIds: []
   rabbitDataPrice: 1
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: Warren
   modifiers:
   - attributeId: population.pool-capacity

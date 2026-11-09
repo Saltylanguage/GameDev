@@ -310,7 +310,7 @@ namespace SaltyGame
                 return false;
             }
 
-            var visionPattern = speciesRules.Awareness.VisionPattern;
+            var visionPattern = speciesRules.Awareness.PredatorDetectionPattern;
             var bestDistance = int.MaxValue;
             target = default;
             foreach (var offset in cells.GetPattern(visionPattern).Offsets)
@@ -385,7 +385,7 @@ namespace SaltyGame
 
             var bestDistance = int.MaxValue;
             target = default;
-            foreach (var offset in cells.GetPattern(speciesRules.Awareness.VisionPattern).Offsets)
+            foreach (var offset in cells.GetPattern(speciesRules.Awareness.PredatorDetectionPattern).Offsets)
             {
                 var targetX = x + offset.x;
                 var targetY = y + offset.y;

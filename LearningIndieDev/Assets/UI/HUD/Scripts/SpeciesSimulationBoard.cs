@@ -160,6 +160,7 @@ namespace SaltyGame
         SolidColorBrush rockShadowBrush;
         SolidColorBrush rockFillBrush;
         SolidColorBrush rockLightBrush;
+        SolidColorBrush burrowBrush;
 
         public event Action<float> ZoomRequested;
 
@@ -641,6 +642,19 @@ namespace SaltyGame
                     if (cell.IsCreature || (cell.IsPlantResource && !cell.IsTerrainResource))
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
+                    }
+
+                    if (snapshot.HasBurrowAt(x, y))
+                    {
+                        var radius = cellRect.Width * 0.14f;
+                        if (burrowBrush == null)
+                        {
+                            burrowBrush = new SolidColorBrush(Noesis.Color.FromArgb(235, 112, 71, 37));
+                        }
+
+                        context.DrawEllipse(burrowBrush, null,
+                            new Noesis.Point(cellRect.X + cellRect.Width * 0.76f, cellRect.Y + cellRect.Height * 0.74f),
+                            radius, radius);
                     }
                 }
             }

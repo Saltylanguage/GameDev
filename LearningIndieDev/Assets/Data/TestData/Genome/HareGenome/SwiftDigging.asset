@@ -14,13 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.swift-digging
   displayName: Long Stride
-  description: Movement speed +0.25 while active.
+  description: Unlocks Faster Movement as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.guarded-burrow
   rabbitDataPrice: 5
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: FD2
-  modifiers:
-  - attributeId: movement.speed
-    signedValue: 0.25
+  modifiers: []

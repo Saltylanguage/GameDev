@@ -12,6 +12,7 @@ namespace SaltyGame
         void Save();
     }
 
+#if !CELLSIM_STANDALONE
     sealed class PlayerPrefsProfileSessionStorage : IProfileSessionStorage
     {
         public bool HasKey(string key) => PlayerPrefs.HasKey(key);
@@ -20,6 +21,7 @@ namespace SaltyGame
         public void DeleteKey(string key) => PlayerPrefs.DeleteKey(key);
         public void Save() => PlayerPrefs.Save();
     }
+#endif
 
     /// <summary>Unpaid success inputs retained until the deposit and receipt are saved together.</summary>
     public sealed class PendingFieldDataSettlement

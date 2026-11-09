@@ -34,21 +34,21 @@ namespace SaltyGame.Tests
             return rules;
         }
 
-        [TestCase(2, 41)]
-        [TestCase(3, 34)]
-        [TestCase(4, 26)]
-        public void FasterGestationUsesSavedCapacityAsRank(int capacityPoints, int expectedTicks)
+        [TestCase(1, 41)]
+        [TestCase(2, 34)]
+        [TestCase(3, 26)]
+        public void FasterGestationUsesSavedRank(int rank, int expectedTicks)
         {
             var hare = GenomeContract.RabbitSpeciesId;
             var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
                 "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
-                capacityPoints: 2, maximumRanks: 3);
+                capacityPoints: 1, maximumRanks: 3);
             var profile = new SpeciesGenomeProfile(hare, activeNodeIds: new[] { node.Id },
-                allocations: new[] { new GenomeNodeAllocation(node.Id, 1, capacityPoints) });
+                allocations: new[] { new GenomeNodeAllocation(node.Id, rank, 1, rank) });
             var catalog = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(hare, new[] { node }) });
             var frozen = GenomeSimulationSnapshot.Create(new[] { profile }).Resolve(catalog);
 
-            Assert.That(frozen.GetSpeciesGenome(hare).GetAllocationCapacityPoints(node.Id), Is.EqualTo(capacityPoints));
+            Assert.That(frozen.GetSpeciesGenome(hare).GetAllocationCapacityPoints(node.Id), Is.EqualTo(rank));
             Assert.That(frozen.ApplyToNaturalRules(PopulationRules())[hare].GestationTicks,
                 Is.EqualTo(expectedTicks));
         }
@@ -74,9 +74,9 @@ namespace SaltyGame.Tests
                 var hare = GenomeContract.RabbitSpeciesId;
                 var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
                     "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
-                    capacityPoints: 2, maximumRanks: 3);
+                    capacityPoints: 1, maximumRanks: 3);
                 var map = new SpeciesGenomeMapSnapshot(hare, new[] { node });
-                Assert.That(session.TryPurchaseRabbitGenomeNode(map, node.Id, 1, 2, out _), Is.True);
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, node.Id, 1, 1, out _), Is.True);
                 Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
                 Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
                 Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.False);
@@ -85,9 +85,10 @@ namespace SaltyGame.Tests
                 var reloaded = second.AddComponent<Helper_ProfileSession>();
                 reloaded.Reload();
                 Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out var profile), Is.True);
-                Assert.That(profile.CapacityUsed, Is.EqualTo(4));
+                Assert.That(profile.CapacityUsed, Is.EqualTo(1));
                 Assert.That(profile.TryGetAllocation(node.Id, out var allocation), Is.True);
-                Assert.That(allocation.CapacityPoints, Is.EqualTo(4));
+                Assert.That(allocation.CapacityPoints, Is.EqualTo(1));
+                Assert.That(allocation.Rank, Is.EqualTo(3));
                 Assert.That(reloaded.Current.RabbitData, Is.EqualTo(9));
                 Assert.That(reloaded.TryResetRabbitGenome(1, out _), Is.True);
                 Assert.That(reloaded.Current.RabbitData, Is.EqualTo(12));
@@ -97,6 +98,60 @@ namespace SaltyGame.Tests
                 Object.DestroyImmediate(first);
                 Object.DestroyImmediate(second);
                 PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void EightDistinctNodesFitAndAnEquippedRankCanUpgradeAtFullCapacity()
+        {
+            var hadStore = PlayerPrefs.HasKey(Helper_ProfileSession.StoreKey);
+            var originalStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
+            var hadRecovery = PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey);
+            var originalRecovery = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            var owner = new GameObject("Full Genome Profile");
+            try
+            {
+                var session = owner.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.CreateProfile("Full genome");
+                session.AddRabbitData(30);
+                session.RecordSuccessfulJourney("full-1");
+                session.RecordSuccessfulJourney("full-2");
+                session.RecordSuccessfulJourney("full-3");
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(1, out var reason), Is.True, reason);
+                var hare = GenomeContract.RabbitSpeciesId;
+                var nodes = new List<GenomeUpgradeNodeSnapshot>
+                {
+                    new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId, "Gestation", "Test",
+                        hare, rabbitDataPrice: 1, capacityPoints: 1, maximumRanks: 3)
+                };
+                for (var i = 1; i < 9; i++)
+                    nodes.Add(new GenomeUpgradeNodeSnapshot("test.node-" + i, "Node", "Test",
+                        hare, rabbitDataPrice: 1, capacityPoints: i % 2 == 0 ? 5 : 3));
+                var map = new SpeciesGenomeMapSnapshot(hare, nodes);
+                for (var i = 0; i < 8; i++)
+                    Assert.That(session.TryPurchaseRabbitGenomeNode(map, nodes[i].Id, 1, nodes[i].CapacityPoints, out reason), Is.True, reason);
+                var balance = session.Current.RabbitData;
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, nodes[8].Id, 1, nodes[8].CapacityPoints, out _), Is.False);
+                Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, nodes[0].Id, out reason), Is.True, reason);
+                Assert.That(session.Current.TryGetGenomeProfile(hare, out var profile), Is.True);
+                Assert.That(profile.CapacityUsed, Is.EqualTo(8));
+                Assert.That(profile.TryGetAllocation(nodes[1].Id, out var legacyAllocation), Is.True);
+                Assert.That(legacyAllocation.CapacityPoints, Is.EqualTo(3));
+                Assert.That(profile.TryGetAllocation(nodes[0].Id, out var allocation), Is.True);
+                Assert.That(allocation.Rank, Is.EqualTo(2));
+                Assert.That(allocation.CapacityPoints, Is.EqualTo(1));
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+                if (hadStore) PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, originalStore);
+                else PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                if (hadRecovery) PlayerPrefs.SetString(Helper_ProfileSession.RecoveryStoreKey, originalRecovery);
+                else PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
                 PlayerPrefs.Save();
             }
         }
@@ -618,7 +673,9 @@ namespace SaltyGame.Tests
                 Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 5, out reason), Is.True, reason);
                 Assert.That(session.Current.RabbitData, Is.EqualTo(65));
                 Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
-                Assert.That(genome.CapacityUsed, Is.EqualTo(8));
+                Assert.That(genome.CapacityUsed, Is.EqualTo(2));
+                Assert.That(genome.Allocations[0].CapacityPoints, Is.EqualTo(3));
+                Assert.That(genome.Allocations[1].CapacityPoints, Is.EqualTo(5));
                 Assert.That(genome.Allocations.Count, Is.EqualTo(2));
                 Assert.That(session.TrySetGenomeConfiguration(hare, new[] { root.Id },
                     new[] { root.Id }, out _), Is.False);
@@ -641,6 +698,9 @@ namespace SaltyGame.Tests
                 Assert.That(reloaded.Current.CompletedRuns, Is.EqualTo(3));
                 Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out genome), Is.True);
                 Assert.That(genome.Allocations.Count, Is.EqualTo(2));
+                Assert.That(genome.CapacityUsed, Is.EqualTo(2));
+                Assert.That(genome.Allocations[0].CapacityPoints, Is.EqualTo(3));
+                Assert.That(genome.Allocations[1].CapacityPoints, Is.EqualTo(5));
                 Assert.That(reloaded.TryResetRabbitGenome(11, out _), Is.False);
                 Assert.That(reloaded.TryResetRabbitGenome(3, out reason), Is.True, reason);
                 Assert.That(reloaded.Current.RabbitData, Is.EqualTo(90));
@@ -733,7 +793,7 @@ namespace SaltyGame.Tests
                     Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
                     Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
                         Is.EqualTo(existingRecovery ? priorRecovery : legacyJson));
-                    StringAssert.Contains("\"version\":7", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+                StringAssert.Contains("\"version\":9", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
 
                     // Replay the old on-disk input as if migration had been interrupted.
                     PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, legacyJson);
@@ -860,7 +920,7 @@ namespace SaltyGame.Tests
                     }
 
                     var probe = JsonUtility.FromJson<MigrationArchiveProbe>(PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
-                    Assert.That(probe.version, Is.EqualTo(7));
+                    Assert.That(probe.version, Is.EqualTo(9));
                     Assert.That(probe.migrationSourceJson, Is.EqualTo(original));
                     Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("older recovery"));
                     session.Reload();

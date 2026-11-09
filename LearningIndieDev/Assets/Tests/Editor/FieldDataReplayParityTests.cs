@@ -35,8 +35,8 @@ namespace SaltyGame.EditorTests
             Assert.That(sourceHash, Is.EqualTo((string)snapshotJson["sourceHash"]), "The frozen export must match current shared sources.");
             var upgrades = ((Array)snapshotType.GetField("fieldDataOrdinaryRewards").GetValue(portable)).Cast<object>()
                 .Select(item => (SpeciesUpgradeSnapshot)item.GetType().GetMethod("Restore").Invoke(item, null)).ToArray();
-            string Digest(SimulationRunState run) => (string)exporter.GetMethod("PortableStateDigest", BindingFlags.Static | BindingFlags.NonPublic)
-                .Invoke(null, new object[] { run.Cells });
+            string Digest(SimulationRunState run) => (string)exporter.GetMethod("PortableRunStateDigest")
+                .Invoke(null, new object[] { run });
 
             foreach (var fixture in manifest["fixtures"])
             {
@@ -50,7 +50,7 @@ namespace SaltyGame.EditorTests
                 var selected = new SpeciesId(definition.SelectedSpeciesId);
                 var seed = (int)expected["seed"];
                 var run = new SimulationRunState(SpeciesInitialGridFactory.Create(data, seed), selected, seed,
-                    data.RunDurationSeconds, 1800);
+                    data.RunDurationSeconds, definition.RoundLength * definition.RoundsPerNode * definition.RouteSimulationCount);
                 run.ConfigureContinuousPhases(100);
                 var manager = new SimulationManager();
                 manager.SetRunner(new SpeciesSimulationRunner(run, data));

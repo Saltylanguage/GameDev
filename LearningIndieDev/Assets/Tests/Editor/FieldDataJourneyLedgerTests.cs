@@ -130,7 +130,7 @@ namespace SaltyGame.EditorTests
             var counts = Populations(hares: 2, foxes: 1, plants: 10);
             Assert.That(ledger.TryDiscardSuccessfulRemainder(out _), Is.False);
 
-            for (var round = 1; round <= 18; round++)
+            for (var round = 1; round <= 24; round++)
             {
                 Assert.That(ledger.TrySettleSuccessfulRound(round, round * 100, counts,
                     EmptyModifiers(), out _, out _, out var error), Is.True, error);
@@ -141,7 +141,7 @@ namespace SaltyGame.EditorTests
             profileProgression.AddCurrency(77);
             var discardedPermanentCurrency = profileProgression.Currency;
             Assert.That(ledger.TryDiscardSuccessfulRemainder(out var discarded), Is.True);
-            Assert.That(discarded, Is.EqualTo(66));
+            Assert.That(discarded, Is.EqualTo(88));
             Assert.That(ledger.Balance, Is.Zero);
             Assert.That(ledger.IsClosed, Is.True);
             Assert.That(profileProgression.Currency, Is.EqualTo(discardedPermanentCurrency));

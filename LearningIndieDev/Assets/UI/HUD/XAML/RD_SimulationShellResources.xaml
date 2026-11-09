@@ -57,14 +57,57 @@
                 <Setter Property="FontSize" Value="13" />
             </Style>
             <Style x:Key="SimulationRewardCardText" TargetType="TextBlock">
-                <Setter Property="Width" Value="210" />
-                <Setter Property="FontSize" Value="13" />
+                <Setter Property="Width" Value="228" />
+                <Setter Property="FontSize" Value="10" />
                 <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
                 <Setter Property="Foreground" Value="{DynamicResource Chrono_TreeBark}" />
                 <Setter Property="TextWrapping" Value="Wrap" />
                 <Setter Property="TextAlignment" Value="Center" />
                 <Setter Property="HorizontalAlignment" Value="Center" />
                 <Setter Property="VerticalAlignment" Value="Center" />
+            </Style>
+
+            <Style x:Key="SimulationRewardIconBase" TargetType="Image">
+                <Setter Property="Source" Value="{StaticResource GalapagOS.Image.Species.Rabbit.64}" />
+            </Style>
+            <Style x:Key="SimulationRewardIcon1" TargetType="Image" BasedOn="{StaticResource SimulationRewardIconBase}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="efficient-digestion"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="tough-hide"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="faster-movement"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="seed-dispersal"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="burrowing"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="fast-gestation"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FasterGestation}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="larger-minimum-litter"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="fertile-droppings"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FertileDroppings}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption1Id}" Value="long-stride"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="SimulationRewardIcon2" TargetType="Image" BasedOn="{StaticResource SimulationRewardIconBase}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="efficient-digestion"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="tough-hide"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="faster-movement"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="seed-dispersal"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="burrowing"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="fast-gestation"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FasterGestation}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="larger-minimum-litter"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="fertile-droppings"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FertileDroppings}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption2Id}" Value="long-stride"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                </Style.Triggers>
+            </Style>
+            <Style x:Key="SimulationRewardIcon3" TargetType="Image" BasedOn="{StaticResource SimulationRewardIconBase}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="efficient-digestion"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.EfficientDigestion}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="tough-hide"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.ToughHide}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="faster-movement"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="seed-dispersal"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.SeedSpreading}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="burrowing"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.Burrowing}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="fast-gestation"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FasterGestation}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="larger-minimum-litter"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.MinimumLitter}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="fertile-droppings"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.FertileDroppings}" /></DataTrigger>
+                    <DataTrigger Binding="{Binding RewardOption3Id}" Value="long-stride"><Setter Property="Source" Value="{StaticResource GalapagOS.Image.Genome.LongStride}" /></DataTrigger>
+                </Style.Triggers>
             </Style>
 
             <!-- Simulation-only visuals stay local to this shell. -->

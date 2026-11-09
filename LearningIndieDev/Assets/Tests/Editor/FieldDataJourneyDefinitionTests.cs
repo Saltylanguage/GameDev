@@ -10,7 +10,7 @@ namespace SaltyGame.EditorTests
         const string DefinitionPath = "Assets/Data/TestData/FieldDataStarterDefinition.asset";
 
         [Test]
-        public void HareRewardPoolUsesOnlyTheSixHareSkillsAndPreservesAuthoredSkillDefinitions()
+        public void HareRewardPoolIncludesBothSensesSkillsAndPreservesAuthoredSkillDefinitions()
         {
             var hare = new SpeciesId("hare");
             var fallback = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
@@ -19,6 +19,9 @@ namespace SaltyGame.EditorTests
                 SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.EfficientDigestionId,
                 SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.CrowdingToleranceId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId, SpeciesUpgradeCatalog.KeenSensesId,
+                SpeciesUpgradeCatalog.LongVisionId, SpeciesUpgradeCatalog.FasterMovementId,
+                SpeciesUpgradeCatalog.ThreatExposureId, SpeciesUpgradeCatalog.LargerMaximumLitterId,
+                SpeciesUpgradeCatalog.LargerMinimumLitterId,
             }));
             Assert.That(fallback.All(upgrade => upgrade.TargetSpecies == hare), Is.True);
             var authored = new[]
@@ -59,11 +62,11 @@ namespace SaltyGame.EditorTests
             Assert.That(snapshot.ScenarioId, Is.EqualTo("ForestEdge"));
             Assert.That(snapshot.SelectedSpeciesId, Is.EqualTo("hare"));
             Assert.That(snapshot.InitialFieldData, Is.Zero);
-            Assert.That(snapshot.Route.Count, Is.EqualTo(5));
+            Assert.That(snapshot.Route.Count, Is.EqualTo(7));
             Assert.That(snapshot.Route.Select(node => node.Kind), Is.EqualTo(new[]
             {
                 JourneyNodeKind.Simulation, JourneyNodeKind.Shop, JourneyNodeKind.Simulation,
-                JourneyNodeKind.Shop, JourneyNodeKind.Simulation,
+                JourneyNodeKind.Shop, JourneyNodeKind.Simulation, JourneyNodeKind.Shop, JourneyNodeKind.Simulation,
             }));
             Assert.That(snapshot.RoundLength, Is.EqualTo(100));
             Assert.That(snapshot.RoundsPerNode, Is.EqualTo(6));
@@ -71,12 +74,15 @@ namespace SaltyGame.EditorTests
             Assert.That(snapshot.FreeChoicesPerRewardEvent, Is.EqualTo(3));
             Assert.That(snapshot.FirstRoundChoice, Is.EqualTo(1));
             Assert.That(snapshot.LastRoundChoice, Is.EqualTo(5));
-            Assert.That(snapshot.NodeRewardChoiceCount, Is.EqualTo(2));
+            Assert.That(snapshot.RouteSimulationCount, Is.EqualTo(FieldDataJourneyDefinition.SimulationCount));
+            Assert.That(snapshot.RouteShopCount, Is.EqualTo(FieldDataJourneyDefinition.NodeChoicesAfterSimulationCount));
+            Assert.That(snapshot.NodeRewardChoiceCount, Is.EqualTo(3));
+            Assert.That(snapshot.WithSimulationCount(4).Fingerprint, Is.EqualTo(snapshot.Fingerprint));
             Assert.That(snapshot.OffersPerShop, Is.EqualTo(5));
             Assert.That(FieldDataJourneyDefinition.SpeciesOfferCost, Is.EqualTo(30));
             Assert.That(snapshot.SpeciesOfferCopyLimit, Is.EqualTo(3));
             Assert.That(snapshot.PopulationControls.Count, Is.EqualTo(6));
-            Assert.That(snapshot.IncomeOffers.Count, Is.EqualTo(3));
+            Assert.That(snapshot.IncomeOffers.Count, Is.EqualTo(4));
             Assert.That(snapshot.SignedSpeciesOffers, Has.Count.EqualTo(12));
             Assert.That(snapshot.PopulationControls.Select(control => control.Amount),
                 Is.EqualTo(new[] { 1, -1, 1, -1, 5, -5 }));

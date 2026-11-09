@@ -14,14 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.safe-foraging
   displayName: Efficient Digestion
-  description: Digestion energy bonus +0.25 while active.
+  description: Unlocks Efficient Digestion as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.keen-hearing
   - hare.swift-digging
   rabbitDataPrice: 5
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: FD2
-  modifiers:
-  - attributeId: digestion.energy-bonus
-    signedValue: 0.25
+  modifiers: []

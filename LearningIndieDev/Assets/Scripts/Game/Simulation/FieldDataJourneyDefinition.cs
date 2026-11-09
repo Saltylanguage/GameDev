@@ -133,12 +133,14 @@ namespace SaltyGame
         public const int InitialBalance = 0;
         public const int RoundLengthTicks = 100;
         public const int RoundsPerSimulation = 6;
-        public const int SimulationCount = 3;
+        /// <summary>Length of the authored short route. Live journeys use <see cref="RouteSimulationCount"/>.</summary>
+        public const int SimulationCount = 4;
         public const int NodeClearReward = 10;
         public const int FreeChoicesPerReward = 3;
         public const int RoundChoicesFirstLocalRound = 1;
         public const int RoundChoicesLastLocalRound = 5;
-        public const int NodeChoicesAfterSimulationCount = 2;
+        /// <summary>Shop count of the authored short route. Live journeys use <see cref="RouteShopCount"/>.</summary>
+        public const int NodeChoicesAfterSimulationCount = SimulationCount - 1;
         public const int ShopOfferCount = 5;
         public const int SpeciesOfferCost = 30;
         public const int SpeciesOfferFamilyCopyLimit = 3;
@@ -162,11 +164,41 @@ namespace SaltyGame
             ScenarioId = scenarioId;
             SelectedSpeciesId = selectedSpeciesId;
             this.route = Copy(route);
+            ValidateExecutableRoute(this.route);
+            RouteSimulationCount = CountKind(this.route, JourneyNodeKind.Simulation);
+            RouteShopCount = CountKind(this.route, JourneyNodeKind.Shop);
             this.populationControls = Copy(populationControls);
             this.incomeOffers = Copy(incomeOffers);
             this.signedSpeciesOffers = Copy(signedSpeciesOffers);
             ReorderPricing = reorderPricing;
             Fingerprint = CreateFingerprint();
+        }
+
+        /// <summary>
+        /// Copies this definition onto an alternating Simulation/Shop route of the requested length.
+        /// This is a test route, not a change to the authored starter layout.
+        /// </summary>
+        public FieldDataJourneyDefinition WithSimulationCount(int simulationCount)
+        {
+            if (simulationCount < 1)
+                throw new ArgumentOutOfRangeException(nameof(simulationCount));
+            var nodes = new List<FieldDataRouteNode>(simulationCount * 2 - 1);
+            for (var index = 1; index <= simulationCount; index++)
+            {
+                var simulationId = "simulation-" + index.ToString(CultureInfo.InvariantCulture);
+                var nextShopId = index < simulationCount
+                    ? "shop-" + index.ToString(CultureInfo.InvariantCulture)
+                    : string.Empty;
+                nodes.Add(new FieldDataRouteNode(simulationId, JourneyNodeKind.Simulation, nextShopId));
+                if (index >= simulationCount) continue;
+                nodes.Add(new FieldDataRouteNode(
+                    nextShopId,
+                    JourneyNodeKind.Shop,
+                    "simulation-" + (index + 1).ToString(CultureInfo.InvariantCulture)));
+            }
+            return new FieldDataJourneyDefinition(
+                Id, ScenarioId, SelectedSpeciesId, nodes, populationControls, incomeOffers,
+                signedSpeciesOffers, ReorderPricing);
         }
 
         public string Id { get; }
@@ -181,7 +213,15 @@ namespace SaltyGame
         public int FreeChoicesPerRewardEvent => FreeChoicesPerReward;
         public int FirstRoundChoice => RoundChoicesFirstLocalRound;
         public int LastRoundChoice => RoundChoicesLastLocalRound;
-        public int NodeRewardChoiceCount => NodeChoicesAfterSimulationCount;
+        public int RouteSimulationCount { get; }
+        public int RouteShopCount { get; }
+        public int NodeRewardChoiceCount => RouteShopCount;
+        public bool OpensShopAfterSimulation(int completedSimulation)
+        {
+            if (completedSimulation < 1 || completedSimulation > RouteShopCount) return false;
+            var shopIndex = completedSimulation * 2 - 1;
+            return shopIndex < route.Count && route[shopIndex].Kind == JourneyNodeKind.Shop;
+        }
         public int OffersPerShop => ShopOfferCount;
         public int SpeciesOfferCopyLimit => SpeciesOfferFamilyCopyLimit;
         public FieldDataReorderPricing ReorderPricing { get; }
@@ -205,12 +245,12 @@ namespace SaltyGame
             Append(canonical, InitialBalance.ToString(CultureInfo.InvariantCulture));
             Append(canonical, RoundLengthTicks.ToString(CultureInfo.InvariantCulture));
             Append(canonical, RoundsPerSimulation.ToString(CultureInfo.InvariantCulture));
-            Append(canonical, SimulationCount.ToString(CultureInfo.InvariantCulture));
+            Append(canonical, RouteSimulationCount.ToString(CultureInfo.InvariantCulture));
             Append(canonical, NodeClearReward.ToString(CultureInfo.InvariantCulture));
             Append(canonical, FreeChoicesPerReward.ToString(CultureInfo.InvariantCulture));
             Append(canonical, RoundChoicesFirstLocalRound.ToString(CultureInfo.InvariantCulture));
             Append(canonical, RoundChoicesLastLocalRound.ToString(CultureInfo.InvariantCulture));
-            Append(canonical, NodeChoicesAfterSimulationCount.ToString(CultureInfo.InvariantCulture));
+            Append(canonical, RouteShopCount.ToString(CultureInfo.InvariantCulture));
             Append(canonical, ShopOfferCount.ToString(CultureInfo.InvariantCulture));
             Append(canonical, SpeciesOfferCost.ToString(CultureInfo.InvariantCulture));
             Append(canonical, SpeciesOfferFamilyCopyLimit.ToString(CultureInfo.InvariantCulture));
@@ -262,6 +302,32 @@ namespace SaltyGame
                 }
                 return result.ToString();
             }
+        }
+
+        static void ValidateExecutableRoute(IReadOnlyList<FieldDataRouteNode> nodes)
+        {
+            if (nodes == null || nodes.Count == 0 || nodes.Count % 2 == 0)
+                throw new ArgumentException(
+                    "A Field Data route must alternate Simulation and Shop and end on a simulation.");
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            for (var i = 0; i < nodes.Count; i++)
+            {
+                var expectedKind = i % 2 == 0 ? JourneyNodeKind.Simulation : JourneyNodeKind.Shop;
+                if (nodes[i].Kind != expectedKind || string.IsNullOrWhiteSpace(nodes[i].Id) || !ids.Add(nodes[i].Id))
+                    throw new ArgumentException(
+                        "A Field Data route must alternate Simulation and Shop and end on a simulation.");
+                var expectedNext = i == nodes.Count - 1 ? string.Empty : nodes[i + 1].Id;
+                if (!string.Equals(nodes[i].NextNodeId, expectedNext, StringComparison.Ordinal))
+                    throw new ArgumentException($"Route node '{nodes[i].Id}' must connect to '{expectedNext}'.");
+            }
+        }
+
+        static int CountKind(IReadOnlyList<FieldDataRouteNode> nodes, JourneyNodeKind kind)
+        {
+            var count = 0;
+            for (var i = 0; i < nodes.Count; i++)
+                if (nodes[i].Kind == kind) count++;
+            return count;
         }
 
         static void Append(StringBuilder builder, string value)

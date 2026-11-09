@@ -66,12 +66,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetString(viewModel, "CurrentProfileName"), Is.EqualTo("Darwin Station"));
             var menuProfile = GameObject.Find("Main Camera")?.GetComponent<Helper_ProfileSession>();
             Assert.That(menuProfile, Is.Not.Null);
+            var profileId = menuProfile.Current.ProfileId;
+            menuProfile.AddRabbitData(30);
+            Assert.That(menuProfile.TryPurchaseHareGenomeLicense(profileId, out var purchaseError), Is.True, purchaseError);
+            Assert.That(menuProfile.TryPurchaseHareGenomeNode(profileId, "hare.guarded-burrow", out purchaseError), Is.True, purchaseError);
             Assert.That(menuProfile.TrySetGenomeConfiguration(
                 new SpeciesId("hare"),
-                new[] { "hare.guard" },
-                new[] { "hare.guard" },
+                new[] { "hare.guarded-burrow" },
+                new[] { "hare.guarded-burrow" },
                 out var validationMessage), Is.True, validationMessage);
-            var profileId = menuProfile.Current.ProfileId;
 
             ExecuteCommand(viewModel, "ContinueCommand");
             var transitionDeadline = Time.realtimeSinceStartup + 3f;
@@ -95,15 +98,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Run.Tick, Is.Zero);
             Assert.That(preview.ActiveGenomeSnapshot.TryGetSpeciesGenome(
                 new SpeciesId("hare"), out var genome), Is.True);
-            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guard" }));
+            Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guarded-burrow" }));
             Assert.That(desktopProfile.TrySetGenomeConfiguration(
                 new SpeciesId("hare"),
-                new[] { "hare.guard" },
+                new[] { "hare.guarded-burrow" },
                 System.Array.Empty<string>(),
                 out var updatedProfileMessage), Is.True, updatedProfileMessage);
             Assert.That(preview.ActiveGenomeSnapshot.TryGetSpeciesGenome(
                 new SpeciesId("hare"), out var frozenGenome), Is.True);
-            Assert.That(frozenGenome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guard" }));
+            Assert.That(frozenGenome.ActiveNodeIds, Is.EqualTo(new[] { "hare.guarded-burrow" }));
             var desktopViewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
             var openSimulation = GetCommand(desktopViewModel, "OpenDesktopIconCommand");
             openSimulation.GetType().GetMethod("Execute")?.Invoke(
@@ -250,7 +253,7 @@ namespace SaltyGame.PlayModeTests
             CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
 
             var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
-            StringAssert.Contains("\"version\":7", migratedStore);
+            StringAssert.Contains("\"version\":9", migratedStore);
             StringAssert.Contains("\"researchData\":73", migratedStore);
             StringAssert.Contains("\"currency\":73",
                 PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
@@ -410,14 +413,13 @@ namespace SaltyGame.PlayModeTests
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
             var natural = SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore];
             var effective = frozen.GetSpeciesGenome(new SpeciesId("hare")).ApplyToNaturalRules(natural);
-            Assert.That(effective.BlockAmount, Is.EqualTo(natural.BlockAmount + 1));
-            Assert.That(effective.Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange + 2));
-            Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
-            Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus + 0.25f));
+            Assert.That(effective.BlockAmount, Is.EqualTo(natural.BlockAmount));
+            Assert.That(effective.Awareness.VisionRange, Is.EqualTo(natural.Awareness.VisionRange));
+            Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed));
+            Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus));
             Assert.That(session.TryPurchaseHareGenomeNode(profileId, active[0], out _), Is.False);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.False);
-            StringAssert.Contains("capacity", error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.EqualTo(5));
             Assert.That(session.Current.ResearchData, Is.EqualTo(37));
             ClearProfiles();
         }
@@ -459,7 +461,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
             Assert.That(genome.ResetGeneration, Is.EqualTo(2));
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
-            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(60));
+            Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
+            Assert.That(frozen.GetSpeciesGenome(hare).PopulationReservesRank, Is.EqualTo(1));
             Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, selected, out error), Is.True, error);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, new[] { selected[0] }, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);

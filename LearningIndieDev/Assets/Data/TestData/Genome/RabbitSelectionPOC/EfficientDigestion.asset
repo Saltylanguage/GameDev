@@ -19,7 +19,7 @@ MonoBehaviour:
   prerequisiteNodeIds:
   - fertile-droppings
   rabbitDataPrice: 1
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: Gardener
   modifiers:
   - attributeId: digestion.energy-bonus

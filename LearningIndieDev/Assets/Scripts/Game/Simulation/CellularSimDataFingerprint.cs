@@ -140,6 +140,7 @@ namespace SaltyGame
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
+            Append(builder, rules.Awareness.PredatorDetectionRangeBonus);
             Append(builder, rules.DigestionEnergyBonus);
             Append(builder, rules.CrowdingTolerance);
             Append(builder, rules.CrowdingEnergyReduction);

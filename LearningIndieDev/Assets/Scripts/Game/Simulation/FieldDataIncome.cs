@@ -137,7 +137,7 @@ namespace SaltyGame
                             break;
 
                         case FieldDataIncomeOperation.MultiplyPopulationPayout:
-                            if (modifier.Value != 1.5m && modifier.Value != 2m)
+                            if (modifier.Value != 1.5m && modifier.Value != 1.75m && modifier.Value != 2m)
                             {
                                 error = "Only the approved ×1.5 and ×2 population-payout operations are supported.";
                                 return false;

@@ -27,7 +27,7 @@ namespace SaltyGame
     /// <summary>Receipt for one resettable active Genome purchase.</summary>
     public sealed class GenomeNodeAllocation
     {
-        public GenomeNodeAllocation(string nodeId, long rabbitDataSpent, int capacityPoints)
+        public GenomeNodeAllocation(string nodeId, long rabbitDataSpent, int capacityPoints, int rank = 1)
         {
             if (string.IsNullOrWhiteSpace(nodeId))
             {
@@ -43,15 +43,18 @@ namespace SaltyGame
             {
                 throw new ArgumentOutOfRangeException(nameof(capacityPoints));
             }
+            if (rank < 1 || rank > GenomeContract.ActiveCapacity) throw new ArgumentOutOfRangeException(nameof(rank));
 
             NodeId = nodeId.Trim();
             RabbitDataSpent = rabbitDataSpent;
             CapacityPoints = capacityPoints;
+            Rank = rank;
         }
 
         public string NodeId { get; }
         public long RabbitDataSpent { get; }
         public int CapacityPoints { get; }
+        public int Rank { get; }
     }
 
     /// <summary>
@@ -69,7 +72,7 @@ namespace SaltyGame
             IEnumerable<string> unlockedNodeIds = null,
             IEnumerable<string> activeNodeIds = null,
             IEnumerable<GenomeNodeAllocation> allocations = null,
-            long resetGeneration = 0)
+            long resetGeneration = 0, int populationReservesRank = -1)
         {
             if (!speciesId.IsValid)
             {
@@ -81,6 +84,13 @@ namespace SaltyGame
             SpeciesId = speciesId;
             this.unlockedNodeIds = CopyIds(unlockedNodeIds, nameof(unlockedNodeIds));
             this.activeNodeIds = CopyIds(activeNodeIds, nameof(activeNodeIds));
+            if (populationReservesRank < -1) throw new ArgumentOutOfRangeException(nameof(populationReservesRank));
+            PopulationReservesRank = populationReservesRank == -1
+                ? (Contains(this.unlockedNodeIds, "hare.warren-network") ? 1 : 0)
+                : populationReservesRank;
+            if (PopulationReservesRank < 0 || PopulationReservesRank > 5
+                || (PopulationReservesRank > 0) != Contains(this.unlockedNodeIds, "hare.warren-network"))
+                throw new ArgumentException("Population Reserves rank must match permanent ownership.");
             var copiedAllocations = new List<GenomeNodeAllocation>();
             var allocatedIds = new HashSet<string>(StringComparer.Ordinal);
             var capacityUsed = 0;
@@ -93,7 +103,9 @@ namespace SaltyGame
                         throw new ArgumentException("Genome allocations must be non-null and unique.", nameof(allocations));
                     }
 
-                    capacityUsed = checked(capacityUsed + allocation.CapacityPoints);
+                    // The saved value remains effect/rank metadata for old catalogs;
+                    // equipment always consumes one slot per active node.
+                    capacityUsed = checked(capacityUsed + 1);
                     copiedAllocations.Add(allocation);
                 }
             }
@@ -143,6 +155,7 @@ namespace SaltyGame
         public IReadOnlyList<GenomeNodeAllocation> Allocations => allocations;
         public int CapacityUsed { get; }
         public long ResetGeneration { get; }
+        public int PopulationReservesRank { get; }
 
         public bool IsNodeUnlocked(string nodeId)
         {
@@ -172,16 +185,17 @@ namespace SaltyGame
 
         public SpeciesGenomeProfile WithActiveNodeIds(IEnumerable<string> nextActiveNodeIds)
         {
-            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations, ResetGeneration);
+            return new SpeciesGenomeProfile(SpeciesId, unlockedNodeIds, nextActiveNodeIds, allocations, ResetGeneration, PopulationReservesRank);
         }
 
         public SpeciesGenomeSnapshot CreateSnapshot()
         {
             var capacityPointsByNode = new Dictionary<string, int>(StringComparer.Ordinal);
             foreach (var allocation in allocations)
-                capacityPointsByNode.Add(allocation.NodeId, allocation.CapacityPoints);
+                capacityPointsByNode.Add(allocation.NodeId, checked(allocation.CapacityPoints + allocation.Rank - 1));
             return new SpeciesGenomeSnapshot(SpeciesId, activeNodeIds,
-                allocationCapacityPoints: capacityPointsByNode);
+                allocationCapacityPoints: capacityPointsByNode,
+                populationReservesRank: IsNodeActive("hare.warren-network") ? PopulationReservesRank : 0);
         }
 
         static IReadOnlyList<string> CopyIds(IEnumerable<string> ids, string parameterName)
@@ -237,7 +251,7 @@ namespace SaltyGame
 
         public SpeciesGenomeSnapshot(SpeciesId speciesId, IEnumerable<string> activeNodeIds = null,
             IEnumerable<GenomeUpgradeNodeSnapshot> resolvedNodes = null, string catalogFingerprint = null,
-            IReadOnlyDictionary<string, int> allocationCapacityPoints = null)
+            IReadOnlyDictionary<string, int> allocationCapacityPoints = null, int populationReservesRank = 0)
         {
             if (!speciesId.IsValid)
             {
@@ -245,6 +259,8 @@ namespace SaltyGame
             }
 
             SpeciesId = speciesId;
+            if (populationReservesRank < 0 || populationReservesRank > 5) throw new ArgumentOutOfRangeException(nameof(populationReservesRank));
+            PopulationReservesRank = populationReservesRank;
             var copied = new List<string>();
             var seen = new HashSet<string>(StringComparer.Ordinal);
             if (activeNodeIds != null)
@@ -298,6 +314,7 @@ namespace SaltyGame
         }
 
         public SpeciesId SpeciesId { get; }
+        public int PopulationReservesRank { get; }
         public IReadOnlyList<string> ActiveNodeIds => activeNodeIds;
         public IReadOnlyList<GenomeUpgradeNodeSnapshot> ResolvedNodes => resolvedNodes;
         public int GetAllocationCapacityPoints(string nodeId) =>
@@ -367,6 +384,7 @@ namespace SaltyGame
             var canonical = new StringBuilder(128);
             Append(canonical, GenomeContract.Version);
             Append(canonical, SpeciesId.Value);
+            if (PopulationReservesRank > 0) Append(canonical, "population-reserves-rank:" + PopulationReservesRank.ToString(CultureInfo.InvariantCulture));
 
             var orderedNodeIds = new List<string>(activeNodeIds);
             orderedNodeIds.Sort(StringComparer.Ordinal);
@@ -522,7 +540,7 @@ namespace SaltyGame
                         allocationPoints[id] = points > 0 ? points : node.CapacityPoints;
                 }
                 snapshots.Add(new SpeciesGenomeSnapshot(genome.SpeciesId, genome.ActiveNodeIds, nodes,
-                    catalog.Fingerprint, allocationPoints));
+                    catalog.Fingerprint, allocationPoints, genome.PopulationReservesRank));
             }
             return new GenomeSimulationSnapshot(snapshots);
         }
@@ -761,7 +779,17 @@ namespace SaltyGame
                     SpeciesAttributeIds.GestationTicks, adjustedTicks - baselineTicks));
             }
             if (modifiers.Count == 0
-                && (TargetSpecies != GenomeContract.RabbitSpeciesId || Id != SpeciesSimulation.FertileDroppingsNodeId))
+                && (TargetSpecies != GenomeContract.RabbitSpeciesId
+                    || (Id != SpeciesSimulation.FertileDroppingsNodeId && Id != "hare.warren-network"
+                        && Id != "hare.guarded-burrow" && Id != "hare.keen-hearing"
+                        && Id != "hare.swift-digging" && Id != "hare.safe-foraging"
+                        && Id != "hare.seed-dispersal" && Id != "hare.crowding-tolerance"
+                        && Id != "hare.reproductive-drive" && Id != "hare.escape-instinct"
+                        && Id != "hare.increased-minimum-litter" && Id != "hare.larger-litters"
+                        && Id != FieldDataPermanentProgressionDefinition.BurrowingNodeId
+                        && Id != FieldDataPermanentProgressionDefinition.SharedBurrowsNodeId
+                        && Id != FieldDataPermanentProgressionDefinition.ExpandedBurrowsNodeId
+                        && Id != FieldDataPermanentProgressionDefinition.BornBurrowerNodeId)))
             {
                 throw new InvalidOperationException($"Genome node '{Id}' has no implemented stat or ability effect.");
             }

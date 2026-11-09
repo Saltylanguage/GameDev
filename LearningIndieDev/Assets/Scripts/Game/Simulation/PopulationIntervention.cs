@@ -48,7 +48,7 @@ namespace SaltyGame
                 return false;
             }
 
-            var snapshot = SpeciesPopulationSnapshot.Create(run.Cells, run.Tick);
+            var snapshot = run.CapturePopulation();
             if (amount < 0 && species == run.PlayerSpeciesId && snapshot.GetCount(species) + amount < 1)
             {
                 reason = "Keep at least one of your species.";

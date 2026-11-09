@@ -20,6 +20,8 @@
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesDefinition.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesGenomeContract.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/FieldDataPermanentProgressionDefinition.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Profile/ProfileSessionSnapshot.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Profile/ProfileSessionStorage.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesId.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesProgression.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Species/SpeciesRole.cs" />
@@ -42,6 +44,8 @@
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataRewardChoices.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataShopOffers.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/FieldDataSpeciesEffects.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/HareLineage.cs" />
+    <SharedSource Include="../../Assets/Scripts/Game/Simulation/HareBurrows.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/JourneyNodeKind.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimData.cs" />
     <SharedSource Include="../../Assets/Scripts/Game/Simulation/CellularSimDataFingerprint.cs" />

@@ -1010,7 +1010,8 @@ namespace SaltyGame.EditorTools
 
             return new SpeciesExperimentalOptions(
                 options.FeatureId, options.FoxAttackCooldownTicks, avoidanceChance,
-                options.CoupledSpeciesResponsesEnabled);
+                options.CoupledSpeciesResponsesEnabled,
+                options.FoxOrdinaryMovementScentEnabled);
         }
 
         static ExperimentReport CreatePairedReport(
@@ -1197,7 +1198,7 @@ namespace SaltyGame.EditorTools
             {
                 seed = run.Seed,
                 genomeFingerprint = run.ActiveGenomeSnapshot.Fingerprint,
-                finalStateDigest = includeFinalStateDigest ? PortableStateDigest(run.Cells) : null,
+                finalStateDigest = includeFinalStateDigest ? PortableRunStateDigest(run) : null,
                 ticks = result.Ticks,
                 durationSeconds = result.DurationSeconds,
                 playerPopulation = result.PlayerPopulation,
