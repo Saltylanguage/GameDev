@@ -8,6 +8,15 @@
 - **Owner / reviewer allocation:** Unassigned on all 16, explicitly requested by Bevin for team allocation
 - **Carry-over:** None. S4 remains Closed; P1-032 and S4-04/05 remain Backlog.
 
+**November 9 transition note:** Josh approved [S6 — The Fun Pass](S6-control-record.md)
+as the planned November 16–29 sprint. S5 remains Active through November 15;
+this is not its closeout or a carry-over decision. FD-T01–FD-T16 were accepted
+October 21. GLJP-01, GLJP-04, GLJP-05, and GLJP-06 still need their current
+source/evidence and player-decision status reconciled at S5 closeout. November
+GLJP-06 evidence and Bevin's canonical-November direction are linked in the S6
+control; October comparisons are historical. Do not infer that the earlier
+kickoff counts or original estimates below describe remaining work.
+
 **October 21 Field Data closeout:** All FD-T01–FD-T16 were read back in Trello
 Done, with complete flags and 79 resolved current checklist items. Bevin's
 full-route playthrough, initial-slice acceptance and APS confirmation close

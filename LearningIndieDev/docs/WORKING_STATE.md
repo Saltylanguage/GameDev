@@ -3,6 +3,14 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 9 planning update:** Josh approved [S6 — The Fun Pass](Sprints/S6-control-record.md)
+for November 16–29. It is the official next-sprint direction, with kickoff and
+task allocation pending; [S5](Sprints/S5-control-record.md) remains active through
+November 15. The [publication handoff](handoffs/2026-11-09-codex-s6-fun-pass-plan.md)
+records the planning baseline. The November implementation and verification
+are now documented in the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
+Integration into the Sprint 6 working branch is pending.
+
 ## Current focus
 
 **November 9 GLJP handoff for Salty:** The November implementation is recorded on `BevBranch` in `de26d3b`. The [handoff](handoffs/2026-11-09-gljp-salty-handoff.md) links the current behavior, test evidence, and decisions that still need review.
