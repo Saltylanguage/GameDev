@@ -25,7 +25,7 @@ if ($ScientificArguments.Count % 2 -ne 0) { throw 'ScientificArguments must cont
 $allowed = @('-playerSpeciesId','-rabbitGenomeNodeIds','-rabbitGenomeCatalogPath','-upgradeId','-upgradeSequence','-upgradeAssetSequence','-upgradeAssetCatalogPath',
     '-upgradeValueOverride','-combatMode','-attackOpportunityMode','-experimentalFeatures','-foxAttackCooldownTicks',
     '-preContactAvoidanceChance','-coupledSpeciesResponses','-wrapEdges','-gridWidth','-gridHeight','-startingPopulations',
-    '-runTicks','-phaseLengthTicks','-phaseUpgradeSchedule','-phaseUpgradeAssetSchedule','-mutationPolicy',
+    '-runTicks','-phaseLengthTicks','-phasesPerNode','-phaseUpgradeSchedule','-phaseUpgradeAssetSchedule','-mutationPolicy',
     '-mutationPolicyEarlyFirstChoice','-harePurchasePolicy','-runDurationSeconds','-stepIntervalSeconds','-speciesStats','-foxIntroductionTicks')
 $seen = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
 for ($i = 0; $i -lt $ScientificArguments.Count; $i += 2) {

@@ -8,8 +8,9 @@ changes, and do not treat research references as approved implementation work.
 
 **Field Data navigation, October 18:** Keep node-end Field Data settlement but
 remove its population controls. After each simulation or shop, return to the
-map and wait for the player to click the next ready node. Preserve the retained
-world/tick, wallet and upgrades while waiting. Ordinary round-1–5 population
+map and wait for the player to click the next ready node. Preserve the run/tick,
+wallet and upgrades while waiting; entering a new simulation node creates a
+fresh grid under the November 10 population rule below. Ordinary round-1–5 population
 controls remain. Final success returns to the completed map; starting a fresh
 journey is a separate action. This supersedes earlier pre-shop round-6 controls.
 
@@ -84,7 +85,7 @@ uncertainty or regression risk.
   November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
   S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
-- **November 10, 2026 node-boundary correction:** Each new simulation node uses static authored starting populations for every nonplayed species. Only the played species' population carries between nodes. In the Hare route, Foxes and Plants reset, while Hares carry over; this generalizes to later scenarios with more species. The existing Field Data implementation still retains one whole world across nodes. Its November 10 Fox-count sweep therefore answers only the first-node and retained-world questions; do not use its node-two figures for the intended design. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [correction analysis](Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS_V2.md). The exact carried individual state remains open.
+- **November 10, 2026 node-boundary correction and evidence:** Each new simulation node carries only the played species' population count, recreates those individuals with default state, and restores static authored starting counts for every other species and resource. This works beyond the Hare/Fox pair. The Field Data and legacy journey transitions now implement that rule; the portable worker matches the Unity simulation. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. No tested count meets the opening safety screen. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analysis](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md); no authored balance value changed.
 
 - **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
   Gene Lab research unlocks eligibility for journey Mutations; it does not

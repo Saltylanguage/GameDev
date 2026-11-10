@@ -87,7 +87,7 @@ namespace SaltyGame.EditorTools
             ExperimentalFeaturesArgument, FoxAttackCooldownTicksArgument,
             PreContactAvoidanceChanceArgument, CoupledSpeciesResponsesArgument,
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
-            RunTicksArgument, PhaseLengthTicksArgument, PhaseUpgradeScheduleArgument,
+            RunTicksArgument, PhaseLengthTicksArgument, PhasesPerNodeArgument, PhaseUpgradeScheduleArgument,
             PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
             MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
             FoxIntroductionTicksArgument

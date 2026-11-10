@@ -388,7 +388,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FieldDataTestRouteCompletesThroughAllShopsOnFixedSeed() =>
+        public IEnumerator FieldDataAuthoredRouteReachesFirstShopAndResetsNode() =>
             ExerciseFieldDataRouteThroughResults(useAuthoredEcology: true);
 
         [UnityTest]
@@ -397,7 +397,7 @@ namespace SaltyGame.PlayModeTests
 
         IEnumerator ExerciseFieldDataRouteThroughResults(bool useAuthoredEcology)
         {
-            const int testSeed = 10100;
+            var testSeed = useAuthoredEcology ? 10101 : 10100;
             journeyProfileSave = ProfilePlayerPrefsBackup.Capture();
             yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
             yield return null;
@@ -483,6 +483,8 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.Run, Is.SameAs(retainedRun));
                 var settledAwardCount = preview.FieldDataSession.Ledger.Awards.Count;
                 var shopBoundary = round < totalRounds && round % roundsPerSimulation == 0;
+                var closingHares = shopBoundary
+                    ? preview.Run.PhaseResults.Last().ClosingPopulation.GetCount(preview.PlayerSpecies) : 0;
                 if (shopBoundary)
                     Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Shop));
                 else if (round < totalRounds)
@@ -534,6 +536,17 @@ namespace SaltyGame.PlayModeTests
                         "A repeated Continue click while the simulation is already running must not advance it.");
                     Assert.That(preview.FieldDataSession.Ledger.Awards.Count, Is.EqualTo(awardsAfterContinue),
                         "A repeated Continue click must not duplicate a settled payout.");
+                    if (useAuthoredEcology && shopBoundary)
+                    {
+                        Assert.That(preview.FieldDataSession.State, Is.EqualTo(FieldDataJourneyFlowState.Running));
+                        Assert.That(preview.Run.PopulationHistory.Last().GetCount(preview.PlayerSpecies),
+                            Is.EqualTo(closingHares));
+                        Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("plant")),
+                            Is.EqualTo(preview.PlantStartingPopulation));
+                        Assert.That(preview.Run.PopulationHistory.Last().GetCount(new SpeciesId("fox")),
+                            Is.EqualTo(preview.CarnivoreStartingPopulation));
+                        yield break;
+                    }
                     preview.PauseSimulation();
                 }
             }
@@ -1703,7 +1716,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator JourneyNodeRewardsAndSimulationsContinueTheSameBiome()
+        public IEnumerator JourneyNodeRewardsCarryPopulationIntoFreshBiome()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
             yield return null;
@@ -1767,6 +1780,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ChooseJourneyNode("burrow-study"), Is.False);
 
             var cells = run.Cells;
+            var closingHares = run.PopulationHistory.Last().GetCount(preview.PlayerSpecies);
             var historyCount = run.PopulationHistory.Count;
             var seedDropBefore = preview.ActiveSpeciesRules[new SpeciesId("plant")].SeedDropChance;
             Assert.That(preview.ChooseJourneyNode("seedfall"), Is.True);
@@ -1780,9 +1794,14 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ChooseJourneyNode("burrow-study"), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(preview.Run, Is.SameAs(run));
-            Assert.That(run.Cells, Is.SameAs(cells));
+            Assert.That(run.Cells, Is.Not.SameAs(cells));
             Assert.That(run.Cells.WrapEdges, Is.True);
             Assert.That(run.PopulationHistory.Count, Is.EqualTo(historyCount));
+            Assert.That(run.PopulationHistory.Last().GetCount(preview.PlayerSpecies), Is.EqualTo(closingHares));
+            Assert.That(run.PopulationHistory.Last().GetCount(new SpeciesId("plant")),
+                Is.EqualTo(preview.PlantStartingPopulation));
+            Assert.That(run.PopulationHistory.Last().GetCount(new SpeciesId("fox")),
+                Is.EqualTo(preview.CarnivoreStartingPopulation));
             Assert.That(run.PhaseIndex, Is.EqualTo(7));
             Assert.That(run.UpgradeLoadout.Count(upgrade => upgrade.TargetSpecies == preview.PlayerSpecies),
                 Is.GreaterThanOrEqualTo(mutationCount));

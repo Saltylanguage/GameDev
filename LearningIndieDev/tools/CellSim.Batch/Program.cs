@@ -260,7 +260,7 @@ internal static class Program
             if (session.State == FieldDataJourneyFlowState.Succeeded) break;
             if (session.State == FieldDataJourneyFlowState.RoundDecision || session.State == FieldDataJourneyFlowState.Shop)
                 if (!session.Continue())
-                    throw new InvalidOperationException("The Field Data journey could not continue at tick " + run.Tick + ".");
+                    throw new InvalidOperationException("The Field Data journey could not continue at tick " + run.Tick + ": " + session.SettlementError);
         }
 
         result.finalTick = run.Tick;
@@ -1075,7 +1075,7 @@ internal static class Program
             role: SpeciesRole.Herbivore, maximumEnergy: 500);
         var probabilities = new Dictionary<SpeciesId, float>();
         var populations = new Dictionary<SpeciesId, int>
-        { [hare] = 20, [SpeciesIds.Plant] = 0, [SpeciesIds.Carnivore] = 0 };
+        { [hare] = 20, [SpeciesIds.Plant] = 0, [SpeciesIds.Herbivore] = 0, [SpeciesIds.Carnivore] = 0 };
         var data = new CellularSimData(16, 16, probabilities, rules, 20f, .2f,
             startingPopulations: populations);
         var route = new[]

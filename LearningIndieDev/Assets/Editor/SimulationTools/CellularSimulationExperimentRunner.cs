@@ -58,6 +58,7 @@ namespace SaltyGame.EditorTools
         const string FoxIntroductionTicksArgument = "-foxIntroductionTicks";
         const string RunTicksArgument = "-runTicks";
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
+        const string PhasesPerNodeArgument = "-phasesPerNode";
         const string PhaseUpgradeScheduleArgument = "-phaseUpgradeSchedule";
         const string PhaseUpgradeAssetScheduleArgument = "-phaseUpgradeAssetSchedule";
         const string MutationPolicyArgument = "-mutationPolicy";
@@ -325,6 +326,11 @@ namespace SaltyGame.EditorTools
                 {
                     "rabbit-genome=" + activeGenomeSnapshot.Fingerprint,
                 }.ToArray();
+            if (options.PhasesPerNode > 0)
+                provenanceLoadout = new List<string>(provenanceLoadout)
+                {
+                    "phases-per-node=" + options.PhasesPerNode,
+                }.ToArray();
             var selectedUpgrade = phaseSchedule == null && orderedLoadout.Length == 1
                 ? authoredUpgradeSnapshots == null
                     ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
@@ -349,7 +355,7 @@ namespace SaltyGame.EditorTools
                     options.MutationPolicyEarlyFirstChoice,
                     options.IncludeFinalStateDigest,
                     options.CaptureDetailedEvents, options.HarePurchasePolicy,
-                    activeGenomeSnapshot, options.FoxIntroductionTicks);
+                    activeGenomeSnapshot, options.FoxIntroductionTicks, options.PhasesPerNode);
             }
 
             return new ExperimentReport
@@ -421,6 +427,7 @@ namespace SaltyGame.EditorTools
                     ? checked(options.PhaseLengthTicks * GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots))
                     : loadedData.RunTicks,
                 phaseLengthTicks = options.PhaseLengthTicks,
+                phasesPerNode = options.PhasesPerNode,
                 phaseCount = hasPhaseFlow
                     ? GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                     : 0,
@@ -456,7 +463,8 @@ namespace SaltyGame.EditorTools
             bool captureDetailedEvents = true,
             string harePurchasePolicy = null,
             GenomeSimulationSnapshot activeGenomeSnapshot = null,
-            int[] foxIntroductionTicks = null)
+            int[] foxIntroductionTicks = null,
+            int phasesPerNode = 0)
         {
             if (!string.IsNullOrWhiteSpace(mutationPolicyId))
             {
@@ -490,7 +498,7 @@ namespace SaltyGame.EditorTools
                     phaseLengthTicks,
                     includeFinalStateDigest,
                     captureDetailedEvents, harePurchasePolicy, activeGenomeSnapshot,
-                    foxIntroductionTicks);
+                    foxIntroductionTicks, phasesPerNode);
             }
 
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
@@ -855,7 +863,8 @@ namespace SaltyGame.EditorTools
             bool captureDetailedEvents = true,
             string harePurchasePolicy = null,
             GenomeSimulationSnapshot activeGenomeSnapshot = null,
-            int[] foxIntroductionTicks = null)
+            int[] foxIntroductionTicks = null,
+            int phasesPerNode = 0)
         {
             var introductions = new List<PopulationIntroductionRecord>();
             var milestones = new ResearchMilestones();
@@ -963,6 +972,8 @@ namespace SaltyGame.EditorTools
                     playerSpecies.Value,
                     activeSnapshots);
                 if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
+                    || (phasesPerNode > 0 && run.PhaseIndex % phasesPerNode == 0
+                        && !runner.TryStartNextSimulationNode(run.PhaseIndex / phasesPerNode + 1, out _))
                     || !run.ContinueWithoutUpgrade())
                 {
                     throw new InvalidOperationException(
@@ -2070,6 +2081,7 @@ namespace SaltyGame.EditorTools
             public string SpeciesStats { get; private set; }
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
+            public int PhasesPerNode { get; private set; }
             public string MutationPolicyId { get; private set; }
             public bool MutationPolicyEarlyFirstChoice { get; private set; }
             public string HarePurchasePolicy { get; private set; }
@@ -2118,6 +2130,7 @@ namespace SaltyGame.EditorTools
 
                 var runTicks = GetIntValue(arguments, RunTicksArgument, 0, allowZero: true);
                 var phaseLengthTicks = GetIntValue(arguments, PhaseLengthTicksArgument, 0, allowZero: true);
+                var phasesPerNode = GetIntValue(arguments, PhasesPerNodeArgument, 0, allowZero: true);
                 var mutationPolicyId = GetOptionalValue(arguments, MutationPolicyArgument);
                 var mutationPolicyEarlyFirstChoice = GetBooleanValue(arguments, MutationPolicyEarlyFirstChoiceArgument);
                 var phaseUpgradeSchedule = ParsePhaseUpgradeSchedule(arguments);
@@ -2181,6 +2194,12 @@ namespace SaltyGame.EditorTools
                         $"'{PhaseUpgradeScheduleArgument}' or '{PhaseUpgradeAssetScheduleArgument}' requires '{PhaseLengthTicksArgument}'.",
                         PhaseLengthTicksArgument);
                 }
+                var scheduledPhases = phaseUpgradeSchedule?.Length ?? phaseAuthoredUpgradeSchedule?.Length ?? 0;
+                if (phasesPerNode > 0 && (scheduledPhases <= phasesPerNode
+                    || scheduledPhases % phasesPerNode != 0))
+                    throw new ArgumentException(
+                        $"'{PhasesPerNodeArgument}' requires an explicit phase schedule with a whole number of nodes.",
+                        PhasesPerNodeArgument);
 
                 if (rabbitGenomeNodeIds.Length > 0
                     && string.Equals(GetOptionalValue(arguments, AttackOpportunityModeArgument),
@@ -2259,6 +2278,7 @@ namespace SaltyGame.EditorTools
                     SpeciesStats = GetOptionalValue(arguments, "-speciesStats"),
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
+                    PhasesPerNode = phasesPerNode,
                     MutationPolicyId = mutationPolicyId,
                     HarePurchasePolicy = harePurchasePolicy,
                     MutationPolicyEarlyFirstChoice = mutationPolicyEarlyFirstChoice,
@@ -2916,6 +2936,7 @@ namespace SaltyGame.EditorTools
             public int gridHeight;
             public int runTicks;
             public int phaseLengthTicks;
+            public int phasesPerNode;
             public int phaseCount;
             public string[] phaseUpgradeSchedule;
             public string mutationPolicyId;

@@ -2358,11 +2358,11 @@ namespace SaltyGame
                     var continued = simulationHelper != null
                         ? simulationHelper.ContinueWithBoundaryState(
                             nextRules, CreateExperimentalOptions(),
-                            GetAppliedRunUpgrades(), activeJourneyCondition)
+                            GetAppliedRunUpgrades(), activeJourneyCondition, 2)
                         : simulationManager != null
                             && simulationManager.ContinueWithBoundaryState(
                                 nextRules, CreateExperimentalOptions(),
-                                GetAppliedRunUpgrades(), activeJourneyCondition);
+                                GetAppliedRunUpgrades(), activeJourneyCondition, 2);
                     if (!continued)
                     {
                         return false;
@@ -3576,7 +3576,7 @@ namespace SaltyGame
             int population)
         {
             var species = ResolveSpeciesId(rules, canonicalSpecies, role);
-            if (species.HasValue && population > 0)
+            if (species.HasValue && population >= 0)
             {
                 populations[species.Value] = population;
             }

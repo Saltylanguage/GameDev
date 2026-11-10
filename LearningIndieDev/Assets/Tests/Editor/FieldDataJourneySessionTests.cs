@@ -137,7 +137,7 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
-        public void AuthoredRoutePausesAtAllShopsAndCompletesOnTheSameRun()
+        public void AuthoredRoutePausesAtAllShopsAndStartsEachNodeWithFreshPopulations()
         {
             var activeGenome = new GenomeSimulationSnapshot(new[]
             {
@@ -192,6 +192,14 @@ namespace SaltyGame.EditorTests
                     Assert.That(manager.Run, Is.SameAs(run));
                     Assert.That(run.Seed, Is.EqualTo(10100));
                     Assert.That(run.PopulationHistory.Count, Is.EqualTo(run.Tick + 1));
+                    if (boundary % definition.RoundsPerNode == 0)
+                    {
+                        Assert.That(run.PopulationHistory[run.Tick].GetCount(new SpeciesId("hare")),
+                            Is.EqualTo(run.PhaseResults[boundary - 1].ClosingPopulation.GetCount(new SpeciesId("hare"))));
+                        Assert.That(run.PopulationHistory[run.Tick].GetCount(new SpeciesId("plant")), Is.EqualTo(500));
+                        Assert.That(AllCells(run.Cells).Where(cell => cell.IsCreature && cell.SpeciesId == new SpeciesId("hare"))
+                            .All(cell => cell.Age == 0 && cell.Energy == 1000), Is.True);
+                    }
                 }
 
                 manager.Advance(10.1f);
@@ -210,6 +218,51 @@ namespace SaltyGame.EditorTests
             }
 
             Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.Closed));
+        }
+
+        [TestCase("hare")]
+        [TestCase("fox")]
+        public void NodeResetRestoresEveryNonplayedSpeciesAndRecreatesPlayedIndividuals(string playerId)
+        {
+            var hare = new SpeciesId("hare");
+            var deer = new SpeciesId("deer");
+            var player = new SpeciesId(playerId);
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
+            var populations = new Dictionary<SpeciesId, int>(scenario.StartingPopulations)
+            {
+                [deer] = 7,
+            };
+            var data = scenario.WithSpeciesRules(deer, scenario.SpeciesRules[hare])
+                .WithStartingPopulations(populations)
+                .WithRunTicks(2, 0.1f);
+            var run = new SimulationRunState(SpeciesInitialGridFactory.Create(data, 4102), player, 4102, 0.2f, 2);
+            run.ConfigureContinuousPhases(1);
+            var runner = new SpeciesSimulationRunner(run, data, stopOnPlayerExtinction: false);
+
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            var carried = run.PopulationHistory[run.Tick].GetCount(player);
+            var oldIds = AllCells(run.Cells).Where(cell => cell.IsCreature && cell.SpeciesId == player)
+                .Select(cell => cell.EntityId).ToArray();
+            Assert.That(runner.TryStartNextSimulationNode(2, out var error), Is.True, error);
+
+            Assert.That(run.PopulationHistory[run.Tick].GetCount(player), Is.EqualTo(carried));
+            foreach (var species in populations.Keys.Where(species => species != player))
+                Assert.That(run.PopulationHistory[run.Tick].GetCount(species), Is.EqualTo(populations[species]));
+            Assert.That(run.PopulationInterventions.Any(action => action.Source == "node-reset-2"
+                && action.Species == player && action.Amount == 0
+                && action.Seed == unchecked(4102 + 2 * 1000003)), Is.True);
+            Assert.That(run.PopulationInterventions.Where(action => action.Source == "node-reset-2")
+                .All(action => action.Amount == run.PopulationHistory[run.Tick].GetCount(action.Species)
+                    - run.PhaseResults[0].ClosingPopulation.GetCount(action.Species)), Is.True);
+            Assert.That(AllCells(run.Cells).Where(cell => cell.IsCreature && cell.SpeciesId == player)
+                .All(cell => cell.Age == 0 && !oldIds.Contains(cell.EntityId)), Is.True);
+        }
+
+        static IEnumerable<SpeciesCell> AllCells(Grid<SpeciesCell> grid)
+        {
+            for (var y = 0; y < grid.Height; y++)
+                for (var x = 0; x < grid.Width; x++)
+                    yield return grid.GetCell(x, y);
         }
 
         [Test]
@@ -236,7 +289,6 @@ namespace SaltyGame.EditorTests
 
         [TestCase(1)]
         [TestCase(6)]
-        [TestCase(18)]
         public void ExtinctionAtRoundBoundariesFailsBeforeThatRoundsAward(int extinctRound)
         {
             var (definition, manager, progression) = CreateSessionParts(
@@ -333,7 +385,9 @@ namespace SaltyGame.EditorTests
                     species, creature.Health, 17, 23, 2, 3f)
                     .WithAttackCooldown(4).WithReproductionCooldown(7)
                     .WithBehaviorState(SpeciesBehaviorState.Sleeping, 3));
-                var cellsBeforeContinuation = grid.Copy();
+                var carriedHares = session.Run.PopulationHistory[session.Run.Tick].GetCount(species);
+                var oldHareIds = AllCells(grid).Where(cell => cell.IsCreature && cell.SpeciesId == species)
+                    .Select(cell => cell.EntityId).ToArray();
 
                 Assert.That(session.TryBuySpeciesEffect("effect-1", "hare-long-stride-plus", out var first, out var error), Is.True, error);
                 Assert.That(session.TryBuySpeciesEffect("effect-1", "hare-long-stride-plus", out var retried, out error), Is.True, error);
@@ -353,10 +407,12 @@ namespace SaltyGame.EditorTests
                     "Two positive copies and one negative copy resolve on top of ordinary progression.");
                 Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(ordinaryMovement),
                     "The shop layer must not mutate ordinary progression storage.");
-                for (var y = 0; y < grid.Height; y++)
-                    for (var x = 0; x < grid.Width; x++)
-                        Assert.That(session.Run.Cells.GetCell(x, y), Is.EqualTo(cellsBeforeContinuation.GetCell(x, y)),
-                            "Applying shop rules must preserve energy, cooldowns, identities and all other cell state.");
+                Assert.That(session.Run.PopulationHistory[session.Run.Tick].GetCount(species), Is.EqualTo(carriedHares));
+                Assert.That(session.Run.PopulationHistory[session.Run.Tick].GetCount(new SpeciesId("plant")), Is.EqualTo(500));
+                Assert.That(AllCells(session.Run.Cells).Where(cell => cell.IsCreature && cell.SpeciesId == species)
+                    .All(cell => cell.Age == 0 && cell.Energy == applied.StartingEnergy
+                        && !oldHareIds.Contains(cell.EntityId)), Is.True,
+                    "The shop starts a fresh node and carries only the Hare count.");
 
                 for (var round = 7; round <= 12; round++)
                 {

@@ -570,7 +570,10 @@ namespace SaltyGame
                 return false;
             }
 
+            var nextNodeNumber = State == FieldDataJourneyFlowState.Shop
+                ? GlobalRound / FieldDataJourneyDefinition.RoundsPerSimulation + 1 : 0;
             var continued = false;
+            string continueError;
             if (speciesEffects.Count > 0 || progression.AppliedRunUpgrades.Count > retainedRun.UpgradeLoadout.Count)
             {
                 if (!FieldDataSpeciesEffects.TryResolve(
@@ -587,14 +590,15 @@ namespace SaltyGame
                 }
                 continued = simulationManager.ContinueWithFieldDataSpeciesRules(
                     retainedRun.PlayerSpeciesId, effectiveRules, avoidance, effectsFingerprint,
-                    progression.AppliedRunUpgrades);
+                    progression.AppliedRunUpgrades, nextNodeNumber, out continueError);
             }
             else
             {
-                continued = simulationManager.ContinueWithoutUpgrade();
+                continued = simulationManager.ContinueWithoutUpgrade(nextNodeNumber, out continueError);
             }
             if (!continued)
             {
+                if (!string.IsNullOrEmpty(continueError)) SettlementError = continueError;
                 return false;
             }
 

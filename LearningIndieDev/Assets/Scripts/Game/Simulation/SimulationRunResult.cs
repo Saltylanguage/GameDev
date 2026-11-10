@@ -376,6 +376,38 @@ namespace SaltyGame
             return true;
         }
 
+        internal void InstallNextSimulationGrid(Grid<SpeciesCell> nextCells, int nodeNumber, int nodeSeed)
+        {
+            if (Status != SimulationRunStatus.AwaitingDecision || nextCells == null
+                || nextCells.Width != Cells.Width || nextCells.Height != Cells.Height)
+                throw new InvalidOperationException("A new simulation grid requires a matching node boundary.");
+            var before = CapturePopulation();
+            var after = SpeciesPopulationSnapshot.Create(nextCells, Tick);
+            if (after.GetCount(PlayerSpeciesId) != before.GetCount(PlayerSpeciesId))
+                throw new InvalidOperationException("The played species population must carry into the next node.");
+
+            Cells = nextCells;
+            hareLineage = null;
+            hareBurrows = null;
+            var species = new HashSet<SpeciesId>(before.Counts.Keys);
+            species.UnionWith(after.Counts.Keys);
+            var orderedSpecies = new List<SpeciesId>(species);
+            orderedSpecies.Sort((left, right) => string.CompareOrdinal(left.Value, right.Value));
+            foreach (var id in orderedSpecies)
+            {
+                var change = after.GetCount(id) - before.GetCount(id);
+                populationInterventions.Add(new PopulationIntervention(id, change,
+                    "node-reset-" + nodeNumber, Tick, PhaseIndex, nodeSeed));
+                if (change > 0)
+                {
+                    boundaryPopulationAdded.TryGetValue(id, out var added);
+                    boundaryPopulationAdded[id] = added + change;
+                }
+            }
+            // The closed phase keeps its pre-reset snapshot; the next phase starts from this fresh grid.
+            populationHistory[populationHistory.Count - 1] = after;
+        }
+
         internal void SetUpgradeLoadout(
             IEnumerable<SpeciesUpgradeSnapshot> upgrades,
             bool coupledResponsesEnabled = false)

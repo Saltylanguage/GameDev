@@ -146,6 +146,42 @@ namespace SaltyGame
             previousCells = null;
         }
 
+        public bool TryStartNextSimulationNode(int nodeNumber, out string error)
+        {
+            error = null;
+            if (simulationData == null || Run.Status != SimulationRunStatus.AwaitingDecision || nodeNumber < 2)
+            {
+                error = "A new simulation node requires an authored scenario at a node boundary.";
+                return false;
+            }
+
+            var populations = new Dictionary<SpeciesId, int>(simulationData.StartingPopulations);
+            foreach (var species in simulationData.SpeciesRules.Keys)
+            {
+                if (!populations.ContainsKey(species))
+                {
+                    error = $"The next node needs a fixed starting population for {species}.";
+                    return false;
+                }
+            }
+            populations[Run.PlayerSpeciesId] = Run.CapturePopulation().GetCount(Run.PlayerSpeciesId);
+            try
+            {
+                var freshData = simulationData.WithStartingPopulations(populations);
+                var nodeSeed = unchecked(Run.Seed + nodeNumber * 1000003);
+                var freshGrid = SpeciesInitialGridFactory.Create(freshData, nodeSeed);
+                Run.InstallNextSimulationGrid(freshGrid, nodeNumber, nodeSeed);
+                previousCells = null;
+                return true;
+            }
+            catch (Exception exception) when (exception is ArgumentException
+                || exception is InvalidOperationException || exception is OverflowException)
+            {
+                error = exception.Message;
+                return false;
+            }
+        }
+
         public bool InstallBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
@@ -205,8 +241,11 @@ namespace SaltyGame
             SpeciesRules targetRules,
             float preContactAvoidanceChance,
             string effectsFingerprint,
-            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout,
+            int nextNodeNumber,
+            out string error)
         {
+            error = null;
             if (Run.Status != SimulationRunStatus.AwaitingDecision || !targetSpecies.IsValid || targetRules == null
                 || float.IsNaN(preContactAvoidanceChance) || float.IsInfinity(preContactAvoidanceChance)
                 || preContactAvoidanceChance < 0f || preContactAvoidanceChance > 1f)
@@ -227,6 +266,7 @@ namespace SaltyGame
             if (!InstallBoundaryState(nextRules, nextOptions, activeUpgradeLoadout ?? Run.UpgradeLoadout)) return false;
             if (!string.IsNullOrWhiteSpace(effectsFingerprint))
                 Run.SetRulesetFingerprint(CombineFingerprint(Run.RulesetFingerprint, effectsFingerprint));
+            if (nextNodeNumber > 0 && !TryStartNextSimulationNode(nextNodeNumber, out error)) return false;
             return Run.ContinueWithoutUpgrade();
         }
 

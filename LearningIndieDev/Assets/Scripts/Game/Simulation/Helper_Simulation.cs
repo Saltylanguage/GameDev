@@ -107,13 +107,15 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
             IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout,
-            SpeciesUpgradeSnapshot selectedUpgrade = null)
+            SpeciesUpgradeSnapshot selectedUpgrade = null,
+            int nextNodeNumber = 0)
         {
             return simulationManager.ContinueWithBoundaryState(
                 nextRules,
                 nextExperimentalOptions,
                 nextUpgradeLoadout,
-                selectedUpgrade);
+                selectedUpgrade,
+                nextNodeNumber);
         }
 
         public bool EndRun()
