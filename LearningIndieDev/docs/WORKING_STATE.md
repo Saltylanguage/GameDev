@@ -9,7 +9,19 @@ task allocation pending; [S5](Sprints/S5-control-record.md) remains active throu
 November 15. The [publication handoff](handoffs/2026-11-09-codex-s6-fun-pass-plan.md)
 records the planning baseline. The November implementation and verification
 are now documented in the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
-Integration into the Sprint 6 working branch is pending.
+The November GLJP code was fast-forward integrated into `feature/s6-fun-pass`.
+
+**November 9 S6 predator-first diagnostic:** Josh locked Fox overhunting as the
+opening Hare pressure and avoidance, survival, and faster reproduction as the
+three temporary Mutation responses. The [approved 12-seed diagnostic](Research/Experiments/S6-Predator-First-Diagnostic-20261109/REPORT.md)
+found six first-node Hare extinctions and seven by the second node, with first-node
+combat deaths exceeding starvation and Plants present in all seeds at tick 600.
+The current published checkout's Unity fixture and portable replay both stop
+seed 10100 at tick 236; the earlier tick-1210 evidence came from a different
+dirty checkout. A portable replay option-wiring fix, matched Mutation results,
+and the [separate analysis](Research/Experiments/S6-Predator-First-Diagnostic-20261109/AI_ANALYSIS.md)
+are ready for review; see the [handoff](handoffs/2026-11-09-2007-codex-s6-predator-first-diagnostic.md).
+No balance value or gameplay asset changed.
 
 ## Current focus
 

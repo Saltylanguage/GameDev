@@ -174,7 +174,8 @@ internal static class Program
         var run = new SimulationRunState(SpeciesInitialGridFactory.Create(data, seed), selected,
             seed, data.RunDurationSeconds, targetTicks);
         run.ConfigureContinuousPhases(definition.RoundLength);
-        var runner = new SpeciesSimulationRunner(run, data);
+        var runner = new SpeciesSimulationRunner(run, data,
+            experimentalOptions: SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableExperimentalOptions(snapshot.arguments));
         var manager = new SimulationManager();
         manager.SetRunner(runner);
         var progression = new SpeciesProgression(new SpeciesDefinition(selected, selectedRules));
@@ -1110,6 +1111,9 @@ internal static class Program
         var portable = PortableSnapshot.Create(data);
         portable.sourceCommit = "self-test";
         portable.arguments = new[] { "-playerSpeciesId", "hare", "-runTicks", "1800" };
+        if (!SaltyGame.EditorTools.CellularSimulationExperimentRunner.PortableExperimentalOptions(
+                new[] { "-playerSpeciesId", "hare", "-experimentalFeatures", "bev-experimental" }).UsesSpeciesStatLines)
+            throw new Exception("Portable journey omitted exported experimental features.");
         portable.fieldDataDefinition = FieldDataPortableDefinition.Create(definition);
         portable.sourceHash = PortableSourceHash(relative =>
         {

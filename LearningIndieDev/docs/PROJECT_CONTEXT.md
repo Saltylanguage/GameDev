@@ -74,11 +74,15 @@ uncertainty or regression risk.
   [S6 — The Fun Pass](Sprints/S6-control-record.md) for November 16–29, following
   the November 15 S5 boundary. The immediate M2 question is whether one complete
   Hare journey offers consequential choices, readable pressure, distinct
-  strategies, and a reason to replay. Use short, reproducible November-build
-  comparisons to guide playtests and assess fun through player feedback. This
-  supersedes the older S6 persistence and Genome forecast. S6 kickoff and
-  integration of the November GLJP work from `BevBranch` into the Sprint 6
-  working branch are pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
+  strategies, and a reason to replay. Josh fixed Fox overhunting as the opening
+  pressure and avoidance, survival, and faster reproduction as the three
+  temporary Mutation answers; see the [S6 design record](Sprints/S6-control-record.md#november-9-predator-first-design-decision).
+  The [current-source diagnostic](Research/Experiments/S6-Predator-First-Diagnostic-20261109/REPORT.md)
+  found the first node too lethal on its 12-seed panel. Use short, reproducible
+  November-build comparisons to guide playtests and assess fun through player
+  feedback. This supersedes the older S6 persistence and Genome forecast.
+  November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
+  S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
 - **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
   Gene Lab research unlocks eligibility for journey Mutations; it does not

@@ -287,6 +287,12 @@ namespace SaltyGame.EditorTools
             return JsonUtility.ToJson(run);
         }
 
+        public static SpeciesExperimentalOptions PortableExperimentalOptions(string[] arguments)
+        {
+            ValidatePortableArguments(arguments);
+            return GetExperimentalOptions(CommandLineOptions.Parse(arguments));
+        }
+
         public static void ValidatePortableArguments(string[] arguments)
         {
             if (arguments == null || arguments.Length % 2 != 0)
