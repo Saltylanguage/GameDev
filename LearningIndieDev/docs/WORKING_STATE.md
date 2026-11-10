@@ -11,6 +11,8 @@ records the planning baseline. The November implementation and verification
 are now documented in the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 The November GLJP code was fast-forward integrated into `feature/s6-fun-pass`.
 
+**November 10 S6 Fox-count sweep:** The [approved 16/18/20-Fox experiment](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) completed 336/336 runs. On 100 disjoint matched seeds per count, Hare extinction by node one was 19%, 15%, and 20%; cumulative extinction by node two was 25%, 26%, and 31%. All counts are valid inputs, but none meets the provisional safe-opening or 50–70% cumulative screens. Node-two Fox pressure falls away as Plants reach zero in many seeds. The [separate analysis](Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS.md) and [handoff](handoffs/2026-11-10-0939-codex-s6-fox-start-sweep.md) leave the next balance mechanism for Josh to decide. No authored balance value changed.
+
 **November 9 S6 predator-first diagnostic:** Josh locked Fox overhunting as the
 opening Hare pressure and avoidance, survival, and faster reproduction as the
 three temporary Mutation responses. The [approved 12-seed diagnostic](Research/Experiments/S6-Predator-First-Diagnostic-20261109/REPORT.md)
