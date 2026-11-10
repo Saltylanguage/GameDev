@@ -84,6 +84,8 @@ uncertainty or regression risk.
   November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
   S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
+- **November 10, 2026 node-boundary correction:** Each new simulation node uses static authored starting populations for every nonplayed species. Only the played species' population carries between nodes. In the Hare route, Foxes and Plants reset, while Hares carry over; this generalizes to later scenarios with more species. The existing Field Data implementation still retains one whole world across nodes. Its November 10 Fox-count sweep therefore answers only the first-node and retained-world questions; do not use its node-two figures for the intended design. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [correction analysis](Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS_V2.md). The exact carried individual state remains open.
+
 - **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
   Gene Lab research unlocks eligibility for journey Mutations; it does not
   automatically apply the Mutation. Equipping a Genome node is distinct from
@@ -412,7 +414,7 @@ evidence, not the player contract. In-memory continuation does not introduce
 player disk save/load. Stat-Line and predictive-AI evidence must name its
 research or player window and upgrade acquisition timing.
 
-**Plan forward:** treat continuous state as the canonical runtime design. The
+**Historical continuous-state plan, superseded across simulation-node boundaries on November 10:** treat continuous state as the canonical runtime design. The
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
 The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
 the remaining player-facing Mutation choices, outcome language, and

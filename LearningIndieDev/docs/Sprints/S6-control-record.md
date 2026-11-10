@@ -20,6 +20,12 @@ For matched seeds under a defined **no-intervention** schedule, the first simula
 
 This decision supersedes the resource-sustainability candidate in FP-02 and focuses FP-01, FP-03, FP-04, and FP-05 on predator pressure and the three responses. Balance iteration for this introductory scenario should test those hypotheses first; food, population, and stat tuning should support that experience.
 
+## November 10 node-boundary design correction
+
+Josh clarified the population contract for this and future playable species: each simulation node has static, trackable starting populations; only the population of the species being played carries into the next node. All other species reset to their authored starting populations at the node boundary. For the Hare route, Hares carry over and Foxes reset; Plants also use their authored starting population. This rule must work with more than two species. Rounds within a node continue normally; the reset happens between simulation nodes. Whether the carried population includes individual state beyond headcount remains to be resolved before implementation.
+
+The current Field Data journey and its portable replay retain one world across all nodes, as required by the earlier S5 continuous-world implementation. This now conflicts with the clarified design. The [Fox-start sweep](../Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) tested that retained-world behavior. Its first-node observations remain relevant, but its node-two balance conclusions and the proposed Fox escalation/Plant tuning must not guide a design change until a corrected node transition is implemented and remeasured; see [analysis v2](../Research/Experiments/S6-Fox-Start-Sweep-20261110/AI_ANALYSIS_V2.md). This correction supersedes the cross-node retained-world assumption for future S6 work, not the immutable evidence of the earlier run.
+
 ## November 9 evidence and integration boundary
 
 The current [GLJP-06 record](https://trello.com/c/eo0iqoRL/154-gljp-06-diagnose-route-seed-survival-mismatch-before-further-development) reports the November authored seed-10100 route ending at tick 1210, before shop 3 at tick 1800. Plants reached zero after the last was consumed at tick 915; the final Hare's recorded death was combat. A separate stable-Hare fixture traversed four simulation nodes and three shops through successful results at tick 2400. That fixture disables reproduction and metabolism and has no Foxes, so it verifies route machinery, not authored ecology or fun.
