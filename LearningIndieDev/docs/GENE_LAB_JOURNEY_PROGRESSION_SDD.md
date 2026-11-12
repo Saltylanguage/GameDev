@@ -2,7 +2,7 @@
 
 - **Document:** SDD-GLJP-001
 - **Status:** Proposed implementation design for the approved direction in [PDD-GLJP-001](GENE_LAB_JOURNEY_PROGRESSION_PROCESS_DESIGN.md)
-- **Updated:** 2026-11-01
+- **Updated:** 2026-11-11
 - **Source inventory:** [Gene Lab and Journey Upgrade Inventory](GENE_LAB_AND_JOURNEY_UPGRADE_INVENTORY.md)
 
 ## 1. Technical outcome
@@ -41,11 +41,15 @@ Exact type members, asset IDs, serializers, and assembly definitions must be rec
 | Income offers and current payout tier | Journey-local shop/session state | One +1 FD/Hare purchase and highest purchased multiplier tier per journey; payouts already settled remain unchanged. |
 | Burrows and family links | Simulation state/cell representation | Deterministic current world; preserve through existing checkpoints, cloning, previews, portable definitions, replay/export paths that represent a live simulation. |
 
+Implementation checkpoint (November 11): profile Store version 10 persists Population Reserves, Litter Upgrade, and Founding Hares ranks. Litter Upgrade and Founding Hares each have three research ranks at 40 Hare Data per rank; Population Reserves remains 30 per rank. These research ranks do not add equipment slots. Older profiles with either newly ranked node already owned migrate to rank 1. Equipped Founding Hares adds five starting Hares per rank, while Larger Litters journey Mutation rank eligibility is capped by the researched Litter Upgrade rank.
+
 ## 4. Genome catalog and capacity
 
-Keep `GenomeContract.ActiveCapacity` at 8. Change node capacity data/defaults and validation so every equipped node consumes one. For ranked nodes, the selected rank is represented by the existing allocation/rank contract while capacity remains one. Avoid representing each rank as separately equipped nodes.
+Keep `GenomeContract.ActiveCapacity` at 8. Change node capacity data/defaults and validation so every equipped node consumes one. FD2 research ranks are stored independently of active equipment; the ranked node remains one slot at every rank. Preserve rank metadata in legacy POC allocation records where those records still apply. Avoid representing each rank as separately equipped nodes.
 
 Preserve stable node IDs when the same concept remains. For removed or repurposed nodes, add explicit profile compatibility handling: old two-point allocations for existing nodes must normalize to one point for retained nodes; obsolete nodes must not silently grant new capabilities. Choose migration behavior using the profile snapshot's current validation/load path and add tests for old saved allocations before editing profile serialization.
+
+Use the November 11 approved diagram as the catalog price and prerequisite source. Research costs are 10 for Sprint, Crowding Tolerance, Burrowing, and Tough Hide; 20 for Heightened Senses, Long Stride, Reproductive Drive, Shared Burrows, and Efficient Digestion; 30 for Escape Instinct, Seed Dispersal, Gestation Upgrade, Expanded Burrows, and Population Reserves; and 40 for each of Litter Upgrade ranks 1–3, Founding Hares ranks 1–3, and Born Burrower. Diagram arrows are owned-research prerequisites: Sprint → Heightened Senses → Escape Instinct → Seed Dispersal → Gestation Upgrade → Expanded Burrows → Population Reserves; Heightened Senses → Long Stride; Crowding Tolerance → Reproductive Drive joins at the Seed/Gestation segment; Burrowing → Shared Burrows joins at the Gestation/Expanded Burrows segment; Tough Hide → Efficient Digestion joins immediately before Population Reserves; Seed Dispersal → Litter Upgrade 1–3; Gestation Upgrade → Founding Hares 1–3; and Expanded Burrows → Born Burrower. Population Reserves costs 30 Hare Data for each of its five ranks. This supersedes earlier provisional prices, including the previously recorded 5/10/15/20/25 Population Reserves sequence and 5 Hare Data Founding Hares price. Keep the route effects and open terrain tuning provisional as stated in the PDD.
 
 Researching a node and equipping it remain separate. Retain owned-prerequisite semantics. The journey receives an immutable equipped Genome snapshot for launch effects and a separate frozen ownership policy for Mutation eligibility. November 5 implementation gates opening, phase, and Field Data rewards by owned research; no equipment requirement is imposed for Mutation access.
 
@@ -60,6 +64,7 @@ Requirements:
 - Escape Instinct maps to the existing Threat Avoidance behavior and does not create a second Mutation.
 - Increased Minimum Litter and Larger Litters are separate regular Hare choices. Larger Litters increases maximum by one per rank through rank 3; its third rank also raises minimum litter to at least 2 when needed.
 - Reproductive Drive and Faster Gestation remain separate dimensions.
+- Open-ground Sprint research unlocks a one-rank temporary Mutation that adds provisional +0.5 movement speed on the currently exposed Bare and Grass tiles. An equipped Born Burrower starter excludes Sprint. If covered terrain is introduced, that terrain must suppress the bonus.
 - Gene Lab research alone must not apply any Mutation or permanent flat bonus.
 - Existing route/phase offer filtering, caps, determinism, and reward receipts must remain intact.
 
@@ -121,6 +126,7 @@ Focused tests should cover:
 - Research unlocks offers but does not apply Mutation; equipped state and route pools gate eligibility.
 - Heightened Senses enables two distinct choices; merged seed concept appears once; Escape Instinct aliases existing behavior without duplicate effects.
 - Minimum and maximum litter changes remain independent; maximum-litter Mutation ranks add +1 each through rank 3, and reaching rank 3 automatically raises minimum litter to at least 2. Gestation and success chance remain independent.
+- Faster Gestation is a temporary Hare Mutation unlocked by Gestation Upgrade. Reuse the existing Genome's provisional 15% reduction per rank, capped at three ranks. Resolve cumulative rank effects against the Hare's starting gestation value (15%, 30%, then 45% total), with a one-tick minimum; do not repeatedly compound rounding. Keep this value provisional pending balance review.
 - The production Hare reproduction-chance baseline is 0.5; Reproductive Drive remains a separate temporary chance increase.
 - Add Hare allowance counts successful additions cumulatively per node; removal gives no refund; invalid purchases are atomic; next simulation node resets count.
 - Shop income purchase affects later payouts only; multipliers replace prior tier and cannot exceed 2x or be bought out of order.
@@ -136,4 +142,4 @@ Do not claim balance acceptance from implementation tests. Balance values and ro
 - The current `PopulationPoolCapacity` contract may be used outside Hare intervention and must be traced before replacement.
 - Burrow lineage touches copy/preview/export paths and can alter deterministic simulation identity; establish parity fixtures before broad edits.
 - The long journey route is not authored. Keep shop tiers data-driven and avoid pretending exact node pacing is settled.
-- Open-ground Sprint cannot be fully specified until exposed/covered terrain is defined. Do not expand this delivery into terrain or Owl systems.
+- Open-ground Sprint is implemented as a one-rank temporary Mutation with provisional +0.5 movement speed. Current Bare and Grass terrain are exposed; burrowed Hares do not move. If covered terrain is added later, covered tiles must suppress the Sprint bonus. Do not expand this delivery into terrain or Owl systems.

@@ -88,7 +88,7 @@ namespace SaltyGame
         public DelegateCommand ToggleLoadoutNodeCommand { get; }
         public DelegateCommand ApplyLoadoutCommand { get; }
         public Visibility PermanentControlsVisibility => permanent != null ? Visibility.Visible : Visibility.Collapsed;
-        public string EconomyModeText => permanent != null ? "PERMANENT HARE GENOME - FIRST-TEST VALUES" : "LEGACY POC - REFUNDABLE ALLOCATIONS";
+        public string EconomyModeText => permanent != null ? "PERMANENT HARE GENOME" : "LEGACY POC - REFUNDABLE ALLOCATIONS";
         public string ResearchLevelText => permanent?.ResearchText ?? "LEGACY RESEARCH";
         public string ResearchOfferText => permanent?.ResearchOffer ?? string.Empty;
         public string ResearchReasonText => permanent?.ResearchReason ?? string.Empty;

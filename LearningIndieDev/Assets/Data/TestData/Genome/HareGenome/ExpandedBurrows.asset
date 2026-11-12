@@ -14,11 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.expanded-burrows
   displayName: Expanded Burrows
-  description: Unlocks five journey ranks of Expanded Burrows. Research cost and path are test values.
+  description: Unlocks five journey ranks of Expanded Burrows.
   targetSpeciesId: hare
   prerequisiteNodeIds:
-  - hare.burrowing
-  rabbitDataPrice: 5
+  - hare.gestation-upgrade
+  - hare.shared-burrows
+  rabbitDataPrice: 30
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2

@@ -102,6 +102,17 @@ uncertainty or regression risk.
   [PDD](GENE_LAB_JOURNEY_PROGRESSION_PROCESS_DESIGN.md) and
   [SDD](GENE_LAB_JOURNEY_PROGRESSION_SDD.md).
 
+  **November 11, 2026 update:** The older unresolved-cost/effect statements in
+  this dated summary are superseded. Bevin confirmed the supplied progression
+  diagram as authoritative for all listed research costs, ranks, and
+  prerequisite paths. In particular, Burrowing and Crowding Tolerance each
+  cost 10 Hare Data; the 24-energy burrow-dig cost remains provisional. Faster
+  Gestation and Open-ground Sprint journey Mutations are implemented with
+  provisional values. The Long Vision/Keen Senses linked-offer selection fix
+  passed focused session, visual PlayMode, and Seed Dispersal regression tests.
+  Current full-suite outcomes and outstanding visual review are recorded in
+  [GLJP finish plan](GLJP_FINISH_PLAN.md).
+
 - **Population decisions playtest slice (October 21, 2026):** Local round-boundary
   controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
   and +/-5 Plants. Rejected changes cost nothing; paid removals are recorded

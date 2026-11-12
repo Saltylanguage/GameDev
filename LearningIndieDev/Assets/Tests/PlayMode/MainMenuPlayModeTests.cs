@@ -253,7 +253,7 @@ namespace SaltyGame.PlayModeTests
             CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
 
             var migratedStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
-            StringAssert.Contains("\"version\":9", migratedStore);
+            StringAssert.Contains("\"version\":10", migratedStore);
             StringAssert.Contains("\"researchData\":73", migratedStore);
             StringAssert.Contains("\"currency\":73",
                 PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey));
@@ -395,13 +395,18 @@ namespace SaltyGame.PlayModeTests
             var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             var profileId = session.CreateProfile("Permanent Hare nodes").ProfileId;
-            session.AddRabbitData(40);
+            session.AddRabbitData(120);
             session.AddResearchData(37);
             Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
-            var active = new[] { "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.swift-digging", out _), Is.False,
+                "Long Stride requires Heightened Senses.");
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.safe-foraging", out _), Is.False,
+                "Efficient Digestion requires Tough Hide.");
+            var active = new[] { FieldDataPermanentProgressionDefinition.SprintNodeId,
+                "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
             foreach (var id in active)
                 Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(30));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
@@ -418,8 +423,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(effective.MovementSpeed, Is.EqualTo(natural.MovementSpeed));
             Assert.That(effective.DigestionEnergyBonus, Is.EqualTo(natural.DigestionEnergyBonus));
             Assert.That(session.TryPurchaseHareGenomeNode(profileId, active[0], out _), Is.False);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.True, error);
-            Assert.That(session.Current.RabbitData, Is.EqualTo(5));
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.escape-instinct", out error), Is.True, error);
+            Assert.That(session.Current.RabbitData, Is.Zero);
             Assert.That(session.Current.ResearchData, Is.EqualTo(37));
             ClearProfiles();
         }
@@ -432,43 +437,45 @@ namespace SaltyGame.PlayModeTests
             var session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             var profileId = session.CreateProfile("Permanent replacement").ProfileId;
-            session.AddRabbitData(50);
+            session.AddRabbitData(130);
             session.AddResearchData(60);
             var hare = new SpeciesId("hare");
             Assert.That(session.TryPurchaseHareGenomeLicense(profileId, out var error), Is.True, error);
-            foreach (var id in new[] { "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" })
+            foreach (var id in new[] { FieldDataPermanentProgressionDefinition.SprintNodeId,
+                         "hare.guarded-burrow", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" })
                 Assert.That(session.TryPurchaseHareGenomeNode(profileId, id, out error), Is.True, error);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(40));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(20));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(40));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
-            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.warren-network", out error), Is.True, error);
+            Assert.That(session.TryPurchaseHareGenomeNode(profileId, "hare.escape-instinct", out error), Is.True, error);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out error), Is.True, error);
-            var selected = new[] { "hare.warren-network", "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging" };
+            var selected = new[] { FieldDataPermanentProgressionDefinition.SprintNodeId, "hare.guarded-burrow",
+                "hare.keen-hearing", "hare.swift-digging", "hare.safe-foraging", "hare.escape-instinct" };
             Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, selected, out error), Is.True, error);
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             yield return LoadMainMenu();
             session = GameObject.Find("Main Camera").GetComponent<Helper_ProfileSession>();
             session.SetPlaytimeTracking(false);
             Assert.That(session.Current.ProfileId, Is.EqualTo(profileId));
             Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
-            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(5));
+            Assert.That(genome.UnlockedNodeIds.Count, Is.EqualTo(6));
             Assert.That(genome.ActiveNodeIds, Is.EqualTo(selected));
             Assert.That(genome.ResetGeneration, Is.EqualTo(2));
             var frozen = FieldDataPermanentProgressionDefinition.CreateStarter().FreezeOwnedLoadout(genome);
             Assert.That(frozen.GetPopulationPoolCapacity(hare), Is.EqualTo(50));
-            Assert.That(frozen.GetSpeciesGenome(hare).PopulationReservesRank, Is.EqualTo(1));
+            Assert.That(frozen.GetSpeciesGenome(hare).PopulationReservesRank, Is.Zero);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, selected, out error), Is.True, error);
             Assert.That(session.TryArrangeGenomeLoadout(profileId, hare, 2, new[] { selected[0] }, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 0, out _), Is.False);
             Assert.That(session.TryResetGenomeLoadout(profileId, hare, 1, out _), Is.False);
             Assert.That(session.Current.ResearchData, Is.EqualTo(20));
-            Assert.That(session.Current.RabbitData, Is.EqualTo(15));
+            Assert.That(session.Current.RabbitData, Is.EqualTo(10));
             ClearProfiles();
         }
 

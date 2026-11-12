@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.born-burrower
   displayName: Born Burrower
-  description: Equip to start the journey with Burrowing. Planned exclusion is Open-ground Sprint. Research cost is a test value.
+  description: Equip to start the journey with Burrowing. Excludes Open-ground Sprint.
   targetSpeciesId: hare
   prerequisiteNodeIds:
-  - hare.burrowing
-  rabbitDataPrice: 5
+  - hare.expanded-burrows
+  rabbitDataPrice: 40
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2

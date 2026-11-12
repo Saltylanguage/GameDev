@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -55,7 +56,7 @@ namespace SaltyGame.PlayModeTests
                 {
                     // Research bought on the Desktop must apply without reloading the scene.
                     profile = root.GetComponent<Helper_ProfileSession>();
-                    profile.AddRabbitData(15);
+                    profile.AddRabbitData(20);
                     Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
                     Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
                 }
@@ -91,8 +92,9 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP reproduction visual").ProfileId;
-                profile.AddRabbitData(15);
+                profile.AddRabbitData(60);
                 Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
+                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.crowding-tolerance", out error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.reproductive-drive", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic).SetValue(preview, false);
@@ -110,8 +112,11 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.ReproductiveDriveId), Is.Zero);
                 for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
                 var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                Assert.That(choices.Choices, Has.Count.EqualTo(1));
-                var choice = choices.Choices.Single();
+                Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id),
+                    Does.Contain(SpeciesUpgradeCatalog.CrowdingToleranceId)
+                        .And.Contain(SpeciesUpgradeCatalog.ReproductiveDriveId));
+                var choice = choices.Choices.Single(choice =>
+                    choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId);
                 Assert.That(choice.OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveId));
                 var output = TryGetVisualOutputDirectory();
                 if (output != null)
@@ -140,7 +145,7 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP crowding visual").ProfileId;
-                profile.AddRabbitData(15);
+                profile.AddRabbitData(20);
                 Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.crowding-tolerance", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
@@ -185,8 +190,11 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP seed visual").ProfileId;
-                profile.AddRabbitData(15);
+                profile.AddRabbitData(150);
                 Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
+                foreach (var prerequisite in new[] { "hare.open-ground-sprint", "hare.keen-hearing",
+                             "hare.crowding-tolerance", "hare.reproductive-drive", "hare.escape-instinct" })
+                    Assert.That(profile.TryPurchaseHareGenomeNode(id, prerequisite, out error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.seed-dispersal", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -202,8 +210,9 @@ namespace SaltyGame.PlayModeTests
                 Assert.That(preview.Progression.GetUpgradeLevel(SpeciesUpgradeCatalog.SeedDispersalId), Is.Zero);
                 for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
                 var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                Assert.That(choices.Choices, Has.Count.EqualTo(1));
-                var seed = choices.Choices.Single();
+                Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id),
+                    Does.Contain(SpeciesUpgradeCatalog.SeedDispersalId));
+                var seed = choices.Choices.Single(choice => choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.SeedDispersalId);
                 Assert.That(seed.OrdinaryUpgrade.Id, Is.EqualTo(SpeciesUpgradeCatalog.SeedDispersalId));
                 var output = TryGetVisualOutputDirectory();
                 if (output != null)
@@ -215,7 +224,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator LongStrideResearchAppearsInFieldDataAndCanBeChosen()
+        public IEnumerator LongStrideResearchAddsFasterMovementToEligibleJourneyPool()
         {
             var backup = ProfilePlayerPrefsBackup.Capture();
             try
@@ -231,31 +240,35 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP Long Stride visual").ProfileId;
-                profile.AddRabbitData(20);
+                profile.AddRabbitData(60);
                 Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
-                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.open-ground-sprint", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.keen-hearing", out error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.swift-digging", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
+                Assert.That(FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile.Current,
+                    new SpeciesId("hare"))(SpeciesUpgradeCatalog.FasterMovementId), Is.True,
+                    "Long Stride research must unlock Faster Movement as a journey Mutation.");
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(preview, false);
                 typeof(SpeciesSimulationPreview).GetField("seed", BindingFlags.Instance | BindingFlags.NonPublic)
-                    .SetValue(preview, 10100);
+                    .SetValue(preview, 10102);
                 SpeciesPresentationPlayModeTests.ConfigureAuthoredFieldDataScenario(preview);
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
                 yield return null;
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 ExecuteCommand(GetProperty(shell, "StartFieldDataTestJourneyCommand"));
                 preview.PauseSimulation();
-                for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
-                var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-                var stride = choices.Choices.Single(choice => choice.OrdinaryUpgrade.Id == SpeciesUpgradeCatalog.FasterMovementId);
-                Assert.That(stride.DisplayName, Is.EqualTo("LONG STRIDE"));
-                var output = TryGetVisualOutputDirectory();
-                if (output != null)
-                    yield return CaptureCamera(output, "gljp-long-stride-choice", GameObject.Find(SimulationCameraName).GetComponent<Camera>());
-                var before = preview.Progression.CurrentRules.MovementSpeed;
-                Assert.That(preview.FieldDataSession.ResolveRewardChoice(choices.SourceId, stride.Id, out error), Is.True, error);
-                Assert.That(preview.Progression.CurrentRules.MovementSpeed, Is.GreaterThan(before));
+                var poolField = typeof(FieldDataJourneySession).GetField("ordinaryRewardPool",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                var pool = (List<SpeciesUpgradeSnapshot>)poolField.GetValue(preview.FieldDataSession);
+                Assert.That(pool.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.FasterMovementId),
+                    "Long Stride must add Faster Movement to the randomized journey reward pool.");
+                var eligible = typeof(FieldDataJourneySession).GetMethod("IsOrdinaryRewardEligible",
+                    BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That((bool)eligible.Invoke(preview.FieldDataSession,
+                    new object[] { pool.Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.FasterMovementId) }), Is.True,
+                    "Faster Movement remains eligible when the current randomized three-choice offer omits it.");
             }
             finally { backup.Restore(); }
         }
@@ -277,9 +290,10 @@ namespace SaltyGame.PlayModeTests
                 var profile = root.GetComponent<Helper_ProfileSession>();
                 profile.SetPlaytimeTracking(false);
                 var id = profile.CreateProfile("GLJP senses visual").ProfileId;
-                profile.AddRabbitData(20);
+                profile.AddRabbitData(50);
                 Assert.That(profile.TryPurchaseHareGenomeLicense(id, out var error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.guarded-burrow", out error), Is.True, error);
+                Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.open-ground-sprint", out error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.keen-hearing", out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
@@ -872,6 +886,9 @@ namespace SaltyGame.PlayModeTests
             Assert.That(desktop, Is.Not.Null);
             Assert.That(session, Is.Not.Null);
             session.SetPlaytimeTracking(false);
+            // This visual fixture enters the permanent Gene Lab flow explicitly rather than
+            // the standalone desktop's legacy POC default.
+            desktop.GetType().GetMethod("BindProfileSession")?.Invoke(desktop, new object[] { session, true });
             var backup = ProfilePlayerPrefsBackup.Capture();
             session.CreateProfile("Gene Lab visual");
             var open = GetProperty(desktop, "OpenDesktopIconCommand");
@@ -883,7 +900,7 @@ namespace SaltyGame.PlayModeTests
             if (outputDirectory != null)
                 yield return CaptureCamera(outputDirectory, "gene-lab-locked", desktopRoot.GetComponent<Camera>());
 
-            session.AddRabbitData(2);
+            session.AddRabbitData(20);
             session.AddResearchData(1);
             for (var index = 1; index <= 3; index++)
                 session.RecordCompletedRun($"visual-genome-{index}");
@@ -894,7 +911,7 @@ namespace SaltyGame.PlayModeTests
                 ?.Invoke(GetProperty(lab, "PurchaseNodeCommand"), new object[] { null });
             Assert.That(GetProperty(windows[0], "ActiveGenomeCapacityText"), Is.EqualTo("1 / 8"));
             if (outputDirectory != null)
-                yield return CaptureCamera(outputDirectory, "gene-lab-fertile-droppings-active", desktopRoot.GetComponent<Camera>());
+                yield return CaptureCamera(outputDirectory, "gene-lab-permanent-node-active", desktopRoot.GetComponent<Camera>());
 
             yield return SceneManager.LoadSceneAsync("MainMenu");
             backup.Restore();

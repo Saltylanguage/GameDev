@@ -237,6 +237,7 @@ namespace SaltyGame.EditorTools
                 fingerprint = genome.Fingerprint, capacityLimit = GenomeContract.ActiveCapacity,
                 capacityUsed = rabbit.ResolvedNodes.Sum(node => node.CapacityPoints),
                 populationReservesRank = rabbit.PopulationReservesRank,
+                foundingHaresRank = rabbit.FoundingHaresRank,
                 orderedNodeIds = rabbit.ActiveNodeIds.ToArray(),
                 nodes = rabbit.ResolvedNodes.Select(GenomeNodeData.Create).ToArray(),
                 fertileDroppings = rabbit.HasActiveNode(SpeciesSimulation.FertileDroppingsNodeId)
@@ -692,7 +693,7 @@ namespace SaltyGame.EditorTools
         {
             public string contractVersion, genomeContractVersion, nodeContractVersion, registryFingerprint;
             public string catalogPath, catalogFingerprint, fingerprint;
-            public int capacityUsed, capacityLimit, populationReservesRank;
+            public int capacityUsed, capacityLimit, populationReservesRank, foundingHaresRank;
             public string[] orderedNodeIds;
             public GenomeNodeData[] nodes;
             public FertileDroppingsInputRecord fertileDroppings;

@@ -17,7 +17,8 @@ namespace SaltyGame.EditorTests
             Assert.That(fallback.Select(upgrade => upgrade.Id), Is.EqualTo(new[]
             {
                 SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.EfficientDigestionId,
-                SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.CrowdingToleranceId,
+                SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.FasterGestationId,
+                SpeciesUpgradeCatalog.OpenGroundSprintId, SpeciesUpgradeCatalog.CrowdingToleranceId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId, SpeciesUpgradeCatalog.KeenSensesId,
                 SpeciesUpgradeCatalog.LongVisionId, SpeciesUpgradeCatalog.FasterMovementId,
                 SpeciesUpgradeCatalog.ThreatExposureId, SpeciesUpgradeCatalog.LargerMaximumLitterId,

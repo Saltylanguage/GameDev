@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.founding-hares
   displayName: Founding Hares
-  description: +5 Hares at the start of a new journey. A larger colony consumes more
-    food. Does not refill each round.
+  description: +5 Hares at the start of a new journey. Research up to three ranks; does not refill each round.
   targetSpeciesId: hare
-  prerequisiteNodeIds: []
-  rabbitDataPrice: 5
+  prerequisiteNodeIds:
+  - hare.gestation-upgrade
+  rabbitDataPrice: 40
   capacityPoints: 1
-  maximumRanks: 1
+  maximumRanks: 3
   branchName: FD2
   modifiers:
   - attributeId: population.starting

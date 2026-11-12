@@ -1142,8 +1142,41 @@ namespace SaltyGame
 
             ShuffleRewardCandidates(candidates, CreateRewardSeed(sourceId));
             if (candidates.Count > FieldDataJourneyDefinition.FreeChoicesPerReward)
+            {
+                var longVisionIndex = candidates.FindIndex(choice =>
+                    choice.OrdinaryUpgrade?.Id == SpeciesUpgradeCatalog.LongVisionId);
+                var keenSensesIndex = candidates.FindIndex(choice =>
+                    choice.OrdinaryUpgrade?.Id == SpeciesUpgradeCatalog.KeenSensesId);
+                if (longVisionIndex >= 0 && keenSensesIndex >= 0)
+                {
+                    // Heightened Senses research unlocks both connected choices together.
+                    var selected = new List<FieldDataRewardChoice>(FieldDataJourneyDefinition.FreeChoicesPerReward);
+                    for (var i = 0; i < FieldDataJourneyDefinition.FreeChoicesPerReward; i++)
+                        selected.Add(candidates[i]);
+
+                    foreach (var sense in new[] { candidates[longVisionIndex], candidates[keenSensesIndex] })
+                    {
+                        if (selected.Exists(choice => choice.OrdinaryUpgrade?.Id == sense.OrdinaryUpgrade.Id))
+                            continue;
+
+                        for (var i = selected.Count - 1; i >= 0; i--)
+                        {
+                            var candidate = selected[i];
+                            if (candidate.OrdinaryUpgrade?.Id != SpeciesUpgradeCatalog.LongVisionId
+                                && candidate.OrdinaryUpgrade?.Id != SpeciesUpgradeCatalog.KeenSensesId)
+                            {
+                                selected[i] = sense;
+                                break;
+                            }
+                        }
+                    }
+
+                    candidates = selected;
+                }
+
                 candidates.RemoveRange(FieldDataJourneyDefinition.FreeChoicesPerReward,
                     candidates.Count - FieldDataJourneyDefinition.FreeChoicesPerReward);
+            }
             var created = new FieldDataRewardChoiceSet(sourceId, candidates);
             rewardChoiceSets.Add(sourceId, created);
             return created;
