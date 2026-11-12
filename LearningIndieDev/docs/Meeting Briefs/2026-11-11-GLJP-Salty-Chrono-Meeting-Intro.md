@@ -9,7 +9,7 @@ Bring Salty and Chrono up to date on the November GLJP slice, review the player-
 
 ## Opening summary
 
-The GLJP slice now connects permanent Gene Lab research to temporary journey choices, ranked progression, population controls, and Burrowing. Bevin approved the catalog diagram and accepted the current Gene Lab screen. The remaining work is final validation, review of the journey upgrade screens and Burrow marker, ticket evidence, and integration of the local `BevBranch` work into the Sprint 6 branch.
+The GLJP slice now connects permanent Gene Lab research to temporary journey choices, ranked progression, population controls, and Burrowing. Bevin approved the catalog diagram and accepted the current Gene Lab screen. The implementation is pushed to `origin/BevBranch` at `cf5b771c1559d6b5e18e6177551440ae3a3364df`; the remaining work is visual/player review, exact-source replay evidence, route disposition, and ticket closeout.
 
 ## Current state as of November 11
 
@@ -18,22 +18,23 @@ The GLJP slice now connects permanent Gene Lab research to temporary journey cho
 - **Journey and Burrowing:** Focused captures exist for linked Heightened Senses choices, shop progression, and the Burrow lifecycle. Review of the journey upgrade screen and brown-circle Burrow marker remains.
 - **Slice values:** Faster Gestation remains a provisional 15% reduction per rank, up to three ranks. Open-ground Sprint remains a provisional +0.5 movement for one rank over current exposed Bare/Grass terrain; an equipped Born Burrower excludes it. Burrowing costs 24 energy, holds three Hares by default, and lasts 200 steps.
 - **Route finding:** The authored Forest Edge seed 10100 loses its last Hare at tick 1210. Bevin approved tracking this as a route finding rather than making unaided survival a GLJP closeout gate.
-- **Branch and publication:** The GLJP changes are being published from local `BevBranch`, based on `a2c38b3`. The complete live Unity run on the final source completed in `artifacts/unity-tests-20261111-190817`: EditMode **770 passed, 0 failed, 1 skipped**; PlayMode **100 passed, 1 failed, 2 skipped**. The one PlayMode failure is `FieldDataTestRouteCompletesThroughAllShopsOnFixedSeed`: authored Forest Edge seed 10100 loses its last Hare at tick 1210. This remains the accepted route finding, not a GLJP acceptance gate. Two screenshot-dependent PlayMode cases skipped because this was not a visual-runner capture session; focused Gene Lab and GLJP PlayMode checks passed. Commit/push and Trello read-back are part of this work session.
-- **Ticket snapshot:** Last recorded Trello status on November 11: GLJP-02/03 Done, GLJP-01/06 In Progress, GLJP-04/05 Current Work. Recheck statuses and add/read back evidence after publication.
+- **Branch and publication:** Published to `origin/BevBranch` at `cf5b771c1559d6b5e18e6177551440ae3a3364df`; local and remote heads match and the worktree is clean. The complete live Unity run on the final source completed in `artifacts/unity-tests-20261111-190817`: EditMode **770 passed, 0 failed, 1 skipped**; PlayMode **100 passed, 1 failed, 2 skipped**. The one PlayMode failure is `FieldDataTestRouteCompletesThroughAllShopsOnFixedSeed`: authored Forest Edge seed 10100 loses its last Hare at tick 1210 after two shops. Per Bevin, retain this as a route finding, not a GLJP closeout gate; no balance change was made. The two screenshot-dependent PlayMode cases require the visual runner. Focused checks passed: Hare-node EditMode **32/32**, Long Stride eligibility PlayMode **1/1**, and Population Reserves rank-5 UI PlayMode **1/1**.
+- **Ticket snapshot:** Trello evidence was posted and read back on GLJP-04/05/06. Statuses remain: GLJP-02/03 Done, GLJP-01/06 In Progress, GLJP-04/05 Current Work. Cards remain open pending their remaining acceptance evidence.
+- **Effort estimate:** About **2–4 focused hours** remain for journey/ranked Gene Lab/Burrow visual review, exact-source replay evidence, and closeout. The route finding is not a gate by itself; if the group changes that acceptance decision, estimate additional investigation and reruns separately.
 
 ## Suggested 30-minute discussion
 
 1. **Status and scope - 5 min**
-   Confirm the GLJP tickets included in this slice and the current state of the local `BevBranch` implementation.
+   Confirm the GLJP tickets included in this slice and the published `BevBranch` revision.
 
 2. **Player-facing walkthrough - 10 min**
    Review the accepted Gene Lab screen, then the journey Mutation choice flow and Burrow marker. Check that the permanent research unlock, temporary journey choice, ranked states, exclusions, and population-control wording are clear.
 
 3. **Verification and open issues - 7 min**
-   Review the current full-suite results, required replay-parity evidence, visual checks still needing acceptance, and the documented seed-10100 outcome.
+   Review the current full-suite results, exact-source replay-parity evidence still needed, visual checks still needing player acceptance, and the documented seed-10100 finding.
 
 4. **Integration and owners - 5 min**
-   Agree who will integrate `BevBranch` into the Sprint 6 working branch and how conflicts or follow-up fixes will be handled.
+   Agree whether and when to integrate the published revision into the Sprint 6 working branch and how follow-up fixes will be handled.
 
 5. **Commitments - 3 min**
    Record each remaining task, one owner, and a target date. Keep GLJP tickets open until their evidence and acceptance criteria are recorded.
