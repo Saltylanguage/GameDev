@@ -68,13 +68,14 @@ namespace SaltyGame.Tests
             {
                 var profile = new ProfileSessionSnapshot(true, "litter-" + rank, "Litter", new[]
                 {
-                    new SpeciesGenomeProfile(hare, new[] { "hare.larger-litters" }, Array.Empty<string>(),
+                    new SpeciesGenomeProfile(hare, new[] { "hare.larger-litters" }, new[] { "hare.larger-litters" },
                         litterUpgradeRank: rank)
                 });
                 var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
                 var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
                 var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
-                    mutationRankLimit: limits);
+                    mutationRankLimit: limits,
+                    mutationEquipment: FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare));
                 for (var level = 1; level <= rank; level++)
                     Assert.That(progression.TryApplyFieldDataReward(reward), Is.True, $"Research rank {rank}, mutation rank {level}");
                 Assert.That(progression.TryApplyFieldDataReward(reward), Is.False, $"Research rank {rank} must cap the next Mutation rank");
@@ -95,12 +96,13 @@ namespace SaltyGame.Tests
                 var profile = new ProfileSessionSnapshot(true, "minimum-litter-" + rank, "Minimum Litter", new[]
                 {
                     new SpeciesGenomeProfile(hare, new[] { FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId },
-                        Array.Empty<string>(), litterUpgradeRank: rank)
+                        new[] { FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId }, litterUpgradeRank: rank)
                 });
                 var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
                 var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
                 var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
-                    mutationRankLimit: limits);
+                    mutationRankLimit: limits,
+                    mutationEquipment: FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare));
 
                 Assert.That(limits(SpeciesUpgradeCatalog.LargerMinimumLitterId), Is.EqualTo(rank));
                 for (var level = 1; level <= rank; level++)
@@ -149,19 +151,21 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void LongStrideResearchMakesItsMovementMutationAvailableWithoutEquippingIt()
+        public void EquippedLongStrideResearchMakesItsMovementMutationAvailable()
         {
             var hare = new SpeciesId("hare");
             var genome = new SpeciesGenomeProfile(hare,
-                new[] { "hare.guarded-burrow", "hare.swift-digging" }, Array.Empty<string>());
+                new[] { "hare.guarded-burrow", "hare.swift-digging" }, new[] { "hare.swift-digging" });
             var profile = new ProfileSessionSnapshot(true, "stride", "Stride", new[] { genome });
             var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipped = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
             var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
             var stride = pool.Single(value => value.Id == SpeciesUpgradeCatalog.FasterMovementId);
             Assert.That(stride.DisplayName, Is.EqualTo("LONG STRIDE"));
             Assert.That(eligible(stride.Id), Is.True);
             var progression = new SpeciesProgression(new SpeciesDefinition(hare,
-                SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligible);
+                SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligible, usesGeneLabResearch: true,
+                mutationEquipment: equipped);
             var before = progression.CurrentRules.MovementSpeed;
             Assert.That(progression.TryApplyFieldDataReward(stride), Is.True);
             Assert.That(progression.CurrentRules.MovementSpeed, Is.GreaterThan(before));
@@ -175,21 +179,23 @@ namespace SaltyGame.Tests
             var profile = new ProfileSessionSnapshot(true, "gestation", "Gestation", new[]
             {
                 new SpeciesGenomeProfile(hare, new[]
-                    { FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId }, Array.Empty<string>())
+                    { FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId },
+                    new[] { FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId })
             });
             var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
             var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
             var reward = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null)
                 .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.FasterGestationId);
             var phaseOffers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, 42,
-                upgrade => research(upgrade.Id));
+                upgrade => research(upgrade.Id) && equipment(upgrade.Id));
 
             Assert.That(research(SpeciesUpgradeCatalog.FasterGestationId), Is.True);
             Assert.That(limits(SpeciesUpgradeCatalog.FasterGestationId), Is.EqualTo(3));
             Assert.That(phaseOffers.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.FasterGestationId));
 
             var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
-                mutationRankLimit: limits);
+                mutationRankLimit: limits, mutationEquipment: equipment);
             for (var rank = 1; rank <= SpeciesUpgradeCatalog.FasterGestationMaxLevel; rank++)
             {
                 Assert.That(progression.TryApplyFieldDataReward(reward), Is.True, $"Mutation rank {rank}");
@@ -209,21 +215,23 @@ namespace SaltyGame.Tests
             var profile = new ProfileSessionSnapshot(true, "sprint", "Sprint", new[]
             {
                 new SpeciesGenomeProfile(hare, new[]
-                    { FieldDataPermanentProgressionDefinition.SprintNodeId }, Array.Empty<string>())
+                    { FieldDataPermanentProgressionDefinition.SprintNodeId },
+                    new[] { FieldDataPermanentProgressionDefinition.SprintNodeId })
             });
             var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
             var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
             var reward = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null)
                 .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.OpenGroundSprintId);
             var phaseOffers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, 42,
-                upgrade => research(upgrade.Id));
+                upgrade => research(upgrade.Id) && equipment(upgrade.Id));
 
             Assert.That(research(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.True);
             Assert.That(limits(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.EqualTo(1));
             Assert.That(phaseOffers.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.OpenGroundSprintId));
 
             var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
-                mutationRankLimit: limits);
+                mutationRankLimit: limits, mutationEquipment: equipment);
             var initialMovement = progression.CurrentRules.MovementSpeed;
             Assert.That(progression.TryApplyFieldDataReward(reward), Is.True);
             Assert.That(progression.CurrentRules.MovementSpeed,

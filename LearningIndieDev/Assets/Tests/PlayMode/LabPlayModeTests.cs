@@ -783,11 +783,11 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator GeneLabResearchPurchaseFlowsIntoFieldDataJourneyChoice() =>
+        public IEnumerator GeneLabResearchMustBeEquippedForFieldDataJourneyChoice() =>
             ResearchPurchaseFlowsIntoFieldDataJourneyChoice("hare.seed-dispersal", SpeciesUpgradeCatalog.SeedDispersalId);
 
         [UnityTest]
-        public IEnumerator FreshProfileCanResearchAndChooseBurrowingInFieldData() =>
+        public IEnumerator UnequippedBurrowingResearchDoesNotOfferBurrowingInFieldData() =>
             ResearchPurchaseFlowsIntoFieldDataJourneyChoice(FieldDataPermanentProgressionDefinition.BurrowingNodeId,
                 SpeciesUpgradeCatalog.BurrowingId);
 
@@ -887,31 +887,10 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.GetUpgradeLevel(mutationId), Is.Zero);
             for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
             var choices = preview.FieldDataSession.GetCurrentRoundRewardChoices();
-            Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id), Does.Contain(mutationId));
-            var choice = choices.Choices.Single(choice => choice.OrdinaryUpgrade.Id == mutationId);
-            Assert.That(choice.OrdinaryUpgrade.Id, Is.EqualTo(mutationId));
-            var simulation = GameObject.Find("GalapagOS Simulation View");
+            Assert.That(choices.Choices.Where(choice => choice.OrdinaryUpgrade != null), Is.Empty,
+                "Owned but unequipped Gene Lab research should not add journey Mutations to the offer pool.");
             yield return null;
-            var choose = GetProperty(shell, "PurchaseRewardOption1Command");
-            var button = FindGeneControl<Noesis.Button>(simulation.GetComponent<NoesisView>().Content,
-                candidate => candidate.IsVisible && object.ReferenceEquals(candidate.Command, choose));
-            Assert.That(button, Is.Not.Null, "The eligible Mutation should have a visible choice button.");
-            Assert.That(button.IsEnabled, Is.True);
-            var caption = FindGeneControl<Noesis.TextBlock>(button, text => text.IsVisible
-                && text.Text == "UNLOCKED IN GENE LAB\nTHIS JOURNEY ONLY");
-            Assert.That(caption, Is.Not.Null, "The rendered Mutation card should identify its research source and lifetime.");
-            if (output != null)
-                yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, $"03-{mutationId}-journey-choice", simulation.GetComponent<Camera>());
-            button.Command.Execute(button.CommandParameter);
-            Assert.That(preview.Progression.GetUpgradeLevel(mutationId), Is.EqualTo(1));
-            if (mutationId == SpeciesUpgradeCatalog.BurrowingId)
-            {
-                Assert.That(preview.Run.GetHareBurrowStateFingerprint(), Is.Null);
-                ExecuteCommand(shell, "ContinueJourneyCommand");
-                preview.PauseSimulation();
-                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
-                Assert.That(preview.Run.GetHareBurrowStateFingerprint(), Is.Not.Null);
-            }
+            Assert.That(GetProperty(shell, "FieldDataStatusText").ToString(), Does.Contain("No Mutations available"));
         }
 
         [UnityTest]

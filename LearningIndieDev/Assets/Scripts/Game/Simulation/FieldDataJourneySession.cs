@@ -1186,7 +1186,7 @@ namespace SaltyGame
         {
             if (snapshot == null || snapshot.TargetSpecies != retainedRun.PlayerSpeciesId
                 || !snapshot.CanApplyAfterRunStart || snapshot.PopulationToAdd != 0
-                || !progression.IsMutationResearched(snapshot.Id)
+                || !progression.IsMutationAvailable(snapshot.Id)
                 || !progression.CanApplyBurrowMutation(snapshot.Id, retainedRun.HasStarterBurrowing))
                 return false;
             var currentLevel = progression.GetUpgradeLevel(snapshot.Id);

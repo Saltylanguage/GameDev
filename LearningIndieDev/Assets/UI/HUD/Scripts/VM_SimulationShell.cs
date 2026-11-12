@@ -783,7 +783,7 @@ namespace SaltyGame
         public string RewardOption2Description => GetFieldDataRewardDescription(1);
         public string RewardOption3Description => GetFieldDataRewardDescription(2);
         public string FieldDataMutationCardCaption => preview?.FieldDataSession?.Progression.UsesGeneLabResearch == true
-            ? "UNLOCKED IN GENE LAB\nTHIS JOURNEY ONLY" : "THIS JOURNEY ONLY";
+            ? "EQUIPPED IN GENE LAB\nTHIS JOURNEY ONLY" : "THIS JOURNEY ONLY";
         public Visibility RewardDescriptionsVisibility => preview?.FieldDataSession == null ? Visibility.Collapsed : Visibility.Visible;
         public string RewardOption1Id => rewardOption1Id;
         public string RewardOption2Id => rewardOption2Id;

@@ -27,11 +27,13 @@ This is a feature design for the current Hare-focused slice. It does not redefin
 
 | System | Player action | Lifetime | Rule |
 |---|---|---|---|
-| Gene Lab research | Permanently researches a capability or unlock | Permanent profile state | Research normally makes an option eligible; it does not grant a temporary Mutation immediately. |
-| Active Genome | Equips researched nodes before a journey | Frozen for that journey | Every equipped node costs **1 capacity point**. Total active capacity remains **8**. A ranked node uses one slot at its chosen rank. |
-| Journey Mutation | Selects an offered Hare adaptation | Current journey | Temporary; clears at journey end. A Gene Lab unlock can add a Mutation to the eligible offer pool. |
+| Gene Lab research | Permanently researches a capability or unlock | Permanent profile state | Ownership unlocks the node for equipping; it does not by itself add a temporary Mutation to journey offers. |
+| Active Genome | Equips researched nodes before a journey | Frozen for that journey | Equipped research controls which Gene Lab Mutations can appear. Every equipped node costs **1 capacity point**. Total active capacity remains **8**. A ranked node uses one slot at its chosen rank. |
+| Journey Mutation | Selects an offered Hare adaptation | Current journey | Temporary; clears at journey end. A Gene Lab Mutation is eligible only when its research is owned and that node is equipped. |
 | Field Data shop | Buys route economy or other distinct shop offer | Current journey | One-time and tiered offer rules are stated below. |
 | Population intervention | Adds/removes population or plants at an allowed boundary | Immediate route state | These are paid controls, not upgrades. Existing controls remain as authored for now, except Add Hare is limited by Population Reserves. |
+
+**Eligibility rule approved November 11, 2026:** a Gene Lab Mutation enters the journey offer pool only when both its Gene Lab research is owned and its node is in the active Genome loadout. Buying research permanently unlocks the node; equipping it enables its journey Mutation; choosing the Mutation applies it for that journey. This supersedes the earlier implementation rule that owned research alone enabled offers. Starter genes remain explicit launch grants, separate from journey choices.
 
 ## 4. Genome capacity and research
 

@@ -51,43 +51,53 @@ namespace SaltyGame
         {
             if (species.Value != "hare") return id => true;
             var owned = new HashSet<string>(StringComparer.Ordinal);
-            var hasBornBurrowerStarter = false;
             if (profile != null && profile.TryGetGenomeProfile(species, out var genome))
             {
                 owned.UnionWith(genome.UnlockedNodeIds);
                 // Prototype purchases were stored as allocations rather than unlock IDs.
                 owned.UnionWith(genome.Allocations.Select(allocation => allocation.NodeId));
-                hasBornBurrowerStarter = species.Value == "hare"
-                    && genome.ActiveNodeIds.Contains(BornBurrowerNodeId);
             }
+            return id => GetMutationResearchNodeIds(id).Any(owned.Contains);
+        }
+
+        /// <summary>Journey Mutations require both owned research and its active Genome node.</summary>
+        public static Func<string, bool> CaptureMutationEquipment(ProfileSessionSnapshot profile, SpeciesId species)
+        {
+            if (species.Value != "hare" || profile == null) return id => true;
+            var active = new HashSet<string>(StringComparer.Ordinal);
+            if (profile.TryGetGenomeProfile(species, out var genome))
+                active.UnionWith(genome.ActiveNodeIds);
+            var hasBornBurrowerStarter = active.Contains(BornBurrowerNodeId);
             return id =>
             {
-                if (species.Value == "hare" && hasBornBurrowerStarter
-                    && id == SpeciesUpgradeCatalog.OpenGroundSprintId) return false;
-                string[] research;
-                switch (id)
-                {
-                    case SpeciesUpgradeCatalog.ToughHideId: research = new[] { "hare.guarded-burrow", "poc.hare.tough-hide" }; break;
-                    case SpeciesUpgradeCatalog.FasterMovementId: research = new[] { "hare.swift-digging", "poc.hare.long-stride" }; break;
-                    case SpeciesUpgradeCatalog.KeenSensesId:
-                    case SpeciesUpgradeCatalog.LongVisionId: research = new[] { "hare.keen-hearing", "poc.hare.long-vision", "heightened-senses" }; break;
-                    case SpeciesUpgradeCatalog.EfficientDigestionId: research = new[] { "hare.safe-foraging", "poc.hare.efficient-digestion" }; break;
-                    case SpeciesUpgradeCatalog.SeedDispersalId: research = new[] { "hare.seed-dispersal", "seed-dispersal", "fertile-droppings" }; break;
-                    case SpeciesUpgradeCatalog.BurrowingId: return owned.Contains(BurrowingNodeId);
-                    case SpeciesUpgradeCatalog.SharedBurrowsId: return owned.Contains(SharedBurrowsNodeId);
-                    case SpeciesUpgradeCatalog.ExpandedBurrowsId: return owned.Contains(ExpandedBurrowsNodeId);
-                    case SpeciesUpgradeCatalog.FasterGestationId: return owned.Contains(GestationUpgradeNodeId);
-                    case SpeciesUpgradeCatalog.OpenGroundSprintId: return owned.Contains(SprintNodeId);
-                    case SpeciesUpgradeCatalog.CrowdingToleranceId: research = new[] { "hare.crowding-tolerance", "crowding-tolerance", "high-crowding" }; break;
-                    case SpeciesUpgradeCatalog.ReproductiveDriveId: research = new[] { "hare.reproductive-drive", "reproductive-drive" }; break;
-                    case SpeciesUpgradeCatalog.LargerMinimumLitterId: research = new[] { LitterUpgradeNodeId, "hare.increased-minimum-litter", "increased-minimum-litter" }; break;
-                    case SpeciesUpgradeCatalog.LargerMaximumLitterId: research = new[] { LitterUpgradeNodeId, "poc.hare.larger-litters" }; break;
-                    case SpeciesUpgradeCatalog.ThreatExposureId:
-                    case SpeciesUpgradeCatalog.LegacyThreatResponseId: research = new[] { "hare.escape-instinct", "escape-instinct" }; break;
-                    default: return false;
-                }
-                return research.Any(owned.Contains);
+                if (id == SpeciesUpgradeCatalog.OpenGroundSprintId && hasBornBurrowerStarter) return false;
+                return GetMutationResearchNodeIds(id).Any(active.Contains);
             };
+        }
+
+        static string[] GetMutationResearchNodeIds(string mutationId)
+        {
+            switch (mutationId)
+            {
+                case SpeciesUpgradeCatalog.ToughHideId: return new[] { "hare.guarded-burrow", "poc.hare.tough-hide" };
+                case SpeciesUpgradeCatalog.FasterMovementId: return new[] { "hare.swift-digging", "poc.hare.long-stride" };
+                case SpeciesUpgradeCatalog.KeenSensesId:
+                case SpeciesUpgradeCatalog.LongVisionId: return new[] { "hare.keen-hearing", "poc.hare.long-vision", "heightened-senses" };
+                case SpeciesUpgradeCatalog.EfficientDigestionId: return new[] { "hare.safe-foraging", "poc.hare.efficient-digestion" };
+                case SpeciesUpgradeCatalog.SeedDispersalId: return new[] { "hare.seed-dispersal", "seed-dispersal", "fertile-droppings" };
+                case SpeciesUpgradeCatalog.BurrowingId: return new[] { BurrowingNodeId };
+                case SpeciesUpgradeCatalog.SharedBurrowsId: return new[] { SharedBurrowsNodeId };
+                case SpeciesUpgradeCatalog.ExpandedBurrowsId: return new[] { ExpandedBurrowsNodeId };
+                case SpeciesUpgradeCatalog.FasterGestationId: return new[] { GestationUpgradeNodeId };
+                case SpeciesUpgradeCatalog.OpenGroundSprintId: return new[] { SprintNodeId };
+                case SpeciesUpgradeCatalog.CrowdingToleranceId: return new[] { "hare.crowding-tolerance", "crowding-tolerance", "high-crowding" };
+                case SpeciesUpgradeCatalog.ReproductiveDriveId: return new[] { "hare.reproductive-drive", "reproductive-drive" };
+                case SpeciesUpgradeCatalog.LargerMinimumLitterId: return new[] { LitterUpgradeNodeId, "hare.increased-minimum-litter", "increased-minimum-litter" };
+                case SpeciesUpgradeCatalog.LargerMaximumLitterId: return new[] { LitterUpgradeNodeId, "poc.hare.larger-litters" };
+                case SpeciesUpgradeCatalog.ThreatExposureId:
+                case SpeciesUpgradeCatalog.LegacyThreatResponseId: return new[] { "hare.escape-instinct", "escape-instinct" };
+                default: return Array.Empty<string>();
+            }
         }
 
         public static Func<string, int> CaptureMutationRankLimit(ProfileSessionSnapshot profile, SpeciesId species)

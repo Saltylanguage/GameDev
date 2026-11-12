@@ -14,14 +14,17 @@ namespace SaltyGame
             new List<SpeciesUpgradeSnapshot>();
         readonly Func<string, bool> mutationResearch;
         readonly Func<string, int> mutationRankLimit;
+        readonly Func<string, bool> mutationEquipment;
 
         public SpeciesProgression(SpeciesDefinition definition, Func<string, bool> mutationResearch = null,
-            bool usesGeneLabResearch = false, Func<string, int> mutationRankLimit = null)
+            bool usesGeneLabResearch = false, Func<string, int> mutationRankLimit = null,
+            Func<string, bool> mutationEquipment = null)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             CurrentRules = definition.Rules;
             this.mutationResearch = mutationResearch;
             this.mutationRankLimit = mutationRankLimit;
+            this.mutationEquipment = mutationEquipment;
             UsesGeneLabResearch = usesGeneLabResearch && mutationResearch != null;
         }
 
@@ -34,6 +37,8 @@ namespace SaltyGame
         public IReadOnlyList<SpeciesUpgradeSnapshot> AppliedRunUpgrades => appliedRunUpgrades.AsReadOnly();
         public bool UsesGeneLabResearch { get; }
         public bool IsMutationResearched(string id) => mutationResearch == null || mutationResearch(id);
+        public bool IsMutationAvailable(string id) => IsMutationResearched(id)
+            && (!UsesGeneLabResearch || mutationEquipment != null && mutationEquipment(id));
 
         public int GetUpgradeLevel(string upgradeId)
         {
@@ -104,7 +109,7 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            return IsMutationResearched(upgrade.Id)
+            return IsMutationAvailable(upgrade.Id)
                 && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
                 && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
                     || CurrentRules.ReproductionChance + upgrade.Value <= 1f);
@@ -167,7 +172,7 @@ namespace SaltyGame
 
         public bool TryApplyFieldDataReward(SpeciesUpgradeSnapshot upgrade, bool hasStarterBurrowing = false)
         {
-            if (upgrade == null || !IsMutationResearched(upgrade.Id)
+            if (upgrade == null || !IsMutationAvailable(upgrade.Id)
                 || !CanApplyBurrowMutation(upgrade.Id, hasStarterBurrowing)) return false;
             if (upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId && CurrentRules.ReproductionChance >= 1f)
                 return false;

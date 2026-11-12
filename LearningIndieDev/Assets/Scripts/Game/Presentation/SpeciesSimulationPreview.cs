@@ -398,12 +398,14 @@ namespace SaltyGame
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         Func<string, bool> mutationResearch;
+        Func<string, bool> mutationEquipment;
         Func<string, int> mutationRankLimit;
         bool mutationResearchFromProfile;
 
         public void BindMutationResearch(ProfileSessionSnapshot profile)
         {
             mutationResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, playerSpecies);
+            mutationEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, playerSpecies);
             mutationRankLimit = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, playerSpecies);
             mutationResearchFromProfile = profile != null;
             if (!sessionStarted && progression != null) ResetExpeditionProgression(progression.Definition.Rules);
@@ -2830,7 +2832,8 @@ namespace SaltyGame
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
                 playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
-                mutationRankLimit: playerSpecies.Value == "hare" ? mutationRankLimit : null);
+                mutationRankLimit: playerSpecies.Value == "hare" ? mutationRankLimit : null,
+                mutationEquipment: playerSpecies.Value == "hare" ? mutationEquipment : null);
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
@@ -3030,7 +3033,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationResearched(snapshot.Id))
+                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationAvailable(snapshot.Id))
                         continue;
                     authoredOptions.Add(snapshot);
                 }
@@ -3048,7 +3051,7 @@ namespace SaltyGame
             {
                 rewardOptions = LegacyRewardOptions.Where(upgrade =>
                     upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
-                    || progression == null || progression.IsMutationResearched(upgrade.Id)).ToArray();
+                    || progression == null || progression.IsMutationAvailable(upgrade.Id)).ToArray();
                 return;
             }
 
@@ -3187,7 +3190,7 @@ namespace SaltyGame
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
-                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationResearched(upgrade.Id))
+                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationAvailable(upgrade.Id))
                 || (progression.GetUpgradeLevel(upgrade.Id) > 0
                     && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
                         || upgrade.PopulationToAdd == 0))
