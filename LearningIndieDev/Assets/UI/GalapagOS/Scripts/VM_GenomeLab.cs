@@ -677,7 +677,7 @@ namespace SaltyGame
                 : node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
                     ? "Equip this starter gene to begin the next journey with Burrowing."
                 : mutationUnlock != null
-                    ? $"Research unlocks {mutationUnlock} journey choices even when this node is unequipped."
+                    ? $"Research and equip this Gene Lab node to make {mutationUnlock} available during the journey; choosing it applies only for that journey."
                 : node.Modifiers.Count > 0
                     ? "Applies to every Hare next journey. Playtest values; ecology balance is not established."
                     : "Preview only. This mechanic is not available yet.";

@@ -252,9 +252,17 @@ namespace SaltyGame.Tests
                         FieldDataPermanentProgressionDefinition.BornBurrowerNodeId },
                     new[] { FieldDataPermanentProgressionDefinition.BornBurrowerNodeId })
             });
-            var excludedByStarter = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+            Assert.That(hare.Value, Is.EqualTo("hare"));
+            Assert.That(bornBurrowerLoadout.TryGetGenomeProfile(hare, out var bornBurrowerGenome), Is.True);
+            CollectionAssert.AreEqual(new[] { FieldDataPermanentProgressionDefinition.BornBurrowerNodeId },
+                bornBurrowerGenome.ActiveNodeIds);
+            var starterResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
                 bornBurrowerLoadout, hare);
-            Assert.That(excludedByStarter(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.False,
+            var starterEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(
+                bornBurrowerLoadout, hare);
+            Assert.That(starterResearch(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.True,
+                "Sprint research remains owned even when its Mutation is excluded by the active starter gene.");
+            Assert.That(starterEquipment(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.False,
                 "Born Burrower excludes the Open-ground Sprint Mutation while equipped.");
         }
 

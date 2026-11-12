@@ -866,6 +866,30 @@ namespace SaltyGame.PlayModeTests
                 yield return GalapagOSVisualAcceptanceTests.CaptureCamera(output, "02-burrowing-research-owned",
                     root.GetComponent<Camera>());
 
+            if (mutationId == SpeciesUpgradeCatalog.BurrowingId)
+            {
+                ExecuteCommand(((IList)GetProperty(desktop, "OpenDesktopWindows"))[0], "CloseCommand");
+                OpenDesktopApp(desktop, "Simulation");
+                yield return null;
+                ExecuteCommand(shell, "StartFieldDataTestJourneyCommand");
+                ExecuteCommand(shell, "StartFieldDataTestJourneyCommand");
+                preview.PauseSimulation();
+                for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                var equippedChoices = preview.FieldDataSession.GetCurrentRoundRewardChoices().Choices;
+                Assert.That(equippedChoices.Where(choice => choice.OrdinaryUpgrade != null)
+                    .Select(choice => choice.OrdinaryUpgrade.Id), Does.Contain(mutationId),
+                    "Owned and equipped Gene Lab research should add its Mutation to the journey offer pool.");
+                Assert.That(preview.AbandonFieldDataJourney(), Is.True);
+                yield return null;
+                ExecuteCommand(shell, "CloseWindowCommand");
+                yield return null;
+                OpenDesktopApp(desktop, "Gene Lab");
+                yield return null;
+                lab = GetProperty(((IList)GetProperty(desktop, "OpenDesktopWindows"))[0], "GenomeLab");
+                SelectGeneButton(content, researchId);
+                yield return null;
+            }
+
             profile.AddResearchData(FieldDataPermanentProgressionDefinition.ResetResearchDataFee);
             yield return null;
             ExecuteGeneAction(content, lab, "ResetGenomeCommand");
@@ -1223,7 +1247,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(GetProperty(GetProperty(lab, "SelectedNode"), "Description").ToString(),
                 Does.Contain("journey Mutation"));
             Assert.That(GetProperty(GetProperty(lab, "SelectedNode"), "BiomeImpactText").ToString(),
-                Does.Contain("even when this node is unequipped"));
+                Does.Contain("Research and equip this Gene Lab node")
+                    .And.Contain("choosing it applies only for that journey"));
             Assert.That(GetProperty(lab, "NodeReasonText").ToString(), Does.Contain("equips this Genome node"));
             if (conceptOutput != null)
                 yield return GalapagOSVisualAcceptanceTests.CaptureCamera(conceptOutput,

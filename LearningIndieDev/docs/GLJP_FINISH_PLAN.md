@@ -1,6 +1,19 @@
 # GLJP finish plan
 
-Updated November 11, 2026. Scope covers GLJP-01 through GLJP-06. Following Bevin's acceptance of the current Gene Lab screen and the final full-suite run, remaining work is estimated at **2–4 focused hours**: player review of journey upgrade screens, deeper/ranked Gene Lab states and the Burrow marker; exact-source replay-parity evidence; and ticket closeout. Add time only if that work finds a bounded fix or changes the agreed route acceptance. GLJP-06's seed-10100 survival observation is accepted as a documented finding, not a closeout gate.
+## November 12 closeout checklist
+
+**Goal:** Close GLJP-01 through GLJP-06 on the approved November design, with each remaining card backed by current-source evidence and its own acceptance. GLJP-02/03/06 are Done; GLJP-01 is In Progress; GLJP-04/05 are in Current Work. The accepted Forest Edge seed-10100 extinction at tick 1210 remains a documented, non-gating finding.
+
+- [ ] **Player review - GLJP-01/04/05:** Review the 1920x1080 five-rank Gene Lab, journey-choice, owned-but-unequipped Gene Lab, and brown-circle Burrow captures. Accept them or list only bounded fixes. The ranked view passed `PopulationReservesRanksArePurchasedInGeneLabForOneSlot` and confirms rank 5 grants 35 purchased Hares per simulation node; the journey checkpoint shows the 34 remaining after one purchase. Captures: `artifacts/visual-evidence-20261112-103721/gljp-population-reserves-rank-5.png`, `.../gljp-rank-5-journey-allowance.png`, `artifacts/visual-evidence-20261112-102606/gljp-heightened-senses-choices.png`, `artifacts/visual-evidence-20261112-102628/02b-burrowing-research-unequipped.png`, and `artifacts/visual-evidence-20261112-102655/gljp-born-burrower-first-tick.png`.
+- [x] **Exact-source replay parity - GLJP-01/05:** Exported `artifacts/gljp-parity-20261112/snapshot.json` from the connected Unity Editor with source hash `2f9e835b01d9e9660b2a5f5c0cb8d571359de4975da468b1d3bbe6f816f4fd7b`; built the standalone runner with 0 warnings/errors; regenerated the two replay fixtures from retained action schedules; and passed `FrozenJourneyActionsMatchUnityAtEveryDecisionAndTerminalState` 1/1. Wrapper result: `artifacts/unity-tests-20261112-104357/EditMode-results.json`.
+- [x] **Final evidence review - GLJP-01/04/05/06:** Full EditMode now passes 771/771 with no skips when the fresh parity manifest is enabled (`artifacts/unity-tests-20261112-104729`). Full PlayMode remains 100 passed / 1 accepted seed-10100 route finding / 2 visual-runner skips (`artifacts/unity-tests-20261112-101935`); focused graphics runs passed, including the new 1920x1080 rank-five capture (`artifacts/visual-evidence-20261112-103721`). The remaining evidence gate is Bevin's visual acceptance.
+- [x] **Trello evidence read-back:** Current-source evidence is posted and visible on GLJP-01/04/05/06. GLJP-06 was moved to Done after its bounded diagnostic and accepted non-gating route disposition were recorded. GLJP-02/03 remain Done.
+- [ ] **Player acceptance and remaining closeout:** Bevin's visual review remains open for GLJP-01/04/05. Keep those cards open until their review criteria are accepted; then move only accepted cards to Done.
+- [ ] **Publish final source and handoff:** Commit and push the accepted closeout changes, verify remote SHA and clean 0/0 state, and refresh this plan/working-state handoff with evidence and final ticket statuses.
+
+The previous 2-4 hour estimate covered review, parity and closeout before the November 12 evidence pass. Exact-source parity and the full EditMode suite are complete; remaining time depends on player review, Trello closeout, and publishing the accepted changes.
+
+November 11 baseline estimate (superseded by this November 12 checkpoint): remaining work was estimated at **2–4 focused hours** for player review, exact-source replay parity, and ticket closeout. GLJP-06's seed-10100 survival observation is accepted as a documented finding, not a closeout gate.
 
 ## November 11 final validation checkpoint
 
