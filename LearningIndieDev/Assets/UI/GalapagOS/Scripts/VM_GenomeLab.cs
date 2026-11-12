@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using UnityEngine;
 using Noesis;
 
 namespace SaltyGame
@@ -21,6 +23,7 @@ namespace SaltyGame
         const float TreeHeaderHeight = 42f;
         const float ConnectorThickness = 4f;
         const string AllBranches = "All branches";
+        static bool DeveloperWalletToolsAvailable => Application.isEditor || Debug.isDebugBuild;
         static readonly HashSet<string> PermanentConceptNodeIds = new HashSet<string>(StringComparer.Ordinal)
         {
             GenomeContract.FastGestationNodeId,
@@ -33,6 +36,8 @@ namespace SaltyGame
         readonly SpeciesId? selectedSpecies;
         string selectedNodeId;
         string selectedBranch;
+        string developerGrantAmountText = "1000";
+        string developerWalletToolsStatusText = "Grants are saved to the active profile.";
 
         public GenomeLabViewModel(
             GenomeCatalogSnapshot catalog,
@@ -53,6 +58,8 @@ namespace SaltyGame
             PurchaseResearchCommand = new DelegateCommand(() => ExecutePermanent(() => permanent.Research()));
             ToggleLoadoutNodeCommand = new DelegateCommand(() => ExecutePermanent(() => permanent.Toggle(selectedNodeId)));
             ApplyLoadoutCommand = new DelegateCommand(() => ExecutePermanent(() => permanent.Apply()));
+            GrantHareDataCommand = new DelegateCommand(() => GrantWalletData(true));
+            GrantResearchDataCommand = new DelegateCommand(() => GrantWalletData(false));
             Nodes = new ObservableCollection<GenomeLabNodeViewModel>();
             GenomeTreeSegments = new ObservableCollection<GenomeLabTreeSegmentViewModel>();
             BranchNames = new ObservableCollection<string>();
@@ -87,6 +94,21 @@ namespace SaltyGame
         public DelegateCommand PurchaseResearchCommand { get; }
         public DelegateCommand ToggleLoadoutNodeCommand { get; }
         public DelegateCommand ApplyLoadoutCommand { get; }
+        public DelegateCommand GrantHareDataCommand { get; }
+        public DelegateCommand GrantResearchDataCommand { get; }
+        public string DeveloperGrantAmountText
+        {
+            get => developerGrantAmountText;
+            set
+            {
+                if (developerGrantAmountText == value) return;
+                developerGrantAmountText = value;
+                OnPropertyChanged(nameof(DeveloperGrantAmountText));
+            }
+        }
+        public string DeveloperWalletToolsStatusText => developerWalletToolsStatusText;
+        public Visibility DeveloperWalletToolsVisibility => DeveloperWalletToolsAvailable
+            && profileSession?.Current.HasLoadedProfile == true ? Visibility.Visible : Visibility.Collapsed;
         public Visibility PermanentControlsVisibility => permanent != null ? Visibility.Visible : Visibility.Collapsed;
         public string EconomyModeText => permanent != null ? "PERMANENT HARE GENOME" : "LEGACY POC - REFUNDABLE ALLOCATIONS";
         public string ResearchLevelText => permanent?.ResearchText ?? "LEGACY RESEARCH";
@@ -257,6 +279,32 @@ namespace SaltyGame
             SetActionResult(succeeded ? "Rabbit Genome reset; node Rabbit Data refunded." : reason);
         }
 
+        void GrantWalletData(bool hareData)
+        {
+            if (!DeveloperWalletToolsAvailable || profileSession?.Current.HasLoadedProfile != true)
+                return;
+            if (!long.TryParse(developerGrantAmountText, NumberStyles.None,
+                    CultureInfo.InvariantCulture, out var amount) || amount <= 0)
+            {
+                developerWalletToolsStatusText = "Enter a positive whole number to grant.";
+                OnPropertyChanged(nameof(DeveloperWalletToolsStatusText));
+                return;
+            }
+
+            try
+            {
+                if (hareData) profileSession.AddRabbitData(amount);
+                else profileSession.AddResearchData(amount);
+                BindProfile(profileSession.Current);
+                developerWalletToolsStatusText = $"Added {amount:N0} {(hareData ? "Hare Data" : "Research Data")} to this profile.";
+            }
+            catch (OverflowException)
+            {
+                developerWalletToolsStatusText = "That grant would exceed the supported wallet limit.";
+            }
+            OnPropertyChanged(nameof(DeveloperWalletToolsStatusText));
+        }
+
         void ExecutePermanent(Func<bool> action)
         {
             if (permanent == null) return;
@@ -396,6 +444,7 @@ namespace SaltyGame
             OnPropertyChanged(nameof(CompletedRunsText));
             OnPropertyChanged(nameof(CanPurchaseLicense));
             OnPropertyChanged(nameof(CanResetGenome));
+            OnPropertyChanged(nameof(DeveloperWalletToolsVisibility));
             OnPropertyChanged(nameof(ActionStatusText));
             OnPropertyChanged(nameof(NodeOfferText));
             OnPropertyChanged(nameof(CanPurchaseNode));
