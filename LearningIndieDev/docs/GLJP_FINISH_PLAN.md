@@ -9,9 +9,9 @@
 - [x] **Final evidence review - GLJP-01/04/05/06:** Full EditMode now passes 771/771 with no skips when the fresh parity manifest is enabled (`artifacts/unity-tests-20261112-104729`). Full PlayMode remains 100 passed / 1 accepted seed-10100 route finding / 2 visual-runner skips (`artifacts/unity-tests-20261112-101935`); focused graphics runs passed, including the new 1920x1080 rank-five capture (`artifacts/visual-evidence-20261112-103721`). The remaining evidence gate is Bevin's visual acceptance.
 - [x] **Trello evidence read-back:** Current-source evidence is posted and visible on GLJP-01/04/05/06. GLJP-06 was moved to Done after its bounded diagnostic and accepted non-gating route disposition were recorded. GLJP-02/03 remain Done.
 - [ ] **Player acceptance and remaining closeout:** Bevin's visual review remains open for GLJP-01/04/05. Keep those cards open until their review criteria are accepted; then move only accepted cards to Done.
-- [ ] **Publish final source and handoff:** Commit and push the accepted closeout changes, verify remote SHA and clean 0/0 state, and refresh this plan/working-state handoff with evidence and final ticket statuses.
+- [x] **Publish final source and handoff:** Commit `a8f1b6265f0e135eb98634ca0625f337e126d753` is pushed to `origin/BevBranch`; local HEAD and remote SHA match, with a clean worktree and ahead/behind 0/0. This checklist records the remaining player-acceptance gate and current ticket dispositions.
 
-The previous 2-4 hour estimate covered review, parity and closeout before the November 12 evidence pass. Exact-source parity and the full EditMode suite are complete; remaining time depends on player review, Trello closeout, and publishing the accepted changes.
+The previous 2-4 hour estimate covered review, parity and closeout before the November 12 evidence pass. Exact-source parity, full EditMode, Trello evidence read-back, and publication are complete. Remaining time depends on Bevin's visual review and any bounded fixes before final ticket closure.
 
 November 11 baseline estimate (superseded by this November 12 checkpoint): remaining work was estimated at **2–4 focused hours** for player review, exact-source replay parity, and ticket closeout. GLJP-06's seed-10100 survival observation is accepted as a documented finding, not a closeout gate.
 
