@@ -2076,7 +2076,7 @@ namespace SaltyGame.PlayModeTests
                 .First(index => preview.GetRewardOptionId(index) == SpeciesUpgradeCatalog.ToughHideId);
             Assert.That(preview.GetRewardOptionId(rewardIndex), Is.EqualTo("tough-hide"));
             StringAssert.Contains("TOUGH HIDE", preview.GetRewardOptionDisplayName(rewardIndex));
-            StringAssert.Contains("Block more incoming attacks", preview.GetRewardOptionDisplayName(rewardIndex));
+            StringAssert.Contains("Gain 2 health", preview.GetRewardOptionDisplayName(rewardIndex));
             StringAssert.DoesNotContain("TRAILBLAZER", preview.GetRewardOptionDisplayName(rewardIndex));
             StringAssert.Contains("FREE", preview.GetRewardOptionDisplayName(rewardIndex));
             StringAssert.DoesNotContain("COST", preview.GetRewardOptionDisplayName(rewardIndex));
@@ -2084,7 +2084,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.Currency, Is.Zero);
             Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);
             var currencyAtBoundary = preview.Progression.Currency;
-            var blockBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount;
+            var healthBefore = preview.ActiveSpeciesRules[preview.PlayerSpecies].MaximumHealth;
 
             Assert.That(preview.PurchaseReward(rewardIndex), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
@@ -2094,8 +2094,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(1));
             Assert.That(run.UpgradeLoadout.Count, Is.EqualTo(1));
             Assert.That(
-                preview.ActiveSpeciesRules[preview.PlayerSpecies].BlockAmount,
-                Is.EqualTo(blockBefore + 2));
+                preview.ActiveSpeciesRules[preview.PlayerSpecies].MaximumHealth,
+                Is.EqualTo(healthBefore + 2));
             Assert.That(preview.Progression.Currency, Is.EqualTo(currencyAtBoundary));
 
             // A repeated click cannot purchase or apply the same boundary twice.
@@ -2331,10 +2331,11 @@ namespace SaltyGame.PlayModeTests
                     if (upgrade.Id == SpeciesUpgradeCatalog.ToughHideId && phase > 1)
                     {
                         var completedPhase = run.PhaseResults[run.PhaseResults.Count - 1];
-                        var blockedIncomingAttacks = completedPhase.Metrics.CombatRollEvents.Count(
-                            combat => combat.TargetSpecies == preview.PlayerSpecies && !combat.Hit);
+                        var foxId = preview.ActiveSpeciesRules.ContainsKey(new SpeciesId("fox"))
+                            ? new SpeciesId("fox") : SpeciesIds.Carnivore;
+                        var survivedHits = completedPhase.Metrics.GetActivity(foxId).CombatNonLethalHits;
                         StringAssert.Contains(
-                            $"Incoming attacks blocked this phase: {blockedIncomingAttacks}",
+                            $"Fox hits survived this phase: {survivedHits}",
                             preview.PhaseRewardMessage);
                     }
                     Assert.That(preview.CanPurchaseReward(rewardIndex), Is.True);

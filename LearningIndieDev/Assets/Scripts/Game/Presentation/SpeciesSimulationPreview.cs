@@ -184,6 +184,7 @@ namespace SaltyGame
                 StartingEnergyText = rules.StartingEnergy.ToString(CultureInfo.InvariantCulture);
                 MaximumEnergy = rules.MaximumEnergy;
                 MaximumEnergyText = rules.MaximumEnergy.ToString(CultureInfo.InvariantCulture);
+                MaximumHealth = rules.MaximumHealth;
                 LitterMinimum = rules.LitterMinimum;
                 LitterMinimumText = rules.LitterMinimum.ToString(CultureInfo.InvariantCulture);
                 LitterMaximum = rules.LitterMaximum;
@@ -251,6 +252,7 @@ namespace SaltyGame
             public string StartingEnergyText;
             public int MaximumEnergy;
             public string MaximumEnergyText;
+            public int MaximumHealth;
             public int LitterMinimum;
             public string LitterMinimumText;
             public int LitterMaximum;
@@ -3102,7 +3104,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
                 case SpeciesUpgradeCatalog.ToughHideId:
-                    return "Block more incoming attacks.";
+                    return "Gain 2 health. A healthy Hare can survive a basic Fox hit.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
                     return "Gain more energy from food.";
                 case SpeciesUpgradeCatalog.SeedDispersalId:
@@ -3148,12 +3150,13 @@ namespace SaltyGame
             if (completedPhase.EffectiveUpgradeLoadout.Any(
                     upgrade => upgrade.Id == SpeciesUpgradeCatalog.ToughHideId))
             {
-                var blockedIncomingAttacks = completedPhase.Metrics.CombatRollEvents.Count(
-                    combat => combat.TargetSpecies == playerSpecies && !combat.Hit);
+                var foxId = rules.ContainsKey(new SpeciesId("fox"))
+                    ? new SpeciesId("fox") : SpeciesIds.Carnivore;
+                var survivedHits = completedPhase.Metrics.GetActivity(foxId).CombatNonLethalHits;
                 summary += string.Format(
                     CultureInfo.InvariantCulture,
-                    " Incoming attacks blocked this phase: {0}.",
-                    blockedIncomingAttacks);
+                    " Fox hits survived this phase: {0}.",
+                    survivedHits);
             }
 
             return summary;
@@ -3362,6 +3365,7 @@ namespace SaltyGame
                     role: draft.Role,
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,
+                    maximumHealth: draft.MaximumHealth,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
                     trackingPersistenceSteps: draft.TrackingPersistenceSteps,

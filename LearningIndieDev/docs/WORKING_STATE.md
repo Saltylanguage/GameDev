@@ -3,6 +3,10 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 11–12 Fox carcass-value first pass:** Josh clarified the balance question as “how many Hares is a Fox worth?” Lethal Hare attacks now create shareable 96-energy carcasses, and Foxes consume only enough to reach their 96-energy capacity. Fox upkeep is provisionally 48 energy per 600-tick node (2 every 25 ticks), so the idealized calorie ledger is one Hare per two Foxes before reproduction, missed hunts, and spatial access. The portable source-linked self-test and batch build pass. Josh approved the [100-run carcass-value diagnostic scope](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md) on November 12; no ecology seed runs have started because the worktree's Unity Editor cannot be opened through the supported CLI and its lock remains. The earlier [15-condition starting-population curve draft](Research/Experiments/S6-Population-Curve-20261111/CONTRACT-DRAFT.md) is superseded before execution. See the [handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md) and [S6 decision record](Sprints/S6-control-record.md#november-11-carcass-feeding-and-fox-energy-first-pass).
+
+The November 12 focused Unity EditMode attempt found a missing required argument in a changed test fixture; that call is fixed. The corrected launch was then stopped by the Clean wrapper because the project lock reappeared while Pipeline was unreachable. No Unity tests ran; details and artifacts are in the [carcass handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md#unity-verification-november-12).
+
 **November 9 planning update:** Josh approved [S6 — The Fun Pass](Sprints/S6-control-record.md)
 for November 16–29. It is the official next-sprint direction, with kickoff and
 task allocation pending; [S5](Sprints/S5-control-record.md) remains active through

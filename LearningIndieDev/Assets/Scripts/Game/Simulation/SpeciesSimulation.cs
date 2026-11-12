@@ -114,7 +114,7 @@ namespace SaltyGame
                 var y = cellIndex / source.Width;
                 result.SetCell(x, y, result.GetCell(x, y).WithEntity(
                     species,
-                    health: 1,
+                    health: speciesRules.MaximumHealth,
                     energy: energy,
                     age: 0,
                     foodEaten: 0,
@@ -960,7 +960,7 @@ namespace SaltyGame
                             break;
                         }
 
-                        if (target.IsPlantResource)
+                        if (target.IsPlantResource && !target.IsCreature && !target.IsMeatResource)
                         {
                             TryFeedOnPlant(
                                 next,
@@ -1003,11 +1003,17 @@ namespace SaltyGame
                             }
                             else
                             {
-                                next.SetCell(targetX, targetY, MarkCreatureDead(
+                                var carcass = MarkCreatureDead(
                                     next,
                                     targetX,
                                     targetY,
-                                    metrics).WithoutEntity());
+                                    metrics).WithoutEntity();
+                                var carcassEnergy = rules.TryGetValue(currentTarget.SpeciesId, out var preyRules)
+                                    ? preyRules.EnergyValue
+                                    : 0;
+                                next.SetCell(targetX, targetY, carcass.WithMeatResource(
+                                    currentTarget.SpeciesId,
+                                    carcassEnergy));
                             }
 
                             if (remainingHealth <= 0)
@@ -1025,25 +1031,6 @@ namespace SaltyGame
                                 metrics?.Record(attacker.SpeciesId, combatKills: 1);
                             }
 
-                            if (remainingHealth <= 0
-                                && attackerRules.StartingEnergy > 0
-                                && currentAttacker.IsCreature
-                                && currentAttacker.SpeciesId == attacker.SpeciesId)
-                            {
-                                next.SetCell(x, y, CreateFedCell(
-                                    currentAttacker,
-                                    attackerRules,
-                                    rules.TryGetValue(target.SpeciesId, out var foodRules)
-                                        ? foodRules.EnergyValue
-                                        : 0).WithBehaviorState(
-                                            SpeciesBehaviorState.Eating,
-                                            Math.Max(1, currentAttacker.BehaviorStateTicks)));
-                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: true, consumedAmount: 1f);
-                            }
-                            else
-                            {
-                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
-                            }
                         }
                         else
                         {
@@ -1056,7 +1043,6 @@ namespace SaltyGame
                                     damageDealt: 0,
                                     lethal: false);
                             }
-                            metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
                         }
 
                         ApplyFoxAttackCooldown(next, x, y, experimentalOptions);
@@ -2236,7 +2222,10 @@ namespace SaltyGame
             {
                 if (ShouldForage(cell, speciesRules))
                 {
-                    if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))
+                    var fed = sourceTarget.IsMeatResource
+                        ? TryFeedOnMeat(next, targetX, targetY, x, y, cell, speciesRules, metrics)
+                        : TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics);
+                    if (!fed)
                     {
                         return false;
                     }
@@ -2244,6 +2233,11 @@ namespace SaltyGame
                     moved[GetIndex(source, x, y)] = true;
                     return true;
                 }
+            }
+
+            if (sourceTarget.IsMeatResource)
+            {
+                return false;
             }
 
             var movementSpeed = speciesRules.MovementSpeed
@@ -2551,7 +2545,7 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (cell.IsOccupied)
+                    if (cell.IsOccupied && !cell.IsMeatResource)
                     {
                         var aged = cell.WithEntity(
                             cell.SpeciesId,
@@ -2868,7 +2862,7 @@ namespace SaltyGame
         {
             if (!grid.TryResolveCoordinates(ref x, ref y)) return false;
             var cell = grid.GetCell(x, y);
-            return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource;
+            return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource && !cell.IsMeatResource;
         }
 
         static void ResolveGestationBirths(
@@ -2972,7 +2966,7 @@ namespace SaltyGame
 
                         var offspring = childCell.WithEntity(
                             parent.SpeciesId,
-                            health: 1,
+                            health: speciesRules.MaximumHealth,
                             energy: offspringLocations != null ? 0 : speciesRules.ReproductionFoodRequired,
                             age: 0,
                             foodEaten: 0,
@@ -3338,6 +3332,7 @@ namespace SaltyGame
                         var parentIsPlant = IsPlantSpecies(parent.SpeciesId, speciesRules);
                         if (claimed[childIndex]
                             || childCell.IsCreature
+                            || childCell.IsMeatResource
                             || (parentIsPlant && childCell.IsPlantResource))
                         {
                             continue;
@@ -3350,7 +3345,7 @@ namespace SaltyGame
                                 parent.SpeciesId).WithScentMarker(childCell.ScentMarker)
                             : childCell.WithEntity(
                                 parent.SpeciesId,
-                                health: 1,
+                                health: speciesRules.MaximumHealth,
                                 energy: distributedOffspringLocations != null
                                     ? 0
                                     : speciesRules.ReproductionFoodRequired,
@@ -3504,7 +3499,7 @@ namespace SaltyGame
         static SpeciesCell CreateFedCell(
             SpeciesCell cell,
             SpeciesRules rules,
-            int energyValue,
+            float energyValue,
             float foodAmount = 1f)
         {
             var availableEnergy = cell.EnergyRemainder + energyValue + rules.DigestionEnergyBonus;
@@ -3609,6 +3604,50 @@ namespace SaltyGame
             {
                 metrics?.RecordDeath(plant, plantX, plantY, SpeciesDeathCause.ResourceConsumed, resourceLayer: true);
             }
+            return true;
+        }
+
+        static bool TryFeedOnMeat(
+            Grid<SpeciesCell> next,
+            int meatX,
+            int meatY,
+            int eaterX,
+            int eaterY,
+            SpeciesCell eater,
+            SpeciesRules eaterRules,
+            SpeciesSimulationMetrics metrics)
+        {
+            var meat = next.GetCell(meatX, meatY);
+            if (!meat.IsMeatResource)
+            {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
+                return false;
+            }
+
+            var availableEnergy = meat.FoodReserve;
+            var currentEater = next.GetCell(eaterX, eaterY);
+            var energyNeeded = eaterRules.MaximumEnergy > 0
+                ? Math.Max(0f, eaterRules.MaximumEnergy
+                    - currentEater.Energy
+                    - currentEater.EnergyRemainder
+                    - eaterRules.DigestionEnergyBonus)
+                : availableEnergy;
+            var consumedEnergy = Math.Min(availableEnergy, energyNeeded);
+            if (consumedEnergy <= 0f)
+            {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
+                return false;
+            }
+
+            next.SetCell(
+                eaterX,
+                eaterY,
+                CreateFedCell(currentEater, eaterRules, consumedEnergy, consumedEnergy)
+                    .WithBehaviorState(
+                        SpeciesBehaviorState.Eating,
+                        Math.Max(1, currentEater.BehaviorStateTicks)));
+            next.SetCell(meatX, meatY, meat.WithMeatEnergy(availableEnergy - consumedEnergy));
+            metrics?.RecordFoodAction(eater.SpeciesId, successful: true, consumedAmount: consumedEnergy);
             return true;
         }
 

@@ -871,6 +871,7 @@ internal static class Program
     }
     static void SelfTest()
     {
+        VerifyCarcassFeeding();
         var gestationPattern = new GridPattern(new[] { UnityEngine.Vector2Int.left, UnityEngine.Vector2Int.right });
         var gestationRules = new Dictionary<SpeciesId, SpeciesRules>(SpeciesRuleDefaults.Create());
         gestationRules[SpeciesIds.Carnivore] = new SpeciesRules(
@@ -1023,6 +1024,60 @@ internal static class Program
             throw new Exception("Standalone research eligibility did not preserve profile ownership boundaries.");
         RunJourneyReplaySelfTest();
         Console.WriteLine("PASS: snapshot round-trip including gestation; stat override preserves gestation; gestation and hidden-burrow state digests; entity normalization; compact/detailed parity; repeat determinism; invalid input rejection; eight purchase policies; wallet carryover; affordability; placement/capacity; no-purchase parity; profile research eligibility.");
+    }
+
+    static void VerifyCarcassFeeding()
+    {
+        var empty = new GridPattern(Array.Empty<UnityEngine.Vector2Int>());
+        var horizontal = new GridPattern(new[] { UnityEngine.Vector2Int.left, UnityEngine.Vector2Int.right });
+        var rules = new Dictionary<SpeciesId, SpeciesRules>
+        {
+            [SpeciesIds.Carnivore] = new SpeciesRules(
+                movementSpeed: 0f, movementPattern: empty, attackPattern: horizontal,
+                attackAmount: 2, blockPattern: empty, blockAmount: 0,
+                dietPattern: horizontal, dietTarget: SpeciesIds.Herbivore,
+                reproductionPattern: empty, reproductionNeighborCount: 0,
+                reproductionChance: 0f, reproductionFoodRequired: 48,
+                startingEnergy: 48, forageBelowEnergy: 72,
+                maximumEnergy: 96, metabolism: 2, energyLossIntervalTicks: 25,
+                awareness: new SpeciesAwarenessRules(visionRange: 1), role: SpeciesRole.Carnivore),
+            [SpeciesIds.Herbivore] = new SpeciesRules(
+                movementSpeed: 0f, movementPattern: empty, attackPattern: empty,
+                attackAmount: 0, blockPattern: empty, blockAmount: 0,
+                dietPattern: empty, dietTarget: null, reproductionPattern: empty,
+                reproductionNeighborCount: 0, reproductionChance: 0f,
+                energyValue: 96, metabolism: 0, role: SpeciesRole.Herbivore),
+        };
+        var cells = new Grid<SpeciesCell>(3, 1);
+        cells.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 48));
+        cells.SetCell(1, 0, new SpeciesCell(SpeciesIds.Herbivore, health: 1));
+        cells.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 48));
+        var metrics = new SpeciesSimulationMetrics();
+
+        cells = SpeciesSimulation.Step(cells, rules, seed: 42, metrics: metrics);
+        if (!cells.GetCell(1, 0).IsMeatResource || cells.GetCell(1, 0).FoodReserve != 96f
+            || metrics.GetActivity(SpeciesIds.Carnivore).FoodConsumed != 0f
+            || metrics.GetActivity(SpeciesIds.Carnivore).CombatKills != 1)
+            throw new Exception("A lethal Hare attack did not leave a 96-energy carcass for later feeding.");
+
+        cells = SpeciesSimulation.Step(cells, rules, seed: 42, metrics: metrics);
+        var foxActivity = metrics.GetActivity(SpeciesIds.Carnivore);
+        if (cells.GetCell(1, 0).IsOccupied
+            || cells.GetCell(0, 0).Energy != 96
+            || cells.GetCell(2, 0).Energy != 96
+            || foxActivity.FoodConsumed != 96f
+            || foxActivity.FoodActionSuccesses != 2)
+            throw new Exception("Two Foxes did not share the Hare carcass up to their energy limits.");
+
+        for (var tick = 2; tick < 600; tick++)
+        {
+            cells = SpeciesSimulation.Step(cells, rules, seed: 42);
+        }
+
+        if (!cells.GetCell(0, 0).IsCreature || cells.GetCell(0, 0).Energy != 48
+            || !cells.GetCell(2, 0).IsCreature || cells.GetCell(2, 0).Energy != 48)
+            throw new Exception("Two Foxes did not spend exactly 48 energy across a 600-tick node.");
+        Console.WriteLine("PASS: one 96-energy Hare carcass feeds two Foxes through a 600-tick node.");
     }
 
     static void VerifyPortableBurrowDigest(Func<Grid<SpeciesCell>, string> surfaceDigest)

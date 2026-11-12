@@ -459,9 +459,14 @@ namespace SaltyGame
 
         public static bool IsDietTarget(SpeciesCell cell, SpeciesId target)
         {
-            return cell.IsPlantResource
-                ? !cell.IsCreature && cell.SpeciesId == target
-                : cell.IsCreature && cell.SpeciesId == target;
+            if (cell.IsCreature || cell.IsMeatResource)
+            {
+                return cell.SpeciesId == target;
+            }
+
+            return cell.IsTerrainResource
+                ? cell.ResourceSpeciesId == target
+                : cell.IsPlantResource && cell.SpeciesId == target;
         }
 
         static bool TryFindTarget(

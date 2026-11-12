@@ -66,6 +66,7 @@ namespace SaltyGame
         VisionRange,
         Intelligence,
         MaximumEnergy,
+        MaximumHealth,
         LitterMinimum,
         LitterMaximum,
         DigestionEnergyBonus,
@@ -104,6 +105,7 @@ namespace SaltyGame
         public const string VisionRange = "awareness.vision-range";
         public const string Intelligence = "awareness.intelligence";
         public const string MaximumEnergy = "energy.maximum";
+        public const string MaximumHealth = "health.maximum";
         public const string LitterMinimum = "reproduction.litter-minimum";
         public const string LitterMaximum = "reproduction.litter-maximum";
         public const string GestationTicks = "reproduction.gestation-ticks";
@@ -196,6 +198,7 @@ namespace SaltyGame
             var intelligence = rules.Awareness.Intelligence;
             var predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus;
             var maximumEnergy = rules.MaximumEnergy;
+            var maximumHealth = rules.MaximumHealth;
             var litterMinimum = rules.LitterMinimum;
             var litterMaximum = rules.LitterMaximum;
             var gestationTicks = rules.GestationTicks;
@@ -272,6 +275,9 @@ namespace SaltyGame
                 case SpeciesAttributeTarget.MaximumEnergy:
                     maximumEnergy += (int)value;
                     break;
+                case SpeciesAttributeTarget.MaximumHealth:
+                    maximumHealth += (int)value;
+                    break;
                 case SpeciesAttributeTarget.LitterMinimum:
                     litterMinimum += (int)value;
                     break;
@@ -344,7 +350,8 @@ namespace SaltyGame
                 rules.MatingEnergyCostFraction,
                 rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction,
-                gestationTicks);
+                gestationTicks,
+                maximumHealth);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()
@@ -373,6 +380,7 @@ namespace SaltyGame
                 Definition(SpeciesAttributeIds.VisionRange, "Vision Range", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.VisionRange),
                 Definition(SpeciesAttributeIds.Intelligence, "Intelligence", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.Intelligence),
                 Definition(SpeciesAttributeIds.MaximumEnergy, "Maximum Energy", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.MaximumEnergy),
+                Definition(SpeciesAttributeIds.MaximumHealth, "Maximum Health", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.MaximumHealth),
                 Definition(SpeciesAttributeIds.LitterMinimum, "Minimum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMinimum),
                 Definition(SpeciesAttributeIds.LitterMaximum, "Maximum Litter", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.LitterMaximum),
                 Definition(SpeciesAttributeIds.GestationTicks, "Gestation Ticks", SpeciesAttributeValueKind.Integer, SpeciesAttributeTarget.GestationTicks),

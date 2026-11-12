@@ -11,6 +11,7 @@ namespace SaltyGame
         AttackModifier,
         DamageAmount,
         BlockAmount,
+        MaximumHealth,
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
@@ -88,6 +89,9 @@ namespace SaltyGame
                 case SpeciesUpgradeType.BlockAmount:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, Value));
                     break;
+                case SpeciesUpgradeType.MaximumHealth:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumHealth, Value));
+                    break;
                 case SpeciesUpgradeType.ReproductionChance:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ReproductionChance, Value));
                     break;
@@ -139,6 +143,8 @@ namespace SaltyGame
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of planting chance per eligible step. Spend one stored food only on success."
                     : Type == SpeciesUpgradeType.BlockAmount
                     ? $"Increase block by {(int)Value} for this journey."
+                    : Type == SpeciesUpgradeType.MaximumHealth
+                    ? $"Gain {(int)Value} health. A Hare can survive one basic Fox attack."
                     : Type == SpeciesUpgradeType.MovementSpeed
                     ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} for this journey."
                     : Type == SpeciesUpgradeType.DigestionEnergyBonus
@@ -149,6 +155,8 @@ namespace SaltyGame
                     ? $"Reduce the original extra crowding energy cost by {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points."
                     : Type == SpeciesUpgradeType.PreContactAvoidanceChance
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of pre-contact attack avoidance."
+                    : Type == SpeciesUpgradeType.FleeMovementSpeedBonus
+                    ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} while Threatened."
                     : Type == SpeciesUpgradeType.VisionRange
                     ? $"Increase vision range by {(int)Value} tiles for this journey."
                     : Type == SpeciesUpgradeType.TrackingPersistenceSteps
@@ -187,6 +195,7 @@ namespace SaltyGame
             var attackModifier = rules.AttackModifier;
             var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
+            var maximumHealth = rules.MaximumHealth;
             var reproductionChance = rules.ReproductionChance;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var seedDropChance = rules.SeedDropChance;
@@ -218,6 +227,9 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
+                    break;
+                case SpeciesUpgradeType.MaximumHealth:
+                    maximumHealth += (int)Value;
                     break;
                 case SpeciesUpgradeType.ReproductionChance:
                     reproductionChance = Math.Max(0f, Math.Min(1f, reproductionChance + Value));
@@ -302,7 +314,8 @@ namespace SaltyGame
                 matingEnergyCostFraction: rules.MatingEnergyCostFraction,
                 distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
-                gestationTicks: rules.GestationTicks);
+                gestationTicks: rules.GestationTicks,
+                maximumHealth: maximumHealth);
         }
     }
 
@@ -312,7 +325,7 @@ namespace SaltyGame
         {
             ToughHideId, EfficientDigestionId, SeedDispersalId,
             CrowdingToleranceId, ReproductiveDriveId, KeenSensesId, LongVisionId, FasterMovementId,
-            ThreatExposureId, LargerMaximumLitterId, LargerMinimumLitterId,
+            ThreatExposureId, QuickEscapeId, LargerMaximumLitterId, LargerMinimumLitterId,
         };
 
         public const string BurrowingId = "burrowing";
@@ -398,6 +411,9 @@ namespace SaltyGame
 
         public const string FasterMovementId = "faster-movement";
         public const int FasterMovementMaxLevel = 10;
+        public const string QuickEscapeId = "quick-escape";
+        public const int QuickEscapeMaxLevel = 5;
+        public const float QuickEscapeFleeSpeedPerLevel = 0.5f;
         public const string StrongerAttackId = "stronger-attack";
         public const string StrongerAttackModifierId = "stronger-attack-modifier";
         public const string StrongerDamageId = "stronger-damage";
@@ -415,8 +431,8 @@ namespace SaltyGame
         public const int CrowdingToleranceMaxLevel = 10;
         public const float CrowdingToleranceBonusPerLevel = 0.1f;
         public const string ReproductiveDriveId = "reproductive-drive";
-        public const int ReproductiveDriveMaxLevel = 10;
-        public const float ReproductiveDriveChancePerLevel = 0.005f;
+        public const int ReproductiveDriveMaxLevel = 5;
+        public const float ReproductiveDriveChancePerLevel = 0.1f;
         public const string KeenSensesId = "keen-senses";
         public const int KeenSensesMaxLevel = 10;
         public const int KeenSensesPredatorDetectionTilesPerLevel = 1;
@@ -446,6 +462,7 @@ namespace SaltyGame
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == FasterMovementId ? FasterMovementMaxLevel
+                : upgradeId == QuickEscapeId ? QuickEscapeMaxLevel
                 : upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
                 : upgradeId == SeedDispersalId ? SeedDispersalMaxLevel
@@ -488,6 +505,7 @@ namespace SaltyGame
             CrowdingToleranceId,
             ReproductiveDriveId,
             ThreatExposureId,
+            QuickEscapeId,
             FasterMovementId,
             SeedDispersalId,
             KeenSensesId,
@@ -510,6 +528,7 @@ namespace SaltyGame
             ThreatExposureId,
             LargerMinimumLitterId,
             LargerMaximumLitterId,
+            QuickEscapeId,
             FasterMovementId,
             SeedDispersalId,
         };
@@ -641,6 +660,12 @@ namespace SaltyGame
             {
                 case FasterMovementId:
                     return new SpeciesUpgrade(FasterMovementId, 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
+                case QuickEscapeId:
+                    return new SpeciesUpgrade(
+                        QuickEscapeId,
+                        QuickEscapeMaxLevel,
+                        SpeciesUpgradeType.FleeMovementSpeedBonus,
+                        QuickEscapeFleeSpeedPerLevel);
                 case StrongerAttackId:
                     return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
                 case StrongerAttackModifierId:
@@ -652,7 +677,7 @@ namespace SaltyGame
                 case StrongerBlockTwoId:
                     return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 case ToughHideId:
-                    return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.BlockAmount, 2f);
+                    return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.MaximumHealth, 2f);
                 case EfficientDigestionId:
                     return new SpeciesUpgrade(
                         EfficientDigestionId,
@@ -794,6 +819,8 @@ namespace SaltyGame
             {
                 case FasterMovementId:
                     return "GENERAL MOVEMENT";
+                case QuickEscapeId:
+                    return "QUICK ESCAPE";
                 case StrongerAttackId:
                     return "ATTACK";
                 case StrongerBlockId:

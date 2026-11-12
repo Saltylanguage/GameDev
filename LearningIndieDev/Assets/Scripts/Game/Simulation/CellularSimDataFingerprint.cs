@@ -127,6 +127,7 @@ namespace SaltyGame
             Append(builder, rules.DistributeMatingEnergyToOffspring);
             Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
+            Append(builder, rules.MaximumHealth);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
             Append(builder, rules.GestationTicks);

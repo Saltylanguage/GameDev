@@ -431,8 +431,10 @@ namespace SaltyGame.Tests
             var crowding = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.CrowdingToleranceId).Apply(rules);
             var reproductiveDrive = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).Apply(rules);
             var threatExposure = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).Apply(rules);
+            var quickEscape = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.QuickEscapeId).Apply(rules);
 
-            Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount + 2));
+            Assert.That(toughHide.MaximumHealth, Is.EqualTo(rules.MaximumHealth + 2));
+            Assert.That(toughHide.BlockAmount, Is.EqualTo(rules.BlockAmount));
             Assert.That(toughHide.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus));
             Assert.That(
                 digestion.DigestionEnergyBonus,
@@ -447,6 +449,10 @@ namespace SaltyGame.Tests
             Assert.That(reproductiveDrive.BlockAmount, Is.EqualTo(rules.BlockAmount));
             Assert.That(threatExposure.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus));
             Assert.That(threatExposure.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+            Assert.That(
+                quickEscape.FleeMovementSpeedBonus,
+                Is.EqualTo(rules.FleeMovementSpeedBonus + SpeciesUpgradeCatalog.QuickEscapeFleeSpeedPerLevel).Within(0.0001f));
+            Assert.That(quickEscape.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
         }
 
         [Test]
@@ -804,7 +810,7 @@ namespace SaltyGame.Tests
                 Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f).Within(0.00001f));
                 Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
                 Assert.That(progression.CurrentRules.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 0.1f * level).Within(0.00001f));
-                Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(rules.ReproductionChance + 0.005f * level).Within(0.00001f));
+                Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel * level).Within(0.00001f));
                 Assert.That(progression.CurrentRules.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance));
                 Assert.That(progression.CurrentRules.CrowdingEnergyReduction, Is.EqualTo(level * 0.1f).Within(0.00001f));
                 Assert.That(progression.CurrentRules.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
@@ -986,7 +992,7 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void ToughHideBlocksPreserveEncountersButDeadTargetsDoNot(bool blocked)
+        public void BlockModifiersPreserveEncountersButDeadTargetsDoNot(bool blocked)
         {
             var horizontal = new GridPattern(new[] { Vector2Int.right, Vector2Int.left });
             var fox = new SpeciesRules(0f, EmptyPattern, horizontal, 1, EmptyPattern, 0,
@@ -999,8 +1005,7 @@ namespace SaltyGame.Tests
                 energyValue: 3, metabolism: 0, role: SpeciesRole.Herbivore);
             if (blocked)
             {
-                var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId);
-                for (var level = 0; level < 10; level++) hare = upgrade.Apply(hare);
+                hare = new SpeciesUpgrade("test-block", 0, SpeciesUpgradeType.BlockAmount, 20f).Apply(hare);
             }
             var rules = new Dictionary<SpeciesId, SpeciesRules>
             {
@@ -1030,6 +1035,45 @@ namespace SaltyGame.Tests
                     Assert.That(next.GetCell(x, 0).Energy, Is.EqualTo(1));
                 }
             }
+        }
+
+        [Test]
+        public void ToughHideLetsAHareSurviveOneBaseFoxAttack()
+        {
+            var hareId = new SpeciesId("hare");
+            var foxId = new SpeciesId("fox");
+            var foxRules = new SpeciesRules(
+                movementSpeed: 0f,
+                movementPattern: EmptyPattern,
+                attackPattern: new GridPattern(new[] { Vector2Int.right }),
+                attackAmount: 2,
+                blockPattern: EmptyPattern,
+                blockAmount: 0,
+                dietPattern: EmptyPattern,
+                dietTarget: hareId,
+                reproductionPattern: EmptyPattern,
+                reproductionNeighborCount: 0,
+                reproductionChance: 0f,
+                metabolism: 0,
+                role: SpeciesRole.Carnivore,
+                attackModifier: 20,
+                damageAmount: 2);
+            var hareRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(
+                new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+                    EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f, metabolism: 0));
+            var cells = new Grid<SpeciesCell>(2, 1);
+            cells.SetCell(0, 0, new SpeciesCell(foxId, energy: 10));
+            cells.SetCell(1, 0, new SpeciesCell(hareId, health: hareRules.MaximumHealth));
+
+            var next = SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [foxId] = foxRules,
+                [hareId] = hareRules,
+            }, seed: 42);
+
+            Assert.That(hareRules.MaximumHealth, Is.EqualTo(3));
+            Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
+            Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(1));
         }
 
         [Test]
@@ -1304,7 +1348,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void SuccessfulPredationSetsEatingAfterTheBehaviorDecisionIsRecorded()
+        public void SuccessfulPredationLeavesCarcassForTheNextFeedingStep()
         {
             var source = new Grid<SpeciesCell>(2, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
@@ -1348,18 +1392,135 @@ namespace SaltyGame.Tests
             var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
             var activity = metrics.GetActivity(SpeciesIds.Carnivore);
 
+            Assert.That(next.GetCell(1, 0).IsMeatResource, Is.True);
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(4f));
+            Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Attacking));
+            Assert.That(next.GetCell(0, 0).FoodReserve, Is.Zero);
+            var killSnapshot = SpeciesPopulationSnapshot.Create(next, tick: 1);
+            Assert.That(killSnapshot.GetCount(SpeciesIds.Herbivore), Is.Zero);
+            Assert.That(killSnapshot.Empty, Is.Zero);
+            Assert.That(activity.CombatKills, Is.EqualTo(1));
+            Assert.That(activity.FoodConsumed, Is.Zero);
+            Assert.That(activity.FoodActionAttempts, Is.Zero);
+
+            next = SpeciesSimulation.Step(next, rules, seed: 42, metrics: metrics);
+            activity = metrics.GetActivity(SpeciesIds.Carnivore);
+
             Assert.That(next.GetCell(1, 0).IsOccupied, Is.False);
             Assert.That(next.GetCell(0, 0).BehaviorState, Is.EqualTo(SpeciesBehaviorState.Eating));
-            Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(1f));
-            Assert.That(activity.CombatKills, Is.EqualTo(1));
-            Assert.That(activity.FoodConsumed, Is.EqualTo(1f));
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(5));
+            Assert.That(next.GetCell(0, 0).FoodReserve, Is.EqualTo(4f));
+            Assert.That(activity.FoodConsumed, Is.EqualTo(4f));
             Assert.That(activity.FoodActionAttempts, Is.EqualTo(1));
             Assert.That(activity.FoodActionSuccesses, Is.EqualTo(1));
             Assert.That(activity.FoodActionFailures, Is.EqualTo(0));
             Assert.That(activity.FoodActionAttempts, Is.EqualTo(
                 activity.FoodActionSuccesses + activity.FoodActionFailures));
             Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Attacking), Is.EqualTo(1));
-            Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Eating), Is.EqualTo(0));
+            Assert.That(metrics.GetStateTicks(SpeciesIds.Carnivore, SpeciesBehaviorState.Eating), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void FoxesShareCarcassEnergyAndLeaveTheUnusedRemainder()
+        {
+            var fox = SpeciesIds.Carnivore;
+            var hare = SpeciesIds.Herbivore;
+            var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(fox, energy: 8));
+            source.SetCell(1, 0, SpeciesCell.Empty.WithMeatResource(hare, 6f));
+            source.SetCell(2, 0, new SpeciesCell(fox, energy: 8));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [fox] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: horizontal,
+                    dietTarget: hare,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 8,
+                    forageBelowEnergy: 10,
+                    maximumEnergy: 10,
+                    metabolism: 0),
+            };
+
+            var metrics = new SpeciesSimulationMetrics();
+            var next = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+
+            Assert.That(next.GetCell(0, 0).Energy, Is.EqualTo(10));
+            Assert.That(next.GetCell(2, 0).Energy, Is.EqualTo(10));
+            Assert.That(next.GetCell(1, 0).IsMeatResource, Is.True);
+            Assert.That(next.GetCell(1, 0).FoodReserve, Is.EqualTo(2f));
+            Assert.That(metrics.GetActivity(fox).FoodConsumed, Is.EqualTo(4f));
+            Assert.That(metrics.GetActivity(fox).FoodActionSuccesses, Is.EqualTo(2));
+        }
+
+        [Test]
+        public void OneHareCarcassCarriesTwoFoxesThroughA600TickNode()
+        {
+            var horizontal = new GridPattern(new[] { Vector2Int.left, Vector2Int.right });
+            var source = new Grid<SpeciesCell>(3, 1);
+            source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 48));
+            source.SetCell(1, 0, SpeciesCell.Empty.WithMeatResource(SpeciesIds.Herbivore, 96f));
+            source.SetCell(2, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 48));
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [SpeciesIds.Carnivore] = new SpeciesRules(
+                    movementSpeed: 0f,
+                    movementPattern: EmptyPattern,
+                    attackPattern: EmptyPattern,
+                    attackAmount: 0,
+                    blockPattern: EmptyPattern,
+                    blockAmount: 0,
+                    dietPattern: horizontal,
+                    dietTarget: SpeciesIds.Herbivore,
+                    reproductionPattern: EmptyPattern,
+                    reproductionNeighborCount: 0,
+                    reproductionChance: 0f,
+                    startingEnergy: 48,
+                    forageBelowEnergy: 72,
+                    maximumEnergy: 96,
+                    metabolism: 2,
+                    energyLossIntervalTicks: 25),
+            };
+
+            var metrics = new SpeciesSimulationMetrics();
+            source = SpeciesSimulation.Step(source, rules, seed: 42, metrics: metrics);
+            Assert.That(source.GetCell(1, 0).IsOccupied, Is.False);
+            Assert.That(source.GetCell(0, 0).Energy, Is.EqualTo(96));
+            Assert.That(source.GetCell(2, 0).Energy, Is.EqualTo(96));
+            Assert.That(metrics.GetActivity(SpeciesIds.Carnivore).FoodConsumed, Is.EqualTo(96f));
+
+            for (var tick = 1; tick < 600; tick++)
+            {
+                source = SpeciesSimulation.Step(source, rules, seed: 42);
+            }
+
+            Assert.That(source.GetCell(0, 0).IsCreature, Is.True);
+            Assert.That(source.GetCell(0, 0).Energy, Is.EqualTo(48));
+            Assert.That(source.GetCell(2, 0).IsCreature, Is.True);
+            Assert.That(source.GetCell(2, 0).Energy, Is.EqualTo(48));
+        }
+
+        [Test]
+        public void MeatResourceRemainsDistinctFromCustomPlantSpecies()
+        {
+            var customPlant = new SpeciesId("custom-plant");
+            var plant = SpeciesCell.Grass(customPlant, 10f);
+            var meat = plant.WithMeatResource(SpeciesIds.Herbivore, 6f);
+
+            Assert.That(plant.IsPlantResource, Is.True);
+            Assert.That(plant.IsMeatResource, Is.False);
+            Assert.That(meat.IsPlantResource, Is.True, "The terrain resource remains beneath the carcass.");
+            Assert.That(meat.IsMeatResource, Is.True);
+            Assert.That(meat.WithTerrainEnergy(12f).IsMeatResource, Is.True);
+            Assert.That(meat.WithTerrainResourceGrowthElapsedTicks(1).IsMeatResource, Is.True);
         }
 
         [Test]
@@ -2148,7 +2309,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void BlockedPredationRecordsAFailedFoodActionWithoutFoodConsumed()
+        public void NonlethalPredationDoesNotRecordFoodConsumption()
         {
             var source = new Grid<SpeciesCell>(2, 1);
             source.SetCell(0, 0, new SpeciesCell(SpeciesIds.Carnivore, energy: 1));
@@ -2193,9 +2354,9 @@ namespace SaltyGame.Tests
 
             Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(2));
             Assert.That(activity.FoodConsumed, Is.EqualTo(0f));
-            Assert.That(activity.FoodActionAttempts, Is.EqualTo(1));
+            Assert.That(activity.FoodActionAttempts, Is.Zero);
             Assert.That(activity.FoodActionSuccesses, Is.EqualTo(0));
-            Assert.That(activity.FoodActionFailures, Is.EqualTo(1));
+            Assert.That(activity.FoodActionFailures, Is.Zero);
         }
 
         [Test]

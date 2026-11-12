@@ -158,7 +158,8 @@ namespace SaltyGame
             decimal crowdingEnergyRemainder = 0m,
             SpeciesGestation gestation = default,
             SpeciesScentMarker scentMarker = default,
-            SpeciesScentMemory scentMemory = default)
+            SpeciesScentMemory scentMemory = default,
+            bool isMeatResource = false)
         {
             if (health < 0)
             {
@@ -266,6 +267,7 @@ namespace SaltyGame
             this.terrainId = terrainId;
             TerrainEnergy = terrainEnergy;
             this.isResourceSpecies = isResourceSpecies;
+            this.isMeatResource = isMeatResource && isOccupied && isResourceSpecies;
             this.isResourceTerrain = isResourceTerrain;
             this.resourceSpeciesId = resourceSpeciesId;
             this.isPassable = isPassable;
@@ -291,6 +293,7 @@ namespace SaltyGame
         }
 
         readonly bool isResourceSpecies;
+        readonly bool isMeatResource;
         readonly bool isResourceTerrain;
         readonly SpeciesId resourceSpeciesId;
         readonly TerrainId terrainId;
@@ -414,7 +417,11 @@ namespace SaltyGame
         public bool IsCreature => IsOccupied && !isResourceSpecies;
         public bool IsTerrainResource => isResourceTerrain && TerrainEnergy > 0f;
         public bool IsPlantResource => IsTerrainResource
-            || (IsOccupied && isResourceSpecies);
+            || (IsOccupied && isResourceSpecies && !isMeatResource);
+        public bool IsMeatResource => IsOccupied
+            && isResourceSpecies
+            && isMeatResource
+            && FoodReserve > 0f;
         public SpeciesId ResourceSpeciesId => isResourceTerrain ? resourceSpeciesId : default;
         public bool IsPassable => !terrainId.IsValid || isPassable;
         public float MovementCost => terrainId.IsValid ? movementCost : 1f;
@@ -517,6 +524,81 @@ namespace SaltyGame
                 gestation: preserveTracking ? Gestation : default,
                 scentMarker: ScentMarker,
                 scentMemory: preserveTracking ? ScentMemory : default);
+        }
+
+        public SpeciesCell WithMeatResource(SpeciesId species, float energy)
+        {
+            if (!species.IsValid)
+            {
+                throw new ArgumentException("Meat needs a valid prey species id.", nameof(species));
+            }
+
+            if (species == SpeciesIds.Plant)
+            {
+                throw new ArgumentException("Plant food cannot be represented as meat.", nameof(species));
+            }
+
+            if (energy < 0f || float.IsNaN(energy) || float.IsInfinity(energy))
+            {
+                throw new ArgumentOutOfRangeException(nameof(energy), energy,
+                    "Meat energy must be finite and non-negative.");
+            }
+
+            return energy <= 0f
+                ? WithoutEntity()
+                : new SpeciesCell(
+                    species,
+                    true,
+                    0,
+                    0,
+                    0,
+                    0,
+                    energy,
+                    false,
+                    TerrainId,
+                    TerrainEnergy,
+                    isResourceSpecies: true,
+                    isResourceTerrain,
+                    IsPassable,
+                    MovementCost,
+                    resourceSpeciesId,
+                    scentMarker: ScentMarker,
+                    isMeatResource: true);
+        }
+
+        public SpeciesCell WithMeatEnergy(float energy)
+        {
+            if (!IsMeatResource)
+            {
+                throw new InvalidOperationException("Only meat resources can change meat energy.");
+            }
+
+            if (energy < 0f || float.IsNaN(energy) || float.IsInfinity(energy))
+            {
+                throw new ArgumentOutOfRangeException(nameof(energy), energy,
+                    "Meat energy must be finite and non-negative.");
+            }
+
+            return energy <= 0f
+                ? WithoutEntity()
+                : new SpeciesCell(
+                    SpeciesId,
+                    true,
+                    0,
+                    0,
+                    0,
+                    0,
+                    energy,
+                    false,
+                    TerrainId,
+                    TerrainEnergy,
+                    isResourceSpecies: true,
+                    isResourceTerrain,
+                    IsPassable,
+                    MovementCost,
+                    resourceSpeciesId,
+                    scentMarker: ScentMarker,
+                    isMeatResource: true);
         }
 
         internal SpeciesCell PlaceCreatureOn(SpeciesCell tile)
@@ -728,7 +810,8 @@ namespace SaltyGame
                     reproductionCooldownTicksRemaining: ReproductionCooldownTicksRemaining,
                     gestation: Gestation,
                     scentMarker: ScentMarker,
-                    scentMemory: ScentMemory);
+                    scentMemory: ScentMemory,
+                    isMeatResource: isMeatResource);
             }
 
             return IsOccupied && isResourceSpecies ? WithoutEntity() : this;
@@ -791,7 +874,8 @@ namespace SaltyGame
                     : 0,
                 gestation: Gestation,
                 scentMarker: ScentMarker,
-                scentMemory: ScentMemory);
+                scentMemory: ScentMemory,
+                isMeatResource: isMeatResource);
         }
 
         public SpeciesCell WithTerrainResourceGrowthElapsedTicks(int ticks)
@@ -837,7 +921,8 @@ namespace SaltyGame
                 terrainResourceGrowthElapsedTicks: ticks,
                 gestation: Gestation,
                 scentMarker: ScentMarker,
-                scentMemory: ScentMemory);
+                scentMemory: ScentMemory,
+                isMeatResource: isMeatResource);
         }
 
         public SpeciesCell WithReproductionCooldown(int ticks)
@@ -977,7 +1062,7 @@ namespace SaltyGame
                 AttackCooldownTicksRemaining, EnergyRemainder, TrackingTargetEntityId,
                 TrackingTargetX, TrackingTargetY, TrackingTicksRemaining,
                 ReproductionCooldownTicksRemaining, ForagePhase, TerrainResourceGrowthElapsedTicks,
-                CrowdingEnergyRemainder, Gestation, marker, ScentMemory);
+                CrowdingEnergyRemainder, Gestation, marker, ScentMemory, isMeatResource);
         }
 
         public SpeciesCell WithScentMemory(SpeciesScentMemory memory)

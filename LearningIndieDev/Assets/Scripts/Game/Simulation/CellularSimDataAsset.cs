@@ -121,6 +121,7 @@ namespace SaltyGame
             [SerializeField, Min(0)] internal int intelligence;
             [SerializeField, Min(0)] internal int predatorDetectionRangeBonus;
             [SerializeField, Min(0)] internal int maximumEnergy;
+            [SerializeField, Min(1)] internal int maximumHealth = 1;
             [SerializeField, Min(1)] internal int litterMinimum = 1;
             [SerializeField, Min(1)] internal int litterMaximum = 1;
             [SerializeField, Min(0)] internal int gestationTicks = 48;
@@ -170,7 +171,8 @@ namespace SaltyGame
                     matingEnergyCostFraction: matingEnergyCostFraction,
                     distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
                     crowdingEnergyReduction: crowdingEnergyReduction,
-                    gestationTicks: role == SpeciesRole.Plant ? 0 : gestationTicks);
+                    gestationTicks: role == SpeciesRole.Plant ? 0 : gestationTicks,
+                    maximumHealth: maximumHealth);
             }
 
             internal static SpeciesDefinition From(SpeciesId species, float probability, SpeciesRules rules)
@@ -211,6 +213,7 @@ namespace SaltyGame
                     intelligence = rules.Awareness.Intelligence,
                     predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus,
                     maximumEnergy = rules.MaximumEnergy,
+                    maximumHealth = rules.MaximumHealth,
                     litterMinimum = rules.LitterMinimum,
                     litterMaximum = rules.LitterMaximum,
                     gestationTicks = rules.GestationTicks,

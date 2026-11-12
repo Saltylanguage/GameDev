@@ -20,7 +20,8 @@ namespace SaltyGame.EditorTests
                 SpeciesUpgradeCatalog.SeedDispersalId, SpeciesUpgradeCatalog.CrowdingToleranceId,
                 SpeciesUpgradeCatalog.ReproductiveDriveId, SpeciesUpgradeCatalog.KeenSensesId,
                 SpeciesUpgradeCatalog.LongVisionId, SpeciesUpgradeCatalog.FasterMovementId,
-                SpeciesUpgradeCatalog.ThreatExposureId, SpeciesUpgradeCatalog.LargerMaximumLitterId,
+                SpeciesUpgradeCatalog.ThreatExposureId, SpeciesUpgradeCatalog.QuickEscapeId,
+                SpeciesUpgradeCatalog.LargerMaximumLitterId,
                 SpeciesUpgradeCatalog.LargerMinimumLitterId,
             }));
             Assert.That(fallback.All(upgrade => upgrade.TargetSpecies == hare), Is.True);

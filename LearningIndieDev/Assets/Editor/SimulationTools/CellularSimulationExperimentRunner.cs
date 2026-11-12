@@ -55,6 +55,7 @@ namespace SaltyGame.EditorTools
         const string GridWidthArgument = "-gridWidth";
         const string GridHeightArgument = "-gridHeight";
         const string StartingPopulationsArgument = "-startingPopulations";
+        const string NodeStartingPopulationsArgument = "-nodeStartingPopulations";
         const string FoxIntroductionTicksArgument = "-foxIntroductionTicks";
         const string RunTicksArgument = "-runTicks";
         const string PhaseLengthTicksArgument = "-phaseLengthTicks";
@@ -243,6 +244,11 @@ namespace SaltyGame.EditorTools
             var hasMutationPolicy = !string.IsNullOrWhiteSpace(options.MutationPolicyId);
             var hasPhaseSchedule = phaseSchedule != null || authoredPhaseUpgradeSnapshots != null;
             var hasPhaseFlow = hasPhaseSchedule || hasMutationPolicy;
+            if (!string.IsNullOrWhiteSpace(options.NodeStartingPopulations)
+                && (!hasPhaseSchedule || hasMutationPolicy))
+                throw new ArgumentException(
+                    $"'{NodeStartingPopulationsArgument}' requires an explicit phase upgrade schedule.",
+                    NodeStartingPopulationsArgument);
             if (options.FoxIntroductionTicks.Length > 0
                 && (!data.SpeciesRules.TryGetValue(new SpeciesId("fox"), out var foxRules)
                     || foxRules.Role != SpeciesRole.Carnivore))
@@ -261,6 +267,18 @@ namespace SaltyGame.EditorTools
             {
                 activeGenomeSnapshot = activeGenomeSnapshot.IncludeSpecies(data.SpeciesRules.Keys);
                 data = ApplyGenomeToNaturalData(data, activeGenomeSnapshot);
+            }
+            var nodeStartingPopulations = string.IsNullOrWhiteSpace(options.NodeStartingPopulations)
+                ? null
+                : CommandLineOptions.ParseNodeStartingPopulations(
+                    options.NodeStartingPopulations,
+                    data,
+                    playerSpecies,
+                    options.PhasesPerNode,
+                    GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots));
+            if (nodeStartingPopulations != null)
+            {
+                data = CommandLineOptions.ApplyStartingPopulationOverrides(data, nodeStartingPopulations[0]);
             }
             var scheduledInitialSnapshots = phaseSchedule != null
                 ? CreateLegacyUpgradeSnapshots(phaseSchedule[0], options.PlayerSpeciesId)
@@ -331,6 +349,11 @@ namespace SaltyGame.EditorTools
                 {
                     "phases-per-node=" + options.PhasesPerNode,
                 }.ToArray();
+            if (!string.IsNullOrWhiteSpace(options.NodeStartingPopulations))
+                provenanceLoadout = new List<string>(provenanceLoadout)
+                {
+                    "node-starting-populations=" + options.NodeStartingPopulations,
+                }.ToArray();
             var selectedUpgrade = phaseSchedule == null && orderedLoadout.Length == 1
                 ? authoredUpgradeSnapshots == null
                     ? GetEffectiveUpgrade(orderedLoadout[0], options.UpgradeValueOverride)
@@ -355,7 +378,8 @@ namespace SaltyGame.EditorTools
                     options.MutationPolicyEarlyFirstChoice,
                     options.IncludeFinalStateDigest,
                     options.CaptureDetailedEvents, options.HarePurchasePolicy,
-                    activeGenomeSnapshot, options.FoxIntroductionTicks, options.PhasesPerNode);
+                    activeGenomeSnapshot, options.FoxIntroductionTicks, options.PhasesPerNode,
+                    nodeStartingPopulations);
             }
 
             return new ExperimentReport
@@ -428,6 +452,7 @@ namespace SaltyGame.EditorTools
                     : loadedData.RunTicks,
                 phaseLengthTicks = options.PhaseLengthTicks,
                 phasesPerNode = options.PhasesPerNode,
+                nodeStartingPopulations = options.NodeStartingPopulations ?? string.Empty,
                 phaseCount = hasPhaseFlow
                     ? GetPhaseCount(options, phaseSchedule, authoredPhaseUpgradeSnapshots)
                     : 0,
@@ -464,7 +489,8 @@ namespace SaltyGame.EditorTools
             string harePurchasePolicy = null,
             GenomeSimulationSnapshot activeGenomeSnapshot = null,
             int[] foxIntroductionTicks = null,
-            int phasesPerNode = 0)
+            int phasesPerNode = 0,
+            IReadOnlyDictionary<SpeciesId, int>[] nodeStartingPopulations = null)
         {
             if (!string.IsNullOrWhiteSpace(mutationPolicyId))
             {
@@ -498,7 +524,7 @@ namespace SaltyGame.EditorTools
                     phaseLengthTicks,
                     includeFinalStateDigest,
                     captureDetailedEvents, harePurchasePolicy, activeGenomeSnapshot,
-                    foxIntroductionTicks, phasesPerNode);
+                    foxIntroductionTicks, phasesPerNode, nodeStartingPopulations);
             }
 
             var initialGrid = SpeciesInitialGridFactory.Create(data, seed);
@@ -864,7 +890,8 @@ namespace SaltyGame.EditorTools
             string harePurchasePolicy = null,
             GenomeSimulationSnapshot activeGenomeSnapshot = null,
             int[] foxIntroductionTicks = null,
-            int phasesPerNode = 0)
+            int phasesPerNode = 0,
+            IReadOnlyDictionary<SpeciesId, int>[] nodeStartingPopulations = null)
         {
             var introductions = new List<PopulationIntroductionRecord>();
             var milestones = new ResearchMilestones();
@@ -971,13 +998,21 @@ namespace SaltyGame.EditorTools
                     data.WithRunTicks(totalTicks, data.StepInterval),
                     playerSpecies.Value,
                     activeSnapshots);
+                var nextNodeNumber = phasesPerNode > 0 && run.PhaseIndex % phasesPerNode == 0
+                    ? run.PhaseIndex / phasesPerNode + 1 : 0;
+                var nextNodePopulationOverrides = nextNodeNumber >= 2
+                    && nodeStartingPopulations != null
+                    && nextNodeNumber <= nodeStartingPopulations.Length
+                    ? nodeStartingPopulations[nextNodeNumber - 1]
+                    : null;
+                string nodeStartError = null;
                 if (!runner.InstallBoundaryState(nextData.SpeciesRules, activeExperimentalOptions, activeSnapshots)
-                    || (phasesPerNode > 0 && run.PhaseIndex % phasesPerNode == 0
-                        && !runner.TryStartNextSimulationNode(run.PhaseIndex / phasesPerNode + 1, out _))
+                    || (nextNodeNumber >= 2
+                        && !runner.TryStartNextSimulationNode(nextNodeNumber, nextNodePopulationOverrides, out nodeStartError))
                     || !run.ContinueWithoutUpgrade())
                 {
                     throw new InvalidOperationException(
-                        $"Could not install the scheduled loadout for phase {nextPhaseIndex + 1}.");
+                        $"Could not install the scheduled loadout for phase {nextPhaseIndex + 1}. {nodeStartError}");
                 }
 
                 activePlayerRules = nextData.SpeciesRules[playerSpecies];
@@ -2082,6 +2117,7 @@ namespace SaltyGame.EditorTools
             public int RunTicks { get; private set; }
             public int PhaseLengthTicks { get; private set; }
             public int PhasesPerNode { get; private set; }
+            public string NodeStartingPopulations { get; private set; }
             public string MutationPolicyId { get; private set; }
             public bool MutationPolicyEarlyFirstChoice { get; private set; }
             public string HarePurchasePolicy { get; private set; }
@@ -2279,6 +2315,7 @@ namespace SaltyGame.EditorTools
                     RunTicks = runTicks,
                     PhaseLengthTicks = phaseLengthTicks,
                     PhasesPerNode = phasesPerNode,
+                    NodeStartingPopulations = GetOptionalValue(arguments, NodeStartingPopulationsArgument),
                     MutationPolicyId = mutationPolicyId,
                     HarePurchasePolicy = harePurchasePolicy,
                     MutationPolicyEarlyFirstChoice = mutationPolicyEarlyFirstChoice,
@@ -2290,7 +2327,69 @@ namespace SaltyGame.EditorTools
                 };
             }
 
-            static int[] ParseFoxIntroductionTicks(IReadOnlyList<string> arguments, string[][] schedule, int phaseTicks)
+        public static IReadOnlyDictionary<SpeciesId, int>[] ParseNodeStartingPopulations(
+            string schedule,
+            CellularSimData data,
+            SpeciesId playerSpecies,
+            int phasesPerNode,
+            int phaseCount)
+        {
+            if (string.IsNullOrWhiteSpace(schedule)) return null;
+            if (phasesPerNode <= 0 || phaseCount <= phasesPerNode || phaseCount % phasesPerNode != 0)
+                throw new ArgumentException(
+                    $"'{NodeStartingPopulationsArgument}' requires a multi-node phase schedule and '{PhasesPerNodeArgument}'.",
+                    NodeStartingPopulationsArgument);
+
+            var nodeCount = phaseCount / phasesPerNode;
+            var nodes = schedule.Split(new[] { ';' }, StringSplitOptions.None);
+            if (nodes.Length != nodeCount)
+                throw new ArgumentException(
+                    $"'{NodeStartingPopulationsArgument}' must provide one population map per simulation node ({nodeCount}).",
+                    NodeStartingPopulationsArgument);
+
+            var parsed = new IReadOnlyDictionary<SpeciesId, int>[nodes.Length];
+            for (var nodeIndex = 0; nodeIndex < nodes.Length; nodeIndex++)
+            {
+                var node = nodes[nodeIndex].Trim();
+                var populations = new Dictionary<SpeciesId, int>();
+                if (!string.IsNullOrEmpty(node)
+                    && !string.Equals(node, "none", StringComparison.OrdinalIgnoreCase))
+                {
+                    foreach (var entry in node.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        var pair = entry.Split(new[] { '=' }, StringSplitOptions.None);
+                        if (pair.Length != 2
+                            || !int.TryParse(pair[1].Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out var count)
+                            || count < 0)
+                            throw new ArgumentException(
+                                $"'{NodeStartingPopulationsArgument}' must use species=count pairs with nonnegative counts.",
+                                NodeStartingPopulationsArgument);
+
+                        var species = new SpeciesId(pair[0].Trim());
+                        if (species == playerSpecies || !data.SpeciesRules.ContainsKey(species)
+                            || populations.ContainsKey(species))
+                            throw new ArgumentException(
+                                $"'{NodeStartingPopulationsArgument}' contains the played species, an unknown species, or a duplicate species at node {nodeIndex + 1}.",
+                                NodeStartingPopulationsArgument);
+                        populations.Add(species, count);
+                    }
+                }
+                parsed[nodeIndex] = populations;
+            }
+
+            return parsed;
+        }
+
+        public static CellularSimData ApplyStartingPopulationOverrides(
+            CellularSimData data,
+            IReadOnlyDictionary<SpeciesId, int> overrides)
+        {
+            var populations = new Dictionary<SpeciesId, int>(data.StartingPopulations);
+            foreach (var entry in overrides) populations[entry.Key] = entry.Value;
+            return data.WithStartingPopulations(populations);
+        }
+
+        static int[] ParseFoxIntroductionTicks(IReadOnlyList<string> arguments, string[][] schedule, int phaseTicks)
             {
                 var text = GetOptionalValue(arguments, FoxIntroductionTicksArgument);
                 if (text == null) return Array.Empty<int>();
@@ -2937,6 +3036,7 @@ namespace SaltyGame.EditorTools
             public int runTicks;
             public int phaseLengthTicks;
             public int phasesPerNode;
+            public string nodeStartingPopulations;
             public int phaseCount;
             public string[] phaseUpgradeSchedule;
             public string mutationPolicyId;

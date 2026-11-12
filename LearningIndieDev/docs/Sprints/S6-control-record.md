@@ -20,6 +20,39 @@ For matched seeds under a defined **no-intervention** schedule, the first simula
 
 This decision supersedes the resource-sustainability candidate in FP-02 and focuses FP-01, FP-03, FP-04, and FP-05 on predator pressure and the three responses. Balance iteration for this introductory scenario should test those hypotheses first; food, population, and stat tuning should support that experience.
 
+## November 11 carcass feeding and Fox energy first pass
+
+Josh approved a shared carcass model for the low-population Hare/Fox matchup:
+a lethal attack replaces the living Hare with a meat resource carrying the
+Hare's authored energy value. Multiple Foxes may eat from the same carcass;
+each takes only enough energy to fill its current stomach, leaving the rest for
+another feeder. This makes the death consequential to Fox survival without
+removing the Hare from the board and granting all food to the attacking Fox at
+once.
+
+For the agreed comparison window, **600 ticks represents 48 hours**. The Hare
+currently yields 96 energy. The first-pass Fox values are start energy 48,
+maximum energy 96, and upkeep of 2 energy every 25 ticks (48 per node). The
+calorie-only prediction is one Hare per two Foxes. Foxes forage below the
+effective 72-energy threshold; their current 25% mating threshold and 15% mating
+cost fractions remain in force. Fox offspring begin at 48 energy. These are
+provisional values and a ledger calculation, not a measured survival ratio.
+
+The portable mechanics check confirms the local energy path: one 96-energy
+Hare carcass fills two Foxes from 48 to 96, and both finish a no-reproduction
+600-tick fixture alive at 48. The natural ecology result can differ through
+encounter timing, missed attacks, reproduction, and spatial access. The
+[five-arm, 20-seed-per-arm diagnostic contract](../Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
+was approved by Josh on November 12. Seed runs have not started because the
+worktree's Unity Editor remains unreachable. No ratio or production value is
+approved from the arithmetic alone.
+
+The separate [15-condition starting-population failure-rate draft](../Research/Experiments/S6-Population-Curve-20261111/CONTRACT-DRAFT.md)
+was superseded before execution after Josh clarified the question. Its
+generated dry-run plan and pre-carcass snapshot are historical preparation and
+must not be reused. The map-size follow-up should be designed after the
+carcass-value results identify a useful count region.
+
 ## November 10 node-boundary design correction
 
 Josh clarified the population contract for this and future playable species: each simulation node has static, trackable starting populations; only the population count of the species being played carries into the next node. All individuals are recreated with default state. All other species and resources reset to their authored starting populations at the node boundary. For the Hare route, Hares carry over as a count while Foxes and Plants reset. This rule must work with more than two species. Rounds within a node continue normally; the reset happens between simulation nodes.

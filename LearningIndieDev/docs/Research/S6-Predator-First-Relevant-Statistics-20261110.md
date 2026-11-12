@@ -4,6 +4,12 @@
 **Source revision:** `feature/s6-fun-pass`, commit `652c87c9` (Nov 10, 2026).
 **Terminology:** The player-facing rabbit is the simulation species with ID `hare`. There is no separate `rabbit` species in the authored Forest Edge scenario.
 
+> **Update, November 11:** This report preserves the November 10 source snapshot.
+> Fox energy values in the table below were changed for the carcass-feeding
+> first pass. See the [November 11 handoff](../handoffs/2026-11-11-carcass-feeding-first-pass.md)
+> for current provisional values and verification status; do not use the old
+> Fox energy rows as current tuning.
+
 ## Authored Forest Edge starting point
 
 The production [ForestEdge scenario](../../Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset) starts with **400 Plants, 55 Hares, and 20 Foxes** on a 36×20 grid. The recent Fox-count screens overrode the Fox count per arm; they did not change the scenario asset. Under the current node rule, the Hare count carries forward, while fresh Hares are created with default individual state and Foxes/Plants reset to their fixed starting counts.

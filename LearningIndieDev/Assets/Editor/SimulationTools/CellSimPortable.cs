@@ -87,6 +87,7 @@ namespace SaltyGame.EditorTools
             ExperimentalFeaturesArgument, FoxAttackCooldownTicksArgument,
             PreContactAvoidanceChanceArgument, CoupledSpeciesResponsesArgument,
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
+            NodeStartingPopulationsArgument,
             RunTicksArgument, PhaseLengthTicksArgument, PhasesPerNodeArgument, PhaseUpgradeScheduleArgument,
             PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
             MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
@@ -784,6 +785,7 @@ namespace SaltyGame.EditorTools
             public SpeciesRole role;
             public int forageBelowEnergy;
             public int maximumEnergy;
+            public int maximumHealth;
             public int litterMinimum;
             public int litterMaximum;
             public int attackModifier;
@@ -830,6 +832,7 @@ namespace SaltyGame.EditorTools
                     role = value.Role,
                     forageBelowEnergy = value.ForageBelowEnergy,
                     maximumEnergy = value.MaximumEnergy,
+                    maximumHealth = value.MaximumHealth,
                     litterMinimum = value.LitterMinimum,
                     litterMaximum = value.LitterMaximum,
                     attackModifier = value.AttackModifier,
@@ -874,6 +877,7 @@ namespace SaltyGame.EditorTools
                 role: role,
                 forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: maximumEnergy,
+                maximumHealth: maximumHealth == 0 ? 1 : maximumHealth,
                 litterMinimum: litterMinimum,
                 litterMaximum: litterMaximum,
                 attackModifier: attackModifier,

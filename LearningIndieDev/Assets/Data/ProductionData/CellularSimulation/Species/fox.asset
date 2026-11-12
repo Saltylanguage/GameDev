@@ -58,8 +58,8 @@ MonoBehaviour:
   reproductionChance: 0.45
   reproductionFoodRequired: 48
   maxReproductionGroupSize: 3
-  startingEnergy: 120
-  forageBelowEnergy: 120
+  startingEnergy: 48
+  forageBelowEnergy: 72
   forageThresholdFraction: 0.75
   matingEnergyThresholdFraction: 0.25
   matingEnergyCostFraction: 0.15
@@ -69,11 +69,11 @@ MonoBehaviour:
   startingFoodReserve: 0
   seedDropChance: 0
   energyValue: 100
-  metabolism: 1
-  energyLossIntervalTicks: 1
+  metabolism: 2
+  energyLossIntervalTicks: 25
   visionRange: 12
   intelligence: 1
-  maximumEnergy: 240
+  maximumEnergy: 96
   litterMinimum: 1
   litterMaximum: 1
   gestationTicks: 48

@@ -151,6 +151,7 @@ namespace SaltyGame
             IsCreature = cell.IsCreature;
             IsTerrainResource = cell.IsTerrainResource;
             IsPlantResource = cell.IsPlantResource;
+            IsMeatResource = cell.IsMeatResource;
             IsPassable = cell.IsPassable;
             SpeciesId = cell.SpeciesId;
             ResourceSpeciesId = cell.ResourceSpeciesId;
@@ -179,6 +180,7 @@ namespace SaltyGame
         public bool IsCreature { get; }
         public bool IsTerrainResource { get; }
         public bool IsPlantResource { get; }
+        public bool IsMeatResource { get; }
         public bool IsPassable { get; }
         public SpeciesId SpeciesId { get; }
         public SpeciesId ResourceSpeciesId { get; }

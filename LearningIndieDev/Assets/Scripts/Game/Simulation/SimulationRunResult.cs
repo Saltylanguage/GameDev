@@ -114,6 +114,11 @@ namespace SaltyGame
                         hasPopulation = true;
                     }
 
+                    if (cell.IsMeatResource)
+                    {
+                        hasPopulation = true;
+                    }
+
                     if (!hasPopulation)
                     {
                         empty++;
@@ -348,6 +353,44 @@ namespace SaltyGame
             boundaryPopulationAdded.TryGetValue(species, out var added);
             boundaryPopulationAdded[species] = added + amount;
             return true;
+        }
+
+        internal bool InstallBoundaryHealthBonus(SpeciesId species, int amount)
+        {
+            if (Status != SimulationRunStatus.AwaitingDecision || !species.IsValid || amount <= 0)
+            {
+                return false;
+            }
+
+            Cells = AddHealth(Cells, species, amount);
+            initialCells = AddHealth(initialCells, species, amount);
+            populationHistory[populationHistory.Count - 1] = CapturePopulation();
+            return true;
+        }
+
+        static Grid<SpeciesCell> AddHealth(Grid<SpeciesCell> cells, SpeciesId species, int amount)
+        {
+            var next = cells.Copy();
+            for (var y = 0; y < next.Height; y++)
+            {
+                for (var x = 0; x < next.Width; x++)
+                {
+                    var cell = next.GetCell(x, y);
+                    if (cell.IsCreature && cell.SpeciesId == species)
+                    {
+                        next.SetCell(x, y, cell.WithEntity(
+                            species,
+                            checked(cell.Health + amount),
+                            cell.Energy,
+                            cell.Age,
+                            cell.FoodEaten,
+                            cell.FoodReserve,
+                            cell.IsAlpha));
+                    }
+                }
+            }
+
+            return next;
         }
 
         internal bool InstallFieldDataBoundaryCells(

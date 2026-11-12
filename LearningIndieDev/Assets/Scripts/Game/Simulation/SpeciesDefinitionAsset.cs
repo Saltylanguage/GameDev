@@ -44,6 +44,7 @@ namespace SaltyGame
         [SerializeField, Min(0)] int visionRange;
         [SerializeField, Min(0)] int intelligence;
         [SerializeField, Min(0)] int maximumEnergy;
+        [SerializeField, Min(1)] int maximumHealth = 1;
         [SerializeField, Min(1)] int litterMinimum = 1;
         [SerializeField, Min(1)] int litterMaximum = 1;
         [SerializeField, Min(0)] int gestationTicks = 48;
@@ -96,7 +97,8 @@ namespace SaltyGame
                 matingEnergyCostFraction: matingEnergyCostFraction,
                 distributeMatingEnergyToOffspring: distributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
-                gestationTicks: Role == SpeciesRole.Plant ? 0 : gestationTicks);
+                gestationTicks: Role == SpeciesRole.Plant ? 0 : gestationTicks,
+                maximumHealth: maximumHealth);
         }
 
         public bool TryCreateAlphaRule(out AlphaOffspringRule rule)

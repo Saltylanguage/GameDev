@@ -148,6 +148,14 @@ namespace SaltyGame
 
         public bool TryStartNextSimulationNode(int nodeNumber, out string error)
         {
+            return TryStartNextSimulationNode(nodeNumber, null, out error);
+        }
+
+        public bool TryStartNextSimulationNode(
+            int nodeNumber,
+            IReadOnlyDictionary<SpeciesId, int> fixedPopulationOverrides,
+            out string error)
+        {
             error = null;
             if (simulationData == null || Run.Status != SimulationRunStatus.AwaitingDecision || nodeNumber < 2)
             {
@@ -156,6 +164,23 @@ namespace SaltyGame
             }
 
             var populations = new Dictionary<SpeciesId, int>(simulationData.StartingPopulations);
+            if (fixedPopulationOverrides != null)
+            {
+                foreach (var entry in fixedPopulationOverrides)
+                {
+                    if (entry.Key == Run.PlayerSpeciesId)
+                    {
+                        error = "The played species population must carry over from the previous node.";
+                        return false;
+                    }
+                    if (!simulationData.SpeciesRules.ContainsKey(entry.Key) || entry.Value < 0)
+                    {
+                        error = $"The next node has an invalid fixed population override for {entry.Key}.";
+                        return false;
+                    }
+                    populations[entry.Key] = entry.Value;
+                }
+            }
             foreach (var species in simulationData.SpeciesRules.Keys)
             {
                 if (!populations.ContainsKey(species))
@@ -196,6 +221,22 @@ namespace SaltyGame
             if (nextRules == null)
             {
                 throw new ArgumentNullException(nameof(nextRules));
+            }
+
+            foreach (var entry in nextRules)
+            {
+                if (rules.TryGetValue(entry.Key, out var currentRules)
+                    && entry.Value.MaximumHealth > currentRules.MaximumHealth)
+                {
+                    if (!Run.InstallBoundaryHealthBonus(
+                        entry.Key,
+                        entry.Value.MaximumHealth - currentRules.MaximumHealth))
+                    {
+                        return false;
+                    }
+
+                    previousCells = Run.Cells;
+                }
             }
 
             if (selectedUpgrade != null && selectedUpgrade.PopulationToAdd > 0
@@ -392,7 +433,7 @@ namespace SaltyGame
                 {
                     nextCells.SetCell(x, y, plant
                         ? cell.WithPlantResource(resourceTerrain, species, targetRules.StartingFoodReserve)
-                        : cell.WithEntity(species, 1, energy, 0, 0, 0f));
+                        : cell.WithEntity(species, targetRules.MaximumHealth, energy, 0, 0, 0f));
                 }
                 else
                 {

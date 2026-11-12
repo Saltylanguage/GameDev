@@ -100,7 +100,7 @@ namespace SaltyGame
                     : rules.Role == SpeciesRole.Plant
                         ? SpeciesCell.FromTerrain(plantTerrain, rules.StartingFoodReserve, species)
                             .WithScentMarker(cell.ScentMarker)
-                        : cell.WithEntity(species, 1, rules.MaximumEnergy > 0 ? Math.Min(rules.StartingEnergy, rules.MaximumEnergy) : rules.StartingEnergy, 0, 0, 0f));
+                        : cell.WithEntity(species, rules.MaximumHealth, rules.MaximumEnergy > 0 ? Math.Min(rules.StartingEnergy, rules.MaximumEnergy) : rules.StartingEnergy, 0, 0, 0f));
             }
             return next;
         }

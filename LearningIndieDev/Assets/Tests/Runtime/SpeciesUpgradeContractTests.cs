@@ -48,6 +48,74 @@ namespace SaltyGame.Tests
             Assert.That(definition.ValueKind, Is.EqualTo(SpeciesAttributeValueKind.Float));
             Assert.That(SpeciesAttributeRegistry.Contains(SpeciesAttributeIds.VisionRange), Is.True);
             Assert.That(SpeciesAttributeRegistry.Contains(SpeciesAttributeIds.AttackAmount), Is.True);
+            Assert.That(SpeciesAttributeRegistry.Contains(SpeciesAttributeIds.MaximumHealth), Is.True);
+        }
+
+        [Test]
+        public void ToughHideRaisesMaximumHealthThroughTheSnapshotContract()
+        {
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId);
+            var snapshot = upgrade.CreateSnapshot(new SpeciesId("hare"));
+            var rules = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+                EmptyPattern, null, EmptyPattern, 0, metabolism: 0);
+
+            var legacyResult = upgrade.Apply(rules);
+            var snapshotResult = snapshot.Apply(rules);
+
+            Assert.That(snapshot.Modifiers, Has.Count.EqualTo(1));
+            Assert.That(snapshot.Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.MaximumHealth));
+            Assert.That(snapshot.Modifiers[0].SignedValue, Is.EqualTo(2f));
+            Assert.That(legacyResult.MaximumHealth, Is.EqualTo(3));
+            Assert.That(snapshotResult.MaximumHealth, Is.EqualTo(legacyResult.MaximumHealth));
+            Assert.That(snapshotResult.BlockAmount, Is.EqualTo(rules.BlockAmount));
+        }
+
+        [Test]
+        public void QuickEscapeAddsOnlyThreatenedMovementThroughTheSnapshotContract()
+        {
+            var hare = new SpeciesId("hare");
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.QuickEscapeId);
+            var snapshot = upgrade.CreateSnapshot(hare);
+            var rules = CreateRules(movementSpeed: 1f, metabolism: 1, awareness: null);
+            var result = snapshot.Apply(rules);
+
+            Assert.That(snapshot.DisplayName, Is.EqualTo("QUICK ESCAPE"));
+            Assert.That(snapshot.Description, Does.Contain("while Threatened"));
+            Assert.That(snapshot.Modifiers, Has.Count.EqualTo(1));
+            Assert.That(snapshot.Modifiers[0].AttributeId, Is.EqualTo(SpeciesAttributeIds.FleeMovementSpeedBonus));
+            Assert.That(snapshot.Modifiers[0].SignedValue, Is.EqualTo(SpeciesUpgradeCatalog.QuickEscapeFleeSpeedPerLevel));
+            Assert.That(result.FleeMovementSpeedBonus, Is.EqualTo(SpeciesUpgradeCatalog.QuickEscapeFleeSpeedPerLevel));
+            Assert.That(result.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
+        }
+
+        [Test]
+        public void InstallingToughHideRaisesCurrentAndNewHareHealth()
+        {
+            var hare = new SpeciesId("hare");
+            var rules = new Dictionary<SpeciesId, SpeciesRules>
+            {
+                [hare] = new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
+                    EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f, metabolism: 0),
+            };
+            var cells = new Grid<SpeciesCell>(3, 1);
+            cells.SetCell(0, 0, new SpeciesCell(hare, health: 1, energy: 10));
+            var run = new SimulationRunState(cells, hare, seed: 42, durationSeconds: 1f, targetTicks: 2);
+            run.ConfigureContinuousPhases(1);
+            var runner = new SpeciesSimulationRunner(run, rules, 0.1f, stopOnPlayerExtinction: false);
+            runner.Start();
+            Assert.That(runner.AdvanceOneTick(), Is.True);
+            Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.AwaitingDecision));
+
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId)
+                .CreateSnapshot(hare);
+            var upgradedRules = new Dictionary<SpeciesId, SpeciesRules>(rules)
+            {
+                [hare] = upgrade.Apply(rules[hare]),
+            };
+            Assert.That(runner.InstallBoundaryState(upgradedRules, null, new[] { upgrade }), Is.True);
+            Assert.That(run.Cells.GetCell(0, 0).Health, Is.EqualTo(3));
+            Assert.That(runner.TryAddBoundaryPopulation(hare, 1), Is.True);
+            Assert.That(run.Cells.GetCell(1, 0).Health, Is.EqualTo(3));
         }
 
         [Test]

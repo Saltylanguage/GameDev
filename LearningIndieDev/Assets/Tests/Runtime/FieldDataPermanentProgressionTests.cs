@@ -80,6 +80,21 @@ namespace SaltyGame.Tests
         }
 
         [Test]
+        public void QuickEscapeIsAvailableAsAFieldDataAndPhaseMutation()
+        {
+            var hare = new SpeciesId("hare");
+            var fieldData = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
+            var phaseOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                SpeciesUpgradeCatalog.QuickEscapeId, rotation: 0, seed: 42);
+
+            Assert.That(fieldData.Any(value => value.Id == SpeciesUpgradeCatalog.QuickEscapeId), Is.True);
+            Assert.That(phaseOffer.Any(value => value.Id == SpeciesUpgradeCatalog.QuickEscapeId), Is.True);
+            Assert.That(
+                SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(hare, SpeciesUpgradeCatalog.QuickEscapeId),
+                Is.EqualTo(SpeciesUpgradeCatalog.QuickEscapeMaxLevel));
+        }
+
+        [Test]
         public void LegacyPrototypeAllocationRemainsEligibleAfterProfileMigration()
         {
             var hare = new SpeciesId("hare");
