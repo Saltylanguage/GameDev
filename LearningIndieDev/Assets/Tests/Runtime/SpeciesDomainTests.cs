@@ -1385,7 +1385,8 @@ namespace SaltyGame.Tests
                     startingEnergy: 1,
                     forageBelowEnergy: 5,
                     metabolism: 0,
-                    awareness: new SpeciesAwarenessRules(visionRange: 1)),
+                    awareness: new SpeciesAwarenessRules(visionRange: 1),
+                    role: SpeciesRole.Carnivore),
                 [SpeciesIds.Herbivore] = new SpeciesRules(
                     movementSpeed: 0f,
                     movementPattern: EmptyPattern,
@@ -1399,7 +1400,8 @@ namespace SaltyGame.Tests
                     reproductionNeighborCount: 0,
                     reproductionChance: 0f,
                     energyValue: 4,
-                    metabolism: 0),
+                    metabolism: 0,
+                    role: SpeciesRole.Herbivore),
             };
 
             var metrics = new SpeciesSimulationMetrics();
@@ -1416,6 +1418,9 @@ namespace SaltyGame.Tests
             Assert.That(activity.CombatKills, Is.EqualTo(1));
             Assert.That(activity.FoodConsumed, Is.Zero);
             Assert.That(activity.FoodActionAttempts, Is.Zero);
+            Assert.That(metrics.GetHerbivoreEncounters(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(metrics.GetHerbivorePreyed(SpeciesIds.Herbivore), Is.EqualTo(1));
+            Assert.That(metrics.CreateHerbivoreStatLine(SpeciesIds.Herbivore, 1, 0).PopulationReconciled, Is.True);
 
             next = SpeciesSimulation.Step(next, rules, seed: 42, metrics: metrics);
             activity = metrics.GetActivity(SpeciesIds.Carnivore);

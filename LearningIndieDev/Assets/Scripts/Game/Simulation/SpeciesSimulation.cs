@@ -859,8 +859,7 @@ namespace SaltyGame
                         SpeciesRules targetRules = null;
                         var hasTargetRules = target.IsCreature
                             && rules.TryGetValue(target.SpeciesId, out targetRules);
-                        var isCarnivoreHerbivoreInteraction = collectSpeciesStatLines
-                            && attackerRules.Role == SpeciesRole.Carnivore
+                        var isCarnivoreHerbivoreInteraction = attackerRules.Role == SpeciesRole.Carnivore
                             && hasTargetRules
                             && targetRules.Role == SpeciesRole.Herbivore;
                         var isPredatorPreyInteraction = collectSpeciesStatLines
