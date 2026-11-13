@@ -102,10 +102,11 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
+            // Reproduction chance is clamped during application; tolerate float accumulation at 1.
             return IsMutationResearched(upgrade.Id)
                 && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
                 && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
-                    || CurrentRules.ReproductionChance + upgrade.Value <= 1f);
+                    || CurrentRules.ReproductionChance + upgrade.Value <= 1f + 0.000001f);
         }
 
         public bool TryApplyFreeUpgrade(SpeciesUpgrade upgrade)

@@ -789,7 +789,7 @@ namespace SaltyGame.Tests
 
         [TestCase(false)]
         [TestCase(true)]
-        public void FiveHerbivoreSkillsStackIndependentlyAndStopAtTen(bool reverse)
+        public void FiveHerbivoreSkillsStackIndependentlyAndStopAtTheirCaps(bool reverse)
         {
             var ids = new[] { "threat-exposure", "tough-hide", "efficient-digestion",
                 "reproductive-drive", "crowding-tolerance" };
@@ -800,19 +800,30 @@ namespace SaltyGame.Tests
             var rules = CreateRules();
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
             progression.AddCurrency(275);
+            var expectedOrder = new List<string>();
+            var expectedCurrency = 275;
             for (var level = 1; level <= 10; level++)
             {
                 foreach (var id in ids)
                 {
-                    Assert.That(progression.TryPurchase(SpeciesUpgradeCatalog.Create(id)), Is.True);
+                    var upgrade = SpeciesUpgradeCatalog.Create(id);
+                    if (level > SpeciesUpgradeCatalog.GetMaxLevel(id))
+                    {
+                        continue;
+                    }
+
+                    Assert.That(progression.TryPurchase(upgrade), Is.True);
+                    expectedOrder.Add(id);
+                    expectedCurrency -= upgrade.Cost;
                 }
                 Assert.That(progression.CurrentRules.FleeMovementSpeedBonus, Is.EqualTo(rules.FleeMovementSpeedBonus));
-                Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f).Within(0.00001f));
-                Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
-                Assert.That(progression.CurrentRules.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + 0.1f * level).Within(0.00001f));
-                Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel * level).Within(0.00001f));
+                Assert.That(progression.PreContactAvoidanceChance, Is.EqualTo(Math.Min(level, SpeciesUpgradeCatalog.ThreatExposureMaxLevel) * 0.08f).Within(0.00001f));
+                Assert.That(progression.CurrentRules.MaximumHealth, Is.EqualTo(rules.MaximumHealth + 2 * Math.Min(level, SpeciesUpgradeCatalog.ToughHideMaxLevel)));
+                Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount));
+                Assert.That(progression.CurrentRules.DigestionEnergyBonus, Is.EqualTo(rules.DigestionEnergyBonus + SpeciesUpgradeCatalog.EfficientDigestionBonusPerLevel * Math.Min(level, SpeciesUpgradeCatalog.EfficientDigestionMaxLevel)).Within(0.00001f));
+                Assert.That(progression.CurrentRules.ReproductionChance, Is.EqualTo(Math.Min(1f, rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel * Math.Min(level, SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel))).Within(0.00001f));
                 Assert.That(progression.CurrentRules.CrowdingTolerance, Is.EqualTo(rules.CrowdingTolerance));
-                Assert.That(progression.CurrentRules.CrowdingEnergyReduction, Is.EqualTo(level * 0.1f).Within(0.00001f));
+                Assert.That(progression.CurrentRules.CrowdingEnergyReduction, Is.EqualTo(Math.Min(level, SpeciesUpgradeCatalog.CrowdingToleranceMaxLevel) * SpeciesUpgradeCatalog.CrowdingToleranceBonusPerLevel).Within(0.00001f));
                 Assert.That(progression.CurrentRules.MaxReproductionGroupSize, Is.EqualTo(rules.MaxReproductionGroupSize));
                 Assert.That(progression.CurrentRules.MaximumEnergy, Is.EqualTo(rules.MaximumEnergy));
                 Assert.That(progression.CurrentRules.MovementSpeed, Is.EqualTo(rules.MovementSpeed));
@@ -820,16 +831,16 @@ namespace SaltyGame.Tests
             var cappedRules = progression.CurrentRules;
             foreach (var id in ids)
             {
-                Assert.That(progression.GetUpgradeLevel(id), Is.EqualTo(10));
+                Assert.That(progression.GetUpgradeLevel(id), Is.EqualTo(SpeciesUpgradeCatalog.GetMaxLevel(id)));
                 Assert.That(progression.TryPurchase(SpeciesUpgradeCatalog.Create(id)), Is.False);
             }
             Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
-            Assert.That(progression.Currency, Is.EqualTo(25));
-            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(50));
-            Assert.That(progression.AppliedRunUpgrades, Has.Count.EqualTo(50));
-            for (var index = 0; index < 50; index++)
+            Assert.That(progression.Currency, Is.EqualTo(expectedCurrency));
+            Assert.That(progression.PurchasedUpgradeCount, Is.EqualTo(expectedOrder.Count));
+            Assert.That(progression.AppliedRunUpgrades, Has.Count.EqualTo(expectedOrder.Count));
+            for (var index = 0; index < expectedOrder.Count; index++)
             {
-                Assert.That(progression.OrderedUpgradeIds[index], Is.EqualTo(ids[index % 5]));
+                Assert.That(progression.OrderedUpgradeIds[index], Is.EqualTo(expectedOrder[index]));
             }
         }
 
@@ -876,7 +887,7 @@ namespace SaltyGame.Tests
             {
                 Assert.That(progression.CanPurchase(upgrade), Is.True);
                 Assert.That(progression.TryPurchase(upgrade), Is.True);
-                Assert.That(progression.CurrentRules.BlockAmount, Is.EqualTo(rules.BlockAmount + 2 * level));
+                Assert.That(progression.CurrentRules.MaximumHealth, Is.EqualTo(rules.MaximumHealth + 2 * level));
                 Assert.That(progression.GetUpgradeLevel(upgrade.Id), Is.EqualTo(level));
             }
             var cappedRules = progression.CurrentRules;
@@ -955,7 +966,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void ReproductiveDrivePurchasesStopAtTenWithoutSpendingOrApplyingAgain()
+        public void ReproductiveDrivePurchasesStopAtFiveWithoutSpendingOrApplyingAgain()
         {
             var rules = CreateRules();
             var progression = new SpeciesProgression(new SpeciesDefinition(SpeciesArchetype.Herbivore, rules));
@@ -982,12 +993,12 @@ namespace SaltyGame.Tests
             Assert.That(progression.CanPurchase(upgrade), Is.False);
             Assert.That(progression.TryPurchase(upgrade), Is.False);
             Assert.That(progression.CurrentRules, Is.SameAs(cappedRules));
-            Assert.That(progression.Currency, Is.EqualTo(5));
+            Assert.That(progression.Currency, Is.EqualTo(55 - SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel * upgrade.Cost));
             Assert.That(
                 progression.CurrentRules.ReproductionChance,
                 Is.EqualTo(rules.ReproductionChance + SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel * SpeciesUpgradeCatalog.ReproductiveDriveChancePerLevel)
                     .Within(0.0001f));
-            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(10));
+            Assert.That(progression.OrderedUpgradeIds, Has.Count.EqualTo(SpeciesUpgradeCatalog.ReproductiveDriveMaxLevel));
         }
 
         [TestCase(false)]
@@ -1042,14 +1053,15 @@ namespace SaltyGame.Tests
         {
             var hareId = new SpeciesId("hare");
             var foxId = new SpeciesId("fox");
+            var right = new GridPattern(new[] { Vector2Int.right });
             var foxRules = new SpeciesRules(
                 movementSpeed: 0f,
                 movementPattern: EmptyPattern,
-                attackPattern: new GridPattern(new[] { Vector2Int.right }),
+                attackPattern: right,
                 attackAmount: 2,
                 blockPattern: EmptyPattern,
                 blockAmount: 0,
-                dietPattern: EmptyPattern,
+                dietPattern: right,
                 dietTarget: hareId,
                 reproductionPattern: EmptyPattern,
                 reproductionNeighborCount: 0,
@@ -1057,7 +1069,9 @@ namespace SaltyGame.Tests
                 metabolism: 0,
                 role: SpeciesRole.Carnivore,
                 attackModifier: 20,
-                damageAmount: 2);
+                damageAmount: 2,
+                forageBelowEnergy: 20,
+                awareness: new SpeciesAwarenessRules(visionRange: 1));
             var hareRules = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).Apply(
                 new SpeciesRules(0f, EmptyPattern, EmptyPattern, 0, EmptyPattern, 0,
                     EmptyPattern, null, EmptyPattern, 0, reproductionChance: 0f, metabolism: 0));
