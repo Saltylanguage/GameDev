@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.reproductive-drive
   displayName: Reproductive Drive
-  description: Unlocks Reproductive Drive as a journey Mutation. Not offered at 100%
-    reproduction chance. Cost and path are test values.
+  description: Unlocks Reproductive Drive as a journey Mutation.
   targetSpeciesId: hare
-  prerequisiteNodeIds: []
-  rabbitDataPrice: 5
+  prerequisiteNodeIds:
+  - hare.crowding-tolerance
+  rabbitDataPrice: 20
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2

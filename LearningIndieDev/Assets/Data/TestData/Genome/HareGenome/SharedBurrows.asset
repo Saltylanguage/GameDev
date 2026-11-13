@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.shared-burrows
   displayName: Shared Burrows
-  description: Unlocks Shared Burrows as a journey Mutation. Research cost and path are test values.
+  description: Unlocks Shared Burrows as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.burrowing
-  rabbitDataPrice: 5
+  rabbitDataPrice: 20
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2

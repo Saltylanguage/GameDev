@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using UnityEditor;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -429,6 +430,37 @@ namespace SaltyGame.EditorTests
             var (nextDefinition, nextManager, nextProgression) = CreateSessionParts();
             using (var next = new FieldDataJourneySession(nextDefinition, nextManager, nextProgression))
                 Assert.That(next.SpeciesEffects, Is.Empty, "A fresh journey cannot inherit shop effects.");
+        }
+
+        [Test]
+        public void HeightenedSensesOffersBothLinkedMutationsTogether()
+        {
+            var (definition, manager, setupProgression) = CreateSessionParts();
+            var hare = new SpeciesId("hare");
+            var profile = new ProfileSessionSnapshot(true, "senses-offer", "Senses offer", new[]
+            {
+                new SpeciesGenomeProfile(hare, new[]
+                {
+                    "hare.guarded-burrow",
+                    "hare.open-ground-sprint",
+                    "hare.keen-hearing",
+                }, Array.Empty<string>()),
+            });
+            var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var progression = new SpeciesProgression(setupProgression.Definition, research);
+            var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null, research);
+            using (var session = new FieldDataJourneySession(definition, manager, progression))
+            {
+                Assert.That(session.SetOrdinaryRewardPool(pool), Is.True);
+                Assert.That(session.Begin(), Is.True);
+                manager.Advance(10.1f);
+
+                var choices = session.GetCurrentRoundRewardChoices();
+                Assert.That(choices.Choices, Has.Count.EqualTo(FieldDataJourneyDefinition.FreeChoicesPerReward));
+                Assert.That(choices.Choices.Select(choice => choice.OrdinaryUpgrade.Id),
+                    Does.Contain(SpeciesUpgradeCatalog.LongVisionId)
+                        .And.Contain(SpeciesUpgradeCatalog.KeenSensesId));
+            }
         }
 
         [Test]

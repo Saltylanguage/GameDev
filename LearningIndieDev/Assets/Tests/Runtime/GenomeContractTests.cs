@@ -793,7 +793,7 @@ namespace SaltyGame.Tests
                     Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
                     Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
                         Is.EqualTo(existingRecovery ? priorRecovery : legacyJson));
-                StringAssert.Contains("\"version\":9", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+                StringAssert.Contains("\"version\":10", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
 
                     // Replay the old on-disk input as if migration had been interrupted.
                     PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, legacyJson);
@@ -920,7 +920,7 @@ namespace SaltyGame.Tests
                     }
 
                     var probe = JsonUtility.FromJson<MigrationArchiveProbe>(PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
-                    Assert.That(probe.version, Is.EqualTo(9));
+                    Assert.That(probe.version, Is.EqualTo(10));
                     Assert.That(probe.migrationSourceJson, Is.EqualTo(original));
                     Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("older recovery"));
                     session.Reload();

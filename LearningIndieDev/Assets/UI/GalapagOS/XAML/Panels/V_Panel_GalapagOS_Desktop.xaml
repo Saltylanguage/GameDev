@@ -758,6 +758,49 @@
                           <TextBlock Text="{Binding GenomeLab.ResearchReasonText}" Margin="0,6,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
                           <TextBlock Text="Research Data is shared across species. Hare Data funds this path and its permanent nodes." Margin="0,18,0,0" FontSize="14" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}" />
                         </StackPanel>
+                        <Border Visibility="{Binding GenomeLab.DeveloperWalletToolsVisibility}"
+                                Margin="0,16,0,0"
+                                Padding="8"
+                                Background="{DynamicResource Chrono_Lime}"
+                                BorderBrush="{DynamicResource Chrono_Olive}"
+                                BorderThickness="1"
+                                CornerRadius="5">
+                          <StackPanel>
+                            <TextBlock Text="DEVELOPER WALLET TOOLS"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="Editor / development build only. Grants save to this profile."
+                                       Margin="0,3,0,5"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Chrono_Olive}"
+                                       TextWrapping="Wrap" />
+                            <TextBlock Text="AMOUNT TO GRANT"
+                                       Margin="0,0,0,3"
+                                       FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <TextBox Text="{Binding GenomeLab.DeveloperGrantAmountText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Height="30"
+                                     Margin="0,0,0,5" />
+                            <Button Content="+ HARE DATA"
+                                    Command="{Binding GenomeLab.GrantHareDataCommand}"
+                                    Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Height="30"
+                                    Margin="0,0,0,4" />
+                            <Button Content="+ RESEARCH DATA"
+                                    Command="{Binding GenomeLab.GrantResearchDataCommand}"
+                                    Style="{StaticResource GalapagOS.Button.Secondary}"
+                                    Height="30" />
+                            <TextBlock Text="{Binding GenomeLab.DeveloperWalletToolsStatusText}"
+                                       Margin="0,5,0,0"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource Chrono_TreeBark}"
+                                       TextWrapping="Wrap" />
+                          </StackPanel>
+                        </Border>
                       </StackPanel>
                     </ScrollViewer>
                   </Border>

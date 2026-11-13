@@ -17,7 +17,7 @@ MonoBehaviour:
   description: Unlocks Tough Hide as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
-  rabbitDataPrice: 5
+  rabbitDataPrice: 10
   capacityPoints: 1
   branchName: FD2
   modifiers: []

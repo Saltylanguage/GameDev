@@ -17,9 +17,8 @@ MonoBehaviour:
   description: Unlocks Efficient Digestion as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds:
-  - hare.keen-hearing
-  - hare.swift-digging
-  rabbitDataPrice: 5
+  - hare.guarded-burrow
+  rabbitDataPrice: 20
   capacityPoints: 1
   branchName: FD2
   modifiers: []

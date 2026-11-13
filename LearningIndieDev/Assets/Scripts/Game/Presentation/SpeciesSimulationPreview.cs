@@ -400,11 +400,15 @@ namespace SaltyGame
         bool journeyActive;
         GenomeSimulationSnapshot activeGenomeSnapshot = GenomeSimulationSnapshot.Empty;
         Func<string, bool> mutationResearch;
+        Func<string, bool> mutationEquipment;
+        Func<string, int> mutationRankLimit;
         bool mutationResearchFromProfile;
 
         public void BindMutationResearch(ProfileSessionSnapshot profile)
         {
             mutationResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, playerSpecies);
+            mutationEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, playerSpecies);
+            mutationRankLimit = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, playerSpecies);
             mutationResearchFromProfile = profile != null;
             if (!sessionStarted && progression != null) ResetExpeditionProgression(progression.Definition.Rules);
         }
@@ -1255,7 +1259,9 @@ namespace SaltyGame
 
         SpeciesUpgradeSnapshot[] CreateFieldDataOrdinaryRewardPool()
         {
-            return SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(playerSpecies, authoredRewardOptions, mutationResearch);
+            if (!mutationResearchFromProfile || mutationRankLimit == null || progression == null) return pool;
+            return pool.Where(upgrade => progression.GetUpgradeLevel(upgrade.Id) < mutationRankLimit(upgrade.Id)).ToArray();
         }
 
         /// <summary>Opts this preview into the approved Field Data route before its first run starts.</summary>
@@ -2827,7 +2833,9 @@ namespace SaltyGame
         void ResetExpeditionProgression(SpeciesRules playerRules)
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
-                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile);
+                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
+                mutationRankLimit: playerSpecies.Value == "hare" ? mutationRankLimit : null,
+                mutationEquipment: playerSpecies.Value == "hare" ? mutationEquipment : null);
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
@@ -3027,7 +3035,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationResearched(snapshot.Id))
+                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationAvailable(snapshot.Id))
                         continue;
                     authoredOptions.Add(snapshot);
                 }
@@ -3045,7 +3053,7 @@ namespace SaltyGame
             {
                 rewardOptions = LegacyRewardOptions.Where(upgrade =>
                     upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
-                    || progression == null || progression.IsMutationResearched(upgrade.Id)).ToArray();
+                    || progression == null || progression.IsMutationAvailable(upgrade.Id)).ToArray();
                 return;
             }
 
@@ -3103,6 +3111,10 @@ namespace SaltyGame
             {
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
+                case SpeciesUpgradeCatalog.FasterGestationId:
+                    return "Reduce Hare gestation time by 15% per rank, up to three ranks.";
+                case SpeciesUpgradeCatalog.OpenGroundSprintId:
+                    return "Move 0.5 faster across exposed ground during this journey.";
                 case SpeciesUpgradeCatalog.ToughHideId:
                     return "Gain 2 health. A healthy Hare can survive a basic Fox hit.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
@@ -3181,7 +3193,7 @@ namespace SaltyGame
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
-                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationResearched(upgrade.Id))
+                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationAvailable(upgrade.Id))
                 || (progression.GetUpgradeLevel(upgrade.Id) > 0
                     && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
                         || upgrade.PopulationToAdd == 0))

@@ -22,6 +22,7 @@ namespace SaltyGame
         PopulationReinforcement,
         LitterMinimum,
         LitterMaximum,
+        GestationReductionPercent,
         PreContactAvoidanceChance,
         CrowdingEnergyReduction,
         SeedDropChance,
@@ -123,6 +124,7 @@ namespace SaltyGame
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.PredatorDetectionRangeBonus, Value));
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
+                case SpeciesUpgradeType.GestationReductionPercent:
                 case SpeciesUpgradeType.PreContactAvoidanceChance:
                     break;
                 case SpeciesUpgradeType.LitterMinimum:
@@ -169,6 +171,8 @@ namespace SaltyGame
                         ? $"Increase the minimum litter size by {(int)Value}."
                         : Type == SpeciesUpgradeType.LitterMaximum
                             ? $"Increase the maximum litter size by {(int)Value}; rank 3 also raises the minimum to 2."
+                    : Type == SpeciesUpgradeType.GestationReductionPercent
+                        ? $"Reduce Hare gestation time by {(int)Value}% per rank, up to three ranks."
                     : "Legacy upgrade converted to the run upgrade contract.",
                 targetSpecies,
                 Cost,
@@ -188,6 +192,13 @@ namespace SaltyGame
             if (Type == SpeciesUpgradeType.PreContactAvoidanceChance)
             {
                 return rules;
+            }
+            if (Type == SpeciesUpgradeType.GestationReductionPercent)
+            {
+                var adjustedTicks = SpeciesUpgradeCatalog.GetGestationTicksAfterReduction(rules.GestationTicks, (int)Value);
+                if (adjustedTicks == rules.GestationTicks) return rules;
+                return SpeciesAttributeRegistry.Apply(rules, new SpeciesUpgradeModifier(
+                    SpeciesAttributeIds.GestationTicks, adjustedTicks - rules.GestationTicks));
             }
 
             var movementSpeed = rules.MovementSpeed;
@@ -323,7 +334,7 @@ namespace SaltyGame
     {
         static readonly string[] FieldDataHareSkillIds =
         {
-            ToughHideId, EfficientDigestionId, SeedDispersalId,
+            ToughHideId, EfficientDigestionId, SeedDispersalId, FasterGestationId, OpenGroundSprintId,
             CrowdingToleranceId, ReproductiveDriveId, KeenSensesId, LongVisionId, FasterMovementId,
             ThreatExposureId, QuickEscapeId, LargerMaximumLitterId, LargerMinimumLitterId,
         };
@@ -410,6 +421,12 @@ namespace SaltyGame
         }
 
         public const string FasterMovementId = "faster-movement";
+        public const string FasterGestationId = GenomeContract.FastGestationNodeId;
+        public const int FasterGestationMaxLevel = 3;
+        public const int FasterGestationReductionPercentPerLevel = 15;
+        public const string OpenGroundSprintId = "open-ground-sprint";
+        public const int OpenGroundSprintMaxLevel = 1;
+        public const float OpenGroundSprintMovementSpeedBonus = 0.5f;
         public const int FasterMovementMaxLevel = 10;
         public const string QuickEscapeId = "quick-escape";
         public const int QuickEscapeMaxLevel = 5;
@@ -455,13 +472,23 @@ namespace SaltyGame
         public const int PopulationReinforcementCount = 1;
         public const int PopulationReinforcementMaxLevel = int.MaxValue;
         public const string LargerMinimumLitterId = "larger-minimum-litter";
+        public const int LargerMinimumLitterMaxLevel = 3;
         public const string LargerMaximumLitterId = "larger-maximum-litter";
         public const int LargerMaximumLitterMaxLevel = 3;
         public const int LitterSizeIncreasePerLevel = 1;
 
+        internal static int GetGestationTicksAfterReduction(int baselineTicks, int mutationLevel)
+        {
+            if (baselineTicks <= 0) return baselineTicks;
+            var reductionPercent = Math.Min(100, FasterGestationReductionPercentPerLevel * mutationLevel);
+            return (int)Math.Max(1L, ((long)baselineTicks * (100 - reductionPercent) + 50) / 100);
+        }
+
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == FasterMovementId ? FasterMovementMaxLevel
+                : upgradeId == OpenGroundSprintId ? OpenGroundSprintMaxLevel
+                : upgradeId == FasterGestationId ? FasterGestationMaxLevel
                 : upgradeId == QuickEscapeId ? QuickEscapeMaxLevel
                 : upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
@@ -474,6 +501,7 @@ namespace SaltyGame
                 : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
                 : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
                 : upgradeId == BroodDriveId ? BroodDriveMaxLevel
+                : upgradeId == LargerMinimumLitterId ? LargerMinimumLitterMaxLevel
                 : upgradeId == LargerMaximumLitterId ? LargerMaximumLitterMaxLevel
                 : upgradeId == PopulationReinforcementId ? PopulationReinforcementMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
@@ -507,6 +535,8 @@ namespace SaltyGame
             ThreatExposureId,
             QuickEscapeId,
             FasterMovementId,
+            OpenGroundSprintId,
+            FasterGestationId,
             SeedDispersalId,
             KeenSensesId,
             LongVisionId,
@@ -666,6 +696,12 @@ namespace SaltyGame
                         QuickEscapeMaxLevel,
                         SpeciesUpgradeType.FleeMovementSpeedBonus,
                         QuickEscapeFleeSpeedPerLevel);
+                case OpenGroundSprintId:
+                    return new SpeciesUpgrade(OpenGroundSprintId, 5, SpeciesUpgradeType.MovementSpeed,
+                        OpenGroundSprintMovementSpeedBonus);
+                case FasterGestationId:
+                    return new SpeciesUpgrade(FasterGestationId, 5,
+                        SpeciesUpgradeType.GestationReductionPercent, FasterGestationReductionPercentPerLevel);
                 case StrongerAttackId:
                     return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
                 case StrongerAttackModifierId:
@@ -821,6 +857,10 @@ namespace SaltyGame
                     return "GENERAL MOVEMENT";
                 case QuickEscapeId:
                     return "QUICK ESCAPE";
+                case OpenGroundSprintId:
+                    return "OPEN-GROUND SPRINT";
+                case FasterGestationId:
+                    return "FASTER GESTATION";
                 case StrongerAttackId:
                     return "ATTACK";
                 case StrongerBlockId:

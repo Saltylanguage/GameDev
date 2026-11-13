@@ -13,13 +13,12 @@ MonoBehaviour:
   m_Name: IncreasedMinimumLitter
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.increased-minimum-litter
-  displayName: Increased Minimum Litter
-  description: Unlocks Increased Minimum Litter as a journey Mutation. Research cost
-    and path are test values.
+  displayName: Increased Minimum Litter (legacy)
+  description: Legacy research ID. New profiles unlock both litter Mutations through Litter Upgrade.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
-  rabbitDataPrice: 5
-  capacityPoints: 1
+  rabbitDataPrice: 0
+  capacityPoints: 0
   maximumRanks: 1
-  branchName: FD2
+  branchName: Legacy
   modifiers: []

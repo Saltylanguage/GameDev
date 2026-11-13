@@ -17,8 +17,9 @@ MonoBehaviour:
   description: Unlocks Long Vision and Keen Senses journey Mutations.
   targetSpeciesId: hare
   prerequisiteNodeIds:
-  - hare.guarded-burrow
-  rabbitDataPrice: 5
+  - hare.open-ground-sprint
+  rabbitDataPrice: 20
   capacityPoints: 1
+  maximumRanks: 1
   branchName: FD2
   modifiers: []

@@ -326,6 +326,9 @@ namespace SaltyGame.Tests
             Assert.That(
                 SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.LargerMaximumLitterId),
                 Is.EqualTo(SpeciesUpgradeCatalog.LargerMaximumLitterMaxLevel));
+            Assert.That(
+                SpeciesUpgradeCatalog.GetMaxLevel(SpeciesUpgradeCatalog.LargerMinimumLitterId),
+                Is.EqualTo(SpeciesUpgradeCatalog.LargerMinimumLitterMaxLevel));
         }
 
         [Test]

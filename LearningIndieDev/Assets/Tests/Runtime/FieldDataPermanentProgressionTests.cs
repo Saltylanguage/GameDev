@@ -19,7 +19,7 @@ namespace SaltyGame.Tests
         {
             Assert.That(FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(rank), Is.EqualTo(allowance));
             if (rank > 0)
-                Assert.That(FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(rank), Is.EqualTo(rank * 5));
+                Assert.That(FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(rank), Is.EqualTo(30));
         }
 
         [Test]
@@ -56,6 +56,64 @@ namespace SaltyGame.Tests
             Assert.That(progression.CurrentRules.Awareness.VisionRange, Is.EqualTo(beforeVision + SpeciesUpgradeCatalog.LongVisionTiles));
             Assert.That(progression.TryApplyFieldDataReward(SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LongVisionId).CreateSnapshot(hare)), Is.False);
             Assert.That(empty(SpeciesUpgradeCatalog.ToughHideId), Is.False, "Another profile's research must not change the frozen empty policy.");
+        }
+
+        [Test]
+        public void LitterMutationRankLimitFollowsResearchedLitterUpgradeRank()
+        {
+            var hare = new SpeciesId("hare");
+            var definition = new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]);
+            var reward = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId).CreateSnapshot(hare);
+            foreach (var rank in new[] { 1, 2, 3 })
+            {
+                var profile = new ProfileSessionSnapshot(true, "litter-" + rank, "Litter", new[]
+                {
+                    new SpeciesGenomeProfile(hare, new[] { "hare.larger-litters" }, new[] { "hare.larger-litters" },
+                        litterUpgradeRank: rank)
+                });
+                var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+                var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
+                var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
+                    mutationRankLimit: limits,
+                    mutationEquipment: FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare));
+                for (var level = 1; level <= rank; level++)
+                    Assert.That(progression.TryApplyFieldDataReward(reward), Is.True, $"Research rank {rank}, mutation rank {level}");
+                Assert.That(progression.TryApplyFieldDataReward(reward), Is.False, $"Research rank {rank} must cap the next Mutation rank");
+            }
+        }
+
+        [Test]
+        public void MinimumLitterMutationRankLimitFollowsResearchedLitterUpgradeRank()
+        {
+            var hare = new SpeciesId("hare");
+            var definition = new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]);
+            var increaseMaximum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMaximumLitterId)
+                .CreateSnapshot(hare);
+            var increaseMinimum = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.LargerMinimumLitterId)
+                .CreateSnapshot(hare);
+            foreach (var rank in new[] { 1, 2, 3 })
+            {
+                var profile = new ProfileSessionSnapshot(true, "minimum-litter-" + rank, "Minimum Litter", new[]
+                {
+                    new SpeciesGenomeProfile(hare, new[] { FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId },
+                        new[] { FieldDataPermanentProgressionDefinition.LitterUpgradeNodeId }, litterUpgradeRank: rank)
+                });
+                var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+                var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
+                var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
+                    mutationRankLimit: limits,
+                    mutationEquipment: FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare));
+
+                Assert.That(limits(SpeciesUpgradeCatalog.LargerMinimumLitterId), Is.EqualTo(rank));
+                for (var level = 1; level <= rank; level++)
+                    Assert.That(progression.TryApplyFieldDataReward(increaseMaximum), Is.True,
+                        $"Research rank {rank}, maximum litter rank {level}");
+                for (var level = 1; level <= rank; level++)
+                    Assert.That(progression.TryApplyFieldDataReward(increaseMinimum), Is.True,
+                        $"Research rank {rank}, minimum litter rank {level}");
+                Assert.That(progression.TryApplyFieldDataReward(increaseMinimum), Is.False,
+                    $"Research rank {rank} must cap the next minimum-litter Mutation rank");
+            }
         }
 
         [Test]
@@ -108,22 +166,119 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void LongStrideResearchMakesItsMovementMutationAvailableWithoutEquippingIt()
+        public void EquippedLongStrideResearchMakesItsMovementMutationAvailable()
         {
             var hare = new SpeciesId("hare");
             var genome = new SpeciesGenomeProfile(hare,
-                new[] { "hare.guarded-burrow", "hare.swift-digging" }, Array.Empty<string>());
+                new[] { "hare.guarded-burrow", "hare.swift-digging" }, new[] { "hare.swift-digging" });
             var profile = new ProfileSessionSnapshot(true, "stride", "Stride", new[] { genome });
             var eligible = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipped = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
             var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
             var stride = pool.Single(value => value.Id == SpeciesUpgradeCatalog.FasterMovementId);
             Assert.That(stride.DisplayName, Is.EqualTo("LONG STRIDE"));
             Assert.That(eligible(stride.Id), Is.True);
             var progression = new SpeciesProgression(new SpeciesDefinition(hare,
-                SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligible);
+                SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]), eligible, usesGeneLabResearch: true,
+                mutationEquipment: equipped);
             var before = progression.CurrentRules.MovementSpeed;
             Assert.That(progression.TryApplyFieldDataReward(stride), Is.True);
             Assert.That(progression.CurrentRules.MovementSpeed, Is.GreaterThan(before));
+        }
+
+        [Test]
+        public void GestationUpgradeResearchUnlocksThreeRankFasterGestationMutation()
+        {
+            var hare = new SpeciesId("hare");
+            var definition = new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]);
+            var profile = new ProfileSessionSnapshot(true, "gestation", "Gestation", new[]
+            {
+                new SpeciesGenomeProfile(hare, new[]
+                    { FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId },
+                    new[] { FieldDataPermanentProgressionDefinition.GestationUpgradeNodeId })
+            });
+            var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
+            var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
+            var reward = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null)
+                .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.FasterGestationId);
+            var phaseOffers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, 42,
+                upgrade => research(upgrade.Id) && equipment(upgrade.Id));
+
+            Assert.That(research(SpeciesUpgradeCatalog.FasterGestationId), Is.True);
+            Assert.That(limits(SpeciesUpgradeCatalog.FasterGestationId), Is.EqualTo(3));
+            Assert.That(phaseOffers.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.FasterGestationId));
+
+            var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
+                mutationRankLimit: limits, mutationEquipment: equipment);
+            for (var rank = 1; rank <= SpeciesUpgradeCatalog.FasterGestationMaxLevel; rank++)
+            {
+                Assert.That(progression.TryApplyFieldDataReward(reward), Is.True, $"Mutation rank {rank}");
+                var expectedTicks = (int)Math.Max(1L,
+                    ((long)definition.Rules.GestationTicks * (100 - 15 * rank) + 50) / 100);
+                Assert.That(progression.CurrentRules.GestationTicks,
+                    Is.EqualTo(expectedTicks));
+            }
+            Assert.That(progression.TryApplyFieldDataReward(reward), Is.False, "Research supports only three ranks.");
+        }
+
+        [Test]
+        public void OpenGroundSprintResearchUnlocksOneRankMovementMutation()
+        {
+            var hare = new SpeciesId("hare");
+            var definition = new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]);
+            var profile = new ProfileSessionSnapshot(true, "sprint", "Sprint", new[]
+            {
+                new SpeciesGenomeProfile(hare, new[]
+                    { FieldDataPermanentProgressionDefinition.SprintNodeId },
+                    new[] { FieldDataPermanentProgressionDefinition.SprintNodeId })
+            });
+            var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(profile, hare);
+            var equipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(profile, hare);
+            var limits = FieldDataPermanentProgressionDefinition.CaptureMutationRankLimit(profile, hare);
+            var reward = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null)
+                .Single(upgrade => upgrade.Id == SpeciesUpgradeCatalog.OpenGroundSprintId);
+            var phaseOffers = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, 42,
+                upgrade => research(upgrade.Id) && equipment(upgrade.Id));
+
+            Assert.That(research(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.True);
+            Assert.That(limits(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.EqualTo(1));
+            Assert.That(phaseOffers.Select(upgrade => upgrade.Id), Does.Contain(SpeciesUpgradeCatalog.OpenGroundSprintId));
+
+            var progression = new SpeciesProgression(definition, research, usesGeneLabResearch: true,
+                mutationRankLimit: limits, mutationEquipment: equipment);
+            var initialMovement = progression.CurrentRules.MovementSpeed;
+            Assert.That(progression.TryApplyFieldDataReward(reward), Is.True);
+            Assert.That(progression.CurrentRules.MovementSpeed,
+                Is.EqualTo(initialMovement + SpeciesUpgradeCatalog.OpenGroundSprintMovementSpeedBonus));
+            Assert.That(progression.TryApplyFieldDataReward(reward), Is.False, "Sprint is a one-rank Mutation.");
+
+            var unresearched = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+                new ProfileSessionSnapshot(true, "new", "New", new[]
+                {
+                    new SpeciesGenomeProfile(hare, Array.Empty<string>(), Array.Empty<string>())
+                }), hare);
+            Assert.That(unresearched(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.False);
+
+            var bornBurrowerLoadout = new ProfileSessionSnapshot(true, "burrower", "Burrower", new[]
+            {
+                new SpeciesGenomeProfile(hare,
+                    new[] { FieldDataPermanentProgressionDefinition.SprintNodeId,
+                        FieldDataPermanentProgressionDefinition.BornBurrowerNodeId },
+                    new[] { FieldDataPermanentProgressionDefinition.BornBurrowerNodeId })
+            });
+            Assert.That(hare.Value, Is.EqualTo("hare"));
+            Assert.That(bornBurrowerLoadout.TryGetGenomeProfile(hare, out var bornBurrowerGenome), Is.True);
+            CollectionAssert.AreEqual(new[] { FieldDataPermanentProgressionDefinition.BornBurrowerNodeId },
+                bornBurrowerGenome.ActiveNodeIds);
+            var starterResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+                bornBurrowerLoadout, hare);
+            var starterEquipment = FieldDataPermanentProgressionDefinition.CaptureMutationEquipment(
+                bornBurrowerLoadout, hare);
+            Assert.That(starterResearch(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.True,
+                "Sprint research remains owned even when its Mutation is excluded by the active starter gene.");
+            Assert.That(starterEquipment(SpeciesUpgradeCatalog.OpenGroundSprintId), Is.False,
+                "Born Burrower excludes the Open-ground Sprint Mutation while equipped.");
         }
 
         [Test]
@@ -146,8 +301,8 @@ namespace SaltyGame.Tests
                 if (active.Contains("hare.warren-network")) terminalCount++;
             }
 
-            Assert.That(validCount, Is.EqualTo(39203));
-            Assert.That(terminalCount, Is.EqualTo(16384));
+            Assert.That(validCount, Is.EqualTo(106762));
+            Assert.That(terminalCount, Is.EqualTo(41226));
         }
 
         [Test]
@@ -171,14 +326,15 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void MissingOwnedAncestorsAndUnknownOrWrongSpeciesNodesAreRejected()
+        public void LegacyActiveNodesRemainLaunchableAndUnknownOrWrongSpeciesNodesAreRejected()
         {
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var hare = new SpeciesId("hare");
             var incomplete = new SpeciesGenomeProfile(hare,
                 new[] { "hare.warren-network", "hare.safe-foraging", "hare.guarded-burrow" },
                 new[] { "hare.warren-network" });
-            Assert.Throws<InvalidOperationException>(() => definition.FreezeOwnedLoadout(incomplete));
+            Assert.That(definition.FreezeOwnedLoadout(incomplete).GetSpeciesGenome(hare).ActiveNodeIds,
+                Is.EqualTo(new[] { "hare.warren-network" }));
             var unknown = new SpeciesGenomeProfile(hare, new[] { "legacy.unknown" }, new[] { "legacy.unknown" });
             Assert.Throws<InvalidOperationException>(() => definition.FreezeOwnedLoadout(unknown));
             Assert.Throws<ArgumentException>(() => definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(new SpeciesId("fox"))));
@@ -236,7 +392,15 @@ namespace SaltyGame.Tests
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             var hare = new SpeciesId("hare");
             var owned = definition.HareMap.Nodes.Select(node => node.Id).ToArray();
-            if (invalid == "ancestor") owned = owned.Where(id => id != "hare.guarded-burrow").ToArray();
+            if (invalid == "ancestor")
+            {
+                // Older profiles could own and equip Population Reserves before the approved
+                // prerequisite path existed; preserve that saved loadout as grandfathered.
+                owned = owned.Where(id => id != FieldDataPermanentProgressionDefinition.ExpandedBurrowsNodeId).ToArray();
+                var legacy = LaunchProfile(new SpeciesGenomeProfile(hare, owned, new[] { "hare.warren-network" }));
+                Assert.DoesNotThrow(() => legacy.CreateLaunchGenomeSnapshot(definition.Catalog));
+                return;
+            }
             var active = invalid == "unknown" ? "hare.unknown" : "hare.warren-network";
             if (invalid == "unknown") owned = owned.Concat(new[] { active }).ToArray();
             var allocations = invalid == "poc-allocation" ? new[] { new GenomeNodeAllocation(active, 5, 2) } : null;

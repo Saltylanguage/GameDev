@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.burrowing
   displayName: Burrowing
-  description: Unlocks Burrowing as a journey Mutation. Research cost and path are test values.
+  description: Unlocks Burrowing as a journey Mutation.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
-  rabbitDataPrice: 5
+  rabbitDataPrice: 10
   capacityPoints: 1
   maximumRanks: 1
   branchName: FD2
