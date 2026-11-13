@@ -146,6 +146,67 @@ namespace SaltyGame
             previousCells = null;
         }
 
+        public bool TryStartNextSimulationNode(int nodeNumber, out string error)
+        {
+            return TryStartNextSimulationNode(nodeNumber, null, out error);
+        }
+
+        public bool TryStartNextSimulationNode(
+            int nodeNumber,
+            IReadOnlyDictionary<SpeciesId, int> fixedPopulationOverrides,
+            out string error)
+        {
+            error = null;
+            if (simulationData == null || Run.Status != SimulationRunStatus.AwaitingDecision || nodeNumber < 2)
+            {
+                error = "A new simulation node requires an authored scenario at a node boundary.";
+                return false;
+            }
+
+            var populations = new Dictionary<SpeciesId, int>(simulationData.StartingPopulations);
+            if (fixedPopulationOverrides != null)
+            {
+                foreach (var entry in fixedPopulationOverrides)
+                {
+                    if (entry.Key == Run.PlayerSpeciesId)
+                    {
+                        error = "The played species population must carry over from the previous node.";
+                        return false;
+                    }
+                    if (!simulationData.SpeciesRules.ContainsKey(entry.Key) || entry.Value < 0)
+                    {
+                        error = $"The next node has an invalid fixed population override for {entry.Key}.";
+                        return false;
+                    }
+                    populations[entry.Key] = entry.Value;
+                }
+            }
+            foreach (var species in simulationData.SpeciesRules.Keys)
+            {
+                if (!populations.ContainsKey(species))
+                {
+                    error = $"The next node needs a fixed starting population for {species}.";
+                    return false;
+                }
+            }
+            populations[Run.PlayerSpeciesId] = Run.CapturePopulation().GetCount(Run.PlayerSpeciesId);
+            try
+            {
+                var freshData = simulationData.WithStartingPopulations(populations);
+                var nodeSeed = unchecked(Run.Seed + nodeNumber * 1000003);
+                var freshGrid = SpeciesInitialGridFactory.Create(freshData, nodeSeed);
+                Run.InstallNextSimulationGrid(freshGrid, nodeNumber, nodeSeed);
+                previousCells = null;
+                return true;
+            }
+            catch (Exception exception) when (exception is ArgumentException
+                || exception is InvalidOperationException || exception is OverflowException)
+            {
+                error = exception.Message;
+                return false;
+            }
+        }
+
         public bool InstallBoundaryState(
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
@@ -160,6 +221,22 @@ namespace SaltyGame
             if (nextRules == null)
             {
                 throw new ArgumentNullException(nameof(nextRules));
+            }
+
+            foreach (var entry in nextRules)
+            {
+                if (rules.TryGetValue(entry.Key, out var currentRules)
+                    && entry.Value.MaximumHealth > currentRules.MaximumHealth)
+                {
+                    if (!Run.InstallBoundaryHealthBonus(
+                        entry.Key,
+                        entry.Value.MaximumHealth - currentRules.MaximumHealth))
+                    {
+                        return false;
+                    }
+
+                    previousCells = Run.Cells;
+                }
             }
 
             if (selectedUpgrade != null && selectedUpgrade.PopulationToAdd > 0
@@ -205,8 +282,11 @@ namespace SaltyGame
             SpeciesRules targetRules,
             float preContactAvoidanceChance,
             string effectsFingerprint,
-            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout,
+            int nextNodeNumber,
+            out string error)
         {
+            error = null;
             if (Run.Status != SimulationRunStatus.AwaitingDecision || !targetSpecies.IsValid || targetRules == null
                 || float.IsNaN(preContactAvoidanceChance) || float.IsInfinity(preContactAvoidanceChance)
                 || preContactAvoidanceChance < 0f || preContactAvoidanceChance > 1f)
@@ -222,10 +302,12 @@ namespace SaltyGame
                 featureId,
                 experimentalOptions.FoxAttackCooldownTicks,
                 preContactAvoidanceChance,
-                experimentalOptions.CoupledSpeciesResponsesEnabled);
+                experimentalOptions.CoupledSpeciesResponsesEnabled,
+                experimentalOptions.FoxOrdinaryMovementScentEnabled);
             if (!InstallBoundaryState(nextRules, nextOptions, activeUpgradeLoadout ?? Run.UpgradeLoadout)) return false;
             if (!string.IsNullOrWhiteSpace(effectsFingerprint))
                 Run.SetRulesetFingerprint(CombineFingerprint(Run.RulesetFingerprint, effectsFingerprint));
+            if (nextNodeNumber > 0 && !TryStartNextSimulationNode(nextNodeNumber, out error)) return false;
             return Run.ContinueWithoutUpgrade();
         }
 
@@ -351,7 +433,7 @@ namespace SaltyGame
                 {
                     nextCells.SetCell(x, y, plant
                         ? cell.WithPlantResource(resourceTerrain, species, targetRules.StartingFoodReserve)
-                        : cell.WithEntity(species, 1, energy, 0, 0, 0f));
+                        : cell.WithEntity(species, targetRules.MaximumHealth, energy, 0, 0, 0f));
                 }
                 else
                 {
@@ -531,30 +613,26 @@ namespace SaltyGame
             }
 
             Run.Metrics.BeginTick(Run.Tick + 1);
-            var next = simulationData == null
-                ? SpeciesSimulation.Step(
-                    Run.Cells,
-                    rules,
-                    Run.Seed + Run.Tick,
-                    maxPopulation,
-                    metrics: Run.Metrics,
-                    combatResolutionMode: combatResolutionMode,
-                    attackOpportunityMode: attackOpportunityMode,
-                    experimentalOptions: experimentalOptions,
-                    previousSource: previousCells,
-                    stepIntervalSeconds: stepSeconds,
-                    genomeSnapshot: Run.ActiveGenomeSnapshot)
-                : SpeciesSimulation.Step(
-                    Run.Cells,
-                    simulationData,
-                    Run.Seed + Run.Tick,
-                    Run.Metrics,
-                    combatResolutionMode,
-                    attackOpportunityMode,
-                    experimentalOptions,
-                    previousSource: previousCells,
-                    genomeSnapshot: Run.ActiveGenomeSnapshot);
-            previousCells = Run.Cells;
+            var activeRules = simulationData?.SpeciesRules ?? rules;
+            var lineage = Run.GetHareJourneyLineage();
+            var source = Run.PrepareHareBurrows(activeRules, lineage);
+            var next = SpeciesSimulation.StepWithLineage(
+                source,
+                activeRules,
+                Run.Seed + Run.Tick,
+                simulationData?.MaxPopulation ?? maxPopulation,
+                simulationData?.TerrainDefinitions,
+                simulationData?.AlphaOffspringRules,
+                Run.Metrics,
+                combatResolutionMode,
+                attackOpportunityMode,
+                experimentalOptions,
+                previousCells,
+                simulationData?.StepInterval ?? stepSeconds,
+                Run.ActiveGenomeSnapshot,
+                lineage,
+                Run.HiddenHareCount);
+            previousCells = source;
             Run.Advance(next, stepSeconds);
             if (stopOnPlayerExtinction && Run.SupportsContinuation
                 && Run.Status != SimulationRunStatus.Complete

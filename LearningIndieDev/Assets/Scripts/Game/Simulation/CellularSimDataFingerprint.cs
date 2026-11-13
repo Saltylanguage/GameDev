@@ -127,6 +127,7 @@ namespace SaltyGame
             Append(builder, rules.DistributeMatingEnergyToOffspring);
             Append(builder, rules.ForagesUntilFull);
             Append(builder, rules.MaximumEnergy);
+            Append(builder, rules.MaximumHealth);
             Append(builder, rules.LitterMinimum);
             Append(builder, rules.LitterMaximum);
             Append(builder, rules.GestationTicks);
@@ -140,6 +141,7 @@ namespace SaltyGame
             Append(builder, (int)rules.Role);
             Append(builder, rules.Awareness.VisionRange);
             Append(builder, rules.Awareness.Intelligence);
+            Append(builder, rules.Awareness.PredatorDetectionRangeBonus);
             Append(builder, rules.DigestionEnergyBonus);
             Append(builder, rules.CrowdingTolerance);
             Append(builder, rules.CrowdingEnergyReduction);

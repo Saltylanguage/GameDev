@@ -10,7 +10,8 @@ namespace SaltyGame
             string featureId = "",
             int foxAttackCooldownTicks = 0,
             float preContactAvoidanceChance = 0f,
-            bool coupledSpeciesResponsesEnabled = false)
+            bool coupledSpeciesResponsesEnabled = false,
+            bool foxOrdinaryMovementScentEnabled = false)
         {
             if (foxAttackCooldownTicks < 0)
             {
@@ -56,6 +57,7 @@ namespace SaltyGame
             FoxAttackCooldownTicks = foxAttackCooldownTicks;
             PreContactAvoidanceChance = preContactAvoidanceChance;
             CoupledSpeciesResponsesEnabled = coupledSpeciesResponsesEnabled;
+            FoxOrdinaryMovementScentEnabled = foxOrdinaryMovementScentEnabled;
         }
 
         public static SpeciesExperimentalOptions None { get; } = new SpeciesExperimentalOptions();
@@ -66,6 +68,7 @@ namespace SaltyGame
         public float PreContactAvoidanceChance { get; }
         public bool HasPreContactAvoidance => PreContactAvoidanceChance > 0f;
         public bool CoupledSpeciesResponsesEnabled { get; }
+        public bool FoxOrdinaryMovementScentEnabled { get; }
         public bool UsesSplitCombatStats =>
             string.Equals(FeatureId, BevExperimentalFeaturesId, StringComparison.Ordinal);
         public bool UsesHerbivoreStatLine =>

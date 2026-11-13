@@ -19,7 +19,7 @@ MonoBehaviour:
   prerequisiteNodeIds:
   - poc.hare.tough-hide
   rabbitDataPrice: 1
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: Warren
   modifiers:
   - attributeId: reproduction.litter-maximum

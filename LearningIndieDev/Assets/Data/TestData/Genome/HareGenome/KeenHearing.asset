@@ -13,8 +13,12 @@ MonoBehaviour:
   m_Name: KeenHearing
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.keen-hearing
-  displayName: Keen Hearing
-  description: Perception branch placeholder; effect contract pending.
+  displayName: Heightened Senses
+  description: Unlocks Long Vision and Keen Senses journey Mutations.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.guarded-burrow
+  rabbitDataPrice: 5
+  capacityPoints: 1
+  branchName: FD2
+  modifiers: []

@@ -48,7 +48,7 @@ namespace SaltyGame
                 return false;
             }
 
-            var snapshot = SpeciesPopulationSnapshot.Create(run.Cells, run.Tick);
+            var snapshot = run.CapturePopulation();
             if (amount < 0 && species == run.PlayerSpeciesId && snapshot.GetCount(species) + amount < 1)
             {
                 reason = "Keep at least one of your species.";
@@ -100,7 +100,7 @@ namespace SaltyGame
                     : rules.Role == SpeciesRole.Plant
                         ? SpeciesCell.FromTerrain(plantTerrain, rules.StartingFoodReserve, species)
                             .WithScentMarker(cell.ScentMarker)
-                        : cell.WithEntity(species, 1, rules.MaximumEnergy > 0 ? Math.Min(rules.StartingEnergy, rules.MaximumEnergy) : rules.StartingEnergy, 0, 0, 0f));
+                        : cell.WithEntity(species, rules.MaximumHealth, rules.MaximumEnergy > 0 ? Math.Min(rules.StartingEnergy, rules.MaximumEnergy) : rules.StartingEnergy, 0, 0, 0f));
             }
             return next;
         }

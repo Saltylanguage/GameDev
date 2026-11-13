@@ -129,7 +129,15 @@ namespace SaltyGame
 
         public bool ContinueWithoutUpgrade()
         {
-            if (runner == null || !runner.Run.ContinueWithoutUpgrade())
+            return ContinueWithoutUpgrade(0, out _);
+        }
+
+        internal bool ContinueWithoutUpgrade(int nextNodeNumber, out string error)
+        {
+            error = null;
+            if (runner == null || runner.Run.Status != SimulationRunStatus.AwaitingDecision
+                || (nextNodeNumber > 0 && !runner.TryStartNextSimulationNode(nextNodeNumber, out error))
+                || !runner.Run.ContinueWithoutUpgrade())
             {
                 return false;
             }
@@ -157,11 +165,14 @@ namespace SaltyGame
             SpeciesRules targetRules,
             float preContactAvoidanceChance,
             string effectsFingerprint,
-            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout)
+            IEnumerable<SpeciesUpgradeSnapshot> activeUpgradeLoadout,
+            int nextNodeNumber,
+            out string error)
         {
+            error = null;
             if (runner == null || runner.Run.Status != SimulationRunStatus.AwaitingDecision
                 || !runner.ContinueWithFieldDataSpeciesRules(targetSpecies, targetRules, preContactAvoidanceChance,
-                    effectsFingerprint, activeUpgradeLoadout))
+                    effectsFingerprint, activeUpgradeLoadout, nextNodeNumber, out error))
                 return false;
 
             accumulatedSeconds = 0f;
@@ -205,11 +216,13 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> nextRules,
             SpeciesExperimentalOptions nextExperimentalOptions,
             IEnumerable<SpeciesUpgradeSnapshot> nextUpgradeLoadout,
-            SpeciesUpgradeSnapshot selectedUpgrade = null)
+            SpeciesUpgradeSnapshot selectedUpgrade = null,
+            int nextNodeNumber = 0)
         {
             if (runner == null
                 || runner.Run.Status != SimulationRunStatus.AwaitingDecision
                 || !runner.InstallBoundaryState(nextRules, nextExperimentalOptions, nextUpgradeLoadout, selectedUpgrade)
+                || (nextNodeNumber > 0 && !runner.TryStartNextSimulationNode(nextNodeNumber, out _))
                 || !runner.Run.ContinueWithoutUpgrade())
             {
                 return false;

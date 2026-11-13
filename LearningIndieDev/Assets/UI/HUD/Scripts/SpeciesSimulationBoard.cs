@@ -160,6 +160,10 @@ namespace SaltyGame
         SolidColorBrush rockShadowBrush;
         SolidColorBrush rockFillBrush;
         SolidColorBrush rockLightBrush;
+        SolidColorBrush burrowBrush;
+        SolidColorBrush meatShadowBrush;
+        SolidColorBrush meatFillBrush;
+        SolidColorBrush meatBoneBrush;
 
         public event Action<float> ZoomRequested;
 
@@ -638,9 +642,24 @@ namespace SaltyGame
                         DrawBirthPoof(context, cellRect, cellSize);
                     }
 
-                    if (cell.IsCreature || (cell.IsPlantResource && !cell.IsTerrainResource))
+                    if (cell.IsCreature
+                        || cell.IsMeatResource
+                        || (cell.IsPlantResource && !cell.IsTerrainResource))
                     {
                         DrawSpeciesSprite(context, cell, cellRect);
+                    }
+
+                    if (snapshot.HasBurrowAt(x, y))
+                    {
+                        var radius = cellRect.Width * 0.14f;
+                        if (burrowBrush == null)
+                        {
+                            burrowBrush = new SolidColorBrush(Noesis.Color.FromArgb(235, 112, 71, 37));
+                        }
+
+                        context.DrawEllipse(burrowBrush, null,
+                            new Noesis.Point(cellRect.X + cellRect.Width * 0.76f, cellRect.Y + cellRect.Height * 0.74f),
+                            radius, radius);
                     }
                 }
             }
@@ -1110,6 +1129,25 @@ namespace SaltyGame
 
         void DrawSpeciesSprite(DrawingContext context, SimulationCellSnapshot cell, NoesisRect cellRect)
         {
+            if (cell.IsMeatResource)
+            {
+                var size = Mathf.Min(cellRect.Width, cellRect.Height);
+                var centerX = cellRect.X + cellRect.Width * 0.5f;
+                var centerY = cellRect.Y + cellRect.Height * 0.5f;
+                meatShadowBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 93, 43, 35));
+                meatFillBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 186, 83, 54));
+                meatBoneBrush ??= new SolidColorBrush(Noesis.Color.FromArgb(255, 239, 217, 168));
+                context.DrawEllipse(meatShadowBrush, null,
+                    new Noesis.Point(centerX - size * 0.025f, centerY), size * 0.28f, size * 0.18f);
+                context.DrawEllipse(meatFillBrush, null,
+                    new Noesis.Point(centerX - size * 0.06f, centerY), size * 0.19f, size * 0.13f);
+                context.DrawRectangle(meatBoneBrush, null,
+                    new NoesisRect(centerX + size * 0.04f, centerY - size * 0.035f, size * 0.2f, size * 0.07f));
+                context.DrawEllipse(meatBoneBrush, null,
+                    new Noesis.Point(centerX + size * 0.24f, centerY), size * 0.06f, size * 0.06f);
+                return;
+            }
+
             if (cell.IsPlantResource && !cell.IsTerrainResource)
             {
                 if (grassTerrainTiles != null)

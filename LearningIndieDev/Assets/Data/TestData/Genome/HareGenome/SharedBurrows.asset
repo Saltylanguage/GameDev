@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8a3f0c4b7e1469aa51f2c6d8e9b3041, type: 3}
+  m_Name: SharedBurrows
+  m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
+  upgradeId: hare.shared-burrows
+  displayName: Shared Burrows
+  description: Unlocks Shared Burrows as a journey Mutation. Research cost and path are test values.
+  targetSpeciesId: hare
+  prerequisiteNodeIds:
+  - hare.burrowing
+  rabbitDataPrice: 5
+  capacityPoints: 1
+  maximumRanks: 1
+  branchName: FD2
+  modifiers: []

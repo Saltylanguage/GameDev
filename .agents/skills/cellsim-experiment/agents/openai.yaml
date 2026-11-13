@@ -1,0 +1,3 @@
+interface:
+  display_name: "CellSim Experiment"
+  short_description: "Design and compare seeded CellSim runs"

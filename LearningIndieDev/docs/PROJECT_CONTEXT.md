@@ -8,8 +8,9 @@ changes, and do not treat research references as approved implementation work.
 
 **Field Data navigation, October 18:** Keep node-end Field Data settlement but
 remove its population controls. After each simulation or shop, return to the
-map and wait for the player to click the next ready node. Preserve the retained
-world/tick, wallet and upgrades while waiting. Ordinary round-1–5 population
+map and wait for the player to click the next ready node. Preserve the run/tick,
+wallet and upgrades while waiting; entering a new simulation node creates a
+fresh grid under the November 10 population rule below. Ordinary round-1–5 population
 controls remain. Final success returns to the completed map; starting a fresh
 journey is a separate action. This supersedes earlier pre-shop round-6 controls.
 
@@ -70,14 +71,57 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 11, 2026 carcass feeding and Fox energy first pass:** A lethal
+  attack now leaves the prey's authored energy as a shareable meat resource;
+  each eater consumes only the energy needed to fill its stomach, with any
+  remainder available to another Fox. Hare energy value is 96. Provisional Fox
+  upkeep is 2 energy every 25 ticks, or 48 per 600-tick node. At the agreed
+  600-tick = 48-hour comparison, this predicts one Hare per two Foxes for
+  maintenance alone. It omits reproduction, unsuccessful hunts, and spatial
+  contact, so it is not yet an observed population ratio. The one-node
+  [carcass-value diagnostic](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
+  was approved by Josh on November 12; execution awaits a fresh snapshot and
+  reachable Editor. The earlier starting-population failure-rate matrix was
+  superseded before execution. See the [implementation handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md)
+  and [S6 decision record](Sprints/S6-control-record.md#november-11-carcass-feeding-and-fox-energy-first-pass).
+
 - **November 9, 2026 sprint direction:** Josh approved
   [S6 — The Fun Pass](Sprints/S6-control-record.md) for November 16–29, following
   the November 15 S5 boundary. The immediate M2 question is whether one complete
   Hare journey offers consequential choices, readable pressure, distinct
-  strategies, and a reason to replay. Use short, reproducible November-build
-  comparisons to guide playtests; automated correctness does not establish fun.
-  The older S6 persistence/Genome forecast is superseded. S6 kickoff and
-  integration of Sim's local November GLJP work are still pending.
+  strategies, and a reason to replay. Josh fixed Fox overhunting as the opening
+  pressure and avoidance, survival, and faster reproduction as the three
+  temporary Mutation answers; see the [S6 design record](Sprints/S6-control-record.md#november-9-predator-first-design-decision).
+  The [current-source diagnostic](Research/Experiments/S6-Predator-First-Diagnostic-20261109/REPORT.md)
+  found the first node too lethal on its 12-seed panel. Use short, reproducible
+  November-build comparisons to guide playtests and assess fun through player
+  feedback. This supersedes the older S6 persistence and Genome forecast.
+  November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
+  S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
+
+- **November 10, 2026 node-boundary correction and evidence:** Each new simulation node carries only the played species' population count, recreates those individuals with default state, and restores static authored starting counts for every other species and resource. This works beyond the Hare/Fox pair. The Field Data and legacy journey transitions now implement that rule; the portable worker matches the Unity simulation. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
+
+- **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
+  Gene Lab research unlocks eligibility for journey Mutations; it does not
+  automatically apply the Mutation. Equipping a Genome node is distinct from
+  owning its research, and an explicit starter gene may grant an ability at
+  journey launch. Heightened Senses connects Long Vision and Keen Senses as
+  separate journey choices; Seed Dispersal is the single seed-planting unlock;
+  Escape Instinct maps to the existing Threat Avoidance behavior. Reproductive
+  Drive, litter size and gestation remain separate dimensions. Larger Litters
+  adds one maximum litter per Mutation rank through rank 3; rank 3 raises the
+  minimum to 2 when needed. The production Hare reproduction-chance baseline is
+  0.5. Population Reserves adds five Hares to the per-simulation-node purchase
+  allowance per researched rank, starting from 10; it does not cap births or
+  survivors. Burrowing uses the implemented 24-energy dig cost (provisional),
+  requires eight empty neighboring cells, holds three Hares by default and
+  lasts 200 simulation steps; family hiding, Shared Burrows and Expanded
+  Burrows are implemented. Faster Gestation's journey effect, minimum-litter
+  Mutation rank cap, final research costs/prerequisites and Open-ground Sprint
+  terrain rule remain unresolved; do not reuse the October 29 POC costs/effects
+  as current decisions. Bevin has designated the November build as canonical and stopped further October-value comparisons; completed October results remain historical only. See the [GLJP status and change log](GLJP_SPRINT_STATUS_2026-11-08.md),
+  [PDD](GENE_LAB_JOURNEY_PROGRESSION_PROCESS_DESIGN.md) and
+  [SDD](GENE_LAB_JOURNEY_PROGRESSION_SDD.md).
 
 - **Population decisions playtest slice (October 21, 2026):** Local round-boundary
   controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
@@ -252,8 +296,12 @@ uncertainty or regression risk.
   its path license and nodes use Hare Data, unlocked nodes remain permanent,
   active configuration stays within the existing capacity of 8, and a paid
   Research Data reset clears only the active Hare loadout without refunding
-  node costs. Exact research cap/costs, reset fee and first Hare catalog are
-  still implementation tuning. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
+  node costs. The first-test settings are recorded in the [FD2 tuning
+  sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md): three conversion
+  levels cost 10/20/30 Research Data; reset costs 20 Research Data; and the
+  five Hare nodes each cost 5 Hare Data and use 2 capacity points. Their
+  supported effects were approved for the first slice; these values remain
+  test settings rather than measured balance. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
   [FD2 Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md),
   and [FD2 ticket draft](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md).
   All 12 FD2 tickets were published to the board's 🎯 Upcoming Work list on 2026-10-21, assigned to Bevin (Nick Nevins) and marked Owner/Reviewer: Bevin; no sprint placement was made. The ticket draft contains the verified card links.
@@ -381,7 +429,7 @@ evidence, not the player contract. In-memory continuation does not introduce
 player disk save/load. Stat-Line and predictive-AI evidence must name its
 research or player window and upgrade acquisition timing.
 
-**Plan forward:** treat continuous state as the canonical runtime design. The
+**Historical continuous-state plan, superseded across simulation-node boundaries on November 10:** treat continuous state as the canonical runtime design. The
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
 The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
 the remaining player-facing Mutation choices, outcome language, and

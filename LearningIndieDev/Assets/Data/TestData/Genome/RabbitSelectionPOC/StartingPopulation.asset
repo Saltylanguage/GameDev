@@ -18,8 +18,8 @@ MonoBehaviour:
     food. Does not refill each round.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
-  rabbitDataPrice: 1
-  capacityPoints: 2
+  rabbitDataPrice: 5
+  capacityPoints: 1
   branchName: Warren
   modifiers:
   - attributeId: population.starting

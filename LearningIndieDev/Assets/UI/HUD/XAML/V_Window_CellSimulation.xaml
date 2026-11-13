@@ -1325,7 +1325,8 @@
                                        TextWrapping="Wrap"
                                        TextAlignment="Left" />
 
-                            <Border Margin="0,14,0,16"
+                            <Border x:Name="FieldDataPhaseRewardMessage" Margin="0,14,0,16"
+                                    Visibility="{Binding PhaseRewardVisibility}"
                                     Padding="14,10"
                                     Background="{DynamicResource Chrono_VanillaCream}"
                                     BorderBrush="{DynamicResource Chrono_Sand}"
@@ -1346,7 +1347,7 @@
                                     <ColumnDefinition Width="*" />
                                     <ColumnDefinition Width="Auto" />
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="CHOOSE A MUTATION"
+                                <TextBlock Text="CHOOSE A TEMPORARY MUTATION"
                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                            FontSize="10"
                                            FontWeight="Bold"
@@ -1361,7 +1362,7 @@
                                         IsEnabled="{Binding CanPurchaseRewardOption1}"
                                         Style="{StaticResource GalapagOS.Button.RewardCard}"
                                         Width="258"
-                                        Height="158"
+                                        Height="204"
                                         Margin="0,0,10,0">
                                     <Grid>
                                         <Image Source="{StaticResource GalapagOS.Image.Simulation.BotanicalSketch}"
@@ -1373,8 +1374,8 @@
                                                IsHitTestVisible="False" />
                                         <StackPanel>
                                             <Grid Margin="0,0,0,7">
-                                                <Border Width="32"
-                                                        Height="32"
+                                                <Border Width="26"
+                                                        Height="26"
                                                         HorizontalAlignment="Left"
                                                         Background="{DynamicResource Chrono_Lime}"
                                                         BorderBrush="{DynamicResource Chrono_Olive}"
@@ -1388,19 +1389,22 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="MUTATION RECORD"
+                                                <TextBlock Text="{Binding FieldDataMutationCardCaption}"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                           FontSize="8"
+                                                           FontSize="9"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource Chrono_Olive}"
+                                                           Foreground="{DynamicResource Chrono_TreeBark}"
                                                            VerticalAlignment="Center" />
                                             </Grid>
                                             <Rectangle Height="1"
                                                        Margin="0,0,0,8"
                                                        Fill="{DynamicResource Chrono_Sand}" />
+                                            <Image Style="{StaticResource SimulationRewardIcon1}" Width="48" Height="48" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,1" />
                                             <TextBlock Text="{Binding RewardOption1Text}"
                                                        Style="{StaticResource SimulationRewardCardText}" />
+                                            <TextBlock Text="{Binding RewardOption1Description}" Visibility="{Binding RewardDescriptionsVisibility}" Width="220" Height="32" TextWrapping="Wrap" TextAlignment="Center" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                            <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,8,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -1409,7 +1413,7 @@
                                         IsEnabled="{Binding CanPurchaseRewardOption2}"
                                         Style="{StaticResource GalapagOS.Button.RewardCard}"
                                         Width="258"
-                                        Height="158"
+                                        Height="204"
                                         Margin="0,0,10,0">
                                     <Grid>
                                         <Image Source="{StaticResource GalapagOS.Image.Simulation.BotanicalSketch}"
@@ -1421,8 +1425,8 @@
                                                IsHitTestVisible="False" />
                                         <StackPanel>
                                             <Grid Margin="0,0,0,7">
-                                                <Border Width="32"
-                                                        Height="32"
+                                                <Border Width="26"
+                                                        Height="26"
                                                         HorizontalAlignment="Left"
                                                         Background="{DynamicResource Chrono_Lime}"
                                                         BorderBrush="{DynamicResource Chrono_Olive}"
@@ -1436,19 +1440,22 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="MUTATION RECORD"
+                                                <TextBlock Text="{Binding FieldDataMutationCardCaption}"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                           FontSize="8"
+                                                           FontSize="9"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource Chrono_Olive}"
+                                                           Foreground="{DynamicResource Chrono_TreeBark}"
                                                            VerticalAlignment="Center" />
                                             </Grid>
                                             <Rectangle Height="1"
                                                        Margin="0,0,0,8"
                                                        Fill="{DynamicResource Chrono_Sand}" />
+                                            <Image Style="{StaticResource SimulationRewardIcon2}" Width="48" Height="48" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,1" />
                                             <TextBlock Text="{Binding RewardOption2Text}"
                                                        Style="{StaticResource SimulationRewardCardText}" />
+                                            <TextBlock Text="{Binding RewardOption2Description}" Visibility="{Binding RewardDescriptionsVisibility}" Width="220" Height="32" TextWrapping="Wrap" TextAlignment="Center" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                            <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,8,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -1457,7 +1464,7 @@
                                         Visibility="{Binding RewardOption3Visibility}"
                                         Style="{StaticResource GalapagOS.Button.RewardCard}"
                                         Width="258"
-                                        Height="158">
+                                        Height="204">
                                     <Grid>
                                         <Image Source="{StaticResource GalapagOS.Image.Simulation.BotanicalSketch}"
                                                Width="124"
@@ -1468,8 +1475,8 @@
                                                IsHitTestVisible="False" />
                                         <StackPanel>
                                             <Grid Margin="0,0,0,7">
-                                                <Border Width="32"
-                                                        Height="32"
+                                                <Border Width="26"
+                                                        Height="26"
                                                         HorizontalAlignment="Left"
                                                         Background="{DynamicResource Chrono_Lime}"
                                                         BorderBrush="{DynamicResource Chrono_Olive}"
@@ -1483,19 +1490,22 @@
                                                                HorizontalAlignment="Center"
                                                                VerticalAlignment="Center" />
                                                 </Border>
-                                                <TextBlock Text="MUTATION RECORD"
+                                                <TextBlock Text="{Binding FieldDataMutationCardCaption}"
                                                            Margin="42,0,0,0"
                                                            FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                           FontSize="8"
+                                                           FontSize="9"
                                                            FontWeight="Bold"
-                                                           Foreground="{DynamicResource Chrono_Olive}"
+                                                           Foreground="{DynamicResource Chrono_TreeBark}"
                                                            VerticalAlignment="Center" />
                                             </Grid>
                                             <Rectangle Height="1"
                                                        Margin="0,0,0,8"
                                                        Fill="{DynamicResource Chrono_Sand}" />
+                                            <Image Style="{StaticResource SimulationRewardIcon3}" Width="48" Height="48" Stretch="Uniform" HorizontalAlignment="Center" Margin="0,0,0,1" />
                                             <TextBlock Text="{Binding RewardOption3Text}"
                                                        Style="{StaticResource SimulationRewardCardText}" />
+                                            <TextBlock Text="{Binding RewardOption3Description}" Visibility="{Binding RewardDescriptionsVisibility}" Width="220" Height="32" TextWrapping="Wrap" TextAlignment="Center" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                            <Border Background="{DynamicResource Chrono_Lime}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="1" CornerRadius="4" Padding="8,3" Margin="0,8,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" /></Border>
                                         </StackPanel>
                                     </Grid>
                                 </Button>
@@ -1571,11 +1581,11 @@
                                                FontWeight="Bold"
                                                Foreground="{DynamicResource Chrono_TreeBark}" />
                                     <StackPanel Margin="0,6,0,0">
-                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer1Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer1Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer1Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer1Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
-                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer2Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer2Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer2Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer2Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
-                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer3Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer3Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer3Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer3Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
-                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer4Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer4Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer4Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer4Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
-                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer5Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer5Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" Content="REROLL" Command="{Binding RerollFieldDataShopOffer5Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer5Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer1Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer1Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" x:Name="FieldDataShopReroll1" Content="REROLL" Visibility="{Binding FieldDataShopReroll1Visibility}" Command="{Binding RerollFieldDataShopOffer1Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer1}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer1Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer2Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer2Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" x:Name="FieldDataShopReroll2" Content="REROLL" Visibility="{Binding FieldDataShopReroll2Visibility}" Command="{Binding RerollFieldDataShopOffer2Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer2}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer2Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer3Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer3Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" x:Name="FieldDataShopReroll3" Content="REROLL" Visibility="{Binding FieldDataShopReroll3Visibility}" Command="{Binding RerollFieldDataShopOffer3Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer3}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer3Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer4Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer4Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" x:Name="FieldDataShopReroll4" Content="REROLL" Visibility="{Binding FieldDataShopReroll4Visibility}" Command="{Binding RerollFieldDataShopOffer4Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer4}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer4Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
+                                        <DockPanel Margin="0,2" Visibility="{Binding FieldDataShopOffer5Visibility}"><Button DockPanel.Dock="Right" Width="62" Content="BUY" Command="{Binding BuyFieldDataShopOffer5Command}" IsEnabled="{Binding CanBuyFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><Button DockPanel.Dock="Right" Width="86" x:Name="FieldDataShopReroll5" Content="REROLL" Visibility="{Binding FieldDataShopReroll5Visibility}" Command="{Binding RerollFieldDataShopOffer5Command}" IsEnabled="{Binding CanRerollFieldDataShopOffer5}" Height="38" Padding="10,4" FontSize="12" Style="{StaticResource GalapagOS.Button.SecondaryPaper}" Margin="4,0"/><TextBlock Text="{Binding FieldDataShopOffer5Text}" VerticalAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Chrono_Olive}"/></DockPanel>
                                     </StackPanel>
                                     <TextBlock Text="{Binding FieldDataReorderText}" Margin="0,8,0,2" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="9" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding FieldDataReorderCostText}" FontSize="10" Foreground="{DynamicResource Chrono_Olive}" />
@@ -1756,31 +1766,37 @@
                             IsEnabled="{Binding CanPurchaseRewardOption1}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="180"
                             Margin="0,0,10,0">
-                        <TextBlock Text="{Binding RewardOption1Text}"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Style="{StaticResource SimulationRewardIcon1}" Width="58" Height="58" Stretch="Uniform" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RewardOption1Text}" Width="205" TextWrapping="Wrap" TextAlignment="Center"/>
+                            <Border Background="{DynamicResource Chrono_Lime}" CornerRadius="4" Padding="8,3" Margin="0,7,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontSize="11" FontWeight="Bold" /></Border>
+                        </StackPanel>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption2Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption2}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112"
+                            Height="180"
                             Margin="0,0,10,0">
-                        <TextBlock Text="{Binding RewardOption2Text}"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Style="{StaticResource SimulationRewardIcon2}" Width="58" Height="58" Stretch="Uniform" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RewardOption2Text}" Width="205" TextWrapping="Wrap" TextAlignment="Center"/>
+                            <Border Background="{DynamicResource Chrono_Lime}" CornerRadius="4" Padding="8,3" Margin="0,7,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontSize="11" FontWeight="Bold" /></Border>
+                        </StackPanel>
                     </Button>
                     <Button Command="{Binding PurchaseRewardOption3Command}"
                             IsEnabled="{Binding CanPurchaseRewardOption3}"
                             Visibility="{Binding RewardOption3Visibility}"
                             Style="{StaticResource GalapagOS.Button.Primary}"
                             Width="240"
-                            Height="112">
-                        <TextBlock Text="{Binding RewardOption3Text}"
-                                   TextWrapping="Wrap"
-                                   TextAlignment="Center"/>
+                            Height="180">
+                        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Image Style="{StaticResource SimulationRewardIcon3}" Width="58" Height="58" Stretch="Uniform" Margin="0,0,0,4" />
+                            <TextBlock Text="{Binding RewardOption3Text}" Width="205" TextWrapping="Wrap" TextAlignment="Center"/>
+                            <Border Background="{DynamicResource Chrono_Lime}" CornerRadius="4" Padding="8,3" Margin="0,7,0,0" HorizontalAlignment="Center"><TextBlock Text="CHOOSE" FontSize="11" FontWeight="Bold" /></Border>
+                        </StackPanel>
                     </Button>
                 </StackPanel>
                 <Button Content="CONTINUE WITHOUT UPGRADE"
@@ -1885,6 +1901,23 @@
                                            Foreground="{DynamicResource Chrono_TreeBark}"
                                            TextWrapping="Wrap"
                                            Margin="0,0,0,12" />
+
+                                <Border Visibility="{Binding PermanentSettlementVisibility}"
+                                        Padding="14,11" Margin="0,0,0,12"
+                                        Background="{DynamicResource Chrono_VanillaCream}"
+                                        BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="PERMANENT DATA" FontSize="10" FontWeight="Bold"
+                                                   Foreground="{DynamicResource Chrono_Olive}" Margin="0,0,0,6" />
+                                        <TextBlock Text="{Binding PermanentSettlementDetailsText}" FontSize="13"
+                                                   TextWrapping="Wrap" Foreground="{DynamicResource Chrono_TreeBark}" />
+                                        <Button Content="RETRY SAVING SETTLEMENT"
+                                                Visibility="{Binding RetryPermanentSettlementVisibility}"
+                                                Command="{Binding RetryPermanentSettlementCommand}"
+                                                Style="{StaticResource GalapagOS.Button.SecondaryPaper}"
+                                                Height="44" Margin="0,10,0,0" />
+                                    </StackPanel>
+                                </Border>
 
                                 <Border Visibility="{Binding JourneyResultsVisibility}"
                                         Padding="14,11"

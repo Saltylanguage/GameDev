@@ -7,6 +7,7 @@
 - **Related baseline:** [Accepted Field Data journey](FIELD_DATA_PROCESS_DESIGN.md), [Genome direction](UPGRADE_SYSTEM_DIRECTION.md), [Studio balance guideline](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md)
 - **Technical companion:** [FD2 Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md)
 - **Ticket breakdown:** [FD2 implementation tickets](FIELD_DATA_PERMANENT_PROGRESSION_TICKET_DRAFT.md)
+- **First-test values:** [FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md)
 
 ## 1. Purpose
 
@@ -88,22 +89,26 @@ reopened.
 4. The player purchases eligible nodes using that species' data. Nodes remain
    permanently unlocked. Each purchase activates the node immediately if the
    species' active capacity permits; otherwise the purchase is blocked.
-5. The player may arrange unlocked nodes within the existing eight-point
-   capacity. Effects are captured for the next simulation/journey at launch;
-   an in-progress simulation never changes.
-6. One species' active loadout can be reset at a time for a fixed Research Data
-   fee. The reset removes all active selections for that species, refunds no
-   species data, and leaves all permanent unlocks intact. The player can then
-   freely reselect unlocked nodes within capacity.
+5. The first Hare catalog uses all five existing placeholder IDs and keeps
+   their authored prerequisite graph. Each costs 5 Hare Data and uses 2 points
+   of the existing eight-point active capacity, so at most four can be active.
+   The tuning sheet v0.2 proposes supported effects from Salty's pushed
+   mechanics and clearer display names, approved by Bevin on October 24.
+   Prerequisites are permanent ownership requirements. They do not also have
+   to stay active, which would make the final node exceed the capacity limit.
+6. One species' active loadout can be reset at a time for 20 Research Data in
+   the first test. The reset removes all active selections for that species,
+   refunds no species data, and leaves all permanent unlocks intact. The player
+   can then freely reselect unlocked nodes within capacity.
 7. Shared conversion research appears in the Gene Lab's Research section. It
-   costs Research Data, has a small fixed level cap, and its price rises with
-   each level. Each purchased level affects later success settlements only.
+   has three levels in the first test, costing 10, 20, and 30 Research Data.
+   Each level multiplies later species-data settlements by 1.10.
 
-For the first-test baseline, Genome nodes cost 5 matching species data each,
-subject to their authored prerequisites. The node list, node effects, reset
-fee, exact conversion-research cap, and its price schedule remain tuning or
-content decisions to finalize during implementation. Do not invent effects or
-prices to fill those gaps.
+These first-test prices and limits are provisional, not balance findings. The
+[FD2 tuning sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md) is the
+current numeric baseline. The local node assets remain placeholders pending
+review of the proposed mapping and runtime integration. See the
+[T01 review](FIELD_DATA_PERMANENT_PROGRESSION_T01_REVIEW.md).
 
 ## 7. Wallets and migration
 

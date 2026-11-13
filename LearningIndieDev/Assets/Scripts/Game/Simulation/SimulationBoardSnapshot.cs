@@ -11,6 +11,7 @@ namespace SaltyGame
         readonly SimulationCellSnapshot[] cells;
         readonly int[] grassVertices;
         readonly int[] desertVertices;
+        readonly HashSet<int> burrowCellIndices;
         readonly IReadOnlyDictionary<SpeciesId, SpeciesRole> speciesRoles;
 
         SimulationBoardSnapshot(
@@ -22,6 +23,7 @@ namespace SaltyGame
             SimulationCellSnapshot[] cells,
             int[] grassVertices,
             int[] desertVertices,
+            int[] burrowCellIndices,
             IReadOnlyDictionary<SpeciesId, SpeciesRole> speciesRoles)
         {
             Width = width;
@@ -32,6 +34,7 @@ namespace SaltyGame
             this.cells = cells;
             this.grassVertices = grassVertices;
             this.desertVertices = desertVertices;
+            this.burrowCellIndices = new HashSet<int>(burrowCellIndices);
             this.speciesRoles = speciesRoles;
         }
 
@@ -85,6 +88,7 @@ namespace SaltyGame
                 cells,
                 grassVertices,
                 desertVertices,
+                run.CopyHareBurrowCellIndices(),
                 speciesRoles);
         }
 
@@ -96,6 +100,16 @@ namespace SaltyGame
         public SpeciesId PlayerSpecies { get; }
         public IReadOnlyList<SimulationCellSnapshot> Cells => cells;
         public IReadOnlyDictionary<SpeciesId, SpeciesRole> SpeciesRoles => speciesRoles;
+
+        public bool HasBurrowAt(int x, int y)
+        {
+            if (x < 0 || x >= Width || y < 0 || y >= Height)
+            {
+                return false;
+            }
+
+            return burrowCellIndices.Contains(x + y * Width);
+        }
 
         public int GetTerrainVertexMask(int x, int y, TerrainVisualFamily family)
         {
@@ -137,6 +151,7 @@ namespace SaltyGame
             IsCreature = cell.IsCreature;
             IsTerrainResource = cell.IsTerrainResource;
             IsPlantResource = cell.IsPlantResource;
+            IsMeatResource = cell.IsMeatResource;
             IsPassable = cell.IsPassable;
             SpeciesId = cell.SpeciesId;
             ResourceSpeciesId = cell.ResourceSpeciesId;
@@ -165,6 +180,7 @@ namespace SaltyGame
         public bool IsCreature { get; }
         public bool IsTerrainResource { get; }
         public bool IsPlantResource { get; }
+        public bool IsMeatResource { get; }
         public bool IsPassable { get; }
         public SpeciesId SpeciesId { get; }
         public SpeciesId ResourceSpeciesId { get; }

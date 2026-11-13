@@ -1,0 +1,3 @@
+interface:
+  display_name: "Playable Route Review"
+  short_description: "Review a playable game route with evidence"

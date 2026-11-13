@@ -135,24 +135,19 @@ namespace SaltyGame
 
         static bool ValidateRoute(IReadOnlyList<FieldDataRouteNode> nodes, out string error)
         {
-            var expected = new[]
+            if (nodes.Count != FieldDataJourneyDefinition.SimulationCount + FieldDataJourneyDefinition.NodeChoicesAfterSimulationCount)
             {
-                JourneyNodeKind.Simulation, JourneyNodeKind.Shop, JourneyNodeKind.Simulation,
-                JourneyNodeKind.Shop, JourneyNodeKind.Simulation,
-            };
-            if (nodes.Count != expected.Length)
-            {
-                error = "The starter Field Data route must contain exactly five nodes.";
+                error = "The starter Field Data route must contain four simulations and three shops.";
                 return false;
             }
             var ids = new HashSet<string>(StringComparer.Ordinal);
             for (var i = 0; i < nodes.Count; i++)
             {
                 var node = nodes[i];
-                if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id)
-                    || node.Kind != expected[i])
+                var expectedKind = i % 2 == 0 ? JourneyNodeKind.Simulation : JourneyNodeKind.Shop;
+                if (string.IsNullOrWhiteSpace(node.Id) || !ids.Add(node.Id) || node.Kind != expectedKind)
                 {
-                    error = "The starter route needs unique stable node IDs in Simulation → Shop → Simulation → Shop → Simulation order.";
+                    error = "The starter route needs unique stable node IDs in alternating Simulation → Shop order, ending with a simulation.";
                     return false;
                 }
                 var expectedNext = i == nodes.Count - 1 ? string.Empty : nodes[i + 1].Id;
@@ -226,6 +221,9 @@ namespace SaltyGame
                         ? item.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout && amount == 1.5m
                             && item.Sources == FieldDataIncomeSource.Shop
                             && item.FirstShopVisit == 1 && item.ShopCost == 30
+                    : item.Id == "income-multiply-one-point-seven-five"
+                        ? item.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout && amount == 1.75m
+                            && item.Sources == FieldDataIncomeSource.Shop && item.FirstShopVisit == 2 && item.ShopCost == 40
                     : item.Id == "income-multiply-two"
                         ? item.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout && amount == 2m
                             && item.Sources == FieldDataIncomeSource.Shop && item.FirstShopVisit == 2 && item.ShopCost == 50
@@ -238,9 +236,9 @@ namespace SaltyGame
                 values.Add(new FieldDataIncomeOffer(item.Id, item.DisplayName, item.Operation, amount,
                     item.Sources, item.FirstShopVisit, item.ShopCost));
             }
-            if (seen.Count != 3)
+            if (seen.Count != 4)
             {
-                error = "The starter definition requires all three income offers.";
+                error = "The starter definition requires the additive offer and all three payout tiers.";
                 return false;
             }
             error = string.Empty;

@@ -19,7 +19,7 @@ MonoBehaviour:
   prerequisiteNodeIds:
   - poc.hare.long-stride
   rabbitDataPrice: 1
-  capacityPoints: 2
+  capacityPoints: 1
   branchName: Trailblazer
   modifiers:
   - attributeId: awareness.vision-range

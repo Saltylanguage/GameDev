@@ -114,7 +114,7 @@ namespace SaltyGame
                 var y = cellIndex / source.Width;
                 result.SetCell(x, y, result.GetCell(x, y).WithEntity(
                     species,
-                    health: 1,
+                    health: speciesRules.MaximumHealth,
                     energy: energy,
                     age: 0,
                     foodEaten: 0,
@@ -265,6 +265,28 @@ namespace SaltyGame
             float stepIntervalSeconds = 0.1f,
             GenomeSimulationSnapshot genomeSnapshot = null)
         {
+            return StepWithLineage(source, rules, seed, maxPopulation, terrainDefinitions,
+                alphaOffspringRules, metrics, combatResolutionMode, attackOpportunityMode,
+                experimentalOptions, previousSource, stepIntervalSeconds, genomeSnapshot, null);
+        }
+
+        internal static Grid<SpeciesCell> StepWithLineage(
+            Grid<SpeciesCell> source,
+            IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
+            int seed,
+            int maxPopulation,
+            IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions,
+            IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
+            SpeciesSimulationMetrics metrics,
+            SpeciesCombatResolutionMode combatResolutionMode,
+            SpeciesAttackOpportunityMode attackOpportunityMode,
+            SpeciesExperimentalOptions experimentalOptions,
+            Grid<SpeciesCell> previousSource,
+            float stepIntervalSeconds,
+            GenomeSimulationSnapshot genomeSnapshot,
+            HareLineage hareLineage,
+            int hiddenHares = 0)
+        {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
@@ -317,7 +339,9 @@ namespace SaltyGame
                 forcedOpportunity: null,
                 experimentalOptions: experimentalOptions,
                 stepIntervalSeconds: stepIntervalSeconds,
-                genomeSnapshot: genomeSnapshot);
+                genomeSnapshot: genomeSnapshot,
+                hareLineage: hareLineage,
+                hiddenHares: hiddenHares);
         }
 
         public static SpeciesPairedStepResult StepPaired(
@@ -490,7 +514,8 @@ namespace SaltyGame
             ResolveReproductionCooldowns(next);
             ResolveGestationTimers(next);
             ResolveScentDecay(next);
-            SpeciesBehaviorSystem.Update(source, next, rules, random, metrics, previousSource);
+            SpeciesBehaviorSystem.Update(
+                source, next, rules, random, metrics, previousSource, experimentalOptions);
         }
 
         static void ResolveScentDecay(Grid<SpeciesCell> next)
@@ -532,7 +557,9 @@ namespace SaltyGame
             SpeciesAttackOpportunity? forcedOpportunity,
             SpeciesExperimentalOptions experimentalOptions = null,
             float stepIntervalSeconds = 0.1f,
-            GenomeSimulationSnapshot genomeSnapshot = null)
+            GenomeSimulationSnapshot genomeSnapshot = null,
+            HareLineage hareLineage = null,
+            int hiddenHares = 0)
         {
             RecordSpeciesExposureStep(source, rules, metrics, experimentalOptions);
             ResolveAttacks(
@@ -553,7 +580,7 @@ namespace SaltyGame
             ResolveStarvation(next, rules, metrics);
             ResolveSeedDrops(next, rules, terrainDefinitions, random, metrics, genomeSnapshot);
             ResolveWilt(next, rules, random, metrics);
-            ResolveGestationBirths(next, rules, alphaOffspringRules, random, metrics);
+            ResolveGestationBirths(next, rules, alphaOffspringRules, random, metrics, hareLineage);
             ResolveReproduction(
                 next,
                 rules,
@@ -561,8 +588,9 @@ namespace SaltyGame
                 alphaOffspringRules,
                 random,
                 metrics,
-                stepIntervalSeconds);
-            ResolvePopulationLimit(next, maxPopulation, random, metrics);
+                stepIntervalSeconds,
+                hareLineage);
+            ResolvePopulationLimit(next, maxPopulation, random, metrics, hiddenHares);
             return next;
         }
 
@@ -662,7 +690,8 @@ namespace SaltyGame
             Grid<SpeciesCell> next,
             int maxPopulation,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            int hiddenHares)
         {
             if (maxPopulation <= 0)
             {
@@ -687,7 +716,7 @@ namespace SaltyGame
                 }
             }
 
-            while (populations.Count > maxPopulation)
+            while (populations.Count > Math.Max(0, maxPopulation - hiddenHares))
             {
                 var removeIndex = random.Next(populations.Count);
                 var population = populations[removeIndex];
@@ -931,7 +960,7 @@ namespace SaltyGame
                             break;
                         }
 
-                        if (target.IsPlantResource)
+                        if (target.IsPlantResource && !target.IsCreature && !target.IsMeatResource)
                         {
                             TryFeedOnPlant(
                                 next,
@@ -974,11 +1003,17 @@ namespace SaltyGame
                             }
                             else
                             {
-                                next.SetCell(targetX, targetY, MarkCreatureDead(
+                                var carcass = MarkCreatureDead(
                                     next,
                                     targetX,
                                     targetY,
-                                    metrics).WithoutEntity());
+                                    metrics).WithoutEntity();
+                                var carcassEnergy = rules.TryGetValue(currentTarget.SpeciesId, out var preyRules)
+                                    ? preyRules.EnergyValue
+                                    : 0;
+                                next.SetCell(targetX, targetY, carcass.WithMeatResource(
+                                    currentTarget.SpeciesId,
+                                    carcassEnergy));
                             }
 
                             if (remainingHealth <= 0)
@@ -996,25 +1031,6 @@ namespace SaltyGame
                                 metrics?.Record(attacker.SpeciesId, combatKills: 1);
                             }
 
-                            if (remainingHealth <= 0
-                                && attackerRules.StartingEnergy > 0
-                                && currentAttacker.IsCreature
-                                && currentAttacker.SpeciesId == attacker.SpeciesId)
-                            {
-                                next.SetCell(x, y, CreateFedCell(
-                                    currentAttacker,
-                                    attackerRules,
-                                    rules.TryGetValue(target.SpeciesId, out var foodRules)
-                                        ? foodRules.EnergyValue
-                                        : 0).WithBehaviorState(
-                                            SpeciesBehaviorState.Eating,
-                                            Math.Max(1, currentAttacker.BehaviorStateTicks)));
-                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: true, consumedAmount: 1f);
-                            }
-                            else
-                            {
-                                metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
-                            }
                         }
                         else
                         {
@@ -1027,7 +1043,6 @@ namespace SaltyGame
                                     damageDealt: 0,
                                     lethal: false);
                             }
-                            metrics?.RecordFoodAction(attacker.SpeciesId, successful: false);
                         }
 
                         ApplyFoxAttackCooldown(next, x, y, experimentalOptions);
@@ -1871,7 +1886,7 @@ namespace SaltyGame
                 return false;
             }
 
-            if (speciesRules.Awareness.VisionRange <= 0
+            if (speciesRules.Awareness.VisionRange + speciesRules.Awareness.PredatorDetectionRangeBonus <= 0
                 && !currentCell.ScentMemory.IsActive)
             {
                 return false;
@@ -2207,7 +2222,10 @@ namespace SaltyGame
             {
                 if (ShouldForage(cell, speciesRules))
                 {
-                    if (!TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics))
+                    var fed = sourceTarget.IsMeatResource
+                        ? TryFeedOnMeat(next, targetX, targetY, x, y, cell, speciesRules, metrics)
+                        : TryFeedOnPlant(next, targetX, targetY, x, y, cell, speciesRules, plantEnergyValue, metrics);
+                    if (!fed)
                     {
                         return false;
                     }
@@ -2215,6 +2233,11 @@ namespace SaltyGame
                     moved[GetIndex(source, x, y)] = true;
                     return true;
                 }
+            }
+
+            if (sourceTarget.IsMeatResource)
+            {
+                return false;
             }
 
             var movementSpeed = speciesRules.MovementSpeed
@@ -2522,7 +2545,7 @@ namespace SaltyGame
                 for (var x = 0; x < next.Width; x++)
                 {
                     var cell = next.GetCell(x, y);
-                    if (cell.IsOccupied)
+                    if (cell.IsOccupied && !cell.IsMeatResource)
                     {
                         var aged = cell.WithEntity(
                             cell.SpeciesId,
@@ -2839,7 +2862,7 @@ namespace SaltyGame
         {
             if (!grid.TryResolveCoordinates(ref x, ref y)) return false;
             var cell = grid.GetCell(x, y);
-            return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource;
+            return cell.IsPassable && !cell.IsCreature && !cell.IsPlantResource && !cell.IsMeatResource;
         }
 
         static void ResolveGestationBirths(
@@ -2847,7 +2870,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
             System.Random random,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            HareLineage hareLineage)
         {
             // Newborns have no pending litter, and occupied cells cannot be birth sites.
             // This pass can read and write the same grid without copying it.
@@ -2942,7 +2966,7 @@ namespace SaltyGame
 
                         var offspring = childCell.WithEntity(
                             parent.SpeciesId,
-                            health: 1,
+                            health: speciesRules.MaximumHealth,
                             energy: offspringLocations != null ? 0 : speciesRules.ReproductionFoodRequired,
                             age: 0,
                             foodEaten: 0,
@@ -2954,6 +2978,10 @@ namespace SaltyGame
                         }
 
                         next.SetCell(childX, childY, offspring);
+                        if (hareLineage != null && parent.SpeciesId == HareSpeciesId)
+                        {
+                            hareLineage.RecordBirth(offspring.EntityId, parent.EntityId, parent.Gestation.MateEntityId);
+                        }
                         offspringLocations?.Add(new Vector2Int(childX, childY));
                         births++;
                         metrics?.Record(parent.SpeciesId, births: 1);
@@ -3102,7 +3130,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules,
             System.Random random,
             SpeciesSimulationMetrics metrics,
-            float stepIntervalSeconds)
+            float stepIntervalSeconds,
+            HareLineage hareLineage)
         {
             var source = next.Copy();
             var claimed = new bool[source.Count];
@@ -3303,6 +3332,7 @@ namespace SaltyGame
                         var parentIsPlant = IsPlantSpecies(parent.SpeciesId, speciesRules);
                         if (claimed[childIndex]
                             || childCell.IsCreature
+                            || childCell.IsMeatResource
                             || (parentIsPlant && childCell.IsPlantResource))
                         {
                             continue;
@@ -3315,7 +3345,7 @@ namespace SaltyGame
                                 parent.SpeciesId).WithScentMarker(childCell.ScentMarker)
                             : childCell.WithEntity(
                                 parent.SpeciesId,
-                                health: 1,
+                                health: speciesRules.MaximumHealth,
                                 energy: distributedOffspringLocations != null
                                     ? 0
                                     : speciesRules.ReproductionFoodRequired,
@@ -3329,6 +3359,10 @@ namespace SaltyGame
                         }
 
                         next.SetCell(childX, childY, offspring);
+                        if (hareLineage != null && parent.SpeciesId == HareSpeciesId)
+                        {
+                            hareLineage.RecordBirth(offspring.EntityId, parent.EntityId, matingPartner.EntityId);
+                        }
                         distributedOffspringLocations?.Add(new Vector2Int(childX, childY));
                         claimed[childIndex] = true;
                         births++;
@@ -3465,7 +3499,7 @@ namespace SaltyGame
         static SpeciesCell CreateFedCell(
             SpeciesCell cell,
             SpeciesRules rules,
-            int energyValue,
+            float energyValue,
             float foodAmount = 1f)
         {
             var availableEnergy = cell.EnergyRemainder + energyValue + rules.DigestionEnergyBonus;
@@ -3570,6 +3604,50 @@ namespace SaltyGame
             {
                 metrics?.RecordDeath(plant, plantX, plantY, SpeciesDeathCause.ResourceConsumed, resourceLayer: true);
             }
+            return true;
+        }
+
+        static bool TryFeedOnMeat(
+            Grid<SpeciesCell> next,
+            int meatX,
+            int meatY,
+            int eaterX,
+            int eaterY,
+            SpeciesCell eater,
+            SpeciesRules eaterRules,
+            SpeciesSimulationMetrics metrics)
+        {
+            var meat = next.GetCell(meatX, meatY);
+            if (!meat.IsMeatResource)
+            {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
+                return false;
+            }
+
+            var availableEnergy = meat.FoodReserve;
+            var currentEater = next.GetCell(eaterX, eaterY);
+            var energyNeeded = eaterRules.MaximumEnergy > 0
+                ? Math.Max(0f, eaterRules.MaximumEnergy
+                    - currentEater.Energy
+                    - currentEater.EnergyRemainder
+                    - eaterRules.DigestionEnergyBonus)
+                : availableEnergy;
+            var consumedEnergy = Math.Min(availableEnergy, energyNeeded);
+            if (consumedEnergy <= 0f)
+            {
+                metrics?.RecordFoodAction(eater.SpeciesId, successful: false);
+                return false;
+            }
+
+            next.SetCell(
+                eaterX,
+                eaterY,
+                CreateFedCell(currentEater, eaterRules, consumedEnergy, consumedEnergy)
+                    .WithBehaviorState(
+                        SpeciesBehaviorState.Eating,
+                        Math.Max(1, currentEater.BehaviorStateTicks)));
+            next.SetCell(meatX, meatY, meat.WithMeatEnergy(availableEnergy - consumedEnergy));
+            metrics?.RecordFoodAction(eater.SpeciesId, successful: true, consumedAmount: consumedEnergy);
             return true;
         }
 
@@ -3820,6 +3898,7 @@ namespace SaltyGame
     public static class SpeciesBehaviorSystem
     {
         const int SleepAfterIdleTicks = 10;
+        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
 
         public static void Update(
             Grid<SpeciesCell> source,
@@ -3827,7 +3906,8 @@ namespace SaltyGame
             IReadOnlyDictionary<SpeciesId, SpeciesRules> rules,
             System.Random random,
             SpeciesSimulationMetrics metrics = null,
-            Grid<SpeciesCell> previousSource = null)
+            Grid<SpeciesCell> previousSource = null,
+            SpeciesExperimentalOptions experimentalOptions = null)
         {
             if (source == null)
             {
@@ -3878,7 +3958,8 @@ namespace SaltyGame
 
                     var trackedCell = UpdateTracking(source, next, x, y, cell, speciesRules, random);
                     var perceivedCell = UpdateScentMemory(
-                        source, next, x, y, trackedCell, speciesRules, metrics);
+                        source, next, x, y, trackedCell, speciesRules, metrics,
+                        experimentalOptions ?? SpeciesExperimentalOptions.None);
 
                     var state = ChooseState(
                         source,
@@ -3970,7 +4051,8 @@ namespace SaltyGame
             int y,
             SpeciesCell cell,
             SpeciesRules rules,
-            SpeciesSimulationMetrics metrics)
+            SpeciesSimulationMetrics metrics,
+            SpeciesExperimentalOptions experimentalOptions)
         {
             if (rules.Role != SpeciesRole.Carnivore)
             {
@@ -4046,6 +4128,8 @@ namespace SaltyGame
                         sniffedDropping: sniffed);
                 }
                 else if (!memory.IsActive
+                    && (cell.SpeciesId != FoxSpeciesId
+                        || experimentalOptions.FoxOrdinaryMovementScentEnabled)
                     && SpeciesPerception.TryFindMovementScent(
                         source, x, y, rules.DietTargetId.Value,
                         out var movement, out var movementMarker))

@@ -357,6 +357,16 @@ EX-010 used its own human-approved schedule and authored intervention contract;
 its bounded result is recorded in the experiment package. Any future research
 schedule needs a new approval and contract.
 
+For an approved multi-node experiment, set `-PhasesPerNode` and provide one
+semicolon-delimited starting-population override map per node. The played
+species must be omitted because its count carries over; all other species and
+resources reset from the scenario, then the supplied node map overrides any
+listed counts. Example: `-PhasesPerNode 6 -NodeStartingPopulations
+'fox=4;fox=16'` uses four Foxes in node one and sixteen in node two while
+carrying the Hare count forward. An empty map or `none` keeps that node's
+authored nonplayer counts. The report records the schedule and opening
+population history.
+
 `CellSim.cmd` launches PowerShell with a process-only execution-policy bypass; it
 does not change the machine's saved policy. It dispatches to the underlying
 commands below when their full options are needed:
@@ -366,7 +376,7 @@ commands below when their full options are needed:
 | `CellSim Doctor` | Run fast Unity CLI and licensing diagnostics without launching a full Editor. |
 | `CellSim Test` | Run all Unity tests; add `-Mode EditMode` or `PlayMode` for a focused suite, and use `-Execution Auto`, `Live`, or `Clean`. Test name, assembly, and category filters are supported. |
 | `CellSim Visuals` | Run graphics-capable PlayMode evidence in the selected execution lane and capture settings, late-running, rewards, and results PNGs; use `-TestFilter` to focus it. Add `-ReplayReportPath ... -ReplaySeed ...` to replay one headless report result with its scenario, player species, seed, and grid settings. |
-| `CellSim Run` | Generate a JSON report for a seed range in the selected execution lane; `-RunTicks` sets an explicit tick count, while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; the default remains a fresh window. The wrapper waits briefly for the report file to become readable before parsing it. |
+| `CellSim Run` | Generate a JSON report for a seed range in the selected execution lane; `-RunTicks` sets an explicit tick count, while `-RunDurationSeconds` and `-StepIntervalSeconds` remain available for legacy duration-based runs. These options override the run window without changing the authored scenario asset. ForestEdge/Hare runs with `-ExperimentalFeatures bev-experimental` also emit and validate `statline.csv` before returning. Add both `-PhaseLengthTicks` and `-PhaseUpgradeSchedule` (semicolon-separated cumulative loadouts, with `none` for an empty phase) to opt into a deterministic continuation schedule; `-PhasesPerNode` enables fresh-node boundaries, with optional `-NodeStartingPopulations` for fixed per-node nonplayer counts. The wrapper waits briefly for the report file to become readable before parsing it. |
 | `CellSim Report` | Turn the latest JSON experiment into readable Markdown. |
 | `CellSim Baseline` | Run all tests, then an experiment and its Markdown report in one command. |
 | `CellSim Compare` | Compare two explicit reports. Matching seed ranges are required for an A/B balance conclusion. |

@@ -34,6 +34,128 @@ namespace SaltyGame.Tests
             return rules;
         }
 
+        [TestCase(1, 41)]
+        [TestCase(2, 34)]
+        [TestCase(3, 26)]
+        public void FasterGestationUsesSavedRank(int rank, int expectedTicks)
+        {
+            var hare = GenomeContract.RabbitSpeciesId;
+            var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
+                "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
+                capacityPoints: 1, maximumRanks: 3);
+            var profile = new SpeciesGenomeProfile(hare, activeNodeIds: new[] { node.Id },
+                allocations: new[] { new GenomeNodeAllocation(node.Id, rank, 1, rank) });
+            var catalog = new GenomeCatalogSnapshot(new[] { new SpeciesGenomeMapSnapshot(hare, new[] { node }) });
+            var frozen = GenomeSimulationSnapshot.Create(new[] { profile }).Resolve(catalog);
+
+            Assert.That(frozen.GetSpeciesGenome(hare).GetAllocationCapacityPoints(node.Id), Is.EqualTo(rank));
+            Assert.That(frozen.ApplyToNaturalRules(PopulationRules())[hare].GestationTicks,
+                Is.EqualTo(expectedTicks));
+        }
+
+        [Test]
+        public void FasterGestationRanksSpendCapacityOnceAndSurviveProfileReload()
+        {
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            var first = new GameObject("Faster Gestation Profile");
+            var second = new GameObject("Reloaded Faster Gestation Profile");
+            try
+            {
+                var session = first.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.CreateProfile("Gestation");
+                session.AddRabbitData(10);
+                session.TryPurchaseRabbitGenomeLicense(1, out _);
+                session.RecordSuccessfulJourney("gestation-1");
+                session.RecordSuccessfulJourney("gestation-2");
+                session.RecordSuccessfulJourney("gestation-3");
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(1, out _), Is.True);
+
+                var hare = GenomeContract.RabbitSpeciesId;
+                var node = new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId,
+                    "Faster Gestation", "Gestation test", hare, rabbitDataPrice: 1,
+                    capacityPoints: 1, maximumRanks: 3);
+                var map = new SpeciesGenomeMapSnapshot(hare, new[] { node });
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, node.Id, 1, 1, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.True);
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, node.Id, out _), Is.False);
+                Assert.That(session.Current.RabbitData, Is.EqualTo(9));
+
+                var reloaded = second.AddComponent<Helper_ProfileSession>();
+                reloaded.Reload();
+                Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out var profile), Is.True);
+                Assert.That(profile.CapacityUsed, Is.EqualTo(1));
+                Assert.That(profile.TryGetAllocation(node.Id, out var allocation), Is.True);
+                Assert.That(allocation.CapacityPoints, Is.EqualTo(1));
+                Assert.That(allocation.Rank, Is.EqualTo(3));
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(9));
+                Assert.That(reloaded.TryResetRabbitGenome(1, out _), Is.True);
+                Assert.That(reloaded.Current.RabbitData, Is.EqualTo(12));
+            }
+            finally
+            {
+                Object.DestroyImmediate(first);
+                Object.DestroyImmediate(second);
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
+        [Test]
+        public void EightDistinctNodesFitAndAnEquippedRankCanUpgradeAtFullCapacity()
+        {
+            var hadStore = PlayerPrefs.HasKey(Helper_ProfileSession.StoreKey);
+            var originalStore = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
+            var hadRecovery = PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey);
+            var originalRecovery = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            var owner = new GameObject("Full Genome Profile");
+            try
+            {
+                var session = owner.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.CreateProfile("Full genome");
+                session.AddRabbitData(30);
+                session.RecordSuccessfulJourney("full-1");
+                session.RecordSuccessfulJourney("full-2");
+                session.RecordSuccessfulJourney("full-3");
+                Assert.That(session.TryPurchaseRabbitGenomeLicense(1, out var reason), Is.True, reason);
+                var hare = GenomeContract.RabbitSpeciesId;
+                var nodes = new List<GenomeUpgradeNodeSnapshot>
+                {
+                    new GenomeUpgradeNodeSnapshot(GenomeContract.FastGestationNodeId, "Gestation", "Test",
+                        hare, rabbitDataPrice: 1, capacityPoints: 1, maximumRanks: 3)
+                };
+                for (var i = 1; i < 9; i++)
+                    nodes.Add(new GenomeUpgradeNodeSnapshot("test.node-" + i, "Node", "Test",
+                        hare, rabbitDataPrice: 1, capacityPoints: i % 2 == 0 ? 5 : 3));
+                var map = new SpeciesGenomeMapSnapshot(hare, nodes);
+                for (var i = 0; i < 8; i++)
+                    Assert.That(session.TryPurchaseRabbitGenomeNode(map, nodes[i].Id, 1, nodes[i].CapacityPoints, out reason), Is.True, reason);
+                var balance = session.Current.RabbitData;
+                Assert.That(session.TryPurchaseRabbitGenomeNode(map, nodes[8].Id, 1, nodes[8].CapacityPoints, out _), Is.False);
+                Assert.That(session.Current.RabbitData, Is.EqualTo(balance));
+                Assert.That(session.TryUpgradeRabbitGenomeNode(map, nodes[0].Id, out reason), Is.True, reason);
+                Assert.That(session.Current.TryGetGenomeProfile(hare, out var profile), Is.True);
+                Assert.That(profile.CapacityUsed, Is.EqualTo(8));
+                Assert.That(profile.TryGetAllocation(nodes[1].Id, out var legacyAllocation), Is.True);
+                Assert.That(legacyAllocation.CapacityPoints, Is.EqualTo(3));
+                Assert.That(profile.TryGetAllocation(nodes[0].Id, out var allocation), Is.True);
+                Assert.That(allocation.Rank, Is.EqualTo(2));
+                Assert.That(allocation.CapacityPoints, Is.EqualTo(1));
+            }
+            finally
+            {
+                Object.DestroyImmediate(owner);
+                if (hadStore) PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, originalStore);
+                else PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+                if (hadRecovery) PlayerPrefs.SetString(Helper_ProfileSession.RecoveryStoreKey, originalRecovery);
+                else PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+                PlayerPrefs.Save();
+            }
+        }
+
         [Test]
         public void PopulationPoolClampsGrantsRecordsActualAdditionsAndAllowsExplicitExceptions()
         {
@@ -121,6 +243,9 @@ namespace SaltyGame.Tests
             originalProfileSave = PlayerPrefs.GetString(Helper_ProfileSession.StoreKey);
             hadRecoverySave = PlayerPrefs.HasKey(Helper_ProfileSession.RecoveryStoreKey);
             originalRecoverySave = PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
+            PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            PlayerPrefs.Save();
         }
 
         [TearDown]
@@ -548,7 +673,9 @@ namespace SaltyGame.Tests
                 Assert.That(session.TryPurchaseRabbitGenomeNode(map, branch.Id, 5, 5, out reason), Is.True, reason);
                 Assert.That(session.Current.RabbitData, Is.EqualTo(65));
                 Assert.That(session.Current.TryGetGenomeProfile(hare, out var genome), Is.True);
-                Assert.That(genome.CapacityUsed, Is.EqualTo(8));
+                Assert.That(genome.CapacityUsed, Is.EqualTo(2));
+                Assert.That(genome.Allocations[0].CapacityPoints, Is.EqualTo(3));
+                Assert.That(genome.Allocations[1].CapacityPoints, Is.EqualTo(5));
                 Assert.That(genome.Allocations.Count, Is.EqualTo(2));
                 Assert.That(session.TrySetGenomeConfiguration(hare, new[] { root.Id },
                     new[] { root.Id }, out _), Is.False);
@@ -571,6 +698,9 @@ namespace SaltyGame.Tests
                 Assert.That(reloaded.Current.CompletedRuns, Is.EqualTo(3));
                 Assert.That(reloaded.Current.TryGetGenomeProfile(hare, out genome), Is.True);
                 Assert.That(genome.Allocations.Count, Is.EqualTo(2));
+                Assert.That(genome.CapacityUsed, Is.EqualTo(2));
+                Assert.That(genome.Allocations[0].CapacityPoints, Is.EqualTo(3));
+                Assert.That(genome.Allocations[1].CapacityPoints, Is.EqualTo(5));
                 Assert.That(reloaded.TryResetRabbitGenome(11, out _), Is.False);
                 Assert.That(reloaded.TryResetRabbitGenome(3, out reason), Is.True, reason);
                 Assert.That(reloaded.Current.RabbitData, Is.EqualTo(90));
@@ -592,7 +722,7 @@ namespace SaltyGame.Tests
         }
 
         [Test]
-        public void VersionTwoGenomeSaveKeepsLegacyNodesAndStartsNewEconomyAtZero()
+        public void VersionTwoGenomeSaveKeepsLegacyNodesAndMigratesCurrencyToResearchData()
         {
             const string versionTwo =
                 "{\"version\":2,\"profiles\":[{\"id\":\"v2\",\"name\":\"Old\",\"currency\":14,"
@@ -609,7 +739,7 @@ namespace SaltyGame.Tests
                 session.SetPlaytimeTracking(false);
                 Assert.That(session.Current.Currency, Is.EqualTo(14));
                 Assert.That(session.Current.RabbitData, Is.Zero);
-                Assert.That(session.Current.ResearchData, Is.Zero);
+                Assert.That(session.Current.ResearchData, Is.EqualTo(14));
                 Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out var genome), Is.True);
                 Assert.That(genome.ActiveNodeIds, Is.EqualTo(new[] { "hare.old" }));
                 session.AddRabbitData(2);
@@ -624,6 +754,219 @@ namespace SaltyGame.Tests
                 if (sessionObject != null) Object.DestroyImmediate(sessionObject);
                 PlayerPrefs.DeleteKey(Helper_ProfileSession.StoreKey);
                 PlayerPrefs.Save();
+            }
+        }
+
+        [TestCase(false)]
+        [TestCase(true)]
+        public void VersionTwoMigrationCanReplayWithoutDuplicatingWalletsOrReplacingRecovery(bool existingRecovery)
+        {
+            const string legacyJson = "{\"version\":2,\"profiles\":[{\"id\":\"first\",\"name\":\"First\","
+                + "\"currency\":73},{\"id\":\"second\",\"name\":\"Second\",\"currency\":19}],"
+                + "\"lastLoadedProfileId\":\"second\"}";
+            const string priorRecovery = "previous recovery evidence";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, legacyJson);
+            if (existingRecovery)
+            {
+                PlayerPrefs.SetString(Helper_ProfileSession.RecoveryStoreKey, priorRecovery);
+            }
+            else
+            {
+                PlayerPrefs.DeleteKey(Helper_ProfileSession.RecoveryStoreKey);
+            }
+
+            PlayerPrefs.Save();
+            var sessionObject = new GameObject("Wallet Migration Session");
+            try
+            {
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.Reload();
+                for (var attempt = 0; attempt < 2; attempt++)
+                {
+                    Assert.That(session.Profiles.Count, Is.EqualTo(2));
+                    Assert.That(session.Current.ProfileId, Is.EqualTo("second"));
+                    Assert.That(session.Current.ResearchData, Is.EqualTo(19));
+                    Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
+                    Assert.That(session.SelectProfile("first"), Is.True);
+                    Assert.That(session.Current.ResearchData, Is.EqualTo(73));
+                    Assert.That(session.Current.SpeciesDataWallets, Is.Empty);
+                    Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey),
+                        Is.EqualTo(existingRecovery ? priorRecovery : legacyJson));
+                StringAssert.Contains("\"version\":9", PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+
+                    // Replay the old on-disk input as if migration had been interrupted.
+                    PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, legacyJson);
+                    PlayerPrefs.Save();
+                    session.Reload();
+                }
+
+                session.Reload();
+                Assert.That(session.Current.ResearchData, Is.EqualTo(19));
+                var fresh = session.CreateProfile("Fresh");
+                Assert.That(fresh.ResearchData, Is.Zero);
+                Assert.That(fresh.SpeciesDataWallets, Is.Empty);
+                Assert.That(fresh.UnlockedGenomeSpeciesIds, Is.Empty);
+                Assert.That(fresh.GenomeProfiles, Is.Empty);
+            }
+            finally
+            {
+                Object.DestroyImmediate(sessionObject);
+            }
+        }
+
+        [Test]
+        public void EveryProfileSnapshotCopyPreservesIndependentSpeciesWallets()
+        {
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var wallets = new Dictionary<SpeciesId, long> { { hare, 19 }, { fox, 0 } };
+            var original = new ProfileSessionSnapshot(true, "wallets", "Wallets", currency: 42,
+                speciesDataWallets: wallets);
+            wallets[hare] = 999;
+            var genome = new SpeciesGenomeProfile(hare, new[] { "hare.guard" }, new[] { "hare.guard" });
+            var copies = new[]
+            {
+                original.WithLoaded(false),
+                original.WithCurrency(43),
+                original.WithTime(600, 1234),
+                original.WithUnlockedSpecies(fox),
+                original.WithUnlockedGenome(hare),
+                original.WithUnlockedFeature("gene-lab"),
+                original.WithGenomeProfile(genome),
+                original.WithGenomeProfile(genome).WithGenomeProfile(genome),
+            };
+            foreach (var copy in copies)
+            {
+                Assert.That(copy.SpeciesDataWallets[hare], Is.EqualTo(19));
+                Assert.That(copy.SpeciesDataWallets[fox], Is.Zero);
+                Assert.That(copy.Currency, Is.EqualTo(copy.ResearchData));
+            }
+
+            Assert.That(original.ResearchData, Is.EqualTo(42));
+            Assert.Throws<System.NotSupportedException>(() =>
+                ((IDictionary<SpeciesId, long>)original.SpeciesDataWallets)[hare] = 100);
+        }
+
+        [TestCase("", 0)]
+        [TestCase("hare", -1)]
+        public void ProfileSnapshotRejectsInvalidSpeciesWallets(string species, long balance)
+        {
+            var speciesId = string.IsNullOrEmpty(species) ? default : new SpeciesId(species);
+            Assert.Throws<System.ArgumentException>(() => new ProfileSessionSnapshot(true, "id", "Name",
+                speciesDataWallets: new[] { new KeyValuePair<SpeciesId, long>(speciesId, balance) }));
+        }
+
+        [Test]
+        public void ProfileSnapshotRejectsDuplicateSpeciesWallets()
+        {
+            var wallet = new KeyValuePair<SpeciesId, long>(new SpeciesId("hare"), 1);
+            Assert.Throws<System.ArgumentException>(() => new ProfileSessionSnapshot(true, "id", "Name",
+                speciesDataWallets: new[] { wallet, wallet }));
+        }
+
+        [System.Serializable]
+        sealed class MigrationArchiveProbe
+        {
+            public int version;
+            public string migrationSourceJson;
+        }
+
+        [TestCase(2, 73, 0, 0)]
+        [TestCase(30, 73, 19, 11)]
+        [TestCase(31, 21, 19, 0)]
+        public void CompatibleMigrationPreservesBothV3ShapesAndOriginalJson(
+            int shape, long expectedResearch, long expectedHare, long expectedFox)
+        {
+            var fields = shape == 2 ? "\"currency\":73,"
+                : shape == 30 ? "\"researchData\":73,\"speciesDataWallets\":[{\"speciesId\":\"hare\",\"balance\":19},"
+                    + "{\"speciesId\":\"fox\",\"balance\":11}],"
+                : "\"currency\":14,\"researchData\":7,\"rabbitData\":19,\"completedRuns\":3,\"completedRunIds\":[\"prior-run\"],";
+            var allocations = shape == 31
+                ? ",\"allocations\":[{\"nodeId\":\"hare.guard\",\"rabbitDataSpent\":1,\"capacityPoints\":2}]" : string.Empty;
+            var original = "{\"version\":" + (shape == 2 ? 2 : 3)
+                + ",\"profiles\":[{\"id\":\"compat\",\"name\":\"Compatible\"," + fields
+                + "\"simulationTicks\":42,\"playTimeMilliseconds\":1234,"
+                + "\"unlockedSpeciesIds\":[\"hare\",\"fox\"],\"unlockedGenomeSpeciesIds\":[\"hare\"],"
+                + "\"genomeProfiles\":[{\"speciesId\":\"hare\",\"unlockedNodeIds\":[\"hare.guard\"],"
+                + "\"activeNodeIds\":[\"hare.guard\"]" + allocations + "}]}],\"lastLoadedProfileId\":\"compat\"}";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, original);
+            PlayerPrefs.SetString(Helper_ProfileSession.RecoveryStoreKey, "older recovery");
+            PlayerPrefs.Save();
+            var sessionObject = new GameObject("Compatible Wallet Migration");
+            try
+            {
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.SetPlaytimeTracking(false);
+                session.Reload();
+                for (var attempt = 0; attempt < 2; attempt++)
+                {
+                    Assert.That(session.Current.ResearchData, Is.EqualTo(expectedResearch));
+                    Assert.That(session.Current.Currency, Is.EqualTo(expectedResearch));
+                    Assert.That(session.Current.RabbitData, Is.EqualTo(expectedHare));
+                    Assert.That(session.Current.SpeciesDataWallets.TryGetValue(new SpeciesId("fox"), out var fox)
+                        ? fox : 0, Is.EqualTo(expectedFox));
+                    Assert.That(session.Current.SimulationTicks, Is.EqualTo(42));
+                    Assert.That(session.Current.PlayTimeMilliseconds, Is.EqualTo(1234));
+                    Assert.That(session.Current.TryGetGenomeProfile(new SpeciesId("hare"), out var genome), Is.True);
+                    CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.UnlockedNodeIds);
+                    CollectionAssert.AreEqual(new[] { "hare.guard" }, genome.ActiveNodeIds);
+                    Assert.That(genome.Allocations.Count, Is.EqualTo(shape == 31 ? 1 : 0));
+                    Assert.That(session.Current.CompletedRuns, Is.EqualTo(shape == 31 ? 3 : 0));
+                    if (shape == 31)
+                    {
+                        CollectionAssert.AreEqual(new[] { "prior-run" }, session.Current.CompletedRunIds);
+                        Assert.That(genome.Allocations[0].RabbitDataSpent, Is.EqualTo(1));
+                    }
+
+                    var probe = JsonUtility.FromJson<MigrationArchiveProbe>(PlayerPrefs.GetString(Helper_ProfileSession.StoreKey));
+                    Assert.That(probe.version, Is.EqualTo(9));
+                    Assert.That(probe.migrationSourceJson, Is.EqualTo(original));
+                    Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("older recovery"));
+                    session.Reload();
+                }
+
+                session.AddCurrency(1);
+                session.AddResearchData(2);
+                session.AddRabbitData(3);
+                session.Reload();
+                Assert.That(session.Current.ResearchData, Is.EqualTo(expectedResearch + 3));
+                Assert.That(session.Current.RabbitData, Is.EqualTo(expectedHare + 3));
+                Assert.That(session.Current.SpeciesDataWallets.TryGetValue(new SpeciesId("fox"), out var finalFox)
+                    ? finalFox : 0, Is.EqualTo(expectedFox));
+                Assert.That(JsonUtility.FromJson<MigrationArchiveProbe>(PlayerPrefs.GetString(Helper_ProfileSession.StoreKey))
+                    .migrationSourceJson, Is.EqualTo(original));
+            }
+            finally
+            {
+                Object.DestroyImmediate(sessionObject);
+            }
+        }
+
+        [TestCase("\"researchData\":2,\"rabbitData\":1,\"speciesDataWallets\":[]")]
+        [TestCase("\"currency\":9223372036854775807,\"researchData\":1")]
+        [TestCase("\"researchData\":2,\"speciesDataWallets\":[{\"speciesId\":\"hare\",\"balance\":-1}]")]
+        public void AmbiguousOverflowingOrInvalidWalletMigrationKeepsOriginalForRecovery(string fields)
+        {
+            var original = "{\"version\":3,\"profiles\":[{\"id\":\"invalid\"," + fields
+                + "}],\"lastLoadedProfileId\":\"invalid\"}";
+            PlayerPrefs.SetString(Helper_ProfileSession.StoreKey, original);
+            PlayerPrefs.SetString(Helper_ProfileSession.RecoveryStoreKey, "older recovery");
+            PlayerPrefs.Save();
+            var sessionObject = new GameObject("Rejected Wallet Migration");
+            try
+            {
+                var session = sessionObject.AddComponent<Helper_ProfileSession>();
+                session.Reload();
+                session.SetPlaytimeTracking(false);
+                Assert.That(session.HasProfiles, Is.False);
+                Assert.That(session.LoadWarning, Is.Not.Empty);
+                Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.StoreKey), Is.EqualTo(original));
+                Assert.That(PlayerPrefs.GetString(Helper_ProfileSession.RecoveryStoreKey), Is.EqualTo("older recovery"));
+            }
+            finally
+            {
+                Object.DestroyImmediate(sessionObject);
             }
         }
 

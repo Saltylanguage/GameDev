@@ -11,6 +11,7 @@ namespace SaltyGame
         AttackModifier,
         DamageAmount,
         BlockAmount,
+        MaximumHealth,
         DigestionEnergyBonus,
         CrowdingTolerance,
         FleeMovementSpeedBonus,
@@ -24,6 +25,7 @@ namespace SaltyGame
         PreContactAvoidanceChance,
         CrowdingEnergyReduction,
         SeedDropChance,
+        PredatorDetectionRangeBonus,
     }
 
     public sealed class SpeciesUpgrade
@@ -87,6 +89,9 @@ namespace SaltyGame
                 case SpeciesUpgradeType.BlockAmount:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.BlockAmount, Value));
                     break;
+                case SpeciesUpgradeType.MaximumHealth:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.MaximumHealth, Value));
+                    break;
                 case SpeciesUpgradeType.ReproductionChance:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.ReproductionChance, Value));
                     break;
@@ -114,6 +119,9 @@ namespace SaltyGame
                 case SpeciesUpgradeType.TrackingPersistenceSteps:
                     modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.TrackingPersistenceSteps, Value));
                     break;
+                case SpeciesUpgradeType.PredatorDetectionRangeBonus:
+                    modifiers.Add(new SpeciesUpgradeModifier(SpeciesAttributeIds.PredatorDetectionRangeBonus, Value));
+                    break;
                 case SpeciesUpgradeType.PopulationReinforcement:
                 case SpeciesUpgradeType.PreContactAvoidanceChance:
                     break;
@@ -129,19 +137,38 @@ namespace SaltyGame
 
             return new SpeciesUpgradeSnapshot(
                 Id,
-                SpeciesUpgradeCatalog.GetDisplayName(Id),
+                targetSpecies.Value == "hare" && Id == SpeciesUpgradeCatalog.FasterMovementId
+                    ? "LONG STRIDE" : SpeciesUpgradeCatalog.GetDisplayName(Id),
                 Type == SpeciesUpgradeType.SeedDropChance
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of planting chance per eligible step. Spend one stored food only on success."
+                    : Type == SpeciesUpgradeType.BlockAmount
+                    ? $"Increase block by {(int)Value} for this journey."
+                    : Type == SpeciesUpgradeType.MaximumHealth
+                    ? $"Gain {(int)Value} health. A Hare can survive one basic Fox attack."
+                    : Type == SpeciesUpgradeType.MovementSpeed
+                    ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} for this journey."
+                    : Type == SpeciesUpgradeType.DigestionEnergyBonus
+                    ? $"Gain {Value.ToString("0.##", CultureInfo.InvariantCulture)} more energy from food."
+                    : Type == SpeciesUpgradeType.ReproductionChance
+                    ? $"Increase reproduction chance by {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points."
                     : Type == SpeciesUpgradeType.CrowdingEnergyReduction
                     ? $"Reduce the original extra crowding energy cost by {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points."
                     : Type == SpeciesUpgradeType.PreContactAvoidanceChance
                     ? $"Add {(Value * 100f).ToString("0.###", CultureInfo.InvariantCulture)} percentage points of pre-contact attack avoidance."
+                    : Type == SpeciesUpgradeType.FleeMovementSpeedBonus
+                    ? $"Increase movement speed by {Value.ToString("0.##", CultureInfo.InvariantCulture)} while Threatened."
+                    : Type == SpeciesUpgradeType.VisionRange
+                    ? $"Increase vision range by {(int)Value} tiles for this journey."
+                    : Type == SpeciesUpgradeType.TrackingPersistenceSteps
+                    ? $"Extend target tracking memory by {(int)Value} simulation steps."
+                    : Type == SpeciesUpgradeType.PredatorDetectionRangeBonus
+                    ? $"Detect predators {(int)Value} tiles farther away."
                     : Type == SpeciesUpgradeType.PopulationReinforcement
                     ? $"Add {(int)Value} {targetSpecies.Value} to the next phase."
                     : Type == SpeciesUpgradeType.LitterMinimum
                         ? $"Increase the minimum litter size by {(int)Value}."
                         : Type == SpeciesUpgradeType.LitterMaximum
-                            ? $"Increase the maximum litter size by {(int)Value}."
+                            ? $"Increase the maximum litter size by {(int)Value}; rank 3 also raises the minimum to 2."
                     : "Legacy upgrade converted to the run upgrade contract.",
                 targetSpecies,
                 Cost,
@@ -168,6 +195,7 @@ namespace SaltyGame
             var attackModifier = rules.AttackModifier;
             var damageAmount = rules.DamageAmount;
             var blockAmount = rules.BlockAmount;
+            var maximumHealth = rules.MaximumHealth;
             var reproductionChance = rules.ReproductionChance;
             var digestionEnergyBonus = rules.DigestionEnergyBonus;
             var seedDropChance = rules.SeedDropChance;
@@ -176,6 +204,7 @@ namespace SaltyGame
             var fleeMovementSpeedBonus = rules.FleeMovementSpeedBonus;
             var visionRange = rules.Awareness.VisionRange;
             var intelligence = rules.Awareness.Intelligence;
+            var predatorDetectionRangeBonus = rules.Awareness.PredatorDetectionRangeBonus;
             var forageBelowEnergy = rules.ForageBelowEnergy;
             var trackingPersistenceSteps = rules.TrackingPersistenceSteps;
             var litterMinimum = rules.LitterMinimum;
@@ -198,6 +227,9 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.BlockAmount:
                     blockAmount += (int)Value;
+                    break;
+                case SpeciesUpgradeType.MaximumHealth:
+                    maximumHealth += (int)Value;
                     break;
                 case SpeciesUpgradeType.ReproductionChance:
                     reproductionChance = Math.Max(0f, Math.Min(1f, reproductionChance + Value));
@@ -225,6 +257,9 @@ namespace SaltyGame
                     break;
                 case SpeciesUpgradeType.TrackingPersistenceSteps:
                     trackingPersistenceSteps += (int)Value;
+                    break;
+                case SpeciesUpgradeType.PredatorDetectionRangeBonus:
+                    predatorDetectionRangeBonus += (int)Value;
                     break;
                 case SpeciesUpgradeType.PopulationReinforcement:
                     break;
@@ -259,7 +294,7 @@ namespace SaltyGame
                 seedDropChance,
                 rules.EnergyValue,
                 rules.Metabolism,
-                awareness: new SpeciesAwarenessRules(visionRange, intelligence),
+                awareness: new SpeciesAwarenessRules(visionRange, intelligence, predatorDetectionRangeBonus),
                 role: rules.Role,
                 forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: rules.MaximumEnergy,
@@ -279,7 +314,8 @@ namespace SaltyGame
                 matingEnergyCostFraction: rules.MatingEnergyCostFraction,
                 distributeMatingEnergyToOffspring: rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction: crowdingEnergyReduction,
-                gestationTicks: rules.GestationTicks);
+                gestationTicks: rules.GestationTicks,
+                maximumHealth: maximumHealth);
         }
     }
 
@@ -288,17 +324,44 @@ namespace SaltyGame
         static readonly string[] FieldDataHareSkillIds =
         {
             ToughHideId, EfficientDigestionId, SeedDispersalId,
-            CrowdingToleranceId, ReproductiveDriveId, KeenSensesId,
+            CrowdingToleranceId, ReproductiveDriveId, KeenSensesId, LongVisionId, FasterMovementId,
+            ThreatExposureId, QuickEscapeId, LargerMaximumLitterId, LargerMinimumLitterId,
         };
+
+        public const string BurrowingId = "burrowing";
+        public const string SharedBurrowsId = "shared-burrows";
+        public const string ExpandedBurrowsId = "expanded-burrows";
+        public const int ExpandedBurrowsMaxLevel = 5;
+        static readonly string[] BurrowMutationIds = { BurrowingId, SharedBurrowsId, ExpandedBurrowsId };
+
+        internal static bool IsHareBurrowMutation(SpeciesId species, string id) =>
+            species.Value == "hare" && Array.IndexOf(BurrowMutationIds, id) >= 0;
 
         public static int GetFieldDataRewardMaxLevel(SpeciesId species, string upgradeId)
         {
+            if (species.Value == "hare" && upgradeId == ExpandedBurrowsId) return ExpandedBurrowsMaxLevel;
             return species.Value == "hare" && Array.IndexOf(FieldDataHareSkillIds, upgradeId) >= 0
                 ? GetMaxLevel(upgradeId) : 1;
         }
 
+        public static bool PreservesLitterBounds(SpeciesRules rules, SpeciesUpgradeSnapshot upgrade)
+        {
+            if (rules == null) throw new ArgumentNullException(nameof(rules));
+            if (upgrade == null) return false;
+            var minimum = rules.LitterMinimum;
+            var maximum = rules.LitterMaximum;
+            foreach (var modifier in upgrade.Modifiers)
+            {
+                if (modifier.AttributeId == SpeciesAttributeIds.LitterMinimum)
+                    minimum += (int)modifier.SignedValue;
+                else if (modifier.AttributeId == SpeciesAttributeIds.LitterMaximum)
+                    maximum += (int)modifier.SignedValue;
+            }
+            return minimum >= 1 && maximum >= minimum;
+        }
+
         public static SpeciesUpgradeSnapshot[] ResolveFieldDataOrdinaryRewardPool(
-            SpeciesId species, IEnumerable<SpeciesUpgradeSnapshot> authored)
+            SpeciesId species, IEnumerable<SpeciesUpgradeSnapshot> authored, Func<string, bool> burrowResearch = null)
         {
             var pool = new List<SpeciesUpgradeSnapshot>();
             if (species.Value == "hare")
@@ -314,6 +377,18 @@ namespace SaltyGame
                         }
                     pool.Add(selected ?? Create(id).CreateSnapshot(species));
                 }
+                foreach (var id in BurrowMutationIds)
+                {
+                    SpeciesUpgradeSnapshot selected = null;
+                    foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
+                        if (upgrade != null && upgrade.TargetSpecies == species && upgrade.Id == id)
+                        {
+                            selected = upgrade;
+                            break;
+                        }
+                    if (selected != null || burrowResearch?.Invoke(id) == true)
+                        pool.Add(selected ?? CreateBurrowMutation(id, species));
+                }
                 return pool.ToArray();
             }
             foreach (var upgrade in authored ?? Array.Empty<SpeciesUpgradeSnapshot>())
@@ -324,8 +399,21 @@ namespace SaltyGame
             return pool.ToArray();
         }
 
+        static SpeciesUpgradeSnapshot CreateBurrowMutation(string id, SpeciesId species)
+        {
+            var name = id == BurrowingId ? "Burrowing" : id == SharedBurrowsId ? "Shared Burrows" : "Expanded Burrows";
+            var description = id == BurrowingId
+                ? "Hares can dig burrows and hide with their descendants. Each burrow holds three Hares and lasts 200 steps."
+                : id == SharedBurrowsId ? "Unrelated Hares can shelter in burrows with room."
+                : "Adds one place to every burrow for this journey, up to eight places.";
+            return new SpeciesUpgradeSnapshot(id, name, description, species, 0, Array.Empty<SpeciesUpgradeModifier>());
+        }
+
         public const string FasterMovementId = "faster-movement";
         public const int FasterMovementMaxLevel = 10;
+        public const string QuickEscapeId = "quick-escape";
+        public const int QuickEscapeMaxLevel = 5;
+        public const float QuickEscapeFleeSpeedPerLevel = 0.5f;
         public const string StrongerAttackId = "stronger-attack";
         public const string StrongerAttackModifierId = "stronger-attack-modifier";
         public const string StrongerDamageId = "stronger-damage";
@@ -343,11 +431,14 @@ namespace SaltyGame
         public const int CrowdingToleranceMaxLevel = 10;
         public const float CrowdingToleranceBonusPerLevel = 0.1f;
         public const string ReproductiveDriveId = "reproductive-drive";
-        public const int ReproductiveDriveMaxLevel = 10;
-        public const float ReproductiveDriveChancePerLevel = 0.005f;
+        public const int ReproductiveDriveMaxLevel = 5;
+        public const float ReproductiveDriveChancePerLevel = 0.1f;
         public const string KeenSensesId = "keen-senses";
         public const int KeenSensesMaxLevel = 10;
-        public const float KeenSensesTrackingStepsPerLevel = 1f;
+        public const int KeenSensesPredatorDetectionTilesPerLevel = 1;
+        public const string LongVisionId = "long-vision";
+        // Preserve the old test catalog's two-tile vision effect as a provisional Mutation value.
+        public const int LongVisionTiles = 2;
         public const string RelentlessPursuitId = "relentless-pursuit";
         public const int RelentlessPursuitMaxLevel = 10;
         public const float RelentlessPursuitMovementSpeedPerLevel = 0.15f;
@@ -365,21 +456,25 @@ namespace SaltyGame
         public const int PopulationReinforcementMaxLevel = int.MaxValue;
         public const string LargerMinimumLitterId = "larger-minimum-litter";
         public const string LargerMaximumLitterId = "larger-maximum-litter";
+        public const int LargerMaximumLitterMaxLevel = 3;
         public const int LitterSizeIncreasePerLevel = 1;
 
         public static int GetMaxLevel(string upgradeId)
         {
             return upgradeId == FasterMovementId ? FasterMovementMaxLevel
+                : upgradeId == QuickEscapeId ? QuickEscapeMaxLevel
                 : upgradeId == ToughHideId ? ToughHideMaxLevel
                 : upgradeId == EfficientDigestionId ? EfficientDigestionMaxLevel
                 : upgradeId == SeedDispersalId ? SeedDispersalMaxLevel
                 : upgradeId == CrowdingToleranceId ? CrowdingToleranceMaxLevel
                 : upgradeId == ReproductiveDriveId ? ReproductiveDriveMaxLevel
                 : upgradeId == KeenSensesId ? KeenSensesMaxLevel
+                : upgradeId == LongVisionId ? 1
                 : upgradeId == RelentlessPursuitId ? RelentlessPursuitMaxLevel
                 : upgradeId == PiercingBiteId ? PiercingBiteMaxLevel
                 : upgradeId == HuntUrgencyId ? HuntUrgencyMaxLevel
                 : upgradeId == BroodDriveId ? BroodDriveMaxLevel
+                : upgradeId == LargerMaximumLitterId ? LargerMaximumLitterMaxLevel
                 : upgradeId == PopulationReinforcementId ? PopulationReinforcementMaxLevel
                 : IsThreatExposureId(upgradeId) ? ThreatExposureMaxLevel : int.MaxValue;
         }
@@ -410,8 +505,11 @@ namespace SaltyGame
             CrowdingToleranceId,
             ReproductiveDriveId,
             ThreatExposureId,
+            QuickEscapeId,
             FasterMovementId,
             SeedDispersalId,
+            KeenSensesId,
+            LongVisionId,
         };
 
         static readonly string[][] PhaseHerbivorePathStarterIds =
@@ -430,6 +528,7 @@ namespace SaltyGame
             ThreatExposureId,
             LargerMinimumLitterId,
             LargerMaximumLitterId,
+            QuickEscapeId,
             FasterMovementId,
             SeedDispersalId,
         };
@@ -561,6 +660,12 @@ namespace SaltyGame
             {
                 case FasterMovementId:
                     return new SpeciesUpgrade(FasterMovementId, 5, SpeciesUpgradeType.MovementSpeed, 0.5f);
+                case QuickEscapeId:
+                    return new SpeciesUpgrade(
+                        QuickEscapeId,
+                        QuickEscapeMaxLevel,
+                        SpeciesUpgradeType.FleeMovementSpeedBonus,
+                        QuickEscapeFleeSpeedPerLevel);
                 case StrongerAttackId:
                     return new SpeciesUpgrade(StrongerAttackId, 5, SpeciesUpgradeType.AttackAmount, 1f);
                 case StrongerAttackModifierId:
@@ -572,7 +677,7 @@ namespace SaltyGame
                 case StrongerBlockTwoId:
                     return new SpeciesUpgrade(StrongerBlockTwoId, 5, SpeciesUpgradeType.BlockAmount, 2f);
                 case ToughHideId:
-                    return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.BlockAmount, 2f);
+                    return new SpeciesUpgrade(ToughHideId, 5, SpeciesUpgradeType.MaximumHealth, 2f);
                 case EfficientDigestionId:
                     return new SpeciesUpgrade(
                         EfficientDigestionId,
@@ -597,8 +702,10 @@ namespace SaltyGame
                     return new SpeciesUpgrade(
                         KeenSensesId,
                         5,
-                        SpeciesUpgradeType.TrackingPersistenceSteps,
-                        KeenSensesTrackingStepsPerLevel);
+                        SpeciesUpgradeType.PredatorDetectionRangeBonus,
+                        KeenSensesPredatorDetectionTilesPerLevel);
+                case LongVisionId:
+                    return new SpeciesUpgrade(LongVisionId, 5, SpeciesUpgradeType.VisionRange, LongVisionTiles);
                 case RelentlessPursuitId:
                     return new SpeciesUpgrade(
                         RelentlessPursuitId,
@@ -712,6 +819,8 @@ namespace SaltyGame
             {
                 case FasterMovementId:
                     return "GENERAL MOVEMENT";
+                case QuickEscapeId:
+                    return "QUICK ESCAPE";
                 case StrongerAttackId:
                     return "ATTACK";
                 case StrongerBlockId:
@@ -728,6 +837,8 @@ namespace SaltyGame
                     return "REPRODUCTIVE DRIVE";
                 case KeenSensesId:
                     return "KEEN SENSES";
+                case LongVisionId:
+                    return "LONG VISION";
                 case RelentlessPursuitId:
                     return "RELENTLESS PURSUIT";
                 case PiercingBiteId:
@@ -739,12 +850,12 @@ namespace SaltyGame
                 case PopulationReinforcementId:
                     return "REINFORCEMENTS";
                 case LargerMinimumLitterId:
-                    return "LARGER MINIMUM LITTER";
+                    return "INCREASED MINIMUM LITTER";
                 case LargerMaximumLitterId:
-                    return "LARGER MAXIMUM LITTER";
+                    return "LARGER LITTERS";
                 case ThreatExposureId:
                 case LegacyThreatResponseId:
-                    return "THREAT AVOIDANCE";
+                    return "ESCAPE INSTINCT";
                 default:
                     return id?.ToUpperInvariant() ?? string.Empty;
             }

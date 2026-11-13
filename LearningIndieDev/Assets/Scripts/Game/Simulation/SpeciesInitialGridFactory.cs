@@ -196,7 +196,7 @@ namespace SaltyGame
                         : rules.StartingEnergy;
                     grid.SetCell(x, y, cell.WithEntity(
                         species,
-                        health: 1,
+                        health: rules.MaximumHealth,
                         energy,
                         age: 0,
                         foodEaten: 0,

@@ -125,7 +125,7 @@ namespace SaltyGame.EditorTests
             Assert.That(report.rulesetFingerprint, Is.EqualTo(effective.Fingerprint));
             Assert.That(report.genomeInput.fingerprint, Is.EqualTo(genome.Fingerprint));
             Assert.That(report.genomeInput.catalogFingerprint, Is.EqualTo(catalog.Fingerprint));
-            Assert.That(report.genomeInput.capacityUsed, Is.EqualTo(3));
+            Assert.That(report.genomeInput.capacityUsed, Is.EqualTo(2));
             Assert.That(report.genomeInput.capacityLimit, Is.EqualTo(8));
             Assert.That(report.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "fertile-droppings", "poc.hare.efficient-digestion" }));
             Assert.That(report.genomeInput.nodes[1].modifiers[0].id, Is.EqualTo(SpeciesAttributeIds.DigestionEnergyBonus));
@@ -138,7 +138,6 @@ namespace SaltyGame.EditorTests
         [TestCase("poc.hare.efficient-digestion")]
         [TestCase("poc.hare.efficient-digestion,fertile-droppings")]
         [TestCase("poc.hare.tough-hide,poc.hare.burrows-preview")]
-        [TestCase("fertile-droppings,poc.hare.efficient-digestion,poc.hare.long-stride,poc.hare.long-vision,poc.hare.tough-hide")]
         public void RabbitGenomeResearchRejectsUnknownMissingPrerequisitePreviewAndOverCapacityBuilds(string ids)
         {
             var error = Assert.Throws<TargetInvocationException>(() => GenomeHeader(FrozenGenomeFixture(), GenomeArguments(ids)));
@@ -680,8 +679,8 @@ namespace SaltyGame.EditorTests
             Assert.That(data.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(2));
             var authored = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
             Assert.That(authored.StartingPopulations[new SpeciesId("plant")], Is.EqualTo(400));
-            Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(20));
-            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(10));
+            Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(55));
+            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
         }
 
         [TestCase("hare=-1")]
@@ -764,22 +763,26 @@ namespace SaltyGame.EditorTests
             try
             {
                 Undo.IncrementCurrentGroup();
+                var originalPopulations = scenario.CreateRuntimeData().StartingPopulations;
+                var editedHares = checked(originalPopulations[new SpeciesId("hare")] + 5);
                 var serialized = new SerializedObject(scenario);
                 var population = serialized.FindProperty("species").GetArrayElementAtIndex(1).FindPropertyRelative("startingPopulation");
-                population.intValue = 25;
+                population.intValue = editedHares;
                 serialized.ApplyModifiedProperties();
                 Undo.FlushUndoRecordObjects();
-                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")], Is.EqualTo(25));
+                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")], Is.EqualTo(editedHares));
                 Undo.PerformUndo();
-                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")], Is.EqualTo(55));
+                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")],
+                    Is.EqualTo(originalPopulations[new SpeciesId("hare")]));
                 serialized.Update();
-                population.intValue = 25;
+                population.intValue = editedHares;
                 serialized.ApplyModifiedProperties();
                 AssetDatabase.SaveAssetIfDirty(scenario);
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 var loaded = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(path).CreateRuntimeData();
-                Assert.That(loaded.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(25));
-                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
+                Assert.That(loaded.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(editedHares));
+                Assert.That(loaded.StartingPopulations[new SpeciesId("fox")],
+                    Is.EqualTo(originalPopulations[new SpeciesId("fox")]));
             }
             finally
             {

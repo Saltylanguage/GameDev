@@ -25,7 +25,7 @@ MonoBehaviour:
     startingPopulation: 400
   - definition: {fileID: 11400000, guid: 766cb564370608a41bbc5504a556b28a, type: 2}
     startingProbability: 0
-    startingPopulation: 20
+    startingPopulation: 55
   - definition: {fileID: 11400000, guid: ae99e1a57e5bbdb4cad7e11e4110d588, type: 2}
     startingProbability: 0
-    startingPopulation: 10
+    startingPopulation: 20

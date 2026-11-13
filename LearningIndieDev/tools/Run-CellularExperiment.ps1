@@ -4,6 +4,7 @@ param(
     [string]$Execution = 'Auto',
     [string]$ScenarioPath,
     [string]$StartingPopulations = '',
+    [string]$NodeStartingPopulations = '',
     [string]$SpeciesStats = '',
     [string]$FoxIntroductionTicks = '',
     [int]$SeedStart = 1,
@@ -17,6 +18,8 @@ param(
     [int]$RunTicks = 0,
     [ValidateRange(0, 1000000)]
     [int]$PhaseLengthTicks = 0,
+    [ValidateRange(0, 1000000)]
+    [int]$PhasesPerNode = 0,
     [string]$PhaseUpgradeSchedule = '',
     [string]$PhaseUpgradeAssetSchedule = '',
     [ValidateSet('', 'trailblazer', 'warren', 'gardeners')]
@@ -194,6 +197,10 @@ if (-not [string]::IsNullOrWhiteSpace($StartingPopulations)) {
     $arguments += @('-startingPopulations', $StartingPopulations)
 }
 
+if (-not [string]::IsNullOrWhiteSpace($NodeStartingPopulations)) {
+    $arguments += @('-nodeStartingPopulations', $NodeStartingPopulations)
+}
+
 if (-not [string]::IsNullOrWhiteSpace($RabbitGenomeNodeIds)) {
     $arguments += @('-rabbitGenomeNodeIds', $RabbitGenomeNodeIds)
 }
@@ -258,6 +265,10 @@ if ($RunTicks -gt 0) {
 
 if ($PhaseLengthTicks -gt 0) {
     $arguments += @('-phaseLengthTicks', $PhaseLengthTicks)
+}
+
+if ($PhasesPerNode -gt 0) {
+    $arguments += @('-phasesPerNode', $PhasesPerNode)
 }
 
 if (-not [string]::IsNullOrWhiteSpace($PhaseUpgradeSchedule)) {

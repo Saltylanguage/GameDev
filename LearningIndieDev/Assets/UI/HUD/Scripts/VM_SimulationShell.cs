@@ -258,6 +258,7 @@ namespace SaltyGame
         bool[] canBuyFieldDataShopOffers = new bool[5];
         bool[] canRerollFieldDataShopOffers = new bool[5];
         Visibility[] fieldDataShopOfferVisibilities = new Visibility[5];
+        Visibility[] fieldDataShopRerollVisibilities = new Visibility[5];
         bool canRandomIncomeReorder;
         bool canStartChosenIncomeReorder;
         bool canConfirmChosenIncomeReorder;
@@ -312,6 +313,9 @@ namespace SaltyGame
         string rewardOption1Text;
         string rewardOption2Text;
         string rewardOption3Text;
+        string rewardOption1Id;
+        string rewardOption2Id;
+        string rewardOption3Id;
         string selectedUpgradeSummaryText;
         string resultsTitleText;
         string resultsMessageText;
@@ -452,6 +456,7 @@ namespace SaltyGame
         public DelegateCommand ConfirmChosenIncomeReorderCommand { get; private set; }
         public DelegateCommand CancelChosenIncomeReorderCommand { get; private set; }
         public DelegateCommand PlayNextSimulationCommand { get; private set; }
+        public DelegateCommand RetryPermanentSettlementCommand { get; private set; }
         public DelegateCommand OpenJourneyMapCommand { get; private set; }
         public DelegateCommand StartFieldDataTestJourneyCommand { get; private set; }
         public DelegateCommand CloseJourneyMapCommand { get; private set; }
@@ -477,6 +482,7 @@ namespace SaltyGame
         public string PhaseCurrencyText => phaseCurrencyText;
         public string HarePurchaseText => harePurchaseText;
         public string PhaseRewardText => phaseRewardText;
+        public Visibility PhaseRewardVisibility => string.IsNullOrWhiteSpace(phaseRewardText) ? Visibility.Collapsed : Visibility.Visible;
         public string PhaseDecisionTitleText => phaseDecisionTitleText;
         public string FieldDataBreakdownText => fieldDataBreakdownText;
         public string FieldDataStatusText => fieldDataStatusText;
@@ -506,6 +512,11 @@ namespace SaltyGame
         public bool CanRerollFieldDataShopOffer3 => canRerollFieldDataShopOffers[2];
         public bool CanRerollFieldDataShopOffer4 => canRerollFieldDataShopOffers[3];
         public bool CanRerollFieldDataShopOffer5 => canRerollFieldDataShopOffers[4];
+        public Visibility FieldDataShopReroll1Visibility => fieldDataShopRerollVisibilities[0];
+        public Visibility FieldDataShopReroll2Visibility => fieldDataShopRerollVisibilities[1];
+        public Visibility FieldDataShopReroll3Visibility => fieldDataShopRerollVisibilities[2];
+        public Visibility FieldDataShopReroll4Visibility => fieldDataShopRerollVisibilities[3];
+        public Visibility FieldDataShopReroll5Visibility => fieldDataShopRerollVisibilities[4];
         public Visibility FieldDataShopOffer1Visibility => fieldDataShopOfferVisibilities[0];
         public Visibility FieldDataShopOffer2Visibility => fieldDataShopOfferVisibilities[1];
         public Visibility FieldDataShopOffer3Visibility => fieldDataShopOfferVisibilities[2];
@@ -514,7 +525,8 @@ namespace SaltyGame
         public bool CanRandomIncomeReorder => canRandomIncomeReorder;
         public bool CanStartChosenIncomeReorder => canStartChosenIncomeReorder;
         public bool CanConfirmChosenIncomeReorder => canConfirmChosenIncomeReorder;
-        public string AddHaresText => "ADD 1 HARE · 10 FD";
+        public string AddHaresText => preview?.FieldDataSession == null ? "ADD 1 HARE · 10 FD"
+            : $"ADD 1 HARE · 10 FD · {preview.FieldDataSession.HarePurchasesRemaining} LEFT";
         public string RemoveHaresText => "REMOVE 1 HARE · 10 FD";
         public string AddFoxesText => "ADD 1 FOX · 10 FD";
         public string RemoveFoxesText => "REMOVE 1 FOX · 10 FD";
@@ -767,12 +779,24 @@ namespace SaltyGame
         public string RewardOption1Text => rewardOption1Text;
         public string RewardOption2Text => rewardOption2Text;
         public string RewardOption3Text => rewardOption3Text;
+        public string RewardOption1Description => GetFieldDataRewardDescription(0);
+        public string RewardOption2Description => GetFieldDataRewardDescription(1);
+        public string RewardOption3Description => GetFieldDataRewardDescription(2);
+        public string FieldDataMutationCardCaption => preview?.FieldDataSession?.Progression.UsesGeneLabResearch == true
+            ? "UNLOCKED IN GENE LAB\nTHIS JOURNEY ONLY" : "THIS JOURNEY ONLY";
+        public Visibility RewardDescriptionsVisibility => preview?.FieldDataSession == null ? Visibility.Collapsed : Visibility.Visible;
+        public string RewardOption1Id => rewardOption1Id;
+        public string RewardOption2Id => rewardOption2Id;
+        public string RewardOption3Id => rewardOption3Id;
         public string SelectedUpgradeSummaryText => selectedUpgradeSummaryText;
         public string ResultsTitleText => resultsTitleText;
         public string ResultsMessageText => resultsMessageText;
+        public string PermanentSettlementDetailsText => preview?.PermanentResults?.Details ?? string.Empty;
+        public Visibility PermanentSettlementVisibility => preview?.PermanentResults?.IsPresented == true ? Visibility.Visible : Visibility.Collapsed;
+        public Visibility RetryPermanentSettlementVisibility => preview?.PermanentResults?.IsPending == true ? Visibility.Visible : Visibility.Collapsed;
         public string PlayNextSimulationText => playNextSimulationText;
         public bool CanPlayNextSimulation => canPlayNextSimulation;
-        public bool CanReturnToLab => resultsVisibility == Visibility.Visible
+        public bool CanReturnToLab => preview?.CanLeavePermanentResults != false && resultsVisibility == Visibility.Visible
             && (desktopClose != null
                 || (sceneTransition != null
                     && profileSession?.Current?.HasLoadedProfile == true));
@@ -781,7 +805,7 @@ namespace SaltyGame
             : "RETURN TO LAB";
         // Closing stays disabled during active states; the player must use the
         // separate confirmed End flow before returning to the Lab.
-        public bool CanCloseWindow => (lastState == SpeciesPreviewState.Ready
+        public bool CanCloseWindow => preview?.CanLeavePermanentResults != false && (lastState == SpeciesPreviewState.Ready
                 || lastState == SpeciesPreviewState.Results)
             && (desktopClose != null
                 || (sceneTransition != null
@@ -1349,7 +1373,7 @@ namespace SaltyGame
             CancelChosenIncomeReorderCommand = new DelegateCommand(CancelChosenIncomeReorder);
             PlayNextSimulationCommand = new DelegateCommand(() =>
             {
-                if (preview == null)
+                if (preview == null || !preview.CanLeavePermanentResults)
                 {
                     return;
                 }
@@ -1364,9 +1388,15 @@ namespace SaltyGame
                     preview.PlayNextSimulation();
                 }
             });
+            RetryPermanentSettlementCommand = new DelegateCommand(() =>
+            {
+                preview?.PermanentResults?.Retry();
+                Refresh(true);
+            });
             StartFieldDataTestJourneyCommand = new DelegateCommand(StartFieldDataTestJourney);
             OpenJourneyMapCommand = new DelegateCommand(() =>
             {
+                if (preview?.CanLeavePermanentResults == false) return;
                 if (preview != null
                     && (preview.JourneyMap != null || preview.ConfiguredFieldDataJourney != null)
                     && (preview.State == SpeciesPreviewState.Ready
@@ -1578,7 +1608,7 @@ namespace SaltyGame
             if (fieldDataSession != null && (state != lastState || tick != lastTick))
                 SetFieldDataStatus(string.Empty);
             if (fieldDataChoices != null && !fieldDataChoices.Resolved && fieldDataChoices.Choices.Count == 0)
-                SetFieldDataStatus("No eligible mutations remain. Select Skip to continue.");
+                SetFieldDataStatus("No Mutations available. Gene Lab research may unlock choices for a future journey. Select Skip to continue.");
             SpeciesRules playerRules = null;
             var isHerbivorePlayer = preview.ActiveSpeciesRules != null
                 && preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out playerRules)
@@ -1686,7 +1716,11 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FoodPressureText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FoodSupplyText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PopulationActionMessage)));
-            Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
+            if (phaseRewardText != preview.PhaseRewardMessage)
+            {
+                Set(ref phaseRewardText, preview.PhaseRewardMessage, nameof(PhaseRewardText));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PhaseRewardVisibility)));
+            }
             Set(ref fieldDataBreakdownText, BuildFieldDataBreakdown(fieldDataSession), nameof(FieldDataBreakdownText));
             RefreshFieldDataShop(fieldDataSession);
             SyncJourneyPresentation(state);
@@ -1694,7 +1728,8 @@ namespace SaltyGame
                 && run?.SupportsContinuation == true;
             Set(
                 ref resultsTitleText,
-                preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
+                preview.PermanentResults?.IsPresented == true ? preview.PermanentResults.Title
+                : preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
                     ? "Cycle complete"
                     : isContinuousRun
                     ? preview.LastExpeditionFailed
@@ -1706,7 +1741,8 @@ namespace SaltyGame
                 nameof(ResultsTitleText));
             Set(
                 ref resultsMessageText,
-                fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Failed
+                preview.PermanentResults?.IsPresented == true ? preview.PermanentResults.Summary
+                : fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Failed
                     ? $"Journey failed. {fieldDataSession.FieldDataLostOnFailure} Field Data was lost."
                     : fieldDataSession != null && fieldDataSession.State == FieldDataJourneyFlowState.Succeeded
                         ? $"Journey complete. {fieldDataSession.AvailableFieldData} Field Data remains. It will be discarded when you leave this journey."
@@ -1722,6 +1758,9 @@ namespace SaltyGame
                             ? "The expedition is complete. Start a new expedition when ready."
                             : "The player update is applied. Continue into the next run when ready.",
                 nameof(ResultsMessageText));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PermanentSettlementDetailsText)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PermanentSettlementVisibility)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RetryPermanentSettlementVisibility)));
             Set(ref journeyResultSummaryText,
                 preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
                     ? BuildJourneyResultSummary(run)
@@ -1768,6 +1807,14 @@ namespace SaltyGame
             Set(ref rewardOption3Text, fieldDataSession != null
                 ? fieldDataChoices != null && fieldDataChoices.Choices.Count > 2 ? fieldDataChoices.Choices[2].DisplayName : string.Empty
                 : preview.GetRewardOptionDisplayName(2), nameof(RewardOption3Text));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RewardOption1Description)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RewardOption2Description)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RewardOption3Description)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(FieldDataMutationCardCaption)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RewardDescriptionsVisibility)));
+            Set(ref rewardOption1Id, GetRewardOptionIconId(0, fieldDataChoices), nameof(RewardOption1Id));
+            Set(ref rewardOption2Id, GetRewardOptionIconId(1, fieldDataChoices), nameof(RewardOption2Id));
+            Set(ref rewardOption3Id, GetRewardOptionIconId(2, fieldDataChoices), nameof(RewardOption3Id));
             Set(ref canContinueJourney, fieldDataSession == null
                 ? state == SpeciesPreviewState.PhaseDecision
                 : (fieldDataSession.State == FieldDataJourneyFlowState.RoundDecision
@@ -1793,13 +1840,14 @@ namespace SaltyGame
                 : preview.CanPurchaseReward(2), nameof(CanPurchaseRewardOption3));
             Set(ref canBuyHare, preview.CanBuyHare, nameof(CanBuyHare));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddHares)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(AddHaresText)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemoveHares)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddFoxes)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemoveFoxes)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanAddPlants)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanRemovePlants)));
             Set(ref canPlayNextSimulation,
-                state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision,
+                preview.CanLeavePermanentResults && (state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision),
                 nameof(CanPlayNextSimulation));
 
             Set(ref settingsVisibility,
@@ -1897,6 +1945,18 @@ namespace SaltyGame
                 nameof(BoardVisibility));
         }
 
+        string GetRewardOptionIconId(int index, FieldDataRewardChoiceSet fieldDataChoices)
+        {
+            if (fieldDataChoices != null)
+            {
+                return index >= 0 && index < fieldDataChoices.Choices.Count
+                    ? fieldDataChoices.Choices[index].OrdinaryUpgrade?.Id ?? string.Empty
+                    : string.Empty;
+            }
+
+            return preview != null ? preview.GetRewardOptionId(index) : string.Empty;
+        }
+
         void ChooseRewardOption(int index)
         {
             var session = preview?.FieldDataSession;
@@ -1925,6 +1985,13 @@ namespace SaltyGame
             if (preview?.PurchaseReward(index) == true) Refresh(true);
         }
 
+        string GetFieldDataRewardDescription(int index)
+        {
+            var choices = GetCurrentFieldDataRewardChoices(preview?.FieldDataSession);
+            return choices != null && index < choices.Choices.Count
+                ? choices.Choices[index].OrdinaryUpgrade?.Description ?? string.Empty : string.Empty;
+        }
+
         static FieldDataRewardChoiceSet GetCurrentFieldDataRewardChoices(FieldDataJourneySession session)
         {
             if (session == null) return null;
@@ -1935,6 +2002,7 @@ namespace SaltyGame
         {
             var session = preview?.FieldDataSession;
             if (session == null || !session.CanUsePopulationControls || session.AvailableFieldData < 10) return false;
+            if (kind == FieldDataPopulationInterventionKind.AddHare && session.HarePurchasesRemaining == 0) return false;
             return (int)kind >= (int)FieldDataPopulationInterventionKind.AddHare
                 && (int)kind <= (int)FieldDataPopulationInterventionKind.RemovePlants;
         }
@@ -1960,7 +2028,7 @@ namespace SaltyGame
             if (session == null) return string.Empty;
             var builder = new StringBuilder();
             var round = session.GlobalRound;
-            builder.Append("ROUND ").Append(round).Append(" · FIELD DATA ").Append(session.AvailableFieldData).Append(" FD\n");
+            builder.Append("ROUND ").Append(round).Append(" · AVAILABLE ").Append(session.AvailableFieldData).Append(" FD\n");
             FieldDataAwardReceipt payout = null;
             FieldDataAwardReceipt node = null;
             foreach (var award in session.Ledger.Awards)
@@ -2005,9 +2073,13 @@ namespace SaltyGame
             var isShop = session?.CanUseShopActions == true && fieldDataNodeNavigation == FieldDataNodeNavigation.Shopping;
             var visit = isShop ? session.GetCurrentShopVisit() : null;
             Set(ref fieldDataShopVisibility, isShop ? Visibility.Visible : Visibility.Collapsed, nameof(FieldDataShopVisibility));
-            Set(ref rewardChoicePanelVisibility, session == null || GetCurrentFieldDataRewardChoices(session)?.Resolved == false
+            var rewardChoices = session == null ? null : GetCurrentFieldDataRewardChoices(session);
+            Set(ref rewardChoicePanelVisibility, session == null || (rewardChoices?.Resolved == false && rewardChoices.Choices.Count > 0)
                 ? Visibility.Visible : Visibility.Collapsed, nameof(FieldDataRewardChoicesVisibility));
-            Set(ref fieldDataShopSummaryText, visit == null ? string.Empty : $"SHOP {visit.VisitNumber} · {visit.Offers.Count} randomized offers · Wallet {session.AvailableFieldData} FD", nameof(FieldDataShopSummaryText));
+            var offerCount = visit?.Offers.Count ?? 0;
+            Set(ref fieldDataShopSummaryText, visit == null ? string.Empty
+                : $"SHOP {visit.VisitNumber} · {offerCount} {(offerCount == 1 ? "offer" : "offers")} · Wallet {session.AvailableFieldData} FD",
+                nameof(FieldDataShopSummaryText));
             for (var i = 0; i < fieldDataShopOfferTexts.Length; i++)
             {
                 var offer = visit != null && i < visit.Offers.Count ? visit.Offers[i] : null;
@@ -2016,6 +2088,8 @@ namespace SaltyGame
                 canBuyFieldDataShopOffers[i] = eligible;
                 fieldDataShopOfferVisibilities[i] = offer == null ? Visibility.Collapsed : Visibility.Visible;
                 canRerollFieldDataShopOffers[i] = isShop && offer != null && offer.Locked && !offer.Purchased;
+                fieldDataShopRerollVisibilities[i] = offer?.Kind == FieldDataShopOfferKind.SpeciesEffect
+                    ? Visibility.Visible : Visibility.Collapsed;
                 if (offer?.SignedSpeciesOffer is FieldDataSignedSpeciesOffer effect)
                 {
                     var copies = 0;
@@ -2027,15 +2101,15 @@ namespace SaltyGame
                 }
                 else if (offer?.IncomeOffer is FieldDataIncomeOffer income)
                 {
-                    var copies = 0;
-                    foreach (var owned in session.CurrentIncomeExecutionOrder)
-                        if (owned.OfferId == income.Id) copies++;
-                    fieldDataShopOfferTexts[i] += $"\nJourney income · Owned {copies} · No copy cap";
+                    fieldDataShopOfferTexts[i] += income.Operation == FieldDataIncomeOperation.MultiplyPopulationPayout
+                        ? "\nJourney income · One-time tier · Replaces previous tier"
+                        : "\nJourney income · One-time purchase";
                 }
                 var n = i + 1;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FieldDataShopOffer" + n + "Text"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CanBuyFieldDataShopOffer" + n));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("CanRerollFieldDataShopOffer" + n));
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FieldDataShopReroll" + n + "Visibility"));
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("FieldDataShopOffer" + n + "Visibility"));
             }
             var randomCost = 0;
@@ -2386,7 +2460,7 @@ namespace SaltyGame
 
         void ReturnToLab()
         {
-            if (CanReturnToLab)
+            if (CanReturnToLab && preview?.TryLeavePermanentResults() != false)
             {
                 if (desktopClose != null)
                 {
@@ -2400,6 +2474,7 @@ namespace SaltyGame
 
         void CloseWindow()
         {
+            if (preview?.TryLeavePermanentResults() == false) return;
             if (desktopClose != null)
             {
                 if (CanCloseWindow)

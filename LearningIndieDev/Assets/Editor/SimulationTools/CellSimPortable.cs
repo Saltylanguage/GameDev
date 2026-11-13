@@ -31,6 +31,9 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesCell.cs",
             "Assets/Scripts/Game/Species/SpeciesDefinition.cs",
             "Assets/Scripts/Game/Species/SpeciesGenomeContract.cs",
+            "Assets/Scripts/Game/Species/FieldDataPermanentProgressionDefinition.cs",
+            "Assets/Scripts/Game/Profile/ProfileSessionSnapshot.cs",
+            "Assets/Scripts/Game/Profile/ProfileSessionStorage.cs",
             "Assets/Scripts/Game/Species/SpeciesId.cs",
             "Assets/Scripts/Game/Species/SpeciesProgression.cs",
             "Assets/Scripts/Game/Species/SpeciesRole.cs",
@@ -43,6 +46,7 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Species/SpeciesUpgradePredictionInputAdapter.cs",
             "Assets/Scripts/Game/Simulation/AlphaOffspringRule.cs",
             "Assets/Scripts/Game/Simulation/FieldDataIncome.cs",
+            "Assets/Scripts/Game/Simulation/FieldDataSettlement.cs",
             "Assets/Scripts/Game/Simulation/FieldDataIncomeReordering.cs",
             "Assets/Scripts/Game/Simulation/FieldDataJourneyDefinition.cs",
             "Assets/Scripts/Game/Simulation/FieldDataPortableDefinition.cs",
@@ -67,6 +71,8 @@ namespace SaltyGame.EditorTools
             "Assets/Scripts/Game/Simulation/SpeciesSimulation.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationMetrics.cs",
             "Assets/Scripts/Game/Simulation/SpeciesSimulationRunner.cs",
+            "Assets/Scripts/Game/Simulation/HareLineage.cs",
+            "Assets/Scripts/Game/Simulation/HareBurrows.cs",
             "Assets/Editor/SimulationTools/CellularSimulationExperimentRunner.cs",
             "Assets/Editor/SimulationTools/SimulationReportSerialization.cs",
             "Assets/Editor/SimulationTools/CellSimPortable.cs"
@@ -81,7 +87,8 @@ namespace SaltyGame.EditorTools
             ExperimentalFeaturesArgument, FoxAttackCooldownTicksArgument,
             PreContactAvoidanceChanceArgument, CoupledSpeciesResponsesArgument,
             WrapEdgesArgument, GridWidthArgument, GridHeightArgument, StartingPopulationsArgument,
-            RunTicksArgument, PhaseLengthTicksArgument, PhaseUpgradeScheduleArgument,
+            NodeStartingPopulationsArgument,
+            RunTicksArgument, PhaseLengthTicksArgument, PhasesPerNodeArgument, PhaseUpgradeScheduleArgument,
             PhaseUpgradeAssetScheduleArgument, MutationPolicyArgument, "-harePurchasePolicy",
             MutationPolicyEarlyFirstChoiceArgument, RunDurationArgument, StepIntervalArgument, "-speciesStats",
             FoxIntroductionTicksArgument
@@ -150,6 +157,13 @@ namespace SaltyGame.EditorTools
                     }
                 }
             return PortableHash(builder.ToString());
+        }
+
+        public static string PortableRunStateDigest(SimulationRunState run)
+        {
+            var surface = PortableStateDigest(run.Cells);
+            var hareJourneyState = run.GetHareJourneyStateFingerprint();
+            return hareJourneyState == null ? surface : PortableHash(surface + "|" + hareJourneyState);
         }
 
         public static SpeciesGenomeMapSnapshot CaptureRabbitGenomeCatalog(string assetPath)
@@ -223,6 +237,7 @@ namespace SaltyGame.EditorTools
                 catalogPath = catalogPath, catalogFingerprint = rabbit.CatalogFingerprint,
                 fingerprint = genome.Fingerprint, capacityLimit = GenomeContract.ActiveCapacity,
                 capacityUsed = rabbit.ResolvedNodes.Sum(node => node.CapacityPoints),
+                populationReservesRank = rabbit.PopulationReservesRank,
                 orderedNodeIds = rabbit.ActiveNodeIds.ToArray(),
                 nodes = rabbit.ResolvedNodes.Select(GenomeNodeData.Create).ToArray(),
                 fertileDroppings = rabbit.HasActiveNode(SpeciesSimulation.FertileDroppingsNodeId)
@@ -271,6 +286,12 @@ namespace SaltyGame.EditorTools
                 }
             }
             return JsonUtility.ToJson(run);
+        }
+
+        public static SpeciesExperimentalOptions PortableExperimentalOptions(string[] arguments)
+        {
+            ValidatePortableArguments(arguments);
+            return GetExperimentalOptions(CommandLineOptions.Parse(arguments));
         }
 
         public static void ValidatePortableArguments(string[] arguments)
@@ -643,6 +664,7 @@ namespace SaltyGame.EditorTools
             public string id, displayName, description, speciesId, branchName, fingerprint;
             public string[] prerequisites;
             public int capacityPoints;
+            public int maximumRanks = 1;
             public long rabbitDataPrice;
             public ModifierData[] modifiers;
 
@@ -652,6 +674,7 @@ namespace SaltyGame.EditorTools
                 speciesId = node.TargetSpecies.Value, branchName = node.BranchName, fingerprint = node.Fingerprint,
                 prerequisites = node.PrerequisiteNodeIds.ToArray(), capacityPoints = node.CapacityPoints,
                 rabbitDataPrice = node.RabbitDataPrice,
+                maximumRanks = node.MaximumRanks,
                 modifiers = node.Modifiers.Select(value => new ModifierData { id = value.AttributeId, value = value.SignedValue }).ToArray(),
             };
 
@@ -663,7 +686,7 @@ namespace SaltyGame.EditorTools
                 }
                 var node = new GenomeUpgradeNodeSnapshot(id, displayName, description, new SpeciesId(speciesId),
                     prerequisites, rabbitDataPrice, capacityPoints, branchName,
-                    modifiers.Select(value => new SpeciesUpgradeModifier(value.id, value.value)));
+                    modifiers.Select(value => new SpeciesUpgradeModifier(value.id, value.value)), Math.Max(1, maximumRanks));
                 if (node.Fingerprint != fingerprint)
                 {
                     throw new InvalidOperationException("Frozen Genome node fingerprint mismatch: " + id);
@@ -676,7 +699,7 @@ namespace SaltyGame.EditorTools
         {
             public string contractVersion, genomeContractVersion, nodeContractVersion, registryFingerprint;
             public string catalogPath, catalogFingerprint, fingerprint;
-            public int capacityUsed, capacityLimit;
+            public int capacityUsed, capacityLimit, populationReservesRank;
             public string[] orderedNodeIds;
             public GenomeNodeData[] nodes;
             public FertileDroppingsInputRecord fertileDroppings;
@@ -762,6 +785,7 @@ namespace SaltyGame.EditorTools
             public SpeciesRole role;
             public int forageBelowEnergy;
             public int maximumEnergy;
+            public int maximumHealth;
             public int litterMinimum;
             public int litterMaximum;
             public int attackModifier;
@@ -808,6 +832,7 @@ namespace SaltyGame.EditorTools
                     role = value.Role,
                     forageBelowEnergy = value.ForageBelowEnergy,
                     maximumEnergy = value.MaximumEnergy,
+                    maximumHealth = value.MaximumHealth,
                     litterMinimum = value.LitterMinimum,
                     litterMaximum = value.LitterMaximum,
                     attackModifier = value.AttackModifier,
@@ -852,6 +877,7 @@ namespace SaltyGame.EditorTools
                 role: role,
                 forageBelowEnergy: forageBelowEnergy,
                 maximumEnergy: maximumEnergy,
+                maximumHealth: maximumHealth == 0 ? 1 : maximumHealth,
                 litterMinimum: litterMinimum,
                 litterMaximum: litterMaximum,
                 attackModifier: attackModifier,

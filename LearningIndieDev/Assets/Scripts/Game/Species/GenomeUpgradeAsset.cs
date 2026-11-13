@@ -23,6 +23,7 @@ namespace SaltyGame
         [SerializeField] string[] prerequisiteNodeIds = Array.Empty<string>();
         [SerializeField] long rabbitDataPrice;
         [SerializeField] int capacityPoints;
+        [SerializeField, Min(1)] int maximumRanks = 1;
         [SerializeField] string branchName;
         [SerializeField] ModifierEntry[] modifiers = Array.Empty<ModifierEntry>();
 
@@ -61,7 +62,8 @@ namespace SaltyGame
                     rabbitDataPrice,
                     capacityPoints,
                     branchName,
-                    modifierValues);
+                    modifierValues,
+                    maximumRanks);
                 validationMessage = string.Empty;
                 return true;
             }

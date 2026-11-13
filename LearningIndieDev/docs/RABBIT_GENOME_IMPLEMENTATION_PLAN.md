@@ -42,8 +42,9 @@ can use this document directly; no new chat or delegation is required.
   snapshots work. The Gene Lab supports multiple selected/allocated nodes.
 - The explicit POC catalog has **eight activatable nodes plus one Burrows
   preview**. Seven activatable nodes use stat/lifecycle effects and Fertile
-  Droppings uses its existing explicit ability. The production map has Fertile
-  Droppings only. Existing POC IDs must continue resolving in saved profiles.
+  Droppings uses its existing explicit ability. The production test catalog
+  now contains eleven selectable nodes, including the existing POC offers under
+  their original IDs. Existing saved profile IDs must continue resolving.
 - Implemented POC effects: Long Stride, Long Vision, Tough Hide, maximum litter,
   Efficient Digestion, +5 starting Hares and +10 refill capacity. Do not rebuild
   these effects or the selection bridge.
@@ -67,7 +68,7 @@ can use this document directly; no new chat or delegation is required.
 | RG-00 | Include the new population code in portable provenance | Ready; start here |
 | RG-01 | Make population controls available on the first cycle's result | Ready; follows RG-00 |
 | RG-02 | Review the normal-length route and reconcile its shop/session path | Shop/session integrated; automated route passes and Josh reports the manual journey made sense; exact run configuration, choices and receipts are not recorded |
-| RG-03 | Complete the agreed stat-only POC offers | Existing targets are ready; new values, prerequisites and costs need Josh's approval |
+| RG-03 | Complete the agreed stat-only POC offers | Existing POC stat/lifecycle offers, Faster Gestation, Increased Minimum Litter and High Crowding are selectable in the production test catalog; avoidance remains blocked on runtime integration |
 | RG-04 | Add a food model that supports distinct edible Plants | Design gate G1; core Gardener dependency |
 | RG-05 | Deliver Gardener abilities one at a time | RG-04 plus node-specific decisions |
 | RG-06 | Add Trailblazer and Warren signature mechanics | Design gates G2–G4; independently sequenced when agreed |
@@ -166,15 +167,32 @@ comparison does not authorize promoting its candidate settings.
 
 ### RG-03 — Finish stat-only offers before adding structural mechanics
 
-Reuse the registry and frozen Genome bridge. The remaining straightforward
-candidates are faster gestation, increased minimum litter, an explicitly chosen
-crowding effect, and an explicitly chosen avoidance effect. Maximum litter,
+Reuse the registry and frozen Genome bridge. High Crowding is a Trailblazer
+root costing 1 Rabbit Data and 2 capacity points; it uses the existing
+`crowding.energy-reduction` rule at +0.1 (10 percentage points less of the
+extra crowding metabolism loss). This is a provisional playtest baseline.
+Increased Minimum Litter is now a
+bounded Warren root: 1 Rabbit Data and 1 capacity point for one rank, adding
+1 to minimum litter while leaving maximum litter unchanged. On Forest Edge's
+current natural rules this changes the minimum from 2 to 3; treat the value as
+a playtest baseline, not a balanced production target. Maximum litter,
 movement, vision, defense and digestion already have playable POC offers.
 
-For each candidate, settle its exact target, signed value, price, capacity,
-prerequisites and stacking before authoring a selectable node. A minimal draft
-for discussion is **gestation -8 ticks** and **minimum litter +1** against current
-natural 48 / 2–5 values; these numbers are recommendations, not approved content.
+Faster Gestation is now an approved bounded playtest offer: Trailblazer root,
+1 Rabbit Data per rank, 2 capacity points for rank 1 and one additional
+capacity point per rank through rank 3. Each rank reduces current natural Hare
+gestation by 15%, rounded to the nearest tick with a 1-tick minimum (48 ticks
+resolves to 41 / 34 / 26). It uses its own explicit percentage rule rather than
+changing the signed-additive modifier registry (UPG-C02). Allocation points are
+saved and included in the frozen run fingerprint. This remains playtest content.
+
+Avoidance remains unimplemented: its current chance is carried through
+`SpeciesExperimentalOptions` and is deliberately rejected by the shared stat
+modifier path. Wire an approved Genome value into the actual simulation route
+before making avoidance selectable.
+
+For any future candidate, settle its exact target, signed value, price,
+capacity, prerequisites and stacking before authoring a selectable node.
 Use the existing provisional POC economics only after Josh accepts that extension.
 Do not choose whether “high crowding” changes tolerance or energy cost on his behalf.
 
@@ -258,8 +276,8 @@ The two added population nodes currently sit in Warren in the POC.
 
 | Branch | Candidate slots | Current implemented POC portion | Remaining mechanics / definition |
 | --- | ---: | --- | --- |
-| Trailblazer | 8 | Movement, long vision | Avoidance, fast gestation, chosen crowding effect, wanderlust, 2x interactions, skip a node |
-| Warren | 10 | Tough hide, maximum litter, +5 starting Hares, +10 pool | Burrows, Hare scent, minimum litter, litter-linked crowding, burrow speed, offspring/inherited burrows |
+| Trailblazer | 8 | Long Stride, Long Vision, Faster Gestation (3 ranks), High Crowding | Avoidance, wanderlust, 2x interactions, skip a node |
+| Warren | 10 | Tough Hide, Larger Litters, Increased Minimum Litter, Founding Hares, Population Reserves | Burrows, Hare scent, litter-linked crowding, burrow speed, offspring/inherited burrows |
 | Gardener | 9 | Fertile Droppings first slice, Efficient Digestion | Bush traversal, Picky Eater, tier-2 drops, tier-3 drops, Favorite Food, At One with Nature, Patrols |
 
 **Total: 27 candidate slots.** This fits the requested 6–10 range per tree.
@@ -318,9 +336,9 @@ need separate authored identities/allocation rules; no node-level system is impl
   artifacts, limits, next decision. Unit/fixture checks are not balance runs.
 - Start with **RG-00, then RG-01**, and return the result before broadening scope.
   Josh explicitly authorized the RG-02 review before RG-00/RG-01's pending
-  Unity verification; that review is now delivered. Do not begin RG-03 offers or
-  values until the starting-count and first-spendable-Field-Data decisions above
-  are resolved.
+  Unity verification; that review is now delivered. The starting-count and
+  first-spendable-Field-Data decisions have since been resolved. RG-03's current
+  authoring and verification status is recorded above.
 
 ## Sources
 

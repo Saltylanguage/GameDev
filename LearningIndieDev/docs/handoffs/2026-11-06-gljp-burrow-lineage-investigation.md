@@ -1,0 +1,23 @@
+# GLJP-04 lineage and occupancy investigation - November 6, 2026
+
+This is an implementation investigation, not a finished Burrowing feature or an approval of new rules. The threat-passing, blocked-emergence, and multiple-burrow choices in `docs/GLJP_MORNING_REVIEW.md` remain unresolved. Do not infer a decision from the possible representations below.
+
+## Existing evidence
+
+- A creature is a `SpeciesCell` value in a grid, with a process-wide `EntityId`; it does not currently retain parent IDs. Grid copies use `Array.Copy` on cell values (`Assets/Scripts/Game/Grid/Grid.cs`, `SpeciesCell.cs`).
+- There are two creature birth paths in `SpeciesSimulation.cs`: immediate reproduction creates offspring around line 3316, and completed gestation creates offspring around line 2943. A lineage change has to cover both. Current detailed `SpeciesBirthEvent` records one parent ID and mate coordinates, not the mate ID; `SpeciesSimulationMetrics.RecordBirth` skips recording altogether when detailed events are disabled. These events cannot be the authoritative family store.
+- `SpeciesGestation` stores the mate's entity ID, but the birth path searches the live grid for that mate. If the mate has died or otherwise left the grid, its position is unavailable, even though the conception-time ID remains in gestation. A family implementation must preserve sufficient second-parent ancestry through gestation without assuming the mate is alive at birth.
+- Movement recreates an entity in the destination with `WithEntity` and explicitly carries selected extra state, including gestation (`SpeciesSimulation.cs` near lines 2245 and 2405). New creature state would need to survive both movement paths, the many `SpeciesCell` copy helpers, and entity removal without leaking to a later occupant of the tile.
+- `SimulationRunCheckpoint` copies the grid and selected run histories but currently has no separate lineage or burrow state (`SimulationRunResult.cs` near lines 599 and 783). Any separate run-owned structure must be copied and restored with it, as well as through paired runs and preview/continuation paths that consume simulation state.
+- Population snapshots count creatures found in grid cells (`SimulationRunResult.cs` near line 84). A hidden Hare stored outside the grid would otherwise disappear from counts, settlements and extinction checks; movement, combat, placement, visualization and telemetry would also need an explicit hidden-population contract. `SimulationBoardSnapshot` exposes only the current grid cell projection.
+- `PortableStateDigest` normalizes live entity IDs by grid position and treats IDs absent from the grid as `-1` (`Assets/Editor/SimulationTools/CellSimPortable.cs`). Family ancestry can refer to dead or hidden creatures, so extending the live-position rule naively could collapse distinct family graphs or make replay identity nondeterministic. Checkpoint, portable export, digest, and Unity/standalone parity must include a stable representation of relevant off-grid or historical identities.
+
+## Consequences for the approved descendant rule
+
+The user chose descendants through either parent. A burrow can be created after an eligible descendant was already born, so a design that only tags offspring born after a burrow exists would miss existing descendants. A compact family identifier cannot automatically represent two parents belonging to different families; the relationship must retain enough information for both lineages. A run-owned ancestry graph or equivalent persistent relation is a candidate, not an approved design decision. It needs deterministic identity and a bounded retention strategy that still permits ancestry queries after an ancestor dies.
+
+## Validation plan before claiming GLJP-04
+
+Build deterministic fixtures that distinguish both immediate and gestating births, either-parent ancestry, a dead or moved mate before birth, an existing descendant when a burrow is created, and two unrelated families joining. Verify copies, movement, checkpoint restore, preview, standalone replay and digest distinguish family relationships. Exercise hidden-population counts, targeting, placement, capacity, blocked emergence and the 200-step expiry only after the open behavior choices are defined. Compare a disabled-feature run against the existing simulation for regressions. Do not treat this investigation as those tests or as an implemented feature.
+
+The investigation summary was added to [GLJP-04](https://trello.com/c/DQwFKLSF) and read back on November 6; `artifacts/gljp-trello-lineage-20261106.png` shows the card and comment. Its description and Current Work placement were not changed.
