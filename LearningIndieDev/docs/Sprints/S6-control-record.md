@@ -43,9 +43,17 @@ Hare carcass fills two Foxes from 48 to 96, and both finish a no-reproduction
 600-tick fixture alive at 48. The natural ecology result can differ through
 encounter timing, missed attacks, reproduction, and spatial access. The
 [five-arm, 20-seed-per-arm diagnostic contract](../Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
-was approved by Josh on November 12. Seed runs have not started because the
-worktree's Unity Editor remains unreachable. No ratio or production value is
-approved from the arithmetic alone.
+was approved by Josh on November 12. The initial panel and the contract's
+conditional scale extension completed on November 13. The three 2:1 starting
+arms recorded at least one Fox starvation death in 47/100, 82/100, and 100/100
+seeds as both populations scaled from 2/1 to 4/2 to 6/3. Hares went extinct in
+all 300 of those seeds. The fixed-six-Fox controls remained at 20 seeds each;
+the 6/6 arm recorded Fox starvation in 6/20 seeds and retained Hares in 5/20.
+This shows the 96/48 energy arithmetic is not itself an ecological survival
+ratio. No production ratio or energy value is approved from this diagnostic.
+See the [factual report](../Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md)
+and [separate AI analysis](../Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md);
+Josh's balance decision remains pending.
 
 The separate [15-condition starting-population failure-rate draft](../Research/Experiments/S6-Population-Curve-20261111/CONTRACT-DRAFT.md)
 was superseded before execution after Josh clarified the question. Its

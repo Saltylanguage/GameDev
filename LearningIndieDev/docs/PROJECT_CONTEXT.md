@@ -71,18 +71,20 @@ uncertainty or regression risk.
 
 ## Current game direction
 
-- **November 11, 2026 carcass feeding and Fox energy first pass:** A lethal
+- **November 11–13, 2026 carcass feeding and Fox energy first pass:** A lethal
   attack now leaves the prey's authored energy as a shareable meat resource;
-  each eater consumes only the energy needed to fill its stomach, with any
-  remainder available to another Fox. Hare energy value is 96. Provisional Fox
-  upkeep is 2 energy every 25 ticks, or 48 per 600-tick node. At the agreed
-  600-tick = 48-hour comparison, this predicts one Hare per two Foxes for
-  maintenance alone. It omits reproduction, unsuccessful hunts, and spatial
-  contact, so it is not yet an observed population ratio. The one-node
-  [carcass-value diagnostic](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
-  was approved by Josh on November 12; execution awaits a fresh snapshot and
-  reachable Editor. The earlier starting-population failure-rate matrix was
-  superseded before execution. See the [implementation handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md)
+  each eater consumes only enough to fill its stomach, with any remainder
+  available to another Fox. Hare energy value is 96; provisional Fox upkeep is
+  2 energy every 25 ticks, or 48 per 600-tick node. This gives a maintenance
+  ledger of one Hare per two Foxes, not an ecological survival ratio. The
+  approved [carcass-value experiment](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
+  completed 340 accepted runs: 100 matched seeds per 2:1 scale arm and 20 per
+  fixed-six-Fox control. At the same 2:1 ratio, seed-level Fox-starvation
+  incidence was 47%, 82%, and 100% at 2/1, 4/2, and 6/3; Hares were extinct in
+  all of those seeds. No production values changed and Josh's balance decision
+  remains pending. Review the [factual report](Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md),
+  [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md),
+  [implementation handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md),
   and [S6 decision record](Sprints/S6-control-record.md#november-11-carcass-feeding-and-fox-energy-first-pass).
 
 - **November 9, 2026 sprint direction:** Josh approved

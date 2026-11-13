@@ -2,7 +2,7 @@
 
 **Experiment ID:** `S6-FOX-CARCASS-VALUE-20261111`  
 **Decision owner:** Josh  
-**Status:** Scope approved November 12; execution pending Unity access  
+**Status:** Scope approved November 12; initial panel and the conditional scale extension completed November 13. No production balance decision is recorded.
 **Feature:** Hare carcasses and Fox energy balance
 
 ## Question
@@ -32,13 +32,16 @@ calorie-based prediction, not an ecological balance claim.
 | Fox and Hare behavior | Current production rules, including natural movement, predation, feeding, and reproduction |
 | Fox energy candidate | Start 48; maximum 96; metabolism 2 every 25 ticks; effective forage threshold 72 |
 | Hare food value | 96 energy per lethal carcass |
-| Seed panel | Matched seeds 62000–62019 across all arms; 100 runs total |
+| Initial seed panel | Matched seeds 62000–62019 across all five arms; 100 runs |
 
 Only starting Fox and Hare counts vary. Plants, map, scenario terrain,
 simulation rules, time window, and seed are held fixed within each matched seed.
 Fox reproduction stays enabled and will be reported separately so its energy
 and population effects are visible rather than hidden in the maintenance
-estimate.
+estimate. The approved uncertainty condition was triggered: the three 2:1
+scale arms were extended to 100 matched seeds each with seeds 62021–62100
+(240 additional runs). The two fixed-six-Fox controls remain at 20 seeds each.
+Seed 62020 was reserved for a separate smoke run and excluded from both panels.
 
 ## Proposed population matrix
 
@@ -102,17 +105,42 @@ Keep facts in `REPORT.md`, interpretation in `AI_ANALYSIS.md`, and retain
 raw per-seed runs and manifests under ignored `artifacts/`. Do not rewrite
 older reports or combine their Fox energy values with this changed model.
 
-## Execution gate
+## Execution and results
 
-No seed runs have started. Before execution, export a fresh snapshot from the
-current dirty source, verify the source and scenario fingerprints, dry-run the
-100-run plan, and confirm the target Unity Editor is reachable. The old
-population-curve plan and snapshot predate the carcass rules and Fox energy
-change and must not be reused. The current Unity worktree has an unreachable
-Editor lock, so a fresh export/run is not yet available.
+**Josh approval:** The displayed five-arm, 20-seed diagnostic scope was
+approved on November 12. The conditional expansion rule above was part of the
+approved contract and was applied after the initial scale results left the
+ratio uncertain.
 
-**Josh approval:** Approved to continue as drafted on November 12, following
-the scope review. Josh's reply was, “this sounds like great progress i'd like
-to keep the velocity and momentum going”; this is recorded as approval of the
-displayed five-arm, 20-seed diagnostic scope. No seed runs have started.
-Execution still requires a fresh snapshot and reachable Unity Editor.
+- Unity resolved the local `Genome.meta` conflict to the branch's canonical
+  GUID `c576ac05bbb49f7488aa54f8ac574eaa`; there is no outstanding tracked
+  GUID diff.
+- Focused `SpeciesDomainTests` passed **160/160**. The full Clean run recorded
+  EditMode **764/773 passed, 8 failed, 1 skipped** and PlayMode **92/103 passed,
+  4 failed, 7 skipped**. The failure cases and raw results are linked from the
+  [factual report](REPORT.md#provenance-and-validation); the full suite is not
+  a pass.
+- The first fresh batch attempt was rejected because no-preset Hare `PREY`
+  telemetry did not reconcile with Fox kills. No run from that attempt was
+  accepted. Commit `8a92425866b4b5ef3cd9c77968f53554e17f63b8` corrected the
+  telemetry condition; a fresh snapshot and four Unity reference runs then
+  reconciled the population ledgers.
+- The original five-arm panel completed **100/100** runs. The three 2:1 scale
+  arms were then expanded by **240/240** runs. The combined evidence contains
+  340 accepted runs, with 100 seeds per 2:1 scale arm and 20 per fixed-six-Fox
+  control. See the [factual report](REPORT.md), [AI analysis](AI_ANALYSIS.md),
+  [expanded per-seed summary](../../../../artifacts/S6-Fox-Carcass-Value-20261113-153600/expanded-validated-summary.json),
+  and retained [initial plan](../../../../artifacts/S6-Fox-Carcass-Value-20261113-153600/plan.json) /
+  [scale-extension plan](../../../../artifacts/S6-Fox-Carcass-Value-20261113-153600/scale-extension-plan.json).
+- Snapshot source commit: `8a92425866b4b5ef3cd9c77968f53554e17f63b8`; source hash:
+  `b2cf7f809a3108b33d6c6878ec9c5006ed3173bccb96ae2eaf57c99cb901fd7f`;
+  scenario fingerprint:
+  `a8c005fdb3696275f469699cbf739da337e656b35f912abcaee48f88d18b253b`.
+- The .NET 8-targeted portable runner used installed .NET 10.0.4 with
+  `DOTNET_ROLL_FORWARD=Major`. Predictive AI was not used; there is no matched
+  held-out calibration for this carcass rule.
+
+The 2:1 scale outcomes differ materially even after expansion, so the result
+does not establish a universal ecological ratio. No production value was
+changed. Any next value decision should be made after review of the report and
+analysis, with the uncertainty and scope limits retained.
