@@ -784,8 +784,6 @@ namespace SaltyGame.PlayModeTests
                 ?.SetValue(preview, authoredScenarioData.Height);
             typeof(SpeciesSimulationPreview).GetField("stepInterval", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.SetValue(preview, authoredScenarioData.StepInterval);
-            typeof(SpeciesSimulationPreview).GetField("wrapEdges", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?.SetValue(preview, authoredScenarioData.WrapEdges);
             typeof(SpeciesSimulationPreview).GetField("startingPopulationOverrideEnabled", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.SetValue(preview, false);
             return authoredScenarioData;
@@ -1724,7 +1722,7 @@ namespace SaltyGame.PlayModeTests
             var preview = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>().SpeciesPreview;
             var viewModel = GameObject.Find("Prototype Camera").GetComponent("SaltyGame.VM_SimulationShell");
             preview.StopSimulation();
-            Assert.That(preview.TryApplyWrapEdges(true, out var wrapMessage), Is.True, wrapMessage);
+            Assert.That(preview.WrapEdges, Is.True);
             Assert.That(preview.TryApplyContinuousPhases(true, "2", out var message), Is.True, message);
             Assert.That(preview.JourneyActive, Is.True);
             Assert.That(preview.CanChooseJourneyNode("forest-edge-start"), Is.True);

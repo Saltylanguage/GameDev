@@ -614,7 +614,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
 
                     if (!cell.IsPassable) context.DrawRectangle(Brushes.Black, null, cellRect);
@@ -635,7 +635,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var cellRect = GetCellRect(columns, rows, x, snapshot.Height - 1 - y);
                     if (matingCueActive && IsBirthCueCell(x, y))
                     {
@@ -752,7 +752,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < snapshot.Width; x++)
                 {
-                    var cell = snapshot.GetCell(x, y);
+                    if (!snapshot.TryGetCell(x, y, out var cell)) continue;
                     var hash = unchecked((x * 73856093) ^ (y * 19349663));
                     var centerX = left + (x + 0.5f) * cellSize;
                     var centerY = top + (snapshot.Height - y - 0.5f) * cellSize;

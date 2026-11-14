@@ -46,6 +46,7 @@ namespace SaltyGame
             public int StartingPopulation => startingPopulation;
         }
 
+        [SerializeField] MapTopologyDefinition mapLayout = new MapTopologyDefinition();
         [SerializeField, Min(1)] int width = 32;
         [SerializeField, Min(1)] int height = 20;
         [SerializeField, Min(0.01f)] float runDurationSeconds = 20f;
@@ -104,7 +105,8 @@ namespace SaltyGame
                 maxPopulation,
                 minPopulation,
                 alphaOffspringRules: alphaRules,
-                startingPopulations: startingPopulations);
+                startingPopulations: startingPopulations,
+                wrapEdges: true, topology: (mapLayout ?? new MapTopologyDefinition()).Create(width, height));
         }
     }
 }

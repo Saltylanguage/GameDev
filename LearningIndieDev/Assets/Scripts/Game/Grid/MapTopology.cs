@@ -1,0 +1,266 @@
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text;
+using UnityEngine;
+
+namespace SaltyGame
+{
+    [Serializable]
+    public struct MapBoundaryConnection
+    {
+        public Vector2Int source, direction, target;
+        public MapBoundaryConnection(Vector2Int source, Vector2Int direction, Vector2Int target)
+        {
+            this.source = source;
+            this.direction = direction;
+            this.target = target;
+        }
+    }
+
+    [Serializable]
+    public sealed class MapTopologyDefinition
+    {
+        [SerializeField] bool explicitLayout, rectangle;
+        [SerializeField] Vector2Int[] cells = Array.Empty<Vector2Int>();
+        [SerializeField] MapBoundaryConnection[] connections = Array.Empty<MapBoundaryConnection>();
+        [SerializeField] string generationInputs = "authored-map-v1";
+
+        public MapTopologyDefinition() { }
+        public MapTopologyDefinition(MapTopology topology)
+        {
+            if (topology == null) throw new ArgumentNullException(nameof(topology));
+            explicitLayout = true;
+            rectangle = topology.IsRectangle;
+            cells = topology.CopyCells();
+            connections = topology.CopyConnections();
+            generationInputs = topology.GenerationInputs;
+        }
+
+        public IGridTopology Create(int width, int height)
+        {
+            if (!explicitLayout) return new RectangularGridTopology(width, height, true);
+            if (rectangle) return new MapTopology(width, height, generationInputs: generationInputs);
+            if (cells == null || cells.Length == 0) throw new ArgumentException("An explicit authored layout needs playable cells.");
+            return new MapTopology(width, height, cells, connections, generationInputs);
+        }
+    }
+
+    // Layout authors supply cells and reciprocal boundary pairings; gaps have no edges.
+    public sealed class MapTopology : IGridTopology
+    {
+        readonly HashSet<Vector2Int> validCells;
+        readonly Dictionary<(Vector2Int, Vector2Int), Vector2Int> boundaries = new Dictionary<(Vector2Int, Vector2Int), Vector2Int>();
+        readonly Dictionary<Vector2Int, Dictionary<Vector2Int, int>> distances = new Dictionary<Vector2Int, Dictionary<Vector2Int, int>>();
+        readonly Vector2Int[] cells;
+        readonly MapBoundaryConnection[] connections;
+
+        public MapTopology(int width, int height, IEnumerable<Vector2Int> cells = null,
+            IEnumerable<MapBoundaryConnection> connections = null, string generationInputs = "rectangle-v1")
+        {
+            if (width <= 0 || height <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+            Width = width;
+            Height = height;
+            GenerationInputs = generationInputs ?? throw new ArgumentNullException(nameof(generationInputs));
+            IsRectangle = cells == null;
+            if (IsRectangle)
+            {
+                if (connections != null) throw new ArgumentException("Custom connections require an explicit cell layout.");
+                this.cells = Array.Empty<Vector2Int>();
+                this.connections = Array.Empty<MapBoundaryConnection>();
+                CellCount = checked(width * height);
+                return;
+            }
+            validCells = new HashSet<Vector2Int>();
+            foreach (var cell in cells)
+            {
+                if (cell.x < 0 || cell.x >= width || cell.y < 0 || cell.y >= height || !validCells.Add(cell))
+                    throw new ArgumentException("Map cells must be unique and within the layout dimensions.");
+            }
+            if (validCells.Count == 0) throw new ArgumentException("A map needs at least one cell.");
+            var sorted = new List<Vector2Int>(validCells);
+            sorted.Sort((a, b) => a.y != b.y ? a.y.CompareTo(b.y) : a.x.CompareTo(b.x));
+            this.cells = sorted.ToArray();
+            CellCount = sorted.Count;
+            var pairs = new List<MapBoundaryConnection>(connections ?? Array.Empty<MapBoundaryConnection>());
+            foreach (var pair in pairs)
+            {
+                if (!IsValidCell(pair.source.x, pair.source.y) || !IsValidCell(pair.target.x, pair.target.y)
+                    || pair.direction == Vector2Int.zero || Math.Abs(pair.direction.x) > 1 || Math.Abs(pair.direction.y) > 1
+                    || validCells.Contains(new Vector2Int(pair.source.x + pair.direction.x, pair.source.y + pair.direction.y)) || validCells.Contains(new Vector2Int(pair.target.x - pair.direction.x, pair.target.y - pair.direction.y)))
+                    throw new ArgumentException("Boundary pairings must join valid cells at opposite missing neighbors.");
+                AddBoundary(pair.source, pair.direction, pair.target);
+                AddBoundary(pair.target, new Vector2Int(-pair.direction.x, -pair.direction.y), pair.source);
+            }
+            // Only the outer row/column endpoints wrap; an interior hole has no connection.
+            for (var y = 0; y < Height; y++)
+            {
+                var first = -1;
+                var last = -1;
+                for (var x = 0; x < Width; x++)
+                    if (IsValidCell(x, y)) { if (first < 0) first = x; last = x; }
+                if (first >= 0) ConnectOuterEndpoints(new Vector2Int(first, y), Vector2Int.left, new Vector2Int(last, y));
+            }
+            for (var x = 0; x < Width; x++)
+            {
+                var first = -1;
+                var last = -1;
+                for (var y = 0; y < Height; y++)
+                    if (IsValidCell(x, y)) { if (first < 0) first = y; last = y; }
+                if (first >= 0) ConnectOuterEndpoints(new Vector2Int(x, first), Vector2Int.down, new Vector2Int(x, last));
+            }
+            pairs.Clear();
+            foreach (var edge in boundaries)
+                pairs.Add(new MapBoundaryConnection(edge.Key.Item1, edge.Key.Item2, edge.Value));
+            pairs.Sort((a, b) => string.CompareOrdinal(Key(a), Key(b)));
+            this.connections = pairs.ToArray();
+        }
+
+        public int Width { get; }
+        public int Height { get; }
+        public int CellCount { get; }
+        public bool IsRectangle { get; }
+        public string GenerationInputs { get; }
+        public Vector2Int[] CopyCells() => (Vector2Int[])cells.Clone();
+        public MapBoundaryConnection[] CopyConnections() => (MapBoundaryConnection[])connections.Clone();
+        public bool IsValidCell(int x, int y) => x >= 0 && x < Width && y >= 0 && y < Height
+            && (IsRectangle || validCells.Contains(new Vector2Int(x, y)));
+
+        public bool TryResolve(int x, int y, Vector2Int offset, out Vector2Int target)
+        {
+            target = new Vector2Int(x, y);
+            if (!IsValidCell(x, y)) return false;
+            if (IsRectangle)
+            {
+                target = new Vector2Int(Modulo((long)x + offset.x, Width), Modulo((long)y + offset.y, Height));
+                return true;
+            }
+            var remainingX = offset.x;
+            var remainingY = offset.y;
+            while (remainingX != 0 || remainingY != 0)
+            {
+                var direction = new Vector2Int(Math.Sign(remainingX), Math.Sign(remainingY));
+                var adjacent = new Vector2Int(target.x + direction.x, target.y + direction.y);
+                if (validCells.Contains(adjacent)) target = adjacent;
+                else if (boundaries.TryGetValue((target, direction), out var wrapped)) target = wrapped;
+                else return false;
+                remainingX -= direction.x;
+                remainingY -= direction.y;
+            }
+            return true;
+        }
+
+        public int GetDistance(int x, int y, int targetX, int targetY)
+        {
+            if (!IsValidCell(x, y) || !IsValidCell(targetX, targetY)) return int.MaxValue;
+            if (IsRectangle)
+            {
+                var dx = Math.Abs(targetX - x);
+                var dy = Math.Abs(targetY - y);
+                return Math.Max(Math.Min(dx, Width - dx), Math.Min(dy, Height - dy));
+            }
+            var origin = new Vector2Int(x, y);
+            if (!distances.TryGetValue(origin, out var found))
+            {
+                found = new Dictionary<Vector2Int, int> { [origin] = 0 };
+                var queue = new Queue<Vector2Int>();
+                queue.Enqueue(origin);
+                while (queue.Count > 0)
+                {
+                    var current = queue.Dequeue();
+                    for (var dy = -1; dy <= 1; dy++)
+                        for (var dx = -1; dx <= 1; dx++)
+                            if ((dx != 0 || dy != 0) && TryResolve(current.x, current.y, new Vector2Int(dx, dy), out var next)
+                                && !found.ContainsKey(next))
+                            {
+                                found.Add(next, found[current] + 1);
+                                queue.Enqueue(next);
+                            }
+                }
+                distances.Add(origin, found);
+            }
+            return found.TryGetValue(new Vector2Int(targetX, targetY), out var distance) ? distance : int.MaxValue;
+        }
+
+        public bool WrapEdges => true;
+        public string Fingerprint => Identity;
+        public bool IsPlayableCell(int x, int y) => IsValidCell(x, y);
+        public IEnumerable<Vector2Int> PlayableCoordinates
+        {
+            get
+            {
+                if (!IsRectangle)
+                {
+                    foreach (var cell in cells) yield return cell;
+                    yield break;
+                }
+                for (var y = 0; y < Height; y++)
+                    for (var x = 0; x < Width; x++) yield return new Vector2Int(x, y);
+            }
+        }
+        public bool TryResolveCoordinates(ref int x, ref int y)
+        {
+            if (IsRectangle)
+            {
+                x = Modulo(x, Width);
+                y = Modulo(y, Height);
+            }
+            return IsValidCell(x, y);
+        }
+        public bool TryResolveOffset(int x, int y, Vector2Int offset, out Vector2Int target) => TryResolve(x, y, offset, out target);
+        public GridPattern GetPattern(GridPattern pattern)
+        {
+            if (!IsRectangle) throw new InvalidOperationException("Shape patterns require their origin.");
+            return new RectangularGridTopology(Width, Height, true).GetPattern(pattern);
+        }
+        public GridPattern GetPattern(int x, int y, GridPattern pattern)
+        {
+            if (IsRectangle) return GetPattern(pattern);
+            var offsets = new List<Vector2Int>();
+            var visited = new HashSet<Vector2Int> { new Vector2Int(x, y) };
+            foreach (var offset in pattern.Offsets)
+                if (TryResolve(x, y, offset, out var target) && visited.Add(target)) offsets.Add(offset);
+            return new GridPattern(offsets);
+        }
+
+        public string Identity
+        {
+            get
+            {
+                var result = new StringBuilder("map-topology-v1|");
+                result.Append(Width).Append('|').Append(Height).Append('|').Append(GenerationInputs.Length).Append(':').Append(GenerationInputs);
+                result.Append(IsRectangle ? "|rectangle" : "|cells");
+                foreach (var cell in cells) result.Append('|').Append(cell.x).Append(',').Append(cell.y);
+                foreach (var pair in connections) result.Append('|').Append(Key(pair));
+                return result.ToString();
+            }
+        }
+
+        void ConnectOuterEndpoints(Vector2Int first, Vector2Int direction, Vector2Int last)
+        {
+            var reverse = new Vector2Int(-direction.x, -direction.y);
+            if (boundaries.ContainsKey((first, direction)))
+            {
+                if (!boundaries.ContainsKey((last, reverse)))
+                    throw new ArgumentException("Custom seams must pair every outer boundary endpoint.");
+                return;
+            }
+            AddBoundary(first, direction, last);
+            AddBoundary(last, reverse, first);
+        }
+
+        void AddBoundary(Vector2Int source, Vector2Int direction, Vector2Int target)
+        {
+            if (boundaries.TryGetValue((source, direction), out var existing))
+            {
+                if (existing != target) throw new ArgumentException("Conflicting boundary pairings.");
+                return;
+            }
+            boundaries.Add((source, direction), target);
+        }
+
+        static string Key(MapBoundaryConnection pair) => string.Format(CultureInfo.InvariantCulture,
+            "{0},{1}:{2},{3}:{4},{5}", pair.source.x, pair.source.y, pair.direction.x, pair.direction.y, pair.target.x, pair.target.y);
+        static int Modulo(long value, int size) => (int)((value % size + size) % size);
+    }
+}

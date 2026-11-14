@@ -24,7 +24,8 @@ namespace SaltyGame
             IReadOnlyDictionary<TerrainId, TerrainDefinition> terrainDefinitions = null,
             IReadOnlyDictionary<SpeciesId, AlphaOffspringRule> alphaOffspringRules = null,
             IReadOnlyDictionary<SpeciesId, int> startingPopulations = null,
-            bool wrapEdges = false)
+            bool wrapEdges = true,
+            IGridTopology topology = null)
         {
             if (width <= 0)
             {
@@ -67,6 +68,11 @@ namespace SaltyGame
             {
                 throw new ArgumentOutOfRangeException(nameof(minPopulation), minPopulation, "Minimum population cannot be negative.");
             }
+
+            Topology = topology ?? new RectangularGridTopology(width, height, true);
+            if (!Topology.WrapEdges) throw new ArgumentException("Every scenario topology must wrap across both axes.", nameof(topology));
+            if (Topology.Width != width || Topology.Height != height)
+                throw new ArgumentException("Topology dimensions must match the simulation dimensions.", nameof(topology));
 
             var copiedProbabilities = new Dictionary<SpeciesId, float>(startingProbabilities.Count);
             foreach (var entry in startingProbabilities)
@@ -150,7 +156,7 @@ namespace SaltyGame
                 totalStartingPopulation += entry.Value;
             }
 
-            if (totalStartingPopulation > (long)width * height)
+            if (totalStartingPopulation > Topology.CellCount)
             {
                 throw new ArgumentException(
                     "Configured starting populations cannot exceed the grid capacity.",
@@ -217,7 +223,6 @@ namespace SaltyGame
 
             Width = width;
             Height = height;
-            WrapEdges = wrapEdges;
             this.startingProbabilities = new ReadOnlyDictionary<SpeciesId, float>(copiedProbabilities);
             this.speciesRules = new ReadOnlyDictionary<SpeciesId, SpeciesRules>(copiedRules);
             this.startingPopulations = new ReadOnlyDictionary<SpeciesId, int>(copiedStartingPopulations);
@@ -280,7 +285,8 @@ namespace SaltyGame
 
         public int Width { get; }
         public int Height { get; }
-        public bool WrapEdges { get; }
+        public IGridTopology Topology { get; }
+        public bool WrapEdges => Topology.WrapEdges;
         public float RunDurationSeconds { get; }
         public float StepInterval { get; }
         public int RunTicks => CalculateRunTicks(RunDurationSeconds, StepInterval);
@@ -406,7 +412,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                startingPopulations, WrapEdges);
+                startingPopulations, WrapEdges, Topology);
         }
 
         public CellularSimData WithRunTicks(int runTicks, float stepInterval)
@@ -447,12 +453,23 @@ namespace SaltyGame
                 : Math.Max(1, (int)calculatedTicks);
         }
 
-        public CellularSimData WithWrapEdges(bool wrapEdges)
+        public CellularSimData WithTopology(IGridTopology topology)
         {
+            if (topology == null) throw new ArgumentNullException(nameof(topology));
             return new CellularSimData(Width, Height, startingProbabilities, speciesRules,
                 RunDurationSeconds, StepInterval, MaxPopulation, MinPopulation,
-                terrainDefinitions, alphaOffspringRules, startingPopulations, wrapEdges);
+                terrainDefinitions, alphaOffspringRules, startingPopulations, topology: topology);
         }
+
+        IGridTopology TopologyForSize(int width, int height)
+        {
+            if (width == Width && height == Height) return Topology;
+            if (Topology is RectangularGridTopology) return new RectangularGridTopology(width, height, WrapEdges);
+            throw new NotSupportedException("Resize the map definition and rebuild its topology before changing simulation dimensions.");
+        }
+
+        // Retained for older tooling callers; scenario wrapping is mandatory.
+        public CellularSimData WithWrapEdges(bool wrapEdges) => Copy();
 
         public CellularSimData WithGridSize(int width, int height)
         {
@@ -467,7 +484,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                startingPopulations, WrapEdges);
+                startingPopulations, WrapEdges, TopologyForSize(width, height));
         }
 
         public CellularSimData WithGridSizeAndStartingPopulations(
@@ -486,7 +503,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 alphaOffspringRules,
-                populations, WrapEdges);
+                populations, WrapEdges, TopologyForSize(width, height));
         }
 
         CellularSimData CreateUpdated(
@@ -506,7 +523,7 @@ namespace SaltyGame
                 MinPopulation,
                 terrainDefinitions,
                 updatedAlphaOffspringRules,
-                updatedStartingPopulations, WrapEdges);
+                updatedStartingPopulations, WrapEdges, Topology);
         }
 
         static Dictionary<SpeciesId, TValue> Copy<TValue>(

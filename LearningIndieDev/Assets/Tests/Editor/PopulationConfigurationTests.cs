@@ -15,6 +15,27 @@ namespace SaltyGame.EditorTests
         const string ScenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
         const BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
 
+        [TestCase(0, 1), TestCase(3, 3)]
+        public void LegacyPreviewDraftHealthMigratesWithoutChangingPositiveValues(int serializedHealth, int expectedHealth)
+        {
+            var root = new GameObject("Legacy preview draft test");
+            root.SetActive(false);
+            try
+            {
+                var preview = root.AddComponent<SpeciesSimulationPreview>();
+                var draftMap = (System.Collections.IDictionary)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRuleDrafts", PrivateInstance)
+                    .Invoke(preview, new object[] { SpeciesRuleDefaults.Create() });
+                foreach (var draft in draftMap.Values)
+                    draft.GetType().GetField("MaximumHealth").SetValue(draft, serializedHealth);
+                typeof(SpeciesSimulationPreview).GetField("ruleDrafts", PrivateInstance).SetValue(preview, draftMap);
+                var rules = (IReadOnlyDictionary<SpeciesId, SpeciesRules>)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRulesFromDrafts", PrivateInstance).Invoke(preview, null);
+                foreach (var rule in rules.Values) Assert.That(rule.MaximumHealth, Is.EqualTo(expectedHealth));
+            }
+            finally { Object.DestroyImmediate(root); }
+        }
+
         static CellularSimData ApplyOverrides(params string[] arguments)
         {
             var runner = AppDomain.CurrentDomain.GetAssemblies()
@@ -405,9 +426,9 @@ namespace SaltyGame.EditorTests
                 "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
             var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
                 "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
-            Assert.That(bounded.WrapEdges, Is.False);
+            Assert.That(bounded.WrapEdges, Is.True);
             Assert.That(wrapped.WrapEdges, Is.True);
-            Assert.That(wrapped.Fingerprint, Is.Not.EqualTo(bounded.Fingerprint));
+            Assert.That(wrapped.Fingerprint, Is.EqualTo(bounded.Fingerprint));
             Assert.That(wrapped.Copy().WithRunTicks(600, 0.1f).WithGridSize(36, 20)
                 .WithSpeciesRules(new SpeciesId("hare"), wrapped.SpeciesRules[new SpeciesId("hare")]).WrapEdges, Is.True);
             var initial = SpeciesInitialGridFactory.Create(wrapped, 10100);
@@ -448,8 +469,7 @@ namespace SaltyGame.EditorTests
                 var arguments = new object[] { preview, 10100, null };
                 Assert.That(apply.Invoke(null, arguments), Is.True, (string)arguments[2]);
                 Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("hare"));
-                Assert.That(preview.WrapEdges, Is.False);
-                Assert.That(preview.TryApplyWrapEdges(true, out _), Is.True);
+                Assert.That(preview.WrapEdges, Is.True);
                 Assert.That(preview.Run.Cells.WrapEdges, Is.True);
                 Assert.That(preview.BaseSeed, Is.EqualTo(10100));
                 Assert.That(preview.StepInterval, Is.EqualTo(0.1f));
@@ -468,12 +488,37 @@ namespace SaltyGame.EditorTests
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Paused));
                 Assert.That(apply.Invoke(null, arguments), Is.False);
-                Assert.That(preview.TryApplyWrapEdges(false, out _), Is.False);
                 Assert.That(preview.WrapEdges, Is.True);
                 Assert.That(preview.Run.Tick, Is.EqualTo(1));
                 foreach (var key in prefsKeys)
                     Assert.That(PlayerPrefs.HasKey(key) ? PlayerPrefs.GetString(key) : null, Is.EqualTo(prefsBefore[key]));
                 Assert.That(System.IO.File.ReadAllText(ScenarioPath), Is.EqualTo(assetBefore));
+            }
+            finally
+            {
+                Object.DestroyImmediate(previewObject);
+            }
+        }
+
+        [Test]
+        public void PreviewAlwaysBuildsWrappingSimulationData()
+        {
+            var scenario = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
+            var previewObject = new GameObject("Wrapping Preview Test");
+            previewObject.SetActive(false);
+            try
+            {
+                var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                typeof(SpeciesSimulationPreview).GetField("rules", PrivateInstance)
+                    .SetValue(preview, scenario.CreateRuntimeData().SpeciesRules);
+
+                var data = (CellularSimData)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateSimulationData", PrivateInstance)
+                    .Invoke(preview, null);
+
+                Assert.That(preview.WrapEdges, Is.True);
+                Assert.That(data.WrapEdges, Is.True);
             }
             finally
             {

@@ -19,7 +19,7 @@ namespace SaltyGame.EditorTools
         // experiment schedules remain the single simulation implementation.
         public static readonly string[] PortableSourceFiles = new[]
         {
-            "Assets/Scripts/Game/Grid/Grid.cs",
+            "Assets/Scripts/Game/Grid/Grid.cs", "Assets/Scripts/Game/Grid/MapTopology.cs",
             "Assets/Scripts/Game/Grid/GridPattern.cs",
             "Assets/Scripts/Game/Grid/GridPatternTemplates.cs",
             "Assets/Scripts/Game/Grid/GridSimulation.cs",
@@ -122,15 +122,16 @@ namespace SaltyGame.EditorTools
             var positions = new Dictionary<long, int>();
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
-                    if (cells.GetCell(x, y).IsCreature)
+                    if (cells.IsPlayableCell(x, y) && cells.GetCell(x, y).IsCreature)
                         positions[cells.GetCell(x, y).EntityId] = x + y * cells.Width + 1;
             var fields = typeof(SpeciesCell).GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
                 .OrderBy(field => field.Name, StringComparer.Ordinal).ToArray();
             var builder = new StringBuilder();
-            builder.Append(cells.Width).Append('|').Append(cells.Height).Append('|').Append(cells.WrapEdges);
+            builder.Append(cells.Width).Append('|').Append(cells.Height).Append('|').Append(cells.Topology.Fingerprint);
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var cell = cells.GetCell(x, y);
                     foreach (var field in fields)
                     {
@@ -551,11 +552,15 @@ namespace SaltyGame.EditorTools
         [Serializable]
         public sealed class PortableSnapshot
         {
-            public int schemaVersion = 1;
+            public int schemaVersion = 2;
             public string sourceHash, sourceCommit, scenarioPath, fingerprint, catalogPath;
             public string[] arguments;
             public int width, height, maxPopulation, minPopulation;
             public bool wrapEdges;
+            public bool hasTopology, rectangularTopology, mapIsRectangle;
+            public string generationInputs;
+            public Vector2Int[] mapCells;
+            public MapBoundaryConnection[] mapConnections;
             public float runDurationSeconds, stepInterval;
             public SpeciesData[] species;
             public TerrainData[] terrain;
@@ -568,9 +573,14 @@ namespace SaltyGame.EditorTools
 
             public static PortableSnapshot Create(CellularSimData data)
             {
+                if (!(data.Topology is RectangularGridTopology) && !(data.Topology is MapTopology))
+                    throw new NotSupportedException("Portable snapshots require a concrete map definition.");
+                var map = data.Topology as MapTopology;
                 return new PortableSnapshot
                 {
                     fingerprint = data.Fingerprint, width = data.Width, height = data.Height,
+                    hasTopology = true, rectangularTopology = map == null,
+                    mapIsRectangle = map?.IsRectangle ?? false, generationInputs = map?.GenerationInputs, mapCells = map?.CopyCells(), mapConnections = map?.CopyConnections(),
                     wrapEdges = data.WrapEdges, maxPopulation = data.MaxPopulation, minPopulation = data.MinPopulation,
                     runDurationSeconds = data.RunDurationSeconds, stepInterval = data.StepInterval,
                     species = data.SpeciesRules.OrderBy(entry => entry.Key.Value, StringComparer.Ordinal).Select(entry => new SpeciesData
@@ -597,8 +607,12 @@ namespace SaltyGame.EditorTools
 
             public CellularSimData Restore()
             {
-                if (schemaVersion != 1 || species == null || terrain == null || alpha == null)
+                if ((schemaVersion != 1 && schemaVersion != 2) || species == null || terrain == null || alpha == null)
                     throw new ArgumentException("Unsupported or incomplete portable snapshot.");
+                if (schemaVersion == 2 && (!hasTopology || (!rectangularTopology && !mapIsRectangle && (mapCells == null || mapConnections == null))))
+                    throw new ArgumentException("Portable snapshot is missing map topology.");
+                IGridTopology topology = !hasTopology || rectangularTopology ? new RectangularGridTopology(width, height, wrapEdges)
+                    : new MapTopology(width, height, mapIsRectangle ? null : mapCells, mapIsRectangle ? null : mapConnections, generationInputs);
                 var data = new CellularSimData(width, height,
                     species.Where(entry => entry.hasProbability).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.probability),
                     species.ToDictionary(entry => new SpeciesId(entry.id), entry => entry.rules.Restore()),
@@ -607,7 +621,7 @@ namespace SaltyGame.EditorTools
                         entry.isPassable, entry.movementCost, entry.providesResource, entry.color, entry.regrowthPerTick, entry.growthIntervalSeconds)),
                     alpha.ToDictionary(entry => new SpeciesId(entry.species), entry => new AlphaOffspringRule(new SpeciesId(entry.species),
                         entry.chance, entry.healthBonus, entry.energyBonus)),
-                    species.Where(entry => entry.hasPopulation).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.population), wrapEdges);
+                    species.Where(entry => entry.hasPopulation).ToDictionary(entry => new SpeciesId(entry.id), entry => entry.population), wrapEdges, topology);
                 if (data.Fingerprint != fingerprint) throw new InvalidOperationException("Snapshot round-trip fingerprint mismatch.");
                 return data;
             }

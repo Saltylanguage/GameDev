@@ -64,6 +64,7 @@ namespace SaltyGame
             for (var y = 0; y < run.Cells.Height; y++)
             for (var x = 0; x < run.Cells.Width; x++)
             {
+                if (!run.Cells.IsPlayableCell(x, y)) continue;
                 var cell = run.Cells.GetCell(x, y);
                 var plant = rules.Role == SpeciesRole.Plant;
                 var matches = plant

@@ -73,7 +73,7 @@ namespace SaltyGame
                 foreach (var occupant in burrow.Occupants) AddCellIds(occupant);
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
-                    if (cells.GetCell(x, y).IsCreature) AddCellIds(cells.GetCell(x, y));
+                    if (cells.IsPlayableCell(x, y) && cells.GetCell(x, y).IsCreature) AddCellIds(cells.GetCell(x, y));
 
             ids.Remove(0);
             var labels = new Dictionary<long, int>();
@@ -83,6 +83,7 @@ namespace SaltyGame
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var cell = cells.GetCell(x, y);
                     if (!cell.IsCreature) continue;
                     key.Append(FormattableString.Invariant($"surface:{x},{y},{Label(cell.EntityId)},{Label(cell.Gestation.MateEntityId)}|"));
@@ -123,7 +124,6 @@ namespace SaltyGame
         {
             var cells = source.Copy();
             var threatened = FindFoxAttackTiles(source, rules);
-            var neighbors = cells.GetPattern(Neighbors).Offsets;
             var sites = new HashSet<int>();
             foreach (var burrow in burrows) sites.Add(burrow.X + burrow.Y * cells.Width);
 
@@ -135,8 +135,9 @@ namespace SaltyGame
                 if (expired || !threatened[burrow.X + burrow.Y * cells.Width])
                 {
                     TryEmerge(burrow, cells, threatened, expired, burrow.X, burrow.Y, emerged);
-                    foreach (var offset in neighbors)
-                        TryEmerge(burrow, cells, threatened, expired, burrow.X + offset.x, burrow.Y + offset.y, emerged);
+                    foreach (var offset in cells.GetPattern(burrow.X, burrow.Y, Neighbors).Offsets)
+                        if (cells.TryResolveOffset(burrow.X, burrow.Y, offset, out var emergeX, out var emergeY))
+                            TryEmerge(burrow, cells, threatened, expired, emergeX, emergeY, emerged);
                 }
 
                 if (expired && burrow.Occupants.Count == 0)
@@ -146,17 +147,20 @@ namespace SaltyGame
                 }
             }
 
-            if (canDig && neighbors.Count == 8)
+            if (canDig)
             {
                 for (var y = 0; y < cells.Height; y++)
                     for (var x = 0; x < cells.Width; x++)
                     {
+                        if (!cells.IsPlayableCell(x, y)) continue;
+                        var neighbors = cells.GetPattern(x, y, Neighbors).Offsets;
+                        if (neighbors.Count != 8) continue;
                         var hare = cells.GetCell(x, y);
                         if (!IsHare(hare) || hare.Energy < DigEnergy || diggers.Contains(hare.EntityId)
                             || sites.Contains(x + y * cells.Width)) continue;
                         var clear = true;
                         foreach (var offset in neighbors)
-                            if (!cells.TryGetCell(x + offset.x, y + offset.y, out var neighbor) || neighbor.IsOccupied)
+                            if (!cells.TryGetCellAtOffset(x, y, offset, out var neighbor) || neighbor.IsOccupied)
                             {
                                 clear = false;
                                 break;
@@ -175,9 +179,9 @@ namespace SaltyGame
             {
                 if (!canDig || tick >= burrow.Expires) continue;
                 TryHide(burrow, cells, threatened, lineage, shared, capacity, burrow.X, burrow.Y, emerged);
-                foreach (var offset in neighbors)
-                    TryHide(burrow, cells, threatened, lineage, shared, capacity,
-                        burrow.X + offset.x, burrow.Y + offset.y, emerged);
+                foreach (var offset in cells.GetPattern(burrow.X, burrow.Y, Neighbors).Offsets)
+                    if (cells.TryResolveOffset(burrow.X, burrow.Y, offset, out var hideX, out var hideY))
+                        TryHide(burrow, cells, threatened, lineage, shared, capacity, hideX, hideY, emerged);
             }
             return cells;
         }
@@ -186,19 +190,18 @@ namespace SaltyGame
 
         static bool[] FindFoxAttackTiles(Grid<SpeciesCell> cells, IReadOnlyDictionary<SpeciesId, SpeciesRules> rules)
         {
-            var threatened = new bool[cells.Count];
+            var threatened = new bool[checked(cells.Width * cells.Height)];
             if (!rules.TryGetValue(Fox, out var fox)) return threatened;
-            var offsets = cells.GetPattern(fox.AttackPattern).Offsets;
             for (var y = 0; y < cells.Height; y++)
                 for (var x = 0; x < cells.Width; x++)
                 {
+                    if (!cells.IsPlayableCell(x, y)) continue;
                     var cell = cells.GetCell(x, y);
                     if (!cell.IsCreature || cell.SpeciesId != Fox) continue;
-                    foreach (var offset in offsets)
+                    foreach (var offset in cells.GetPattern(x, y, fox.AttackPattern).Offsets)
                     {
-                        var targetX = x + offset.x;
-                        var targetY = y + offset.y;
-                        if (cells.TryResolveCoordinates(ref targetX, ref targetY))
+                        var targetXResolved = cells.TryResolveOffset(x, y, offset, out var targetX, out var targetY);
+                        if (targetXResolved)
                             threatened[targetX + targetY * cells.Width] = true;
                     }
                 }

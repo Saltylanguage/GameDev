@@ -1200,6 +1200,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < source.Width; x++)
                 {
+                    if (!source.IsPlayableCell(x, y)) continue;
                     var cell = source.GetCell(x, y);
                     if (cell.IsCreature)
                     {
@@ -1295,6 +1296,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < source.Width; x++)
                 {
+                    if (!source.IsPlayableCell(x, y)) continue;
                     var cell = source.GetCell(x, y);
                     if (!cell.IsCreature
                         || cell.SpeciesId != species
@@ -1319,6 +1321,7 @@ namespace SaltyGame
             {
                 for (var x = 0; x < source.Width; x++)
                 {
+                    if (!source.IsPlayableCell(x, y)) continue;
                     var cell = source.GetCell(x, y);
                     if (!cell.IsCreature || cell.SpeciesId != species)
                     {

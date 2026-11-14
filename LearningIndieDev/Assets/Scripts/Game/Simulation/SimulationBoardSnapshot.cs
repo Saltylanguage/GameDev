@@ -48,11 +48,12 @@ namespace SaltyGame
                 return null;
             }
 
-            var cells = new SimulationCellSnapshot[run.Cells.Count];
+            var cells = new SimulationCellSnapshot[run.Cells.StorageCount];
             for (var y = 0; y < run.Cells.Height; y++)
             {
                 for (var x = 0; x < run.Cells.Width; x++)
                 {
+                    if (!run.Cells.IsPlayableCell(x, y)) continue;
                     var cell = run.Cells.GetCell(x, y);
                     var terrainMask = TerrainTileResolver.ResolveTerrainMask(run.Cells, x, y, cell.TerrainId);
                     cells[x + y * run.Cells.Width] = SimulationCellSnapshot.Create(cell, terrainMask);
@@ -139,7 +140,7 @@ namespace SaltyGame
             }
 
             cell = cells[x + y * Width];
-            return true;
+            return cell.IsPlayable;
         }
     }
 
@@ -147,6 +148,7 @@ namespace SaltyGame
     {
         SimulationCellSnapshot(SpeciesCell cell, int terrainVariantMask)
         {
+            IsPlayable = true;
             IsOccupied = cell.IsOccupied;
             IsCreature = cell.IsCreature;
             IsTerrainResource = cell.IsTerrainResource;
@@ -176,6 +178,7 @@ namespace SaltyGame
             return new SimulationCellSnapshot(cell, terrainVariantMask);
         }
 
+        public bool IsPlayable { get; }
         public bool IsOccupied { get; }
         public bool IsCreature { get; }
         public bool IsTerrainResource { get; }

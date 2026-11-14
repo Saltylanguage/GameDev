@@ -502,7 +502,7 @@ namespace SaltyGame.Tests
                 runDurationSeconds: 0.4f,
                 stepInterval: 0.1f).WithRunTicks(4, 0.1f);
             var original = new SimulationRunState(
-                CreateContinuityFixture(),
+                CreateContinuityFixture(wrapEdges: true),
                 SpeciesIds.Herbivore,
                 seed: 42,
                 durationSeconds: data.RunDurationSeconds);
@@ -638,11 +638,11 @@ namespace SaltyGame.Tests
             return manager;
         }
 
-        static Grid<SpeciesCell> CreateContinuityFixture()
+        static Grid<SpeciesCell> CreateContinuityFixture(bool wrapEdges = false)
         {
             return new Grid<SpeciesCell>(2, 1, (x, _) => x == 0
                 ? new SpeciesCell(SpeciesIds.Herbivore, health: 10, energy: 24)
-                : SpeciesCell.Grass(10f));
+                : SpeciesCell.Grass(10f), wrapEdges);
         }
 
         static int CountSpecies(Grid<SpeciesCell> cells, SpeciesId species)
