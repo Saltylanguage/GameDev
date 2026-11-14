@@ -25,6 +25,11 @@ structure and must clearly state when no research conclusion is possible.
 
 ## Packages
 
+For cross-experiment Hare/Rabbit–Fox balance comparisons, start with the
+[Hare / Rabbit–Fox balance index](../HARE_FOX_BALANCE_INDEX.md). It separates
+the current carcass experiment from earlier Fox energy models and legacy S4
+panels, with links to the source reports.
+
 - [S4 strategy-choice policy screen at 600/40/25](S4-03-Strategy-Choice-Policy-Screen-600-40-25/PROTOCOL.md): 800-run offer-aware comparison complete locally; Gardeners improved matched clears but remained below the 40–50% target. See the [report](S4-03-Strategy-Choice-Policy-Screen-600-40-25/REPORT.md), [interpretation](S4-03-Strategy-Choice-Policy-Screen-600-40-25/ANALYSIS.md), and [handoff](../../handoffs/2026-10-06-2326-codex-s4-03-strategy-choice-policy-screen.md).
 
 - [S4 Trailblazer early-choice timing diagnostic](S4-03-Trailblazer-Early-Choice-Timing-600-40-25/PROTOCOL.md): 200-seed matched timing comparison complete locally; moving the first choice to tick 0 did not improve the strict all-species clear rate. See the [report](S4-03-Trailblazer-Early-Choice-Timing-600-40-25/REPORT.md), [interpretation](S4-03-Trailblazer-Early-Choice-Timing-600-40-25/ANALYSIS.md), and [handoff](../../handoffs/2026-10-07-0024-codex-s4-03-trailblazer-early-choice-timing.md).

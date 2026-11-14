@@ -86,6 +86,9 @@ uncertainty or regression risk.
   [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md),
   [implementation handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md),
   and [S6 decision record](Sprints/S6-control-record.md#november-11-carcass-feeding-and-fox-energy-first-pass).
+  For future balance work, use the [Hare / Rabbit–Fox balance index](Research/HARE_FOX_BALANCE_INDEX.md)
+  to retrieve comparable studies and their validity limits without pooling
+  incompatible Fox energy models.
 
 - **November 9, 2026 sprint direction:** Josh approved
   [S6 — The Fun Pass](Sprints/S6-control-record.md) for November 16–29, following
