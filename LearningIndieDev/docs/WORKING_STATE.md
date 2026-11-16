@@ -1,6 +1,6 @@
 # Working state
 
-**November 16 M2 fix and Sim review handoff:** The legacy-preview-health compatibility fix and completed independent review are prepared on `codex/m2-independent-review`, based on `fda7731`. Focused checks passed 42/42 EditMode and 1/1 menu/Desktop/Journey PlayMode; Bevin confirms ticking and speed switching work. Latest review: 9 Yes, 9 Needs change, 4 Blocked; Q23 Agree. Audio, early Journey failure/progression, event/strategy feedback and UI findings remain open. Read the [shared review and screenshots](Reviews/M2-Sim-20261116/README.md) and [fix handoff](handoffs/2026-11-16-1443-codex-m2-tick-zero-legacy-preview-health-fix.md). No full-suite, build, balance, or M2 acceptance is claimed.
+**November 16 M2 fix and Sim review handoff:** The legacy-preview-health compatibility fix and completed independent review are published on `codex/m2-independent-review`, based on `fda7731`. Focused checks passed 42/42 EditMode and 1/1 menu/Desktop/Journey PlayMode; Bevin confirms ticking and speed switching work. Latest review: 9 Yes, 9 Needs change, 4 Blocked; Q23 Agree. Audio, early Journey failure/progression, event/strategy feedback and UI findings remain open. Read the [shared review and screenshots](Reviews/M2-Sim-20261116/README.md) and [fix handoff](handoffs/2026-11-16-1443-codex-m2-tick-zero-legacy-preview-health-fix.md). No full-suite, build, balance, or M2 acceptance is claimed.
 
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
