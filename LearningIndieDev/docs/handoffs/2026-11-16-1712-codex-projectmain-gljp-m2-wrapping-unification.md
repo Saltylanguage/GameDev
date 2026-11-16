@@ -1,6 +1,6 @@
 # ProjectMain consolidation - GLJP, M2 and mandatory wrapping
 
-[Working state](../WORKING_STATE.md) | Status: validated for ProjectMain consolidation; publication recorded below
+[Working state](../WORKING_STATE.md) | Status: published to ProjectMain; existing ecology and M2 findings remain open
 
 - Handoff schema: 1
 - Handoff ID: 2026-11-16-1712-codex-projectmain-gljp-m2-wrapping-unification
@@ -55,4 +55,8 @@ The clean results replace the noisy live PlayMode run as the merge check. The ex
 
 ## Publication and recovery
 
-The validated source is 21b3c71, following merge 472375b and catalog alignment 85d585a. Publication will fast-forward ProjectMain after a fresh ancestry check, without force-pushing or deleting historical branches/worktrees. The normal checkout is F:/ForkBin/GameDev/LearningIndieDev; subsequent reviews should use ProjectMain there. The publication record below will name the shared commit and Trello handoff after read-back verification.
+The validated source is 21b3c71, following merge 472375b and catalog alignment 85d585a. Integration plus retained documentation/images was pushed to origin/ProjectMain at **e5f475642f7cd64027cba8b7878f9d861ebd709c**. A fresh fetch/ancestry audit immediately before publication found no local/fetched remote branch tip outside the candidate. The normal F:/ForkBin/GameDev checkout was clean, switched to ProjectMain and fast-forwarded; the remote exact SHA was read back. No force-push or historical branch/worktree deletion occurred. Default main remains b3ea53f543465d9ca6178558185274960a725584.
+
+The required [M2 Trello integration handoff](https://trello.com/c/PoxE1gpz/19-m2-vertical-slice#comment-6afb8309f78ad492441eee74) was posted under the user-confirmed Nick Nevins identity and read back successfully. It links the shared integration evidence and preserves the open milestone/ecology status. Local screenshot proof is artifacts/projectmain-integration-20261116/trello-consolidation-confirmation.png. This subsequent publication-record commit changes documentation only.
+
+Use ProjectMain in F:/ForkBin/GameDev/LearningIndieDev for subsequent reviews. Earlier M2/GLJP/wrapping branches remain recovery/history references; their old checked-out worktrees should not be mistaken for the unified source.
