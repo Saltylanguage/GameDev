@@ -13,7 +13,7 @@ namespace SaltyGame.EditorTools
     [InitializeOnLoad]
     public static class PlayModeSimulationResultLogger
     {
-        const int ReportSchemaVersion = 12;
+        const int ReportSchemaVersion = 13;
         const string JsonFileName = "playmode-last-run.json";
         const string MarkdownFileName = "playmode-last-run.md";
 
@@ -76,6 +76,7 @@ namespace SaltyGame.EditorTools
                 upgradeLoadout = SimulationReportSerialization.CreateUpgradeLoadout(run.UpgradeLoadout),
                 finalPlayerPopulation = SimulationRunResults.Create(run).PlayerPopulation,
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
+                mutationEffects = SimulationReportSerialization.CreateMutationEffects(run.Metrics),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
                 behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
@@ -106,6 +107,9 @@ namespace SaltyGame.EditorTools
             builder.AppendLine($"- Ruleset fingerprint: `{report.rulesetFingerprint}`");
             builder.AppendLine($"- Upgrade loadout: `{report.upgradeLoadout.Length}` ordered contract snapshot(s)");
             builder.AppendLine($"- Phase windows: `{report.phaseResults.Length}` versioned result(s)");
+            builder.AppendLine($"- Direct Mutation effects: {report.mutationEffects.avoidedContacts} avoided contacts, "
+                + $"{report.mutationEffects.decisiveFullHealthHits} decisive full-health hits, "
+                + $"{report.mutationEffects.changedReproductionRolls} changed reproduction rolls");
             builder.AppendLine();
             if (report.upgradeLoadout.Length > 0)
             {
@@ -279,6 +283,7 @@ namespace SaltyGame.EditorTools
             public SimulationUpgradeRecord[] upgradeLoadout;
             public int finalPlayerPopulation;
             public SimulationPopulationSnapshotRecord[] populationHistory;
+            public SimulationMutationEffectsRecord mutationEffects;
             public SimulationSpeciesActivityRecord[] activity;
             public SimulationSpeciesBehaviorRecord[] behavior;
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;

@@ -22,9 +22,9 @@ MonoBehaviour:
   playableInPrototype: 1
   conditionUpgrade: {fileID: 0}
   rewardMutationIds:
-  - faster-movement
+  - threat-exposure
   - tough-hide
-  - efficient-digestion
+  - reproductive-drive
   dataReward: 0
   nextNodes:
   - {fileID: 11400000, guid: 353519f5b00c4f14bc857415f02dd8c3, type: 2}

@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.escape-instinct
   displayName: Escape Instinct
-  description: Unlocks Escape Instinct as a journey Mutation. Research cost and path
-    are test values.
+  description: Unlocks Escape Instinct outside Forest Edge, Quick Escape, and Field
+    Data offers. Forest Edge offers Escape Instinct without research. Research cost
+    and path are test values.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
   rabbitDataPrice: 5

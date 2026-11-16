@@ -10,6 +10,9 @@ namespace SaltyGame
 {
     public sealed class VM_GalapagOS_Desktop : MonoBehaviour, INotifyPropertyChanged
     {
+        const string VolumePreference = "GalapagOS.MasterVolume";
+        const string MutePreference = "GalapagOS.Muted";
+        const string ReducedMotionPreference = "GalapagOS.ReducedMotion";
         [SerializeField] GenomeCatalogProvider genomeCatalogProvider;
         [SerializeField] string genomeSpeciesId = "hare";
         Helper_ProfileSession profileSession;
@@ -28,6 +31,7 @@ namespace SaltyGame
         public DelegateCommand VolumeDownCommand { get; private set; }
         public DelegateCommand VolumeUpCommand { get; private set; }
         public DelegateCommand ToggleMuteCommand { get; private set; }
+        public DelegateCommand ToggleReducedMotionCommand { get; private set; }
         public DelegateCommand SetGameSpeedCommand { get; private set; }
 
         public string DesktopTitle => "GALAPAGOS DESKTOP";
@@ -39,6 +43,16 @@ namespace SaltyGame
         public string DayPhaseText => "DAYLIGHT";
         public string NotificationCountText => "3";
         public string VolumeText => muted ? "MUTED" : $"{Math.Round(volume * 100f):0}%";
+        public string ReducedMotionText => ReducedMotionEnabled ? "ON" : "OFF";
+        public static bool ReducedMotionEnabled => PlayerPrefs.GetInt(ReducedMotionPreference, 0) == 1;
+        public static float SavedAudioVolume => PlayerPrefs.GetInt(MutePreference, 0) == 1
+            ? 0f : ReadSavedVolume();
+
+        static float ReadSavedVolume()
+        {
+            var saved = PlayerPrefs.GetFloat(VolumePreference, 0.8f);
+            return float.IsNaN(saved) || float.IsInfinity(saved) ? 0.8f : Mathf.Clamp01(saved);
+        }
         public string GameSpeedText => $"{gameSpeed:0.#}x";
         public string ActiveDesktopAppTitle => activeDesktopAppTitle ?? "GALAPAGOS APP";
         public string ActiveDesktopAppDescription => activeDesktopAppDescription ?? "Select a GalapagOS application to begin.";
@@ -97,7 +111,10 @@ namespace SaltyGame
             VolumeDownCommand = new DelegateCommand(VolumeDown);
             VolumeUpCommand = new DelegateCommand(VolumeUp);
             ToggleMuteCommand = new DelegateCommand(ToggleMute);
+            ToggleReducedMotionCommand = new DelegateCommand(ToggleReducedMotion);
             SetGameSpeedCommand = new DelegateCommand(SetGameSpeed);
+            volume = ReadSavedVolume();
+            muted = PlayerPrefs.GetInt(MutePreference, 0) == 1;
             ApplyAudioVolume();
         }
 
@@ -158,7 +175,8 @@ namespace SaltyGame
                 () => CloseDesktopWindow(openedWindow),
                 () => OpenRelatedDesktopApp(openedWindow, "Gene Lab"),
                 () => OpenRelatedDesktopApp(openedWindow, "History / Data Record"),
-                appName == "Gene Lab" ? CreateGenomeLabViewModel() : null);
+                appName == "Gene Lab" ? CreateGenomeLabViewModel() : null,
+                this);
             openDesktopWindows.Add(openedWindow);
             OnPropertyChanged(nameof(ActiveDesktopAppTitle));
             OnPropertyChanged(nameof(ActiveDesktopAppDescription));
@@ -354,6 +372,7 @@ namespace SaltyGame
             muted = false;
             ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
+            SaveAudioPreferences();
         }
 
         void VolumeUp()
@@ -362,6 +381,7 @@ namespace SaltyGame
             muted = false;
             ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
+            SaveAudioPreferences();
         }
 
         void ToggleMute()
@@ -369,6 +389,21 @@ namespace SaltyGame
             muted = !muted;
             ApplyAudioVolume();
             OnPropertyChanged(nameof(VolumeText));
+            SaveAudioPreferences();
+        }
+
+        void ToggleReducedMotion()
+        {
+            PlayerPrefs.SetInt(ReducedMotionPreference, ReducedMotionEnabled ? 0 : 1);
+            PlayerPrefs.Save();
+            OnPropertyChanged(nameof(ReducedMotionText));
+        }
+
+        void SaveAudioPreferences()
+        {
+            PlayerPrefs.SetFloat(VolumePreference, volume);
+            PlayerPrefs.SetInt(MutePreference, muted ? 1 : 0);
+            PlayerPrefs.Save();
         }
 
         void ApplyAudioVolume()
@@ -439,7 +474,8 @@ namespace SaltyGame
             Action close,
             Action openGeneLab = null,
             Action openHistory = null,
-            GenomeLabViewModel genomeLab = null)
+            GenomeLabViewModel genomeLab = null,
+            VM_GalapagOS_Desktop settings = null)
         {
             var isGeneLab = title == "Gene Lab";
             var isFieldGuide = title == "Field Notes" || title == "Field Guide / Journal";
@@ -479,6 +515,7 @@ namespace SaltyGame
             OpenGeneLabCommand = new DelegateCommand(openGeneLab ?? (() => { }));
             OpenHistoryCommand = new DelegateCommand(openHistory ?? (() => { }));
             GenomeLab = genomeLab ?? new GenomeLabViewModel(GenomeCatalogSnapshot.Empty);
+            Settings = settings;
             GenomeLab.PropertyChanged += HandleGenomeLabPropertyChanged;
         }
 
@@ -492,6 +529,7 @@ namespace SaltyGame
         public DelegateCommand OpenGeneLabCommand { get; private set; }
         public DelegateCommand OpenHistoryCommand { get; private set; }
         public GenomeLabViewModel GenomeLab { get; }
+        public VM_GalapagOS_Desktop Settings { get; }
         public ObservableCollection<GenomeLabNodeViewModel> GenomeNodes => GenomeLab.Nodes;
         public ObservableCollection<GenomeLabTreeSegmentViewModel> GenomeTreeSegments => GenomeLab.GenomeTreeSegments;
         public float GenomeTreeWidth => GenomeLab.GenomeTreeWidth;

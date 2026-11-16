@@ -7,8 +7,6 @@ namespace SaltyGame
 {
     public sealed class GalapagOSDesktopNoesisHost : MonoBehaviour
     {
-        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
-
         [Header("Desktop Composition")]
         [SerializeField] Camera desktopCamera;
         [SerializeField] NoesisView view;
@@ -34,8 +32,7 @@ namespace SaltyGame
         bool profileLaunchActive;
         SimulationRunState trackedProfileRun;
         int trackedProfileTick;
-        int lastBirthSoundTick = -1;
-        int lastFoxHuntReactionTick = -1;
+        int lastReactionTick = -1;
         SimulationRunState lastReactionRun;
 
         void Start()
@@ -209,7 +206,6 @@ namespace SaltyGame
                 return;
             }
 
-            simulationView.Content.DataContext = simulationViewModel;
             simulationBoard = FindSimulationBoard(simulationView.Content);
             if (simulationBoard == null)
             {
@@ -222,9 +218,13 @@ namespace SaltyGame
                 simulationViewModel.AnimalSprites,
                 simulationViewModel.GrassTerrainTiles,
                 simulationViewModel.DesertTerrainTiles);
+            simulationBoard.CellSelected += HandleCellSelected;
+            simulationBoard.DataContext = simulationBoardViewModel;
+            simulationView.Content.DataContext = simulationViewModel;
             simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
             simulationBoardViewModel.PropertyChanged += HandleBoardPropertyChanged;
             ApplyBoardSnapshot();
+            SimulationSoundPalette.StartBed(gameObject);
 
             // The journey map is the entry point for Forest Edge/Hare. Other
             // scenarios keep the prepared live-board launch behavior.
@@ -259,7 +259,9 @@ namespace SaltyGame
         void CloseSimulation()
         {
             if (!simulationPreview.TryLeavePermanentResults()) return;
+            SimulationSoundPalette.StopBed(gameObject);
             simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
+            if (simulationBoard != null) simulationBoard.CellSelected -= HandleCellSelected;
             simulationBoard?.ClearFoxHuntCue();
             simulationBoard?.ClearMatingCue();
             simulationBoard = null;
@@ -271,6 +273,7 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            SimulationSoundPalette.StopBed(gameObject);
             if (simulationPreview != null) simulationPreview.BindGenomeLaunchSource(null);
             if (simulationPreview != null) simulationPreview.BindPermanentResults(null);
             SpeciesSimulationPreview.RunCompleted -= HandleRunCompleted;
@@ -284,6 +287,7 @@ namespace SaltyGame
             {
                 simulationBoardViewModel.PropertyChanged -= HandleBoardPropertyChanged;
             }
+            if (simulationBoard != null) simulationBoard.CellSelected -= HandleCellSelected;
         }
 
         void Update()
@@ -355,6 +359,10 @@ namespace SaltyGame
             {
                 ApplyBoardSnapshot();
             }
+            else if (args.PropertyName == nameof(VM_SimulationBoard.HasSelection))
+            {
+                simulationBoard?.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY);
+            }
         }
 
         void ApplyBoardSnapshot()
@@ -365,15 +373,16 @@ namespace SaltyGame
             }
 
             var currentRun = simulationPreview != null ? simulationPreview.Run : null;
-            if (!ReferenceEquals(lastReactionRun, currentRun))
+            if (!ReferenceEquals(lastReactionRun, currentRun)
+                || (currentRun != null && currentRun.Tick < lastReactionTick))
             {
                 lastReactionRun = currentRun;
-                lastBirthSoundTick = -1;
-                lastFoxHuntReactionTick = -1;
-                simulationViewModel?.ClearEventReaction();
+                lastReactionTick = currentRun?.Tick ?? -1;
+                simulationViewModel?.ResetRunActivity();
             }
 
             simulationBoard.SetSnapshot(simulationBoardViewModel.Snapshot);
+            simulationBoard.SetSelectedCell(simulationBoardViewModel.SelectedX, simulationBoardViewModel.SelectedY);
             simulationBoard.SetForestEdgeFlourishes(simulationViewModel.ForestEdgeFlourishes);
             simulationBoard.SetFoxHuntCue(
                 simulationBoardViewModel.FoxHuntCueX,
@@ -389,29 +398,21 @@ namespace SaltyGame
                 simulationBoardViewModel.MatingCueOffspringY,
                 simulationBoardViewModel.MatingCueTick);
             simulationBoard.SetBirthCues(simulationBoardViewModel.RecentBirths);
-            if (simulationBoardViewModel.FoxHuntCueTick < 0)
+            if (currentRun != null && currentRun.Tick > lastReactionTick)
             {
-                lastFoxHuntReactionTick = -1;
+                if (simulationViewModel != null && simulationViewModel.PresentRunActivity(
+                    currentRun, lastReactionTick, simulationBoardViewModel.FoxHuntCueTick > lastReactionTick))
+                {
+                    SimulationBirthChime.Play(gameObject);
+                }
+                lastReactionTick = currentRun.Tick;
             }
-            else if (simulationBoardViewModel.FoxHuntCueTick != lastFoxHuntReactionTick)
-            {
-                simulationViewModel?.PresentFoxHuntReaction();
-                lastFoxHuntReactionTick = simulationBoardViewModel.FoxHuntCueTick;
-            }
+        }
 
-            if (simulationBoardViewModel.MatingCueTick < 0)
-            {
-                lastBirthSoundTick = -1;
-            }
-            if (simulationBoardViewModel.MatingCueTick >= 0
-                && simulationBoardViewModel.MatingCueTick != lastBirthSoundTick)
-            {
-                SimulationBirthChime.Play(gameObject);
-                var births = simulationBoardViewModel.RecentBirths;
-                var foxPortrait = births.Count > 0 && births[0].Species == FoxSpeciesId;
-                simulationViewModel?.PresentBirthReaction(births.Count, foxPortrait);
-                lastBirthSoundTick = simulationBoardViewModel.MatingCueTick;
-            }
+        void HandleCellSelected(int x, int y)
+        {
+            simulationBoardViewModel?.SelectCell(x, y);
+            SimulationSoundPalette.Play(gameObject, SimulationSound.Selection);
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

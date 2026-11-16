@@ -139,7 +139,13 @@ namespace SaltyGame
         Point renderedOrigin;
         Point renderedUnit;
         Point lastPanPosition;
+        Point panStartPosition;
         bool isPanning;
+        bool panMoved;
+        int selectedX = -1;
+        int selectedY = -1;
+        readonly Pen selectionShadow = new Pen { Brush = Brushes.Black, Thickness = 3f };
+        readonly Pen selectionOutline = new Pen { Brush = Brushes.White, Thickness = 1.5f };
         SolidColorBrush foxHuntShadowBrush;
         SolidColorBrush foxHuntAccentBrush;
         SolidColorBrush heartShadowBrush;
@@ -166,13 +172,17 @@ namespace SaltyGame
         SolidColorBrush meatBoneBrush;
 
         public event Action<float> ZoomRequested;
+        public event Action<int, int> CellSelected;
 
         public SpeciesSimulationBoard()
         {
             panZoomTransform = new MatrixTransform();
             panZoomTransform.Matrix = new Matrix(1f, 0f, 0f, 1f, 0f, 0f);
             RenderTransform = panZoomTransform;
+            Focusable = true;
             MouseLeftButtonDown += OnPanStarted;
+            KeyDown += OnBoardKeyDown;
+            IsKeyboardFocusedChanged += (_, __) => InvalidateVisual();
             MouseWheel += OnZoom;
             LostMouseCapture += OnLostMouseCapture;
             Unloaded += OnBoardUnloaded;
@@ -213,6 +223,11 @@ namespace SaltyGame
             }
 
             foxHuntCueTick = tick;
+            if (VM_GalapagOS_Desktop.ReducedMotionEnabled)
+            {
+                ClearFoxHuntCue();
+                return;
+            }
             foxHuntCueX = x;
             foxHuntCueY = y;
             foxHuntCueStartedAt = Time.unscaledTime;
@@ -234,6 +249,11 @@ namespace SaltyGame
 
         public void UpdateFoxHuntCue()
         {
+            if (VM_GalapagOS_Desktop.ReducedMotionEnabled)
+            {
+                ClearFoxHuntCue();
+                return;
+            }
             if (!foxHuntCueActive)
             {
                 return;
@@ -272,6 +292,11 @@ namespace SaltyGame
             }
 
             matingCueTick = tick;
+            if (VM_GalapagOS_Desktop.ReducedMotionEnabled)
+            {
+                ClearMatingCue();
+                return;
+            }
             matingCueX = parentX;
             matingCueY = parentY;
             matingCueMateX = mateX;
@@ -316,6 +341,11 @@ namespace SaltyGame
 
         public void UpdateMatingCue(bool paused)
         {
+            if (VM_GalapagOS_Desktop.ReducedMotionEnabled)
+            {
+                ClearMatingCue();
+                return;
+            }
             if (!matingCueActive)
             {
                 return;
@@ -387,6 +417,14 @@ namespace SaltyGame
             InvalidateVisual();
         }
 
+        public void SetSelectedCell(int x, int y)
+        {
+            if (selectedX == x && selectedY == y) return;
+            selectedX = x;
+            selectedY = y;
+            InvalidateVisual();
+        }
+
         void OnPanStarted(object sender, MouseButtonEventArgs e)
         {
             var viewport = Parent as UIElement;
@@ -396,12 +434,14 @@ namespace SaltyGame
             }
 
             lastPanPosition = e.GetPosition(viewport);
+            panStartPosition = lastPanPosition;
             if (!CaptureMouse())
             {
                 return;
             }
 
             isPanning = true;
+            panMoved = false;
             MouseMove += OnPanMoved;
             MouseLeftButtonUp += OnPanEnded;
             e.Handled = true;
@@ -428,6 +468,8 @@ namespace SaltyGame
             }
 
             var position = e.GetPosition(viewport);
+            if (Math.Abs(position.X - panStartPosition.X) > 3f
+                || Math.Abs(position.Y - panStartPosition.Y) > 3f) panMoved = true;
             panOffsetX += position.X - lastPanPosition.X;
             panOffsetY += position.Y - lastPanPosition.Y;
             lastPanPosition = position;
@@ -438,9 +480,47 @@ namespace SaltyGame
 
         void OnPanEnded(object sender, MouseButtonEventArgs e)
         {
+            if (!panMoved && TryGetCellAt(e.GetPosition(this), out var x, out var y))
+            {
+                Focus();
+                CellSelected?.Invoke(x, y);
+            }
             ReleaseMouseCapture();
             EndPan();
             e.Handled = true;
+        }
+
+        void OnBoardKeyDown(object sender, KeyEventArgs e)
+        {
+            if (snapshot == null) return;
+            var x = Mathf.Clamp(selectedX, 0, snapshot.Width - 1);
+            var y = selectedY >= 0
+                ? Mathf.Clamp(selectedY, 0, snapshot.Height - 1) : snapshot.Height - 1;
+            switch (e.Key)
+            {
+                case Key.Left: x = Math.Max(0, x - 1); break;
+                case Key.Right: x = Math.Min(snapshot.Width - 1, x + 1); break;
+                case Key.Up: y = Math.Min(snapshot.Height - 1, y + 1); break;
+                case Key.Down: y = Math.Max(0, y - 1); break;
+                default: return;
+            }
+            Debug.Assert(snapshot.TryGetCell(x, y, out _));
+            CellSelected?.Invoke(x, y);
+            e.Handled = true;
+        }
+
+        bool TryGetCellAt(Point position, out int x, out int y)
+        {
+            x = y = -1;
+            if (snapshot == null || ActualWidth <= 0f || ActualHeight <= 0f) return false;
+            GetBoardLayout(ActualWidth, ActualHeight, out var cellSize, out var left, out var top);
+            if (cellSize <= 0f) return false;
+            var column = (int)Math.Floor((position.X - left) / cellSize);
+            var row = (int)Math.Floor((position.Y - top) / cellSize);
+            if (!snapshot.TryGetCell(column, snapshot.Height - 1 - row, out _)) return false;
+            x = column;
+            y = snapshot.Height - 1 - row;
+            return true;
         }
 
         void OnLostMouseCapture(object sender, MouseEventArgs e)
@@ -594,6 +674,8 @@ namespace SaltyGame
             var width = ActualWidth > 0f ? ActualWidth : Width;
             var height = ActualHeight > 0f ? ActualHeight : Height;
             context.DrawRectangle(Brushes.Transparent, null, new NoesisRect(0f, 0f, width, height));
+            if (IsKeyboardFocused && width > 4f && height > 4f)
+                context.DrawRectangle(null, selectionOutline, new NoesisRect(2f, 2f, width - 4f, height - 4f));
 
             if (snapshot == null || width <= 0f || height <= 0f)
             {
@@ -666,6 +748,12 @@ namespace SaltyGame
 
             DrawFoxHuntCue(context, left, top, cellSize);
             DrawMatingCue(context, left, top, cellSize);
+            if (snapshot.TryGetCell(selectedX, selectedY, out _))
+            {
+                var selected = GetCellRect(columns, rows, selectedX, snapshot.Height - 1 - selectedY);
+                context.DrawRectangle(null, selectionShadow, selected);
+                context.DrawRectangle(null, selectionOutline, selected);
+            }
         }
 
         float[] GetPixelAlignedEdges(float start, float cellSize, int count, bool horizontal)

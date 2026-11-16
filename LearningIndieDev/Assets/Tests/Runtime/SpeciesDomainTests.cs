@@ -1079,15 +1079,82 @@ namespace SaltyGame.Tests
             cells.SetCell(0, 0, new SpeciesCell(foxId, energy: 10));
             cells.SetCell(1, 0, new SpeciesCell(hareId, health: hareRules.MaximumHealth));
 
+            var metrics = new SpeciesSimulationMetrics();
+            typeof(SpeciesSimulationMetrics).GetMethod("ConfigureMutationEffects",
+                    BindingFlags.Instance | BindingFlags.NonPublic)
+                .Invoke(metrics, new object[] { hareId, new[] {
+                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(hareId) } });
+
             var next = SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules>
             {
                 [foxId] = foxRules,
                 [hareId] = hareRules,
-            }, seed: 42);
+            }, seed: 42, metrics: metrics);
 
             Assert.That(hareRules.MaximumHealth, Is.EqualTo(3));
             Assert.That(next.GetCell(1, 0).IsCreature, Is.True);
             Assert.That(next.GetCell(1, 0).Health, Is.EqualTo(1));
+            Assert.That(metrics.MutationEffects.DecisiveFullHealthHits, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void ReproductiveDriveCountsOnlyRollsItsChanceChanged()
+        {
+            var hare = new SpeciesId("hare");
+            var baselineRules = CreateReproductionRules(reproductionChance: 0.01f);
+            var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId)
+                .CreateSnapshot(hare);
+            var upgradedRules = upgrade.Apply(baselineRules);
+            var configure = typeof(SpeciesSimulationMetrics).GetMethod("ConfigureMutationEffects",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var changed = 0;
+            for (var seed = 0; seed < 128; seed++)
+            {
+                var cells = new Grid<SpeciesCell>(3, 1);
+                cells.SetCell(1, 0, new SpeciesCell(hare, energy: 10));
+                var baseline = new SpeciesSimulationMetrics();
+                var upgraded = new SpeciesSimulationMetrics();
+                configure.Invoke(upgraded, new object[] { hare, new[] { upgrade } });
+                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [hare] = baselineRules },
+                    seed, metrics: baseline);
+                SpeciesSimulation.Step(cells, new Dictionary<SpeciesId, SpeciesRules> { [hare] = upgradedRules },
+                    seed, metrics: upgraded);
+                var extraRolls = upgraded.MutationEffects.ChangedReproductionRolls;
+                Assert.That(extraRolls, Is.InRange(0, 1));
+                if (extraRolls == 0) continue;
+                changed += extraRolls;
+                Assert.That(baseline.GetActivity(hare).Births, Is.Zero);
+            }
+            Assert.That(changed, Is.GreaterThan(0));
+        }
+
+        [Test]
+        public void MutationEffectCountsAreRetainedInTheClosedPhaseWindow()
+        {
+            var metrics = new SpeciesSimulationMetrics();
+            var type = typeof(SpeciesSimulationMetrics);
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var hare = new SpeciesId("hare");
+            var configure = type.GetMethod("ConfigureMutationEffects", flags);
+            configure.Invoke(metrics, new object[] { hare, new[] {
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId).CreateSnapshot(hare),
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId).CreateSnapshot(hare),
+                SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ReproductiveDriveId).CreateSnapshot(hare) } });
+            Assert.That(type.GetProperty("MutationAvoidanceBonus", flags).GetValue(metrics), Is.EqualTo(0.08f));
+            Assert.That(type.GetProperty("MutationHealthBonus", flags).GetValue(metrics), Is.EqualTo(2f));
+            Assert.That(type.GetProperty("MutationReproductionBonus", flags).GetValue(metrics), Is.EqualTo(0.1f));
+            type.GetMethod("RecordMutationAvoidedContact", flags).Invoke(metrics, null);
+            var before = type.GetMethod("CreateSnapshot", flags).Invoke(metrics, null);
+            type.GetMethod("RecordMutationAvoidedContact", flags).Invoke(metrics, null);
+            type.GetMethod("RecordMutationDecisiveFullHealthHit", flags).Invoke(metrics, null);
+            type.GetMethod("RecordMutationChangedReproductionRoll", flags).Invoke(metrics, null);
+            var window = (SpeciesSimulationMetricsWindow)type.GetMethod("CreateWindow", flags)
+                .Invoke(metrics, new object[] { before, 0, 1 });
+            Assert.That(window.MutationEffects.AvoidedContacts, Is.EqualTo(1));
+            Assert.That(window.MutationEffects.DecisiveFullHealthHits, Is.EqualTo(1));
+            Assert.That(window.MutationEffects.ChangedReproductionRolls, Is.EqualTo(1));
+            configure.Invoke(metrics, new object[] { hare, Array.Empty<SpeciesUpgradeSnapshot>() });
+            Assert.That(type.GetProperty("MutationAvoidanceBonus", flags).GetValue(metrics), Is.EqualTo(0f));
         }
 
         [Test]
@@ -1132,18 +1199,20 @@ namespace SaltyGame.Tests
         {
             var paths = new[]
             {
-                new[] { SpeciesUpgradeCatalog.FasterMovementId, SpeciesUpgradeCatalog.ThreatExposureId },
-                new[] { SpeciesUpgradeCatalog.ToughHideId, SpeciesUpgradeCatalog.CrowdingToleranceId },
-                new[] { SpeciesUpgradeCatalog.EfficientDigestionId, SpeciesUpgradeCatalog.SeedDispersalId },
+                new[] { SpeciesUpgradeCatalog.ThreatExposureId },
+                new[] { SpeciesUpgradeCatalog.ToughHideId },
+                new[] { SpeciesUpgradeCatalog.ReproductiveDriveId },
             };
             foreach (var seed in new[] { int.MinValue, -1, 0, 1, 2, 42, 11100, int.MaxValue })
             {
-                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed);
+                var offer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed,
+                    introductoryHareMutations: true);
                 Assert.That(offer, Has.Length.EqualTo(3));
                 foreach (var path in paths)
                     Assert.That(Array.FindAll(offer, upgrade => Array.IndexOf(path, upgrade.Id) >= 0), Has.Length.EqualTo(1));
                 var capped = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(null, 0, seed,
-                    upgrade => Array.IndexOf(paths[0], upgrade.Id) < 0);
+                    upgrade => Array.IndexOf(paths[0], upgrade.Id) < 0,
+                    introductoryHareMutations: true);
                 Assert.That(capped, Has.Length.EqualTo(3));
                 Assert.That(new HashSet<string>(Array.ConvertAll(capped, upgrade => upgrade.Id)), Has.Count.EqualTo(3));
                 Assert.That(Array.Exists(capped, upgrade => Array.IndexOf(paths[0], upgrade.Id) >= 0), Is.False);
@@ -1745,13 +1814,27 @@ namespace SaltyGame.Tests
                 {
                     var first = new SpeciesSimulationMetrics();
                     var replay = new SpeciesSimulationMetrics();
+                    if (chance == 0.08f)
+                    {
+                        var upgrade = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId)
+                            .CreateSnapshot(SpeciesIds.Herbivore);
+                        var configure = typeof(SpeciesSimulationMetrics).GetMethod("ConfigureMutationEffects",
+                            BindingFlags.Instance | BindingFlags.NonPublic);
+                        configure.Invoke(first, new object[] { SpeciesIds.Herbivore, new[] { upgrade } });
+                        configure.Invoke(replay, new object[] { SpeciesIds.Herbivore, new[] { upgrade } });
+                    }
                     var next = SpeciesSimulation.Step(FreshGrid(), rules, seed, metrics: first, experimentalOptions: options);
                     var repeated = SpeciesSimulation.Step(FreshGrid(), rules, seed, metrics: replay, experimentalOptions: options);
                     Assert.That(replay.CombatRollEvents.Count, Is.EqualTo(first.CombatRollEvents.Count));
                     Assert.That(repeated.GetCell(1, 0).Health, Is.EqualTo(next.GetCell(1, 0).Health));
                     if (chance == 0f) Assert.That(first.CombatRollEvents.Count, Is.EqualTo(1));
                     if (chance == 1f) Assert.That(first.CombatRollEvents, Is.Empty);
-                    if (chance == 0.08f && first.CombatRollEvents.Count == 0) avoided++;
+                    if (chance == 0.08f && first.CombatRollEvents.Count == 0)
+                    {
+                        avoided++;
+                        Assert.That(first.MutationEffects.AvoidedContacts, Is.EqualTo(1));
+                        Assert.That(replay.MutationEffects.AvoidedContacts, Is.EqualTo(1));
+                    }
                 }
             }
             Assert.That(avoided, Is.InRange(1, 127));

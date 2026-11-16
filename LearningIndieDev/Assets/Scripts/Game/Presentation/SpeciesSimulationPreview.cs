@@ -412,6 +412,7 @@ namespace SaltyGame
         FieldDataPermanentResults permanentResults;
         [SerializeField] Helper_Simulation simulationHelper;
         SimulationManager simulationManager;
+        float playbackSpeed = 1f;
         SimulationRunResult result;
         SpeciesUpgrade selectedUpgrade;
         SpeciesUpgradeSnapshot selectedUpgradeSnapshot;
@@ -635,6 +636,13 @@ namespace SaltyGame
         public int CarnivoreStartingPopulation => carnivoreStartingPopulation;
         public bool RandomizeSeedOnStart => randomizeSeedOnStart;
         public bool BevExperimentalFeaturesEnabled => bevExperimentalFeaturesEnabled;
+        public float PlaybackSpeed => playbackSpeed;
+        public bool TrySetPlaybackSpeed(float value)
+        {
+            if (value != 0.5f && value != 1f && value != 2f && value != 4f) return false;
+            playbackSpeed = value;
+            return true;
+        }
         public int FoxAttackCooldownTicks => foxAttackCooldownTicks;
         public bool CoupledSpeciesResponsesEnabled => coupledSpeciesResponsesEnabled;
         public IReadOnlyDictionary<SpeciesId, SpeciesRules> ActiveSpeciesRules => rules;
@@ -1025,11 +1033,11 @@ namespace SaltyGame
         {
             if (simulationHelper != null)
             {
-                simulationHelper.Advance(Time.deltaTime);
+                simulationHelper.Advance(Time.deltaTime * playbackSpeed);
             }
             else
             {
-                simulationManager?.Advance(Time.deltaTime);
+                simulationManager?.Advance(Time.deltaTime * playbackSpeed);
             }
         }
 
@@ -2827,10 +2835,15 @@ namespace SaltyGame
         void ResetExpeditionProgression(SpeciesRules playerRules)
         {
             progression = new SpeciesProgression(new SpeciesDefinition(playerSpecies, playerRules),
-                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile);
+                playerSpecies.Value == "hare" ? mutationResearch : null, usesGeneLabResearch: mutationResearchFromProfile,
+                introductoryHareMutations: ShouldUseJourneyPrototype());
             coupledResponseProgression = null;
             appliedRunUpgrades.Clear();
         }
+
+        bool ShouldUseJourneyPrototype() => fieldDataJourneyDefinition == null
+            && journeyPrototypeEnabled && continuousPhasesEnabled && journeyMap != null
+            && journeyMap.AppliesTo(SelectedScenario, playerSpecies);
 
         IReadOnlyList<SpeciesUpgradeSnapshot> GetAppliedRunUpgrades()
         {
@@ -2867,11 +2880,7 @@ namespace SaltyGame
             }
             rules = currentRules;
             var simulationData = activeGenomeSnapshot.ApplyToStartingPopulations(CreateSimulationData());
-            journeyActive = fieldDataJourneyDefinition == null
-                && journeyPrototypeEnabled
-                && continuousPhasesEnabled
-                && journeyMap != null
-                && journeyMap.AppliesTo(SelectedScenario, playerSpecies);
+            journeyActive = ShouldUseJourneyPrototype();
             SnapshotJourneyConditions();
             var phaseCount = fieldDataJourneyDefinition != null
                 ? FieldDataJourneyDefinition.RoundsPerSimulation * fieldDataJourneyDefinition.RouteSimulationCount
@@ -3027,7 +3036,7 @@ namespace SaltyGame
                         continue;
                     }
 
-                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.IsMutationResearched(snapshot.Id))
+                    if (snapshot.PopulationToAdd == 0 && progression != null && !progression.HasMutationAccess(snapshot.Id))
                         continue;
                     authoredOptions.Add(snapshot);
                 }
@@ -3045,7 +3054,7 @@ namespace SaltyGame
             {
                 rewardOptions = LegacyRewardOptions.Where(upgrade =>
                     upgrade.Type == SpeciesUpgradeType.PopulationReinforcement
-                    || progression == null || progression.IsMutationResearched(upgrade.Id)).ToArray();
+                    || progression == null || progression.HasMutationAccess(upgrade.Id)).ToArray();
                 return;
             }
 
@@ -3061,7 +3070,8 @@ namespace SaltyGame
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
                         Run?.Seed ?? seed,
-                        canOffer)
+                        canOffer,
+                        introductoryHareMutations: ShouldUseJourneyPrototype())
                     : SpeciesUpgradeCatalog.CreateExperimentalHerbivoreOffer(
                         lastExperimentalUpgradeId,
                         experimentalOfferRotation,
@@ -3104,7 +3114,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.FasterMovementId:
                     return "Move faster to escape predators and reach fresh food.";
                 case SpeciesUpgradeCatalog.ToughHideId:
-                    return "Gain 2 health. A healthy Hare can survive a basic Fox hit.";
+                    return "Gain 2 health. A healthy Hare can survive a basic Fox hit. Survivors still need food.";
                 case SpeciesUpgradeCatalog.EfficientDigestionId:
                     return "Gain more energy from food.";
                 case SpeciesUpgradeCatalog.SeedDispersalId:
@@ -3112,9 +3122,11 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.CrowdingToleranceId:
                     return "Cut extra crowding cost by 10%.";
                 case SpeciesUpgradeCatalog.ReproductiveDriveId:
-                    return "Make successful reproduction more likely.";
+                    return "Add 10 percentage points to eligible reproduction attempts. More young need more food.";
                 case SpeciesUpgradeCatalog.ThreatExposureId:
-                    return "Evade predator attacks more often.";
+                    return "Avoid some Fox attacks before combat (+8 percentage points per rank). A caught Hare is still vulnerable.";
+                case SpeciesUpgradeCatalog.QuickEscapeId:
+                    return "Move 0.5 faster while Threatened; ordinary movement stays the same.";
                 case SpeciesUpgradeCatalog.LargerMinimumLitterId:
                     return "Raise the smallest litter size for this journey.";
                 case SpeciesUpgradeCatalog.LargerMaximumLitterId:
@@ -3181,7 +3193,7 @@ namespace SaltyGame
                 || progression == null
                 || upgrade == null
                 || upgrade.TargetSpecies != playerSpecies
-                || (upgrade.PopulationToAdd == 0 && !progression.IsMutationResearched(upgrade.Id))
+                || (upgrade.PopulationToAdd == 0 && !progression.HasMutationAccess(upgrade.Id))
                 || (progression.GetUpgradeLevel(upgrade.Id) > 0
                     && (!SpeciesUpgradeCatalog.IsRepeatableRunUpgradeId(upgrade.Id)
                         || upgrade.PopulationToAdd == 0))

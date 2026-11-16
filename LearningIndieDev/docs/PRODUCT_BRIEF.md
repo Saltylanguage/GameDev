@@ -1,34 +1,40 @@
 # Cellular Automata Roguelike — Vertical-Slice Product Brief
 
-> **Canonical journey update — 2026-10-14:** The six-round victory, failure,
-> and immediate currency-award rules below describe the earlier standalone
-> vertical slice. For the Forest Edge journey, Bevin will guide phase-clear
-> gates during playtesting; failure ends the whole journey with no cash-out.
-> Run-earned currency and temporary upgrades are lost; permanent Desktop
-> upgrades and unlocked upgrade or feature availability survive.
-> Field Data carries within the journey, while other currency types can reach
-> the Desktop for Genome upgrades after success. The exact settlement and
-> spending contracts remain to be built. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)
+> **Current M2 reading — 2026-11-14:** The [roadmap's ten-outcome M2 contract](../ROADMAP.md#m2-outcome-contract--consolidated-2026-11-14)
+> and [S6 predator-first journey decision](Sprints/S6-control-record.md#november-9-predator-first-design-decision)
+> govern the current slice. One six-round simulation is a node in the current
+> map journey. The played species carries
+> only its population count into a fresh next node; other species and resources
+> reset to authored counts. Avoidance, survival, and faster reproduction are the
+> three introductory responses to Fox pressure. The six-round node cadence is
+> the accepted M1 baseline; the complete journey and its player acceptance are
+> current M2 work. No balance value or M2 acceptance is implied.
+
+> **Earlier journey decision — 2026-10-14:** The original six-round victory,
+> failure, and immediate currency-award rules described the standalone M1 slice.
+> That meeting established whole-journey failure with no cash-out and permanent
+> unlocks surviving it. The later Field Data and Gene Lab implementations have
+> advanced the settlement and spending contracts; their final balance and M2
+> player acceptance are still open. See the [meeting decisions](Meeting%20Briefs/2026-10-14-Simulation-Focus-and-Journey-Economy-Notes.md#meeting-decisions)
 > and [journey prototype](JOURNEY_PROTOTYPE.md).
 
 ## Promise
 
-**First-test planning update, 2026-10-16:** The
-[Field Data baseline](FIELD_DATA_JOURNEY_DESIGN.md) defines the five-node
-economy test; the [combined planning draft](FIELD_DATA_AND_SIMULATION_ALIGNMENT.md)
-maps it to the simulation/upgrade proposal and identifies the roadmap terminology
-review still needed. Earlier standalone wording below does not imply that the
-new journey economy or permanent reward system is implemented.
+The [Field Data baseline](FIELD_DATA_JOURNEY_DESIGN.md) defined the five-node
+economy test. The current implementation includes journey map, reward, shop,
+settlement, and Gene Lab paths; the [S6 control](Sprints/S6-control-record.md)
+records the current route and unresolved playability decisions.
 
 **Cellular automata as a roguelike:** the player guides one species through a
 short, deterministic ecosystem expedition by choosing temporary **Mutations**,
 then watches those choices reshape survival, movement, feeding, reproduction,
 and competition on the board.
 
-The slice succeeds when a new player can finish an expedition, describe what
-their Mutations changed, and identify the main cause of victory or defeat.
+The slice succeeds when a new player can complete and replay the representative
+journey, describe what their Mutations changed, identify leading causes of
+victory or defeat, and use one earned permanent unlock on the next journey.
 
-The vertical slice proves one local Species Simulation. The larger game lets
+The vertical slice proves a local Species Simulation journey. The larger game lets
 the player permanently unlock species **Genome** options, configure which ones
 are active, and use their interactions in Biome Simulations to establish a
 diverse, resilient ecosystem. Dominating with one species or completing every
@@ -43,87 +49,87 @@ poorly.
 
 ## Player experience and agency
 
-The player selects the curated slice scenario and begins with a fixed player species and base ruleset. During simulation rounds, the player observes the live board, pauses or changes speed, and inspects cells and species. The player does not directly move individual cells or edit raw parameters.
+The player enters the curated Forest Edge/Hare journey through the Desktop
+profile and launch flow. The scenario and species choice may be constrained,
+but the player must understand that choice and the opening Fox pressure. During
+simulation nodes, the player observes the live board, pauses or changes speed,
+and inspects cells and species. The player does not directly move individual
+cells or edit raw parameters.
 
-The primary decisions are Mutation choices. After rounds one through five, the
-player sees three Mutations and chooses one or Skip. Round one starts without a
-Mutation choice; finishing round six leads to results without another choice.
-Each Mutation is presented with a small icon and keyword (for example,
-“hunting +1”), not a full statistic breakdown. Its effect should be predictable
-at a glance and apparent during the following round. A Mutation is temporary
-and lasts only for its current run.
-
-In the active experimental offer, the third choice is always Reinforcements:
-it adds one individual of the selected species to the following round at a
-deterministically selected unoccupied, passable cell. It can be selected again
-at later phase decisions, subject to available space and the population limit.
+The primary decisions are temporary Mutation choices during a simulation node,
+followed by map, reward, and shop decisions between nodes. The introductory
+choices should offer understandable avoidance, survival, and faster-reproduction
+responses to Fox overhunting, subject to fresh-profile availability review.
+Each choice needs a small icon and keyword, a visible effect and tradeoff, and
+an honest explanation in the following phase and result. A Mutation lasts only
+for the current journey.
 
 ## Run and decision cadence
 
-A run contains **six simulation rounds**, each lasting **10 seconds of
-simulation time**—one minute of simulation time in total. No real-time duration
-target is set; actual elapsed time varies with simulation speed and pauses.
+A simulation node contains **six rounds**, each lasting **10 seconds of
+simulation time**. The journey connects multiple nodes and decisions. No
+real-time duration target is set; elapsed time varies with simulation speed,
+pauses, and choices.
 
 The flow is:
 
-1. Scenario briefing and starting ruleset.
-2. Simulate round one for 10 seconds of simulation time, with pause, speed, and
+1. Select the profile and curated route, then read the scenario introduction.
+2. Play six rounds in one continuing simulation node, with pause, speed, and
    inspection controls available.
-3. After rounds one through five, pause and offer three Mutations or Skip.
-   Continue the same ecosystem into the next round.
-4. After round six, show results and currency earned from the performance
-   measure under development. Additional bonus-event rewards are possible but
-   not decided.
+3. At round boundaries, choose a Mutation or Skip; within the node, preserve
+   the evolving ecosystem.
+4. At node end, read the result and choose the next map, reward, or shop action.
+   The next simulation node starts from authored data plus the played species'
+   carried population count.
+5. At journey end, settle any earned permanent reward and return to the Desktop
+   or next-journey flow.
 
 There is no real-time decision timer. Simulation pauses automatically during
-Mutation selection. A player has five Mutation decision points per run, after
-rounds one through five. A possible Skip bonus is undecided and non-blocking;
-if adopted, it uses the same currency as Genome Upgrades. Its amount and limits
-remain open.
+Mutation selection. The accepted M1 node had five Mutation decision points,
+after rounds one through five; the representative M2 journey must make its
+actual decision cadence understandable without relying on that older total.
 
-Each round preserves the board, creature/resource state, age, energy, cooldowns,
-initial seed, absolute tick and accumulated history. A round summary does not
-restart the expedition. Restart is not a player action. End abandons the run
-after the player confirms Yes; ending before completing round six forfeits all
-rewards. Pause is
-available. The controlled prototype keeps the same world through its round
-decisions; telemetry and full product validation remain in the
-[migration plan](CONTINUOUS_SIMULATION_FLOW_PLAN.md).
+Each round within one node preserves the board, creature/resource state, age,
+energy, cooldowns, seed, absolute tick, and history. At the next node, only the
+played species' count carries; its individuals are recreated and other species
+and resources return to authored counts. Restart is not a player action. End
+abandons the journey after confirmation and forfeits unbanked Field Data and
+temporary Mutations. Pause is available.
 
 The round duration is simulation time, not wall-clock time. Do not infer a
 player-facing real-time pacing target from the 10-second simulation duration.
 
 ## Success, failure, and rewards
 
-- **Victory:** the player species is not extinct at the end of round six. This
-  survival rule applies in any biome.
-- **Failed run:** the player species goes extinct. The run ends immediately and
-  awards no rewards.
-- **Player-ended run:** confirming End abandons the run; if used before round
-  six, it awards no rewards.
+- **Journey success:** complete the authored route and settle the permanent
+  reward. Exact phase-clear and route-survival expectations remain under S6 review.
+- **Failed journey:** player-species extinction ends the journey and awards no
+  new permanent cash-out.
+- **Player-ended journey:** confirming End abandons the active route and
+  forfeits unbanked Field Data and temporary Mutations.
 
-The successful-run currency award is based on the performance measure currently
-in development, not simply final population. Possible bonus events may award
-additional currency, but that is not decided. Final results distinguish
-whole-expedition totals from individual rounds.
+The current journey has round payouts, shops, and permanent success settlement.
+Final results must distinguish journey totals from individual nodes and explain
+the leading observed causes and supported Mutation contributions. Final payout
+values and player-facing balance remain open.
 
-The Gene Lab application, opened from the GalapagOS Desktop, uses currency to
-buy permanent **Genome Upgrades** that fill a species' **Genome** skill tree.
-The exact performance-to-currency calculation is linked to the measure now in
-development. Additional bonus-event rewards remain optional.
+The Gene Lab application on the GalapagOS Desktop uses permanent currency to
+research **Genome Upgrades** for a species' **Genome** skill tree. M2 needs one
+earned unlock to persist through a real application relaunch and apply on the
+next journey. Owning, equipping, and journey eligibility must remain distinct.
 
 ## Persistence and replay
 
 The slice saves settings, completed accomplishments, and versioned
-meta-progression. A completed expedition records its seed, scenario ID, base
-ruleset fingerprint, round boundaries, ordered Mutations with acquisition
-ticks and resolved values, and final result for reproduction and comparison.
+meta-progression. Reproducible evidence records the route identity, seed,
+starting rules and Genome state, ordered actions, and result; S6 owns the
+comparison and review contract.
 
-An active expedition is **not saved to disk or restored after application exit**
-in the initial slice. In-memory continuation across decision breaks is required.
-Research checkpoints are a separate reproduction contract. Starting a new run
-is a separate action after results. Final results return the player to a next-expedition screen where the
-earned unlock is visible and usable when applicable.
+An active journey is **not saved to disk or restored after application exit**
+in the initial slice. In-memory continuation across decisions is required.
+Research checkpoints are a separate reproduction contract. After results, the
+player can return to the Desktop and start the next journey; an earned unlock
+must be visible and usable when applicable.
 
 ## Launch target
 
@@ -140,13 +146,15 @@ The presentation target is readable at 1920×1080 and remains functional at 1280
   leaderboards, or live services.
 - Steam Deck verification, console/mobile ports, or platform achievements.
 - Large-scale procedural worlds, cave production, colony construction, ant tunnels, or beaver dams.
-- Final-volume art, music, sound effects, localization, or accessibility coverage before the slice direction is validated.
+- Final-volume art/audio, localization, and broad accessibility coverage beyond
+  the M2 baseline. M2 still needs an initial audio language, readable art,
+  visible focus, text/contrast, mute, and essential reduced-motion feedback.
 
 ## Evaluation rule
 
-New work belongs in the vertical slice only if it improves the Mutation
-decision, makes its simulation consequence easier to understand, enables the
-complete expedition-to-reward-to-next-expedition flow, or provides evidence
-needed to validate those outcomes. Everything else is deferred until the slice
-passes external comprehension and replay-intent testing.
+New work belongs in M2 when it closes one of the roadmap's ten outcomes on the
+representative player route or produces evidence needed to validate it. S6
+concentrates on the journey's legitimate outcomes, three responses, causal
+feedback, and player review. S7 is reforecast from that evidence and integrates
+the menu-to-next-journey route for external comprehension and replay testing.
 

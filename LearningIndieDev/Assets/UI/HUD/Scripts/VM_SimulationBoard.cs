@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
 namespace SaltyGame
@@ -11,6 +12,7 @@ namespace SaltyGame
     public sealed class VM_SimulationBoard : MonoBehaviour, INotifyPropertyChanged
     {
         static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
+        const int MaxBirthBoardCues = 8;
 
         SpeciesSimulationPreview preview;
         SimulationRunState lastRun;
@@ -45,6 +47,22 @@ namespace SaltyGame
         public SimulationCellSnapshot SelectedCell => HasSelection
             ? snapshot.GetCell(selectedX, selectedY)
             : default;
+        public string InspectionText
+        {
+            get
+            {
+                if (!HasSelection) return "Click a cell, or Tab to the board and use arrow keys to inspect it.";
+                var cell = SelectedCell;
+                var location = $"CELL {selectedX + 1}, {selectedY + 1}";
+                if (cell.IsCreature)
+                    return $"{location}  {cell.SpeciesId.Value.ToUpperInvariant()}\nHealth {cell.Health}  Energy {cell.Energy}\n{cell.BehaviorState}";
+                if (cell.IsMeatResource)
+                    return $"{location}  CARCASS\nFood {cell.FoodReserve.ToString("0.#", CultureInfo.InvariantCulture)}";
+                if (cell.IsPlantResource || cell.IsTerrainResource)
+                    return $"{location}  FOOD\nAvailable {(cell.IsTerrainResource ? cell.TerrainEnergy : cell.FoodReserve).ToString("0.#", CultureInfo.InvariantCulture)}";
+                return $"{location}  {(cell.TerrainId.IsValid ? cell.TerrainId.Value.ToUpperInvariant() : "GROUND")}\nNo creature or food here.";
+            }
+        }
 
         public void Initialize(SpeciesSimulationPreview simulationPreview)
         {
@@ -70,6 +88,7 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedY)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
             return true;
         }
 
@@ -86,6 +105,7 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedY)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
         }
 
         void Update()
@@ -107,8 +127,9 @@ namespace SaltyGame
                 return;
             }
 
-            if (!ReferenceEquals(lastRun, run))
+            if (!ReferenceEquals(lastRun, run) || tick < lastTick)
             {
+                ClearSelection();
                 FoxHuntCueTick = -1;
                 MatingCueTick = -1;
                 recentBirths = Array.Empty<SpeciesBirthEvent>();
@@ -126,24 +147,21 @@ namespace SaltyGame
                         break;
                     }
 
-                    MatingCueX = birth.ParentX;
-                    MatingCueY = birth.ParentY;
-                    MatingCueMateX = birth.MateX;
-                    MatingCueMateY = birth.MateY;
-                    MatingCueOffspringX = birth.ChildX;
-                    MatingCueOffspringY = birth.ChildY;
-                    MatingCueTick = birth.Tick;
                     var first = index;
                     while (first > 0 && births[first - 1].Tick == birth.Tick)
                     {
                         first--;
                     }
 
-                    recentBirths = new SpeciesBirthEvent[index - first + 1];
-                    for (var child = first; child <= index; child++)
-                    {
-                        recentBirths[child - first] = births[child];
-                    }
+                    recentBirths = SelectBirthCues(births, first, index, preview.PlayerSpecies);
+                    var featured = recentBirths[0];
+                    MatingCueX = featured.ParentX;
+                    MatingCueY = featured.ParentY;
+                    MatingCueMateX = featured.MateX;
+                    MatingCueMateY = featured.MateY;
+                    MatingCueOffspringX = featured.ChildX;
+                    MatingCueOffspringY = featured.ChildY;
+                    MatingCueTick = featured.Tick;
                     break;
                 }
 
@@ -164,27 +182,11 @@ namespace SaltyGame
                         continue;
                     }
 
-                    var found = false;
-                    for (var y = 0; y < run.Cells.Height && !found; y++)
+                    if (IsCurrentHuntingFox(run.Cells, transition))
                     {
-                        for (var x = 0; x < run.Cells.Width; x++)
-                        {
-                            var cell = run.Cells.GetCell(x, y);
-                            if (cell.IsCreature
-                                && cell.SpeciesId == FoxSpeciesId
-                                && cell.EntityId == transition.EntityId)
-                            {
-                                FoxHuntCueX = x;
-                                FoxHuntCueY = y;
-                                FoxHuntCueTick = transition.Tick;
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (found)
-                    {
+                        FoxHuntCueX = transition.X;
+                        FoxHuntCueY = transition.Y;
+                        FoxHuntCueTick = transition.Tick;
                         break;
                     }
                 }
@@ -201,6 +203,42 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Snapshot)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(HasSelection)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(SelectedCell)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(InspectionText)));
+        }
+
+        static SpeciesBirthEvent[] SelectBirthCues(
+            IReadOnlyList<SpeciesBirthEvent> births, int first, int last, SpeciesId playerSpecies)
+        {
+            var cues = new SpeciesBirthEvent[Math.Min(MaxBirthBoardCues, last - first + 1)];
+            var count = 0;
+            for (var index = last; index >= first && count < cues.Length; index--)
+            {
+                if (births[index].Species == playerSpecies)
+                {
+                    cues[count++] = births[index];
+                }
+            }
+            for (var index = last; index >= first && count < cues.Length; index--)
+            {
+                if (births[index].Species != playerSpecies)
+                {
+                    cues[count++] = births[index];
+                }
+            }
+            return cues;
+        }
+
+        static bool IsCurrentHuntingFox(Grid<SpeciesCell> cells, SpeciesBehaviorTransition transition)
+        {
+            if (!cells.IsInBounds(transition.X, transition.Y))
+            {
+                return false;
+            }
+            var cell = cells.GetCell(transition.X, transition.Y);
+            return cell.IsCreature
+                && cell.SpeciesId == FoxSpeciesId
+                && cell.EntityId == transition.EntityId
+                && cell.BehaviorState == SpeciesBehaviorState.Hunting;
         }
 
         void UpdateHuntFootprints(SimulationRunState run, int tick)

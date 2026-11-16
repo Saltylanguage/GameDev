@@ -86,12 +86,58 @@ namespace SaltyGame.Tests
             var fieldData = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(hare, null);
             var phaseOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
                 SpeciesUpgradeCatalog.QuickEscapeId, rotation: 0, seed: 42);
+            var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+                new ProfileSessionSnapshot(true, "escape", "Escape", new[]
+                {
+                    new SpeciesGenomeProfile(hare, new[] { "hare.escape-instinct" }, Array.Empty<string>())
+                }), hare);
 
             Assert.That(fieldData.Any(value => value.Id == SpeciesUpgradeCatalog.QuickEscapeId), Is.True);
             Assert.That(phaseOffer.Any(value => value.Id == SpeciesUpgradeCatalog.QuickEscapeId), Is.True);
+            Assert.That(research(SpeciesUpgradeCatalog.QuickEscapeId), Is.True);
             Assert.That(
                 SpeciesUpgradeCatalog.GetFieldDataRewardMaxLevel(hare, SpeciesUpgradeCatalog.QuickEscapeId),
                 Is.EqualTo(SpeciesUpgradeCatalog.QuickEscapeMaxLevel));
+        }
+
+        [TestCase(SpeciesUpgradeCatalog.ThreatExposureId, "hare.escape-instinct")]
+        [TestCase(SpeciesUpgradeCatalog.ToughHideId, "hare.guarded-burrow")]
+        [TestCase(SpeciesUpgradeCatalog.ReproductiveDriveId, "hare.reproductive-drive")]
+        public void ForestEdgeStarterMutationCanStackWithoutResearch(string id, string researchNode)
+        {
+            var hare = new SpeciesId("hare");
+            var research = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+                new ProfileSessionSnapshot(true, "fresh", "Fresh"), hare);
+            var definition = new SpeciesDefinition(hare, SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]);
+            var starter = new SpeciesProgression(definition, research, introductoryHareMutations: true);
+            var upgrade = SpeciesUpgradeCatalog.Create(id);
+
+            Assert.That(research(id), Is.False);
+            Assert.That(starter.HasMutationAccess(id), Is.True);
+            Assert.That(starter.TryApplyFreeUpgrade(upgrade), Is.True);
+            Assert.That(starter.GetUpgradeLevel(id), Is.EqualTo(1));
+            Assert.That(starter.HasMutationAccess(id), Is.True);
+            Assert.That(starter.TryApplyFreeUpgrade(upgrade), Is.True);
+            Assert.That(starter.GetUpgradeLevel(id), Is.EqualTo(2));
+            var nextOffer = SpeciesUpgradeCatalog.CreateExperimentalHerbivoreMutationOffer(
+                id, rotation: 1, seed: 42, canOffer: starter.CanApplyFreeUpgrade);
+            Assert.That(nextOffer.Select(option => option.Id), Is.EquivalentTo(new[]
+            {
+                SpeciesUpgradeCatalog.ThreatExposureId,
+                SpeciesUpgradeCatalog.ToughHideId,
+                SpeciesUpgradeCatalog.ReproductiveDriveId,
+            }));
+            Assert.That(new SpeciesProgression(definition, research).HasMutationAccess(id), Is.False);
+
+            var ownedResearch = FieldDataPermanentProgressionDefinition.CaptureMutationResearch(
+                new ProfileSessionSnapshot(true, "owned", "Owned", new[]
+                {
+                    new SpeciesGenomeProfile(hare, new[] { researchNode }, Array.Empty<string>())
+                }), hare);
+            var researched = new SpeciesProgression(definition, ownedResearch, introductoryHareMutations: true);
+            Assert.That(researched.TryApplyFreeUpgrade(upgrade), Is.True);
+            Assert.That(researched.TryApplyFreeUpgrade(upgrade), Is.True);
+            Assert.That(researched.GetUpgradeLevel(id), Is.EqualTo(2));
         }
 
         [Test]

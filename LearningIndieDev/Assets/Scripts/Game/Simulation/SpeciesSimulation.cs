@@ -878,6 +878,15 @@ namespace SaltyGame
                                 targetX,
                                 targetY))
                         {
+                            if (metrics != null && target.SpeciesId == metrics.MutationSpecies
+                                && metrics.MutationAvoidanceBonus > 0f
+                                && next.TryGetCell(targetX, targetY, out var stillPresent)
+                                && stillPresent.IsCreature && stillPresent.SpeciesId == target.SpeciesId
+                                && !ShouldAvoidPreContact(
+                                    Math.Max(0f, experimentalOptions.PreContactAvoidanceChance
+                                        - metrics.MutationAvoidanceBonus),
+                                    seed, x, y, targetX, targetY))
+                                metrics.RecordMutationAvoidedContact();
                             // Bev experimental pre-contact avoidance removes the interaction
                             // before ECN/PREY accounting and combat resolution.
                             continue;
@@ -991,6 +1000,13 @@ namespace SaltyGame
                                 damageDealt: Math.Min(damage, currentTarget.Health));
                             if (remainingHealth > 0)
                             {
+                                if (metrics != null && attackerRules.Role == SpeciesRole.Carnivore
+                                    && currentTarget.SpeciesId == metrics.MutationSpecies
+                                    && metrics.MutationHealthBonus > 0f
+                                    && targetRules != null
+                                    && currentTarget.Health == targetRules.MaximumHealth
+                                    && currentTarget.Health - metrics.MutationHealthBonus - damage <= 0f)
+                                    metrics.RecordMutationDecisiveFullHealthHit();
                                 next.SetCell(targetX, targetY, currentTarget.WithEntity(
                                     currentTarget.SpeciesId,
                                     remainingHealth,
@@ -3256,7 +3272,8 @@ namespace SaltyGame
 
                     var reproductionPattern = source.GetPattern(speciesRules.ReproductionPattern);
                     var startOffset = reproductionPattern.Count == 0 ? 0 : random.Next(reproductionPattern.Count);
-                    var chanceRollSucceeded = random.NextDouble() <= speciesRules.ReproductionChance;
+                    var chanceRoll = random.NextDouble();
+                    var chanceRollSucceeded = chanceRoll <= speciesRules.ReproductionChance;
                     var growthIntervalTicks = usesTimedPlantGrowth
                         ? GetGrowthIntervalTicks(plantGrowthIntervalSeconds, stepIntervalSeconds)
                         : 0;
@@ -3266,6 +3283,12 @@ namespace SaltyGame
                     {
                         continue;
                     }
+
+                    if (metrics != null && parent.SpeciesId == metrics.MutationSpecies
+                        && metrics.MutationReproductionBonus > 0f && chanceRollSucceeded
+                        && chanceRoll > Math.Max(0f, speciesRules.ReproductionChance
+                            - metrics.MutationReproductionBonus))
+                        metrics.RecordMutationChangedReproductionRoll();
 
                     var reproductionSucceeded = usesTimedPlantGrowth || chanceRollSucceeded;
                     ApplyReproductionCooldown(

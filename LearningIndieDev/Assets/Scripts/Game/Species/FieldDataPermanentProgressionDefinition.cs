@@ -73,6 +73,7 @@ namespace SaltyGame
                     case SpeciesUpgradeCatalog.ReproductiveDriveId: research = new[] { "hare.reproductive-drive", "reproductive-drive" }; break;
                     case SpeciesUpgradeCatalog.LargerMinimumLitterId: research = new[] { "hare.increased-minimum-litter", "increased-minimum-litter" }; break;
                     case SpeciesUpgradeCatalog.LargerMaximumLitterId: research = new[] { "hare.larger-litters", "poc.hare.larger-litters" }; break;
+                    case SpeciesUpgradeCatalog.QuickEscapeId:
                     case SpeciesUpgradeCatalog.ThreatExposureId:
                     case SpeciesUpgradeCatalog.LegacyThreatResponseId: research = new[] { "hare.escape-instinct", "escape-instinct" }; break;
                     default: return false;
@@ -100,7 +101,7 @@ namespace SaltyGame
             var hare = new SpeciesId("hare");
             var nodes = new[]
             {
-                Node("hare.guarded-burrow", "Tough Hide", "Unlocks Tough Hide as a journey Mutation."),
+                Node("hare.guarded-burrow", "Tough Hide", "Unlocks Tough Hide outside Forest Edge and in Field Data. Forest Edge offers it without research."),
                 Node("hare.keen-hearing", "Heightened Senses", "Unlocks Long Vision and Keen Senses journey Mutations.",
                     "hare.guarded-burrow"),
                 Node("hare.swift-digging", "Long Stride", "Unlocks Faster Movement as a journey Mutation.",
@@ -116,8 +117,8 @@ namespace SaltyGame
                     modifiers: new[] { new SpeciesUpgradeModifier(SpeciesAttributeIds.StartingPopulation, 5) }),
                 Node("hare.seed-dispersal", "Seed Dispersal", "Unlocks Seed Dispersal as a journey Mutation. Research cost and path are test values."),
                 Node("hare.crowding-tolerance", "Crowding Tolerance", "Unlocks Crowding Tolerance as a journey Mutation. Research cost and path are test values."),
-                Node("hare.reproductive-drive", "Reproductive Drive", "Unlocks Reproductive Drive as a journey Mutation. Not offered at 100% reproduction chance. Cost and path are test values."),
-                Node("hare.escape-instinct", "Escape Instinct", "Unlocks Escape Instinct as a journey Mutation. Research cost and path are test values."),
+                Node("hare.reproductive-drive", "Reproductive Drive", "Unlocks Reproductive Drive outside Forest Edge and in Field Data. Forest Edge offers it without research. Not offered at 100% reproduction chance. Cost and path are test values."),
+                Node("hare.escape-instinct", "Escape Instinct", "Unlocks Escape Instinct outside Forest Edge, Quick Escape, and Field Data offers. Forest Edge offers Escape Instinct without research. Research cost and path are test values."),
                 Node("hare.increased-minimum-litter", "Increased Minimum Litter", "Unlocks Increased Minimum Litter as a journey Mutation. Research cost and path are test values."),
                 Node("hare.larger-litters", "Larger Litters", "Unlocks Larger Litters as a journey Mutation. Research cost and path are test values."),
                 Node(BurrowingNodeId, "Burrowing", "Unlocks Burrowing as a journey Mutation. Research cost and path are test values."),

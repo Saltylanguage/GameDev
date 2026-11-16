@@ -3,6 +3,64 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Hare route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
+
+**November 15 evening M2 implementation readiness:** Direct Mutation-effect counters now export at run and phase level in CellSim schema 42 and PlayMode logger schema 13; the existing Chrono `reward_v1.png` is wired as the provisional journey reward icon. Stale fixtures behind the earlier eight EditMode failures were repaired. The clean EditMode suite passed 778 with zero failures and one skip, and the journey map visual test passed at 1280×720 and 1920×1080. The authored Hare route remains a real M2-03 blocker, missing Chrono originals remain an M2-05 gap, and Josh's M2-04 factual-report decision remains `Needs Review`. No balance values changed. See the [evening readiness handoff](handoffs/2026-11-15-1907-codex-m2-implementation-readiness.md).
+
+**November 15 M2 prevalidation implementation:** Local code now covers the
+remaining M2-01, M2-06, M2-08 contribution, and M2-10 gaps alongside the
+earlier M2-02/04/07 work. The existing Forest Edge route, art direction, and
+versioned progression were prepared for validation. The [November 15 M2
+validation batch](handoffs/2026-11-15-0940-codex-m2-validation-batch.md)
+now records Unity and visual evidence for all ten rows. The [approved M2-04
+comparison](Research/Experiments/M2-04-Three-Response-20261115/REPORT.md)
+completed 48 matched seed runs: control and all three one-rank responses lost
+every Hare before node two. Its headless report lacks direct Mutation-effect
+counters. M2 acceptance remains open: the authored route also fails in two
+visual/PlayMode seeds, real process relaunch and player checks are pending, and
+the questionnaire has no answers yet. Missing Chrono source originals remain
+an art gap. The earlier [implementation handoff](handoffs/2026-11-15-0152-codex-m2-prevalidation-implementation.md)
+retains the code scope.
+
+**November 15 M2-04 Hare responses, local implementation:** The Forest Edge
+opening offers avoidance, survival, and faster reproduction. Fresh profiles can
+stack those temporary Mutations through their existing caps on the introductory
+route; research still governs other routes and Field Data. Focused mechanics and
+offer tests now pass. Matched seeds and player review must establish visible
+effects, tradeoffs, and viable paths before acceptance. See the
+[M2-04 handoff](handoffs/2026-11-14-1204-codex-m2-04-hare-response-implementation.md).
+
+**November 15 M2-02 live-run UI, local implementation:** A board click now
+selects a cell for a live ledger readout, the Hare objective and next action are
+stated, and the four speed controls change cadence. Unity, XML, and two-resolution
+visual checks passed; hands-on pointer/zoom behavior and player comprehension
+remain open. See the
+[M2-02 handoff](handoffs/2026-11-15-0120-codex-m2-02-live-run-ui-implementation.md).
+
+**November 15 M2-08 results first and second slices:** Canonical Field Data and
+prototype results show expedition-wide, phase-backed Hare births/deaths,
+predator pressure, and a leading recorded loss. A later local pass added
+closed-phase counters for three directly resolved introductory Mutation
+effects; other upgrades remain unisolated. Unity tests and result captures pass;
+player causal understanding remains open. See the [first-slice handoff](handoffs/2026-11-15-0112-codex-m2-08-results-first-slice.md)
+and [prevalidation handoff](handoffs/2026-11-15-0152-codex-m2-prevalidation-implementation.md).
+
+**November 14 M2-07 local feedback implementation:** The board now caps birth
+flourishes, checks tracked Fox cue positions against the rendered grid, and both
+Noesis hosts use one completed-tick reaction path for grouped births, recorded
+Hare losses, and a zero-Hare warning. The focused PlayMode test and cue captures
+pass; crowded 1×/4× player review remains open. See the [M2-07 handoff](handoffs/2026-11-14-2041-codex-m2-07-feedback-implementation.md).
+
+**November 14 M2 vision consolidation:** Josh confirmed that every official M2
+entry must reach completion, while new discoveries and design decisions must
+not be overwritten to manufacture milestone progress. The [roadmap v2.6](../ROADMAP.md#m2-outcome-contract--consolidated-2026-11-14)
+now holds all ten outcomes and their acceptance boundaries. [S6](Sprints/S6-control-record.md#m2-alignment--november-14-vision-consolidation)
+proves the predator-first Hare journey and three Mutation responses; S7 remains
+the unscheduled full integration and external-player gate. This documentation
+update does not start S6, close S5/M2, select balance values, or alter gameplay.
+
+**November 13 Chrono art integration, local and in progress:** The verified `simulation.png` original is imported and wired to journey map simulation nodes; `reward_v1.png` was imported as a source variant and provisionally wired on November 15 as noted above. A focused Unity visual test passed 1/1 and captured the rendered simulation icon. The remaining UI, animal, and latest Hero originals are still unavailable locally after repeated Trello browser download stalls. Grass and desert terrain were explicitly deferred. See the [art handoff](handoffs/2026-11-13-1850-codex-chrono-art-integration.md) for the exact file list, evidence, and next step.
+
 **November 13 Fox carcass-value validation:** The GUID conflict is resolved to the branch's canonical `Genome.meta` GUID `c576ac05bbb49f7488aa54f8ac574eaa`. Focused `SpeciesDomainTests` passed 160/160; the full Unity Clean run completed but retained 12 failed tests (EditMode 8, PlayMode 4). The approved carcass-value experiment completed its five-arm 20-seed panel plus the contract-triggered expansion of all three 2:1 scale arms to 100 seeds each: 340 accepted runs total. At the same 2:1 ratio, the chance a seed records at least one Fox starvation death was 47%, 82%, and 100% for 2/1, 4/2, and 6/3; all Hares went extinct in those arms. This is evidence against treating 96 Hare energy / 48 Fox maintenance as a stable ecology ratio. No production balance value changed. See the [factual report](Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md), [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md), [contract](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md), and [handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md).
 
 **November 12 blocked Unity attempt (superseded November 13):** The first focused attempt found a missing fixture argument, which was fixed. The corrected launch was stopped by the Clean wrapper while the Unity project lock was unreachable. Headless Clean validation later ran on November 13; the earlier blocked-run details remain in the [carcass handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md#unity-verification-november-12).

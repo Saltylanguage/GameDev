@@ -7,6 +7,10 @@
                  UriSource="GalapagOS/Art/Journey/WoodlandSummerTrails.png" />
     <BitmapImage x:Key="GalapagOS.Image.Journey.Panorama"
                  UriSource="GalapagOS/Art/Journey/JourneyPanoramaPlaceholder.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Journey.Node.Simulation"
+                 UriSource="GalapagOS/Art/Icons/simulation.png" />
+    <BitmapImage x:Key="GalapagOS.Image.Journey.Node.Reward"
+                 UriSource="GalapagOS/Art/Icons/reward_v1.png" />
     <BitmapImage x:Key="GalapagOS.Image.Background.WoodlandSummer"
                  UriSource="GalapagOS/Art/Journey/WoodlandSummer.png" />
 

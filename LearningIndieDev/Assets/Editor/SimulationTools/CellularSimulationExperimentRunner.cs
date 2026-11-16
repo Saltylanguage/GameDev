@@ -20,7 +20,7 @@ namespace SaltyGame.EditorTools
     /// </summary>
     public static partial class CellularSimulationExperimentRunner
     {
-        const int ReportSchemaVersion = 41;
+        const int ReportSchemaVersion = 42;
 
         [Serializable]
         public sealed class PopulationInterventionRecord
@@ -1261,6 +1261,7 @@ namespace SaltyGame.EditorTools
                 currencyEarned = result.CurrencyEarned,
                 upgradeLoadout = SimulationReportSerialization.CreateUpgradeLoadout(result.UpgradeLoadout),
                 populationHistory = SimulationReportSerialization.CreatePopulationHistory(run.PopulationHistory, species),
+                mutationEffects = SimulationReportSerialization.CreateMutationEffects(run.Metrics),
                 activity = SimulationReportSerialization.CreateActivity(run.Metrics, species),
                 behavior = SimulationReportSerialization.CreateBehavior(run.Metrics, species),
                 behaviorTransitions = SimulationReportSerialization.CreateBehaviorTransitions(run.Metrics),
@@ -3062,6 +3063,7 @@ namespace SaltyGame.EditorTools
             public int currencyEarned;
             public SimulationUpgradeRecord[] upgradeLoadout;
             public SimulationPopulationSnapshotRecord[] populationHistory;
+            public SimulationMutationEffectsRecord mutationEffects;
             public SimulationSpeciesActivityRecord[] activity;
             public SimulationSpeciesBehaviorRecord[] behavior;
             public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;

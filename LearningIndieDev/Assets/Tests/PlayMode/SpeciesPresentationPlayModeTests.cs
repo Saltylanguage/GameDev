@@ -17,6 +17,190 @@ namespace SaltyGame.PlayModeTests
     {
         ProfilePlayerPrefsBackup journeyProfileSave;
 
+        [Test]
+        public void QuickEscapeHasAPlayerFacingMutationDescription()
+        {
+            var describe = typeof(SpeciesSimulationPreview).GetMethod(
+                "GetHerbivoreMutationDescription", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.That(describe, Is.Not.Null);
+            Assert.That(describe.Invoke(null, new object[] { SpeciesUpgradeCatalog.QuickEscapeId }),
+                Is.EqualTo("Move 0.5 faster while Threatened; ordinary movement stays the same."));
+        }
+
+        [Test]
+        public void JourneyOutcomeAggregatesPhaseEvidenceAndLeadingCause()
+        {
+            var shellType = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("SaltyGame.VM_SimulationShell"))
+                .FirstOrDefault(type => type != null);
+            Assert.That(shellType, Is.Not.Null);
+            var summarize = shellType.GetMethod("BuildObservedOutcomeSummary",
+                BindingFlags.Static | BindingFlags.NonPublic);
+            Assert.That(summarize, Is.Not.Null);
+            var metrics = new SpeciesSimulationMetrics();
+            var hare = new SpeciesId("hare");
+            var record = typeof(SpeciesSimulationMetrics).GetMethod("Record",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var recordArgs = record.GetParameters().Select(parameter => parameter.DefaultValue).ToArray();
+            recordArgs[0] = hare;
+            recordArgs[1] = 3;
+            record.Invoke(metrics, recordArgs);
+            var recordDeath = typeof(SpeciesSimulationMetrics).GetMethod("RecordDeath",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+            var hareCell = new SpeciesCell(hare);
+            recordDeath.Invoke(metrics, new object[] { hareCell, 0, 0, SpeciesDeathCause.Combat, 0, false });
+            recordDeath.Invoke(metrics, new object[] { hareCell, 0, 0, SpeciesDeathCause.Combat, 0, false });
+            recordDeath.Invoke(metrics, new object[] { hareCell, 0, 0, SpeciesDeathCause.Starvation, 0, false });
+            typeof(SpeciesSimulationMetrics).GetMethod("RecordHerbivoreEncounter",
+                BindingFlags.Instance | BindingFlags.NonPublic).Invoke(metrics, new object[] { hare });
+            typeof(SpeciesSimulationMetrics).GetMethod("RecordHerbivorePreyed",
+                BindingFlags.Instance | BindingFlags.NonPublic).Invoke(metrics, new object[] { hare });
+
+            var windows = new ISpeciesSimulationMetricsView[] { metrics };
+            var summary = (string)summarize.Invoke(null, new object[] { windows, hare });
+            Assert.That(summary, Does.Contain("HARE births: 3; deaths: 3. Predator encounters: 1; kills: 1."));
+            Assert.That(summary, Does.Contain("Losses: 2 combat, 1 starvation, 0 other. Leading loss: combat."));
+
+            var nextPhase = new SpeciesSimulationMetrics();
+            recordDeath.Invoke(nextPhase, new object[] { hareCell, 0, 0, SpeciesDeathCause.Starvation, 0, false });
+            windows = new ISpeciesSimulationMetricsView[] { metrics, nextPhase };
+            summary = (string)summarize.Invoke(null, new object[] { windows, hare });
+            Assert.That(summary, Does.Contain("HARE births: 3; deaths: 4."));
+            Assert.That(summary, Does.Contain("Leading loss: mixed causes."));
+
+            recordArgs[1] = 0;
+            recordArgs[16] = 1;
+            record.Invoke(nextPhase, recordArgs);
+            summary = (string)summarize.Invoke(null, new object[] { windows, hare });
+            Assert.That(summary, Does.Contain("Cause detail unavailable."));
+            Assert.That(summary, Does.Not.Contain("Leading loss:"));
+        }
+
+        [Test]
+        public void RunFeedbackGroupsSkippedTicksAndPrioritizesRecordedHareLosses()
+        {
+            var owner = new GameObject("Run feedback test");
+            try
+            {
+                var viewModelType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(assembly => assembly.GetType("SaltyGame.VM_SimulationShell"))
+                    .FirstOrDefault(type => type != null);
+                Assert.That(viewModelType, Is.Not.Null);
+                var viewModel = owner.AddComponent(viewModelType);
+                var hare = new SpeciesId("hare");
+                var fox = new SpeciesId("fox");
+                var run = new SimulationRunState(new Grid<SpeciesCell>(2, 2), hare, 17, 1f);
+                typeof(SimulationRunState).GetProperty("Tick")?.GetSetMethod(true)?.Invoke(run, new object[] { 3 });
+                var births = (List<SpeciesBirthEvent>)typeof(SpeciesSimulationMetrics)
+                    .GetField("birthEvents", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(run.Metrics);
+                var deaths = (List<SpeciesDeathEvent>)typeof(SpeciesSimulationMetrics)
+                    .GetField("deathEvents", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(run.Metrics);
+                var birthConstructor = typeof(SpeciesBirthEvent).GetConstructors(
+                    BindingFlags.Instance | BindingFlags.NonPublic).Single();
+                var deathConstructor = typeof(SpeciesDeathEvent).GetConstructors(
+                    BindingFlags.Instance | BindingFlags.NonPublic).Single();
+                births.Add((SpeciesBirthEvent)birthConstructor.Invoke(new object[]
+                    { hare, 1L, 0, 0, 0, 1, 2L, 1, 0, 1 }));
+                births.Add((SpeciesBirthEvent)birthConstructor.Invoke(new object[]
+                    { fox, 3L, 0, 0, 0, 1, 4L, 1, 0, 2 }));
+                births.Add((SpeciesBirthEvent)birthConstructor.Invoke(new object[]
+                    { hare, 5L, 0, 0, 0, 1, 6L, 1, 0, 3 }));
+                deaths.Add((SpeciesDeathEvent)deathConstructor.Invoke(new object[]
+                    { hare, 7L, 2, 0, 0, 2, SpeciesDeathCause.Combat, true }));
+                deaths.Add((SpeciesDeathEvent)deathConstructor.Invoke(new object[]
+                    { hare, 8L, 2, 0, 0, 3, SpeciesDeathCause.Starvation, true }));
+
+                var present = viewModelType.GetMethod(
+                    "PresentRunActivity", BindingFlags.Instance | BindingFlags.NonPublic);
+                var reset = viewModelType.GetMethod(
+                    "ResetRunActivity", BindingFlags.Instance | BindingFlags.NonPublic);
+                Assert.That(present, Is.Not.Null);
+                Assert.That(reset, Is.Not.Null);
+                Assert.That(present.Invoke(viewModel, new object[] { run, 0, true }), Is.False);
+                Assert.That(viewModelType.GetProperty("EventReactionTitleText")?.GetValue(viewModel), Is.EqualTo("HARES LOST"));
+                Assert.That(viewModelType.GetProperty("EventReactionMessageText")?.GetValue(viewModel),
+                    Is.EqualTo("Recent Hare losses: 1 in combat, 1 starved, 0 other. Also 2 Hare and 1 Fox births."));
+                viewModelType.GetField("eventReactionRemainingSeconds",
+                    BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(viewModel, 1f);
+                viewModelType.GetMethod("PresentBirthReaction",
+                    BindingFlags.Instance | BindingFlags.NonPublic)?.Invoke(viewModel, new object[] { 1, false });
+                Assert.That(viewModelType.GetProperty("EventReactionTitleText")?.GetValue(viewModel),
+                    Is.EqualTo("HARES LOST"), "A routine birth must not replace a live loss warning.");
+                Assert.That(present.Invoke(viewModel, new object[] { run, 3, false }), Is.False);
+                reset.Invoke(viewModel, null);
+                Assert.That(viewModelType.GetProperty("EventReactionVisibility")?.GetValue(viewModel)?.ToString(),
+                    Is.EqualTo("Collapsed"));
+                var history = (List<SpeciesPopulationSnapshot>)typeof(SimulationRunState)
+                    .GetField("populationHistory", BindingFlags.Instance | BindingFlags.NonPublic)
+                    .GetValue(run);
+                history.Add(new SpeciesPopulationSnapshot(3, new Dictionary<SpeciesId, int>(), 4));
+                Assert.That(present.Invoke(viewModel, new object[] { run, 2, false }), Is.False);
+                Assert.That(viewModelType.GetProperty("EventReactionTitleText")?.GetValue(viewModel),
+                    Is.EqualTo("HARES GONE"));
+                Assert.That(viewModelType.GetProperty("EventReactionMessageText")?.GetValue(viewModel),
+                    Is.EqualTo("Recent Hare losses: 0 in combat, 1 starved, 0 other. Also 1 Hare and 0 Fox births."));
+
+                reset.Invoke(viewModel, null);
+                deaths.Clear();
+                Assert.That(present.Invoke(viewModel, new object[] { run, 0, false }), Is.True);
+                Assert.That(viewModelType.GetProperty("EventReactionTitleText")?.GetValue(viewModel),
+                    Is.EqualTo("NEW ARRIVALS"));
+                Assert.That(viewModelType.GetProperty("EventReactionMessageText")?.GetValue(viewModel),
+                    Is.EqualTo("Recent births: 2 Hare and 1 Fox."));
+                births.Add((SpeciesBirthEvent)birthConstructor.Invoke(new object[]
+                    { hare, 9L, 0, 0, 0, 1, 10L, 1, 0, 4 }));
+                typeof(SimulationRunState).GetProperty("Tick")?.GetSetMethod(true)?.Invoke(run, new object[] { 4 });
+                Assert.That(present.Invoke(viewModel, new object[] { run, 3, false }), Is.False);
+                viewModelType.GetField("eventReactionRemainingSeconds",
+                    BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(viewModel, 1f);
+                typeof(SimulationRunState).GetProperty("Tick")?.GetSetMethod(true)?.Invoke(run, new object[] { 5 });
+                Assert.That(present.Invoke(viewModel, new object[] { run, 4, false }), Is.True);
+                Assert.That(viewModelType.GetProperty("EventReactionMessageText")?.GetValue(viewModel),
+                    Is.EqualTo("Recent births: 1 Hare and 0 Fox."));
+
+                var boardType = AppDomain.CurrentDomain.GetAssemblies()
+                    .Select(assembly => assembly.GetType("SaltyGame.VM_SimulationBoard"))
+                    .FirstOrDefault(type => type != null);
+                Assert.That(boardType, Is.Not.Null);
+                var selectBirthCues = boardType.GetMethod("SelectBirthCues",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                Assert.That(selectBirthCues, Is.Not.Null);
+                var denseBirths = new List<SpeciesBirthEvent>();
+                for (var index = 0; index < 12; index++)
+                {
+                    denseBirths.Add((SpeciesBirthEvent)birthConstructor.Invoke(new object[]
+                        { fox, (long)index + 10, 0, 0, 0, 1, (long)index + 30, 1, 0, 3 }));
+                }
+                denseBirths.Add(births[0]);
+                var cues = (SpeciesBirthEvent[])selectBirthCues.Invoke(null,
+                    new object[] { denseBirths, 0, denseBirths.Count - 1, hare });
+                Assert.That(cues, Has.Length.EqualTo(8));
+                Assert.That(cues[0].Species, Is.EqualTo(hare));
+
+                var trackedFox = new SpeciesCell(fox).WithBehaviorState(SpeciesBehaviorState.Hunting);
+                var currentCells = new Grid<SpeciesCell>(2, 2);
+                currentCells.SetCell(0, 0, trackedFox);
+                var transitionConstructor = typeof(SpeciesBehaviorTransition).GetConstructors(
+                    BindingFlags.Instance | BindingFlags.NonPublic).Single();
+                var transition = (SpeciesBehaviorTransition)transitionConstructor.Invoke(new object[]
+                    { fox, trackedFox.EntityId, 0, 0, 0, 3, SpeciesBehaviorState.Wandering, SpeciesBehaviorState.Hunting });
+                var isCurrentHuntingFox = boardType.GetMethod("IsCurrentHuntingFox",
+                    BindingFlags.Static | BindingFlags.NonPublic);
+                Assert.That(isCurrentHuntingFox, Is.Not.Null);
+                Assert.That(isCurrentHuntingFox.Invoke(null, new object[] { currentCells, transition }), Is.True);
+                currentCells.SetCell(0, 0, default);
+                currentCells.SetCell(1, 0, trackedFox);
+                Assert.That(isCurrentHuntingFox.Invoke(null, new object[] { currentCells, transition }), Is.False,
+                    "A skipped rendered tick must not place the cue at the Fox's later location.");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(owner);
+            }
+        }
+
         [UnityTearDown]
         public IEnumerator RestoreJourneyProfileSave()
         {
@@ -556,6 +740,12 @@ namespace SaltyGame.PlayModeTests
             Assert.That(shellType.GetProperty("ResultsMessageText")?.GetValue(shell)?.ToString(),
                 Does.Contain("Field Data remains").And.Not.Contain("was discarded"));
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
+            Assert.That(shellType.GetProperty("JourneyResultsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(shellType.GetProperty("JourneyResultSummaryText")?.GetValue(shell)?.ToString(),
+                Does.Contain("HARE births:").And.Contain("Losses:"));
+            Assert.That(shellType.GetProperty("SelectedUpgradeSummaryText")?.GetValue(shell)?.ToString(),
+                Does.Contain("Measured introductory Mutation effects"));
             Assert.That(preview.Run.Tick, Is.EqualTo(totalRounds * FieldDataJourneyDefinition.RoundLengthTicks));
             Assert.That(shellType.GetProperty("FieldDataPopulationControlsVisibility")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("Collapsed"), "Terminal results must not offer population controls.");
@@ -665,6 +855,11 @@ namespace SaltyGame.PlayModeTests
                 "The fixture seed should exercise natural extinction before the next node clear.");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
             Assert.That(failedSession.FieldDataLostOnFailure, Is.GreaterThan(0));
+            yield return null;
+            Assert.That(shell.GetType().GetProperty("JourneyResultsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(shell.GetType().GetProperty("JourneyResultSummaryText")?.GetValue(shell)?.ToString(),
+                Does.Contain("Leading loss:"));
             Assert.That(shell.GetType().GetProperty("PlayNextSimulationText")?.GetValue(shell)?.ToString(),
                 Is.EqualTo("START NEW JOURNEY"));
             Assert.That(failedSession.Ledger.Balance, Is.Zero);
@@ -734,6 +929,10 @@ namespace SaltyGame.PlayModeTests
             var abandonedSession = preview.FieldDataSession;
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Results));
             Assert.That(abandonedSession.State, Is.EqualTo(FieldDataJourneyFlowState.Failed));
+            Assert.That(shell.GetType().GetProperty("JourneyResultsVisibility")?.GetValue(shell)?.ToString(),
+                Is.EqualTo("Visible"));
+            Assert.That(shell.GetType().GetProperty("JourneyResultSummaryText")?.GetValue(shell)?.ToString(),
+                Does.Contain("HARE births:"));
             Assert.That(abandonedSession.FieldDataLostOnFailure, Is.GreaterThan(0));
             Assert.That(abandonedSession.Ledger.Balance, Is.Zero);
             AssertBankedProfilePreserved(bankedProfileBefore, profileSession.Current);
@@ -1461,7 +1660,7 @@ namespace SaltyGame.PlayModeTests
             var expectedDescriptions = new[]
             {
                 "Move faster to escape predators and reach fresh food.",
-                "Evade predator attacks more often.",
+                "Avoid some Fox attacks before combat",
             };
             for (var choice = 0; choice < choices.Length; choice++)
             {
@@ -1732,7 +1931,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.ChooseJourneyNode("forest-edge-start"), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
             Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
-            CollectionAssert.AreEqual(new[] { "faster-movement", "tough-hide", "efficient-digestion" },
+            CollectionAssert.AreEqual(new[] { "threat-exposure", "tough-hide", "reproductive-drive" },
                 preview.JourneyMap.StartNode.RewardMutationIds);
             Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
@@ -1743,7 +1942,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(run.Cells.WrapEdges, Is.True);
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Running));
             Assert.That(run.TargetTicks, Is.EqualTo(24));
-            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "faster-movement"), Is.True);
+            Assert.That(run.UpgradeLoadout.Any(upgrade => upgrade.Id == "threat-exposure"), Is.True);
 
             for (var phase = 1; phase <= 5; phase++)
             {

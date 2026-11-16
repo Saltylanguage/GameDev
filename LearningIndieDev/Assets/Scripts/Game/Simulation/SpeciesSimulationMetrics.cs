@@ -984,6 +984,24 @@ namespace SaltyGame
         public SpeciesHerbivoreMetricStatus ActualHuntScoreStatus { get; }
     }
 
+    public readonly struct SpeciesMutationEffects
+    {
+        public SpeciesMutationEffects(int avoidedContacts, int decisiveFullHealthHits, int changedReproductionRolls)
+        {
+            AvoidedContacts = avoidedContacts;
+            DecisiveFullHealthHits = decisiveFullHealthHits;
+            ChangedReproductionRolls = changedReproductionRolls;
+        }
+
+        public int AvoidedContacts { get; }
+        public int DecisiveFullHealthHits { get; }
+        public int ChangedReproductionRolls { get; }
+        public SpeciesMutationEffects Subtract(SpeciesMutationEffects other) => new SpeciesMutationEffects(
+            AvoidedContacts - other.AvoidedContacts,
+            DecisiveFullHealthHits - other.DecisiveFullHealthHits,
+            ChangedReproductionRolls - other.ChangedReproductionRolls);
+    }
+
     public interface ISpeciesSimulationMetricsView
     {
         SpeciesSimulationActivity GetActivity(SpeciesId species);
@@ -1002,6 +1020,7 @@ namespace SaltyGame
         IReadOnlyList<SpeciesDeathEvent> DeathEvents { get; }
         IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents { get; }
         IReadOnlyList<SpeciesCombatCooldownSuppressionEvent> CombatCooldownSuppressionEvents { get; }
+        SpeciesMutationEffects MutationEffects { get; }
         int ControlledOpportunityScheduled { get; }
         int ControlledOpportunityEligible { get; }
         int ControlledOpportunityUnfulfilledNoTarget { get; }
@@ -1062,6 +1081,46 @@ namespace SaltyGame
         int controlledOpportunityEligible;
         int controlledOpportunityUnfulfilledNoTarget;
         int controlledOpportunityUnfulfilledInvalidated;
+        SpeciesId mutationSpecies;
+        float mutationAvoidanceBonus;
+        float mutationHealthBonus;
+        float mutationReproductionBonus;
+        int avoidedContacts;
+        int decisiveFullHealthHits;
+        int changedReproductionRolls;
+
+        public SpeciesMutationEffects MutationEffects => new SpeciesMutationEffects(
+            avoidedContacts, decisiveFullHealthHits, changedReproductionRolls);
+        internal SpeciesId MutationSpecies => mutationSpecies;
+        internal float MutationAvoidanceBonus => mutationAvoidanceBonus;
+        internal float MutationHealthBonus => mutationHealthBonus;
+        internal float MutationReproductionBonus => mutationReproductionBonus;
+
+        internal void ConfigureMutationEffects(SpeciesId playerSpecies, IReadOnlyList<SpeciesUpgradeSnapshot> loadout)
+        {
+            mutationSpecies = playerSpecies;
+            mutationAvoidanceBonus = mutationHealthBonus = mutationReproductionBonus = 0f;
+            if (loadout == null) return;
+            foreach (var upgrade in loadout)
+            {
+                if (upgrade == null || upgrade.TargetSpecies != playerSpecies) continue;
+                if (SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id))
+                    mutationAvoidanceBonus += upgrade.PreContactAvoidanceChanceBonus;
+                foreach (var modifier in upgrade.Modifiers)
+                {
+                    if (upgrade.Id == SpeciesUpgradeCatalog.ToughHideId
+                        && modifier.AttributeId == SpeciesAttributeIds.MaximumHealth)
+                        mutationHealthBonus += modifier.SignedValue;
+                    if (upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId
+                        && modifier.AttributeId == SpeciesAttributeIds.ReproductionChance)
+                        mutationReproductionBonus += modifier.SignedValue;
+                }
+            }
+        }
+
+        internal void RecordMutationAvoidedContact() => avoidedContacts++;
+        internal void RecordMutationDecisiveFullHealthHit() => decisiveFullHealthHits++;
+        internal void RecordMutationChangedReproductionRoll() => changedReproductionRolls++;
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -1186,6 +1245,9 @@ namespace SaltyGame
             controlledOpportunityEligible = 0;
             controlledOpportunityUnfulfilledNoTarget = 0;
             controlledOpportunityUnfulfilledInvalidated = 0;
+            mutationSpecies = default;
+            mutationAvoidanceBonus = mutationHealthBonus = mutationReproductionBonus = 0f;
+            avoidedContacts = decisiveFullHealthHits = changedReproductionRolls = 0;
         }
 
         internal void BeginTick(int tick)
@@ -1812,7 +1874,8 @@ namespace SaltyGame
                 controlledOpportunityScheduled,
                 controlledOpportunityEligible,
                 controlledOpportunityUnfulfilledNoTarget,
-                controlledOpportunityUnfulfilledInvalidated);
+                controlledOpportunityUnfulfilledInvalidated,
+                MutationEffects);
         }
 
         internal SpeciesSimulationMetricsWindow CreateWindow(
@@ -1897,6 +1960,7 @@ namespace SaltyGame
                 controlledOpportunityEligible - baseline.ControlledOpportunityEligible,
                 controlledOpportunityUnfulfilledNoTarget - baseline.ControlledOpportunityUnfulfilledNoTarget,
                 controlledOpportunityUnfulfilledInvalidated - baseline.ControlledOpportunityUnfulfilledInvalidated,
+                MutationEffects.Subtract(baseline.MutationEffects),
                 filteredTransitions,
                 filteredDeaths,
                 filteredRolls,
@@ -1934,7 +1998,8 @@ namespace SaltyGame
             int controlledOpportunityScheduled,
             int controlledOpportunityEligible,
             int controlledOpportunityUnfulfilledNoTarget,
-            int controlledOpportunityUnfulfilledInvalidated)
+            int controlledOpportunityUnfulfilledInvalidated,
+            SpeciesMutationEffects mutationEffects)
         {
             this.activity = new Dictionary<SpeciesId, SpeciesSimulationActivity>(activity);
             this.reproduction = new Dictionary<SpeciesId, SpeciesReproductionActivity>(reproduction);
@@ -1957,12 +2022,14 @@ namespace SaltyGame
             ControlledOpportunityEligible = controlledOpportunityEligible;
             ControlledOpportunityUnfulfilledNoTarget = controlledOpportunityUnfulfilledNoTarget;
             ControlledOpportunityUnfulfilledInvalidated = controlledOpportunityUnfulfilledInvalidated;
+            MutationEffects = mutationEffects;
         }
 
         public int ControlledOpportunityScheduled { get; }
         public int ControlledOpportunityEligible { get; }
         public int ControlledOpportunityUnfulfilledNoTarget { get; }
         public int ControlledOpportunityUnfulfilledInvalidated { get; }
+        public SpeciesMutationEffects MutationEffects { get; }
 
         public SpeciesSimulationActivity GetActivity(SpeciesId species)
         {
@@ -2054,6 +2121,7 @@ namespace SaltyGame
             int controlledOpportunityEligible,
             int controlledOpportunityUnfulfilledNoTarget,
             int controlledOpportunityUnfulfilledInvalidated,
+            SpeciesMutationEffects mutationEffects,
             IReadOnlyList<SpeciesBehaviorTransition> behaviorTransitions,
             IReadOnlyList<SpeciesDeathEvent> deathEvents,
             IReadOnlyList<SpeciesCombatRollEvent> combatRollEvents,
@@ -2098,6 +2166,7 @@ namespace SaltyGame
             ControlledOpportunityEligible = controlledOpportunityEligible;
             ControlledOpportunityUnfulfilledNoTarget = controlledOpportunityUnfulfilledNoTarget;
             ControlledOpportunityUnfulfilledInvalidated = controlledOpportunityUnfulfilledInvalidated;
+            MutationEffects = mutationEffects;
         }
 
         public const int ContractVersion = 1;
@@ -2105,6 +2174,7 @@ namespace SaltyGame
         public int ControlledOpportunityEligible { get; }
         public int ControlledOpportunityUnfulfilledNoTarget { get; }
         public int ControlledOpportunityUnfulfilledInvalidated { get; }
+        public SpeciesMutationEffects MutationEffects { get; }
         public IReadOnlyList<SpeciesBehaviorTransition> BehaviorTransitions { get; }
         public IReadOnlyList<SpeciesDeathEvent> DeathEvents { get; }
         public IReadOnlyList<SpeciesCombatRollEvent> CombatRollEvents { get; }

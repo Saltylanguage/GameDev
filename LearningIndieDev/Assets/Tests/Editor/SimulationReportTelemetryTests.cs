@@ -105,6 +105,38 @@ namespace SaltyGame.EditorTests
         }
 
         [Test]
+        public void MutationEffectReportSerializesRunAndClosedPhaseCounts()
+        {
+            var metrics = new SpeciesSimulationMetrics();
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var type = typeof(SpeciesSimulationMetrics);
+            var avoided = type.GetMethod("RecordMutationAvoidedContact", flags);
+            var decisive = type.GetMethod("RecordMutationDecisiveFullHealthHit", flags);
+            var reproduction = type.GetMethod("RecordMutationChangedReproductionRoll", flags);
+            avoided.Invoke(metrics, null);
+            var baseline = type.GetMethod("CreateSnapshot", flags).Invoke(metrics, null);
+            avoided.Invoke(metrics, null);
+            decisive.Invoke(metrics, null);
+            reproduction.Invoke(metrics, null);
+            reproduction.Invoke(metrics, null);
+            var window = type.GetMethod("CreateWindow", flags).Invoke(metrics, new[] { baseline, (object)0, 1 });
+
+            var serializer = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("SaltyGame.EditorTools.SimulationReportSerialization"))
+                .First(typeFound => typeFound != null);
+            var create = serializer.GetMethod("CreateMutationEffects", BindingFlags.Public | BindingFlags.Static);
+            MutationEffectsReport Serialize(object source) =>
+                JsonUtility.FromJson<MutationEffectsReport>(JsonUtility.ToJson(create.Invoke(null, new[] { source })));
+
+            var run = Serialize(metrics);
+            var phase = Serialize(window);
+            Assert.That((run.avoidedContacts, run.decisiveFullHealthHits, run.changedReproductionRolls),
+                Is.EqualTo((2, 1, 2)));
+            Assert.That((phase.avoidedContacts, phase.decisiveFullHealthHits, phase.changedReproductionRolls),
+                Is.EqualTo((1, 1, 2)));
+        }
+
+        [Test]
         public void SpatialObserverCountsTravelCrowdingAndFoxProximityWithoutChangingGrid()
         {
             var hare = new SpeciesId("hare");
@@ -155,6 +187,14 @@ namespace SaltyGame.EditorTests
             public int reproductionBlockedMateRequirement;
             public int reproductionSuccessfulAttempts;
             public bool reproductionReconciled;
+        }
+
+        [Serializable]
+        sealed class MutationEffectsReport
+        {
+            public int avoidedContacts;
+            public int decisiveFullHealthHits;
+            public int changedReproductionRolls;
         }
 
         [Serializable]
