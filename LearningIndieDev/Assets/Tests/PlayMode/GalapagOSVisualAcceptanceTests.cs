@@ -333,6 +333,10 @@ namespace SaltyGame.PlayModeTests
                              "hare.crowding-tolerance", "hare.reproductive-drive", "hare.escape-instinct" })
                     Assert.That(profile.TryPurchaseHareGenomeNode(id, prerequisite, out error), Is.True, error);
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.seed-dispersal", out error), Is.True, error);
+                profile.AddResearchData(FieldDataPermanentProgressionDefinition.ResetResearchDataFee);
+                Assert.That(profile.TryResetGenomeLoadout(id, new SpeciesId("hare"), 0, out error), Is.True, error);
+                Assert.That(profile.TryArrangeGenomeLoadout(id, new SpeciesId("hare"), 1,
+                    new[] { "hare.seed-dispersal" }, out error), Is.True, error);
                 preview.BindMutationResearch(profile.Current);
                 typeof(SpeciesSimulationPreview).GetField("randomizeSeedOnStart", BindingFlags.Instance | BindingFlags.NonPublic)
                     .SetValue(preview, false);

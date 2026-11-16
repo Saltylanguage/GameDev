@@ -950,6 +950,10 @@ namespace SaltyGame.PlayModeTests
                          "hare.crowding-tolerance", "hare.reproductive-drive", "hare.escape-instinct" })
                 Assert.That(profile.TryPurchaseHareGenomeNode(id, prerequisite, out error), Is.True, error);
             Assert.That(profile.TryPurchaseHareGenomeNode(id, "hare.seed-dispersal", out error), Is.True, error);
+            profile.AddResearchData(FieldDataPermanentProgressionDefinition.ResetResearchDataFee);
+            Assert.That(profile.TryResetGenomeLoadout(id, new SpeciesId("hare"), 0, out error), Is.True, error);
+            Assert.That(profile.TryArrangeGenomeLoadout(id, new SpeciesId("hare"), 1,
+                new[] { "hare.seed-dispersal" }, out error), Is.True, error);
             for (var tick = 0; tick < 100; tick++) Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
             Assert.That(preview.FieldDataSession.GetCurrentRoundRewardChoices().Choices, Is.Empty);
             Assert.That(preview.AbandonFieldDataJourney(), Is.True);
