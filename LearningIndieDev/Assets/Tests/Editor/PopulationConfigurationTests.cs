@@ -15,6 +15,27 @@ namespace SaltyGame.EditorTests
         const string ScenarioPath = "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset";
         const BindingFlags PrivateInstance = BindingFlags.Instance | BindingFlags.NonPublic;
 
+        [TestCase(0, 1), TestCase(3, 3)]
+        public void LegacyPreviewDraftHealthMigratesWithoutChangingPositiveValues(int serializedHealth, int expectedHealth)
+        {
+            var root = new GameObject("Legacy preview draft test");
+            root.SetActive(false);
+            try
+            {
+                var preview = root.AddComponent<SpeciesSimulationPreview>();
+                var draftMap = (System.Collections.IDictionary)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRuleDrafts", PrivateInstance)
+                    .Invoke(preview, new object[] { SpeciesRuleDefaults.Create() });
+                foreach (var draft in draftMap.Values)
+                    draft.GetType().GetField("MaximumHealth").SetValue(draft, serializedHealth);
+                typeof(SpeciesSimulationPreview).GetField("ruleDrafts", PrivateInstance).SetValue(preview, draftMap);
+                var rules = (IReadOnlyDictionary<SpeciesId, SpeciesRules>)typeof(SpeciesSimulationPreview)
+                    .GetMethod("CreateRulesFromDrafts", PrivateInstance).Invoke(preview, null);
+                foreach (var rule in rules.Values) Assert.That(rule.MaximumHealth, Is.EqualTo(expectedHealth));
+            }
+            finally { Object.DestroyImmediate(root); }
+        }
+
         static CellularSimData ApplyOverrides(params string[] arguments)
         {
             var runner = AppDomain.CurrentDomain.GetAssemblies()

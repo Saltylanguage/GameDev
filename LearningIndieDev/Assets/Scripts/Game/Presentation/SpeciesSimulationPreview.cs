@@ -3377,7 +3377,8 @@ namespace SaltyGame
                     role: draft.Role,
                     forageBelowEnergy: draft.ForageBelowEnergy,
                     maximumEnergy: draft.MaximumEnergy,
-                    maximumHealth: draft.MaximumHealth,
+                    // Saved drafts from before maximumHealth was added deserialize it as zero.
+                    maximumHealth: draft.MaximumHealth == 0 ? 1 : draft.MaximumHealth,
                     litterMinimum: draft.LitterMinimum,
                     litterMaximum: draft.LitterMaximum,
                     trackingPersistenceSteps: draft.TrackingPersistenceSteps,
