@@ -14,8 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.guarded-burrow
   displayName: Tough Hide
-  description: Unlocks Tough Hide outside Forest Edge and in Field Data. Forest Edge
-    offers it without research.
+  description: Unlocks Tough Hide when researched and equipped; the introductory Forest Edge Journey offers it without research.
   targetSpeciesId: hare
   prerequisiteNodeIds: []
   rabbitDataPrice: 10
