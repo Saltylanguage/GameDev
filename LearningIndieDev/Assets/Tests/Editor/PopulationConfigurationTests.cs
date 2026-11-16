@@ -141,7 +141,7 @@ namespace SaltyGame.EditorTests
             effective = effective.WithSpeciesRules(GenomeContract.RabbitSpeciesId,
                 SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.EfficientDigestionId)
                     .Apply(effective.SpeciesRules[GenomeContract.RabbitSpeciesId]));
-            Assert.That(report.schemaVersion, Is.EqualTo(41));
+            Assert.That(report.schemaVersion, Is.EqualTo(42));
             Assert.That(report.genomeFingerprint, Is.EqualTo(genome.Fingerprint));
             Assert.That(report.rulesetFingerprint, Is.EqualTo(effective.Fingerprint));
             Assert.That(report.genomeInput.fingerprint, Is.EqualTo(genome.Fingerprint));
@@ -621,7 +621,7 @@ namespace SaltyGame.EditorTests
                 .Invoke(null, new object[] { data, "hare", snapshots });
             var rules = result.SpeciesRules[hare];
             Assert.That(rules.CrowdingEnergyReduction, Is.EqualTo(0.2f));
-            Assert.That(rules.BlockAmount, Is.EqualTo(data.SpeciesRules[hare].BlockAmount + 6));
+            Assert.That(rules.MaximumHealth, Is.EqualTo(data.SpeciesRules[hare].MaximumHealth + 6));
             Assert.That(rules.CrowdingTolerance, Is.EqualTo(data.SpeciesRules[hare].CrowdingTolerance));
             Assert.That(result.Fingerprint, Is.Not.EqualTo(data.Fingerprint));
             var prediction = SaltyGame.EditorTools.SpeciesUpgradePredictionInputAdapter.CreateInput(snapshots);

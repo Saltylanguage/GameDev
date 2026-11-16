@@ -5,6 +5,17 @@ namespace SaltyGame.EditorTools
 {
     static class SimulationReportSerialization
     {
+        public static SimulationMutationEffectsRecord CreateMutationEffects(ISpeciesSimulationMetricsView metrics)
+        {
+            var effects = metrics.MutationEffects;
+            return new SimulationMutationEffectsRecord
+            {
+                avoidedContacts = effects.AvoidedContacts,
+                decisiveFullHealthHits = effects.DecisiveFullHealthHits,
+                changedReproductionRolls = effects.ChangedReproductionRolls,
+            };
+        }
+
         public static SimulationSpeciesActivityRecord[] CreateActivity(
             ISpeciesSimulationMetricsView metrics,
             IReadOnlyList<SpeciesId> species)
@@ -427,6 +438,7 @@ namespace SaltyGame.EditorTools
                     effectiveUpgradeLoadout = CreateUpgradeLoadout(phase.EffectiveUpgradeLoadout),
                     openingPopulation = CreatePopulationHistory(new[] { phase.OpeningPopulation }, species),
                     closingPopulation = CreatePopulationHistory(new[] { phase.ClosingPopulation }, species),
+                    mutationEffects = CreateMutationEffects(phase.Metrics),
                     activity = CreateActivity(phase.Metrics, species),
                     behavior = CreateBehavior(phase.Metrics, species),
                     behaviorTransitions = CreateBehaviorTransitions(phase.Metrics),
@@ -682,6 +694,14 @@ namespace SaltyGame.EditorTools
     }
 
     [System.Serializable]
+    sealed class SimulationMutationEffectsRecord
+    {
+        public int avoidedContacts;
+        public int decisiveFullHealthHits;
+        public int changedReproductionRolls;
+    }
+
+    [System.Serializable]
     sealed class SimulationPhaseResultRecord
     {
         public SimulationHerbivoreStatLineRecord[] herbivoreStatLines;
@@ -694,6 +714,7 @@ namespace SaltyGame.EditorTools
         public SimulationUpgradeRecord[] effectiveUpgradeLoadout;
         public SimulationPopulationSnapshotRecord[] openingPopulation;
         public SimulationPopulationSnapshotRecord[] closingPopulation;
+        public SimulationMutationEffectsRecord mutationEffects;
         public SimulationSpeciesActivityRecord[] activity;
         public SimulationSpeciesBehaviorRecord[] behavior;
         public SimulationSpeciesBehaviorTransitionRecord[] behaviorTransitions;

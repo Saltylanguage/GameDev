@@ -15,6 +15,12 @@ contract, human-decision rules, experiment portfolio, and roadmap. Supporting
 documents should link back here and may provide detail or evidence, but should
 not redefine the program.
 
+For fast Hare/Rabbit–Fox game-balance lookups, use the separate
+[Hare / Rabbit–Fox balance index](HARE_FOX_BALANCE_INDEX.md). It summarizes the
+current S6 evidence, marks superseded or incompatible studies, and links to each
+factual report and analysis. It does not change this research program's status
+or promote a general balance predictor.
+
 ## Research paper draft
 
 - [Toward an Auditable AI-Assisted Ecology Laboratory](AI_ASSISTED_ECOLOGY_LAB_RESEARCH_PAPER.md) - working paper grounded in the current implementation and bounded EX-001 through EX-010 evidence.

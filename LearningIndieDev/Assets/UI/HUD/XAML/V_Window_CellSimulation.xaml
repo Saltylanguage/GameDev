@@ -330,6 +330,12 @@
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
                                        FontSize="9"
                                        TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding ObjectiveText}"
+                                       Margin="0,5,0,0"
+                                       Foreground="{DynamicResource Chrono_Olive}"
+                                       FontSize="13"
+                                       FontWeight="Bold"
+                                       TextWrapping="Wrap" />
                             <Rectangle Height="1"
                                        Margin="0,8,0,7"
                                        Fill="Transparent"
@@ -490,70 +496,27 @@
                                        Stroke="{DynamicResource Chrono_Sand}"
                                        StrokeDashArray="7,4"
                                        StrokeThickness="2" />
-                            <TextBlock Text="RESEARCH DATA"
+                            <TextBlock Text="CELL INSPECTION"
                                        FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                       FontSize="10"
+                                       FontSize="12"
                                        FontWeight="Bold"
                                        Foreground="{DynamicResource Chrono_TreeBark}" />
-                            <Border Height="104"
+                            <Border Height="120"
                                     Margin="0,5,0,0"
+                                    Padding="8,6"
                                     Background="{DynamicResource Chrono_VanillaCream}"
                                     BorderBrush="{DynamicResource Chrono_Sand}"
                                     BorderThickness="2"
                                     CornerRadius="5"
                                     ClipToBounds="True">
-                                <Grid>
-                                    <Image Source="{StaticResource GalapagOS.Image.Simulation.PaperTexture}"
-                                           Stretch="UniformToFill"
-                                           Opacity="0.34"
-                                           IsHitTestVisible="False" />
-                                    <Image Source="{StaticResource GalapagOS.Image.Simulation.SpecimenJars}"
-                                           Margin="3,3,3,1"
-                                           Stretch="Uniform"
-                                           IsHitTestVisible="False" />
-                                    <Border HorizontalAlignment="Left"
-                                            VerticalAlignment="Top"
-                                            Margin="4"
-                                            Padding="4,2"
-                                            Background="{DynamicResource Chrono_LightCream}"
-                                            BorderBrush="{DynamicResource Chrono_Sand}"
-                                            BorderThickness="1"
-                                            CornerRadius="3">
-                                        <TextBlock Text="COLLECTION 03"
-                                                   FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                                   FontSize="7"
-                                                   FontWeight="Bold"
-                                                   Foreground="{DynamicResource Chrono_TreeBark}" />
-                                    </Border>
-                                </Grid>
+                                <TextBlock x:Name="CellInspectionText"
+                                           Text="{Binding DataContext.InspectionText, ElementName=SimulationBoard}"
+                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
+                                           FontSize="13"
+                                           Foreground="{DynamicResource Chrono_TreeBark}"
+                                           TextWrapping="Wrap"
+                                           VerticalAlignment="Center" />
                             </Border>
-                            <Grid Margin="1,3,1,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="*" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="PLANTS 6/8"
-                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                           FontSize="7"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource Chrono_TreeBark}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="1"
-                                           Text="FLOWERS 4/8"
-                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                           FontSize="7"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource Chrono_TreeBark}"
-                                           HorizontalAlignment="Center" />
-                                <TextBlock Grid.Column="2"
-                                           Text="DATA 2/4"
-                                           FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}"
-                                           FontSize="7"
-                                           FontWeight="Bold"
-                                           Foreground="{DynamicResource Chrono_TreeBark}"
-                                           HorizontalAlignment="Center" />
-                            </Grid>
                             <Rectangle Height="1"
                                        Margin="0,8,0,7"
                                        Fill="Transparent"
@@ -848,27 +811,38 @@
                                        Foreground="{DynamicResource Chrono_TreeBark}"
                                        VerticalAlignment="Center"
                                        Margin="0,0,10,0" />
-                            <RadioButton Content="−"
+                            <RadioButton Content="0.5x"
                                          GroupName="SimulationSpeed"
+                                         Command="{Binding SetPlaybackSpeedCommand}"
+                                         CommandParameter="0.5"
+                                         IsChecked="{Binding IsHalfSpeed, Mode=OneWay}"
                                          Style="{StaticResource GalapagOS.RadioButton.Speed}"
-                                         Width="38"
+                                         Width="42"
                                          Height="34"
                                          Margin="0,0,5,0" />
                             <RadioButton Content="1x"
                                          GroupName="SimulationSpeed"
-                                         IsChecked="True"
+                                         Command="{Binding SetPlaybackSpeedCommand}"
+                                         CommandParameter="1"
+                                         IsChecked="{Binding IsNormalSpeed, Mode=OneWay}"
                                          Style="{StaticResource GalapagOS.RadioButton.Speed}"
                                          Width="42"
                                          Height="34"
                                          Margin="0,0,5,0" />
                             <RadioButton Content="2x"
                                          GroupName="SimulationSpeed"
+                                         Command="{Binding SetPlaybackSpeedCommand}"
+                                         CommandParameter="2"
+                                         IsChecked="{Binding IsDoubleSpeed, Mode=OneWay}"
                                          Style="{StaticResource GalapagOS.RadioButton.Speed}"
                                          Width="42"
                                          Height="34"
                                          Margin="0,0,5,0" />
                             <RadioButton Content="4x"
                                          GroupName="SimulationSpeed"
+                                         Command="{Binding SetPlaybackSpeedCommand}"
+                                         CommandParameter="4"
+                                         IsChecked="{Binding IsQuadSpeed, Mode=OneWay}"
                                          Style="{StaticResource GalapagOS.RadioButton.Speed}"
                                           Width="42"
                                           Height="34" />
@@ -2220,7 +2194,7 @@
                                         <Ellipse Width="57" Height="57" Stroke="#D69D4F" StrokeThickness="3"
                                                  Visibility="{Binding AvailableVisibility}" IsHitTestVisible="False" />
                                         <Ellipse x:Name="SelectedJourneyPulse" Width="61" Height="61"
-                                                 Stroke="#D69D4F" StrokeThickness="2" Visibility="{Binding SelectedVisibility}"
+                                                 Stroke="#D69D4F" StrokeThickness="2" Visibility="{Binding SelectedPulseVisibility}"
                                                  IsHitTestVisible="False" Opacity="0.55">
                                             <Ellipse.Triggers>
                                                 <EventTrigger RoutedEvent="FrameworkElement.Loaded">
@@ -2231,6 +2205,8 @@
                                                 </EventTrigger>
                                             </Ellipse.Triggers>
                                         </Ellipse>
+                                        <Ellipse Width="61" Height="61" Stroke="#D69D4F" StrokeThickness="3"
+                                                 Visibility="{Binding SelectedStaticVisibility}" IsHitTestVisible="False" />
                                         <Border Width="51" Height="51" CornerRadius="26" Background="#F1F0D5"
                                                 BorderBrush="#748854" BorderThickness="2">
                                             <Button Width="45" Height="45" Padding="0" Command="{Binding ChooseCommand}"
@@ -2238,8 +2214,8 @@
                                                     IsHitTestVisible="{Binding CanChoose}" Focusable="{Binding CanChoose}"
                                                     Style="{StaticResource GalapagOS.Button.JourneyNode}">
                                                 <Grid>
-                                                    <Path Data="M 0,0 H 7 V 7 H 0 Z M 10,0 H 17 V 7 H 10 Z M 20,0 H 27 V 7 H 20 Z M 0,10 H 7 V 17 H 0 Z M 10,10 H 17 V 17 H 10 Z M 20,10 H 27 V 17 H 20 Z M 0,20 H 7 V 27 H 0 Z M 10,20 H 17 V 27 H 10 Z M 20,20 H 27 V 27 H 20 Z"
-                                                          Width="24" Height="24" Stretch="Uniform" Fill="#405334" Visibility="{Binding SimulationIconVisibility}" />
+                                                    <Image Source="{StaticResource GalapagOS.Image.Journey.Node.Simulation}"
+                                                           Width="28" Height="28" Stretch="Uniform" Visibility="{Binding SimulationIconVisibility}" />
                                                     <Path Data="M 1,6 C 5,1 7,1 11,6 C 15,11 17,11 21,6 M 1,14 C 5,9 7,9 11,14 C 15,19 17,19 21,14 M 1,22 C 5,17 7,17 11,22 C 15,27 17,27 21,22"
                                                           Width="27" Height="27" Stretch="Uniform" Stroke="#47736B" StrokeThickness="2.4" Visibility="{Binding ConditionIconVisibility}" />
                                                     <Path Data="M 14,0 L 0,14 9,14 9,30 19,30 19,14 28,14 Z"
@@ -2247,8 +2223,8 @@
                                                     <TextBlock Text="!" FontSize="27" FontWeight="Bold" Foreground="#785331" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding EventIconVisibility}" />
                                                     <Path Data="M 14,0 L 18,10 28,14 18,18 14,28 10,18 0,14 10,10 Z"
                                                           Width="27" Height="27" Stretch="Uniform" Fill="#9C713C" Visibility="{Binding FinaleIconVisibility}" />
-                                                    <Path Data="M 15,27 L 15,15 4,9 5,17 13,21 13,32 17,32 17,21 26,17 28,7 17,14 17,27 Z"
-                                                          Width="27" Height="27" Stretch="Uniform" Fill="#405334" Visibility="{Binding RewardIconVisibility}" />
+                                                    <Image Source="{StaticResource GalapagOS.Image.Journey.Node.Reward}"
+                                                           Width="28" Height="28" Stretch="Uniform" Visibility="{Binding RewardIconVisibility}" />
                                                     <Path Data="M 15,27 L 15,15 4,9 5,17 13,21 13,32 17,32 17,21 26,17 28,7 17,14 17,27 Z"
                                                           Width="27" Height="27" Stretch="Uniform" Fill="#405334" Visibility="{Binding OpeningFernVisibility}" />
                                                     <Path Data="M 1,6 C 5,1 7,1 11,6 C 15,11 17,11 21,6 M 1,14 C 5,9 7,9 11,14 C 15,19 17,19 21,14 M 1,22 C 5,17 7,17 11,22 C 15,27 17,27 21,22"

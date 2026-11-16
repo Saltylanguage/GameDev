@@ -1050,7 +1050,7 @@
                         </Grid.RowDefinitions>
                         <StackPanel Grid.Row="0">
                           <TextBlock Text="DISPLAY" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="23" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
-                          <TextBlock Text="How GalapagOS fits your screen." Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" />
+                          <TextBlock Text="Screen fit, sound, and motion." Margin="0,5,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" Foreground="{DynamicResource Chrono_TreeBark}" />
                         </StackPanel>
                         <Rectangle Grid.Row="1" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
                         <Grid Grid.Row="2" Margin="0,16,0,14">
@@ -1058,44 +1058,39 @@
                           <StackPanel Margin="0,0,18,0">
                             <TextBlock Text="WINDOW MODE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
-                              <Grid><TextBlock Text="WINDOWED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                              <TextBlock Text="SYSTEM" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                             </Border>
                           </StackPanel>
                           <StackPanel Grid.Column="1" Margin="0,0,18,0">
                             <TextBlock Text="RESOLUTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
-                              <Grid><TextBlock Text="1280 × 720" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                              <TextBlock Text="CURRENT" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                             </Border>
                           </StackPanel>
                           <StackPanel Grid.Column="2">
                             <TextBlock Text="UI SCALE" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <Border Height="38" Margin="0,7,0,0" Background="{DynamicResource Chrono_LightCream}" BorderBrush="{DynamicResource Chrono_Sand}" BorderThickness="2" CornerRadius="5" Padding="10,0">
-                              <Grid><TextBlock Text="100%" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /><TextBlock Text="⌄" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="20" Foreground="{DynamicResource Chrono_Olive}" HorizontalAlignment="Right" VerticalAlignment="Center" /></Grid>
+                              <TextBlock Text="FITTED" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" />
                             </Border>
                           </StackPanel>
                         </Grid>
                         <Rectangle Grid.Row="3" Fill="{DynamicResource Chrono_Sand}" Opacity="0.78" />
                         <Grid Grid.Row="4" Margin="0,16,0,0">
-                          <Grid.ColumnDefinitions><ColumnDefinition Width="1.15*" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
-                          <StackPanel>
-                            <TextBlock Text="PIXEL PREVIEW" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
-                            <Border Height="116" Margin="0,8,18,0" Background="{DynamicResource Chrono_AzureSky}" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="6" Padding="8">
-                              <Canvas>
-                                <Path Data="M 0,83 L 65,37 L 116,72 L 184,28 L 252,76 L 326,43 L 394,80 L 394,116 L 0,116 Z" Fill="{DynamicResource Chrono_Olive}" />
-                                <Path Data="M 0,99 L 76,64 L 144,96 L 216,56 L 290,91 L 394,62 L 394,116 L 0,116 Z" Fill="{DynamicResource Chrono_Lime}" />
-                                <Ellipse Width="24" Height="24" Canvas.Left="24" Canvas.Top="16" Fill="{DynamicResource Chrono_VanillaCream}" />
-                                <Ellipse Width="16" Height="16" Canvas.Left="48" Canvas.Top="29" Fill="{DynamicResource Chrono_VanillaCream}" />
-                                <Image Source="{StaticResource GalapagOS.Image.Species.Rabbit.64}" Width="62" Height="62" Canvas.Left="166" Canvas.Top="48" Stretch="Uniform" />
-                              </Canvas>
-                            </Border>
+                          <Grid.ColumnDefinitions><ColumnDefinition Width="1*" /><ColumnDefinition Width="1*" /></Grid.ColumnDefinitions>
+                          <StackPanel Margin="0,0,18,0">
+                            <TextBlock Text="MASTER AUDIO" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <TextBlock Text="{Binding Settings.VolumeText}" Margin="0,8,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <StackPanel Orientation="Horizontal">
+                              <Button Content="−" Width="64" Height="40" Command="{Binding Settings.VolumeDownCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                              <Button Content="MUTE" Width="100" Height="40" Margin="8,0" Command="{Binding Settings.ToggleMuteCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                              <Button Content="+" Width="64" Height="40" Command="{Binding Settings.VolumeUpCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                            </StackPanel>
                           </StackPanel>
-                          <StackPanel Grid.Column="1" Margin="0,0,0,0">
-                            <TextBlock Text="RENDERING" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
-                            <Border Height="42" Margin="0,8,0,0" Background="#FFE8F1C4" BorderBrush="{DynamicResource Chrono_Olive}" BorderThickness="2" CornerRadius="5" Padding="10,0">
-                              <StackPanel Orientation="Horizontal" VerticalAlignment="Center"><Border Width="22" Height="22" Background="{DynamicResource Chrono_Olive}" CornerRadius="3"><TextBlock Text="✓" FontSize="15" FontWeight="Bold" Foreground="{DynamicResource Chrono_VanillaCream}" HorizontalAlignment="Center" VerticalAlignment="Center" /></Border><TextBlock Text="PRESERVE CRISP PIXELS" Margin="9,0,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="13" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" VerticalAlignment="Center" /></StackPanel>
-                            </Border>
-                            <TextBlock Text="Preview updates after the next apply." Margin="0,10,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
-                            <TextBlock Text="CHANGES ARE LOCAL TO THIS FIELD STATION" Margin="0,14,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" TextWrapping="Wrap" />
+                          <StackPanel Grid.Column="1">
+                            <TextBlock Text="REDUCED MOTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
+                            <TextBlock Text="{Binding Settings.ReducedMotionText}" Margin="0,8,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
+                            <Button Content="TOGGLE" Width="170" Height="40" Command="{Binding Settings.ToggleReducedMotionCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                            <TextBlock Text="Simulation events remain in the text feed." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                           </StackPanel>
                         </Grid>
                       </Grid>
@@ -1103,10 +1098,9 @@
                   </Grid>
 
                   <Grid Grid.Row="2" Margin="0,10,0,0">
-                    <Button Content="RESTORE DEFAULTS" Width="178" Height="42" HorizontalAlignment="Left" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Secondary}" />
+                    <TextBlock Text="CHANGES APPLY IMMEDIATELY" VerticalAlignment="Center" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                      <Button Content="CANCEL" Width="126" Height="42" Margin="0,0,12,0" Command="{Binding CloseCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                      <Button Content="APPLY CHANGES" Width="178" Height="42" IsEnabled="False" Style="{StaticResource GalapagOS.Button.Primary}" />
+                      <Button Content="CLOSE" Width="126" Height="42" Command="{Binding CloseCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
                     </StackPanel>
                   </Grid>
                 </Grid>
@@ -1787,7 +1781,7 @@
                          FontSize="12"
                          FontWeight="Bold"
                          Foreground="{DynamicResource Chrono_TreeBark}" />
-              <TextBlock Text="  ·  LAYOUT READY — CONTROLS ARRIVE WITH THE SETTINGS HELPER"
+              <TextBlock Text="  ·  AUDIO AND MOTION CONTROLS ARE IN THE SETTINGS WINDOW"
                          FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}"
                          FontSize="12"
                          Foreground="{DynamicResource Chrono_TreeBark}" />

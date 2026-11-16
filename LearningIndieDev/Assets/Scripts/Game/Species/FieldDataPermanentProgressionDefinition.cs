@@ -94,6 +94,7 @@ namespace SaltyGame
                 case SpeciesUpgradeCatalog.ReproductiveDriveId: return new[] { "hare.reproductive-drive", "reproductive-drive" };
                 case SpeciesUpgradeCatalog.LargerMinimumLitterId: return new[] { LitterUpgradeNodeId, "hare.increased-minimum-litter", "increased-minimum-litter" };
                 case SpeciesUpgradeCatalog.LargerMaximumLitterId: return new[] { LitterUpgradeNodeId, "poc.hare.larger-litters" };
+                case SpeciesUpgradeCatalog.QuickEscapeId:
                 case SpeciesUpgradeCatalog.ThreatExposureId:
                 case SpeciesUpgradeCatalog.LegacyThreatResponseId: return new[] { "hare.escape-instinct", "escape-instinct" };
                 default: return Array.Empty<string>();
@@ -138,7 +139,7 @@ namespace SaltyGame
             var hare = new SpeciesId("hare");
             var nodes = new[]
             {
-                Node("hare.guarded-burrow", "Tough Hide", "Unlocks Tough Hide as a journey Mutation.", 10),
+                Node("hare.guarded-burrow", "Tough Hide", "Unlocks Tough Hide when researched and equipped; the introductory Forest Edge Journey offers it without research.", 10),
                 Node(SprintNodeId, "Open-ground Sprint", "Unlocks Open-ground Sprint as a journey Mutation; grants a provisional +0.5 movement speed on exposed ground. Current Bare and Grass terrain are exposed.", 10),
                 Node("hare.keen-hearing", "Heightened Senses", "Unlocks Long Vision and Keen Senses journey Mutations.", 20,
                     SprintNodeId),
@@ -147,12 +148,12 @@ namespace SaltyGame
                 Node("hare.safe-foraging", "Efficient Digestion", "Unlocks Efficient Digestion as a journey Mutation.",
                     20, "hare.guarded-burrow"),
                 Node("hare.crowding-tolerance", "Crowding Tolerance", "Unlocks Crowding Tolerance as a journey Mutation.", 10),
-                Node("hare.reproductive-drive", "Reproductive Drive", "Unlocks Reproductive Drive as a journey Mutation.", 20,
+                Node("hare.reproductive-drive", "Reproductive Drive", "Unlocks Reproductive Drive when researched and equipped; the introductory Forest Edge Journey offers it without research. Not offered at 100% reproduction chance.", 20,
                     "hare.crowding-tolerance"),
                 Node(BurrowingNodeId, "Burrowing", "Unlocks Burrowing as a journey Mutation.", 10),
                 Node(SharedBurrowsNodeId, "Shared Burrows", "Unlocks Shared Burrows as a journey Mutation.", 20,
                     BurrowingNodeId),
-                Node("hare.escape-instinct", "Escape Instinct", "Unlocks Escape Instinct as a journey Mutation.", 30,
+                Node("hare.escape-instinct", "Escape Instinct", "Unlocks Escape Instinct and Quick Escape when researched and equipped; the introductory Forest Edge Journey offers Escape Instinct without research.", 30,
                     "hare.keen-hearing"),
                 Node("hare.seed-dispersal", "Seed Dispersal", "Unlocks Seed Dispersal as a journey Mutation.", 30,
                     "hare.escape-instinct", "hare.reproductive-drive"),

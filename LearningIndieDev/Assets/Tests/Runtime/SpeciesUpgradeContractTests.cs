@@ -113,9 +113,21 @@ namespace SaltyGame.Tests
                 [hare] = upgrade.Apply(rules[hare]),
             };
             Assert.That(runner.InstallBoundaryState(upgradedRules, null, new[] { upgrade }), Is.True);
-            Assert.That(run.Cells.GetCell(0, 0).Health, Is.EqualTo(3));
+            var health = new List<int>();
+            for (var x = 0; x < run.Cells.Width; x++)
+            {
+                var cell = run.Cells.GetCell(x, 0);
+                if (cell.IsCreature && cell.SpeciesId == hare) health.Add(cell.Health);
+            }
+            Assert.That(health, Is.EqualTo(new[] { 3 }));
             Assert.That(runner.TryAddBoundaryPopulation(hare, 1), Is.True);
-            Assert.That(run.Cells.GetCell(1, 0).Health, Is.EqualTo(3));
+            health.Clear();
+            for (var x = 0; x < run.Cells.Width; x++)
+            {
+                var cell = run.Cells.GetCell(x, 0);
+                if (cell.IsCreature && cell.SpeciesId == hare) health.Add(cell.Health);
+            }
+            Assert.That(health, Is.EqualTo(new[] { 3, 3 }));
         }
 
         [Test]

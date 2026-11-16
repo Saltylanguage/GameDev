@@ -77,14 +77,21 @@ namespace SaltyGame.EditorTests
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
+                var priorBirths = new Dictionary<SpeciesId, int>
+                {
+                    [Hare] = session.Run.Metrics.GetActivity(Hare).Births,
+                    [Fox] = session.Run.Metrics.GetActivity(Fox).Births,
+                    [Plant] = session.Run.Metrics.GetActivity(Plant).Births,
+                };
+                var priorDeaths = session.Run.Metrics.DeathEvents.Count;
                 Assert.That(session.TryBuyPopulationControl("accounting", kind, out var receipt, out var error), Is.True, error);
                 Assert.That(session.TryBuyPopulationControl("accounting", kind, out _, out error), Is.True, error);
                 var run = session.Run;
                 var species = receipt.SpeciesId;
                 Assert.That(run.GetBoundaryPopulationAdded(species), Is.EqualTo(added));
                 Assert.That(run.GetBoundaryPopulationRemoved(species), Is.EqualTo(removed));
-                Assert.That(run.Metrics.GetActivity(species).Births, Is.Zero);
-                Assert.That(run.Metrics.DeathEvents, Is.Empty);
+                Assert.That(run.Metrics.GetActivity(species).Births, Is.EqualTo(priorBirths[species]));
+                Assert.That(run.Metrics.DeathEvents.Count, Is.EqualTo(priorDeaths));
                 var initial = run.PopulationHistory[0].GetCount(species);
                 if (species == Hare)
                 {
@@ -453,14 +460,27 @@ namespace SaltyGame.EditorTests
         public void PlantRemovalPreservesCreatureAndAnimalRemovalPreservesPlantResource()
         {
             var (definition, manager, _, session) = CreateSessionParts(hareCount: 20, plantCount: 4);
-            var initialHares = FindCreatures(session.Run.Cells, Hare);
-            var shared = initialHares[0];
             var plant = Plant;
-            session.Run.Cells.SetCell(shared.x, shared.y,
-                shared.cell.WithPlantResource(TerrainDefaults.Grass, plant, 20f));
             using (session)
             {
                 ReachFirstFundedRoundDecision(manager, session);
+                var shared = FindCreatures(session.Run.Cells, Hare)[0];
+                var grid = session.Run.Cells;
+                for (var y = 0; y < grid.Height; y++)
+                    for (var x = 0; x < grid.Width; x++)
+                        if (grid.GetCell(x, y).IsPlantResource)
+                            grid.SetCell(x, y, grid.GetCell(x, y).WithoutPlantResource());
+                grid.SetCell(shared.x, shared.y,
+                    grid.GetCell(shared.x, shared.y).WithPlantResource(TerrainDefaults.Grass, plant, 20f));
+                var addedPlants = 1;
+                for (var y = 0; y < grid.Height && addedPlants < 5; y++)
+                    for (var x = 0; x < grid.Width && addedPlants < 5; x++)
+                    {
+                        if ((x == shared.x && y == shared.y) || !grid.GetCell(x, y).IsPassable) continue;
+                        grid.SetCell(x, y, grid.GetCell(x, y).WithPlantResource(TerrainDefaults.Grass, plant, 20f));
+                        addedPlants++;
+                    }
+                Assert.That(addedPlants, Is.EqualTo(5));
                 var sharedCell = session.Run.Cells.GetCell(shared.x, shared.y);
                 var sharedEntity = sharedCell.EntityId;
 
@@ -603,14 +623,17 @@ namespace SaltyGame.EditorTests
 
             var targetTicks = definition.RoundLength * definition.RoundsPerNode * definition.RouteSimulationCount;
             scenario = scenario.WithRunTicks(targetTicks, 0.1f);
+            if (maxPopulationOverride > 0)
+                scenario = new CellularSimData(scenario.Width, scenario.Height,
+                    scenario.StartingProbabilities, scenario.SpeciesRules,
+                    scenario.RunDurationSeconds, scenario.StepInterval,
+                    maxPopulationOverride, scenario.MinPopulation, scenario.TerrainDefinitions,
+                    scenario.AlphaOffspringRules, scenario.StartingPopulations, scenario.WrapEdges);
             var run = new SimulationRunState(
                 SpeciesInitialGridFactory.Create(scenario, 10100), hare, 10100, scenario.RunDurationSeconds, targetTicks, activeGenome);
             run.ConfigureContinuousPhases(100);
             var manager = new SimulationManager();
-            manager.SetRunner(maxPopulationOverride > 0
-                ? new SpeciesSimulationRunner(run, scenario.SpeciesRules,
-                    scenario.StepInterval, maxPopulation: maxPopulationOverride)
-                : new SpeciesSimulationRunner(run, scenario));
+            manager.SetRunner(new SpeciesSimulationRunner(run, scenario));
             var progression = new SpeciesProgression(new SpeciesDefinition(hare, scenario.SpeciesRules[hare]), mutationResearch);
             var session = new FieldDataJourneySession(definition, manager, progression);
             return (definition, manager, progression, session);
@@ -641,7 +664,7 @@ namespace SaltyGame.EditorTests
             ResolveCurrentReward(session);
             Assert.That(session.AvailableFieldData, Is.GreaterThan(0));
             Assert.That(session.BeginShopPurchases(), Is.True);
-            Assert.That(session.Continue(), Is.True);
+            Assert.That(session.Continue(), Is.True, session.SettlementError);
             manager.Advance(10.1f);
             ResolveCurrentReward(session);
             Assert.That(session.GlobalRound, Is.EqualTo(FieldDataJourneyDefinition.RoundsPerSimulation + 1));

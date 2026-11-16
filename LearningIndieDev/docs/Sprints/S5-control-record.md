@@ -17,7 +17,14 @@ GLJP-06 evidence and Bevin's canonical-November direction are linked in the S6
 control; October comparisons are historical. Do not infer that the earlier
 kickoff counts or original estimates below describe remaining work.
 
-**November 10 design correction:** The one-retained-ecosystem route below records what S5 implemented, but Josh now requires the played species' population alone to carry between simulation nodes. Other species return to fixed starting counts. The current route has not been changed yet; see the [S6 node-boundary decision](S6-control-record.md#november-10-node-boundary-design-correction).
+**November 10 design correction, now implemented:** The one-retained-ecosystem
+route below records what S5 originally implemented. Josh now requires only the
+played species' population count to carry between simulation nodes; individuals
+are recreated and other species/resources return to authored starting counts.
+The Field Data and legacy transitions and portable worker implement this rule;
+focused route and parity checks passed. This later change does not rewrite the
+October 21 S5 acceptance or approve a new balance value. See the
+[S6 node-boundary decision](S6-control-record.md#november-10-node-boundary-design-correction).
 
 **October 21 Field Data closeout:** All FD-T01–FD-T16 were read back in Trello
 Done, with complete flags and 79 resolved current checklist items. Bevin's

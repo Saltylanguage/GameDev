@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.GenomeUpgradeAsset
   upgradeId: hare.reproductive-drive
   displayName: Reproductive Drive
-  description: Unlocks Reproductive Drive as a journey Mutation.
+  description: Unlocks Reproductive Drive when researched and equipped; the introductory Forest Edge Journey offers it without research. Not offered at 100% reproduction chance.
   targetSpeciesId: hare
   prerequisiteNodeIds:
   - hare.crowding-tolerance

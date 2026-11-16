@@ -22,13 +22,144 @@ namespace SaltyGame.PlayModeTests
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         [UnityTest]
-        public IEnumerator FreshProfileCanPassOpeningRewardWithoutUnresearchedMutation()
+        public IEnumerator LiveBoardInspectionAndSpeedControlsUseCurrentRun()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var camera = GameObject.Find("Prototype Camera");
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            var preview = runtime.SpeciesPreview;
+            var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+            Assert.That(board, Is.Not.Null);
+            preview.StopSimulation();
+            preview.StartSimulation();
+            preview.PauseSimulation();
+            yield return null;
+
+            var snapshot = (SimulationBoardSnapshot)board.GetType().GetProperty("Snapshot").GetValue(board);
+            Assert.That(snapshot, Is.Not.Null);
+            var hare = new SpeciesId("hare");
+            var found = false;
+            for (var y = 0; y < snapshot.Height && !found; y++)
+            for (var x = 0; x < snapshot.Width && !found; x++)
+            {
+                var cell = snapshot.GetCell(x, y);
+                if (!cell.IsCreature || cell.SpeciesId != hare) continue;
+                Assert.That(board.GetType().GetMethod("SelectCell").Invoke(board, new object[] { x, y }), Is.True);
+                var inspection = (string)board.GetType().GetProperty("InspectionText").GetValue(board);
+                Assert.That(inspection, Does.Contain("HARE").And.Contain("Health"));
+                found = true;
+            }
+            Assert.That(found, Is.True);
+            yield return null;
+            var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var inspectionText = content.FindName("CellInspectionText") as Noesis.TextBlock;
+            if (inspectionText == null)
+            {
+                var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                inspectionText = (window?.Content as Noesis.FrameworkElement)?.FindName("CellInspectionText")
+                    as Noesis.TextBlock;
+            }
+            Assert.That(inspectionText, Is.Not.Null);
+            Assert.That(inspectionText.Text, Does.Contain("HARE"));
+
+            var shell = camera.GetComponent("SaltyGame.VM_SimulationShell");
+            Assert.That(shell.GetType().GetProperty("ObjectiveText").GetValue(shell), Does.Contain("GOAL"));
+            var speedCommand = shell.GetType().GetProperty("SetPlaybackSpeedCommand").GetValue(shell);
+            speedCommand.GetType().GetMethod("Execute").Invoke(speedCommand, new object[] { "4" });
+            Assert.That(preview.PlaybackSpeed, Is.EqualTo(4f));
+            Assert.That(shell.GetType().GetProperty("IsQuadSpeed").GetValue(shell), Is.True);
+            speedCommand.GetType().GetMethod("Execute").Invoke(speedCommand, new object[] { "99" });
+            Assert.That(preview.PlaybackSpeed, Is.EqualTo(4f));
+
+            preview.StopSimulation();
+            preview.StartSimulation();
+            yield return null;
+            Assert.That(board.GetType().GetProperty("HasSelection").GetValue(board), Is.False);
+            Assert.That(board.GetType().GetProperty("InspectionText").GetValue(board),
+                Is.EqualTo("Click a cell, or Tab to the board and use arrow keys to inspect it."));
+        }
+
+        [UnityTest]
+        public IEnumerator SettingsPersistMuteAndReducedMotion()
+        {
+            const string muteKey = "GalapagOS.Muted";
+            const string motionKey = "GalapagOS.ReducedMotion";
+            var hadMute = PlayerPrefs.HasKey(muteKey);
+            var hadMotion = PlayerPrefs.HasKey(motionKey);
+            var oldMute = PlayerPrefs.GetInt(muteKey);
+            var oldMotion = PlayerPrefs.GetInt(motionKey);
+            try
+            {
+                yield return SceneManager.LoadSceneAsync(SceneName);
+                yield return null;
+                var desktop = GameObject.Find(DesktopCameraName).GetComponent("SaltyGame.VM_GalapagOS_Desktop");
+                ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Settings");
+                var windows = (System.Collections.IList)GetProperty(desktop, "OpenDesktopWindows");
+                Assert.That(GetProperty(windows[0], "Settings"), Is.SameAs(desktop));
+                ExecuteCommand(GetProperty(desktop, "ToggleMuteCommand"));
+                Assert.That(PlayerPrefs.GetInt(muteKey), Is.EqualTo(oldMute == 1 ? 0 : 1));
+                ExecuteCommand(GetProperty(desktop, "ToggleReducedMotionCommand"));
+                Assert.That(PlayerPrefs.GetInt(motionKey), Is.EqualTo(oldMotion == 1 ? 0 : 1));
+                Assert.That(GetProperty(desktop, "ReducedMotionText"),
+                    Is.EqualTo(oldMotion == 1 ? "OFF" : "ON"));
+                yield return SceneManager.LoadSceneAsync("MainMenu");
+                yield return null;
+                Assert.That(AudioListener.volume,
+                    Is.EqualTo(PlayerPrefs.GetInt(muteKey) == 1 ? 0f : PlayerPrefs.GetFloat("GalapagOS.MasterVolume", 0.8f)));
+            }
+            finally
+            {
+                if (hadMute) PlayerPrefs.SetInt(muteKey, oldMute); else PlayerPrefs.DeleteKey(muteKey);
+                if (hadMotion) PlayerPrefs.SetInt(motionKey, oldMotion); else PlayerPrefs.DeleteKey(motionKey);
+                PlayerPrefs.Save();
+                AudioListener.volume = oldMute == 1 ? 0f : PlayerPrefs.GetFloat("GalapagOS.MasterVolume", 0.8f);
+            }
+        }
+
+        [Test]
+        public void SimulationAudioPaletteCreatesDistinctCuesAndTwoLoopingBeds()
+        {
+            var palette = AppDomain.CurrentDomain.GetAssemblies()
+                .Select(assembly => assembly.GetType("SaltyGame.SimulationSoundPalette"))
+                .FirstOrDefault(type => type != null);
+            Assert.That(palette, Is.Not.Null);
+            var sound = palette.Assembly.GetType("SaltyGame.SimulationSound");
+            var owner = new GameObject("Audio palette check");
+            var clips = new AudioClip[5];
+            try
+            {
+                palette.GetMethod("StartBed").Invoke(null, new object[] { owner });
+                var bed = owner.transform.Find("Simulation Audio Bed");
+                Assert.That(bed, Is.Not.Null);
+                var loops = bed.GetComponents<AudioSource>();
+                Assert.That(loops.Length, Is.EqualTo(2));
+                Assert.That(loops.All(source => source.loop && source.clip != null), Is.True);
+                Assert.That(loops[0].clip, Is.Not.SameAs(loops[1].clip));
+                var createCue = palette.GetMethod("CreateCue", BindingFlags.NonPublic | BindingFlags.Static);
+                var names = new[] { "Selection", "Upgrade", "Danger", "Success", "Failure" };
+                for (var index = 0; index < names.Length; index++)
+                    clips[index] = (AudioClip)createCue.Invoke(null, new object[] { Enum.Parse(sound, names[index]) });
+                Assert.That(clips.All(clip => clip != null), Is.True);
+                Assert.That(clips.Select(clip => clip.name).Distinct().Count(), Is.EqualTo(5));
+                palette.GetMethod("StopBed").Invoke(null, new object[] { owner });
+            }
+            finally
+            {
+                foreach (var clip in clips) if (clip != null) UnityEngine.Object.DestroyImmediate(clip);
+                UnityEngine.Object.DestroyImmediate(owner);
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator FreshProfileCanChooseAnOpeningResponse()
         {
             yield return VerifyProfileResearchOpening(false);
         }
 
         [UnityTest]
-        public IEnumerator OwnedResearchMakesOnlyItsOpeningMutationAvailable()
+        public IEnumerator OwnedResearchKeepsFurtherToughHideRanksAvailable()
         {
             yield return VerifyProfileResearchOpening(true);
         }
@@ -63,13 +194,19 @@ namespace SaltyGame.PlayModeTests
                 ExecuteCommand(GetProperty(desktop, "OpenDesktopIconCommand"), "Simulation");
                 yield return null;
                 var preview = root.GetComponent<SpeciesSimulationPreview>();
+                var shell = root.GetComponent("SaltyGame.VM_SimulationShell");
+                Assert.That(GetProperty(shell, "JourneyMapSummary"), Does.Contain("Foxes hunt your Hares"));
                 var opening = preview.JourneyMap.StartNode;
                 Assert.That(preview.ChooseJourneyNode(opening.NodeId), Is.True);
-                Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(1));
-                Assert.That(preview.GetJourneyRewardOptionDisplayName(0),
-                    Does.Contain(researched ? "TOUGH HIDE" : "CONTINUE WITHOUT A MUTATION"));
-                Assert.That(preview.ClaimJourneyNodeReward(0), Is.True);
-                Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(researched ? 1 : 0));
+                Assert.That(preview.JourneyRewardOptionCount, Is.EqualTo(3));
+                Assert.That(preview.GetJourneyRewardOptionDisplayName(0), Does.Contain("ESCAPE INSTINCT"));
+                Assert.That(preview.GetJourneyRewardOptionDisplayName(1), Does.Contain("TOUGH HIDE"));
+                Assert.That(preview.GetJourneyRewardOptionDisplayName(2), Does.Contain("REPRODUCTIVE DRIVE"));
+                Assert.That(preview.ClaimJourneyNodeReward(1), Is.True);
+                Assert.That(preview.Progression.PurchasedUpgradeCount, Is.EqualTo(1));
+                Assert.That(preview.Progression.HasMutationAccess(SpeciesUpgradeCatalog.ToughHideId), Is.True);
+                Assert.That(preview.Progression.CanApplyFreeUpgrade(
+                    SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ToughHideId)), Is.True);
                 Assert.That(preview.CanChooseJourneyNode(opening.NextNodes[0].NodeId), Is.True);
             }
             finally { backup.Restore(); }
@@ -957,6 +1094,7 @@ namespace SaltyGame.PlayModeTests
             yield return null;
             yield return null;
             yield return null;
+            yield return CaptureCamera(outputDirectory, "02b-galapagos-settings", desktopRoot.GetComponent<Camera>());
 
             openCommand.GetType().GetMethod("Execute")?.Invoke(openCommand, new object[] { "Simulation" });
             yield return null;

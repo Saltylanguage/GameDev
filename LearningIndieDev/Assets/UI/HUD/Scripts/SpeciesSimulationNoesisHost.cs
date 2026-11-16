@@ -7,8 +7,6 @@ namespace SaltyGame
 {
     public sealed class SpeciesSimulationNoesisHost : MonoBehaviour
     {
-        static readonly SpeciesId FoxSpeciesId = new SpeciesId("fox");
-
         [Header("Serialized Composition")]
         [SerializeField] SpeciesSimulationPreview preview;
         [SerializeField] Camera uiCamera;
@@ -27,8 +25,7 @@ namespace SaltyGame
         [SerializeField] bool enableNoesisUi = true;
 
         SpeciesSimulationBoard simulationBoard;
-        int lastBirthSoundTick = -1;
-        int lastFoxHuntReactionTick = -1;
+        int lastReactionTick = -1;
         SimulationRunState lastReactionRun;
         bool profileLaunchActive;
         SimulationRunState trackedProfileRun;
@@ -62,8 +59,6 @@ namespace SaltyGame
                 Debug.LogError("SpeciesSimulationNoesisHost could not load its XAML content.", this);
                 return;
             }
-
-            view.Content.DataContext = viewModel;
 
             var hasLaunchRequest = Helper_SceneTransition.TryConsumeSimulationLaunch(out var launch);
             if (hasLaunchRequest)
@@ -100,6 +95,9 @@ namespace SaltyGame
             }
 
             simulationBoard.ZoomRequested += HandleBoardZoomRequested;
+            simulationBoard.CellSelected += HandleCellSelected;
+            simulationBoard.DataContext = boardViewModel;
+            view.Content.DataContext = viewModel;
             simulationBoard.SetSpriteVisuals(
                 viewModel.AnimalSprites,
                 viewModel.GrassTerrainTiles,
@@ -107,6 +105,7 @@ namespace SaltyGame
             boardViewModel.PropertyChanged += HandleBoardPropertyChanged;
             viewModel.PropertyChanged += HandleViewModelPropertyChanged;
             ApplyBoardSnapshot();
+            SimulationSoundPalette.StartBed(gameObject);
 
             // Journey launch requests begin on the map; direct test scenes still open live.
             if (preview.State == SpeciesPreviewState.Results)
@@ -135,6 +134,7 @@ namespace SaltyGame
 
         void OnDestroy()
         {
+            SimulationSoundPalette.StopBed(gameObject);
             TrackSimulationTicks();
             if (profileLaunchActive && profileSession != null)
             {
@@ -144,6 +144,7 @@ namespace SaltyGame
             if (simulationBoard != null)
             {
                 simulationBoard.ZoomRequested -= HandleBoardZoomRequested;
+                simulationBoard.CellSelected -= HandleCellSelected;
             }
 
             if (boardViewModel != null)
@@ -201,6 +202,10 @@ namespace SaltyGame
             {
                 ApplyBoardSnapshot();
             }
+            else if (args.PropertyName == nameof(VM_SimulationBoard.HasSelection))
+            {
+                simulationBoard?.SetSelectedCell(boardViewModel.SelectedX, boardViewModel.SelectedY);
+            }
         }
 
         void HandleViewModelPropertyChanged(object sender, PropertyChangedEventArgs args)
@@ -219,15 +224,16 @@ namespace SaltyGame
             }
 
             var currentRun = preview != null ? preview.Run : null;
-            if (!ReferenceEquals(lastReactionRun, currentRun))
+            if (!ReferenceEquals(lastReactionRun, currentRun)
+                || (currentRun != null && currentRun.Tick < lastReactionTick))
             {
                 lastReactionRun = currentRun;
-                lastBirthSoundTick = -1;
-                lastFoxHuntReactionTick = -1;
-                viewModel?.ClearEventReaction();
+                lastReactionTick = currentRun?.Tick ?? -1;
+                viewModel?.ResetRunActivity();
             }
 
             simulationBoard.SetSnapshot(boardViewModel.Snapshot);
+            simulationBoard.SetSelectedCell(boardViewModel.SelectedX, boardViewModel.SelectedY);
             simulationBoard.SetForestEdgeFlourishes(viewModel.ForestEdgeFlourishes);
             ApplyBoardZoom();
             simulationBoard.SetFoxHuntCue(
@@ -244,28 +250,14 @@ namespace SaltyGame
                 boardViewModel.MatingCueOffspringY,
                 boardViewModel.MatingCueTick);
             simulationBoard.SetBirthCues(boardViewModel.RecentBirths);
-            if (boardViewModel.FoxHuntCueTick < 0)
+            if (currentRun != null && currentRun.Tick > lastReactionTick)
             {
-                lastFoxHuntReactionTick = -1;
-            }
-            else if (boardViewModel.FoxHuntCueTick != lastFoxHuntReactionTick)
-            {
-                viewModel?.PresentFoxHuntReaction();
-                lastFoxHuntReactionTick = boardViewModel.FoxHuntCueTick;
-            }
-
-            if (boardViewModel.MatingCueTick < 0)
-            {
-                lastBirthSoundTick = -1;
-            }
-            if (boardViewModel.MatingCueTick >= 0
-                && boardViewModel.MatingCueTick != lastBirthSoundTick)
-            {
-                SimulationBirthChime.Play(gameObject);
-                var births = boardViewModel.RecentBirths;
-                var foxPortrait = births.Count > 0 && births[0].Species == FoxSpeciesId;
-                viewModel?.PresentBirthReaction(births.Count, foxPortrait);
-                lastBirthSoundTick = boardViewModel.MatingCueTick;
+                if (viewModel != null && viewModel.PresentRunActivity(
+                    currentRun, lastReactionTick, boardViewModel.FoxHuntCueTick > lastReactionTick))
+                {
+                    SimulationBirthChime.Play(gameObject);
+                }
+                lastReactionTick = currentRun.Tick;
             }
         }
 
@@ -280,6 +272,12 @@ namespace SaltyGame
         void HandleBoardZoomRequested(float zoom)
         {
             viewModel?.SetBoardZoom(zoom);
+        }
+
+        void HandleCellSelected(int x, int y)
+        {
+            boardViewModel?.SelectCell(x, y);
+            SimulationSoundPalette.Play(gameObject, SimulationSound.Selection);
         }
 
         static SpeciesSimulationBoard FindSimulationBoard(FrameworkElement root)

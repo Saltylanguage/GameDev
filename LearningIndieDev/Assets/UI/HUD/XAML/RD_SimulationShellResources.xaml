@@ -248,6 +248,10 @@
                     <Trigger Property="IsMouseOver" Value="True">
                         <Setter TargetName="SpeedRadioSurface" Property="Opacity" Value="0.9" />
                     </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="SpeedRadioSurface" Property="BorderBrush" Value="#FF243E2C" />
+                        <Setter TargetName="SpeedRadioSurface" Property="BorderThickness" Value="3" />
+                    </Trigger>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter TargetName="SpeedRadioSurface" Property="Opacity" Value="0.45" />
                     </Trigger>
@@ -260,7 +264,7 @@
                 <Setter Property="Foreground" Value="{DynamicResource GalapagOS.Button.Secondary.Foreground}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource GalapagOS.Window.BorderBrush}" />
                 <Setter Property="BorderThickness" Value="2" />
-                <Setter Property="Padding" Value="11,7" />
+                <Setter Property="Padding" Value="3,7" />
                 <Setter Property="MinHeight" Value="34" />
                 <Setter Property="FontFamily" Value="{DynamicResource GalapagOS.FontFamily.Primary}" />
                 <Setter Property="FontSize" Value="13" />
@@ -305,6 +309,10 @@
                     <Trigger Property="IsPressed" Value="True">
                         <Setter TargetName="PaperButtonSurface" Property="Opacity" Value="0.76" />
                     </Trigger>
+                    <Trigger Property="IsKeyboardFocused" Value="True">
+                        <Setter TargetName="PaperButtonSurface" Property="BorderBrush" Value="#FF243E2C" />
+                        <Setter TargetName="PaperButtonSurface" Property="BorderThickness" Value="3" />
+                    </Trigger>
                     <Trigger Property="IsEnabled" Value="False">
                         <Setter TargetName="PaperButtonSurface" Property="Opacity" Value="0.45" />
                     </Trigger>
@@ -341,6 +349,7 @@
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True"><Setter Property="BorderBrush" Value="#D69D4F" /></Trigger>
                                 <Trigger Property="IsPressed" Value="True"><Setter Property="Background" Value="#E5CF91" /></Trigger>
+                                <Trigger Property="IsKeyboardFocused" Value="True"><Setter Property="BorderBrush" Value="#FF243E2C" /></Trigger>
                             </ControlTemplate.Triggers>
                         </ControlTemplate>
                     </Setter.Value>

@@ -1,10 +1,11 @@
 # Handoff — Fox carcass feeding first pass
 
-**Date:** November 11, 2026  
+**Date:** November 11–13, 2026
 **Branch:** `codex/s6-predator-first`  
-**Commit:** `5eead86a` (working tree contains broader pre-existing S6 changes)  
-**Status:** Implementation and portable checks complete; Unity validation and
-seed experiment pending
+**Current source commit:** `8a92425866b4b5ef3cd9c77968f53554e17f63b8`
+**Status:** Implementation and focused validation complete; full test run retains
+12 failures; approved diagnostic completed with 340 accepted runs. No production
+balance decision has been made.
 
 ## Requested change
 
@@ -28,7 +29,7 @@ Foxes. Retune Fox upkeep so 600 ticks represents 48 hours and costs 48 energy.
   because it sets newborn energy; the Fox's 15% mating cost and 25% energy
   threshold are separate fraction fields.
 
-## Checks
+## Initial implementation checks — November 11
 
 - `dotnet build tools/CellSim.Batch/CellSim.Batch.csproj -c Release
   --no-restore` passed with one NU1900 warning because NuGet vulnerability
@@ -45,7 +46,7 @@ Foxes. Retune Fox upkeep so 600 ticks represents 48 hours and costs 48 energy.
   unreachable. Unity EditMode tests and board visual inspection are therefore
   not verified; no lock was deleted and no other project's Editor was used.
 
-## Unity verification — November 12
+## Unity verification — November 12 (blocked; superseded November 13)
 
 - With Josh's authorization, a headless Clean EditMode run filtered to
   `SpeciesDomainTests` was attempted. The first launch reached Unity but stopped
@@ -57,11 +58,11 @@ Foxes. Retune Fox upkeep so 600 ticks represents 48 hours and costs 48 energy.
   present. The lock is zero bytes and dated November 12 at 12:42:52 PM. It was
   left untouched; no Unity process was visible to this session, but Pipeline
   could not establish that the project was closed.
-- The first attempt's result is
-  [`EditMode-cli.json`](../../artifacts/unity-tests-20261112-124249/EditMode-cli.json),
-  with its log alongside. It records compilation failure and zero test results.
-  `git diff --check` passes after the fixture correction. No board visual test
-  or ecology seed experiment was run.
+- The first attempt wrote `EditMode-cli.json` and `EditMode.log` under
+  `LearningIndieDev/artifacts/unity-tests-20261112-124249`; those files are not
+  present in the current main checkout. This handoff retains the recorded
+  outcome: fixture compilation failure and zero test results. No board visual
+  test or ecology seed experiment had run at that November 12 checkpoint.
 
 ## Balance implication
 
@@ -72,29 +73,57 @@ Fox:Hare survival ratio.
 
 The 1,500-run node-failure draft was superseded before execution because Josh
 clarified that the present question is “how many Hares is a Fox worth?” The
-replacement 100-run diagnostic proposal (five arms × 20 matched seeds, one
-600-tick node) is at
-[S6 Fox carcass-value contract](../Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md).
-Josh approved the scope on November 12. No ecology seed runs have started.
+approved five-arm diagnostic and its conditional scale extension are now
+complete. See the [contract](../Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md),
+[factual report](../Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md),
+and [separate AI analysis](../Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md).
 
-Predictive AI was not used: the new carcass-sharing rule has no matching
-held-out calibration evidence. Direct seeded simulation is the useful next
-evidence source once the contract is approved.
+Predictive AI was not used because the new carcass-sharing rule has no matching
+held-out calibration evidence. The approved direct seeded experiment has since
+completed; its factual results and separate interpretation are linked below.
+
+## Unity verification and experiment — November 13
+
+- The GUID conflict is resolved to the canonical `Genome.meta` GUID
+  `c576ac05bbb49f7488aa54f8ac574eaa`. No conflicting serialized references
+  were found, and the canonical file has no outstanding tracked diff.
+- Focused `SpeciesDomainTests` passed **160/160**. The full Unity Clean run on
+  Unity `6000.4.6f1` recorded EditMode **764/773 passed, 8 failed, 1 skipped**
+  and PlayMode **92/103 passed, 4 failed, 7 skipped**. It therefore did not
+  pass. Failures and logs are indexed in the scoped diagnostics summaries at
+  [`unity-tests-20261113-152327`](../../artifacts/unity-tests-20261113-152327/diagnostics-summary.md)
+  and [`unity-tests-20261113-152426`](../../artifacts/unity-tests-20261113-152426/diagnostics-summary.md).
+- The first batch attempt found a real no-preset telemetry gap: Hare `PREY`
+  stayed zero while Fox kills occurred. That batch was rejected and none of
+  its runs were accepted. The fix is in commit
+  `8a92425866b4b5ef3cd9c77968f53554e17f63b8`; fresh reference runs reconciled
+  both species' population accounting.
+- The initial five-arm experiment completed 100/100 runs. Since the three
+  2:1 scale arms differed and the approved contract made expansion conditional
+  on unresolved ratio uncertainty, those arms were extended by 80 matched
+  seeds each. The resulting evidence is **340 accepted runs**: 100 seeds each
+  for 2 Fox/1 Hare, 4/2, and 6/3; 20 seeds each for 6/1 and 6/6. The separate
+  seed-62020 smoke run is excluded.
+- The experiment's source hash, scenario fingerprint, raw JSONL hashes, plan
+  identities, and per-seed ledgers are recorded in the [factual report](../Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md)
+  and retained under `LearningIndieDev/artifacts/S6-Fox-Carcass-Value-20261113-153600/`.
+- The run was headless. No board visual inspection or manual playtest was
+  performed. No production energy or population values changed.
 
 ## Next step
 
-When the worktree's Editor is reachable, rerun the focused EditMode check, then
-export a fresh snapshot, validate the hashes, dry-run the approved plan, and
-execute only the approved 100 runs. The Unity CLI's two `open` attempts
-returned successfully but launched no Editor process; `unity status` reports
-no instances. The Clean wrapper refuses to run while the current lock is
-present and Pipeline is unreachable. Leave that lock untouched until the
-project state can be confirmed.
+Josh can now review the [factual report](../Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md)
+and [AI analysis](../Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md),
+then decide whether to preserve the provisional 96/48 energy values or request
+a separate reproduction-isolation or manual-playtest pass. The report shows
+that 96 Hare energy is two Fox maintenance budgets locally, but does not
+support a universal ecological Fox:Hare ratio.
 
 ## Not checked / risk
 
-Unity domain tests, Noesis rendering, and production-scale encounter outcomes
-remain unverified. The no-decay carcass persists until consumed; that is the
-current first-pass rule and may need a later decay decision if it causes stale
-food to accumulate. Unity launch troubleshooting is the current external-state
-blocker; filing a Unity issue would send logs and needs separate user approval.
+The full Unity suite still has 12 failures outside a clean pass; review the
+retained NUnit XML before release. Noesis board rendering and manual play have
+not been inspected. The no-decay carcass persists until consumed; if later
+scenarios accumulate stale food, decay needs a separate design decision. The
+portable runner targeted .NET 8 but ran under installed .NET 10.0.4 with major
+roll-forward; a native .NET 8 runtime was not available.

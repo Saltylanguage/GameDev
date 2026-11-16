@@ -549,6 +549,13 @@ namespace SaltyGame
             new[] { EfficientDigestionId, SeedDispersalId },
         };
 
+        static readonly string[][] IntroductoryHarePathStarterIds =
+        {
+            new[] { ThreatExposureId },
+            new[] { ToughHideId },
+            new[] { ReproductiveDriveId },
+        };
+
         static readonly string[] ExperimentalHerbivoreUpgradeIds =
         {
             ToughHideId,
@@ -580,7 +587,8 @@ namespace SaltyGame
             string continuingUpgradeId,
             int rotation,
             int seed,
-            Func<SpeciesUpgrade, bool> canOffer = null)
+            Func<SpeciesUpgrade, bool> canOffer = null,
+            bool introductoryHareMutations = false)
         {
             if (rotation < 0)
             {
@@ -601,7 +609,8 @@ namespace SaltyGame
                     % (PhaseHerbivoreUpgradeIds.Length - 1);
             if (!hasContinuingUpgrade && rotation == 0)
             {
-                return CreatePhasePathStarterOffer(seededValue, canOffer);
+                return CreatePhasePathStarterOffer(seededValue, canOffer,
+                    introductoryHareMutations ? IntroductoryHarePathStarterIds : PhaseHerbivorePathStarterIds);
             }
 
             var offer = new List<SpeciesUpgrade>(3);
@@ -635,14 +644,15 @@ namespace SaltyGame
 
         static SpeciesUpgrade[] CreatePhasePathStarterOffer(
             int seededValue,
-            Func<SpeciesUpgrade, bool> canOffer)
+            Func<SpeciesUpgrade, bool> canOffer,
+            string[][] paths)
         {
             var offer = new List<SpeciesUpgrade>(3);
-            var firstPath = seededValue % PhaseHerbivorePathStarterIds.Length;
-            for (var pathOffset = 0; pathOffset < PhaseHerbivorePathStarterIds.Length; pathOffset++)
+            var firstPath = seededValue % paths.Length;
+            for (var pathOffset = 0; pathOffset < paths.Length; pathOffset++)
             {
-                var pathIndex = (firstPath + pathOffset) % PhaseHerbivorePathStarterIds.Length;
-                var path = PhaseHerbivorePathStarterIds[pathIndex];
+                var pathIndex = (firstPath + pathOffset) % paths.Length;
+                var path = paths[pathIndex];
                 var preferred = (seededValue >> (pathIndex + 1)) & 1;
                 for (var alternative = 0; alternative < path.Length; alternative++)
                 {

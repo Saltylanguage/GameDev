@@ -1,0 +1,1473 @@
+{
+  "arms": {
+    "control": {
+      "acquisition": null,
+      "aggregate": {
+        "meanFirstHareExtinctionTick": 444.667,
+        "meanFoxCombatAttempts": 79.333,
+        "meanFoxCombatNonLethalHits": 0,
+        "meanHareBirths": 33.667,
+        "meanHareCombatDeaths": 46,
+        "meanHareEncounters": 79.333,
+        "meanHareStarvationDeaths": 42.667,
+        "nodeFourSurvivors": 0,
+        "nodeOneSurvivors": 0,
+        "seedsExtinctEarlierThanControl": 0,
+        "seedsExtinctLaterThanControl": 0
+      },
+      "artifactDirectory": "artifacts/cellular-experiment-20261115-103544",
+      "reportSha256": "d692a35511f21e04d4808d612211d87814ced6baa80286b104fef626d0cb405c",
+      "runProvenanceFingerprint": "21c5c0a5bc7d8462bd0ade84079fd5c18af7cfc3858f6e36f8dfe59dee4ed9a6",
+      "seeds": [
+        {
+          "firstHareExtinctionTick": 383,
+          "foxCombatAttempts": 68,
+          "foxCombatKills": 38,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            42,
+            5,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 34,
+          "hareCombatDeaths": 38,
+          "hareEncounters": 68,
+          "harePopulationIntegral": 10166,
+          "hareReproductionEligibleAttempts": 25,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 51,
+          "seed": 10100
+        },
+        {
+          "firstHareExtinctionTick": 504,
+          "foxCombatAttempts": 90,
+          "foxCombatKills": 51,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            22,
+            19,
+            11,
+            5,
+            1,
+            0
+          ],
+          "hareBirths": 25,
+          "hareCombatDeaths": 51,
+          "hareEncounters": 90,
+          "harePopulationIntegral": 9243,
+          "hareReproductionEligibleAttempts": 22,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 29,
+          "seed": 10101
+        },
+        {
+          "firstHareExtinctionTick": 445,
+          "foxCombatAttempts": 79,
+          "foxCombatKills": 42,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            34,
+            16,
+            3,
+            0,
+            0
+          ],
+          "hareBirths": 30,
+          "hareCombatDeaths": 42,
+          "hareEncounters": 79,
+          "harePopulationIntegral": 11065,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 43,
+          "seed": 10102
+        },
+        {
+          "firstHareExtinctionTick": 281,
+          "foxCombatAttempts": 51,
+          "foxCombatKills": 33,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            8,
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 7,
+          "hareCombatDeaths": 33,
+          "hareEncounters": 51,
+          "harePopulationIntegral": 5185,
+          "hareReproductionEligibleAttempts": 15,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 29,
+          "seed": 10103
+        },
+        {
+          "firstHareExtinctionTick": 411,
+          "foxCombatAttempts": 63,
+          "foxCombatKills": 43,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            20,
+            5,
+            1,
+            0,
+            0
+          ],
+          "hareBirths": 21,
+          "hareCombatDeaths": 43,
+          "hareEncounters": 63,
+          "harePopulationIntegral": 7391,
+          "hareReproductionEligibleAttempts": 20,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 33,
+          "seed": 10104
+        },
+        {
+          "firstHareExtinctionTick": 447,
+          "foxCombatAttempts": 68,
+          "foxCombatKills": 47,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            24,
+            13,
+            12,
+            0,
+            0
+          ],
+          "hareBirths": 28,
+          "hareCombatDeaths": 47,
+          "hareEncounters": 68,
+          "harePopulationIntegral": 10657,
+          "hareReproductionEligibleAttempts": 34,
+          "hareReproductionFailedChanceRoll": 16,
+          "hareStarvationDeaths": 36,
+          "seed": 10105
+        },
+        {
+          "firstHareExtinctionTick": 538,
+          "foxCombatAttempts": 104,
+          "foxCombatKills": 58,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            55,
+            30,
+            17,
+            3,
+            0
+          ],
+          "hareBirths": 54,
+          "hareCombatDeaths": 58,
+          "hareEncounters": 104,
+          "harePopulationIntegral": 15202,
+          "hareReproductionEligibleAttempts": 47,
+          "hareReproductionFailedChanceRoll": 27,
+          "hareStarvationDeaths": 51,
+          "seed": 10106
+        },
+        {
+          "firstHareExtinctionTick": 473,
+          "foxCombatAttempts": 91,
+          "foxCombatKills": 50,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            31,
+            59,
+            34,
+            9,
+            0,
+            0
+          ],
+          "hareBirths": 68,
+          "hareCombatDeaths": 50,
+          "hareEncounters": 91,
+          "harePopulationIntegral": 16305,
+          "hareReproductionEligibleAttempts": 63,
+          "hareReproductionFailedChanceRoll": 28,
+          "hareStarvationDeaths": 73,
+          "seed": 10107
+        },
+        {
+          "firstHareExtinctionTick": 493,
+          "foxCombatAttempts": 61,
+          "foxCombatKills": 40,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            21,
+            16,
+            14,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 19,
+          "hareCombatDeaths": 40,
+          "hareEncounters": 61,
+          "harePopulationIntegral": 8557,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 9,
+          "hareStarvationDeaths": 34,
+          "seed": 10108
+        },
+        {
+          "firstHareExtinctionTick": 344,
+          "foxCombatAttempts": 72,
+          "foxCombatKills": 39,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            27,
+            8,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 21,
+          "hareCombatDeaths": 39,
+          "hareEncounters": 72,
+          "harePopulationIntegral": 8617,
+          "hareReproductionEligibleAttempts": 27,
+          "hareReproductionFailedChanceRoll": 14,
+          "hareStarvationDeaths": 37,
+          "seed": 10109
+        },
+        {
+          "firstHareExtinctionTick": 530,
+          "foxCombatAttempts": 104,
+          "foxCombatKills": 55,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            43,
+            55,
+            13,
+            1,
+            0
+          ],
+          "hareBirths": 74,
+          "hareCombatDeaths": 55,
+          "hareEncounters": 104,
+          "harePopulationIntegral": 16320,
+          "hareReproductionEligibleAttempts": 53,
+          "hareReproductionFailedChanceRoll": 29,
+          "hareStarvationDeaths": 74,
+          "seed": 10110
+        },
+        {
+          "firstHareExtinctionTick": 487,
+          "foxCombatAttempts": 101,
+          "foxCombatKills": 56,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            24,
+            16,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 23,
+          "hareCombatDeaths": 56,
+          "hareEncounters": 101,
+          "harePopulationIntegral": 9750,
+          "hareReproductionEligibleAttempts": 27,
+          "hareReproductionFailedChanceRoll": 14,
+          "hareStarvationDeaths": 22,
+          "seed": 10111
+        }
+      ],
+      "statValidation": "VALIDATED_WITH_LIMITATIONS"
+    },
+    "escape": {
+      "acquisition": {
+        "effectiveTick": 100,
+        "upgradeId": "threat-exposure"
+      },
+      "aggregate": {
+        "meanFirstHareExtinctionTick": 444.583,
+        "meanFoxCombatAttempts": 76.167,
+        "meanFoxCombatNonLethalHits": 0,
+        "meanHareBirths": 29,
+        "meanHareCombatDeaths": 43.583,
+        "meanHareEncounters": 76.167,
+        "meanHareStarvationDeaths": 40.417,
+        "nodeFourSurvivors": 0,
+        "nodeOneSurvivors": 0,
+        "seedsExtinctEarlierThanControl": 4,
+        "seedsExtinctLaterThanControl": 7
+      },
+      "artifactDirectory": "artifacts/cellular-experiment-20261115-104116",
+      "reportSha256": "10785eef9acdaf024895eade1a862505655ac929097dd437db4776450832b853",
+      "runProvenanceFingerprint": "96acd842495a34fd1396026845d657343441aba951ab1aa0e13721a01b4b8e35",
+      "seeds": [
+        {
+          "firstHareExtinctionTick": 408,
+          "foxCombatAttempts": 71,
+          "foxCombatKills": 38,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            42,
+            5,
+            1,
+            0,
+            0
+          ],
+          "hareBirths": 34,
+          "hareCombatDeaths": 38,
+          "hareEncounters": 71,
+          "harePopulationIntegral": 10197,
+          "hareReproductionEligibleAttempts": 25,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 51,
+          "seed": 10100
+        },
+        {
+          "firstHareExtinctionTick": 514,
+          "foxCombatAttempts": 93,
+          "foxCombatKills": 55,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            22,
+            19,
+            24,
+            8,
+            4,
+            0
+          ],
+          "hareBirths": 32,
+          "hareCombatDeaths": 55,
+          "hareEncounters": 93,
+          "harePopulationIntegral": 10783,
+          "hareReproductionEligibleAttempts": 27,
+          "hareReproductionFailedChanceRoll": 12,
+          "hareStarvationDeaths": 32,
+          "seed": 10101
+        },
+        {
+          "firstHareExtinctionTick": 451,
+          "foxCombatAttempts": 93,
+          "foxCombatKills": 45,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            36,
+            9,
+            4,
+            0,
+            0
+          ],
+          "hareBirths": 27,
+          "hareCombatDeaths": 45,
+          "hareEncounters": 93,
+          "harePopulationIntegral": 10447,
+          "hareReproductionEligibleAttempts": 22,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 37,
+          "seed": 10102
+        },
+        {
+          "firstHareExtinctionTick": 392,
+          "foxCombatAttempts": 62,
+          "foxCombatKills": 33,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            11,
+            5,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 2,
+          "hareCombatDeaths": 33,
+          "hareEncounters": 62,
+          "harePopulationIntegral": 5947,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 18,
+          "hareStarvationDeaths": 24,
+          "seed": 10103
+        },
+        {
+          "firstHareExtinctionTick": 382,
+          "foxCombatAttempts": 68,
+          "foxCombatKills": 41,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            18,
+            5,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 19,
+          "hareCombatDeaths": 41,
+          "hareEncounters": 68,
+          "harePopulationIntegral": 7522,
+          "hareReproductionEligibleAttempts": 16,
+          "hareReproductionFailedChanceRoll": 7,
+          "hareStarvationDeaths": 33,
+          "seed": 10104
+        },
+        {
+          "firstHareExtinctionTick": 447,
+          "foxCombatAttempts": 68,
+          "foxCombatKills": 47,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            24,
+            13,
+            12,
+            0,
+            0
+          ],
+          "hareBirths": 28,
+          "hareCombatDeaths": 47,
+          "hareEncounters": 68,
+          "harePopulationIntegral": 10657,
+          "hareReproductionEligibleAttempts": 34,
+          "hareReproductionFailedChanceRoll": 16,
+          "hareStarvationDeaths": 36,
+          "seed": 10105
+        },
+        {
+          "firstHareExtinctionTick": 472,
+          "foxCombatAttempts": 82,
+          "foxCombatKills": 46,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            49,
+            16,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 37,
+          "hareCombatDeaths": 46,
+          "hareEncounters": 82,
+          "harePopulationIntegral": 12273,
+          "hareReproductionEligibleAttempts": 38,
+          "hareReproductionFailedChanceRoll": 18,
+          "hareStarvationDeaths": 46,
+          "seed": 10106
+        },
+        {
+          "firstHareExtinctionTick": 501,
+          "foxCombatAttempts": 84,
+          "foxCombatKills": 50,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            31,
+            56,
+            29,
+            10,
+            1,
+            0
+          ],
+          "hareBirths": 60,
+          "hareCombatDeaths": 50,
+          "hareEncounters": 84,
+          "harePopulationIntegral": 15729,
+          "hareReproductionEligibleAttempts": 59,
+          "hareReproductionFailedChanceRoll": 32,
+          "hareStarvationDeaths": 65,
+          "seed": 10107
+        },
+        {
+          "firstHareExtinctionTick": 366,
+          "foxCombatAttempts": 52,
+          "foxCombatKills": 33,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            21,
+            19,
+            4,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 14,
+          "hareCombatDeaths": 33,
+          "hareEncounters": 52,
+          "harePopulationIntegral": 6896,
+          "hareReproductionEligibleAttempts": 17,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 36,
+          "seed": 10108
+        },
+        {
+          "firstHareExtinctionTick": 392,
+          "foxCombatAttempts": 63,
+          "foxCombatKills": 35,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            25,
+            6,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 17,
+          "hareCombatDeaths": 35,
+          "hareEncounters": 63,
+          "harePopulationIntegral": 8295,
+          "hareReproductionEligibleAttempts": 23,
+          "hareReproductionFailedChanceRoll": 14,
+          "hareStarvationDeaths": 37,
+          "seed": 10109
+        },
+        {
+          "firstHareExtinctionTick": 537,
+          "foxCombatAttempts": 104,
+          "foxCombatKills": 54,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            43,
+            45,
+            20,
+            2,
+            0
+          ],
+          "hareBirths": 64,
+          "hareCombatDeaths": 54,
+          "hareEncounters": 104,
+          "harePopulationIntegral": 16441,
+          "hareReproductionEligibleAttempts": 64,
+          "hareReproductionFailedChanceRoll": 34,
+          "hareStarvationDeaths": 65,
+          "seed": 10110
+        },
+        {
+          "firstHareExtinctionTick": 473,
+          "foxCombatAttempts": 74,
+          "foxCombatKills": 46,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            20,
+            9,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 14,
+          "hareCombatDeaths": 46,
+          "hareEncounters": 74,
+          "harePopulationIntegral": 8338,
+          "hareReproductionEligibleAttempts": 21,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 23,
+          "seed": 10111
+        }
+      ],
+      "statValidation": "VALIDATED_WITH_LIMITATIONS"
+    },
+    "reproduction": {
+      "acquisition": {
+        "effectiveTick": 100,
+        "upgradeId": "reproductive-drive"
+      },
+      "aggregate": {
+        "meanFirstHareExtinctionTick": 441.25,
+        "meanFoxCombatAttempts": 76.917,
+        "meanFoxCombatNonLethalHits": 0,
+        "meanHareBirths": 33.917,
+        "meanHareCombatDeaths": 45.5,
+        "meanHareEncounters": 76.917,
+        "meanHareStarvationDeaths": 43.417,
+        "nodeFourSurvivors": 0,
+        "nodeOneSurvivors": 0,
+        "seedsExtinctEarlierThanControl": 4,
+        "seedsExtinctLaterThanControl": 2
+      },
+      "artifactDirectory": "artifacts/cellular-experiment-20261115-105023",
+      "reportSha256": "64816d64e3f1b989cb0dab88564bc4ea9389f5137148715aa2d351b07ed65af1",
+      "runProvenanceFingerprint": "1e9125cfecf5d924236025ec01817cb305d786236933caaf4911ab1171746395",
+      "seeds": [
+        {
+          "firstHareExtinctionTick": 355,
+          "foxCombatAttempts": 66,
+          "foxCombatKills": 37,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            42,
+            7,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 37,
+          "hareCombatDeaths": 37,
+          "hareEncounters": 66,
+          "harePopulationIntegral": 10311,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 9,
+          "hareStarvationDeaths": 55,
+          "seed": 10100
+        },
+        {
+          "firstHareExtinctionTick": 504,
+          "foxCombatAttempts": 90,
+          "foxCombatKills": 51,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            22,
+            19,
+            11,
+            5,
+            1,
+            0
+          ],
+          "hareBirths": 25,
+          "hareCombatDeaths": 51,
+          "hareEncounters": 90,
+          "harePopulationIntegral": 9243,
+          "hareReproductionEligibleAttempts": 22,
+          "hareReproductionFailedChanceRoll": 11,
+          "hareStarvationDeaths": 29,
+          "seed": 10101
+        },
+        {
+          "firstHareExtinctionTick": 418,
+          "foxCombatAttempts": 70,
+          "foxCombatKills": 42,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            32,
+            9,
+            1,
+            0,
+            0
+          ],
+          "hareBirths": 31,
+          "hareCombatDeaths": 42,
+          "hareEncounters": 70,
+          "harePopulationIntegral": 10390,
+          "hareReproductionEligibleAttempts": 23,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 44,
+          "seed": 10102
+        },
+        {
+          "firstHareExtinctionTick": 281,
+          "foxCombatAttempts": 51,
+          "foxCombatKills": 33,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            8,
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 7,
+          "hareCombatDeaths": 33,
+          "hareEncounters": 51,
+          "harePopulationIntegral": 5185,
+          "hareReproductionEligibleAttempts": 15,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 29,
+          "seed": 10103
+        },
+        {
+          "firstHareExtinctionTick": 411,
+          "foxCombatAttempts": 63,
+          "foxCombatKills": 43,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            20,
+            5,
+            1,
+            0,
+            0
+          ],
+          "hareBirths": 21,
+          "hareCombatDeaths": 43,
+          "hareEncounters": 63,
+          "harePopulationIntegral": 7391,
+          "hareReproductionEligibleAttempts": 20,
+          "hareReproductionFailedChanceRoll": 7,
+          "hareStarvationDeaths": 33,
+          "seed": 10104
+        },
+        {
+          "firstHareExtinctionTick": 447,
+          "foxCombatAttempts": 68,
+          "foxCombatKills": 47,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            24,
+            13,
+            12,
+            0,
+            0
+          ],
+          "hareBirths": 28,
+          "hareCombatDeaths": 47,
+          "hareEncounters": 68,
+          "harePopulationIntegral": 10657,
+          "hareReproductionEligibleAttempts": 34,
+          "hareReproductionFailedChanceRoll": 16,
+          "hareStarvationDeaths": 36,
+          "seed": 10105
+        },
+        {
+          "firstHareExtinctionTick": 504,
+          "foxCombatAttempts": 103,
+          "foxCombatKills": 59,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            55,
+            25,
+            16,
+            1,
+            0
+          ],
+          "hareBirths": 57,
+          "hareCombatDeaths": 59,
+          "hareEncounters": 103,
+          "harePopulationIntegral": 14588,
+          "hareReproductionEligibleAttempts": 41,
+          "hareReproductionFailedChanceRoll": 19,
+          "hareStarvationDeaths": 53,
+          "seed": 10106
+        },
+        {
+          "firstHareExtinctionTick": 474,
+          "foxCombatAttempts": 71,
+          "foxCombatKills": 44,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            31,
+            65,
+            17,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 63,
+          "hareCombatDeaths": 44,
+          "hareEncounters": 71,
+          "harePopulationIntegral": 15075,
+          "hareReproductionEligibleAttempts": 43,
+          "hareReproductionFailedChanceRoll": 19,
+          "hareStarvationDeaths": 74,
+          "seed": 10107
+        },
+        {
+          "firstHareExtinctionTick": 493,
+          "foxCombatAttempts": 61,
+          "foxCombatKills": 40,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            21,
+            16,
+            14,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 19,
+          "hareCombatDeaths": 40,
+          "hareEncounters": 61,
+          "harePopulationIntegral": 8557,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 9,
+          "hareStarvationDeaths": 34,
+          "seed": 10108
+        },
+        {
+          "firstHareExtinctionTick": 412,
+          "foxCombatAttempts": 73,
+          "foxCombatKills": 40,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            27,
+            15,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 25,
+          "hareCombatDeaths": 40,
+          "hareEncounters": 73,
+          "harePopulationIntegral": 9563,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 12,
+          "hareStarvationDeaths": 40,
+          "seed": 10109
+        },
+        {
+          "firstHareExtinctionTick": 509,
+          "foxCombatAttempts": 106,
+          "foxCombatKills": 54,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            43,
+            50,
+            20,
+            1,
+            0
+          ],
+          "hareBirths": 71,
+          "hareCombatDeaths": 54,
+          "hareEncounters": 106,
+          "harePopulationIntegral": 16816,
+          "hareReproductionEligibleAttempts": 59,
+          "hareReproductionFailedChanceRoll": 28,
+          "hareStarvationDeaths": 72,
+          "seed": 10110
+        },
+        {
+          "firstHareExtinctionTick": 487,
+          "foxCombatAttempts": 101,
+          "foxCombatKills": 56,
+          "foxCombatNonLethalHits": 0,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            24,
+            16,
+            7,
+            0,
+            0
+          ],
+          "hareBirths": 23,
+          "hareCombatDeaths": 56,
+          "hareEncounters": 101,
+          "harePopulationIntegral": 9750,
+          "hareReproductionEligibleAttempts": 27,
+          "hareReproductionFailedChanceRoll": 14,
+          "hareStarvationDeaths": 22,
+          "seed": 10111
+        }
+      ],
+      "statValidation": "VALIDATED_WITH_LIMITATIONS"
+    },
+    "tough": {
+      "acquisition": {
+        "effectiveTick": 100,
+        "upgradeId": "tough-hide"
+      },
+      "aggregate": {
+        "meanFirstHareExtinctionTick": 425.833,
+        "meanFoxCombatAttempts": 123.75,
+        "meanFoxCombatNonLethalHits": 28.167,
+        "meanHareBirths": 25.833,
+        "meanHareCombatDeaths": 42.917,
+        "meanHareEncounters": 123.75,
+        "meanHareStarvationDeaths": 37.917,
+        "nodeFourSurvivors": 0,
+        "nodeOneSurvivors": 0,
+        "seedsExtinctEarlierThanControl": 8,
+        "seedsExtinctLaterThanControl": 4
+      },
+      "artifactDirectory": "artifacts/cellular-experiment-20261115-104540",
+      "reportSha256": "32c3fccc2b9e06e33db8cc43950af538cac3d73c33ee52f8fc7d80e2cd47c8a4",
+      "runProvenanceFingerprint": "a8651c4ca2523634764c1d8dec2d6bab20fbf6c3c852133139bb0b36619e29b3",
+      "seeds": [
+        {
+          "firstHareExtinctionTick": 448,
+          "foxCombatAttempts": 154,
+          "foxCombatKills": 46,
+          "foxCombatNonLethalHits": 31,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            41,
+            13,
+            3,
+            0,
+            0
+          ],
+          "hareBirths": 37,
+          "hareCombatDeaths": 46,
+          "hareEncounters": 154,
+          "harePopulationIntegral": 11608,
+          "hareReproductionEligibleAttempts": 39,
+          "hareReproductionFailedChanceRoll": 23,
+          "hareStarvationDeaths": 46,
+          "seed": 10100
+        },
+        {
+          "firstHareExtinctionTick": 477,
+          "foxCombatAttempts": 135,
+          "foxCombatKills": 46,
+          "foxCombatNonLethalHits": 31,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            22,
+            19,
+            10,
+            8,
+            0,
+            0
+          ],
+          "hareBirths": 23,
+          "hareCombatDeaths": 46,
+          "hareEncounters": 135,
+          "harePopulationIntegral": 8962,
+          "hareReproductionEligibleAttempts": 24,
+          "hareReproductionFailedChanceRoll": 9,
+          "hareStarvationDeaths": 32,
+          "seed": 10101
+        },
+        {
+          "firstHareExtinctionTick": 405,
+          "foxCombatAttempts": 117,
+          "foxCombatKills": 37,
+          "foxCombatNonLethalHits": 25,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            32,
+            15,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 22,
+          "hareCombatDeaths": 37,
+          "hareEncounters": 117,
+          "harePopulationIntegral": 10266,
+          "hareReproductionEligibleAttempts": 27,
+          "hareReproductionFailedChanceRoll": 14,
+          "hareStarvationDeaths": 40,
+          "seed": 10102
+        },
+        {
+          "firstHareExtinctionTick": 460,
+          "foxCombatAttempts": 92,
+          "foxCombatKills": 38,
+          "foxCombatNonLethalHits": 21,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            16,
+            11,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 13,
+          "hareCombatDeaths": 38,
+          "hareEncounters": 92,
+          "harePopulationIntegral": 7292,
+          "hareReproductionEligibleAttempts": 21,
+          "hareReproductionFailedChanceRoll": 9,
+          "hareStarvationDeaths": 30,
+          "seed": 10103
+        },
+        {
+          "firstHareExtinctionTick": 314,
+          "foxCombatAttempts": 111,
+          "foxCombatKills": 40,
+          "foxCombatNonLethalHits": 24,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            17,
+            13,
+            2,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 15,
+          "hareCombatDeaths": 40,
+          "hareEncounters": 111,
+          "harePopulationIntegral": 6542,
+          "hareReproductionEligibleAttempts": 10,
+          "hareReproductionFailedChanceRoll": 4,
+          "hareStarvationDeaths": 30,
+          "seed": 10104
+        },
+        {
+          "firstHareExtinctionTick": 424,
+          "foxCombatAttempts": 131,
+          "foxCombatKills": 47,
+          "foxCombatNonLethalHits": 32,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            30,
+            16,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 24,
+          "hareCombatDeaths": 47,
+          "hareEncounters": 131,
+          "harePopulationIntegral": 10150,
+          "hareReproductionEligibleAttempts": 32,
+          "hareReproductionFailedChanceRoll": 18,
+          "hareStarvationDeaths": 32,
+          "seed": 10105
+        },
+        {
+          "firstHareExtinctionTick": 433,
+          "foxCombatAttempts": 139,
+          "foxCombatKills": 51,
+          "foxCombatNonLethalHits": 33,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            25,
+            11,
+            6,
+            0,
+            0
+          ],
+          "hareBirths": 20,
+          "hareCombatDeaths": 51,
+          "hareEncounters": 139,
+          "harePopulationIntegral": 9067,
+          "hareReproductionEligibleAttempts": 38,
+          "hareReproductionFailedChanceRoll": 21,
+          "hareStarvationDeaths": 24,
+          "seed": 10106
+        },
+        {
+          "firstHareExtinctionTick": 443,
+          "foxCombatAttempts": 148,
+          "foxCombatKills": 46,
+          "foxCombatNonLethalHits": 35,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            31,
+            46,
+            24,
+            4,
+            0,
+            0
+          ],
+          "hareBirths": 62,
+          "hareCombatDeaths": 46,
+          "hareEncounters": 148,
+          "harePopulationIntegral": 15021,
+          "hareReproductionEligibleAttempts": 58,
+          "hareReproductionFailedChanceRoll": 26,
+          "hareStarvationDeaths": 71,
+          "seed": 10107
+        },
+        {
+          "firstHareExtinctionTick": 312,
+          "foxCombatAttempts": 83,
+          "foxCombatKills": 33,
+          "foxCombatNonLethalHits": 16,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            21,
+            10,
+            1,
+            0,
+            0,
+            0
+          ],
+          "hareBirths": 5,
+          "hareCombatDeaths": 33,
+          "hareEncounters": 83,
+          "harePopulationIntegral": 6105,
+          "hareReproductionEligibleAttempts": 15,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 27,
+          "seed": 10108
+        },
+        {
+          "firstHareExtinctionTick": 417,
+          "foxCombatAttempts": 97,
+          "foxCombatKills": 36,
+          "foxCombatNonLethalHits": 23,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            24,
+            25,
+            17,
+            1,
+            0,
+            0
+          ],
+          "hareBirths": 20,
+          "hareCombatDeaths": 36,
+          "hareEncounters": 97,
+          "harePopulationIntegral": 9326,
+          "hareReproductionEligibleAttempts": 28,
+          "hareReproductionFailedChanceRoll": 17,
+          "hareStarvationDeaths": 39,
+          "seed": 10109
+        },
+        {
+          "firstHareExtinctionTick": 566,
+          "foxCombatAttempts": 141,
+          "foxCombatKills": 50,
+          "foxCombatNonLethalHits": 37,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            28,
+            39,
+            29,
+            18,
+            7,
+            0
+          ],
+          "hareBirths": 41,
+          "hareCombatDeaths": 50,
+          "hareEncounters": 141,
+          "harePopulationIntegral": 14940,
+          "hareReproductionEligibleAttempts": 50,
+          "hareReproductionFailedChanceRoll": 27,
+          "hareStarvationDeaths": 46,
+          "seed": 10110
+        },
+        {
+          "firstHareExtinctionTick": 411,
+          "foxCombatAttempts": 137,
+          "foxCombatKills": 45,
+          "foxCombatNonLethalHits": 30,
+          "hareAtNodeClose": [
+            0,
+            0,
+            0,
+            0
+          ],
+          "hareAtPhaseClose": [
+            23,
+            30,
+            19,
+            2,
+            0,
+            0
+          ],
+          "hareBirths": 28,
+          "hareCombatDeaths": 45,
+          "hareEncounters": 137,
+          "harePopulationIntegral": 10233,
+          "hareReproductionEligibleAttempts": 25,
+          "hareReproductionFailedChanceRoll": 8,
+          "hareStarvationDeaths": 38,
+          "seed": 10111
+        }
+      ],
+      "statValidation": "VALIDATED_WITH_LIMITATIONS"
+    }
+  },
+  "directMutationEffectCountersInCellSimReport": false,
+  "experimentId": "M2-04-THREE-20261115",
+  "fixedInputs": {
+    "attackOpportunityMode": "Natural",
+    "combatResolutionMode": "OpposedRoll",
+    "experimentalFeatures": "bev-experimental",
+    "genomeFingerprint": "b12dfbc73f7cf40ef2eef8153cf4c037f7160e740bbaae32fea195a9cf218c64",
+    "gridHeight": 20,
+    "gridWidth": 36,
+    "nodeStartingPopulations": "",
+    "phaseLengthTicks": 100,
+    "phasesPerNode": 6,
+    "playerSpeciesId": "hare",
+    "rulesetFingerprint": "02f7388f465af4c8cd809e432771c40b58688e135d18597c7e4f86e80488e3f6",
+    "runTicks": 2400,
+    "scenarioAssetPath": "Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset",
+    "seedCount": 12,
+    "seedStart": 10100,
+    "stepIntervalSeconds": 0.20000000298023224
+  },
+  "schemaVersion": 1,
+  "sourceIdentity": {
+    "branch": "codex/s6-predator-first",
+    "commit": "f4c1ee34e5174224f2dfe1161083b53839f4129f",
+    "scenarioSha256": "0ECE03F19616942F052B16F07FE171D9BD73663CC1DEEA26604C75438024F69E",
+    "sourcePatchSha256": "FD5E4476F11763910896F5677A46DAA593345A2279959332F8F973A9246EC970",
+    "utc": "2026-11-15T15:35:19.3017674Z"
+  }
+}

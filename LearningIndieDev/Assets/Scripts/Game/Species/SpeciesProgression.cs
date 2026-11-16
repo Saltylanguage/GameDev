@@ -15,16 +15,18 @@ namespace SaltyGame
         readonly Func<string, bool> mutationResearch;
         readonly Func<string, int> mutationRankLimit;
         readonly Func<string, bool> mutationEquipment;
+        readonly bool introductoryHareMutations;
 
         public SpeciesProgression(SpeciesDefinition definition, Func<string, bool> mutationResearch = null,
             bool usesGeneLabResearch = false, Func<string, int> mutationRankLimit = null,
-            Func<string, bool> mutationEquipment = null)
+            Func<string, bool> mutationEquipment = null, bool introductoryHareMutations = false)
         {
             Definition = definition ?? throw new ArgumentNullException(nameof(definition));
             CurrentRules = definition.Rules;
             this.mutationResearch = mutationResearch;
             this.mutationRankLimit = mutationRankLimit;
             this.mutationEquipment = mutationEquipment;
+            this.introductoryHareMutations = introductoryHareMutations;
             UsesGeneLabResearch = usesGeneLabResearch && mutationResearch != null;
         }
 
@@ -39,6 +41,11 @@ namespace SaltyGame
         public bool IsMutationResearched(string id) => mutationResearch == null || mutationResearch(id);
         public bool IsMutationAvailable(string id) => IsMutationResearched(id)
             && (!UsesGeneLabResearch || mutationEquipment != null && mutationEquipment(id));
+        public bool HasMutationAccess(string id) => IsMutationAvailable(id)
+            || (introductoryHareMutations && Definition.Id.Value == "hare"
+                && (id == SpeciesUpgradeCatalog.ThreatExposureId
+                    || id == SpeciesUpgradeCatalog.ToughHideId
+                    || id == SpeciesUpgradeCatalog.ReproductiveDriveId));
 
         public int GetUpgradeLevel(string upgradeId)
         {
@@ -109,10 +116,10 @@ namespace SaltyGame
                 throw new ArgumentNullException(nameof(upgrade));
             }
 
-            return IsMutationAvailable(upgrade.Id)
+            return HasMutationAccess(upgrade.Id)
                 && GetUpgradeLevel(upgrade.Id) < SpeciesUpgradeCatalog.GetMaxLevel(upgrade.Id)
                 && (upgrade.Type != SpeciesUpgradeType.ReproductionChance
-                    || CurrentRules.ReproductionChance + upgrade.Value <= 1f);
+                    || CurrentRules.ReproductionChance + upgrade.Value <= 1f + 0.000001f);
         }
 
         public bool TryApplyFreeUpgrade(SpeciesUpgrade upgrade)
@@ -172,7 +179,7 @@ namespace SaltyGame
 
         public bool TryApplyFieldDataReward(SpeciesUpgradeSnapshot upgrade, bool hasStarterBurrowing = false)
         {
-            if (upgrade == null || !IsMutationAvailable(upgrade.Id)
+            if (upgrade == null || !HasMutationAccess(upgrade.Id)
                 || !CanApplyBurrowMutation(upgrade.Id, hasStarterBurrowing)) return false;
             if (upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId && CurrentRules.ReproductionChance >= 1f)
                 return false;

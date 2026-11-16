@@ -617,6 +617,7 @@ namespace SaltyGame
             }
 
             Run.Metrics.BeginTick(Run.Tick + 1);
+            Run.Metrics.ConfigureMutationEffects(Run.PlayerSpeciesId, Run.UpgradeLoadout);
             var activeRules = simulationData?.SpeciesRules ?? rules;
             var lineage = Run.GetHareJourneyLineage();
             var source = Run.PrepareHareBurrows(activeRules, lineage);

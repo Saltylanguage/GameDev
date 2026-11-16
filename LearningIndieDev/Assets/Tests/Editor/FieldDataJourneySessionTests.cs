@@ -107,7 +107,8 @@ namespace SaltyGame.EditorTests
         [Test]
         public void ChoosingEveryFreeRewardKeepsHareSkillsAvailableAfterBothShops()
         {
-            var (definition, manager, progression) = CreateSessionParts(routeSimulationCount: 3);
+            var (definition, manager, progression) = CreateSessionParts(
+                hareCount: 1, plantCount: 0, routeSimulationCount: 3);
             using (var session = new FieldDataJourneySession(definition, manager, progression))
             {
                 var pool = SpeciesUpgradeCatalog.ResolveFieldDataOrdinaryRewardPool(new SpeciesId("hare"), null);
@@ -124,12 +125,8 @@ namespace SaltyGame.EditorTests
                     var beforeReward = session.Ledger.Balance;
                     Assert.That(session.ResolveRewardChoice(choices.SourceId, choices.Choices[0].Id, out var error), Is.True, error);
                     Assert.That(session.Ledger.Balance, Is.EqualTo(beforeReward), "Free mutations must not charge Field Data.");
-                    if (session.State == FieldDataJourneyFlowState.Shop)
-                    {
-                        var offer = session.GetCurrentShopVisit().Offers.First(item => !item.Locked);
-                        Assert.That(session.TryBuyShopOffer("shop-" + round, offer.Id, out error), Is.True, error);
-                    }
-                    Assert.That(session.Continue(), Is.True);
+                    Assert.That(session.Continue(), Is.True,
+                        $"Round {round}, state {session.State}, run {session.Run.Status}, settlement: {session.SettlementError}");
                 }
                 manager.Advance(10.1f);
                 Assert.That(session.State, Is.EqualTo(FieldDataJourneyFlowState.Succeeded));

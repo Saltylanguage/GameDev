@@ -86,6 +86,7 @@ namespace SaltyGame
 
         void Awake()
         {
+            AudioListener.volume = VM_GalapagOS_Desktop.SavedAudioVolume;
             OpenProfileSelectionCommand = new DelegateCommand(OpenProfileSelection);
             CloseProfileSelectionCommand = new DelegateCommand(CloseProfileSelection);
             CreateInitialProfileCommand = new DelegateCommand(CreateInitialProfile, () => CreateInitialProfileEnabled);

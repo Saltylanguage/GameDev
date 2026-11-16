@@ -10,6 +10,41 @@
 
 This is the approved next-sprint direction and execution gate, not a claim that S6 has started or that the gameplay exit gate has passed. [S5 remains active through November 15](S5-control-record.md); its remaining GLJP work and closeout are not silently moved or closed by this plan. The older [future-sprint horizon](../FUTURE_SPRINT_ROADMAP.md) is historical; this record and the [active roadmap](../../ROADMAP.md) supersede its S6 persistence/Genome forecast.
 
+## M2 alignment — November 14 vision consolidation
+
+The [ten M2 outcomes](../../ROADMAP.md#m2-outcome-contract--consolidated-2026-11-14)
+are the milestone exit contract. S6 concentrates on the representative Hare
+journey: clarify the route's legitimate success and failure, make avoidance,
+survival, and faster reproduction available and distinct, and show players the
+Fox pressure, their choice's observable effect, and the result's leading
+causes. Reuse the current menu, map, Field Data, Gene Lab, board, and report
+foundations. S6 may surface defects in any of them, but does not claim all ten
+outcomes or pull the full presentation, persistence, onboarding, and
+accessibility integration gate forward from S7.
+
+At S6 review, preserve every accepted behavior and every unresolved finding.
+Record the exact source, authored route, seed/action schedule, Genome state,
+Mutation access, terminal outcome, test results, and player observations. A
+controlled fixture that removes Foxes or disables metabolism proves route
+machinery only. A failed no-action seed can be intended pressure; do not tune
+it solely to turn a test green. The November node-reset contract and carcass
+results are current inputs, while the older retained-world sweeps and
+Trailblazer/Warren/Gardeners labels remain historical evidence. No production
+Fox count, calorie ratio, or final Mutation price is approved by this record.
+
+**November 14 checkout baseline, before this documentation update:** On
+`codex/s6-predator-first`, Unity Doctor was healthy and a Clean full suite
+completed with EditMode **764 passed / 8 failed / 1 skipped** and PlayMode
+**90 passed / 6 failed / 7 skipped**. Five PlayMode failures share an unhandled
+`quick-escape` player-description exception; one is the authored seed-10101
+route ending at tick 442 before the first shop. The EditMode failures involve
+reward continuation, population-control fixtures, Warren snapshot expectations,
+and Tough Hide health placement. Triage the controlling code and dated test
+assumptions before using these failures to change ecology or to assert M2
+readiness. Retained XML/logs: `artifacts/unity-tests-20261114-111056/` (local,
+ignored). This baseline is not an S6 kickoff, a balance decision, or player
+acceptance.
+
 ## November 9 predator-first design decision
 
 Josh selected **Fox overhunting of Hares** as the introductory scenario's primary, immediately understandable pressure. Plant overgrazing may remain a gentle background pressure, but it must not obscure the opening problem or make food renewal the only viable answer. Use the existing Hare/Fox matchup before considering another predator species or terrain system.
@@ -43,9 +78,17 @@ Hare carcass fills two Foxes from 48 to 96, and both finish a no-reproduction
 600-tick fixture alive at 48. The natural ecology result can differ through
 encounter timing, missed attacks, reproduction, and spatial access. The
 [five-arm, 20-seed-per-arm diagnostic contract](../Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
-was approved by Josh on November 12. Seed runs have not started because the
-worktree's Unity Editor remains unreachable. No ratio or production value is
-approved from the arithmetic alone.
+was approved by Josh on November 12. The initial panel and the contract's
+conditional scale extension completed on November 13. The three 2:1 starting
+arms recorded at least one Fox starvation death in 47/100, 82/100, and 100/100
+seeds as both populations scaled from 2/1 to 4/2 to 6/3. Hares went extinct in
+all 300 of those seeds. The fixed-six-Fox controls remained at 20 seeds each;
+the 6/6 arm recorded Fox starvation in 6/20 seeds and retained Hares in 5/20.
+This shows the 96/48 energy arithmetic is not itself an ecological survival
+ratio. No production ratio or energy value is approved from this diagnostic.
+See the [factual report](../Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md)
+and [separate AI analysis](../Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md);
+Josh's balance decision remains pending.
 
 The separate [15-condition starting-population failure-rate draft](../Research/Experiments/S6-Population-Curve-20261111/CONTRACT-DRAFT.md)
 was superseded before execution after Josh clarified the question. Its
@@ -112,7 +155,7 @@ Use existing journey, Mutation, shop, and results surfaces to show Fox hunting, 
 
 Play representative complete journeys using the three Mutation responses. For each, record the most engaging and confusing moments, most consequential choice, fairness of failure, and what the player wants to try next. Separate observed behavior from interpretation and combine the play notes with the controlled comparisons.
 
-**Done when:** At least one complete legitimate Hare journey and representative evaluations of all three responses are recorded, with an explicit accept/revise decision and one prioritized next iteration. Automated tests alone do not establish this gate.
+**Done when:** At least one complete legitimate Hare journey and representative evaluations of all three responses are recorded, with an explicit accept/revise decision and one prioritized next iteration. Automated tests alone do not establish this gate. Record which of the ten M2 outcomes this evidence supports and hand remaining integration and external-player checks to S7.
 
 ## Balance loop and scope boundary
 

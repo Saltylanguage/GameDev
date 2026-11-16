@@ -80,7 +80,10 @@ namespace SaltyGame
             Kind = node.Kind.ToString().ToUpperInvariant();
             CanChoose = canChoose;
             AvailableVisibility = canChoose ? Visibility.Visible : Visibility.Collapsed;
-            SelectedVisibility = selected ? Visibility.Visible : Visibility.Collapsed;
+            SelectedPulseVisibility = selected && !VM_GalapagOS_Desktop.ReducedMotionEnabled
+                ? Visibility.Visible : Visibility.Collapsed;
+            SelectedStaticVisibility = selected && VM_GalapagOS_Desktop.ReducedMotionEnabled
+                ? Visibility.Visible : Visibility.Collapsed;
             ChooseCommand = new DelegateCommand(choose);
             HoverCommand = new DelegateCommand(() =>
             {
@@ -111,7 +114,8 @@ namespace SaltyGame
         public string Kind { get; }
         public bool CanChoose { get; }
         public Visibility AvailableVisibility { get; }
-        public Visibility SelectedVisibility { get; }
+        public Visibility SelectedPulseVisibility { get; }
+        public Visibility SelectedStaticVisibility { get; }
         public DelegateCommand ChooseCommand { get; }
         public DelegateCommand HoverCommand { get; }
         public DelegateCommand LeaveCommand { get; }
@@ -192,6 +196,7 @@ namespace SaltyGame
         const float EventReactionReadWindowSeconds = 1.35f;
         const int HuntReactionPriority = 1;
         const int BirthReactionPriority = 2;
+        const int LossReactionPriority = 3;
 
         static readonly string[] AnimalSpriteNames =
         {
@@ -365,6 +370,11 @@ namespace SaltyGame
         string eventReactionMessageText;
         float eventReactionRemainingSeconds;
         int eventReactionPriority;
+        int pendingHareCombatDeaths;
+        int pendingHareStarvationDeaths;
+        int pendingHareOtherDeaths;
+        int pendingHareBirths;
+        int pendingFoxBirths;
         SimulationTimelineItem[] phaseTimelineItems = Array.Empty<SimulationTimelineItem>();
         int phaseTimelineCachedCount = -1;
         int phaseTimelineCachedPhase;
@@ -470,10 +480,16 @@ namespace SaltyGame
         public DelegateCommand CloseWindowCommand { get; private set; }
         public DelegateCommand ShowFieldNotesCommand { get; private set; }
         public DelegateCommand CloseFieldNotesCommand { get; private set; }
+        public DelegateCommand SetPlaybackSpeedCommand { get; private set; }
 
         public string StateTitle => stateTitle;
         public string RunStatusText => runStatusText;
         public string RunDetailsText => runDetailsText;
+        public string ObjectiveText => preview?.Run?.Status == SimulationRunStatus.AwaitingDecision
+            ? "NEXT: Choose a Mutation or Skip to continue."
+            : preview?.PlayerSpecies.Value == "hare"
+                ? "GOAL: Keep Hares alive. Watch Foxes and food; choose a Mutation at the round break."
+                : "GOAL: Keep your species alive through this round. Pause to inspect the board.";
         public string ExperimentalHerbivoreStatLineSummary => experimentalHerbivoreStatLineSummary;
         public string StatLineContextText => statLineContextText;
         public string StatLineGuide => statLineGuide;
@@ -584,6 +600,10 @@ namespace SaltyGame
         public SimulationTimelineItem[] PhaseTimelineItems => phaseTimelineItems;
         public float BoardZoom => boardZoom;
         public string BoardZoomText => $"{Mathf.RoundToInt(boardZoom * 100f)}%";
+        public bool IsHalfSpeed => preview?.PlaybackSpeed == 0.5f;
+        public bool IsNormalSpeed => preview == null || preview.PlaybackSpeed == 1f;
+        public bool IsDoubleSpeed => preview?.PlaybackSpeed == 2f;
+        public bool IsQuadSpeed => preview?.PlaybackSpeed == 4f;
         public bool CanZoomOut => boardZoom > MinimumBoardZoom;
         public bool CanZoomIn => boardZoom < MaximumBoardZoom;
         public string SettingsMessage => settingsMessage;
@@ -902,6 +922,7 @@ namespace SaltyGame
             SyncSpeciesTabs();
             SyncScenarioOptions();
             Refresh(true);
+            NotifyPlaybackSpeedChanged();
         }
 
         public void BindSceneTransition(Helper_SceneTransition transition, Helper_ProfileSession profile)
@@ -1279,6 +1300,12 @@ namespace SaltyGame
             ZoomOutCommand = new DelegateCommand(() => SetBoardZoom(boardZoom - BoardZoomStep), () => CanZoomOut);
             ResetZoomCommand = new DelegateCommand(() => SetBoardZoom(1f));
             ZoomInCommand = new DelegateCommand(() => SetBoardZoom(boardZoom + BoardZoomStep), () => CanZoomIn);
+            SetPlaybackSpeedCommand = new DelegateCommand(value =>
+            {
+                if (!float.TryParse(value?.ToString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var speed)
+                    || preview == null || !preview.TrySetPlaybackSpeed(speed)) return;
+                NotifyPlaybackSpeedChanged();
+            });
             EndCommand = new DelegateCommand(ShowEndConfirmation, CanEndCurrentRun);
             ConfirmEndCommand = new DelegateCommand(ConfirmEnd, CanEndCurrentRun);
             CancelEndConfirmationCommand = new DelegateCommand(CancelEndConfirmation);
@@ -1474,6 +1501,14 @@ namespace SaltyGame
                 Set(ref fieldNotesVisibility, Visibility.Collapsed, nameof(FieldNotesVisibility)));
         }
 
+        void NotifyPlaybackSpeedChanged()
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsHalfSpeed)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsNormalSpeed)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsDoubleSpeed)));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsQuadSpeed)));
+        }
+
         internal void SetBoardZoom(float value)
         {
             var next = Mathf.Clamp(value, MinimumBoardZoom, MaximumBoardZoom);
@@ -1522,6 +1557,115 @@ namespace SaltyGame
                 HuntReactionPriority);
         }
 
+        internal bool PresentRunActivity(SimulationRunState run, int previousTick, bool foxHunting)
+        {
+            if (run == null || run.Tick <= previousTick)
+            {
+                return false;
+            }
+
+            var hare = new SpeciesId("hare");
+            var fox = new SpeciesId("fox");
+            var deaths = run.Metrics.DeathEvents;
+            for (var index = deaths.Count - 1; index >= 0 && deaths[index].Tick > previousTick; index--)
+            {
+                var death = deaths[index];
+                if (!death.IsCreature || death.Species != hare)
+                {
+                    continue;
+                }
+
+                if (death.Cause == SpeciesDeathCause.Combat)
+                {
+                    pendingHareCombatDeaths++;
+                }
+                else if (death.Cause == SpeciesDeathCause.Starvation)
+                {
+                    pendingHareStarvationDeaths++;
+                }
+                else
+                {
+                    pendingHareOtherDeaths++;
+                }
+            }
+
+            var births = run.Metrics.BirthEvents;
+            for (var index = births.Count - 1; index >= 0 && births[index].Tick > previousTick; index--)
+            {
+                if (births[index].Species == hare)
+                {
+                    pendingHareBirths++;
+                }
+                else if (births[index].Species == fox)
+                {
+                    pendingFoxBirths++;
+                }
+            }
+
+            if (PresentPendingHareLoss(run, hare))
+            {
+                return false;
+            }
+
+            if (pendingHareBirths + pendingFoxBirths > 0)
+            {
+                var title = pendingHareBirths + pendingFoxBirths == 1
+                    ? "NEW LITTLE LIFE!" : "NEW ARRIVALS";
+                var presented = PresentEventReaction(title,
+                    string.Format(CultureInfo.InvariantCulture,
+                        "Recent births: {0} Hare and {1} Fox.", pendingHareBirths, pendingFoxBirths),
+                    pendingHareBirths == 0, BirthReactionPriority);
+                if (presented)
+                {
+                    ClearPendingActivity();
+                }
+                return presented;
+            }
+
+            if (foxHunting)
+            {
+                PresentFoxHuntReaction();
+            }
+            return false;
+        }
+
+        bool PresentPendingHareLoss(SimulationRunState run, SpeciesId hare)
+        {
+            if (pendingHareCombatDeaths + pendingHareStarvationDeaths + pendingHareOtherDeaths == 0)
+            {
+                return false;
+            }
+
+            var latestPopulation = run.PopulationHistory[run.PopulationHistory.Count - 1];
+            var title = latestPopulation.Tick == run.Tick && latestPopulation.GetCount(hare) == 0
+                ? "HARES GONE" : "HARES LOST";
+            if (PresentEventReaction(title,
+                string.Format(CultureInfo.InvariantCulture,
+                    "Recent Hare losses: {0} in combat, {1} starved, {2} other. Also {3} Hare and {4} Fox births.",
+                    pendingHareCombatDeaths, pendingHareStarvationDeaths, pendingHareOtherDeaths,
+                    pendingHareBirths, pendingFoxBirths),
+                false, LossReactionPriority))
+            {
+                ClearPendingActivity();
+            }
+            return true;
+        }
+
+        internal void ResetRunActivity()
+        {
+            ClearPendingActivity();
+            ClearEventReaction();
+        }
+
+        void ClearPendingActivity()
+        {
+            pendingHareCombatDeaths = 0;
+            pendingHareStarvationDeaths = 0;
+            pendingHareOtherDeaths = 0;
+            pendingHareBirths = 0;
+            pendingFoxBirths = 0;
+        }
+
         internal void ClearEventReaction()
         {
             eventReactionRemainingSeconds = 0f;
@@ -1531,13 +1675,14 @@ namespace SaltyGame
             Set(ref eventReactionFoxVisibility, Visibility.Collapsed, nameof(EventReactionFoxVisibility));
         }
 
-        void PresentEventReaction(string title, string message, bool foxPortrait, int priority)
+        bool PresentEventReaction(string title, string message, bool foxPortrait, int priority)
         {
             if (eventReactionVisibility == Visibility.Visible
-                && eventReactionRemainingSeconds > EventReactionReadWindowSeconds
-                && priority <= eventReactionPriority)
+                && (priority < eventReactionPriority
+                    || (priority == eventReactionPriority
+                        && eventReactionRemainingSeconds > EventReactionReadWindowSeconds)))
             {
-                return;
+                return false;
             }
 
             Set(ref eventReactionTitleText, title, nameof(EventReactionTitleText));
@@ -1553,10 +1698,21 @@ namespace SaltyGame
             Set(ref eventReactionVisibility, Visibility.Visible, nameof(EventReactionVisibility));
             eventReactionRemainingSeconds = EventReactionDurationSeconds;
             eventReactionPriority = priority;
+            if (priority == HuntReactionPriority || priority == LossReactionPriority)
+                SimulationSoundPalette.Play(gameObject, SimulationSound.Danger);
+            return true;
         }
 
         void UpdateEventReactionLifetime()
         {
+            if (preview?.State == SpeciesPreviewState.Paused && preview.Run != null
+                && pendingHareCombatDeaths + pendingHareStarvationDeaths + pendingHareOtherDeaths > 0)
+            {
+                ClearEventReaction();
+                PresentPendingHareLoss(preview.Run, new SpeciesId("hare"));
+                return;
+            }
+
             if (eventReactionVisibility != Visibility.Visible
                 || preview == null
                 || preview.State != SpeciesPreviewState.Running)
@@ -1592,6 +1748,9 @@ namespace SaltyGame
             {
                 journeyMapPreviewOpen = false;
                 resumeAfterJourneyMap = false;
+                SimulationSoundPalette.Play(gameObject,
+                    preview.LastExpeditionFailed || preview.LastRunEndedEarly
+                        ? SimulationSound.Failure : SimulationSound.Success);
             }
             var run = preview.Run;
             var runStatus = run == null ? SimulationRunStatus.Ready : run.Status;
@@ -1639,6 +1798,7 @@ namespace SaltyGame
             Set(ref stateTitle, GetStateTitle(state), nameof(StateTitle));
             Set(ref runStatusText, GetRunStatusText(run), nameof(RunStatusText));
             Set(ref runDetailsText, GetRunDetailsText(run), nameof(RunDetailsText));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(ObjectiveText)));
             Set(
                 ref phaseDecisionTitleText,
                 fieldDataSession != null && state == SpeciesPreviewState.FieldDataShop
@@ -1726,6 +1886,9 @@ namespace SaltyGame
             SyncJourneyPresentation(state);
             var isContinuousRun = preview.ContinuousPhasesEnabled
                 && run?.SupportsContinuation == true;
+            var showJourneyResults = (fieldDataSession != null && state == SpeciesPreviewState.Results)
+                || (preview.JourneyActive
+                    && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results));
             Set(
                 ref resultsTitleText,
                 preview.PermanentResults?.IsPresented == true ? preview.PermanentResults.Title
@@ -1762,7 +1925,7 @@ namespace SaltyGame
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PermanentSettlementVisibility)));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(RetryPermanentSettlementVisibility)));
             Set(ref journeyResultSummaryText,
-                preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
+                showJourneyResults
                     ? BuildJourneyResultSummary(run)
                     : string.Empty,
                 nameof(JourneyResultSummaryText));
@@ -1825,6 +1988,8 @@ namespace SaltyGame
             Set(ref selectedUpgradeSummaryText,
                 fieldDataSession != null
                     ? $"Journey upgrades: {fieldDataSession.CurrentIncomeExecutionOrder.Count} income modifiers · {fieldDataSession.SpeciesEffects.Count} species effects · {fieldDataSession.Progression.AppliedRunUpgrades.Count} ordinary skills."
+                        + (state == SpeciesPreviewState.Results
+                            ? "\nMeasured introductory Mutation effects appear in the expedition observations when available; other upgrade effects were not isolated." : string.Empty)
                     : preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
                     ? BuildJourneyUpgradeSummary()
                     : preview.GetSelectedUpgradeSummary(),
@@ -1912,7 +2077,7 @@ namespace SaltyGame
                 state == SpeciesPreviewState.Results || preview.JourneyActive && state == SpeciesPreviewState.JourneyDecision
                     ? Visibility.Visible : Visibility.Collapsed, nameof(ResultsVisibility));
             Set(ref journeyResultsVisibility,
-                preview.JourneyActive && (state == SpeciesPreviewState.JourneyDecision || state == SpeciesPreviewState.Results)
+                showJourneyResults
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(JourneyResultsVisibility));
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(CanReturnToLab)));
@@ -1978,11 +2143,16 @@ namespace SaltyGame
                 SetFieldDataStatus(choices.Choices[index].IncomeOffer.HasValue
                     ? choices.Choices[index].DisplayName + " acquired. It applies from the next payout."
                     : "Reward recorded. Continue when you are ready.");
+                SimulationSoundPalette.Play(gameObject, SimulationSound.Upgrade);
                 Refresh(true);
                 return;
             }
 
-            if (preview?.PurchaseReward(index) == true) Refresh(true);
+            if (preview?.PurchaseReward(index) == true)
+            {
+                SimulationSoundPalette.Play(gameObject, SimulationSound.Upgrade);
+                Refresh(true);
+            }
         }
 
         string GetFieldDataRewardDescription(int index)
@@ -2691,7 +2861,7 @@ namespace SaltyGame
 
             Set(ref journeyMapSummary,
                 state == SpeciesPreviewState.Ready
-                    ? "Choose one of three trailheads, then follow the path into the living biome."
+                    ? "FOREST EDGE / HARE is the current route. Foxes hunt your Hares: keep them alive through six rounds, choosing a Mutation at each round break. If Hares reach zero, the journey ends and unspent Field Data is lost. Select a trailhead to begin."
                     : state == SpeciesPreviewState.JourneyDecision
                         ? preview.ChosenJourneyNode != null
                             ? preview.PhaseRewardMessage + " Choose a connected simulation to continue."
@@ -2714,6 +2884,7 @@ namespace SaltyGame
                     {
                         if (preview.ClaimJourneyNodeReward(capturedIndex))
                         {
+                            SimulationSoundPalette.Play(gameObject, SimulationSound.Upgrade);
                             journeyMapPreviewOpen = true;
                             Refresh(true);
                         }
@@ -2958,8 +3129,11 @@ namespace SaltyGame
             var last = run.PhaseResults[run.PhaseResults.Count - 1];
             var summary = new StringBuilder();
             summary.Append("Observed through phase ").Append(run.PhaseIndex)
-                .Append(" at tick ").Append(last.WindowEndTickInclusive)
-                .Append("  |  Mutations: ").Append(preview.PurchasedUpgradeCount);
+                .Append(" at tick ").Append(last.WindowEndTickInclusive);
+            if (preview.FieldDataSession == null)
+            {
+                summary.Append("  |  Mutations: ").Append(preview.PurchasedUpgradeCount);
+            }
             if (preview.ChosenJourneyNode != null)
             {
                 summary.Append("\nHabitat condition: ").Append(preview.ChosenJourneyNodeDisplayName);
@@ -2968,6 +3142,95 @@ namespace SaltyGame
             {
                 summary.Append("\n").Append(FormatSpeciesName(species)).Append(": ")
                     .Append(last.ClosingPopulation.GetCount(species));
+            }
+            var phaseMetrics = new List<ISpeciesSimulationMetricsView>(run.PhaseResults.Count);
+            foreach (var phase in run.PhaseResults) phaseMetrics.Add(phase.Metrics);
+            summary.Append("\n").Append(BuildObservedOutcomeSummary(phaseMetrics, run.PlayerSpeciesId));
+            summary.Append(BuildMutationContributionSummary(run));
+            return summary.ToString();
+        }
+
+        static string BuildMutationContributionSummary(SimulationRunState run)
+        {
+            var loadout = run?.UpgradeLoadout;
+            if (loadout == null) return string.Empty;
+            var escape = false;
+            var hide = false;
+            var drive = false;
+            foreach (var upgrade in loadout)
+            {
+                if (upgrade == null || upgrade.TargetSpecies != run.PlayerSpeciesId) continue;
+                escape |= SpeciesUpgradeCatalog.IsThreatExposureId(upgrade.Id);
+                hide |= upgrade.Id == SpeciesUpgradeCatalog.ToughHideId;
+                drive |= upgrade.Id == SpeciesUpgradeCatalog.ReproductiveDriveId;
+            }
+            if (!escape && !hide && !drive) return string.Empty;
+
+            var avoided = 0;
+            var survived = 0;
+            var changedRolls = 0;
+            foreach (var phase in run.PhaseResults)
+            {
+                var effects = phase.Metrics.MutationEffects;
+                avoided += effects.AvoidedContacts;
+                survived += effects.DecisiveFullHealthHits;
+                changedRolls += effects.ChangedReproductionRolls;
+            }
+            var summary = new StringBuilder("\nMeasured Mutation effects:");
+            if (escape) summary.Append("\nEscape Instinct: ").Append(avoided)
+                .Append(" predator contacts prevented by its added avoidance chance.");
+            if (hide) summary.Append("\nTough Hide: ").Append(survived)
+                .Append(" full-health predator hits survived because of its added health.");
+            if (drive) summary.Append("\nReproductive Drive: ").Append(changedRolls)
+                .Append(" reproduction chance rolls passed because of its added chance; later conditions can still prevent births.");
+            return summary.ToString();
+        }
+
+        static string BuildObservedOutcomeSummary(
+            IEnumerable<ISpeciesSimulationMetricsView> windows, SpeciesId species)
+        {
+            var births = 0;
+            var deaths = 0;
+            var starvation = 0;
+            var combat = 0;
+            var recordedDeaths = 0;
+            var encounters = 0;
+            var predatorKills = 0;
+            foreach (var metrics in windows)
+            {
+                var activity = metrics.GetActivity(species);
+                births += activity.Births;
+                deaths += activity.Deaths;
+                starvation += activity.StarvationDeaths;
+                encounters += metrics.GetHerbivoreEncounters(species);
+                predatorKills += metrics.GetHerbivorePreyed(species);
+                foreach (var death in metrics.DeathEvents)
+                {
+                    if (death.Species != species || !death.IsCreature) continue;
+                    recordedDeaths++;
+                    if (death.Cause == SpeciesDeathCause.Combat) combat++;
+                }
+            }
+
+            var summary = new StringBuilder();
+            summary.Append(FormatSpeciesName(species)).Append(" births: ").Append(births)
+                .Append("; deaths: ").Append(deaths)
+                .Append(". Predator encounters: ").Append(encounters)
+                .Append("; kills: ").Append(predatorKills).Append('.');
+            if (recordedDeaths != deaths)
+            {
+                return summary.Append(" Cause detail unavailable.").ToString();
+            }
+
+            var other = deaths - combat - starvation;
+            summary.Append("\nLosses: ").Append(combat).Append(" combat, ")
+                .Append(starvation).Append(" starvation, ").Append(other).Append(" other.");
+            if (deaths > 0)
+            {
+                var leading = combat > starvation && combat > other ? "combat"
+                    : starvation > combat && starvation > other ? "starvation"
+                    : other > combat && other > starvation ? "other causes" : "mixed causes";
+                summary.Append(" Leading loss: ").Append(leading).Append('.');
             }
             return summary.ToString();
         }
@@ -2999,7 +3262,7 @@ namespace SaltyGame
 
             return seen.Count == 0
                 ? "No Mutations selected this expedition."
-                : summary.ToString();
+                : summary.Append("\nMeasured introductory Mutation effects appear in the expedition observations when available; other effects were not isolated.").ToString();
         }
 
         void SyncSimulationDashboard(SimulationRunState run)
