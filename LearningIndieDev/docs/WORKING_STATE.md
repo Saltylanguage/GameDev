@@ -3,6 +3,16 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 16 vertical-slice meeting direction (recorded November 17):** Josh
+listed Track A technical foundations before balance work: wrapping,
+water, Trinket skeleton, Mutation cards, terrain upgrades, creature-scale feel
+and additional playable species. Track B defers the all-screen UI treatment,
+important-event visuals, Field Report presentation and audio until Josh finishes
+helping Sim with Track A. The reward prototype is the screen-polish benchmark.
+New and existing Trello homes, scope conflicts and open decisions are in the
+[meeting handoff](handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md).
+No M2 outcome or balance value was approved by this planning update.
+
 **November 16 isolated M2 corrections:** Branch `codex/m2-species-scenario-select`
 adds the requested Desktop Simulation → Species & Scenario Selection → Journey
 flow and restores a Desktop audio listener after the menu's temporary chime

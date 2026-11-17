@@ -71,6 +71,16 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 16 vertical-slice planning (recorded November 17):** Josh listed
+  wrapping, ponds/rivers, a verifiable ScriptableObject Trinket skeleton,
+  Mutation cards, terrain upgrades, a cozier creature-scale simulation and
+  additional playable species into Track A before balance work. Josh will help
+  Sim on that track. Track B defers the all-screen UI, VFX, Field Report and
+  audio treatment; the reward-screen prototype sets its polish benchmark.
+  The existing M2 gate and M3 content boundary need explicit reconciliation,
+  especially the new playable-species scope and the conflict between mandatory
+  wrapping and bounded island maps. See the [meeting handoff](handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md).
+
 - **November 11–13, 2026 carcass feeding and Fox energy first pass:** A lethal
   attack now leaves the prey's authored energy as a shareable meat resource;
   each eater consumes only enough to fill its stomach, with any remainder

@@ -1,13 +1,24 @@
-# Cellular Automata Roguelike Roadmap v2.6
+# Cellular Automata Roguelike Roadmap v2.7
 
-> **Status:** Active production roadmap | **Version:** 2.6 | **Updated:**
-> 2026-11-14 | **Cadence:** Two weeks, approximately 20 hours per developer |
+> **Status:** Active production roadmap | **Version:** 2.7 | **Updated:**
+> 2026-11-17 | **Cadence:** Two weeks, approximately 20 hours per developer |
 > **Product owner:** Josh
 
 This is the product-level source of truth for what the team is trying to make,
 what comes next, and what must be true before work moves forward. Feature briefs,
 sprint control records, Trello cards, and technical plans provide execution
 detail; they do not silently expand this roadmap.
+
+**November 16 meeting direction, recorded November 17:** Josh listed
+wrapping, ponds/rivers, a verifiable ScriptableObject Trinket skeleton,
+Mutation cards, terrain upgrades, a cozier creature-scale simulation and
+additional playable species into technical Track A before balance work. Josh
+will help Sim with Track A. Visual polish and player feedback across UI, VFX,
+Field Report and audio form deferred Track B; the reward-screen prototype is
+the polish benchmark for all screens. The [meeting handoff](docs/handoffs/2026-11-17-0741-codex-m2-vertical-slice-meeting-tracks.md)
+links the Trello work and open decisions. Reconcile this added scope with the
+ten-outcome M2 gate below and the M3 content boundary before marking new work
+accepted. No balance value or milestone closeout was approved by this update.
 
 **Sprint transition:** [S5](docs/Sprints/S5-control-record.md) remains active
 through November 15; its Field Data tickets closed October 21, while current
