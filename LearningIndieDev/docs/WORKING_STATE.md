@@ -3,7 +3,15 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
-**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are recorded yet. A failed authored Hare route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
+**November 16 isolated M2 corrections:** Branch `codex/m2-species-scenario-select`
+adds the requested Desktop Simulation → Species & Scenario Selection → Journey
+flow and restores a Desktop audio listener after the menu's temporary chime
+listener ends. It is based on `fda77319` in a separate worktree; the independent
+review checkout remains fixed. Focused PlayMode and 1280×720/1920×1080 visual
+checks passed. This implementation is ready for review, with listening checks
+and integration pending; see the [correction handoff](handoffs/2026-11-16-1939-codex-m2-selection-audio-listener.md).
+
+**M2 independent manual review:** Josh and Sim can use the same [questionnaire](M2_MANUAL_REVIEW_QUESTIONNAIRE.md), [run packet](M2_INDEPENDENT_REVIEW_PACKET.md), and separate copies of the [response template](M2_MANUAL_REVIEW_RESPONSE_TEMPLATE.md). They answer before comparing results; no human answers are shared here yet. A failed authored Hare route is blocked evidence, not a completed journey. Josh retains the factual-report and M2 closeout decisions.
 
 **November 16 M2 art review and sharing:** Chrono's latest Hero and Rabbit originals now occupy the existing runtime art paths, with the Rabbit 32/64/128 and atlas-compatible exports rebuilt in Unity. The remaining delivered UI and animal PNGs are packaged as source candidates for Josh and Sim. Focused Desktop/board visual tests passed and were inspected at 1280×720 and 1920×1080. All M2 items remain open pending human validation; the known Hare route blocker and M2-04 report review remain separate. See the [M2 review handoff](handoffs/2026-11-16-1055-codex-m2-05-art-and-m2-review-handoff.md).
 

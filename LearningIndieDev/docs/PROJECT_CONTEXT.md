@@ -411,6 +411,12 @@ uncertainty or regression risk.
   flow. The standalone Lab and `CellularAutomataPrototype` remain a separate
   legacy/developer test route; their composition and tests must not depend on
   the retired Island Survivor runtime.
+- **November 16 M2 launch correction:** Desktop Simulation opens a constrained
+  Species & Scenario Selection screen before the Journey map. Rabbit/Hare and
+  Forest Edge are selected; Rabbit/Hare is the only available player species,
+  while the other shown species appear as locked silhouettes. The sequence is
+  selection → Journey → first reward → first simulation. This is a player-facing
+  route change, not a new playable-species or scenario unlock.
 
 ## Cellular-automata roguelike concept
 

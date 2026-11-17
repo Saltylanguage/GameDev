@@ -158,6 +158,54 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
+        public IEnumerator DesktopHasAnAudioListenerAfterTheIntroChime()
+        {
+            var backup = ProfilePlayerPrefsBackup.Capture();
+            try
+            {
+                yield return SceneManager.LoadSceneAsync("MainMenu");
+                yield return null;
+                var menu = GameObject.Find("Main Camera");
+                var profile = menu.GetComponent<Helper_ProfileSession>();
+                profile.SetPlaytimeTracking(false);
+                profile.CreateProfile("Desktop audio listener check");
+                ExecuteCommand(GetProperty(menu.GetComponent("SaltyGame.VM_MainMenu"), "ContinueCommand"));
+                var deadline = Time.realtimeSinceStartup + 5f;
+                while (SceneManager.GetActiveScene().name != SceneName && Time.realtimeSinceStartup < deadline)
+                    yield return null;
+                Assert.That(SceneManager.GetActiveScene().name, Is.EqualTo(SceneName));
+                yield return new WaitForSecondsRealtime(3f);
+                var desktop = GameObject.Find(DesktopCameraName);
+                var listener = desktop.GetComponent<AudioListener>();
+                Assert.That(listener, Is.Not.Null);
+                Assert.That(listener.enabled, Is.True);
+                Assert.That(UnityEngine.Object.FindObjectsByType<AudioListener>()
+                    .Count(candidate => candidate.enabled), Is.EqualTo(1));
+                ExecuteCommand(GetProperty(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"),
+                    "OpenDesktopIconCommand"), "Simulation");
+                Assert.That(listener.enabled, Is.True);
+                Assert.That(desktop.transform.Find("Simulation Audio Bed")?.GetComponents<AudioSource>().Length,
+                    Is.EqualTo(2));
+            }
+            finally { backup.Restore(); }
+        }
+
+        [UnityTest]
+        public IEnumerator NonCanonicalDeveloperSpeciesDoesNotShowRabbitSelection()
+        {
+            yield return SceneManager.LoadSceneAsync(SceneName);
+            yield return null;
+            var desktop = GameObject.Find(DesktopCameraName);
+            var preview = desktop.GetComponent<SpeciesSimulationPreview>();
+            Assert.That(preview.TrySetPlayerSpecies("fox", out var message), Is.True, message);
+            Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("fox"));
+            ExecuteCommand(GetProperty(desktop.GetComponent("SaltyGame.VM_GalapagOS_Desktop"),
+                "OpenDesktopIconCommand"), "Simulation");
+            Assert.That(GetProperty(desktop.GetComponent("SaltyGame.VM_SimulationShell"),
+                "LaunchSelectionVisibility").ToString(), Is.EqualTo("Collapsed"));
+        }
+
+        [UnityTest]
         public IEnumerator OwnedResearchKeepsFurtherToughHideRanksAvailable()
         {
             yield return VerifyProfileResearchOpening(true);
@@ -1050,6 +1098,7 @@ namespace SaltyGame.PlayModeTests
 
             var desktopRoot = GameObject.Find(DesktopCameraName);
             Assert.That(desktopRoot, Is.Not.Null);
+            Assert.That(desktopRoot.GetComponent<AudioListener>()?.enabled, Is.True);
             var viewModel = desktopRoot.GetComponent("SaltyGame.VM_GalapagOS_Desktop");
             Assert.That(viewModel, Is.Not.Null);
 
@@ -1090,6 +1139,15 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview, Is.Not.Null);
             Assert.That(simulationViewModel, Is.Not.Null);
             Assert.That(GetProperty(preview, "State").ToString(), Is.EqualTo("Ready"));
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Collapsed"));
+            yield return CaptureCamera(outputDirectory, "03-galapagos-species-scenario-selection", simulationCamera);
+            ExecuteCommand(GetProperty(simulationViewModel, "LeaveLaunchSelectionCommand"));
+            Assert.That(desktopRoot.GetComponent<Camera>().enabled, Is.True);
+            ExecuteCommand(openCommand, "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Collapsed"));
             Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
             for (var frame = 0; frame < 10; frame++) yield return null;
             ResetJourneyHover(simulationViewModel, ((SpeciesSimulationPreview)preview).JourneyMap.StartNode.NodeId);
@@ -1119,6 +1177,8 @@ namespace SaltyGame.PlayModeTests
             yield return CaptureCamera(outputDirectory, "03c-galapagos-journey-right", simulationCamera, settleFrames: 0);
             ExecuteCommand(GetProperty(simulationViewModel, "CloseJourneyMapCommand"));
             ExecuteCommand(openCommand, "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             yield return null;
             yield return null;
             Assert.That(scrollViewer.HorizontalOffset, Is.EqualTo(0f).Within(1f),
@@ -1269,6 +1329,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var message), Is.True, message);
 
             ExecuteCommand(GetProperty(desktopViewModel, "OpenDesktopIconCommand"), "Simulation");
+            Assert.That(GetProperty(simulationViewModel, "LaunchSelectionVisibility").ToString(), Is.EqualTo("Visible"));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             Assert.That(GetProperty(simulationViewModel, "JourneyMapVisibility").ToString(), Is.EqualTo("Visible"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.JourneyNodeReward));
@@ -1366,6 +1428,7 @@ namespace SaltyGame.PlayModeTests
             Assert.That(preview.TryApplyContinuousPhases(true, "1", out var phaseMessage), Is.True, phaseMessage);
             ExecuteCommand(openCommand, "Simulation");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             var rewards = (Array)GetProperty(simulationViewModel, "JourneyRewardItems");
             ExecuteCommand(GetProperty(rewards.GetValue(0), "ChooseCommand"));
@@ -1381,6 +1444,7 @@ namespace SaltyGame.PlayModeTests
             ExecuteCommand(openCommand, "Simulation");
             Assert.That(preview.State, Is.EqualTo(SpeciesPreviewState.Ready));
             Assert.That(preview.Run, Is.Not.SameAs(completedRun));
+            ExecuteCommand(GetProperty(simulationViewModel, "ContinueLaunchSelectionCommand"));
             ExecuteCommand(GetProperty(FindJourneyNode(simulationViewModel, "forest-edge-start"), "ChooseCommand"));
             var secondRewards = (Array)GetProperty(simulationViewModel, "JourneyRewardItems");
             ExecuteCommand(GetProperty(secondRewards.GetValue(0), "ChooseCommand"));
