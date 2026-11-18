@@ -254,7 +254,10 @@ uncertainty or regression risk.
   S6 plan above supersedes that forecast. The
   October 16 [FD-T01 entry decision](FIELD_DATA_ENTRY_REVIEW.md) retains the
   larger map as the Desktop Simulation entry; the five-node Field Data test
-  is selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
+  was selected from that map. Bevin accepted the composition boundary and waived further review on October 16.
+  The November 18 M2 Q21 decision narrows that entry: normal players see the
+  authored Journey, while the Field Data test-route button is visible only in
+  Developer Mode. This preserves developer test access.
   The October 17 route correction adds a five-node preview and explicit Start
   action after selection; income modifiers are shop-only, while free round and
   node choices contain species upgrades.

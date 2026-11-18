@@ -29,7 +29,7 @@ not a reviewer disagreement.
 | Q5 | Retire the 1280×720 question. Josh is not supporting that resolution as an M2 target. | Preserve both historical Q5 answers, remove the check from active M2 acceptance, and keep Q6 at 1920×1080. A new lower supported bound has not been chosen. |
 | Q14 | The reviewers interpreted the question differently but agree on the prescription. Use Sim's **Needs change** answer for the joint board-event readability finding. | Important events need clearer board-level cues. Josh's observation that grouped ledger text was understandable remains intact. Track B [VF-01](https://trello.com/c/RWRw4cjb), [VF-02](https://trello.com/c/AVJ0KXrJ) and [M2-07](https://trello.com/c/bqa1KUTK) hold the feedback work. |
 | Q20 | Josh found Reduced Motion but saw no apparent effect and does not know when or why it was added. Sim could not find it. | Treat the effect and discoverability as unverified, rather than a human pass. Source inspection shows the toggle was added in `71c0c7b7` for M2 accessibility: it reads a saved preference, suppresses animated Fox-hunt and mating cues, and substitutes a static ring for the selected map pulse. Those limited effects may not be visible in an ordinary stretch; no human equivalence check has been established. |
-| Q21 | Investigate Sim's inability to return from the Field Data test route to normal Journey. | Code inspection on `58e927aa` finds a visible test-route button in the Ready journey map even outside Developer Mode. Selecting it stores a Field Data definition; Back closes the map but does not clear that definition, and `ResetToStart` retains it. No in-place return command is exposed. This is a code-path finding, not a fresh runtime reproduction. Decide whether the test route should be hidden from normal players or have an explicit return path before implementing a fix. |
+| Q21 | Josh chose to hide the Field Data test route from normal players. | Code inspection on `58e927aa` found the test-route button visible outside Developer Mode. Selecting it stores a Field Data definition; Back closes the map but does not clear that definition. The button is now gated by Developer Mode, while the existing developer test command remains available. This resolves the normal player entry path; a fresh-profile player check remains open. |
 
 Q13 and Q16 used different labels in the two responses, but neither reviewer
 validated audible 4× behavior or isolated benefit and cost for all three
@@ -44,7 +44,7 @@ does not approve balance tuning or close any M2 outcome.
 1. Carry Q1 and Q14 into the deferred Track B presentation and feedback work.
 2. Retest Reduced Motion with an event that actually triggers its supported
    paths, and decide whether the current effect is meaningful and discoverable.
-3. Resolve Q21's player versus developer route contract, then test the chosen
-   navigation behavior from a normal fresh-profile entry.
+3. Check Q21 from a normal fresh-profile entry: the Field Data test route should
+   be absent while the authored Journey remains available.
 4. Record Josh's separate M2-04 report and milestone decisions only when he
    explicitly makes them.

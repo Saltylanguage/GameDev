@@ -2073,7 +2073,7 @@ namespace SaltyGame
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(JourneyMapPreviewButtonVisibility));
             Set(ref fieldDataTestRouteVisibility,
-                journeyMapPreviewOpen && state == SpeciesPreviewState.Ready && preview.HasFieldDataTestJourney
+                DeveloperMode && journeyMapPreviewOpen && state == SpeciesPreviewState.Ready && preview.HasFieldDataTestJourney
                     ? Visibility.Visible : Visibility.Collapsed,
                 nameof(FieldDataTestRouteVisibility));
             Set(ref journeyMapHudButtonVisibility,

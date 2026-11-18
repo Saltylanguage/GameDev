@@ -338,7 +338,7 @@ namespace SaltyGame.PlayModeTests
         }
 
         [UnityTest]
-        public IEnumerator FieldDataTestRouteCanBeSelectedFromTheJourneyMapBeforeFirstSimulation()
+        public IEnumerator FieldDataTestRouteOnlyAppearsInDeveloperModeBeforeFirstSimulation()
         {
             yield return SceneManager.LoadSceneAsync("GalapagOSDesktopTest");
             yield return null;
@@ -367,6 +367,8 @@ namespace SaltyGame.PlayModeTests
             Assert.That(openMap, Is.Not.Null);
             openMap.GetType().GetMethod("Execute")?.Invoke(openMap, new object[] { null });
             Assert.That(shellType.GetProperty("JourneyMapVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
+            Assert.That(shellType.GetProperty("FieldDataTestRouteVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Collapsed"));
+            shellType.GetProperty("DeveloperMode")?.SetValue(shell, true);
             Assert.That(shellType.GetProperty("FieldDataTestRouteVisibility")?.GetValue(shell)?.ToString(), Is.EqualTo("Visible"));
 
             var startRoute = shellType.GetProperty("StartFieldDataTestJourneyCommand")?.GetValue(shell);
