@@ -3,6 +3,16 @@
 This file is the stable doorway into current collaboration context. It should not
 become a master changelog.
 
+**November 18 independent M2 review comparison:** Josh and Sim's latest
+responses have been compared without treating Sim's startup-fix history as a
+disagreement. Josh deferred Q1 profile visibility to Track B, retired Q5 and
+1280×720 from the active M2 target, adopted Sim's Q14 board-event readability
+finding, clarified that Reduced Motion showed no apparent effect to him, and
+requested investigation of the Field Data test-route return path. The
+[comparison record](Reviews/M2-Comparison-20261118.md) preserves the original
+responses and source-backed Q20/Q21 findings. M2 and balance decisions remain
+open; Track A work is not gated on this comparison.
+
 **November 16 vertical-slice meeting direction (recorded November 17):** Josh
 listed Track A technical foundations before balance work: wrapping,
 water, Trinket skeleton, Mutation cards, terrain upgrades, creature-scale feel

@@ -10,7 +10,7 @@
 - Resolutions and input devices used:
 - Automated check results and local artifact paths, if run:
 
-For Q1–Q22, write **Yes**, **Needs change**, **Blocked**, or **Not tested**. Q0 records setup. For Q23, write **Agree**, **Request a specific correction**, or **Still reviewing**. A blank answer means the question has not been asked yet. Keep each observation to one or two sentences; include a seed, screen, or screenshot when it explains a problem.
+For active Q1–Q22 questions, excluding retired Q5, write **Yes**, **Needs change**, **Blocked**, or **Not tested**. Q0 records setup. For Q23, write **Agree**, **Request a specific correction**, or **Still reviewing**. A blank answer means the question has not been asked yet. Keep each observation to one or two sentences; include a seed, screen, or screenshot when it explains a problem.
 
 | Question | Answer | What I observed / evidence |
 | --- | --- | --- |
@@ -19,7 +19,7 @@ For Q1–Q22, write **Yes**, **Needs change**, **Blocked**, or **Not tested**. Q
 | Q2 |  |  |
 | Q3 |  |  |
 | Q4 |  |  |
-| Q5 |  |  |
+| Q5 | Retired | 1280×720 was removed from M2 acceptance on November 18, 2026. Keep any earlier reviewer answer in its original response. |
 | Q6 |  |  |
 | Q7 |  |  |
 | Q8 |  |  |
