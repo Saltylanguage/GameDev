@@ -1047,7 +1047,7 @@
                             <TextBlock Text="REDUCED MOTION" FontFamily="{DynamicResource GalapagOS.FontFamily.Monospace}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Chrono_Olive}" />
                             <TextBlock Text="{Binding Settings.ReducedMotionText}" Margin="0,8,0,8" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource Chrono_TreeBark}" />
                             <Button Content="TOGGLE" Width="170" Height="40" Command="{Binding Settings.ToggleReducedMotionCommand}" Style="{StaticResource GalapagOS.Button.Secondary}" />
-                            <TextBlock Text="Simulation events remain in the text feed." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="12" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
+                            <TextBlock Text="Hides brief hunt and birth animations on the board; the selected Journey marker stops pulsing. Event text remains visible." Margin="0,8,0,0" FontFamily="{DynamicResource GalapagOS.FontFamily.Primary}" FontSize="14" Foreground="{DynamicResource Chrono_TreeBark}" TextWrapping="Wrap" />
                           </StackPanel>
                         </Grid>
                       </Grid>

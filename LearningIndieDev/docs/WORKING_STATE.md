@@ -12,8 +12,9 @@ requested investigation of the Field Data test-route return path. Josh then
 chose to hide that test route from normal players; its map button is now gated
 by Developer Mode, with a fresh-profile player check still pending. The
 [comparison record](Reviews/M2-Comparison-20261118.md) preserves the original
-responses and source-backed Q20/Q21 findings; the [Q21 handoff](handoffs/2026-11-18-1215-codex-m2-q21-test-route-visibility.md)
-records the change and player check. M2 and balance decisions remain
+responses and source-backed Q20/Q21 findings. The [Q20 handoff](handoffs/2026-11-18-1236-codex-m2-q20-reduced-motion-explanation.md)
+records the Settings explanation and unverified equivalence; the [Q21 handoff](handoffs/2026-11-18-1215-codex-m2-q21-test-route-visibility.md)
+records the route change and player check. M2 and balance decisions remain
 open; Track A work is not gated on this comparison.
 
 **November 16 vertical-slice meeting direction (recorded November 17):** Josh
