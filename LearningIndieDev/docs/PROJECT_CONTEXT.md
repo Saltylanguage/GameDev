@@ -71,6 +71,23 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 18, 2026 cozy individual-led direction:** Josh selected
+  low-population simulations where individual animal events matter, accepting
+  the additional architecture risk. Fox overhunting remains the opening
+  pressure; avoidance, survival, and faster reproduction remain indirect,
+  species-level choices, and animals act autonomously. Surviving Hares retain
+  identity, state, and event history across the run. New Rabbits may inherit a
+  tunable share of parental stats and event-derived effects; the exact
+  inheritance rules remain open. Rabbit reproduction proceeds through
+  eligibility, mate encounter, successful mating, litter, and offspring
+  survival/maturity. Rabbit inspection surfaces useful state/history and
+  contextual individual, lineage, and run goals, such as speed 5, five living
+  lineage Rabbits, or acquiring Burrows. An intelligent event-tracking and
+  presentation system is necessary work; its model and UI need further design.
+  This supersedes count-only Hare carryover as the target while leaving
+  nonplayed-species persistence unchanged pending a separate decision. See the
+  [S6 design record](Sprints/S6-control-record.md#november-18-cozy-individual-led-simulation-direction).
+
 - **November 11–13, 2026 carcass feeding and Fox energy first pass:** A lethal
   attack now leaves the prey's authored energy as a shareable meat resource;
   each eater consumes only enough to fill its stomach, with any remainder
@@ -104,7 +121,7 @@ uncertainty or regression risk.
   November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
   S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
-- **November 10, 2026 node-boundary correction and evidence:** Each new simulation node carries only the played species' population count, recreates those individuals with default state, and restores static authored starting counts for every other species and resource. This works beyond the Hare/Fox pair. The Field Data and legacy journey transitions now implement that rule; the portable worker matches the Unity simulation. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
+- **November 10, 2026 node-boundary correction and historical evidence:** The implemented transition carries only the played species' population count, recreates individuals with default state, and restores static starting counts for other species and resources. The November 18 cozy direction supersedes count-only Hare carryover as the design target; the implemented rule and its evidence remain historical/current-code context until changed. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
 
 - **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
   Gene Lab research unlocks eligibility for journey Mutations; it does not
