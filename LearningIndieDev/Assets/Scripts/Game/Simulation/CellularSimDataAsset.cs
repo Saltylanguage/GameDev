@@ -54,9 +54,10 @@ namespace SaltyGame
             var effectiveRunDurationSeconds = runTicks > 0
                 ? (float)(runTicks * (double)stepInterval)
                 : runDurationSeconds;
+            var topology = (mapLayout ?? new MapTopologyDefinition()).Create(width, height);
             return new CellularSimData(
-                width,
-                height,
+                topology.Width,
+                topology.Height,
                 probabilities,
                 rules,
                 effectiveRunDurationSeconds,
@@ -64,7 +65,7 @@ namespace SaltyGame
                 maxPopulation,
                 minPopulation,
                 alphaOffspringRules: alphaRules,
-                wrapEdges: true, topology: (mapLayout ?? new MapTopologyDefinition()).Create(width, height));
+                wrapEdges: true, topology: topology);
         }
 
         void Reset()

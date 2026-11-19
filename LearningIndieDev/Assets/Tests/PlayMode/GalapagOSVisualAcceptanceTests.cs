@@ -22,6 +22,204 @@ namespace SaltyGame.PlayModeTests
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         [UnityTest]
+        public IEnumerator FieldLedgerScrollReachesTrackingUnderHareLossCard()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            var preview = runtime.SpeciesPreview;
+            preview.PauseSimulation();
+            var camera = GameObject.Find("Prototype Camera");
+            var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+            var shell = camera.GetComponent("SaltyGame.VM_SimulationShell");
+            var hareId = new SpeciesId("hare");
+            var cells = preview.Run.Cells;
+            var hare = cells.Topology.PlayableCoordinates.First(cell => cells.GetCell(cell.x, cell.y).SpeciesId == hareId);
+            Assert.That(board.GetType().GetMethod("SelectCell").Invoke(board, new object[] { hare.x, hare.y }), Is.True);
+
+            const BindingFlags instance = BindingFlags.Instance | BindingFlags.NonPublic;
+            shell.GetType().GetMethod("ClearEventReaction", instance).Invoke(shell, null);
+            Assert.That(shell.GetType().GetMethod("PresentEventReaction", instance).Invoke(shell, new object[]
+            {
+                "HARES LOST",
+                "Recent Hare losses: 1 in combat, 0 starved, 0 other. Also 16 Hare and 0 Fox births.",
+                false,
+                3,
+            }), Is.True);
+            yield return null;
+
+            var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+            var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+            var panel = window.Content as Noesis.FrameworkElement;
+            var ledger = (content.FindName("FieldLedgerScroll") ?? panel.FindName("FieldLedgerScroll")) as Noesis.ScrollViewer;
+            var tracking = (content.FindName("TrackCreatureButton") ?? panel.FindName("TrackCreatureButton")) as Noesis.Button;
+            var zoom = (content.FindName("BoardZoomControls") ?? panel.FindName("BoardZoomControls")) as Noesis.FrameworkElement;
+            Assert.That(ledger, Is.Not.Null);
+            Assert.That(tracking, Is.Not.Null);
+            Assert.That(zoom, Is.Not.Null);
+            Assert.That(ledger.ScrollableHeight, Is.GreaterThan(0f));
+            var viewportBottom = ledger.PointToScreen(new Noesis.Point(0, ledger.ActualHeight)).Y;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.GreaterThan(viewportBottom));
+            Assert.That(viewportBottom, Is.LessThan(zoom.PointToScreen(new Noesis.Point(0, 0)).Y));
+
+            ledger.RaiseEvent(new Noesis.MouseWheelEventArgs(ledger, Noesis.UIElement.MouseWheelEvent, -120));
+            yield return null;
+            Assert.That(ledger.VerticalOffset, Is.GreaterThan(0f));
+            ledger.ScrollToVerticalOffset(ledger.ScrollableHeight);
+            yield return null;
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, tracking.ActualHeight)).Y, Is.LessThanOrEqualTo(viewportBottom));
+            Assert.That(tracking.PointToScreen(new Noesis.Point(0, 0)).Y,
+                Is.GreaterThanOrEqualTo(ledger.PointToScreen(new Noesis.Point(0, 0)).Y));
+            ExecuteCommand(tracking.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+
+            var output = TryGetVisualOutputDirectory();
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "field-ledger-scrolled-with-event", camera.GetComponent<Camera>());
+            }
+        }
+
+        [UnityTest]
+        public IEnumerator FixedCrossRendersAndInspectsOnlyPlayableCells()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
+            var originalScenarios = preview.ScenarioOptions.ToArray();
+            var originalSelection = preview.SelectedScenarioIndex;
+            var scenario = UnityEngine.Object.Instantiate(preview.SelectedScenario);
+            try
+            {
+                JsonUtility.FromJsonOverwrite(
+                    $"{{\"height\":40,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.Cross}}}}}", scenario);
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                Assert.That(preview.TrySelectScenario(0, out var message), Is.True, message);
+                preview.StartSimulation();
+                preview.PauseSimulation();
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
+
+                var camera = GameObject.Find("Prototype Camera");
+                var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+                var snapshot = (SimulationBoardSnapshot)GetProperty(board, "Snapshot");
+                Assert.That(snapshot.Width, Is.EqualTo(40));
+                Assert.That(snapshot.Height, Is.EqualTo(40));
+                Assert.That(snapshot.Tick, Is.EqualTo(preview.Run.Tick));
+                Assert.That(snapshot.Tick, Is.GreaterThanOrEqualTo(2));
+                Assert.That(snapshot.TryGetCell(0, 0, out _), Is.False);
+
+                var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+                var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                var boardElement = (Noesis.UIElement)(content.FindName("SimulationBoard")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("SimulationBoard"));
+                Assert.That(boardElement, Is.Not.Null);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Right, Noesis.KeyStates.Down));
+                var selectedX = (int)GetProperty(board, "SelectedX");
+                var selectedY = (int)GetProperty(board, "SelectedY");
+                Assert.That(snapshot.TryGetCell(selectedX, selectedY, out _), Is.True);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Left, Noesis.KeyStates.Down));
+                Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(selectedX));
+                Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(selectedY));
+
+                var selectCell = board.GetType().GetMethod("SelectCell");
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 0 }), Is.False);
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 20 }), Is.True);
+                var output = TryGetVisualOutputDirectory();
+                if (output != null)
+                {
+                    yield return CaptureCamera(output, "bev-ticket-2-wrapped-cross", camera.GetComponent<Camera>());
+                }
+
+                var trackButton = (content.FindName("TrackCreatureButton")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("TrackCreatureButton")) as Noesis.Button;
+                Assert.That(trackButton, Is.Not.Null);
+                yield return TrackSameCreatureAcrossCrossSeam(preview, board, trackButton, camera.GetComponent<Camera>(), output);
+            }
+            finally
+            {
+                preview.StopSimulation();
+                preview.ConfigureScenarioOptions(originalScenarios, originalSelection);
+                UnityEngine.Object.Destroy(scenario);
+            }
+        }
+
+        private static IEnumerator TrackSameCreatureAcrossCrossSeam(
+            SpeciesSimulationPreview preview, Component board, Noesis.Button button, Camera camera, string output)
+        {
+            var run = preview.Run;
+            var initial = run.Cells.Copy(cell => cell.IsCreature ? SpeciesCell.Empty : cell);
+            var row = initial.Height / 2;
+            var arrivalX = initial.Width - 1;
+            var hare = new SpeciesId("hare");
+            var creature = new SpeciesCell(hare, energy: 10);
+            initial.SetCell(0, row, creature);
+            initial.SetCell(arrivalX, row, SpeciesCell.Empty);
+            AdvancePausedRun(run, initial, preview.StepInterval);
+            yield return null;
+
+            var select = board.GetType().GetMethod("SelectCell");
+            Assert.That(select.Invoke(board, new object[] { arrivalX, row }), Is.True);
+            Assert.That(button.Command.CanExecute(null), Is.False);
+            Assert.That(select.Invoke(board, new object[] { 0, row }), Is.True);
+            ExecuteCommand(button.Command);
+            yield return null;
+            Assert.That(button.Content, Is.EqualTo("STOP TRACKING"));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING HARE #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-before-wrap", camera);
+            }
+
+            var left = new GridPattern(new[] { Vector2Int.left });
+            var empty = new GridPattern(Array.Empty<Vector2Int>());
+            var rules = new Dictionary<SpeciesId, SpeciesRules>(preview.ActiveSpeciesRules)
+            {
+                [hare] = new SpeciesRules(1f, left, left, 0, empty, 0, left, null, empty, 0, 0f, 0),
+            };
+            var moved = SpeciesSimulation.Step(initial, rules, run.Seed);
+            Assert.That(moved.GetCell(arrivalX, row).EntityId, Is.EqualTo(creature.EntityId));
+            Assert.That(moved.GetCell(0, row).IsCreature, Is.False);
+            AdvancePausedRun(run, moved, preview.StepInterval);
+            yield return null;
+
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.True);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(row));
+            Assert.That(GetProperty(board, "InspectionText"), Does.Contain($"TRACKING HARE #{creature.EntityId}"));
+            if (output != null)
+            {
+                yield return CaptureCamera(output, "creature-tracking-after-wrap", camera);
+            }
+
+            ExecuteCommand(button.Command);
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(arrivalX));
+            ExecuteCommand(button.Command);
+            var replacement = moved.Copy();
+            replacement.SetCell(arrivalX, row, new SpeciesCell(hare, energy: 10));
+            AdvancePausedRun(run, replacement, preview.StepInterval);
+            yield return null;
+            Assert.That(GetProperty(board, "IsTrackingCreature"), Is.False);
+            Assert.That(GetProperty(board, "HasSelection"), Is.False);
+        }
+
+        private static void AdvancePausedRun(SimulationRunState run, Grid<SpeciesCell> cells, float stepInterval)
+        {
+            run.Resume();
+            run.Advance(cells, stepInterval);
+            run.Pause();
+        }
+
+        [UnityTest]
         public IEnumerator LiveBoardInspectionAndSpeedControlsUseCurrentRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");

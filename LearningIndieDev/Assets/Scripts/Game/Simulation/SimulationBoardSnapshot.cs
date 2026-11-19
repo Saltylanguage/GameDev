@@ -17,6 +17,7 @@ namespace SaltyGame
         SimulationBoardSnapshot(
             int width,
             int height,
+            int playableCellCount,
             int tick,
             SimulationRunStatus status,
             SpeciesId playerSpecies,
@@ -28,6 +29,7 @@ namespace SaltyGame
         {
             Width = width;
             Height = height;
+            PlayableCellCount = playableCellCount;
             Tick = tick;
             Status = status;
             PlayerSpecies = playerSpecies;
@@ -83,6 +85,7 @@ namespace SaltyGame
             return new SimulationBoardSnapshot(
                 run.Cells.Width,
                 run.Cells.Height,
+                run.Cells.Count,
                 run.Tick,
                 run.Status,
                 playerSpecies,
@@ -95,6 +98,7 @@ namespace SaltyGame
 
         public int Width { get; }
         public int Height { get; }
+        public int PlayableCellCount { get; }
         public int Revision => Tick;
         public int Tick { get; }
         public SimulationRunStatus Status { get; }
