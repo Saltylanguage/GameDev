@@ -1546,6 +1546,15 @@ namespace SaltyGame
 
             var nextWidth = Mathf.Max(1, parsedWidth);
             var nextHeight = Mathf.Max(1, parsedHeight);
+            var scenarioData = SelectedScenario?.CreateRuntimeData();
+            var hasFixedLayout = scenarioData?.Topology is MapTopology;
+            if (hasFixedLayout && (nextWidth != scenarioData.Width || nextHeight != scenarioData.Height))
+            {
+                validationMessage = $"The selected map has fixed dimensions ({scenarioData.Width} x {scenarioData.Height}). Change its size in the scenario asset.";
+                settingsMessage = validationMessage;
+                return false;
+            }
+
             var nextMaximumPopulation = Mathf.Max(0, parsedMaximumPopulation);
             var nextStepInterval = Mathf.Max(0.01f, parsedStepInterval);
             var nextRunTicks = runWindowIsTicks ? Mathf.Max(1, parsedRunTicks) : 0;
@@ -1571,17 +1580,18 @@ namespace SaltyGame
                         + herbivoreStartingPopulation
                         + carnivoreStartingPopulation
                     : 0L;
-            if (SelectedScenario != null
+            if (scenarioData != null
                 && ((hasStartingPopulationValues && totalStartingPopulation == 0)
                     || (!hasStartingPopulationValues && !startingPopulationOverrideEnabled)))
             {
-                foreach (var population in SelectedScenario.CreateRuntimeData().StartingPopulations.Values)
+                foreach (var population in scenarioData.StartingPopulations.Values)
                 {
                     totalStartingPopulation += population;
                 }
             }
 
-            if (totalStartingPopulation > (long)nextWidth * nextHeight)
+            var capacity = hasFixedLayout ? scenarioData.Topology.CellCount : (long)nextWidth * nextHeight;
+            if (totalStartingPopulation > capacity)
             {
                 validationMessage = "Starting populations cannot exceed the grid capacity.";
                 settingsMessage = validationMessage;
@@ -1616,12 +1626,11 @@ namespace SaltyGame
                 herbivoreStartingPopulation = parsedHerbivoreStartingPopulation;
                 carnivoreStartingPopulation = parsedCarnivoreStartingPopulation;
                 startingPopulationOverrideEnabled = configuredStartingPopulation > 0;
-                if (!startingPopulationOverrideEnabled && SelectedScenario != null)
+                if (!startingPopulationOverrideEnabled && scenarioData != null)
                 {
-                    var authoredData = SelectedScenario.CreateRuntimeData();
-                    plantStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
-                    herbivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
-                    carnivoreStartingPopulation = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
+                    plantStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Plant, SpeciesRole.Plant);
+                    herbivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
+                    carnivoreStartingPopulation = GetStartingPopulation(scenarioData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);
                 }
             }
             randomizeSeedOnStart = randomizeSeed;
@@ -2761,18 +2770,30 @@ namespace SaltyGame
                 return;
             }
 
-            if (settingsKey != DefaultSettingsKey && SelectedScenario != null)
+            var authoredData = SelectedScenario?.CreateRuntimeData();
+            if (settingsKey != DefaultSettingsKey && authoredData != null)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
                 saved.width = authoredData.Width;
                 saved.height = authoredData.Height;
                 PlayerPrefs.SetString(DefaultSettingsKey, JsonUtility.ToJson(saved));
                 PlayerPrefs.Save();
             }
 
-            if (SelectedScenario != null && !saved.startingPopulationOverrideEnabled)
+            if (authoredData?.Topology is MapTopology topology)
             {
-                var authoredData = SelectedScenario.CreateRuntimeData();
+                saved.width = authoredData.Width;
+                saved.height = authoredData.Height;
+                var savedPopulation = (long)Mathf.Max(0, saved.plantStartingPopulation)
+                    + Mathf.Max(0, saved.herbivoreStartingPopulation) + Mathf.Max(0, saved.carnivoreStartingPopulation);
+                if (savedPopulation > topology.CellCount
+                    || (authoredData.MaxPopulation > 0 && savedPopulation > authoredData.MaxPopulation))
+                {
+                    saved.startingPopulationOverrideEnabled = false;
+                }
+            }
+
+            if (authoredData != null && !saved.startingPopulationOverrideEnabled)
+            {
                 var authoredPlant = GetStartingPopulation(authoredData, SpeciesIds.Plant, SpeciesRole.Plant);
                 var authoredHerbivore = GetStartingPopulation(authoredData, SpeciesIds.Herbivore, SpeciesRole.Herbivore);
                 var authoredCarnivore = GetStartingPopulation(authoredData, SpeciesIds.Carnivore, SpeciesRole.Carnivore);

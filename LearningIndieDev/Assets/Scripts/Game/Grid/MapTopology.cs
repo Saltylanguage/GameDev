@@ -21,6 +21,21 @@ namespace SaltyGame
     [Serializable]
     public sealed class MapTopologyDefinition
     {
+        public enum FixedShape
+        {
+            AuthoredLayout = 0,
+            Square = 1,
+            Circle = 2,
+            Oval = 3,
+            Diamond = 4,
+            Cross = 5,
+            ShortRectangle = 6,
+            LongRectangle = 7,
+        }
+
+        [SerializeField]
+        [Tooltip("Fixed shapes use the asset's Height as their size. Authored Layout uses Width and Height and preserves existing custom cells.")]
+        private FixedShape shape;
         [SerializeField] bool explicitLayout, rectangle;
         [SerializeField] Vector2Int[] cells = Array.Empty<Vector2Int>();
         [SerializeField] MapBoundaryConnection[] connections = Array.Empty<MapBoundaryConnection>();
@@ -39,16 +54,70 @@ namespace SaltyGame
 
         public IGridTopology Create(int width, int height)
         {
+            if (shape != FixedShape.AuthoredLayout)
+            {
+                return CreateFixedShape(shape, height);
+            }
+
             if (!explicitLayout) return new RectangularGridTopology(width, height, true);
             if (rectangle) return new MapTopology(width, height, generationInputs: generationInputs);
             if (cells == null || cells.Length == 0) throw new ArgumentException("An explicit authored layout needs playable cells.");
             return new MapTopology(width, height, cells, connections, generationInputs);
+        }
+
+        private static MapTopology CreateFixedShape(FixedShape shape, int height)
+        {
+            if (height <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(height));
+            }
+
+            var width = shape switch
+            {
+                FixedShape.Oval or FixedShape.ShortRectangle => checked(height + Math.Max(1, height / 2)),
+                FixedShape.LongRectangle => checked(height * 2),
+                FixedShape.Square or FixedShape.Circle or FixedShape.Diamond or FixedShape.Cross => height,
+                _ => throw new ArgumentOutOfRangeException(nameof(shape)),
+            };
+            var generationInputs = "fixed-shape-v1:" + shape;
+            if (shape is FixedShape.Square or FixedShape.ShortRectangle or FixedShape.LongRectangle)
+            {
+                return new MapTopology(width, height, generationInputs: generationInputs);
+            }
+
+            var area = checked(width * height);
+            // Use doubled, centered coordinates so even and odd sizes have the same symmetry.
+            var cells = new List<Vector2Int>();
+            for (var y = 0; y < height; y++)
+            {
+                var dy = Math.Abs(2L * y - (height - 1));
+                var scaledY = dy * width;
+                for (var x = 0; x < width; x++)
+                {
+                    var dx = Math.Abs(2L * x - (width - 1));
+                    var scaledX = dx * height;
+                    var playable = shape switch
+                    {
+                        FixedShape.Circle or FixedShape.Oval => scaledX * scaledX + scaledY * scaledY <= (long)area * area,
+                        FixedShape.Diamond => scaledX + scaledY <= area,
+                        FixedShape.Cross => dx < Math.Max(2, width / 3) || dy < Math.Max(2, height / 3),
+                        _ => false,
+                    };
+                    if (playable)
+                    {
+                        cells.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            return new MapTopology(width, height, cells, generationInputs: generationInputs);
         }
     }
 
     // Layout authors supply cells and reciprocal boundary pairings; gaps have no edges.
     public sealed class MapTopology : IGridTopology
     {
+        private readonly RectangularGridTopology rectangularGrid;
         readonly HashSet<Vector2Int> validCells;
         readonly Dictionary<(Vector2Int, Vector2Int), Vector2Int> boundaries = new Dictionary<(Vector2Int, Vector2Int), Vector2Int>();
         readonly Dictionary<Vector2Int, Dictionary<Vector2Int, int>> distances = new Dictionary<Vector2Int, Dictionary<Vector2Int, int>>();
@@ -66,6 +135,7 @@ namespace SaltyGame
             if (IsRectangle)
             {
                 if (connections != null) throw new ArgumentException("Custom connections require an explicit cell layout.");
+                rectangularGrid = new RectangularGridTopology(width, height, true);
                 this.cells = Array.Empty<Vector2Int>();
                 this.connections = Array.Empty<MapBoundaryConnection>();
                 CellCount = checked(width * height);
@@ -211,7 +281,7 @@ namespace SaltyGame
         public GridPattern GetPattern(GridPattern pattern)
         {
             if (!IsRectangle) throw new InvalidOperationException("Shape patterns require their origin.");
-            return new RectangularGridTopology(Width, Height, true).GetPattern(pattern);
+            return rectangularGrid.GetPattern(pattern);
         }
         public GridPattern GetPattern(int x, int y, GridPattern pattern)
         {

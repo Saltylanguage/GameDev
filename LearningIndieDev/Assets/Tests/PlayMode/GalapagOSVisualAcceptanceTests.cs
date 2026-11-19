@@ -22,6 +22,70 @@ namespace SaltyGame.PlayModeTests
         const string LegacyDefaultSettingsKey = "SaltyGame.SpeciesSimulationPreview.DefaultSettings.v3";
 
         [UnityTest]
+        public IEnumerator FixedCrossRendersAndInspectsOnlyPlayableCells()
+        {
+            yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
+            yield return null;
+
+            var runtime = UnityEngine.Object.FindAnyObjectByType<CellularAutomataPrototypeRuntime>();
+            Assert.That(runtime, Is.Not.Null);
+            var preview = runtime.SpeciesPreview;
+            preview.StopSimulation();
+            var originalScenarios = preview.ScenarioOptions.ToArray();
+            var originalSelection = preview.SelectedScenarioIndex;
+            var scenario = UnityEngine.Object.Instantiate(preview.SelectedScenario);
+            try
+            {
+                JsonUtility.FromJsonOverwrite(
+                    $"{{\"height\":40,\"mapLayout\":{{\"shape\":{(int)MapTopologyDefinition.FixedShape.Cross}}}}}", scenario);
+                preview.ConfigureScenarioOptions(new[] { scenario });
+                Assert.That(preview.TrySelectScenario(0, out var message), Is.True, message);
+                preview.StartSimulation();
+                preview.PauseSimulation();
+                Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
+                yield return null;
+
+                var camera = GameObject.Find("Prototype Camera");
+                var board = camera.GetComponent("SaltyGame.VM_SimulationBoard");
+                var snapshot = (SimulationBoardSnapshot)GetProperty(board, "Snapshot");
+                Assert.That(snapshot.Width, Is.EqualTo(40));
+                Assert.That(snapshot.Height, Is.EqualTo(40));
+                Assert.That(snapshot.Tick, Is.GreaterThan(0));
+                Assert.That(snapshot.TryGetCell(0, 0, out _), Is.False);
+
+                var content = (Noesis.FrameworkElement)GetProperty(camera.GetComponent("NoesisView"), "Content");
+                var window = content.FindName("SimulationWindow") as Noesis.HeaderedContentControl;
+                var boardElement = (Noesis.UIElement)(content.FindName("SimulationBoard")
+                    ?? (window?.Content as Noesis.FrameworkElement)?.FindName("SimulationBoard"));
+                Assert.That(boardElement, Is.Not.Null);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Right, Noesis.KeyStates.Down));
+                var selectedX = (int)GetProperty(board, "SelectedX");
+                var selectedY = (int)GetProperty(board, "SelectedY");
+                Assert.That(snapshot.TryGetCell(selectedX, selectedY, out _), Is.True);
+                boardElement.RaiseEvent(new Noesis.KeyEventArgs(boardElement, Noesis.UIElement.KeyDownEvent,
+                    Noesis.Key.Left, Noesis.KeyStates.Down));
+                Assert.That(GetProperty(board, "SelectedX"), Is.EqualTo(selectedX));
+                Assert.That(GetProperty(board, "SelectedY"), Is.EqualTo(selectedY));
+
+                var selectCell = board.GetType().GetMethod("SelectCell");
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 0 }), Is.False);
+                Assert.That(selectCell.Invoke(board, new object[] { 0, 20 }), Is.True);
+                var output = TryGetVisualOutputDirectory();
+                if (output != null)
+                {
+                    yield return CaptureCamera(output, "bev-ticket-2-wrapped-cross", camera.GetComponent<Camera>());
+                }
+            }
+            finally
+            {
+                preview.StopSimulation();
+                preview.ConfigureScenarioOptions(originalScenarios, originalSelection);
+                UnityEngine.Object.Destroy(scenario);
+            }
+        }
+
+        [UnityTest]
         public IEnumerator LiveBoardInspectionAndSpeedControlsUseCurrentRun()
         {
             yield return SceneManager.LoadSceneAsync("CellularAutomataPrototype");
