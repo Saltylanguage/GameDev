@@ -114,7 +114,7 @@ display, and favorites. It does not own species rules or purchase validation.
 
 **Key links:** Gene Lab, History, Field Guide, Expedition Planner.
 
-**First-slice emphasis:** Hare is the first hero species; fox provides a clear
+**First-slice emphasis:** Rabbit is the first hero species; fox provides a clear
 pressure contrast; plant/resource presentation remains legible even before a
 dedicated fern glyph is available.
 
@@ -127,7 +127,7 @@ species.
 **Player can:**
 
 - browse species, with Plant, Herbivore, and Carnivore as filters;
-- select a species, beginning with Hare for the vertical slice;
+- select a species, beginning with Rabbit for the vertical slice;
 - inspect Genome nodes, prerequisites, costs, species effects, ecological
   obligations, active-capacity use, and resulting choices;
 - see locked, available, affordable, unaffordable, selected, unlocked, active,
@@ -381,7 +381,7 @@ Desktop Home
 ## Recommended delivery order
 
 1. Desktop Home, app shell, Settings, My PC, and Expedition Planner.
-2. Species Collection and Gene Lab with the Hare vertical slice.
+2. Species Collection and Gene Lab with the Rabbit vertical slice.
 3. Biome / Ecology Lab with Forest Edge.
 4. History / Data Record with phase-versus-expedition labeling.
 5. Field Guide and Research Inbox.
@@ -395,7 +395,7 @@ states before detailed visual design begins.
 
 1. Which apps are visible on the first desktop and which unlock later?
 2. Is Desktop Home a full app window, a permanent desktop surface, or both?
-3. Does the first Gene Lab expose only Herbivore/Hare research, with other tabs
+3. Does the first Gene Lab expose only Herbivore/Rabbit research, with other tabs
    visible but content-light?
 4. Which first Biome Lab actions are real progression and which are read-only
    scenario information?

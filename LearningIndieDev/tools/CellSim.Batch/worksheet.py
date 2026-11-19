@@ -19,7 +19,7 @@ from sweep import completed, load, planned_ticks, tokens
 from worksheet_stats import EvidenceStats, facts, wilson
 
 
-SPECIES = ("hare", "fox", "plant")
+SPECIES = ("rabbit", "fox", "plant")
 REASONS = {
     "insufficient-currency": "Not enough Field Data",
     "placement-or-capacity": "No placement space or population capacity",
@@ -102,7 +102,7 @@ def choice_lines(run, horizon, phase_length):
             parts.extend(a["upgrade"].get("displayName") or readable(a["upgrade"]["upgradeId"]) for a in gained)
         purchase = purchases.get(tick)
         if purchase:
-            parts.append(f"+{purchase['added']} Hares; {purchase['spent']} Field Data")
+            parts.append(f"+{purchase['added']} Rabbits; {purchase['spent']} Field Data")
         elif run.get("purchaseWindows") is None:
             parts.append("purchases not recorded")
         if not parts:
@@ -111,7 +111,7 @@ def choice_lines(run, horizon, phase_length):
     return "\n".join(result) or "Decisions and purchases not recorded"
 
 
-def hare_peak(run, history):
+def rabbit_peak(run, history):
     observed = [(values[0], t) for t, values in history.items() if values[0] is not None]
     for snapshot in run.get('populationHistory') or []:
         value = population(snapshot)[0]
@@ -126,16 +126,16 @@ def hare_peak(run, history):
 def story(run, history, final, horizon, detailed=False):
     tick = run["ticks"]
     if final[0] == 0:
-        lines = [f"Hares became extinct by tick {tick}."]
+        lines = [f"Rabbits became extinct by tick {tick}."]
     elif horizon is not None and tick >= horizon:
-        lines = [f"Reached the {horizon}-tick horizon with {counts(final)} Hares / Foxes / Plants."]
+        lines = [f"Reached the {horizon}-tick horizon with {counts(final)} Rabbits / Foxes / Plants."]
     else:
         lines = [f"Recorded endpoint: tick {tick}. Completion reason not recorded."]
-    peak, peak_tick = hare_peak(run, history)
+    peak, peak_tick = rabbit_peak(run, history)
     if peak is not None:
-        lines.append(f"Highest recorded Hare count: {peak} at tick {peak_tick}.")
-    stats = next((s for s in run.get("herbivoreStatLines") or [] if s.get("speciesId") == "hare"), None)
-    if stats is None and (run.get("herbivoreStatLine") or {}).get("speciesId") == "hare":
+        lines.append(f"Highest recorded Rabbit count: {peak} at tick {peak_tick}.")
+    stats = next((s for s in run.get("herbivoreStatLines") or [] if s.get("speciesId") == "rabbit"), None)
+    if stats is None and (run.get("herbivoreStatLine") or {}).get("speciesId") == "rabbit":
         stats = run["herbivoreStatLine"]
     if stats:
         labels = (("BIR", "births"), ("PREY", "predation deaths"), ("STRV", "starvation deaths"), ("CRWD", "crowding deaths"))
@@ -147,11 +147,11 @@ def story(run, history, final, horizon, detailed=False):
                           if p["windowStartTickExclusive"] == audit["decisionTick"]), None)
         if following:
             following_tick = following["windowEndTickInclusive"]
-            hares = history.get(following_tick, (None,))[0]
-            if hares is not None:
-                change = hares - audit["populationAfter"]
-                lines.append(f"After +{audit['added']} at tick {audit['decisionTick']}, Hares went "
-                             f"{audit['populationAfter']} -> {hares} by tick {following_tick} "
+            rabbits = history.get(following_tick, (None,))[0]
+            if rabbits is not None:
+                change = rabbits - audit["populationAfter"]
+                lines.append(f"After +{audit['added']} at tick {audit['decisionTick']}, Rabbits went "
+                             f"{audit['populationAfter']} -> {rabbits} by tick {following_tick} "
                              f"({change:+d}, excluding the immediate purchase).")
     if any(v is None for v in final):
         lines.append("Some endpoint populations were not recorded.")
@@ -199,19 +199,19 @@ def run_data(run, context, checkpoints):
         strategy = 'skip-all'
     windows = run.get('purchaseWindows')
     policies = {p['policy'] for p in windows or [] if p.get('policy')}
-    policy = arguments.get('-harePurchasePolicy') or context.get('purchasePolicy')
+    policy = arguments.get('-rabbitPurchasePolicy') or context.get('purchasePolicy')
     if not policy:
         policy = next(iter(policies)) if len(policies) == 1 else 'Varies by decision' if policies else None
     horizon = context['horizon']
     reached = run['ticks'] >= horizon if horizon is not None else None
-    peak, peak_tick = hare_peak(run, history)
+    peak, peak_tick = rabbit_peak(run, history)
     data = {'Seed': run['seed'], 'Strategy': strategy, 'Purchase policy': policy,
             'Condition': context['label'], 'Endpoint tick': run['ticks'], 'Horizon tick': horizon,
             'Reached horizon (0/1)': int(reached) if reached is not None else None,
-            'Hares alive at horizon (0/1)': int(reached and final[0] > 0) if reached is not None and final[0] is not None else None,
+            'Rabbits alive at horizon (0/1)': int(reached and final[0] > 0) if reached is not None and final[0] is not None else None,
             'All three alive at horizon (0/1)': int(reached and all(v > 0 for v in final)) if reached is not None and all(v is not None for v in final) else None,
-            'Hare extinction endpoint (0/1)': int(final[0] == 0) if final[0] is not None else None,
-            'Duration seconds': run.get('durationSeconds'), 'Highest recorded Hares': peak, 'Hare peak tick': peak_tick}
+            'Rabbit extinction endpoint (0/1)': int(final[0] == 0) if final[0] is not None else None,
+            'Duration seconds': run.get('durationSeconds'), 'Highest recorded Rabbits': peak, 'Rabbit peak tick': peak_tick}
     for option, label in [('-gridWidth', 'Map width'), ('-gridHeight', 'Map height')]:
         data[label] = int(arguments[option]) if option in arguments else None
     data['Wrap map edges (0/1)'] = int(arguments['-wrapEdges'] == 'true') if arguments.get('-wrapEdges') in ('true', 'false') else None
@@ -235,7 +235,7 @@ def run_data(run, context, checkpoints):
         data[f'Tick {tick} population status'] = ('Not reached' if run['ticks'] < tick else
             'Recorded' if all(v is not None for v in values) else 'Not recorded' if all(v is None for v in values) else 'Partially recorded')
     def stat_lines(payload, prefix):
-        for role, species in [('herbivore', 'hare'), ('predator', 'fox')]:
+        for role, species in [('herbivore', 'rabbit'), ('predator', 'fox')]:
             plural, singular = role + 'StatLines', role + 'StatLine'
             lines = payload.get(plural) or []
             legacy = payload.get(singular) or {}
@@ -316,7 +316,7 @@ def run_data(run, context, checkpoints):
                 end = following['windowEndTickInclusive']
                 closing = history.get(end, (None,))[0]
                 data[prefix + ' following endpoint tick'] = end
-                data[prefix + ' Hare change after immediate purchase'] = closing - purchase['populationAfter'] if closing is not None else None
+                data[prefix + ' Rabbit change after immediate purchase'] = closing - purchase['populationAfter'] if closing is not None else None
         for slot, item in enumerate(acquired[tick], 1):
             for key in ('upgradeId', 'displayName', 'targetSpeciesId', 'scope'):
                 data[f'{prefix} acquisition {slot} {key}'] = item['upgrade'].get(key)
@@ -348,8 +348,8 @@ def data_table(records):
 def annotated_run_data(run, context, checkpoints, goals, rank=None):
     data = run_data(run, context, checkpoints)
     met, added, decisions, chosen, no_purchase = facts(run, context, endpoint(run), goals)
-    data.update({'Export goal met (0/1)': met, 'Goal met without purchased Hares (0/1)': no_purchase,
-                 'Total purchased Hares': added, 'Recorded decision windows': decisions,
+    data.update({'Export goal met (0/1)': met, 'Goal met without purchased Rabbits (0/1)': no_purchase,
+                 'Total purchased Rabbits': added, 'Recorded decision windows': decisions,
                  'Non-skip Mutation choices': chosen})
     if rank is not None:
         data['Shortlist rank'] = rank
@@ -422,8 +422,8 @@ def settings(arguments):
     grid = f"{arguments.get('-gridWidth', 'Not recorded')} × {arguments.get('-gridHeight', 'Not recorded')}"
     wrap = arguments.get('-wrapEdges')
     grid += ' (wrapped)' if wrap == 'true' else ' (closed edges)' if wrap == 'false' else ' (wrapping not recorded)'
-    names = {'fox:energy.starting': 'Fox starting energy', 'hare:awareness.vision-range': 'Hare vision',
-             'hare:reproduction.gestation-ticks': 'Hare gestation ticks', 'fox:reproduction.gestation-ticks': 'Fox gestation ticks'}
+    names = {'fox:energy.starting': 'Fox starting energy', 'rabbit:awareness.vision-range': 'Rabbit vision',
+             'rabbit:reproduction.gestation-ticks': 'Rabbit gestation ticks', 'fox:reproduction.gestation-ticks': 'Fox gestation ticks'}
     overrides = [f"{names.get(key, key)} {value}" for key, value in
                  (item.split('=') for item in arguments.get('-speciesStats', '').split(',') if item)]
     return dict(populations=initial, map=grid,
@@ -454,7 +454,7 @@ def experiment_details(path, contexts, seen):
     strategies = {readable(c.get('arguments', {}).get('-mutationPolicy') or
                   ('skip-all' if c.get('arguments', {}).get('-phaseUpgradeSchedule') == 'none;none;none;none;none;none' else 'Not recorded'))
                   for c in contexts.values()}
-    policies = {c.get('arguments', {}).get('-harePurchasePolicy', 'Not recorded') for c in contexts.values()}
+    policies = {c.get('arguments', {}).get('-rabbitPurchasePolicy', 'Not recorded') for c in contexts.values()}
     return dict(name=name, owner=owner, question=question,
                 populations=common('populations'), map=common('map'), overrides=common('overrides'),
                 timing=next(iter(timing)) if len(timing) == 1 else 'Varies by condition',
@@ -467,11 +467,11 @@ def summary_rows(groups):
     for group in groups:
         c, t = group['context'], group['totals']
         known_horizon = t.get('knownHorizon', 0) == t['runs']
-        hare_known = known_horizon and not t.get('missingHareEndpoint', 0)
+        rabbit_known = known_horizon and not t.get('missingRabbitEndpoint', 0)
         all_known = known_horizon and not t.get('missingEndpoint', 0)
         rows.append([c['label'], t['runs'], c['horizon'] if c['horizon'] is not None else 'Not recorded',
-            t.get('aliveAtHorizon', 0) if hare_known else 'Not recorded',
-            t.get('aliveAtHorizon', 0) / t['runs'] if hare_known else 'Not recorded',
+            t.get('aliveAtHorizon', 0) if rabbit_known else 'Not recorded',
+            t.get('aliveAtHorizon', 0) / t['runs'] if rabbit_known else 'Not recorded',
             t.get('allSpeciesAliveAtHorizon', 0) if all_known else 'Not recorded',
             t.get('allSpeciesAliveAtHorizon', 0) / t['runs'] if all_known else 'Not recorded',
             t.get('reached', 0) if known_horizon else 'Not recorded', t.get('extinct', 0),
@@ -532,7 +532,7 @@ def prepare_rows(inputs, checkpoints, max_runs, match, seeds, detailed, selectio
             total['reached'] += known and run['ticks'] >= context['horizon']
             total['aliveAtHorizon'] += known and run['ticks'] >= context['horizon'] and final[0] is not None and final[0] > 0
             total['allSpeciesAliveAtHorizon'] += known and run['ticks'] >= context['horizon'] and all(v is not None and v > 0 for v in final)
-            total['missingHareEndpoint'] += final[0] is None
+            total['missingRabbitEndpoint'] += final[0] is None
             total['missingEndpoint'] += any(v is None for v in final)
             if selection == 'lowest-seeds':
                 sample = samples[key]
@@ -592,16 +592,16 @@ def prepare_rows(inputs, checkpoints, max_runs, match, seeds, detailed, selectio
         lower, upper = wilson(row[3], t['runs']) if isinstance(row[3], int) else (None, None)
         number = lambda value: value if isinstance(value, (int, float)) else None
         record = {'Condition': row[0], 'Runs': row[1], 'Horizon tick': number(row[2]), **s,
-                  'Hares alive': number(row[3]), 'Hare survival rate': number(row[4]), 'Hare 95% lower': lower, 'Hare 95% upper': upper,
+                  'Rabbits alive': number(row[3]), 'Rabbit survival rate': number(row[4]), 'Rabbit 95% lower': lower, 'Rabbit 95% upper': upper,
                   'All three alive': number(row[5]), 'All-three survival rate': number(row[6]), 'Reached horizon': number(row[7]),
-                  'Hare extinction endpoints': row[8], 'Missing endpoint data': row[9],
-                  'Starting Hares / Foxes / Plants': row[10], 'Map': row[11], 'Stat overrides': row[12],
+                  'Rabbit extinction endpoints': row[8], 'Missing endpoint data': row[9],
+                  'Starting Rabbits / Foxes / Plants': row[10], 'Map': row[11], 'Stat overrides': row[12],
                   'Condition ID': row[13], 'Source report': row[14], 'Batch identity': row[15]}
         statistical_records.append(record)
     statistical_records.sort(key=lambda r: (-(r['Goal 95% lower'] if r['Goal 95% lower'] is not None else -1), -r['Runs'], r['Condition'], r['Source report']))
     return dict(schemaVersion=4, generatedUtc=dt.datetime.now(dt.timezone.utc).isoformat(),
-        headers=["Seed / choices / purchase policy", *(f"Tick {t}\nHares / Foxes / Plants\nbefore purchases" for t in checkpoints),
-                 "Endpoint tick\nHares / Foxes / Plants", "Choices and purchases", "Purchase limits and reasons",
+        headers=["Seed / choices / purchase policy", *(f"Tick {t}\nRabbits / Foxes / Plants\nbefore purchases" for t in checkpoints),
+                 "Endpoint tick\nRabbits / Foxes / Plants", "Choices and purchases", "Purchase limits and reasons",
                  "What happened? (recorded observations)", "Your playtest notes (optional)", "Source evidence"],
         rows=[r[3] for r in selected_rows], evidenceFolders=[r[4] for r in selected_rows],
         totalRuns=total_runs, exportedRows=len(selected_rows), selection=selection_note, selectionMode=selection,
@@ -672,7 +672,7 @@ def main():
     parser.add_argument("--seeds", nargs="*", type=int, default=[])
     parser.add_argument("--detailed-observations", action="store_true", help="Include purchase-by-purchase population changes")
     parser.add_argument('--selection', choices=('promising', 'lowest-seeds'), default='promising')
-    parser.add_argument('--success-floors', nargs=3, type=int, default=[5, 5, 100], metavar=('HARES', 'FOXES', 'PLANTS'))
+    parser.add_argument('--success-floors', nargs=3, type=int, default=[5, 5, 100], metavar=('RABBITS', 'FOXES', 'PLANTS'))
     parser.add_argument("--link-evidence", action="store_true", help=argparse.SUPPRESS)
     args = parser.parse_args()
     try:

@@ -320,7 +320,7 @@ with a small set of apps before the full ecosystem is produced.
 3. Are desktop backgrounds static unlockable scenes, animated scenes, or both?
 4. Which personalization options are meaningful for the vertical slice without
    becoming a production sink?
-5. What is the first Hare Genome catalog, and which choices remain exclusively
+5. What is the first Rabbit Genome catalog, and which choices remain exclusively
    expedition Mutations in the Simulation reward flow?
 6. Does active Genome configuration use a reassignable capacity budget, and is
    reallocation free between simulations?

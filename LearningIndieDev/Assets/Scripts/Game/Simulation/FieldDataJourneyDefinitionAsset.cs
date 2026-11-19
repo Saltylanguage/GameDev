@@ -79,7 +79,7 @@ namespace SaltyGame
     {
         [SerializeField] string definitionId;
         [SerializeField] string scenarioId = "ForestEdge";
-        [SerializeField] string selectedSpeciesId = "hare";
+        [SerializeField] string selectedSpeciesId = "rabbit";
         [SerializeField] FieldDataRouteNodeData[] route = Array.Empty<FieldDataRouteNodeData>();
         [SerializeField] FieldDataPopulationControlData[] populationControls = Array.Empty<FieldDataPopulationControlData>();
         [SerializeField] FieldDataIncomeOfferData[] incomeOffers = Array.Empty<FieldDataIncomeOfferData>();
@@ -170,7 +170,7 @@ namespace SaltyGame
             values = new List<FieldDataPopulationControl>();
             var expected = new Dictionary<string, (string species, int amount)>(StringComparer.Ordinal)
             {
-                ["add-hares"] = ("hare", 1), ["remove-hares"] = ("hare", -1),
+                ["add-rabbits"] = ("rabbit", 1), ["remove-rabbits"] = ("rabbit", -1),
                 ["add-foxes"] = ("fox", 1), ["remove-foxes"] = ("fox", -1),
                 ["add-plants"] = ("plant", 5), ["remove-plants"] = ("plant", -5),
             };
@@ -188,9 +188,9 @@ namespace SaltyGame
                 values.Add(item.ToValue());
             }
             if (seen.Count != expected.Count || !seen.Contains("add-" + selectedSpeciesId + "s")
-                || selectedSpeciesId != "hare")
+                || selectedSpeciesId != "rabbit")
             {
-                error = "The starter definition requires all six population controls and the Hare-selected starter species.";
+                error = "The starter definition requires all six population controls and the Rabbit-selected starter species.";
                 return false;
             }
             error = string.Empty;
@@ -213,8 +213,8 @@ namespace SaltyGame
                     error = "Income offers need unique stable IDs, display names, and invariant numeric values.";
                     return false;
                 }
-                var valid = item.Id == "income-plus-one-per-hare"
-                    ? item.Operation == FieldDataIncomeOperation.AddPerHare && amount == 1m
+                var valid = item.Id == "income-plus-one-per-rabbit"
+                    ? item.Operation == FieldDataIncomeOperation.AddPerRabbit && amount == 1m
                         && item.Sources == FieldDataIncomeSource.Shop
                         && item.FirstShopVisit == 1 && item.ShopCost == 20
                     : item.Id == "income-multiply-one-point-five"
@@ -258,7 +258,7 @@ namespace SaltyGame
                 var expectedAttribute = SupportedShopAttribute(item?.FamilyId);
                 var expectedAmount = SupportedShopAmount(item?.FamilyId);
                 if (item == null || string.IsNullOrWhiteSpace(item.Id) || string.IsNullOrWhiteSpace(item.FamilyId)
-                    || !seen.Add(item.Id) || item.Cost != 30 || item.TargetSpeciesId != "hare"
+                    || !seen.Add(item.Id) || item.Cost != 30 || item.TargetSpeciesId != "rabbit"
                     || !SpeciesAttributeRegistry.Contains(item.AttributeId)
                     || string.IsNullOrEmpty(expectedAttribute) || item.AttributeId != expectedAttribute
                     || Math.Abs(item.SignedAmount) != expectedAmount
@@ -266,7 +266,7 @@ namespace SaltyGame
                     || float.IsNaN(item.SignedAmount) || float.IsInfinity(item.SignedAmount) || item.SignedAmount == 0f
                     || !familySigns.Add(item.FamilyId + (item.SignedAmount > 0 ? "+" : "-")))
                 {
-                    error = $"Signed Hare offer '{item?.Id ?? "<missing>"}' is invalid: family='{item?.FamilyId}', attribute='{item?.AttributeId}', amount={item?.SignedAmount}, expected attribute='{expectedAttribute}', expected absolute amount={expectedAmount}; offers require unique ID/family sign, a supported runtime attribute, a non-zero finite amount, and a 30-FD price.";
+                    error = $"Signed Rabbit offer '{item?.Id ?? "<missing>"}' is invalid: family='{item?.FamilyId}', attribute='{item?.AttributeId}', amount={item?.SignedAmount}, expected attribute='{expectedAttribute}', expected absolute amount={expectedAmount}; offers require unique ID/family sign, a supported runtime attribute, a non-zero finite amount, and a 30-FD price.";
                     return false;
                 }
                 values.Add(item.ToValue());

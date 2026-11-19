@@ -11,7 +11,7 @@ Ask **one numbered question at a time**. Answer **Yes** (you saw it and are happ
 
 These are observations, not automatic approvals of a whole M2 item. After the review, we will summarize each item as **Accept**, **Revise**, or **Inconclusive** from your answers and the existing test evidence. M2 stays open until all ten outcomes have their required evidence and a human closeout decision.
 
-Use the normal player route and a fresh profile where a question asks for one. Test at **1280×720** and **1920×1080** when prompted. A real exit/relaunch means closing the game process, not merely returning to the menu or reloading a Unity scene. The authored Hare route has a known automated failure before node one ends. If your route stops early, record it and mark later unreachable questions **Blocked**; a controlled test fixture can check UI mechanics but cannot stand in for a successful predator route.
+Use the normal player route and a fresh profile where a question asks for one. Test at **1280×720** and **1920×1080** when prompted. A real exit/relaunch means closing the game process, not merely returning to the menu or reloading a Unity scene. The authored Rabbit route has a known automated failure before node one ends. If your route stops early, record it and mark later unreachable questions **Blocked**; a controlled test fixture can check UI mechanics but cannot stand in for a successful predator route.
 
 ## Set up once
 
@@ -21,7 +21,7 @@ Use the normal player route and a fresh profile where a question asks for one. T
 
 **Q1 — M2-01 / M2-10, normal entry.** Starting from the normal menu with a fresh profile, can you reach the journey without developer setup, and can you tell which profile is active?
 
-**Q2 — M2-01, launch meaning.** Before you start, does the game make it clear that this slice launches **Forest Edge as a Hare**, what your immediate goal is, and what to do first?
+**Q2 — M2-01, launch meaning.** Before you start, does the game make it clear that this slice launches **Forest Edge as a Rabbit**, what your immediate goal is, and what to do first?
 
 **Q3 — M2-02, map direction.** On the journey map, can you find your current position, an available next node, and the action that starts it without help?
 
@@ -29,7 +29,7 @@ Use the normal player route and a fresh profile where a question asks for one. T
 
 ## Watch and control the run
 
-**Q5 — M2-02 / M2-03, 1280×720.** At 1280×720, can you distinguish Hares, Foxes, and Plant resources on the live board, read the current objective, and find the next action?
+**Q5 — M2-02 / M2-03, 1280×720.** At 1280×720, can you distinguish Rabbits, Foxes, and Plant resources on the live board, read the current objective, and find the next action?
 
 **Q6 — M2-02 / M2-03, 1920×1080.** At 1920×1080, can you distinguish the same three roles, read the objective, and find the next action?
 
@@ -51,7 +51,7 @@ Use the normal player route and a fresh profile where a question asks for one. T
 
 ## Reach an outcome and return
 
-**Q15 — M2-03, legitimate route.** Using the authored Forest Edge/Hare route with Fox pressure and normal player choices, can you complete the representative journey? If it ends early, record the seed, last visible moment, and apparent cause; answer **Blocked** for completion.
+**Q15 — M2-03, legitimate route.** Using the authored Forest Edge/Rabbit route with Fox pressure and normal player choices, can you complete the representative journey? If it ends early, record the seed, last visible moment, and apparent cause; answer **Blocked** for completion.
 
 **Q16 — M2-04, strategy differences.** After trying each opening response on comparable legitimate attempts, can you point to one observed benefit **and** one cost or limitation for each? If the route ends before the effects can be judged, answer **Blocked**.
 
@@ -69,8 +69,8 @@ Use the normal player route and a fresh profile where a question asks for one. T
 
 ## Separate evidence decision
 
-**Q23 — M2-04 factual report only.** After reading the [48-run factual report](Research/Experiments/M2-04-Three-Response-20261115/REPORT.md), do you agree that it accurately records the approved comparison, including **0 of 12 Hares alive at node-one close in each of four arms** and its stated limits? Answer **Agree**, **Request a specific correction**, or **Still reviewing**. Sim's answer is independent review input; Josh, the decision owner, will make a separate explicit accept/revise decision after comparison. Agreement does **not** approve a balance value, a new experiment, M2-03/M2-04 closeout, or the M2 milestone.
+**Q23 — M2-04 factual report only.** After reading the [48-run factual report](Research/Experiments/M2-04-Three-Response-20261115/REPORT.md), do you agree that it accurately records the approved comparison, including **0 of 12 Rabbits alive at node-one close in each of four arms** and its stated limits? Answer **Agree**, **Request a specific correction**, or **Still reviewing**. Sim's answer is independent review input; Josh, the decision owner, will make a separate explicit accept/revise decision after comparison. Agreement does **not** approve a balance value, a new experiment, M2-03/M2-04 closeout, or the M2 milestone.
 
 ## After Q23
 
-Compare the two independent responses by question ID, then make a short item-by-item decision record: what each reviewer observed, where they disagree, which questions were blocked, and what implementation or validation remains. Any change to the Hare route needs a separate, concrete balance decision under [SG-005](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). Answers will not be filled in or inferred from automated screenshots.
+Compare the two independent responses by question ID, then make a short item-by-item decision record: what each reviewer observed, where they disagree, which questions were blocked, and what implementation or validation remains. Any change to the Rabbit route needs a separate, concrete balance decision under [SG-005](Studio%20Guidelines/SG-005-UPGRADE-AND-ECOLOGY-BALANCE.md). Answers will not be filled in or inferred from automated screenshots.

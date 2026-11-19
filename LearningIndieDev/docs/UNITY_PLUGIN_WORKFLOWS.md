@@ -100,7 +100,7 @@ Seeded experiments use the same routing:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\CellSim.ps1 -Command Run `
     -Execution Auto -SeedStart 10100 -SeedCount 20 -RunTicks 600 `
     -ScenarioPath Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset `
-    -PlayerSpeciesId hare
+    -PlayerSpeciesId rabbit
 ```
 
 The live lane calls the project-owned `cellsim_run` Pipeline command. The clean

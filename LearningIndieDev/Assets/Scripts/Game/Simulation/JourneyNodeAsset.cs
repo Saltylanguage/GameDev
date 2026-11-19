@@ -18,7 +18,7 @@ namespace SaltyGame
         [SerializeField] string[] rewardMutationIds = Array.Empty<string>();
         [SerializeField, Min(0)] int dataReward;
         [SerializeField] JourneyNodeAsset[] nextNodes = Array.Empty<JourneyNodeAsset>();
-        [SerializeField, Min(1)] int refreshHares = 10;
+        [SerializeField, Min(1)] int refreshRabbits = 10;
         [SerializeField, Min(1)] int refreshPlants = 10;
         [SerializeField, Min(1)] int eventPlantGain = 10;
         [SerializeField, Min(1)] int eventPlantLoss = 5;
@@ -38,11 +38,11 @@ namespace SaltyGame
         public JourneyPopulationEncounter CreatePopulationEncounter()
         {
             if (!playableInPrototype || (kind != JourneyNodeKind.Refresh && kind != JourneyNodeKind.Event)
-                || refreshHares < 1 || refreshPlants < 1 || eventPlantGain < 1 || eventPlantLoss < 1
+                || refreshRabbits < 1 || refreshPlants < 1 || eventPlantGain < 1 || eventPlantLoss < 1
                 || eventGainPercent < 0 || eventGainPercent > 100)
                 throw new InvalidOperationException($"Invalid population encounter '{nodeId}'.");
             return new JourneyPopulationEncounter(nodeId, displayName, description, kind,
-                refreshHares, refreshPlants, eventPlantGain, eventPlantLoss, eventGainPercent);
+                refreshRabbits, refreshPlants, eventPlantGain, eventPlantLoss, eventGainPercent);
         }
 
         public bool TryCreateCondition(out SpeciesUpgradeSnapshot condition, out string error)
@@ -69,16 +69,16 @@ namespace SaltyGame
     public sealed class JourneyPopulationEncounter
     {
         public JourneyPopulationEncounter(string id, string name, string description, JourneyNodeKind kind,
-            int hares, int plants, int gain, int loss, int gainPercent)
+            int rabbits, int plants, int gain, int loss, int gainPercent)
         {
             Id = id; Name = name; Description = description; Kind = kind;
-            Hares = hares; Plants = plants; Gain = gain; Loss = loss; GainPercent = gainPercent;
+            Rabbits = rabbits; Plants = plants; Gain = gain; Loss = loss; GainPercent = gainPercent;
         }
         public string Id { get; }
         public string Name { get; }
         public string Description { get; }
         public JourneyNodeKind Kind { get; }
-        public int Hares { get; }
+        public int Rabbits { get; }
         public int Plants { get; }
         public int Gain { get; }
         public int Loss { get; }

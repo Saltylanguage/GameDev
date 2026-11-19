@@ -1,4 +1,4 @@
-# FD2-T01: Hare content and integration review
+# FD2-T01: Rabbit content and integration review
 
 - Date: 2026-10-24
 - Status: Content approved by Bevin; isolated authoring and integration validation underway
@@ -70,7 +70,7 @@ The original prerequisite graph leads through all five nodes. At two points
 each, activating the complete prerequisite chain requires ten points. The
 incoming capacity is eight. Exhaustively checking all 32 subsets against the
 incoming `SpeciesGenomeProfile` and `GenomeSimulationSnapshot.Resolve` yields
-six legal configurations, none containing `hare.warren-network`.
+six legal configurations, none containing `rabbit.warren-network`.
 
 After all five nodes are permanently owned, the FD2 ownership-based proposal
 has 31 subsets within capacity, including 15 containing Warren Network. Those
@@ -87,9 +87,9 @@ dropping a node or silently bypassing validation for every catalog.
 | Vision increase | Changes awareness radius; does not add hearing or adaptive intelligence | Encounter/contact changes, threat response, movement and food access |
 | Movement increase | Changes travel/contact opportunities and movement cost exposure | Distance, energy spent, pursuit/escape, feeding access |
 | Digestion bonus | Changes energy gained through feeding; can increase persistence and consumption | Food consumed, energy gained, starvation, downstream resource depletion |
-| Pool-capacity increase | Allows larger ordinary replenishment; does not spawn Hares by itself | Actual grants, FD spending, later food pressure and losses |
+| Pool-capacity increase | Allows larger ordinary replenishment; does not spawn Rabbits by itself | Actual grants, FD spending, later food pressure and losses |
 
-Every node is Hare-specific, a single signed additive modifier, applied once
+Every node is Rabbit-specific, a single signed additive modifier, applied once
 while active and frozen at launch before ordered expedition Mutations. None
 uses reflection, conditional modifier syntax or a live asset as run authority.
 Capacity costs remain provisional first-test terms. AV/tier estimates are

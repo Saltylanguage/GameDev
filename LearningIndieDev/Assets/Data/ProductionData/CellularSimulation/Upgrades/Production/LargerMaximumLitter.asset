@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: LargerMaximumLitter
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.SpeciesUpgradeAsset
   upgradeId: larger-maximum-litter
-  displayName: 'Hare: Larger Maximum Litter'
+  displayName: 'Rabbit: Larger Maximum Litter'
   description: Increase the maximum number of offspring in each litter by one.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 5
   modifiers:
   - attributeId: reproduction.litter-maximum

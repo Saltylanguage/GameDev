@@ -76,7 +76,7 @@ try {
     if ($Match) { $arguments += @('--match', $Match) }
     if ($Seeds) { $arguments += @('--seeds') + @($Seeds | ForEach-Object { "$_" }) }
     if ($DetailedObservations) { $arguments += '--detailed-observations' }
-    if ($SuccessFloors.Count -ne 3 -or @($SuccessFloors | Where-Object { $_ -lt 1 }).Count -gt 0) { throw 'SuccessFloors needs three positive whole numbers: Hares, Foxes, Plants.' }
+    if ($SuccessFloors.Count -ne 3 -or @($SuccessFloors | Where-Object { $_ -lt 1 }).Count -gt 0) { throw 'SuccessFloors needs three positive whole numbers: Rabbits, Foxes, Plants.' }
     $arguments += @('--selection', $ReviewSelection, '--success-floors') + @($SuccessFloors | ForEach-Object { "$_" })
     & $pythonPath @arguments
     if ($LASTEXITCODE -ne 0) { throw 'Could not prepare worksheet rows. See the explanation above.' }

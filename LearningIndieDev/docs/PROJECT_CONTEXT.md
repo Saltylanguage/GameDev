@@ -4,6 +4,15 @@ This document records durable product and design context that should carry acros
 Codex desktop and IDE conversations. Keep it concise, update it when a decision
 changes, and do not treat research references as approved implementation work.
 
+**November 18, 2026 species identity and roster:** Josh confirmed Rabbit, Fox,
+Owl, Deer, and Wolf as the planned playable test roster. Rabbit is the
+player-facing and canonical gameplay identity; new runtime and authoring data
+use species ID `rabbit`. Profile stores written with the old `hare` ID and
+Genome node prefixes migrate on load. Dated experiments and handoffs retain
+their recorded names and inputs. The pinned M2 review remains the existing
+Forest Edge/Rabbit route; adding the other species is separate test-first work
+under VS-A7 and does not approve ecology or balance values.
+
 ## Unity plugin skills and project fit
 
 **Field Data navigation, October 18:** Keep node-end Field Data settlement but
@@ -71,29 +80,56 @@ uncertainty or regression risk.
 
 ## Current game direction
 
+- **November 19, 2026 Forest Edge wrapping:** Josh chose connected left/right
+  and top/bottom grid edges for the authored Forest Edge route. Scenario assets
+  now own topology; the Desktop preview and experiment runner inherit it unless
+  explicitly overridden. The D5 visual review scenario also retains its
+  existing wrapped setup. Other scenarios remain bounded. This changes
+  movement, perception, combat, feeding, and reproduction at the seams, so
+  earlier bounded route outcomes do not establish the new route's balance.
+  No population or species values were approved by this change. See the
+  [implementation handoff](handoffs/2026-11-19-codex-forest-edge-wrapping.md).
+
+- **November 18, 2026 cozy individual-led direction:** Josh selected
+  low-population simulations where individual animal events matter, accepting
+  the additional architecture risk. Fox overhunting remains the opening
+  pressure; avoidance, survival, and faster reproduction remain indirect,
+  species-level choices, and animals act autonomously. Surviving Rabbits retain
+  identity, state, and event history across the run. New Rabbits may inherit a
+  tunable share of parental stats and event-derived effects; the exact
+  inheritance rules remain open. Rabbit reproduction proceeds through
+  eligibility, mate encounter, successful mating, litter, and offspring
+  survival/maturity. Rabbit inspection surfaces useful state/history and
+  contextual individual, lineage, and run goals, such as speed 5, five living
+  lineage Rabbits, or acquiring Burrows. An intelligent event-tracking and
+  presentation system is necessary work; its model and UI need further design.
+  This supersedes count-only Rabbit carryover as the target while leaving
+  nonplayed-species persistence unchanged pending a separate decision. See the
+  [S6 design record](Sprints/S6-control-record.md#november-18-cozy-individual-led-simulation-direction).
+
 - **November 11–13, 2026 carcass feeding and Fox energy first pass:** A lethal
   attack now leaves the prey's authored energy as a shareable meat resource;
   each eater consumes only enough to fill its stomach, with any remainder
-  available to another Fox. Hare energy value is 96; provisional Fox upkeep is
+  available to another Fox. Rabbit energy value is 96; provisional Fox upkeep is
   2 energy every 25 ticks, or 48 per 600-tick node. This gives a maintenance
-  ledger of one Hare per two Foxes, not an ecological survival ratio. The
+  ledger of one Rabbit per two Foxes, not an ecological survival ratio. The
   approved [carcass-value experiment](Research/Experiments/S6-Fox-Carcass-Value-20261111/CONTRACT-DRAFT.md)
   completed 340 accepted runs: 100 matched seeds per 2:1 scale arm and 20 per
   fixed-six-Fox control. At the same 2:1 ratio, seed-level Fox-starvation
-  incidence was 47%, 82%, and 100% at 2/1, 4/2, and 6/3; Hares were extinct in
+  incidence was 47%, 82%, and 100% at 2/1, 4/2, and 6/3; Rabbits were extinct in
   all of those seeds. No production values changed and Josh's balance decision
   remains pending. Review the [factual report](Research/Experiments/S6-Fox-Carcass-Value-20261111/REPORT.md),
   [separate AI analysis](Research/Experiments/S6-Fox-Carcass-Value-20261111/AI_ANALYSIS.md),
   [implementation handoff](handoffs/2026-11-11-carcass-feeding-first-pass.md),
   and [S6 decision record](Sprints/S6-control-record.md#november-11-carcass-feeding-and-fox-energy-first-pass).
-  For future balance work, use the [Hare / Rabbit–Fox balance index](Research/HARE_FOX_BALANCE_INDEX.md)
+  For future balance work, use the [Rabbit–Fox balance index](Research/HARE_FOX_BALANCE_INDEX.md)
   to retrieve comparable studies and their validity limits without pooling
   incompatible Fox energy models.
 
 - **November 9, 2026 sprint direction:** Josh approved
   [S6 — The Fun Pass](Sprints/S6-control-record.md) for November 16–29, following
   the November 15 S5 boundary. The immediate M2 question is whether one complete
-  Hare journey offers consequential choices, readable pressure, distinct
+  Rabbit journey offers consequential choices, readable pressure, distinct
   strategies, and a reason to replay. Josh fixed Fox overhunting as the opening
   pressure and avoidance, survival, and faster reproduction as the three
   temporary Mutation answers; see the [S6 design record](Sprints/S6-control-record.md#november-9-predator-first-design-decision).
@@ -104,7 +140,7 @@ uncertainty or regression risk.
   November GLJP code from `BevBranch` is integrated into `feature/s6-fun-pass`;
   S6 kickoff remains pending. See the [GLJP handoff](handoffs/2026-11-09-gljp-salty-handoff.md).
 
-- **November 10, 2026 node-boundary correction and evidence:** Each new simulation node carries only the played species' population count, recreates those individuals with default state, and restores static authored starting counts for every other species and resource. This works beyond the Hare/Fox pair. The Field Data and legacy journey transitions now implement that rule; the portable worker matches the Unity simulation. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
+- **November 10, 2026 node-boundary correction and historical evidence:** The implemented transition carries only the played species' population count, recreates individuals with default state, and restores static starting counts for other species and resources. The November 18 cozy direction supersedes count-only Rabbit carryover as the design target; the implemented rule and its evidence remain historical/current-code context until changed. The earlier [retained-world Fox sweep](Research/Experiments/S6-Fox-Start-Sweep-20261110/REPORT.md) remains historical and its node-two outcomes do not apply. In the [corrected 100-seed-per-arm sweep](Research/Experiments/S6-Fox-Node-Reset-20261110/REPORT.md), 16/18/20 Foxes caused 19/15/20 first-node failures and 55/51/61 cumulative node-two failures. A follow-up [12-seed lower-count diagnostic](Research/Experiments/S6-Fox-Soft-Opening-20261110/REPORT.md) tested 8/10/12 Foxes: each had 2/12 first-node failures and 4/2/3 cumulative node-two failures. Its intervals are wide and no arm triggered confirmation; one 10-Fox run depleted Plants by node-two close. No tested count is approved for balance. See the [S6 decision record](Sprints/S6-control-record.md#november-10-node-boundary-design-correction) and [analyses](Research/Experiments/S6-Fox-Node-Reset-20261110/AI_ANALYSIS.md), [lower-count analysis](Research/Experiments/S6-Fox-Soft-Opening-20261110/AI_ANALYSIS.md); no authored balance value changed.
 
 - **Gene Lab and journey progression (GLJP, November 9, 2026):** Permanent
   Gene Lab research unlocks eligibility for journey Mutations; it does not
@@ -115,11 +151,11 @@ uncertainty or regression risk.
   Escape Instinct maps to the existing Threat Avoidance behavior. Reproductive
   Drive, litter size and gestation remain separate dimensions. Larger Litters
   adds one maximum litter per Mutation rank through rank 3; rank 3 raises the
-  minimum to 2 when needed. The production Hare reproduction-chance baseline is
-  0.5. Population Reserves adds five Hares to the per-simulation-node purchase
+  minimum to 2 when needed. The production Rabbit reproduction-chance baseline is
+  0.5. Population Reserves adds five Rabbits to the per-simulation-node purchase
   allowance per researched rank, starting from 10; it does not cap births or
   survivors. Burrowing uses the implemented 24-energy dig cost (provisional),
-  requires eight empty neighboring cells, holds three Hares by default and
+  requires eight empty neighboring cells, holds three Rabbits by default and
   lasts 200 simulation steps; family hiding, Shared Burrows and Expanded
   Burrows are implemented. Faster Gestation's journey effect, minimum-litter
   Mutation rank cap, final research costs/prerequisites and Open-ground Sprint
@@ -129,10 +165,10 @@ uncertainty or regression risk.
   [SDD](GENE_LAB_JOURNEY_PROGRESSION_SDD.md).
 
 - **Population decisions playtest slice (October 21, 2026):** Local round-boundary
-  controls implement the existing 10 Field Data prices for +/-1 Hare, +/-1 Fox,
+  controls implement the existing 10 Field Data prices for +/-1 Rabbit, +/-1 Fox,
   and +/-5 Plants. Rejected changes cost nothing; paid removals are recorded
   separately from simulation deaths. The first two-simulation route adds a
-  provisional Rest Stop (up to 10 Hares, 10 Plants, or no change) and Seed Cache
+  provisional Rest Stop (up to 10 Rabbits, 10 Plants, or no change) and Seed Cache
   (50% +10 Plants / 50% -5 Plants, or leave; no Data cost). Encounter values freeze
   at journey preparation, and reopening cannot reroll the cache. The live ledger
   shows observed Plant-count change, while decisions show food pressure, refill
@@ -140,14 +176,14 @@ uncertainty or regression risk.
   food exhaustion. These values are playtest defaults, not approved balance.
   See [feature contract](POPULATION_DECISIONS_PLAYTEST.md).
 
-- **Food exhaustion and population pool (Josh, 2026-10-21):** Unchecked Hares
+- **Food exhaustion and population pool (Josh, 2026-10-21):** Unchecked Rabbits
   should be able to exhaust food and fail through starvation. Balance should
   provide understandable consequences and player agency. Population pool
   capacity is the player's replenishment/HP allowance: base **50**, with
   **+10 per active capacity Genome node**. Ordinary refresh/population grants
   fill only to that limit; special rules can explicitly override it. It is not
   a survivor cut at round transitions. Natural births can exceed it. A separate
-  early Genome investment gives **+5 starting Hares** for a new journey without
+  early Genome investment gives **+5 starting Rabbits** for a new journey without
   increasing capacity. See the [implementation/design record](Research/2026-10-21-Hare-population-pool-and-Genome-nodes.md).
 - **Simulation tooling direction (2026-10-09):** Bevin wants the readable,
   per-run Excel format from the manual playtest to be an automated output,
@@ -157,7 +193,7 @@ uncertainty or regression risk.
   player feedback remain distinct. A local Windows CellSim Workbench now wraps
   setup, saved presets, run-count preview, validation, deliberate Run, progress,
   safe stop/resume and exports around the existing compiler/executor. The current
-  setup covers neutral Plant/Hare/Fox frozen inputs and the six-round flow;
+  setup covers neutral Plant/Rabbit/Fox frozen inputs and the six-round flow;
   it pins each experiment's exact inputs and runner, preserving historical work.
   Readability, ease of use/understanding and modularity are the priorities for
   iteration. Exports now open on a context-rich summary with survival rates;
@@ -190,7 +226,7 @@ uncertainty or regression risk.
   nothing. These rates are provisional.
   Field Data carries between its phases and nodes; other currency types can
   leave a successful journey for Desktop Genome
-  upgrades. Intended Field Data purchases include removing Hares, changing
+  upgrades. Intended Field Data purchases include removing Rabbits, changing
   Fox and Plant populations in either direction, and buying a random event.
   Costs, limits and first-slice scope were open at that meeting; the October 15
   Field Data baseline below now defines them for its test. Exact permanent
@@ -204,7 +240,7 @@ uncertainty or regression risk.
   replace placeholders rather than becoming a second set of informal notes.
 - The first coupled species treatment is [`HARE_FOX_ITERATIVE_TREATMENT.md`](Species%20Design/HARE_FOX_ITERATIVE_TREATMENT.md);
   its execution plan is [`HARE_FOX_IMPLEMENTATION_PLAN.md`](Species%20Design/HARE_FOX_IMPLEMENTATION_PLAN.md);
-  use it as the working design reference for the Forest Edge hare/fox balance
+  use it as the working design reference for the Forest Edge rabbit/fox balance
   fixture until the interaction experiments produce evidence for promotion.
 - The repeatable shorthand for this workflow is **Species Design Treatment** or
   **Iterate Species Design**; [`SPECIES_DESIGN_TREATMENT_TEMPLATE.md`](Species%20Design/SPECIES_DESIGN_TREATMENT_TEMPLATE.md)
@@ -251,18 +287,18 @@ uncertainty or regression risk.
   The
   GalapagOS Desktop is the canonical player home; the standalone Lab remains a
   legacy/developer route until deliberately migrated.
-- The initial vertical-slice content selection is Forest Edge with hare as the
+- The initial vertical-slice content selection is Forest Edge with rabbit as the
   player species, fern as support, fox as opposition, and Trailblazer, Warren,
   and Gardeners as the three intended builds. The rationale and validation gaps
   are recorded in [`VERTICAL_SLICE_SELECTION.md`](VERTICAL_SLICE_SELECTION.md).
 - **Energy budget direction (Josh, 2026-10-08):** Each species should have a
   species-specific base energy cost per tick, including while sheltered.
   Movement, mating, and crowding costs are additional. Josh chose to retain
-  the current effective animal rates: Hare 0.125 energy per tick (charged as
+  the current effective animal rates: Rabbit 0.125 energy per tick (charged as
   1 every 8 ticks) and Fox 1 per tick. Terrain movement cost affects travel
   speed rather than energy. Josh chose a flat, species-configurable energy
   charge for each completed move, independent of terrain, with a provisional
-  Hare rate of 0.125 energy per move and Fox rate of 0.5 energy per move. The
+  Rabbit rate of 0.125 energy per move and Fox rate of 0.5 energy per move. The
   movement charges are not implemented and are deferred to a separate post-S4
   balance pass; other species' rates and plant energy semantics remain open.
   See the
@@ -278,7 +314,7 @@ uncertainty or regression risk.
 - **Field Data design baseline (2026-10-15):**
   [Field Data and Journey Loop Design v1.0](FIELD_DATA_JOURNEY_DESIGN.md)
   is the standalone first-slice authority. It covers one journey wallet,
-  ordered round income, six fixed population controls, the Hare shop pool,
+  ordered round income, six fixed population controls, the Rabbit shop pool,
   free round/node rewards, shop reordering, and a continuous five-node route
   with 18 round payouts. The Step 1–5 design review is complete; implementation
   and self-play are pending. Reorders start at 10 FD random / 100 FD chosen,
@@ -297,14 +333,14 @@ uncertainty or regression risk.
   a provisional fixed 10 Research Data; a global Research upgrade adds +10%
   multiplicatively per level for later settlements. Failed journeys lose only
   run-earned FD. Generic legacy profile currency migrates to Research Data;
-  prior Genome ownership/loadouts remain. The first permanent tree is Hare:
-  its path license and nodes use Hare Data, unlocked nodes remain permanent,
+  prior Genome ownership/loadouts remain. The first permanent tree is Rabbit:
+  its path license and nodes use Rabbit Data, unlocked nodes remain permanent,
   active configuration stays within the existing capacity of 8, and a paid
-  Research Data reset clears only the active Hare loadout without refunding
+  Research Data reset clears only the active Rabbit loadout without refunding
   node costs. The first-test settings are recorded in the [FD2 tuning
   sheet](FIELD_DATA_PERMANENT_PROGRESSION_TUNING_SHEET.md): three conversion
   levels cost 10/20/30 Research Data; reset costs 20 Research Data; and the
-  five Hare nodes each cost 5 Hare Data and use 2 capacity points. Their
+  five Rabbit nodes each cost 5 Rabbit Data and use 2 capacity points. Their
   supported effects were approved for the first slice; these values remain
   test settings rather than measured balance. See the [FD2 Process Design](FIELD_DATA_PERMANENT_PROGRESSION_PROCESS_DESIGN.md),
   [FD2 Solution Design](FIELD_DATA_PERMANENT_PROGRESSION_SOLUTION_DESIGN.md),
@@ -327,14 +363,14 @@ uncertainty or regression risk.
   to numeric values. When the evidence cannot support a precise claim, use a
   simpler directional abstraction rather than presenting a noisy result as a
   guarantee.
-- For the S3-04 V1 bridge, the five existing experimental Hare Mutations form
+- For the S3-04 V1 bridge, the five existing experimental Rabbit Mutations form
   the rotating phase offer pool. Each boundary shows three distinct applicable
   Mutations or Skip. A Mutation is hidden when its effect would be invalid at
-  the current species stats, including the capped Hare Reproductive Drive and
+  the current species stats, including the capped Rabbit Reproductive Drive and
   its coupled Fox Brood Drive response. A selected Mutation may be offered
   again later; selecting it again increases its level and applies its effect
-  again. Repeatable Hare Reinforcements remain a separate phase-boundary
-  purchase that adds one Hare to the next phase when Field Data, board space,
+  again. Repeatable Rabbit Reinforcements remain a separate phase-boundary
+  purchase that adds one Rabbit to the next phase when Field Data, board space,
   and population limits allow. The S3 behavior is a V1; further Mutation and
   interface iteration remains future work. A broader Mutation economy or
   future Skip bonus remains deferred.
@@ -436,7 +472,7 @@ research or player window and upgrade acquisition timing.
 
 **Historical continuous-state plan, superseded across simulation-node boundaries on November 10:** treat continuous state as the canonical runtime design. The
 graphics-capable desktop/Simulation gate is accepted at both target resolutions.
-The Windows player smoke and corrected Forest Edge/Hare run are complete; finish
+The Windows player smoke and corrected Forest Edge/Rabbit run are complete; finish
 the remaining player-facing Mutation choices, outcome language, and
 reward/persistence loop. Full-session duration/memory measurement is optional
 stretch work, not a product acceptance gate.
@@ -545,7 +581,7 @@ settle them in foundational grid code.
   immutable `SimulationLaunchRequest`, `Helper_SceneTransition` loads the
   authored `CellularAutomataPrototype` Simulation scene in `Single` mode, and
   the results surface can return to Lab using the persisted profile session.
-  The initial slice uses ForestEdge, hare, and seed 10100 as the authored Lab
+  The initial slice uses ForestEdge, rabbit, and seed 10100 as the authored Lab
   launch defaults; upgrades remain an empty ordered list until progression is
   connected.
 
@@ -587,7 +623,7 @@ settle them in foundational grid code.
   plant/herbivore/carnivore role subclasses, and scenarios compose three to six
   species assets into immutable runtime data. Starting probability belongs to
   each scenario/species entry rather than the reusable species asset. The first
-  authored library contains fern, reed, hare, deer, snail, beetle, fox, wolf,
+  authored library contains fern, reed, rabbit, deer, snail, beetle, fox, wolf,
   owl, and stoat, plus a compatibility-only baseline scenario.
 - The authored baseline was proven equivalent to the legacy defaults by matching
   the ruleset fingerprint and final grids for deterministic seeds 10100-10104.
@@ -681,7 +717,7 @@ settle them in foundational grid code.
   and carnivores red. Species-specific shape and a restrained accent color can
   provide identity without weakening the role language.
 - The accepted emotional direction for Forest Edge event feedback is **"deadly
-  but cute"** when a Fox hunts and **"sad but cute"** when a Hare is hunted.
+  but cute"** when a Fox hunts and **"sad but cute"** when a Rabbit is hunted.
   Threat, escape, attack, kill, and feeding must remain visually distinct. The
   proposed cue vocabulary is in
   [`SIMULATION_EVENT_VISUALS_IDEATION.md`](Art%20Direction/SIMULATION_EVENT_VISUALS_IDEATION.md).

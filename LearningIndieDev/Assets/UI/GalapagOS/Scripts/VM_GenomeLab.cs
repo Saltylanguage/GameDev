@@ -45,7 +45,7 @@ namespace SaltyGame
             this.selectedSpecies = selectedSpecies;
             this.profileSession = profileSession;
             if (permanentEconomy && profileSession?.Current.HasLoadedProfile == true
-                && !profileSession.Current.GenomeProfiles.Any(genome => genome.SpeciesId.Value == "hare" && genome.Allocations.Count > 0))
+                && !profileSession.Current.GenomeProfiles.Any(genome => genome.SpeciesId.Value == "rabbit" && genome.Allocations.Count > 0))
                 permanent = new FieldDataGenomeLab(profileSession);
             PurchaseLicenseCommand = new DelegateCommand(PurchaseLicense);
             PurchaseNodeCommand = new DelegateCommand(PurchaseNode);
@@ -88,7 +88,7 @@ namespace SaltyGame
         public DelegateCommand ToggleLoadoutNodeCommand { get; }
         public DelegateCommand ApplyLoadoutCommand { get; }
         public Visibility PermanentControlsVisibility => permanent != null ? Visibility.Visible : Visibility.Collapsed;
-        public string EconomyModeText => permanent != null ? "PERMANENT HARE GENOME - FIRST-TEST VALUES" : "LEGACY POC - REFUNDABLE ALLOCATIONS";
+        public string EconomyModeText => permanent != null ? "PERMANENT RABBIT GENOME - FIRST-TEST VALUES" : "LEGACY POC - REFUNDABLE ALLOCATIONS";
         public string ResearchLevelText => permanent?.ResearchText ?? "LEGACY RESEARCH";
         public string ResearchOfferText => permanent?.ResearchOffer ?? string.Empty;
         public string ResearchReasonText => permanent?.ResearchReason ?? string.Empty;
@@ -108,7 +108,7 @@ namespace SaltyGame
             : permanent != null ? permanent.NodeOffer(selectedNodeId) : SelectedNode == null
             ? "NO NODE SELECTED"
             : !SelectedNode.IsPurchasable ? "PREVIEW ONLY"
-            : profile != null && profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
+            : profile != null && profile.TryGetGenomeProfile(new SpeciesId("rabbit"), out var genome)
                 && genome.IsNodeActive(SelectedNode.NodeId)
                 ? GetSelectedNodeRank(genome) < SelectedNode.MaximumRanks
                     ? $"UPGRADE · RANK {GetSelectedNodeRank(genome) + 1}/{SelectedNode.MaximumRanks} / {SelectedNode.RabbitDataPrice} DATA · 1 POINT TOTAL"
@@ -185,12 +185,12 @@ namespace SaltyGame
                 {
                     return false;
                 }
-                return profile.TryGetGenomeProfile(new SpeciesId("hare"), out var genome)
+                return profile.TryGetGenomeProfile(new SpeciesId("rabbit"), out var genome)
                     && genome.ActiveNodeIds.Count > 0;
             }
         }
         bool HasRabbitLicense => profile != null
-            && profile.UnlockedGenomeSpeciesIds.Contains(new SpeciesId("hare"));
+            && profile.UnlockedGenomeSpeciesIds.Contains(new SpeciesId("rabbit"));
         public string SpeciesNameText { get; private set; }
         public string SpeciesIdText { get; private set; }
         public string ActiveGenomeCapacityText { get; private set; }
@@ -302,14 +302,14 @@ namespace SaltyGame
             }
             else
             {
-                var hareMap = permanent.Catalog.GetSpeciesMap(new SpeciesId("hare"));
-                var concepts = nextCatalog?.GetSpeciesMap(new SpeciesId("hare"))?.Nodes
+                var rabbitMap = permanent.Catalog.GetSpeciesMap(new SpeciesId("rabbit"));
+                var concepts = nextCatalog?.GetSpeciesMap(new SpeciesId("rabbit"))?.Nodes
                     .Where(node => PermanentConceptNodeIds.Contains(node.Id)
-                        && !hareMap.TryGetNode(node.Id, out _)) ?? Array.Empty<GenomeUpgradeNodeSnapshot>();
-                var maps = permanent.Catalog.SpeciesMaps.Where(map => map.SpeciesId.Value != "hare")
-                    .Concat(nextCatalog?.SpeciesMaps.Where(map => map.SpeciesId.Value != "hare")
+                        && !rabbitMap.TryGetNode(node.Id, out _)) ?? Array.Empty<GenomeUpgradeNodeSnapshot>();
+                var maps = permanent.Catalog.SpeciesMaps.Where(map => map.SpeciesId.Value != "rabbit")
+                    .Concat(nextCatalog?.SpeciesMaps.Where(map => map.SpeciesId.Value != "rabbit")
                         ?? Array.Empty<SpeciesGenomeMapSnapshot>())
-                    .Concat(new[] { new SpeciesGenomeMapSnapshot(hareMap.SpeciesId, hareMap.Nodes.Concat(concepts)) });
+                    .Concat(new[] { new SpeciesGenomeMapSnapshot(rabbitMap.SpeciesId, rabbitMap.Nodes.Concat(concepts)) });
                 catalog = new GenomeCatalogSnapshot(maps);
             }
             var speciesMap = ResolveSpeciesMap();
@@ -600,37 +600,37 @@ namespace SaltyGame
             CapacityPoints = node.CapacityPoints;
             IsPurchasable = node.IsPurchasable;
             PrerequisiteNodeIds = node.PrerequisiteNodeIds;
-            BranchText = node.Id == "hare.founding-hares" || node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
+            BranchText = node.Id == "rabbit.founding-rabbits" || node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
                 ? "STARTER GENE"
                 : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(node.Id) ? "RESEARCH · TEST PRICE"
                 : string.IsNullOrEmpty(node.BranchName) ? "GENOME NODE" : $"{node.BranchName.ToUpperInvariant()} · GENOME";
             string mutationUnlock = node.Id switch
             {
-                "hare.guarded-burrow" => "Tough Hide",
-                "hare.keen-hearing" => "Long Vision and Keen Senses",
-                "hare.swift-digging" => "movement",
-                "hare.safe-foraging" => "Efficient Digestion",
-                "hare.seed-dispersal" or "hare.crowding-tolerance" or "hare.reproductive-drive" or "hare.escape-instinct"
-                    or "hare.increased-minimum-litter" or "hare.larger-litters"
+                "rabbit.guarded-burrow" => "Tough Hide",
+                "rabbit.keen-hearing" => "Long Vision and Keen Senses",
+                "rabbit.swift-digging" => "movement",
+                "rabbit.safe-foraging" => "Efficient Digestion",
+                "rabbit.seed-dispersal" or "rabbit.crowding-tolerance" or "rabbit.reproductive-drive" or "rabbit.escape-instinct"
+                    or "rabbit.increased-minimum-litter" or "rabbit.larger-litters"
                     or FieldDataPermanentProgressionDefinition.BurrowingNodeId
                     or FieldDataPermanentProgressionDefinition.SharedBurrowsNodeId
                     or FieldDataPermanentProgressionDefinition.ExpandedBurrowsNodeId => node.DisplayName,
                 _ => null,
             };
-            BiomeImpactText = node.Id == "hare.warren-network"
-                ? "Raises the purchased Hare allowance per simulation node. Births and existing Hares are not limited."
+            BiomeImpactText = node.Id == "rabbit.warren-network"
+                ? "Raises the purchased Rabbit allowance per simulation node. Births and existing Rabbits are not limited."
                 : node.Id == "fertile-droppings"
                 ? "Droppings may regrow grass but leave scent that hungry predators can follow."
                 : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.PopulationPoolCapacity)
                     ? "Raises player replenishment capacity. Natural births can still exceed the pool and consume more food."
                 : node.Modifiers.Any(modifier => modifier.AttributeId == SpeciesAttributeIds.StartingPopulation)
-                    ? "More Hares at launch increase food demand and encounters with predators."
+                    ? "More Rabbits at launch increase food demand and encounters with predators."
                 : node.Id == FieldDataPermanentProgressionDefinition.BornBurrowerNodeId
                     ? "Equip this starter gene to begin the next journey with Burrowing."
                 : mutationUnlock != null
                     ? $"Research unlocks {mutationUnlock} journey choices even when this node is unequipped."
                 : node.Modifiers.Count > 0
-                    ? "Applies to every Hare next journey. Playtest values; ecology balance is not established."
+                    ? "Applies to every Rabbit next journey. Playtest values; ecology balance is not established."
                     : "Preview only. This mechanic is not available yet.";
             Fingerprint = node.Fingerprint;
             Left = left;

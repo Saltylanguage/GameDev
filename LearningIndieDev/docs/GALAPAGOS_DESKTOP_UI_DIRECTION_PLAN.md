@@ -190,7 +190,7 @@ until their pixel clusters blur.
 ### Expedition Setup — “Turn observation into a run”
 
 - Scenario card: Forest Edge, biome preview, and short ecological premise.
-- Species card: Hare as the current slice player species, with role and key
+- Species card: Rabbit as the current slice player species, with role and key
   starting information.
 - Starting options: only options that are actually available or explicitly
   labelled representative.

@@ -11,7 +11,7 @@ namespace SaltyGame.Tests
             var grass = SpeciesCell.Grass(96);
             var fullGrass = SimulationCellSnapshot.Create(grass, TerrainTileResolver.FullMask);
             var animalOnGrass = SimulationCellSnapshot.Create(
-                grass.WithEntity(new SpeciesId("hare"), 1, 12, 0, 0, 0f), TerrainTileResolver.FullMask);
+                grass.WithEntity(new SpeciesId("rabbit"), 1, 12, 0, 0, 0f), TerrainTileResolver.FullMask);
             var variants = new HashSet<int>();
             var decorated = 0;
             for (var y = 0; y < 20; y++)

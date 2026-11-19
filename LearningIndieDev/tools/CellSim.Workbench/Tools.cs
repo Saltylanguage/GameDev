@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace CellSim.Workbench;
 
-internal sealed record ExportOptions(string[] Reports, string Output, string Match, string Seeds, int Rows, int FirstTick, int SecondTick, bool DetailedObservations = false, string ReviewSelection = "promising", int HareFloor = 5, int FoxFloor = 5, int PlantFloor = 100);
+internal sealed record ExportOptions(string[] Reports, string Output, string Match, string Seeds, int Rows, int FirstTick, int SecondTick, bool DetailedObservations = false, string ReviewSelection = "promising", int RabbitFloor = 5, int FoxFloor = 5, int PlantFloor = 100);
 internal sealed record BatchProgress(string Folder, string State, int CompletedChunks, int TotalChunks, string Workers, string Runs, DateTime UpdatedUtc, bool Stale);
 
 internal static class Tools
@@ -36,8 +36,8 @@ internal static class Tools
             throw new FileNotFoundException("A selected source no longer exists. Remove it and choose its current location.");
         if (options.Rows is < 1 or > 1000 || options.FirstTick < 0 || options.SecondTick <= options.FirstTick)
             throw new ArgumentException("Choose 1–1,000 example rows and two increasing checkpoint ticks.");
-        if (options.ReviewSelection is not ("promising" or "lowest-seeds") || options.HareFloor < 1 || options.FoxFloor < 1 || options.PlantFloor < 1)
-            throw new ArgumentException("Choose a supported review selection and positive Hare/Fox/Plant success floors.");
+        if (options.ReviewSelection is not ("promising" or "lowest-seeds") || options.RabbitFloor < 1 || options.FoxFloor < 1 || options.PlantFloor < 1)
+            throw new ArgumentException("Choose a supported review selection and positive Rabbit/Fox/Plant success floors.");
         ParseSeeds(options.Seeds);
         if (!Path.IsPathFullyQualified(options.Output) || !options.Output.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException("Choose a full output filename ending in .xlsx.");
@@ -56,7 +56,7 @@ internal static class Tools
             " -ProjectPath " + Quote(project) + " -ReportPath @(" + string.Join(",", options.Reports.Select(Quote)) + ")" +
             " -OutputPath " + Quote(options.Output) + " -MaxRuns " + options.Rows +
             " -Checkpoints " + options.FirstTick + "," + options.SecondTick + " -Match " + Quote(options.Match) +
-            " -ReviewSelection " + Quote(options.ReviewSelection) + " -SuccessFloors " + options.HareFloor + "," + options.FoxFloor + "," + options.PlantFloor +
+            " -ReviewSelection " + Quote(options.ReviewSelection) + " -SuccessFloors " + options.RabbitFloor + "," + options.FoxFloor + "," + options.PlantFloor +
             (seeds.Length == 0 ? "" : " -Seeds " + string.Join(",", seeds)) +
             (options.DetailedObservations ? " -DetailedObservations" : "") + "; exit $LASTEXITCODE";
     }

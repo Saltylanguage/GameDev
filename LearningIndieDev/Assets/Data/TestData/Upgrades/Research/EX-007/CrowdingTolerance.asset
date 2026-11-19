@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: crowding-tolerance
   displayName: Crowding Tolerance
   description: 'Legacy EX-007 intervention: crowding tolerance +1.'
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 5
   modifiers:
   - attributeId: crowding.tolerance

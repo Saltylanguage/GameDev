@@ -139,20 +139,20 @@ namespace SaltyGame.EditorTests
         [Test]
         public void SpatialObserverCountsTravelCrowdingAndFoxProximityWithoutChangingGrid()
         {
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var fox = new SpeciesId("fox");
             var grid = new Grid<SpeciesCell>(4, 3, (_, _) => SpeciesCell.Empty);
             for (var y = 0; y < 3; y++)
             {
                 for (var x = 0; x < 3; x++)
                 {
-                    grid.SetCell(x, y, new SpeciesCell(x == 0 && y == 0 ? fox : hare));
+                    grid.SetCell(x, y, new SpeciesCell(x == 0 && y == 0 ? fox : rabbit));
                 }
             }
 
             var mover = grid.GetCell(2, 2);
             var rules = AssetDatabase.LoadAssetAtPath<SpeciesDefinitionAsset>(
-                "Assets/Data/ProductionData/CellularSimulation/Species/hare.asset").CreateRules();
+                "Assets/Data/ProductionData/CellularSimulation/Species/rabbit.asset").CreateRules();
             var observerType = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType(
                     "SaltyGame.EditorTools.CellularSimulationExperimentRunner+SpatialObserver"))
@@ -161,7 +161,7 @@ namespace SaltyGame.EditorTests
                 observerType,
                 BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                 null,
-                new object[] { grid, hare, fox },
+                new object[] { grid, rabbit, fox },
                 null);
             observerType.GetMethod("Observe").Invoke(observer, new object[] { grid, rules, 1 });
             var next = grid.Copy();
@@ -173,7 +173,7 @@ namespace SaltyGame.EditorTests
 
             Assert.That(spatial.distinctCells, Is.EqualTo(9));
             Assert.That(spatial.distanceCells, Is.EqualTo(1));
-            Assert.That(spatial.hareObservations, Is.EqualTo(16));
+            Assert.That(spatial.rabbitObservations, Is.EqualTo(16));
             Assert.That(spatial.crowdedObservations, Is.EqualTo(1));
             Assert.That(spatial.foxAdjacentObservations, Is.EqualTo(6));
             Assert.That(spatial.phaseWindows.Select(phase => phase.distinctCells), Is.EqualTo(new[] { 8, 8 }));
@@ -202,7 +202,7 @@ namespace SaltyGame.EditorTests
         {
             public int distinctCells;
             public int distanceCells;
-            public int hareObservations;
+            public int rabbitObservations;
             public int crowdedObservations;
             public int foxAdjacentObservations;
             public SpatialPhaseReport[] phaseWindows;

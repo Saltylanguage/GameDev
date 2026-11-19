@@ -13,7 +13,7 @@ namespace SaltyGame.Tests
             var request = new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 upgrades,
                 "ruleset-1");
@@ -22,7 +22,7 @@ namespace SaltyGame.Tests
 
             Assert.That(request.ProfileId, Is.EqualTo("profile-1"));
             Assert.That(request.ScenarioId, Is.EqualTo("ForestEdge"));
-            Assert.That(request.PlayerSpeciesId, Is.EqualTo("hare"));
+            Assert.That(request.PlayerSpeciesId, Is.EqualTo("rabbit"));
             Assert.That(request.Seed, Is.EqualTo(10100));
             Assert.That(request.RulesetFingerprint, Is.EqualTo("ruleset-1"));
             Assert.That(request.OrderedUpgradeIds, Is.EqualTo(new[] { "Trailblazer" }));
@@ -45,7 +45,7 @@ namespace SaltyGame.Tests
             var request = new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 orderedUpgradeSnapshots: new[] { snapshot });
 
@@ -71,7 +71,7 @@ namespace SaltyGame.Tests
             Assert.Throws<System.ArgumentException>(() => new SimulationLaunchRequest(
                 "profile-1",
                 "ForestEdge",
-                "hare",
+                "rabbit",
                 10100,
                 orderedUpgradeIds: new[] { "different-id" },
                 orderedUpgradeSnapshots: new[] { snapshot }));
@@ -323,7 +323,7 @@ namespace SaltyGame.Tests
             var upgrade = new SpeciesUpgradeSnapshot(
                 SpeciesUpgradeCatalog.PopulationReinforcementId,
                 "REINFORCEMENTS",
-                "Add one hare to the next phase.",
+                "Add one rabbit to the next phase.",
                 SpeciesIds.Herbivore,
                 5,
                 new SpeciesUpgradeModifier[0],

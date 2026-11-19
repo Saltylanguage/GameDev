@@ -9,7 +9,7 @@
 
 ## Shared outcome
 
-Make the Forest Edge/Hare journey useful to play and evaluate: the simulation
+Make the Forest Edge/Rabbit journey useful to play and evaluate: the simulation
 creates understandable pressures, the player can spend or save Field Data,
 and temporary upgrades produce visible tradeoffs. Preserve the current Desktop
 and profile foundations instead of rebuilding them as new features.
@@ -59,7 +59,7 @@ their implementations are missing.
 | Earn, spend and save | Population income every 100 ticks; six 10-FD controls; three ordered income modifiers; shops and reorders | Define first costs/limits and meaningful temporary choices | Use the existing Field Data baseline; do not run a duplicate economy-design task |
 | Passing a node | Six completed rounds with selected-species survival, no extra metric gate | Bevin guides provisional clear judgments; older viability tests are context | Use survival for this slice; broader scenario gates remain a later design decision |
 | Continuous world | Three simulations and two shops, 18 rounds, same board/state/progression | Existing two-cycle map with more visual encounters | Reuse the current map/UI foundations, with an explicit test route; do not make every map marker playable to deliver this slice |
-| Temporary upgrades | Ordinary free choices plus six signed Hare shop families; independent shop caps | Tune Trailblazer, Warren and Gardeners using freely mixed shared skills | Implement the defined mechanics, then judge their ecological effects using those build lenses |
+| Temporary upgrades | Ordinary free choices plus six signed Rabbit shop families; independent shop caps | Tune Trailblazer, Warren and Gardeners using freely mixed shared skills | Implement the defined mechanics, then judge their ecological effects using those build lenses |
 | Currency and permanence | Journey FD is lost on failure; success displays/discards leftovers; no permanent payout in this slice | Separate species/biome wallets, success-only deposits and first permanent upgrade content | Keep permanent economy as a separate future package; do not reinterpret the 10-FD node bonus as a permanent reward |
 | Unlock availability | Protect existing banked Desktop currency/unlocks during FD operations | Permanent availability can survive failure, including future accomplishment unlocks | Preserve schema-v2 state; this slice adds no accomplishment writer or unlock trigger. Future permanent availability is separate from run-earned currency |
 | Evidence | 200 matched seeds per comparison arm, internal self-play, ordered receipts | Freeze inputs, measure simulation behavior and record accept/revise | Share input/provenance and reporting infrastructure; keep economy and ecology comparisons identifiable |

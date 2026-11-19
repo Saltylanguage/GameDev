@@ -17,7 +17,7 @@ namespace SaltyGame
         public const string FastGestationNodeId = "fast-gestation";
         public const int ActiveCapacity = 8;
         public const int BasePopulationPoolCapacity = 50;
-        public static readonly SpeciesId RabbitSpeciesId = new SpeciesId("hare");
+        public static readonly SpeciesId RabbitSpeciesId = new SpeciesId("rabbit");
         public const long RabbitTreeLicensePrice = 1;
         public const long RabbitResetResearchDataFee = 1;
         public const long RabbitDataPerSuccessfulJourney = 1;
@@ -86,10 +86,10 @@ namespace SaltyGame
             this.activeNodeIds = CopyIds(activeNodeIds, nameof(activeNodeIds));
             if (populationReservesRank < -1) throw new ArgumentOutOfRangeException(nameof(populationReservesRank));
             PopulationReservesRank = populationReservesRank == -1
-                ? (Contains(this.unlockedNodeIds, "hare.warren-network") ? 1 : 0)
+                ? (Contains(this.unlockedNodeIds, "rabbit.warren-network") ? 1 : 0)
                 : populationReservesRank;
             if (PopulationReservesRank < 0 || PopulationReservesRank > 5
-                || (PopulationReservesRank > 0) != Contains(this.unlockedNodeIds, "hare.warren-network"))
+                || (PopulationReservesRank > 0) != Contains(this.unlockedNodeIds, "rabbit.warren-network"))
                 throw new ArgumentException("Population Reserves rank must match permanent ownership.");
             var copiedAllocations = new List<GenomeNodeAllocation>();
             var allocatedIds = new HashSet<string>(StringComparer.Ordinal);
@@ -195,7 +195,7 @@ namespace SaltyGame
                 capacityPointsByNode.Add(allocation.NodeId, checked(allocation.CapacityPoints + allocation.Rank - 1));
             return new SpeciesGenomeSnapshot(SpeciesId, activeNodeIds,
                 allocationCapacityPoints: capacityPointsByNode,
-                populationReservesRank: IsNodeActive("hare.warren-network") ? PopulationReservesRank : 0);
+                populationReservesRank: IsNodeActive("rabbit.warren-network") ? PopulationReservesRank : 0);
         }
 
         static IReadOnlyList<string> CopyIds(IEnumerable<string> ids, string parameterName)
@@ -502,7 +502,11 @@ namespace SaltyGame
                 if (bonus == 0) continue;
                 if (!populations.TryGetValue(species, out var starting))
                     throw new InvalidOperationException($"Starting-population Genome requires an explicit starting count for '{species}'.");
-                populations[species] = checked(starting + bonus);
+                var updated = checked(starting + bonus);
+                var maximumPopulation = natural.SpeciesRules[species].MaximumPopulation;
+                populations[species] = maximumPopulation > 0
+                    ? Math.Min(updated, maximumPopulation)
+                    : updated;
                 changed = true;
             }
             return changed ? natural.WithGridSizeAndStartingPopulations(natural.Width, natural.Height, populations) : natural;
@@ -780,12 +784,12 @@ namespace SaltyGame
             }
             if (modifiers.Count == 0
                 && (TargetSpecies != GenomeContract.RabbitSpeciesId
-                    || (Id != SpeciesSimulation.FertileDroppingsNodeId && Id != "hare.warren-network"
-                        && Id != "hare.guarded-burrow" && Id != "hare.keen-hearing"
-                        && Id != "hare.swift-digging" && Id != "hare.safe-foraging"
-                        && Id != "hare.seed-dispersal" && Id != "hare.crowding-tolerance"
-                        && Id != "hare.reproductive-drive" && Id != "hare.escape-instinct"
-                        && Id != "hare.increased-minimum-litter" && Id != "hare.larger-litters"
+                    || (Id != SpeciesSimulation.FertileDroppingsNodeId && Id != "rabbit.warren-network"
+                        && Id != "rabbit.guarded-burrow" && Id != "rabbit.keen-hearing"
+                        && Id != "rabbit.swift-digging" && Id != "rabbit.safe-foraging"
+                        && Id != "rabbit.seed-dispersal" && Id != "rabbit.crowding-tolerance"
+                        && Id != "rabbit.reproductive-drive" && Id != "rabbit.escape-instinct"
+                        && Id != "rabbit.increased-minimum-litter" && Id != "rabbit.larger-litters"
                         && Id != FieldDataPermanentProgressionDefinition.BurrowingNodeId
                         && Id != FieldDataPermanentProgressionDefinition.SharedBurrowsNodeId
                         && Id != FieldDataPermanentProgressionDefinition.ExpandedBurrowsNodeId

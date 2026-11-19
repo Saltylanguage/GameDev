@@ -25,11 +25,11 @@ internal sealed record SetupOptions
     public int Width { get; init; } = 36;
     public int Height { get; init; } = 20;
     public int Plants { get; init; } = 400;
-    public int Hares { get; init; } = 55;
+    public int Rabbits { get; init; } = 55;
     public int Foxes { get; init; } = 35;
     public bool Wrap { get; init; } = true;
     public bool OverrideStats { get; init; }
-    public int HareVision { get; init; } = 9;
+    public int RabbitVision { get; init; } = 9;
     public int FoxEnergy { get; init; } = 160;
     public string[] Strategies { get; init; } = ["skip-all"];
     public string[] Purchases { get; init; } = ["none"];
@@ -69,19 +69,19 @@ internal static class RunTools
         if (!File.Exists(options.Snapshot)) throw new FileNotFoundException("Choose an existing frozen scenario snapshot. This is an exported snapshot, not a Unity .asset or report.json.");
         if (options.SeedStart < 0 || options.SeedCount < 1 || (long)options.SeedStart + options.SeedCount - 1 > int.MaxValue || options.Workers is < 1 or > 64 || options.ChunkSize < 1 || options.TimeoutSeconds is < 1 or > 86400)
             throw new ArgumentException("Check the seed range, worker count (1–64), chunk size and timeout (1–86,400 seconds).");
-        if (options.PhaseTicks < 1 || options.PhaseTicks > 166666 || options.Width is < 1 or > 4096 || options.Height is < 1 or > 4096 || options.Plants < 0 || options.Hares < 1 || options.Foxes < 0)
-            throw new ArgumentException("Use a positive round length and grid. Starting populations must fit the grid, with at least one Hare.");
+        if (options.PhaseTicks < 1 || options.PhaseTicks > 166666 || options.Width is < 1 or > 4096 || options.Height is < 1 or > 4096 || options.Plants < 0 || options.Rabbits < 1 || options.Foxes < 0)
+            throw new ArgumentException("Use a positive round length and grid. Starting populations must fit the grid, with at least one Rabbit.");
         if (options.Strategies.Length == 0 || options.Purchases.Length == 0 || options.Strategies.Except(StrategyIds).Any() || options.Purchases.Except(PurchaseIds).Any() || options.Strategies.Distinct().Count() != options.Strategies.Length || options.Purchases.Distinct().Count() != options.Purchases.Length || RunCount(options) > 1000000 || VariantCount(options) * options.Strategies.Length * options.Purchases.Length > 10000)
             throw new ArgumentException("Choose supported strategies and purchase policies, with a total of at most 1,000,000 runs.");
         decimal Extreme(string key, int fallback, bool maximum) => options.Comparisons.FirstOrDefault(a => a.Key == key) is { } axis ? (maximum ? SetupParameters.Parse(axis).Max() : SetupParameters.Parse(axis).Min()) : fallback;
-        if (Extreme("plant-population", options.Plants, true) + Extreme("hare-population", options.Hares, true) + Extreme("fox-population", options.Foxes, true) > Extreme("map-width", options.Width, false) * Extreme("map-height", options.Height, false))
+        if (Extreme("plant-population", options.Plants, true) + Extreme("rabbit-population", options.Rabbits, true) + Extreme("fox-population", options.Foxes, true) > Extreme("map-width", options.Width, false) * Extreme("map-height", options.Height, false))
             throw new ArgumentException("Some comparison populations do not fit the smallest requested map. Reduce populations or increase the map size.");
-        if (options.HareVision < 0 || options.FoxEnergy < 0) throw new ArgumentException("Stat overrides must be nonnegative.");
+        if (options.RabbitVision < 0 || options.FoxEnergy < 0) throw new ArgumentException("Stat overrides must be nonnegative.");
         using var snapshot = Tools.ReadSmall(options.Snapshot);
         var data = snapshot.RootElement;
         if (!data.TryGetProperty("sourceHash", out _) || !data.TryGetProperty("species", out var species) || !data.TryGetProperty("arguments", out var arguments)) throw new InvalidDataException("This file is not a frozen scenario snapshot.");
         var ids = species.EnumerateArray().Select(s => s.GetProperty("id").GetString()).Order().ToArray();
-        if (!ids.SequenceEqual(new[] { "fox", "hare", "plant" })) throw new InvalidDataException("This first setup screen supports the Forest Edge Plant/Hare/Fox scenario only.");
+        if (!ids.SequenceEqual(new[] { "fox", "rabbit", "plant" })) throw new InvalidDataException("This first setup screen supports the Forest Edge Plant/Rabbit/Fox scenario only.");
         var frozen = arguments.EnumerateArray().Select(a => a.GetString()!).ToArray();
         if (frozen.Length % 2 != 0 || frozen.Where((_, i) => i % 2 == 0).Any(key => key is "-mutationPolicy" or "-phaseUpgradeSchedule" or "-phaseUpgradeAssetSchedule" or "-runTicks" or "-runDurationSeconds" or "-speciesStats" or "-startingPopulations"))
             throw new InvalidDataException("Choose a neutral frozen snapshot without a preselected run length, strategy or stat/population overrides.");
@@ -159,14 +159,14 @@ internal static class RunTools
         var baseline = new List<string> { "-phaseLengthTicks", options.PhaseTicks.ToString(), "-wrapEdges", options.Wrap ? "true" : "false" };
         if (!overridden.Any(p => p.Argument == "-gridWidth")) baseline.AddRange(["-gridWidth", options.Width.ToString()]);
         if (!overridden.Any(p => p.Argument == "-gridHeight")) baseline.AddRange(["-gridHeight", options.Height.ToString()]);
-        var populations = new Dictionary<string, int> { ["plant"] = options.Plants, ["hare"] = options.Hares, ["fox"] = options.Foxes };
+        var populations = new Dictionary<string, int> { ["plant"] = options.Plants, ["rabbit"] = options.Rabbits, ["fox"] = options.Foxes };
         var fixedPops = populations.Where(p => !overridden.Any(a => a.Argument == "-startingPopulations" && a.Component == p.Key));
         if (fixedPops.Any()) baseline.AddRange(["-startingPopulations", string.Join(",", fixedPops.Select(p => p.Key + "=" + p.Value))]);
         var fixedStats = new Dictionary<string, int>();
-        if (options.OverrideStats) { fixedStats["fox:energy.starting"] = options.FoxEnergy; fixedStats["hare:awareness.vision-range"] = options.HareVision; }
+        if (options.OverrideStats) { fixedStats["fox:energy.starting"] = options.FoxEnergy; fixedStats["rabbit:awareness.vision-range"] = options.RabbitVision; }
         var stats = fixedStats.Where(p => !overridden.Any(a => a.Argument == "-speciesStats" && a.Component == p.Key));
         if (stats.Any()) baseline.AddRange(["-speciesStats", string.Join(",", stats.Select(p => p.Key + "=" + p.Value))]);
-        var axes = new List<object> { new { id = "purchase", values = options.Purchases.Select(p => new { id = p, arguments = new[] { "-harePurchasePolicy", p } }).ToArray() } };
+        var axes = new List<object> { new { id = "purchase", values = options.Purchases.Select(p => new { id = p, arguments = new[] { "-rabbitPurchasePolicy", p } }).ToArray() } };
         foreach (var axis in options.Comparisons)
         {
             var p = SetupParameters.Find(axis.Key);
@@ -177,7 +177,7 @@ internal static class RunTools
             schemaVersion = 1, snapshot = "snapshot.json", seedStart = options.SeedStart, seedCount = options.SeedCount, workers = options.Workers, chunkSize = options.ChunkSize, timeoutSeconds = options.TimeoutSeconds, maxRuns = RunCount(options), horizonTicks = checked(options.PhaseTicks * 6), baseArguments = baseline,
             axes,
             paths = options.Strategies.Select(s => new { id = s, arguments = s == "skip-all" ? new[] { "-phaseUpgradeSchedule", "none;none;none;none;none;none" } : new[] { "-mutationPolicy", s } }).ToArray(), referencePath = options.Strategies[0],
-            metrics = new[] { "outcome.playerAliveAtHorizon", "outcome.allSpeciesAliveAtHorizon", "population.hare.final", "population.fox.final", "population.plant.final" }
+            metrics = new[] { "outcome.playerAliveAtHorizon", "outcome.allSpeciesAliveAtHorizon", "population.rabbit.final", "population.fox.final", "population.plant.final" }
         };
         return spec;
     }

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.JourneyNodeAsset
   nodeId: fern-glade-start
   displayName: FERN GLADE
-  description: Begin beneath the canopy. Choose one Hare Mutation before the first
+  description: Begin beneath the canopy. Choose one Rabbit Mutation before the first
     cycle.
   kind: 5
   row: 0

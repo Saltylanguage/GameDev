@@ -22,8 +22,8 @@ action. During the active journey, the route map can be opened from simulation,
 round-decision and shop screens, then closed to return to the same run state.
 Map controls are also available inside the decision and results panels.
 All Field Data income modifiers are shop-only. Free round and node rewards may
-offer species upgrades, but never income modifiers. Hare free species rewards
-use the six approved Hare skill traits; generic attack upgrades are excluded.
+offer species upgrades, but never income modifiers. Rabbit free species rewards
+use the six approved Rabbit skill traits; generic attack upgrades are excluded.
 This correction supersedes the earlier design text that allowed income
 modifiers as round or node rewards.
 
@@ -81,8 +81,8 @@ screens pause simulation ticks. Entering a shop does not reseed, restart the
 ecosystem or regenerate its populations.
 
 Starting populations and other ecology settings come from the selected scenario.
-The paper example's 55 Hares is not an approved replacement starting population
-or balance target. The first content comparison uses Hares; the base income rule
+The paper example's 55 Rabbits is not an approved replacement starting population
+or balance target. The first content comparison uses Rabbits; the base income rule
 still refers to the selected species.
 
 ### One journey wallet
@@ -146,8 +146,8 @@ breaks above, not during a running round or an ordinary mid-round pause.
 
 | Control | Quantity per purchase | Provisional price |
 | --- | ---: | ---: |
-| Add Hares | +1 Hare | 10 FD |
-| Remove Hares | −1 Hare | 10 FD |
+| Add Rabbits | +1 Rabbit | 10 FD |
+| Remove Rabbits | −1 Rabbit | 10 FD |
 | Add Foxes | +1 Fox | 10 FD |
 | Remove Foxes | −1 Fox | 10 FD |
 | Add Plants | +5 Plants | 10 FD |
@@ -178,8 +178,8 @@ base payout = surviving selected-species population
 ```
 
 Process applicable income upgrades one at a time in their current execution
-order. Initially this is acquisition order. A flat per-Hare upgrade adds the
-ending Hare count at that position; a multiplier multiplies the current running
+order. Initially this is acquisition order. A flat per-Rabbit upgrade adds the
+ending Rabbit count at that position; a multiplier multiplies the current running
 amount. Consecutive flat bonuses add and multipliers compound. Do not gather
 all additions first or reinterpret the sequence as a conventional arithmetic
 expression.
@@ -188,14 +188,14 @@ Round down **once**, after the full sequence. Do not round intermediate values
 or carry a fractional remainder into the next payout. Add the final whole-FD
 award to the existing wallet.
 
-With 20 Hares:
+With 20 Rabbits:
 
 | Execution sequence | Calculation | Award |
 | --- | --- | ---: |
 | No upgrades | 20 | 20 FD |
-| +1/Hare, then ×1.5 | (20 + 20) × 1.5 | 60 FD |
-| +1/Hare, then ×2 | (20 + 20) × 2 | 80 FD |
-| ×2, then +1/Hare | (20 × 2) + 20 | 60 FD |
+| +1/Rabbit, then ×1.5 | (20 + 20) × 1.5 | 60 FD |
+| +1/Rabbit, then ×2 | (20 + 20) × 2 | 80 FD |
+| ×2, then +1/Rabbit | (20 × 2) + 20 | 60 FD |
 
 An acquired income upgrade first affects the next round-end payout after its
 shop purchase. It cannot recalculate a settled payout. New income upgrades
@@ -253,7 +253,7 @@ population controls remain separate simulation actions.
 
 | Offer | Explicit effect | Source eligibility | Shop price |
 | --- | --- | --- | ---: |
-| +1 FD per Hare | Add ending Hare count at this point in a population payout | Shop only, from first visit | 20 FD |
+| +1 FD per Rabbit | Add ending Rabbit count at this point in a population payout | Shop only, from first visit | 20 FD |
 | ×1.5 population payout | Multiply current population payout by 1.5 | Shop only, from first visit | 30 FD |
 | ×2 population payout | Multiply current population payout by 2 | Shop only, from second visit | 50 FD |
 
@@ -265,7 +265,7 @@ not income modifiers.
 
 ### Shop species changes
 
-Include six Hare skill families, each with a positive and an equal-magnitude
+Include six Rabbit skill families, each with a positive and an equal-magnitude
 negative variant: twelve starter variants total. They use roughly three times
 the existing ordinary skill amount. Each costs **30 FD**, fixed across repeat
 offers, and affects the rest of the journey starting with the next simulation.
@@ -294,7 +294,7 @@ per-purchase clamping that would prevent later opposites from cancelling.
 Use explicit attribute constraints and runtime mappings, not display names or
 reflection. Boundary behavior requires focused tests before content delivery.
 
-Only Hare-targeted variants enter this slice. Fox/Plant-targeted variants,
+Only Rabbit-targeted variants enter this slice. Fox/Plant-targeted variants,
 multispecies versions and new effect families are deferred. Preserve the agreed
 future direction: a multispecies purchase applies its stated full effect to
 each target, costs 30 FD per target at these provisional prices, and counts as
@@ -327,8 +327,8 @@ unchanged by the reroll.
 | Every successful simulation clear, including Simulation 3 | Automatically award 10 FD after the normal final-round payout |
 | Final journey success | Results only after settlement; no additional upgrade choice |
 
-Round and node choices contain the six ordinary Hare skills; income modifiers
-are shop-only. Each ordinary Hare skill can repeat up to its existing catalogue
+Round and node choices contain the six ordinary Rabbit skills; income modifiers
+are shop-only. Each ordinary Rabbit skill can repeat up to its existing catalogue
 level cap (currently 10), independently of the shop's shared three-copy family
 cap. Taking a free skill once does not remove it for the rest of the journey.
 Journey carryover follows the agreed journey upgrade direction; do not restart
@@ -345,11 +345,11 @@ a permanent Genome purchase.
 
 The complete synthetic ledger is in Appendix A. It compares struggling, stable
 and growing population paths on the same route. Each starts with an
-illustrative 55 Hares, uses the six-round nodes, and includes all three 10-FD
+illustrative 55 Rabbits, uses the six-round nodes, and includes all three 10-FD
 clear bonuses. It assumes the purchased income offer appears; it does not
 predict randomized shop inventory or simulate ecological intervention effects.
 
-| Population path | No buys | ×1.5 at Shop 1 | ×2 at Shop 2 | +1/Hare at Shop 1, then ×2 |
+| Population path | No buys | ×1.5 at Shop 1 | ×2 at Shop 2 | +1/Rabbit at Shop 1, then ×2 |
 | --- | ---: | ---: | ---: | ---: |
 | Struggling | 324 FD | 336 FD | 295 FD | 384 FD |
 | Stable | 1,020 FD | 1,314 FD | 1,300 FD | 2,270 FD |
@@ -359,7 +359,7 @@ The compound path ends richest in these constructed examples. That is a
 specific candidate for internal comparison, not proof of dominance in the
 live ecology. The paper paths establish arithmetic affordability and payback;
 they do not establish fun, pacing, survival probability or validated prices.
-The struggling path ends at one Hare and meets this slice's survival-only
+The struggling path ends at one Rabbit and meets this slice's survival-only
 rule mathematically, without predicting that real runs will follow that path.
 
 ## Step 4 — Implementation scope and acceptance checks
@@ -471,7 +471,7 @@ generate survival or viability acceptance thresholds from the paper examples.
 4. Fixed the missing reward cadence and approved provisional clear-bonus value.
 5. Defined nonterminal round-6 purchase windows and the final-individual guard.
 6. Removed the stale universal pass-rule question from the paper example.
-7. Distinguished current Hare-only shop content from deferred broader targets.
+7. Distinguished current Rabbit-only shop content from deferred broader targets.
 8. Preserved shared family caps, optional capped-offer rerolls, opposing
    cancellation, ordered income and separate acquisition/execution histories.
 9. Reconciled the 200-seed internal protocol with the deferred external-player
@@ -488,11 +488,11 @@ confirmed as a provisional first-slice setting during this review.
 The segment has five nodes: Simulation 1 → Shop 1 → Simulation 2 → Shop 2 →
 Simulation 3. Each simulation node contains six 100-tick rounds. The routes and
 economy paths below are matched examples, not ecology forecasts. They start
-with 55 Hares, matching the currently authored production Forest Edge starting
+with 55 Rabbits, matching the currently authored production Forest Edge starting
 population (`Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset`,
-`startingPopulation: 55` for the Hare definition); that source value is a
+`startingPopulation: 55` for the Rabbit definition); that source value is a
 reference for this paper exercise, not a decision that this journey must use
-55. The three Hare-count paths are
+55. The three Rabbit-count paths are
 deliberately constructed to illustrate different budgets. They are not
 user-approved targets or evidence of ecological viability. Add a provisional
 10-FD clear reward after each successfully completed simulation node. No
@@ -503,11 +503,11 @@ reorders. Prices and clear rewards remain provisional.
 
 ### Round-by-round base ledger
 
-Each population payout is 1 FD per Hare before upgrades. Add a 10-FD clear
+Each population payout is 1 FD per Rabbit before upgrades. Add a 10-FD clear
 reward after rounds 6, 12 and 18. Balances are unspent and shown immediately
 before any purchase at that shop.
 
-| Round | Node | Struggling Hares / base FD | Stable Hares / base FD | Growing Hares / base FD | Clear reward |
+| Round | Node | Struggling Rabbits / base FD | Stable Rabbits / base FD | Growing Rabbits / base FD | Clear reward |
 | --- | --- | ---: | ---: | ---: | ---: |
 | 1 | Simulation 1 | 55 / 55 | 55 / 55 | 55 / 55 | - |
 | 2 | Simulation 1 | 45 / 45 | 55 / 55 | 60 / 60 | - |
@@ -536,28 +536,28 @@ purchase, are 293 / 680 / 1,010 FD.
 ### Spending-strategy comparison
 
 The early strategy buys ×1.5 for 30 FD at Shop 1. The saving strategy saves
-until Shop 2 and buys ×2 for 50 FD. The mixed strategy buys +1 FD per Hare for
+until Shop 2 and buys ×2 for 50 FD. The mixed strategy buys +1 FD per Rabbit for
 20 FD at Shop 1, then ×2 for 50 FD at Shop 2. Modifiers affect only later
 population payouts, execute in acquisition order and do not modify the
 illustrative node-clear rewards. All figures include the three 10-FD clear
 rewards and subtract the stated purchase costs.
 
-| Population path | No purchases | Early: ×1.5 at Shop 1 | Save: ×2 at Shop 2 | Mixed: +1/Hare, then ×2 |
+| Population path | No purchases | Early: ×1.5 at Shop 1 | Save: ×2 at Shop 2 | Mixed: +1/Rabbit, then ×2 |
 | --- | ---: | ---: | ---: | ---: |
 | Struggling | 324 FD | 336 FD | 295 FD | 384 FD |
 | Stable | 1,020 FD | 1,314 FD | 1,300 FD | 2,270 FD |
 | Growing | 1,785 FD | 2,427 FD | 2,500 FD | 4,595 FD |
 
 The mixed strategy has the highest ending balance in these constructed paths
-because the later ×2 also multiplies the earlier +1 FD/Hare effect. This is a
+because the later ×2 also multiplies the earlier +1 FD/Rabbit effect. This is a
 reason to test acquisition order and compounding in play, not a balance
-verdict. The struggling example is still alive at one Hare at the final
+verdict. The struggling example is still alive at one Rabbit at the final
 round and mathematically meets the scoped survival-only clear rule. It is not
 a simulated survival forecast or an ecology-balance result.
 
 ### Affordability and upgrade payback
 
-After round 1, the 55-Hare reference path earns 55 FD and can spend 10 FD on a
+After round 1, the 55-Rabbit reference path earns 55 FD and can spend 10 FD on a
 provisional population intervention, retaining 45 FD. If it then buys the
 30-FD species buff at Shop 1 after round 6, the no-upgrade balance of 216 FD is
 reduced to 176 FD (216 − 10 − 30). The next six rounds plus the 10-FD clear reward contribute
@@ -568,14 +568,14 @@ fixed trajectory used here.
 
 | Income offer | Cost | Population payouts remaining | Struggling incremental FD / payback | Stable incremental FD / payback | Growing incremental FD / payback |
 | --- | ---: | ---: | --- | --- | --- |
-| +1 FD per Hare at Shop 1 | 20 FD | 12 | 88 / 2 payouts | 660 / 1 payout | 1,350 / 1 payout |
+| +1 FD per Rabbit at Shop 1 | 20 FD | 12 | 88 / 2 payouts | 660 / 1 payout | 1,350 / 1 payout |
 | ×1.5 at Shop 1 | 30 FD | 12 | 42 / 5 payouts | 324 / 2 payouts | 672 / 1 payout |
 | ×2 at Shop 2 | 50 FD | 6 | 21 / not repaid | 330 / 1 payout | 765 / 1 payout |
 
 Payback uses per-payout round-down after the full modifier sequence and assumes
 the example populations persist. A modifier may fail to repay in the remaining
 rounds on the struggling path, while earlier or higher-population investments
-repay sooner. The +1/Hare then ×2 combination is worth observing because the
+repay sooner. The +1/Rabbit then ×2 combination is worth observing because the
 later multiplier compounds the flat bonus. Keep current prices as comparison
 inputs for play; paper estimates are not sufficient evidence to rebalance them.
 
@@ -608,7 +608,7 @@ not yet been changed to implement it.
   phase using `lastSettledPhaseIndex`. It has no Field Data modifiers or
   configurable reward breakdown yet.
 - `SpeciesProgression` has one journey-local integer `Currency`,
-  add/spend/purchase methods, and an authored Hare purchase cost of 10. A
+  add/spend/purchase methods, and an authored Rabbit purchase cost of 10. A
   separate persistent profile-currency store exists in
   [ProfileSessionSnapshot.cs](../Assets/Scripts/Game/Profile/ProfileSessionSnapshot.cs)
   and [Helper_ProfileSession.cs](../Assets/Scripts/Game/Profile/Helper_ProfileSession.cs);

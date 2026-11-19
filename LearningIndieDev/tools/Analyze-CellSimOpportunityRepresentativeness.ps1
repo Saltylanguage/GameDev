@@ -112,8 +112,8 @@ $maximumTick = (@($rows | ForEach-Object tick) | Measure-Object -Maximum).Maximu
 Add-TimeBand $rows ([int]$maximumTick)
 
 $stateProperties = @(
-    'harePopulation', 'foxPopulation', 'plantPopulation',
-    'localHareDensity', 'localFoxDensity', 'localPlantResourceDensity',
+    'rabbitPopulation', 'foxPopulation', 'plantPopulation',
+    'localRabbitDensity', 'localFoxDensity', 'localPlantResourceDensity',
     'attackerAge', 'attackerEnergy', 'attackerFoodReserve',
     'targetAge', 'targetEnergy', 'targetFoodReserve', 'terrainEnergy'
 )

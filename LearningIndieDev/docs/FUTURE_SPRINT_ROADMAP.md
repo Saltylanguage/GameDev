@@ -43,7 +43,7 @@ outcome at a time instead of treating this horizon as a pre-filled backlog.
 | --- | --- | --- | --- |
 | File save/load | A versioned local profile can save, load, reset safely, migrate, and fall back from corrupt data. Keep settings, meta-progression, and active-run resume as separate decisions. | Profile shape, settlement/wallet rules, stable IDs | Design can start during S2–S3; implementation belongs after the profile and settlement contracts, targeting the roguelike-loop sprint. |
 | Species and scenarios | A small roster and scenario matrix create different strategic pressures without balancing the whole library. | Upgrade vocabulary, slice scenario evidence, species identities | Slice co-design in S4; broader content after vertical-slice validation. |
-| Reactive species / ecology | A deterministic predator–prey upgrade loop creates counterplay, tension, and recoverable pressure without hidden catch-up multipliers. | S2 upgrade contract/catalog, Forest Edge baseline envelope, existing BEV/EX-002 telemetry, Hare/Fox fixture | Design spike and paired counter trials in S4; recovery validation during S7. See [`REACTIVE_SPECIES_ECOLOGY_PLAN.md`](REACTIVE_SPECIES_ECOLOGY_PLAN.md). |
+| Reactive species / ecology | A deterministic predator–prey upgrade loop creates counterplay, tension, and recoverable pressure without hidden catch-up multipliers. | S2 upgrade contract/catalog, Forest Edge baseline envelope, existing BEV/EX-002 telemetry, Rabbit/Fox fixture | Design spike and paired counter trials in S4; recovery validation during S7. See [`REACTIVE_SPECIES_ECOLOGY_PLAN.md`](REACTIVE_SPECIES_ECOLOGY_PLAN.md). |
 | Iteration tooling | One measured authoring/comparison workflow becomes faster without becoming a feature dependency. | Repeated manual friction, explicit inputs/outputs, manual fallback | Parallel lane from S2 onward; promote only evidence-backed tools. |
 | Upgrade system | Clear separation between temporary per-run Species-Simulation Mutations and permanent Genome Upgrades in each species' Genome skill tree, including costs, capacity, prerequisites, stacking, exclusions, mode-specific evidence, and persistence boundaries. The current run offers five choice moments. | Product economy, six-round cadence, Species/Biome mode contract, SG-005 reference panel | S2 Mutation foundation; calibrate Mutation paths in S4; integrate Genome after the wallet/profile contract. |
 | Actual upgrades | A small explicit catalog proves readable stat changes and tradeoffs first, followed by separately contracted one-time effects and abilities. | Mutation grammar, deterministic effective rules, first slice species, shared capability map | S2 first catalog; S4 calibration and pruning after M1 closeout; expand effect types only when their contracts and telemetry are ready. |
@@ -82,13 +82,13 @@ The proposed control record is
 ### S4 — Species and scenario co-design with an accelerator lane
 
 The approved planning baseline is narrower than the horizon described below:
-it covers three Hare build strategies in Forest Edge, matched-seed evidence,
+it covers three Rabbit build strategies in Forest Edge, matched-seed evidence,
 in-game review, and the P1-032 Desktop active-profile launch. Local
 profile-choice save/restore and the broader balance/accelerator lane remain
 deferred. See [`S4-control-record.md`](Sprints/S4-control-record.md) for the
 current scope and capacity.
 
-The production Fox and Hare baselines, including crowding metabolism, Hare
+The production Fox and Rabbit baselines, including crowding metabolism, Rabbit
 reproduction, and grass reseeding, remain provisional (former loose end
 P1-034). S3 acceptance did not approve broad ecological balance. Revisit
 these values with matched Forest Edge comparisons when the balance lane is

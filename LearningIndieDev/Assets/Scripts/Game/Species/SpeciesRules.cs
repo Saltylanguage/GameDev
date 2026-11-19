@@ -92,7 +92,8 @@ namespace SaltyGame
             bool distributeMatingEnergyToOffspring = false,
             float crowdingEnergyReduction = 0f,
             int gestationTicks = 0,
-            int maximumHealth = 1)
+            int maximumHealth = 1,
+            int maximumPopulation = 0)
         {
             if (movementSpeed < 0f)
             {
@@ -117,6 +118,11 @@ namespace SaltyGame
             if (maximumHealth < 1)
             {
                 throw new ArgumentOutOfRangeException(nameof(maximumHealth), maximumHealth, "Maximum health must be at least one.");
+            }
+
+            if (maximumPopulation < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumPopulation), maximumPopulation, "Maximum population cannot be negative.");
             }
 
             if (digestionEnergyBonus < 0f || float.IsNaN(digestionEnergyBonus) || float.IsInfinity(digestionEnergyBonus))
@@ -302,6 +308,7 @@ namespace SaltyGame
             Role = role;
             MaximumEnergy = maximumEnergy;
             MaximumHealth = maximumHealth;
+            MaximumPopulation = maximumPopulation;
             LitterMinimum = litterMinimum;
             LitterMaximum = litterMaximum;
             GestationTicks = gestationTicks;
@@ -400,6 +407,7 @@ namespace SaltyGame
         public bool IsPlant => Role == SpeciesRole.Plant;
         public int MaximumEnergy { get; }
         public int MaximumHealth { get; }
+        public int MaximumPopulation { get; }
         public int LitterMinimum { get; }
         public int LitterMaximum { get; }
         public int GestationTicks { get; }

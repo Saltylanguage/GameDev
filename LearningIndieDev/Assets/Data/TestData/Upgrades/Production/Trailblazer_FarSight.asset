@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: trailblazer-far-sight
   displayName: 'Trailblazer: Far Sight'
   description: See farther to find food sooner, but burn energy faster.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 8
   modifiers:
   - attributeId: awareness.vision-range

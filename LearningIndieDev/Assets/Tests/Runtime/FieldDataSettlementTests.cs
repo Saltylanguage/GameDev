@@ -7,7 +7,7 @@ namespace SaltyGame.Tests
     [Category("Simulation")]
     public sealed class FieldDataSettlementTests
     {
-        readonly SpeciesId hare = new SpeciesId("hare");
+        readonly SpeciesId rabbit = new SpeciesId("rabbit");
         readonly SpeciesId fox = new SpeciesId("fox");
         FieldDataPermanentProgressionDefinition definition;
         Dictionary<SpeciesId, long> wallets;
@@ -16,7 +16,7 @@ namespace SaltyGame.Tests
         public void SetUp()
         {
             definition = FieldDataPermanentProgressionDefinition.CreateStarter();
-            wallets = new Dictionary<SpeciesId, long> { [fox] = 400, [hare] = 7 };
+            wallets = new Dictionary<SpeciesId, long> { [fox] = 400, [rabbit] = 7 };
         }
 
         [TestCase(0L, 0, 0L)]
@@ -35,7 +35,7 @@ namespace SaltyGame.Tests
         {
             Assert.That(Calculate(leftover, level, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.JourneyId, Is.EqualTo("journey-01"));
-            Assert.That(receipt.SelectedSpeciesId, Is.EqualTo(hare));
+            Assert.That(receipt.SelectedSpeciesId, Is.EqualTo(rabbit));
             Assert.That(receipt.LeftoverFieldData, Is.EqualTo(leftover));
             Assert.That(receipt.FieldDataPerSpeciesData, Is.EqualTo(10));
             Assert.That(receipt.ConversionResearchLevel, Is.EqualTo(level));
@@ -68,9 +68,9 @@ namespace SaltyGame.Tests
             Assert.That(first.SpeciesDataBefore, Is.EqualTo(7));
             Assert.That(first.SpeciesDataAfter, Is.EqualTo(18));
             Assert.That(repeated.SpeciesDataAfter, Is.EqualTo(first.SpeciesDataAfter));
-            Assert.That(wallets[hare], Is.EqualTo(7));
+            Assert.That(wallets[rabbit], Is.EqualTo(7));
             Assert.That(wallets[fox], Is.EqualTo(400));
-            wallets[hare] = 999;
+            wallets[rabbit] = 999;
             Assert.That(first.SpeciesDataBefore, Is.EqualTo(7));
             Assert.That(first.SpeciesDataAfter, Is.EqualTo(18));
         }
@@ -78,11 +78,11 @@ namespace SaltyGame.Tests
         [Test]
         public void MissingSelectedWalletStartsAtZeroWithoutCreatingAnEntry()
         {
-            wallets.Remove(hare);
+            wallets.Remove(rabbit);
             Assert.That(Calculate(10, 0, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.SpeciesDataBefore, Is.Zero);
             Assert.That(receipt.SpeciesDataAfter, Is.EqualTo(1));
-            Assert.That(wallets.ContainsKey(hare), Is.False);
+            Assert.That(wallets.ContainsKey(rabbit), Is.False);
             Assert.That(wallets[fox], Is.EqualTo(400));
         }
 
@@ -112,18 +112,18 @@ namespace SaltyGame.Tests
         [Test]
         public void ChecksBothWalletAdditionsBeforeReturningAnyReceipt()
         {
-            wallets[hare] = long.MaxValue;
+            wallets[rabbit] = long.MaxValue;
             AssertRejected(leftover: 10);
-            Assert.That(wallets[hare], Is.EqualTo(long.MaxValue));
+            Assert.That(wallets[rabbit], Is.EqualTo(long.MaxValue));
             Assert.That(Calculate(0, 0, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.SpeciesDataAfter, Is.EqualTo(long.MaxValue));
-            wallets[hare] = long.MaxValue - 1;
+            wallets[rabbit] = long.MaxValue - 1;
             Assert.That(FieldDataSettlement.TryCalculate(definition, "journey-01", FieldDataJourneyFlowState.Succeeded,
-                hare, 10, 0, wallets, long.MaxValue - 10, out receipt, out error), Is.True, error);
+                rabbit, 10, 0, wallets, long.MaxValue - 10, out receipt, out error), Is.True, error);
             Assert.That(receipt.SpeciesDataAfter, Is.EqualTo(long.MaxValue));
             Assert.That(receipt.ResearchDataAfter, Is.EqualTo(long.MaxValue));
             AssertRejected(leftover: 10, researchData: long.MaxValue - 9);
-            Assert.That(wallets[hare], Is.EqualTo(long.MaxValue - 1));
+            Assert.That(wallets[rabbit], Is.EqualTo(long.MaxValue - 1));
         }
 
         [TestCase(null)]
@@ -132,7 +132,7 @@ namespace SaltyGame.Tests
         public void RequiresAJourneyIdentity(string journeyId)
         {
             Assert.That(FieldDataSettlement.TryCalculate(definition, journeyId, FieldDataJourneyFlowState.Succeeded,
-                hare, 10, 0, wallets, 0, out var receipt, out var error), Is.False);
+                rabbit, 10, 0, wallets, 0, out var receipt, out var error), Is.False);
             Assert.That(receipt, Is.Null);
             Assert.That(error, Is.Not.Empty);
         }
@@ -141,12 +141,12 @@ namespace SaltyGame.Tests
         public void RejectsMissingDefinitionsWalletsAndUnknownOrInvalidSpecies()
         {
             Assert.That(FieldDataSettlement.TryCalculate(null, "id", FieldDataJourneyFlowState.Succeeded,
-                hare, 0, 0, wallets, 0, out var receipt, out _), Is.False);
+                rabbit, 0, 0, wallets, 0, out var receipt, out _), Is.False);
             Assert.That(receipt, Is.Null);
             Assert.That(FieldDataSettlement.TryCalculate(definition, "id", FieldDataJourneyFlowState.Succeeded,
-                hare, 0, 0, null, 0, out receipt, out _), Is.False);
+                rabbit, 0, 0, null, 0, out receipt, out _), Is.False);
             Assert.That(receipt, Is.Null);
-            foreach (var species in new[] { default(SpeciesId), fox, new SpeciesId("Hare") })
+            foreach (var species in new[] { default(SpeciesId), fox, new SpeciesId("Rabbit") })
             {
                 Assert.That(FieldDataSettlement.TryCalculate(definition, "id", FieldDataJourneyFlowState.Succeeded,
                     species, 0, 0, wallets, 0, out receipt, out var error), Is.False, species.ToString());
@@ -168,13 +168,13 @@ namespace SaltyGame.Tests
         bool Calculate(long leftover, int level, out FieldDataSettlementReceipt receipt, out string error)
         {
             return FieldDataSettlement.TryCalculate(definition, "journey-01", FieldDataJourneyFlowState.Succeeded,
-                hare, leftover, level, wallets, 30, out receipt, out error);
+                rabbit, leftover, level, wallets, 30, out receipt, out error);
         }
 
         void AssertRejected(long leftover = 100, int level = 0, long researchData = 30,
             FieldDataJourneyFlowState state = FieldDataJourneyFlowState.Succeeded)
         {
-            Assert.That(FieldDataSettlement.TryCalculate(definition, "journey-01", state, hare,
+            Assert.That(FieldDataSettlement.TryCalculate(definition, "journey-01", state, rabbit,
                 leftover, level, wallets, researchData, out var receipt, out var error), Is.False);
             Assert.That(receipt, Is.Null);
             Assert.That(error, Is.Not.Empty);

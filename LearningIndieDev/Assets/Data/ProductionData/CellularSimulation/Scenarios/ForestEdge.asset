@@ -12,20 +12,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30a9d289a2854be9bf7f1f3c2839d814, type: 3}
   m_Name: ForestEdge
   m_EditorClassIdentifier: SaltyGame.Runtime::SaltyGame.ScenarioDefinitionAsset
-  width: 36
-  height: 20
+  width: 34
+  height: 19
   runDurationSeconds: 20
   stepInterval: 0.2
-  runTicks: 0
+  runTicks: 600
   maxPopulation: 0
   minPopulation: 0
+  wrapEdges: 1
   species:
   - definition: {fileID: 11400000, guid: 337318e6bb33d374da67b1618389f443, type: 2}
     startingProbability: 0
     startingPopulation: 400
   - definition: {fileID: 11400000, guid: 766cb564370608a41bbc5504a556b28a, type: 2}
     startingProbability: 0
-    startingPopulation: 55
+    startingPopulation: 3
   - definition: {fileID: 11400000, guid: ae99e1a57e5bbdb4cad7e11e4110d588, type: 2}
     startingProbability: 0
-    startingPopulation: 20
+    startingPopulation: 2

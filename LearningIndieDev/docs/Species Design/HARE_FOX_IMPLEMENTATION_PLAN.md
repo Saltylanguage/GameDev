@@ -1,9 +1,9 @@
-# Hare + Fox Implementation Plan
+# Rabbit + Fox Implementation Plan
 
 > Based on: `HARE_FOX_ITERATIVE_TREATMENT.md` v0.2  
 > Status: implementation planning  
 > Scenario: Forest Edge  
-> Scope: the first coupled Hare/Fox interaction and five minimal upgrade hooks
+> Scope: the first coupled Rabbit/Fox interaction and five minimal upgrade hooks
 
 ## Outcome
 
@@ -17,12 +17,12 @@ need the [explicit retests](../CONTINUOUS_SIMULATION_EVIDENCE_IMPACT.md).
 
 Deliver a playable, measurable Forest Edge slice in which:
 
-- Grass supports Hare growth without being the primary source of tension.
-- Hares can pursue two viable base strategies: settlement or migration.
-- Foxes create spatially legible pressure through Hare concentration.
-- Foxes lose momentum when Hare access is interrupted.
-- At least one Hare recovery after a Fox pressure wave is possible.
-- Trailblazer, Warren, and Gardeners produce distinct Hare histories.
+- Grass supports Rabbit growth without being the primary source of tension.
+- Rabbits can pursue two viable base strategies: settlement or migration.
+- Foxes create spatially legible pressure through Rabbit concentration.
+- Foxes lose momentum when Rabbit access is interrupted.
+- At least one Rabbit recovery after a Fox pressure wave is possible.
+- Trailblazer, Warren, and Gardeners produce distinct Rabbit histories.
 - Tracker and Ambusher create meaningful Fox counterplay rather than flat kill-rate bonuses.
 - Every important outcome is visible in the run summary and reproducible by seed.
 
@@ -39,7 +39,7 @@ smallest explicit rules and upgrade effects that can prove the treatment.
 Write the authoritative Forest Edge fixture and capture its fingerprint:
 
 - grid dimensions, duration, tick interval, and seed policy;
-- Grass, Hare, and Fox starting probabilities;
+- Grass, Rabbit, and Fox starting probabilities;
 - terrain/resource distribution and occupancy-layer assumptions;
 - species IDs, diet targets, movement, perception, energy, reproduction, and
   population-limit values;
@@ -55,7 +55,7 @@ Acceptance:
 
 Verify or implement only the rules required by the treatment:
 
-**Hare**
+**Rabbit**
 
 - eats Grass/approved plant resources;
 - prioritizes Fox avoidance when a Fox is visible;
@@ -66,12 +66,12 @@ Verify or implement only the rules required by the treatment:
 
 **Fox**
 
-- prioritizes visible Hare over food or wandering;
+- prioritizes visible Rabbit over food or wandering;
 - resolves a discrete attack/feeding interaction;
 - gains enough energy from a hunt to extend activity, but not guaranteed growth;
 - has better prey perception but no ordinary Grass diet;
 - reproduces only after sustained prey access;
-- loses energy and can decline when Hares disperse or disappear.
+- loses energy and can decline when Rabbits disperse or disappear.
 
 **Shared behavior**
 
@@ -83,9 +83,9 @@ Verify or implement only the rules required by the treatment:
 
 Acceptance:
 
-- Grass is not the dominant Hare death cause in the baseline fixture.
-- Foxes cannot sustain indefinite growth without Hare access.
-- Hares can escape a visible Fox under at least one valid terrain/layout state.
+- Grass is not the dominant Rabbit death cause in the baseline fixture.
+- Foxes cannot sustain indefinite growth without Rabbit access.
+- Rabbits can escape a visible Fox under at least one valid terrain/layout state.
 - No new rule is added solely to make a single seed look better.
 
 ### HF-3 — Add the minimal run-upgrade contract
@@ -105,10 +105,10 @@ Implement these five effects as the first catalog:
 
 | Upgrade | Required effect | Required tradeoff |
 |---|---|---|
-| Trailblazer | Better Hare escape/migration through costly or unfamiliar terrain | Weaker local stability, feeding, or reproduction |
-| Warren | Better Hare survival/reproduction in a selected pocket | Reduced value after relocation |
-| Gardeners | Better Grass persistence/recovery around Hare activity | Slower immediate mobility or growth |
-| Tracker | Better Fox pursuit of visible/recent Hare movement | Poor energy efficiency without a target |
+| Trailblazer | Better Rabbit escape/migration through costly or unfamiliar terrain | Weaker local stability, feeding, or reproduction |
+| Warren | Better Rabbit survival/reproduction in a selected pocket | Reduced value after relocation |
+| Gardeners | Better Grass persistence/recovery around Rabbit activity | Slower immediate mobility or growth |
+| Tracker | Better Fox pursuit of visible/recent Rabbit movement | Poor energy efficiency without a target |
 | Ambusher | Better Fox attack pressure near edge transitions | Weaker performance in open terrain |
 
 Acceptance:
@@ -127,7 +127,7 @@ every tick. Record per run and per species:
 - births, feeding, movement, attacks, kills, and deaths by cause;
 - first Fox hunt tick and hunt rate;
 - Fox energy gained from hunts and time without prey access;
-- Hare escape events, dispersal/settlement indicators, and terrain usage;
+- Rabbit escape events, dispersal/settlement indicators, and terrain usage;
 - recovery start, recovery duration, and number of positive-growth cycles;
 - ordered upgrade IDs and each upgrade's attributed contribution;
 - scenario, seed, grid, ruleset fingerprint, and outcome.
@@ -151,17 +151,17 @@ Acceptance:
 
 Create focused tests and deterministic experiment presets:
 
-1. **Baseline pressure:** plentiful Grass, no upgrades, several Hare/Fox ratios.
+1. **Baseline pressure:** plentiful Grass, no upgrades, several Rabbit/Fox ratios.
 2. **Settlement vs migration:** Warren and Trailblazer on the same layout/seeds.
-3. **Fox target reliability:** dense and dispersed Hare layouts.
-4. **Recovery:** controlled Hare reduction after a Fox peak.
+3. **Fox target reliability:** dense and dispersed Rabbit layouts.
+4. **Recovery:** controlled Rabbit reduction after a Fox peak.
 5. **Gardeners:** Grass recovery with and without Fox pressure.
 6. **Tracker/Ambusher:** target-rich versus target-poor and edge versus open terrain.
 
 Automated checks should cover:
 
 - diet and occupancy-layer legality;
-- visible threat perception and Hare flee choice;
+- visible threat perception and Rabbit flee choice;
 - Fox attack/feeding and energy transfer;
 - reproduction thresholds and legal destinations;
 - terrain modifiers and upgrade tradeoffs;
@@ -179,11 +179,11 @@ Acceptance:
 Run the fixtures in this order:
 
 1. Tune the no-upgrade baseline until the three-phase pressure cycle appears:
-   Hare establishment, Fox opportunity, and Hare counterplay/recovery.
+   Rabbit establishment, Fox opportunity, and Rabbit counterplay/recovery.
 2. Tune Trailblazer and Warren until both can succeed with different movement and
    population histories.
 3. Tune Gardeners until the created Grass value is attractive but contestable.
-4. Tune Tracker and Ambusher against the Hare branches; avoid direct global kill
+4. Tune Tracker and Ambusher against the Rabbit branches; avoid direct global kill
    multipliers.
 5. Test the same upgrades across multiple fixed seeds and inspect outliers.
 6. Run a short player-comprehension review: what caused the last hunt, what did
@@ -211,11 +211,11 @@ HF-4 and HF-5. Do not start roster expansion during HF-6.
 
 Promote this treatment when all of the following are true:
 
-- Settlement and migration are both viable Hare strategies.
+- Settlement and migration are both viable Rabbit strategies.
 - Fox pressure is predictable, spatially legible, and not deterministic.
 - Foxes decline naturally when prey access is lost.
 - At least one recovery cycle is observable after a Fox peak.
-- The three Hare upgrades produce visibly different histories and tradeoffs.
+- The three Rabbit upgrades produce visibly different histories and tradeoffs.
 - Tracker and Ambusher create different Fox situations rather than the same
   bonus with different names.
 - Players can explain a successful hunt, escape, and recovery from the UI/report.

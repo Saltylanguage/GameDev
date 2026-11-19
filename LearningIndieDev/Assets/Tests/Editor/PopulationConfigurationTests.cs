@@ -36,14 +36,14 @@ namespace SaltyGame.EditorTests
             var optionsType = runner.GetNestedType("CommandLineOptions", BindingFlags.NonPublic);
             var parse = optionsType.GetMethod("Parse");
             var options = parse.Invoke(null, new object[] {
-                new[] { "-rabbitGenomeNodeIds", "fertile-droppings, poc.hare.efficient-digestion",
+                new[] { "-rabbitGenomeNodeIds", "fertile-droppings, poc.rabbit.efficient-digestion",
                     "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none" } });
             Assert.That((string[])optionsType.GetProperty("RabbitGenomeNodeIds")
-                .GetValue(options), Is.EqualTo(new[] { "fertile-droppings", "poc.hare.efficient-digestion" }));
+                .GetValue(options), Is.EqualTo(new[] { "fertile-droppings", "poc.rabbit.efficient-digestion" }));
 
             foreach (var arguments in new[] {
                 new[] { "-rabbitGenomeNodeIds", "fertile-droppings,fertile-droppings" },
-                new[] { "-rabbitGenomeNodeIds", "fertile-droppings,,poc.hare.long-stride" },
+                new[] { "-rabbitGenomeNodeIds", "fertile-droppings,,poc.rabbit.long-stride" },
                 new[] { "-rabbitGenomeNodeIds", "fertile-droppings", "-attackOpportunityMode",
                     "paired-lockstep-diagnostic" },
             })
@@ -82,7 +82,7 @@ namespace SaltyGame.EditorTests
 
         static string[] GenomeArguments(string ids, params string[] additional)
         {
-            return new[] { "-playerSpeciesId", "hare", "-rabbitGenomeCatalogPath", PocGenomePath,
+            return new[] { "-playerSpeciesId", "rabbit", "-rabbitGenomeCatalogPath", PocGenomePath,
                 "-rabbitGenomeNodeIds", ids }.Concat(additional).ToArray();
         }
 
@@ -97,7 +97,7 @@ namespace SaltyGame.EditorTests
         public void RabbitGenomeReportMatchesDesktopRulesAndRecordsResolvedValuesBeforeMutations()
         {
             var snapshot = FrozenGenomeFixture();
-            var arguments = GenomeArguments("fertile-droppings,poc.hare.efficient-digestion",
+            var arguments = GenomeArguments("fertile-droppings,poc.rabbit.efficient-digestion",
                 "-upgradeId", SpeciesUpgradeCatalog.EfficientDigestionId);
             var report = GenomeHeader(snapshot, arguments);
             var data = GenomeFixtureData();
@@ -108,8 +108,8 @@ namespace SaltyGame.EditorTests
             var profile = new ProfileSessionSnapshot(true, "fixture", "Fixture", new[]
             {
                 new SpeciesGenomeProfile(GenomeContract.RabbitSpeciesId,
-                    new[] { "fertile-droppings", "poc.hare.efficient-digestion" },
-                    new[] { "fertile-droppings", "poc.hare.efficient-digestion" }),
+                    new[] { "fertile-droppings", "poc.rabbit.efficient-digestion" },
+                    new[] { "fertile-droppings", "poc.rabbit.efficient-digestion" }),
             });
             var genome = profile.CreateGenomeSnapshot(catalog).IncludeSpecies(data.SpeciesRules.Keys);
             var effective = data;
@@ -127,7 +127,7 @@ namespace SaltyGame.EditorTests
             Assert.That(report.genomeInput.catalogFingerprint, Is.EqualTo(catalog.Fingerprint));
             Assert.That(report.genomeInput.capacityUsed, Is.EqualTo(2));
             Assert.That(report.genomeInput.capacityLimit, Is.EqualTo(8));
-            Assert.That(report.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "fertile-droppings", "poc.hare.efficient-digestion" }));
+            Assert.That(report.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "fertile-droppings", "poc.rabbit.efficient-digestion" }));
             Assert.That(report.genomeInput.nodes[1].modifiers[0].id, Is.EqualTo(SpeciesAttributeIds.DigestionEnergyBonus));
             Assert.That(report.genomeInput.nodes[1].modifiers[0].value, Is.EqualTo(0.25f));
             Assert.That(report.genomeInput.fertileDroppings.droppingScentDurationTicks, Is.EqualTo(40));
@@ -135,9 +135,9 @@ namespace SaltyGame.EditorTests
         }
 
         [TestCase("unknown")]
-        [TestCase("poc.hare.efficient-digestion")]
-        [TestCase("poc.hare.efficient-digestion,fertile-droppings")]
-        [TestCase("poc.hare.tough-hide,poc.hare.burrows-preview")]
+        [TestCase("poc.rabbit.efficient-digestion")]
+        [TestCase("poc.rabbit.efficient-digestion,fertile-droppings")]
+        [TestCase("poc.rabbit.tough-hide,poc.rabbit.burrows-preview")]
         public void RabbitGenomeResearchRejectsUnknownMissingPrerequisitePreviewAndOverCapacityBuilds(string ids)
         {
             var error = Assert.Throws<TargetInvocationException>(() => GenomeHeader(FrozenGenomeFixture(), GenomeArguments(ids)));
@@ -148,14 +148,14 @@ namespace SaltyGame.EditorTests
         public void RabbitGenomeScheduledLaunchMutationMatchesOneDesktopApplication()
         {
             var snapshot = FrozenGenomeFixture();
-            var arguments = GenomeArguments("fertile-droppings,poc.hare.efficient-digestion",
+            var arguments = GenomeArguments("fertile-droppings,poc.rabbit.efficient-digestion",
                 "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "faster-movement;faster-movement");
             var natural = GenomeFixtureData();
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(PocGenomePath).CreateSnapshot();
             var genome = new GenomeSimulationSnapshot(new[]
             {
                 new SpeciesGenomeSnapshot(GenomeContract.RabbitSpeciesId,
-                    new[] { "fertile-droppings", "poc.hare.efficient-digestion" }),
+                    new[] { "fertile-droppings", "poc.rabbit.efficient-digestion" }),
             }).Resolve(new GenomeCatalogSnapshot(new[] { map })).IncludeSpecies(natural.SpeciesRules.Keys);
             var data = natural;
             foreach (var entry in genome.ApplyToNaturalRules(natural.SpeciesRules))
@@ -188,7 +188,7 @@ namespace SaltyGame.EditorTests
             var snapshot = FrozenGenomeFixture();
             var json = JsonUtility.ToJson(snapshot);
             var restored = JsonUtility.FromJson(json, snapshot.GetType());
-            var arguments = GenomeArguments("fertile-droppings,poc.hare.efficient-digestion");
+            var arguments = GenomeArguments("fertile-droppings,poc.rabbit.efficient-digestion");
             Assert.That(GenomeHeader(restored, arguments).genomeFingerprint, Is.EqualTo(GenomeHeader(snapshot, arguments).genomeFingerprint));
             var catalog = snapshot.GetType().GetField("rabbitGenomeCatalog").GetValue(restored);
             var nodes = (Array)catalog.GetType().GetField("nodes").GetValue(catalog);
@@ -207,8 +207,8 @@ namespace SaltyGame.EditorTests
         {
             var snapshot = FrozenGenomeFixture();
             var arguments = policy
-                ? GenomeArguments("fertile-droppings,poc.hare.efficient-digestion", "-phaseLengthTicks", "2", "-mutationPolicy", "gardeners")
-                : GenomeArguments("fertile-droppings,poc.hare.efficient-digestion", "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none");
+                ? GenomeArguments("fertile-droppings,poc.rabbit.efficient-digestion", "-phaseLengthTicks", "2", "-mutationPolicy", "gardeners")
+                : GenomeArguments("fertile-droppings,poc.rabbit.efficient-digestion", "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none");
             var header = GenomeHeader(snapshot, arguments);
             var method = ExperimentRunner.GetMethod("RunPortableSeed");
             var compact = (string)method.Invoke(null, new object[] { snapshot, arguments, 10100, false, null });
@@ -256,30 +256,30 @@ namespace SaltyGame.EditorTests
         public void PopulationGenomeLaunchAddsFiveOnceAndPortableReportPreservesCapacity()
         {
             var snapshot = FrozenGenomeFixture();
-            var args = GenomeArguments("poc.hare.starting-population,poc.hare.population-pool",
+            var args = GenomeArguments("poc.rabbit.starting-population,poc.rabbit.population-pool",
                 "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none");
             var header = GenomeHeader(snapshot, args);
-            Assert.That(header.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "poc.hare.starting-population", "poc.hare.population-pool" }));
+            Assert.That(header.genomeInput.orderedNodeIds, Is.EqualTo(new[] { "poc.rabbit.starting-population", "poc.rabbit.population-pool" }));
             var first = JsonUtility.FromJson<IntroductionRunProbe>((string)ExperimentRunner.GetMethod("RunPortableSeed")
                 .Invoke(null, new object[] { snapshot, args, 10100, true, null }));
             var repeated = JsonUtility.FromJson<IntroductionRunProbe>((string)ExperimentRunner.GetMethod("RunPortableSeed")
                 .Invoke(null, new object[] { snapshot, args, 10100, true, null }));
-            Assert.That(first.populationHistory[0].species.First(p => p.speciesId == "hare").population, Is.EqualTo(9));
+            Assert.That(first.populationHistory[0].species.First(p => p.speciesId == "rabbit").population, Is.EqualTo(9));
             Assert.That(first.populationPoolCapacity, Is.EqualTo(60));
             Assert.That(first.finalStateDigest, Is.EqualTo(repeated.finalStateDigest));
-            Assert.That(first.populationHistory.Last().species.First(p => p.speciesId == "hare").population, Is.EqualTo(9));
+            Assert.That(first.populationHistory.Last().species.First(p => p.speciesId == "rabbit").population, Is.EqualTo(9));
         }
 
         [Test]
         public void ResearchFeedingAndFoxIntroductionsAreRecordedAndReplayInBothDetailModes()
         {
             var snapshot = FrozenGenomeFixture();
-            var args = new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "2",
+            var args = new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "2",
                 "-phaseUpgradeSchedule", "none;none;none", "-foxIntroductionTicks", "2,4",
-                "-speciesStats", "hare:energy.forage-threshold=25" };
+                "-speciesStats", "rabbit:energy.forage-threshold=25" };
             var header = GenomeHeader(snapshot, args);
-            Assert.That(header.resolvedHareForageThreshold, Is.EqualTo(25));
-            Assert.That(header.researchSpeciesStats, Is.EqualTo("hare:energy.forage-threshold=25"));
+            Assert.That(header.resolvedRabbitForageThreshold, Is.EqualTo(25));
+            Assert.That(header.researchSpeciesStats, Is.EqualTo("rabbit:energy.forage-threshold=25"));
             Assert.That(header.foxIntroductionTicks, Is.EqualTo(new[] { 2, 4 }));
             var method = ExperimentRunner.GetMethod("RunPortableSeed");
             var detailed = JsonUtility.FromJson<IntroductionRunProbe>((string)method.Invoke(null,
@@ -314,15 +314,15 @@ namespace SaltyGame.EditorTests
         {
             var snapshot = FrozenGenomeFixture();
             var method = ExperimentRunner.GetMethod("RunPortableSeed");
-            var plain = new[] { "-playerSpeciesId", "hare", "-runTicks", "6" };
-            var phased = new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none;none" };
+            var plain = new[] { "-playerSpeciesId", "rabbit", "-runTicks", "6" };
+            var phased = new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "2", "-phaseUpgradeSchedule", "none;none;none" };
             var first = JsonUtility.FromJson<GenomeRunProbe>((string)method.Invoke(null, new object[] { snapshot, plain, 10100, true, null }));
             var second = JsonUtility.FromJson<GenomeRunProbe>((string)method.Invoke(null, new object[] { snapshot, phased, 10100, true, null }));
             Assert.That(second.finalStateDigest, Is.EqualTo(first.finalStateDigest));
         }
 
         [Test]
-        public void ScheduledEcologyObservesAfterHareExtinctionWhileGameplayStillStops()
+        public void ScheduledEcologyObservesAfterRabbitExtinctionWhileGameplayStillStops()
         {
             var data = GenomeFixtureData();
             data = data.WithGridSizeAndStartingPopulations(8, 8,
@@ -335,14 +335,14 @@ namespace SaltyGame.EditorTests
             Assert.That(run.Status, Is.EqualTo(SimulationRunStatus.Complete));
             Assert.That(run.Tick, Is.EqualTo(1));
 
-            var args = new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "2",
+            var args = new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "2",
                 "-phaseUpgradeSchedule", "none;none;none", "-foxIntroductionTicks", "2,4" };
             var research = JsonUtility.FromJson<IntroductionRunProbe>((string)ExperimentRunner.GetMethod("RunPortableSeed")
                 .Invoke(null, new object[] { FrozenGenomeFixture(data), args, 10100, true, null }));
             Assert.That(research.ticks, Is.EqualTo(6));
             Assert.That(research.populationIntroductions.Length, Is.EqualTo(2));
             Assert.That(research.populationHistory.Length, Is.EqualTo(7));
-            Assert.That(research.populationHistory.All(p => p.species.First(s => s.speciesId == "hare").population == 0), Is.True);
+            Assert.That(research.populationHistory.All(p => p.species.First(s => s.speciesId == "rabbit").population == 0), Is.True);
             Assert.That(research.researchMilestones.firstBirthTick, Is.EqualTo(-1));
         }
 
@@ -353,7 +353,7 @@ namespace SaltyGame.EditorTests
             data = data.WithGridSizeAndStartingPopulations(1, 1,
                 data.SpeciesRules.Keys.ToDictionary(id => id, id => id == GenomeContract.RabbitSpeciesId ? 1 : 0));
             var snapshot = FrozenGenomeFixture(data);
-            var args = new[] { "-playerSpeciesId", "hare", "-phaseLengthTicks", "2",
+            var args = new[] { "-playerSpeciesId", "rabbit", "-phaseLengthTicks", "2",
                 "-phaseUpgradeSchedule", "none;none", "-foxIntroductionTicks", "2" };
             var error = Assert.Throws<TargetInvocationException>(() => ExperimentRunner.GetMethod("RunPortableSeed")
                 .Invoke(null, new object[] { snapshot, args, 10100, true, null }));
@@ -379,7 +379,7 @@ namespace SaltyGame.EditorTests
         [Serializable] class GenomeReportProbe
         {
             public int schemaVersion;
-            public int resolvedHareForageThreshold;
+            public int resolvedRabbitForageThreshold;
             public string researchSpeciesStats;
             public int[] foxIntroductionTicks;
             public string genomeFingerprint, rulesetFingerprint;
@@ -399,17 +399,51 @@ namespace SaltyGame.EditorTests
         [Serializable] class GenomeRunProbe { public string genomeFingerprint, finalStateDigest; public int ticks; }
 
         [Test]
+        public void ForestEdgeWrappingReachesRunsAndScenarioSwitches()
+        {
+            var forest = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath);
+            var bounded = Object.Instantiate(forest);
+            var serialized = new SerializedObject(bounded);
+            serialized.FindProperty("wrapEdges").boolValue = false;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            var previewObject = new GameObject("Wrapping Scenario Test");
+            previewObject.SetActive(false);
+            try
+            {
+                Assert.That(forest.CreateRuntimeData().WrapEdges, Is.True);
+                Assert.That(bounded.CreateRuntimeData().WrapEdges, Is.False);
+                Assert.That(ApplyOverrides().WrapEdges, Is.True);
+                Assert.That(ApplyOverrides("-wrapEdges", "false").WrapEdges, Is.False);
+
+                var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
+                preview.ConfigureScenarioOptions(new[] { forest, bounded });
+                typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
+                Assert.That(preview.WrapEdges, Is.True);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.True);
+                Assert.That(preview.TrySelectScenario(1, out var message), Is.True, message);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.False);
+                Assert.That(preview.TrySelectScenario(0, out message), Is.True, message);
+                Assert.That(preview.Run.Cells.WrapEdges, Is.True);
+            }
+            finally
+            {
+                Object.DestroyImmediate(previewObject);
+                Object.DestroyImmediate(bounded);
+            }
+        }
+
+        [Test]
         public void WrappingOverridesSurviveDataCopiesAndCheckpointsWithMatchedInitialCells()
         {
-            var bounded = ApplyOverrides("-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
-                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
+            var bounded = ApplyOverrides("-wrapEdges", "false", "-gridWidth", "36", "-gridHeight", "20", "-runTicks", "600",
+                "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
             var wrapped = ApplyOverrides("-wrapEdges", "true", "-gridWidth", "36", "-gridHeight", "20",
-                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,hare=20,fox=10");
+                "-runTicks", "600", "-stepIntervalSeconds", "0.1", "-startingPopulations", "plant=400,rabbit=20,fox=10");
             Assert.That(bounded.WrapEdges, Is.False);
             Assert.That(wrapped.WrapEdges, Is.True);
             Assert.That(wrapped.Fingerprint, Is.Not.EqualTo(bounded.Fingerprint));
             Assert.That(wrapped.Copy().WithRunTicks(600, 0.1f).WithGridSize(36, 20)
-                .WithSpeciesRules(new SpeciesId("hare"), wrapped.SpeciesRules[new SpeciesId("hare")]).WrapEdges, Is.True);
+                .WithSpeciesRules(new SpeciesId("rabbit"), wrapped.SpeciesRules[new SpeciesId("rabbit")]).WrapEdges, Is.True);
             var initial = SpeciesInitialGridFactory.Create(wrapped, 10100);
             var original = SpeciesInitialGridFactory.Create(bounded, 10100);
             for (var y = 0; y < initial.Height; y++)
@@ -418,7 +452,7 @@ namespace SaltyGame.EditorTests
                     Assert.That(initial.GetCell(x, y).SpeciesId, Is.EqualTo(original.GetCell(x, y).SpeciesId));
                     Assert.That(initial.GetCell(x, y).TerrainId, Is.EqualTo(original.GetCell(x, y).TerrainId));
                 }
-            var run = new SimulationRunState(initial, new SpeciesId("hare"), 10100, wrapped.RunDurationSeconds);
+            var run = new SimulationRunState(initial, new SpeciesId("rabbit"), 10100, wrapped.RunDurationSeconds);
             var runner = new SpeciesSimulationRunner(run, wrapped);
             run.ConfigureContinuousPhases(1);
             runner.Start();
@@ -447,7 +481,7 @@ namespace SaltyGame.EditorTests
                 var apply = editor.GetMethod("TryApplyS4Fixture");
                 var arguments = new object[] { preview, 10100, null };
                 Assert.That(apply.Invoke(null, arguments), Is.True, (string)arguments[2]);
-                Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("hare"));
+                Assert.That(preview.PlayerSpecies.Value, Is.EqualTo("rabbit"));
                 Assert.That(preview.WrapEdges, Is.False);
                 Assert.That(preview.TryApplyWrapEdges(true, out _), Is.True);
                 Assert.That(preview.Run.Cells.WrapEdges, Is.True);
@@ -461,7 +495,7 @@ namespace SaltyGame.EditorTests
                 preview.StartSimulation();
                 var initial = preview.Run.PopulationHistory[0];
                 Assert.That(initial.GetCount(new SpeciesId("plant")), Is.EqualTo(400));
-                Assert.That(initial.GetCount(new SpeciesId("hare")), Is.EqualTo(20));
+                Assert.That(initial.GetCount(new SpeciesId("rabbit")), Is.EqualTo(20));
                 Assert.That(initial.GetCount(new SpeciesId("fox")), Is.EqualTo(10));
                 preview.PauseSimulation();
                 Assert.That(preview.AdvanceOneTickWhilePaused(), Is.True);
@@ -489,12 +523,12 @@ namespace SaltyGame.EditorTests
                 .First(type => type != null);
             var resolve = runner.GetMethod("GetScheduledExperimentalOptions", BindingFlags.Static | BindingFlags.NonPublic);
             var options = new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId, 3, 0f, true);
-            var hare = new SpeciesId("hare");
-            var avoidance = SpeciesUpgradeCatalog.Create("threat-exposure").CreateSnapshot(hare);
+            var rabbit = new SpeciesId("rabbit");
+            var avoidance = SpeciesUpgradeCatalog.Create("threat-exposure").CreateSnapshot(rabbit);
             foreach (var level in new[] { 0, 1, 2, 0 })
             {
                 var snapshots = Enumerable.Repeat(avoidance, level).ToArray();
-                var actual = (SpeciesExperimentalOptions)resolve.Invoke(null, new object[] { options, snapshots, hare });
+                var actual = (SpeciesExperimentalOptions)resolve.Invoke(null, new object[] { options, snapshots, rabbit });
                 Assert.That(actual.PreContactAvoidanceChance, Is.EqualTo(level * 0.08f));
                 Assert.That(actual.FeatureId, Is.EqualTo(options.FeatureId));
                 Assert.That(actual.FoxAttackCooldownTicks, Is.EqualTo(3));
@@ -512,18 +546,18 @@ namespace SaltyGame.EditorTests
             var ids = new[] { "faster-movement", "threat-exposure", "faster-movement", "threat-response", "faster-movement" };
             var apply = runner.GetMethods(BindingFlags.Static | BindingFlags.NonPublic)
                 .Single(method => method.Name == "ApplyLoadout" && method.GetParameters().Length == 4);
-            var result = (CellularSimData)apply.Invoke(null, new object[] { data, "hare", ids, 0f });
-            var hare = new SpeciesId("hare");
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, data.SpeciesRules[hare]));
+            var result = (CellularSimData)apply.Invoke(null, new object[] { data, "rabbit", ids, 0f });
+            var rabbit = new SpeciesId("rabbit");
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, data.SpeciesRules[rabbit]));
             foreach (var id in ids) Assert.That(progression.TryApplyFreeUpgrade(SpeciesUpgradeCatalog.Create(id)), Is.True);
-            Assert.That(result.SpeciesRules[hare].MovementSpeed, Is.EqualTo(progression.CurrentRules.MovementSpeed));
-            Assert.That(result.SpeciesRules[hare].FleeMovementSpeedBonus, Is.EqualTo(data.SpeciesRules[hare].FleeMovementSpeedBonus));
+            Assert.That(result.SpeciesRules[rabbit].MovementSpeed, Is.EqualTo(progression.CurrentRules.MovementSpeed));
+            Assert.That(result.SpeciesRules[rabbit].FleeMovementSpeedBonus, Is.EqualTo(data.SpeciesRules[rabbit].FleeMovementSpeedBonus));
             var createSnapshots = runner.GetMethod("CreateLegacyUpgradeSnapshots", BindingFlags.Static | BindingFlags.NonPublic);
-            var snapshots = (IReadOnlyList<SpeciesUpgradeSnapshot>)createSnapshots.Invoke(null, new object[] { ids, "hare", 0f });
+            var snapshots = (IReadOnlyList<SpeciesUpgradeSnapshot>)createSnapshots.Invoke(null, new object[] { ids, "rabbit", 0f });
             var snapshotApply = runner.GetMethod("ApplySnapshotLoadout", BindingFlags.Static | BindingFlags.NonPublic);
-            var actualResult = (CellularSimData)snapshotApply.Invoke(null, new object[] { data, "hare", snapshots });
-            Assert.That(actualResult.SpeciesRules[hare].MovementSpeed, Is.EqualTo(progression.CurrentRules.MovementSpeed));
-            Assert.That(actualResult.SpeciesRules[hare].FleeMovementSpeedBonus, Is.EqualTo(data.SpeciesRules[hare].FleeMovementSpeedBonus));
+            var actualResult = (CellularSimData)snapshotApply.Invoke(null, new object[] { data, "rabbit", snapshots });
+            Assert.That(actualResult.SpeciesRules[rabbit].MovementSpeed, Is.EqualTo(progression.CurrentRules.MovementSpeed));
+            Assert.That(actualResult.SpeciesRules[rabbit].FleeMovementSpeedBonus, Is.EqualTo(data.SpeciesRules[rabbit].FleeMovementSpeedBonus));
             Assert.That(snapshots.Sum(snapshot => snapshot.PreContactAvoidanceChanceBonus), Is.EqualTo(progression.PreContactAvoidanceChance));
             var prediction = SaltyGame.EditorTools.SpeciesUpgradePredictionInputAdapter.CreateInput(snapshots);
             Assert.That(prediction.upgrades[1].preContactAvoidanceChanceBonus, Is.EqualTo(0.08f));
@@ -536,9 +570,9 @@ namespace SaltyGame.EditorTests
             Assert.That(avoidanceRecord.GetType().GetField("preContactAvoidanceChanceBonus").GetValue(avoidanceRecord), Is.EqualTo(0.08f));
             StringAssert.Contains("preContactAvoidanceChanceBonus", JsonUtility.ToJson(avoidanceRecord));
             var invalid = Enumerable.Repeat("faster-movement", 11).ToArray();
-            Assert.Throws<TargetInvocationException>(() => createSnapshots.Invoke(null, new object[] { invalid, "hare", 0f }));
-            Assert.Throws<TargetInvocationException>(() => apply.Invoke(null, new object[] { data, "hare", invalid, 0f }));
-            Assert.Throws<TargetInvocationException>(() => apply.Invoke(null, new object[] { data, "hare", new[] { "threat-exposure" }, 0.75f }));
+            Assert.Throws<TargetInvocationException>(() => createSnapshots.Invoke(null, new object[] { invalid, "rabbit", 0f }));
+            Assert.Throws<TargetInvocationException>(() => apply.Invoke(null, new object[] { data, "rabbit", invalid, 0f }));
+            Assert.Throws<TargetInvocationException>(() => apply.Invoke(null, new object[] { data, "rabbit", new[] { "threat-exposure" }, 0.75f }));
         }
 
         [Test]
@@ -550,9 +584,9 @@ namespace SaltyGame.EditorTests
             var create = runner.GetMethod("GetScheduledExperimentalOptions", BindingFlags.Static | BindingFlags.NonPublic);
             var baseOptions = new SpeciesExperimentalOptions(SpeciesExperimentalOptions.BevExperimentalFeaturesId);
             var avoidance = SpeciesUpgradeCatalog.Create(SpeciesUpgradeCatalog.ThreatExposureId)
-                .CreateSnapshot(new SpeciesId("hare"));
+                .CreateSnapshot(new SpeciesId("rabbit"));
             SpeciesExperimentalOptions Resolve(params SpeciesUpgradeSnapshot[] loadout) =>
-                (SpeciesExperimentalOptions)create.Invoke(null, new object[] { baseOptions, loadout, new SpeciesId("hare") });
+                (SpeciesExperimentalOptions)create.Invoke(null, new object[] { baseOptions, loadout, new SpeciesId("rabbit") });
 
             Assert.That(Resolve().PreContactAvoidanceChance, Is.Zero);
             Assert.That(Resolve(avoidance).PreContactAvoidanceChance, Is.EqualTo(0.08f).Within(0.00001f));
@@ -564,20 +598,20 @@ namespace SaltyGame.EditorTests
         public void WarrenBatchSnapshotsAndAuthoringCopiesPreserveCrowdingReduction()
         {
             var data = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var runner = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("SaltyGame.EditorTools.CellularSimulationExperimentRunner"))
                 .First(type => type != null);
             var ids = new[] { "tough-hide", "crowding-tolerance", "tough-hide", "crowding-tolerance", "tough-hide" };
             var snapshots = (IReadOnlyList<SpeciesUpgradeSnapshot>)runner
                 .GetMethod("CreateLegacyUpgradeSnapshots", BindingFlags.Static | BindingFlags.NonPublic)
-                .Invoke(null, new object[] { ids, "hare", 0f });
+                .Invoke(null, new object[] { ids, "rabbit", 0f });
             var result = (CellularSimData)runner.GetMethod("ApplySnapshotLoadout", BindingFlags.Static | BindingFlags.NonPublic)
-                .Invoke(null, new object[] { data, "hare", snapshots });
-            var rules = result.SpeciesRules[hare];
+                .Invoke(null, new object[] { data, "rabbit", snapshots });
+            var rules = result.SpeciesRules[rabbit];
             Assert.That(rules.CrowdingEnergyReduction, Is.EqualTo(0.2f));
-            Assert.That(rules.MaximumHealth, Is.EqualTo(data.SpeciesRules[hare].MaximumHealth + 6));
-            Assert.That(rules.CrowdingTolerance, Is.EqualTo(data.SpeciesRules[hare].CrowdingTolerance));
+            Assert.That(rules.MaximumHealth, Is.EqualTo(data.SpeciesRules[rabbit].MaximumHealth + 6));
+            Assert.That(rules.CrowdingTolerance, Is.EqualTo(data.SpeciesRules[rabbit].CrowdingTolerance));
             Assert.That(result.Fingerprint, Is.Not.EqualTo(data.Fingerprint));
             var prediction = SaltyGame.EditorTools.SpeciesUpgradePredictionInputAdapter.CreateInput(snapshots);
             Assert.That(prediction.upgrades[1].modifiers[0].attributeId, Is.EqualTo(SpeciesAttributeIds.CrowdingEnergyReduction));
@@ -586,7 +620,7 @@ namespace SaltyGame.EditorTests
             var record = typeof(SpeciesSimulationMetrics).GetMethod("Record", PrivateInstance);
             var parameters = record.GetParameters();
             var arguments = parameters.Select(parameter => parameter.DefaultValue).ToArray();
-            arguments[0] = hare;
+            arguments[0] = rabbit;
             arguments[Array.FindIndex(parameters, parameter => parameter.Name == "crowdingMetabolismTicks")] = 9;
             arguments[Array.FindIndex(parameters, parameter => parameter.Name == "crowdingEnergyLost")] = 7;
             record.Invoke(metrics, arguments);
@@ -594,14 +628,14 @@ namespace SaltyGame.EditorTests
                 .Select(assembly => assembly.GetType("SaltyGame.EditorTools.SimulationReportSerialization"))
                 .First(type => type != null);
             var activityRecords = (Array)serialization.GetMethod("CreateActivity")
-                .Invoke(null, new object[] { metrics, new[] { hare } });
+                .Invoke(null, new object[] { metrics, new[] { rabbit } });
             var activityRecord = activityRecords.GetValue(0);
             Assert.That(activityRecord.GetType().GetField("crowdingMetabolismTicks").GetValue(activityRecord), Is.EqualTo(9));
             Assert.That(activityRecord.GetType().GetField("crowdingEnergyLost").GetValue(activityRecord), Is.EqualTo(7));
             StringAssert.Contains("crowdingEnergyLost", JsonUtility.ToJson(activityRecord));
             var asset = ScriptableObject.CreateInstance<CellularSimDataAsset>();
             var authored = Object.Instantiate(AssetDatabase.LoadAssetAtPath<SpeciesDefinitionAsset>(
-                "Assets/Data/ProductionData/CellularSimulation/Species/hare.asset"));
+                "Assets/Data/ProductionData/CellularSimulation/Species/rabbit.asset"));
             try
             {
                 var definition = typeof(CellularSimDataAsset).GetNestedType("SpeciesDefinition", BindingFlags.NonPublic);
@@ -611,7 +645,7 @@ namespace SaltyGame.EditorTests
                     array.SetValue(definition.GetMethod("From", BindingFlags.Static | BindingFlags.NonPublic)
                         .Invoke(null, new object[] { entries[index].Key, 0.1f, entries[index].Value }), index);
                 typeof(CellularSimDataAsset).GetField("species", PrivateInstance).SetValue(asset, array);
-                Assert.That(asset.CreateRuntimeData().SpeciesRules[hare].CrowdingEnergyReduction, Is.EqualTo(0.2f));
+                Assert.That(asset.CreateRuntimeData().SpeciesRules[rabbit].CrowdingEnergyReduction, Is.EqualTo(0.2f));
                 var serialized = new SerializedObject(authored);
                 serialized.FindProperty("crowdingEnergyReduction").floatValue = 0.5f;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -625,31 +659,31 @@ namespace SaltyGame.EditorTests
         public void GardenersBatchLoadoutMatchesProgressionAndReportsDirectPlantingCounters()
         {
             var data = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
-            var hare = new SpeciesId("hare");
+            var rabbit = new SpeciesId("rabbit");
             var ids = new[] { "efficient-digestion", "seed-dispersal", "efficient-digestion", "seed-dispersal", "efficient-digestion" };
             var runner = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("SaltyGame.EditorTools.CellularSimulationExperimentRunner"))
                 .First(type => type != null);
             var create = runner.GetMethod("CreateLegacyUpgradeSnapshots", BindingFlags.Static | BindingFlags.NonPublic);
-            var snapshots = (IReadOnlyList<SpeciesUpgradeSnapshot>)create.Invoke(null, new object[] { ids, "hare", 0f });
+            var snapshots = (IReadOnlyList<SpeciesUpgradeSnapshot>)create.Invoke(null, new object[] { ids, "rabbit", 0f });
             var result = (CellularSimData)runner.GetMethod("ApplySnapshotLoadout", BindingFlags.Static | BindingFlags.NonPublic)
-                .Invoke(null, new object[] { data, "hare", snapshots });
-            var progression = new SpeciesProgression(new SpeciesDefinition(hare, data.SpeciesRules[hare]));
+                .Invoke(null, new object[] { data, "rabbit", snapshots });
+            var progression = new SpeciesProgression(new SpeciesDefinition(rabbit, data.SpeciesRules[rabbit]));
             foreach (var id in ids) Assert.That(progression.TryApplyFreeUpgrade(SpeciesUpgradeCatalog.Create(id)), Is.True);
-            Assert.That(result.SpeciesRules[hare].SeedDropChance, Is.EqualTo(data.SpeciesRules[hare].SeedDropChance + 0.02f).Within(0.000001f));
-            Assert.That(result.SpeciesRules[hare].SeedDropChance, Is.EqualTo(progression.CurrentRules.SeedDropChance));
-            Assert.That(result.SpeciesRules[hare].DigestionEnergyBonus, Is.EqualTo(progression.CurrentRules.DigestionEnergyBonus));
+            Assert.That(result.SpeciesRules[rabbit].SeedDropChance, Is.EqualTo(data.SpeciesRules[rabbit].SeedDropChance + 0.02f).Within(0.000001f));
+            Assert.That(result.SpeciesRules[rabbit].SeedDropChance, Is.EqualTo(progression.CurrentRules.SeedDropChance));
+            Assert.That(result.SpeciesRules[rabbit].DigestionEnergyBonus, Is.EqualTo(progression.CurrentRules.DigestionEnergyBonus));
             Assert.That(result.Fingerprint, Is.Not.EqualTo(data.Fingerprint));
             var prediction = SaltyGame.EditorTools.SpeciesUpgradePredictionInputAdapter.CreateInput(snapshots);
             Assert.That(prediction.upgrades[1].modifiers[0].attributeId, Is.EqualTo(SpeciesAttributeIds.SeedDropChance));
             Assert.That(prediction.upgrades[1].modifiers[0].signedValue, Is.EqualTo(0.01f));
             Assert.Throws<TargetInvocationException>(() => create.Invoke(null,
-                new object[] { Enumerable.Repeat("seed-dispersal", 11).ToArray(), "hare", 0f }));
+                new object[] { Enumerable.Repeat("seed-dispersal", 11).ToArray(), "rabbit", 0f }));
             var metrics = new SpeciesSimulationMetrics();
             var record = typeof(SpeciesSimulationMetrics).GetMethod("Record", PrivateInstance);
             var parameters = record.GetParameters();
             var arguments = parameters.Select(parameter => parameter.DefaultValue).ToArray();
-            arguments[0] = hare;
+            arguments[0] = rabbit;
             arguments[Array.FindIndex(parameters, parameter => parameter.Name == "seedDropAttempts")] = 9;
             arguments[Array.FindIndex(parameters, parameter => parameter.Name == "seedDropSuccesses")] = 2;
             arguments[Array.FindIndex(parameters, parameter => parameter.Name == "seedDropFoodCreated")] = 6.5f;
@@ -658,7 +692,7 @@ namespace SaltyGame.EditorTests
             var serialization = AppDomain.CurrentDomain.GetAssemblies()
                 .Select(assembly => assembly.GetType("SaltyGame.EditorTools.SimulationReportSerialization"))
                 .First(type => type != null);
-            var records = (Array)serialization.GetMethod("CreateActivity").Invoke(null, new object[] { metrics, new[] { hare } });
+            var records = (Array)serialization.GetMethod("CreateActivity").Invoke(null, new object[] { metrics, new[] { rabbit } });
             var activity = records.GetValue(0);
             Assert.That(activity.GetType().GetField("seedDropAttempts").GetValue(activity), Is.EqualTo(9));
             Assert.That(activity.GetType().GetField("seedDropSuccesses").GetValue(activity), Is.EqualTo(2));
@@ -671,23 +705,23 @@ namespace SaltyGame.EditorTests
         public void StartingPopulationsAndGridOverridesAreAppliedTogether()
         {
             var data = ApplyOverrides("-gridWidth", "10", "-gridHeight", "10",
-                "-startingPopulations", "plant=40,hare=5,fox=2");
+                "-startingPopulations", "plant=40,rabbit=5,fox=2");
             Assert.That(data.Width, Is.EqualTo(10));
             Assert.That(data.Height, Is.EqualTo(10));
             Assert.That(data.StartingPopulations[new SpeciesId("plant")], Is.EqualTo(40));
-            Assert.That(data.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(5));
+            Assert.That(data.StartingPopulations[new SpeciesId("rabbit")], Is.EqualTo(5));
             Assert.That(data.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(2));
             var authored = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(ScenarioPath).CreateRuntimeData();
             Assert.That(authored.StartingPopulations[new SpeciesId("plant")], Is.EqualTo(400));
-            Assert.That(authored.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(55));
-            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(20));
+            Assert.That(authored.StartingPopulations[new SpeciesId("rabbit")], Is.EqualTo(3));
+            Assert.That(authored.StartingPopulations[new SpeciesId("fox")], Is.EqualTo(2));
         }
 
-        [TestCase("hare=-1")]
-        [TestCase("hare=5,hare=2")]
+        [TestCase("rabbit=-1")]
+        [TestCase("rabbit=5,rabbit=2")]
         [TestCase("unknown=1")]
         [TestCase("plant=101")]
-        [TestCase("hare=abc")]
+        [TestCase("rabbit=abc")]
         public void InvalidStartingPopulationsAreRejected(string populations)
         {
             var exception = Assert.Throws<TargetInvocationException>(() =>
@@ -711,14 +745,14 @@ namespace SaltyGame.EditorTests
             {
                 foreach (var key in keys) PlayerPrefs.DeleteKey(key);
                 var serialized = new SerializedObject(scenario);
-                serialized.FindProperty("species").GetArrayElementAtIndex(1).FindPropertyRelative("startingPopulation").intValue = 25;
-                serialized.FindProperty("species").GetArrayElementAtIndex(2).FindPropertyRelative("startingPopulation").intValue = 15;
+                serialized.FindProperty("species").GetArrayElementAtIndex(1).FindPropertyRelative("startingPopulation").intValue = 8;
+                serialized.FindProperty("species").GetArrayElementAtIndex(2).FindPropertyRelative("startingPopulation").intValue = 12;
                 serialized.ApplyModifiedPropertiesWithoutUndo();
                 var preview = previewObject.AddComponent<SpeciesSimulationPreview>();
                 preview.ConfigureScenarioOptions(new[] { scenario });
                 typeof(SpeciesSimulationPreview).GetMethod("Awake", PrivateInstance).Invoke(preview, null);
-                typeof(SpeciesSimulationPreview).GetField("herbivoreStartingPopulation", PrivateInstance).SetValue(preview, 55);
-                typeof(SpeciesSimulationPreview).GetField("carnivoreStartingPopulation", PrivateInstance).SetValue(preview, 35);
+                typeof(SpeciesSimulationPreview).GetField("herbivoreStartingPopulation", PrivateInstance).SetValue(preview, 14);
+                typeof(SpeciesSimulationPreview).GetField("carnivoreStartingPopulation", PrivateInstance).SetValue(preview, 13);
                 typeof(SpeciesSimulationPreview).GetField("startingPopulationOverrideEnabled", PrivateInstance).SetValue(preview, explicitOverride);
                 preview.SaveCurrentSettingsAsDefault();
                 var saved = PlayerPrefs.GetString(keys[2]);
@@ -732,14 +766,14 @@ namespace SaltyGame.EditorTests
                 typeof(SpeciesSimulationPreview).GetMethod("ApplySelectedScenario", PrivateInstance).Invoke(preview, null);
                 typeof(SpeciesSimulationPreview).GetMethod("LoadSavedSettings", PrivateInstance).Invoke(preview, null);
                 preview.ResetToStart();
-                Assert.That(preview.HerbivoreStartingPopulation, Is.EqualTo(explicitOverride ? 55 : 25));
-                Assert.That(preview.CarnivoreStartingPopulation, Is.EqualTo(explicitOverride ? 35 : 15));
+                Assert.That(preview.HerbivoreStartingPopulation, Is.EqualTo(explicitOverride ? 14 : 8));
+                Assert.That(preview.CarnivoreStartingPopulation, Is.EqualTo(explicitOverride ? 13 : 12));
                 var initial = preview.Run.PopulationHistory[0];
-                Assert.That(initial.GetCount(new SpeciesId("hare")), Is.EqualTo(explicitOverride ? 55 : 25));
-                Assert.That(initial.GetCount(new SpeciesId("fox")), Is.EqualTo(explicitOverride ? 35 : 15));
+                Assert.That(initial.GetCount(new SpeciesId("rabbit")), Is.EqualTo(explicitOverride ? 14 : 8));
+                Assert.That(initial.GetCount(new SpeciesId("fox")), Is.EqualTo(explicitOverride ? 13 : 12));
                 preview.SaveCurrentSettingsAsDefault();
                 typeof(SpeciesSimulationPreview).GetMethod("LoadSavedSettings", PrivateInstance).Invoke(preview, null);
-                Assert.That(preview.HerbivoreStartingPopulation, Is.EqualTo(explicitOverride ? 55 : 25));
+                Assert.That(preview.HerbivoreStartingPopulation, Is.EqualTo(explicitOverride ? 14 : 8));
             }
             finally
             {
@@ -764,23 +798,23 @@ namespace SaltyGame.EditorTests
             {
                 Undo.IncrementCurrentGroup();
                 var originalPopulations = scenario.CreateRuntimeData().StartingPopulations;
-                var editedHares = checked(originalPopulations[new SpeciesId("hare")] + 5);
+                var editedRabbits = checked(originalPopulations[new SpeciesId("rabbit")] + 5);
                 var serialized = new SerializedObject(scenario);
                 var population = serialized.FindProperty("species").GetArrayElementAtIndex(1).FindPropertyRelative("startingPopulation");
-                population.intValue = editedHares;
+                population.intValue = editedRabbits;
                 serialized.ApplyModifiedProperties();
                 Undo.FlushUndoRecordObjects();
-                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")], Is.EqualTo(editedHares));
+                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("rabbit")], Is.EqualTo(editedRabbits));
                 Undo.PerformUndo();
-                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("hare")],
-                    Is.EqualTo(originalPopulations[new SpeciesId("hare")]));
+                Assert.That(scenario.CreateRuntimeData().StartingPopulations[new SpeciesId("rabbit")],
+                    Is.EqualTo(originalPopulations[new SpeciesId("rabbit")]));
                 serialized.Update();
-                population.intValue = editedHares;
+                population.intValue = editedRabbits;
                 serialized.ApplyModifiedProperties();
                 AssetDatabase.SaveAssetIfDirty(scenario);
                 AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceUpdate);
                 var loaded = AssetDatabase.LoadAssetAtPath<ScenarioDefinitionAsset>(path).CreateRuntimeData();
-                Assert.That(loaded.StartingPopulations[new SpeciesId("hare")], Is.EqualTo(editedHares));
+                Assert.That(loaded.StartingPopulations[new SpeciesId("rabbit")], Is.EqualTo(editedRabbits));
                 Assert.That(loaded.StartingPopulations[new SpeciesId("fox")],
                     Is.EqualTo(originalPopulations[new SpeciesId("fox")]));
             }

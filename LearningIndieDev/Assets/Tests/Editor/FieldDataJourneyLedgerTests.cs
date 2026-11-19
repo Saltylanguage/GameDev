@@ -14,9 +14,9 @@ namespace SaltyGame.EditorTests
         {
             var definition = LoadDefinition();
             var ledger = new FieldDataJourneyLedger("attempt-a", definition);
-            var counts = Populations(hares: 20, foxes: 3, plants: 50);
+            var counts = Populations(rabbits: 20, foxes: 3, plants: 50);
 
-            Assert.That(definition.SelectedSpeciesId, Is.EqualTo("hare"));
+            Assert.That(definition.SelectedSpeciesId, Is.EqualTo("rabbit"));
             Assert.That(counts.TryGetValue(new SpeciesId(definition.SelectedSpeciesId), out var selectedPopulation), Is.True,
                 string.Join(",", counts.Keys));
             Assert.That(selectedPopulation, Is.EqualTo(20));
@@ -62,11 +62,11 @@ namespace SaltyGame.EditorTests
         public void ExtinctPopulationCannotEarnAndFailedJourneyForfeitsOnlyLocalBalance()
         {
             var ledger = new FieldDataJourneyLedger("attempt-fail", LoadDefinition());
-            var alive = Populations(hares: 8, foxes: 2, plants: 30);
+            var alive = Populations(rabbits: 8, foxes: 2, plants: 30);
             Assert.That(ledger.TrySettleSuccessfulRound(1, 100, alive, EmptyModifiers(),
                 out _, out _, out var error), Is.True, error);
 
-            var extinct = Populations(hares: 0, foxes: 2, plants: 30);
+            var extinct = Populations(rabbits: 0, foxes: 2, plants: 30);
             Assert.That(ledger.TrySettleSuccessfulRound(2, 200, extinct, EmptyModifiers(),
                 out _, out _, out error), Is.False);
             Assert.That(ledger.Balance, Is.EqualTo(8));
@@ -82,14 +82,14 @@ namespace SaltyGame.EditorTests
         public void ExtinctionAtAnyNodeEdgeCannotEarnThatRoundsPayoutOrNodeReward(int extinctRound)
         {
             var ledger = new FieldDataJourneyLedger("attempt-edge-" + extinctRound, LoadDefinition());
-            var alive = Populations(hares: 8, foxes: 2, plants: 30);
+            var alive = Populations(rabbits: 8, foxes: 2, plants: 30);
             for (var round = 1; round < extinctRound; round++)
             {
                 Assert.That(ledger.TrySettleSuccessfulRound(round, round * 100, alive,
                     EmptyModifiers(), out _, out _, out var priorError), Is.True, priorError);
             }
 
-            var extinct = Populations(hares: 0, foxes: 2, plants: 30);
+            var extinct = Populations(rabbits: 0, foxes: 2, plants: 30);
             Assert.That(ledger.TrySettleSuccessfulRound(extinctRound, extinctRound * 100,
                 extinct, EmptyModifiers(), out var payout, out var nodeReward, out var error), Is.False);
             Assert.That(payout, Is.Null);
@@ -104,15 +104,15 @@ namespace SaltyGame.EditorTests
         public void NewlyAcquiredIncomeModifierChangesOnlyLaterRoundPayouts()
         {
             var ledger = new FieldDataJourneyLedger("attempt-modifier", LoadDefinition());
-            var counts = Populations(hares: 10, foxes: 2, plants: 30);
+            var counts = Populations(rabbits: 10, foxes: 2, plants: 30);
             Assert.That(ledger.TrySettlePopulationPayout(1, 100, counts, EmptyModifiers(),
                 out var firstReceipt, out var error), Is.True, error);
 
             var acquiredAfterRoundOne = new[]
             {
                 new FieldDataIncomeModifierInstance(
-                    "instance-1", "income-plus-one-per-hare",
-                    FieldDataIncomeOperation.AddPerHare, 1m),
+                    "instance-1", "income-plus-one-per-rabbit",
+                    FieldDataIncomeOperation.AddPerRabbit, 1m),
             };
             Assert.That(ledger.TrySettlePopulationPayout(2, 200, counts, acquiredAfterRoundOne,
                 out var secondReceipt, out error), Is.True, error);
@@ -127,7 +127,7 @@ namespace SaltyGame.EditorTests
         public void SuccessfulRemainderCanOnlyBeDiscardedAfterAllRoundsAndNodeClears()
         {
             var ledger = new FieldDataJourneyLedger("attempt-success", LoadDefinition());
-            var counts = Populations(hares: 2, foxes: 1, plants: 10);
+            var counts = Populations(rabbits: 2, foxes: 1, plants: 10);
             Assert.That(ledger.TryDiscardSuccessfulRemainder(out _), Is.False);
 
             for (var round = 1; round <= 24; round++)
@@ -137,7 +137,7 @@ namespace SaltyGame.EditorTests
             }
 
             var profileProgression = new SpeciesProgression(new SpeciesDefinition(
-                new SpeciesId("hare"), SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]));
+                new SpeciesId("rabbit"), SpeciesRuleDefaults.Create()[SpeciesIds.Herbivore]));
             profileProgression.AddCurrency(77);
             var discardedPermanentCurrency = profileProgression.Currency;
             Assert.That(ledger.TryDiscardSuccessfulRemainder(out var discarded), Is.True);
@@ -160,11 +160,11 @@ namespace SaltyGame.EditorTests
             return new FieldDataIncomeModifierInstance[0];
         }
 
-        static IReadOnlyDictionary<SpeciesId, int> Populations(int hares, int foxes, int plants)
+        static IReadOnlyDictionary<SpeciesId, int> Populations(int rabbits, int foxes, int plants)
         {
             return new Dictionary<SpeciesId, int>
             {
-                [new SpeciesId("hare")] = hares,
+                [new SpeciesId("rabbit")] = rabbits,
                 [new SpeciesId("fox")] = foxes,
                 [SpeciesIds.Plant] = plants,
             };

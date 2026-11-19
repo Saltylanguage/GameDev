@@ -24,12 +24,12 @@ follow
 
 ## Current Mutation catalog
 
-The production catalog now contains two approved Hare Mutations:
+The production catalog now contains two approved Rabbit Mutations:
 
 - `larger-minimum-litter` — Larger Minimum Litter
 - `larger-maximum-litter` — Larger Maximum Litter
 
-The seven earlier Hare candidates remain in
+The seven earlier Rabbit candidates remain in
 `Assets/Data/TestData/Upgrades/Production/` while their production status is
 reviewed:
 
@@ -45,7 +45,7 @@ The two litter-size Mutations were approved for production on 2026-09-24.
 Their effect values are still subject to future balance review.
 
 The exact contract and acceptance state for every production row is tracked in
-the [Hare Mutation Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
+the [Rabbit Mutation Acceptance Matrix](UPGRADE_CATALOG_ACCEPTANCE_MATRIX.md).
 
 ## First example
 
@@ -56,8 +56,8 @@ The first worked example is:
 It is a provisional starting hypothesis, not accepted balance:
 
 - Stable ID: `larger-minimum-litter`
-- Display name: Hare: Larger Minimum Litter
-- Target species: `hare`
+- Display name: Rabbit: Larger Minimum Litter
+- Target species: `rabbit`
 - Cost: `5` scientific data
 - Modifier: `reproduction.litter-minimum +1`
 
@@ -72,7 +72,7 @@ This raises the minimum litter size by one.
    `Upgrade ID` is the stable identity used by runtime, reports, and research.
 4. Enter a unique, stable `Upgrade ID`, display name, and player-readable
    description.
-5. Enter exactly one target species ID, such as `hare`, `fox`, or `fern`.
+5. Enter exactly one target species ID, such as `rabbit`, `fox`, or `fern`.
 6. Enter a non-negative cost.
 7. Add one or more modifier rows. Select the attribute from the registry-backed
    dropdown and enter a signed additive value. Positive values increase an
@@ -118,7 +118,7 @@ should be applied:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -UpgradeAssetSequence larger-minimum-litter,larger-maximum-litter
 ```
 
@@ -135,7 +135,7 @@ Research-only fixtures use the same adapter with an explicit catalog path:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Run-CellularExperiment.ps1 `
     -ScenarioPath Assets/Data/ProductionData/CellularSimulation/Scenarios/ForestEdge.asset `
-    -PlayerSpeciesId hare `
+    -PlayerSpeciesId rabbit `
     -UpgradeAssetSequence faster-movement,crowding-tolerance `
     -UpgradeAssetCatalogPath Assets/Data/TestData/Upgrades/Research/EX-007
 ```

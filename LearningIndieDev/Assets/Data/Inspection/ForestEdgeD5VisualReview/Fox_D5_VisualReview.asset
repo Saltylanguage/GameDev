@@ -48,7 +48,7 @@ MonoBehaviour:
   - {x: -1, y: -1}
   - {x: 0, y: -1}
   - {x: 1, y: -1}
-  dietTargetId: hare
+  dietTargetId: rabbit
   reproductionPattern:
   - {x: 0, y: 1}
   - {x: 1, y: 0}

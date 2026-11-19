@@ -15,7 +15,7 @@ MonoBehaviour:
   upgradeId: warren-guarded-burrow
   displayName: 'Warren: Guarded Burrow'
   description: Block more incoming hits, but move more slowly.
-  targetSpeciesId: hare
+  targetSpeciesId: rabbit
   cost: 7
   modifiers:
   - attributeId: combat.block

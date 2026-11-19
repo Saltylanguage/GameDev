@@ -33,7 +33,7 @@ namespace SaltyGame
             string offerId,
             FieldDataIncomeOperation operation,
             decimal inputAmount,
-            int harePopulation,
+            int rabbitPopulation,
             decimal modifierValue,
             decimal outputAmount)
         {
@@ -41,7 +41,7 @@ namespace SaltyGame
             OfferId = offerId;
             Operation = operation;
             InputAmount = inputAmount;
-            HarePopulation = harePopulation;
+            RabbitPopulation = rabbitPopulation;
             ModifierValue = modifierValue;
             OutputAmount = outputAmount;
         }
@@ -50,7 +50,7 @@ namespace SaltyGame
         public string OfferId { get; }
         public FieldDataIncomeOperation Operation { get; }
         public decimal InputAmount { get; }
-        public int HarePopulation { get; }
+        public int RabbitPopulation { get; }
         public decimal ModifierValue { get; }
         public decimal OutputAmount { get; }
     }
@@ -62,13 +62,13 @@ namespace SaltyGame
 
         internal FieldDataIncomeReceipt(
             int selectedPopulation,
-            int harePopulation,
+            int rabbitPopulation,
             IEnumerable<FieldDataIncomeBreakdownStep> steps,
             decimal unroundedTotal,
             int award)
         {
             SelectedPopulation = selectedPopulation;
-            HarePopulation = harePopulation;
+            RabbitPopulation = rabbitPopulation;
             this.steps = new ReadOnlyCollection<FieldDataIncomeBreakdownStep>(
                 new List<FieldDataIncomeBreakdownStep>(steps));
             UnroundedTotal = unroundedTotal;
@@ -76,7 +76,7 @@ namespace SaltyGame
         }
 
         public int SelectedPopulation { get; }
-        public int HarePopulation { get; }
+        public int RabbitPopulation { get; }
         public IReadOnlyList<FieldDataIncomeBreakdownStep> Steps => steps;
         public decimal UnroundedTotal { get; }
         public int Award { get; }
@@ -87,7 +87,7 @@ namespace SaltyGame
     {
         public static bool TryCalculate(
             int selectedPopulation,
-            int harePopulation,
+            int rabbitPopulation,
             IReadOnlyList<FieldDataIncomeModifierInstance> orderedModifiers,
             out FieldDataIncomeReceipt receipt,
             out string error)
@@ -95,7 +95,7 @@ namespace SaltyGame
             receipt = null;
             error = null;
 
-            if (selectedPopulation < 0 || harePopulation < 0)
+            if (selectedPopulation < 0 || rabbitPopulation < 0)
             {
                 error = "Population counts cannot be negative.";
                 return false;
@@ -126,14 +126,14 @@ namespace SaltyGame
                     var input = amount;
                     switch (modifier.Operation)
                     {
-                        case FieldDataIncomeOperation.AddPerHare:
+                        case FieldDataIncomeOperation.AddPerRabbit:
                             if (modifier.Value != 1m)
                             {
-                                error = "Only the approved +1 Field Data per Hare operation is supported.";
+                                error = "Only the approved +1 Field Data per Rabbit operation is supported.";
                                 return false;
                             }
 
-                            amount += modifier.Value * harePopulation;
+                            amount += modifier.Value * rabbitPopulation;
                             break;
 
                         case FieldDataIncomeOperation.MultiplyPopulationPayout:
@@ -156,7 +156,7 @@ namespace SaltyGame
                         modifier.OfferId,
                         modifier.Operation,
                         input,
-                        harePopulation,
+                        rabbitPopulation,
                         modifier.Value,
                         amount));
                 }
@@ -170,7 +170,7 @@ namespace SaltyGame
 
                 receipt = new FieldDataIncomeReceipt(
                     selectedPopulation,
-                    harePopulation,
+                    rabbitPopulation,
                     steps,
                     amount,
                     (int)floored);

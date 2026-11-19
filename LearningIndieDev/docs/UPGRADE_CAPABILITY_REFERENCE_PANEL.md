@@ -12,7 +12,7 @@ Owner: **Josh**
 
 Implementation support: **Codex**
 
-Applies to: **the current Hare Mutation catalog and later Genome planning**
+Applies to: **the current Rabbit Mutation catalog and later Genome planning**
 
 This document gives the upgrade work one shared measurement map and one small
 reference panel. It does not approve any Mutation value, Genome capacity, or
@@ -32,20 +32,20 @@ For every upgrade candidate, we must be able to explain this chain:
 authored stat -> creature capability -> world interaction -> measured outcome
 ```
 
-A run is useful only when it helps locate a change in that chain. A final Hare
+A run is useful only when it helps locate a change in that chain. A final Rabbit
 population or combined score by itself is not enough.
 
 ## Shared capability map
 
 | Capability | Current authored inputs | Direct evidence already available | Proxy or missing evidence |
 | --- | --- | --- | --- |
-| Mobility and escape | `movement.speed` | Movement steps normalized by Hare state ticks; predator encounters; preyed count; state transitions | Movement attempts, travel distance, target arrivals, and escape events are not recorded directly |
+| Mobility and escape | `movement.speed` | Movement steps normalized by Rabbit state ticks; predator encounters; preyed count; state transitions | Movement attempts, travel distance, target arrivals, and escape events are not recorded directly |
 | Detection and search | `awareness.vision-range` | Food attempts, successes, and failures; movement and state activity | Newly visible targets and detections beyond the natural range are not recorded directly |
 | Energy endurance | `energy.metabolism`, `energy.starting`, `resource.starting-food-reserve` | Food consumed; food actions; starvation deaths | Energy distribution through time and starting-reserve use are not summarized directly |
 | Defense | `combat.block` | Combat opportunities, attempts, hits, blocks, damage applications, and lethal/non-lethal results | Prevented damage can be derived from blocked results but is not a separate total |
 | Reproduction access and capacity | `reproduction.neighbor-count`, `reproduction.group-size` | Candidates, missing-mate blocks, group-limit blocks, successful attempts, and births | Local mate density must be inferred from the world and block counts |
 | Crowding resilience | `crowding.metabolism-multiplier`, `crowding.tolerance` | Crowded metabolism, starvation deaths, group-limit blocks, births, and population | Local density and energy spent due to crowding are not reported directly |
-| Resource recovery | `resource.seed-drop-chance` | Fern births, Fern population, Hare food activity, and food consumed | Seed-drop attempts and successes are not separate from other Fern births |
+| Resource recovery | `resource.seed-drop-chance` | Fern births, Fern population, Rabbit food activity, and food consumed | Seed-drop attempts and successes are not separate from other Fern births |
 
 The proxy gaps are measurement limits, not permission to infer the missing
 event. If a decision depends on one of them, add the smallest direct metric or
@@ -55,13 +55,13 @@ run a focused mechanic test before judging balance.
 
 | Mutation | Main capability | Main Species evidence | Separate Biome context |
 | --- | --- | --- | --- |
-| `trailblazer-long-stride` | Mobility and escape | Movement steps, predator encounters, preyed count, missing-mate blocks | Hare pressure on Fern and the Hare/Fox relationship |
+| `trailblazer-long-stride` | Mobility and escape | Movement steps, predator encounters, preyed count, missing-mate blocks | Rabbit pressure on Fern and the Rabbit/Fox relationship |
 | `trailblazer-far-sight` | Detection and search; energy endurance | Food actions and starvation are available, but direct long-range detection is missing | Resource pressure and persistence of intended feeding relationships |
-| `warren-guarded-burrow` | Defense; mobility | Blocks, hits, damage, lethal results, movement steps | Fox feeding pressure and Hare persistence |
+| `warren-guarded-burrow` | Defense; mobility | Blocks, hits, damage, lethal results, movement steps | Fox feeding pressure and Rabbit persistence |
 | `warren-room-to-breed` | Reproduction capacity; crowding resilience | Group-limit blocks, crowded metabolism, starvation, and births | Fern depletion, population pressure, and recovery |
-| `gardeners-seed-pouches` | Energy endurance; resource recovery | Early starvation and food activity are proxies; direct reserve use is missing | Early Fern recovery and Hare pressure |
-| `gardeners-careful-sowing` | Resource recovery; mobility | Fern births are a proxy for successful drops; movement steps | Fern recovery, Hare food pressure, and population persistence |
-| `familial-bond-large-litters` | Crowding resilience | Crowded metabolism, starvation deaths, births, and group-limit blocks | Fern depletion and Hare population pressure |
+| `gardeners-seed-pouches` | Energy endurance; resource recovery | Early starvation and food activity are proxies; direct reserve use is missing | Early Fern recovery and Rabbit pressure |
+| `gardeners-careful-sowing` | Resource recovery; mobility | Fern births are a proxy for successful drops; movement steps | Fern recovery, Rabbit food pressure, and population persistence |
+| `familial-bond-large-litters` | Crowding resilience | Crowded metabolism, starvation deaths, births, and group-limit blocks | Fern depletion and Rabbit population pressure |
 
 ## Forest Edge reference panel
 
@@ -72,7 +72,7 @@ planned differences.
 | Field | Locked diagnostic value |
 | --- | --- |
 | Scenario | `Assets/Data/CellularSimulation/Scenarios/ForestEdge.asset` |
-| Player species | `hare` |
+| Player species | `rabbit` |
 | Grid | Scenario default, currently 32 x 32 |
 | Run length | 2,000 ticks |
 | Phase structure | 10 phases of 200 ticks |
@@ -128,9 +128,9 @@ fingerprint, and loadout fingerprint remain auditable.
 
 Keep two views separate:
 
-- **Species view:** Hare mechanic and survival evidence, including movement,
+- **Species view:** Rabbit mechanic and survival evidence, including movement,
   combat, reproduction, food activity, starvation, and preyed count.
-- **Biome view:** Fern, Hare, and Fox persistence, resource pressure, recovery,
+- **Biome view:** Fern, Rabbit, and Fox persistence, resource pressure, recovery,
   and intended food relationships.
 
 Do not turn these into one approval score. Report the observed distributions
@@ -158,7 +158,7 @@ rates are percentage-point changes. Fern births remain a proxy for seed drops.
 
 ### Trailblazer: Long Stride
 
-| Timing | Hare movement rate | Final Hare | Final Fern |
+| Timing | Rabbit movement rate | Final Rabbit | Final Fern |
 | --- | ---: | ---: | ---: |
 | Early | +1.52 pp | -33.4 | +281.0 |
 | Middle | +11.92 pp | -28.8 | +232.8 |
@@ -166,12 +166,12 @@ rates are percentage-point changes. Fern births remain a proxy for seed drops.
 
 The normalized movement measure changes in the authored direction at every
 timing. Raw movement totals fall because the added mate requirement changes
-the Hare population; this is why unnormalized movement is not contribution
+the Rabbit population; this is why unnormalized movement is not contribution
 evidence. The population and Fern changes belong in the separate Biome view.
 
 ### Warren: Guarded Burrow
 
-| Timing | Hare movement rate | Fox blocked-hit rate | Final Hare | Final Fern |
+| Timing | Rabbit movement rate | Fox blocked-hit rate | Final Rabbit | Final Fern |
 | --- | ---: | ---: | ---: | ---: |
 | Early | -33.18 pp | +9.39 pp | +9.6 | +55.0 |
 | Middle | -33.70 pp | +3.18 pp | +14.0 | -17.0 |
@@ -184,7 +184,7 @@ it has little exposure and a small, diverged combat sample.
 
 ### Gardeners: Careful Sowing
 
-| Timing | Hare movement rate | Fern births proxy | Final Hare | Final Fern |
+| Timing | Rabbit movement rate | Fern births proxy | Final Rabbit | Final Fern |
 | --- | ---: | ---: | ---: | ---: |
 | Early | -80.90 pp | +66,074.4 | +230.4 | -91.8 |
 | Middle | -79.89 pp | +38,090.6 | +292.2 | -225.2 |
@@ -192,7 +192,7 @@ it has little exposure and a small, diverged combat sample.
 
 The movement cost is visible and the Fern-birth proxy grows strongly with
 longer exposure. More Fern births do not produce more Ferns at the end: the
-larger Hare population consumes more food and final Fern population falls.
+larger Rabbit population consumes more food and final Fern population falls.
 This is a useful Species/Biome tradeoff, but the size of the cascade is a
 balance warning, not an accepted value. Direct seed-drop attempts and
 successes are required before attributing the birth increase to the Mutation.

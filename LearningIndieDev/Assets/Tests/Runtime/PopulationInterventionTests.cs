@@ -5,11 +5,11 @@ namespace SaltyGame.Tests
 {
     public sealed class PopulationInterventionTests
     {
-        static SpeciesSimulationRunner Boundary(int hares = 3, int plants = 6, int foxes = 2, int max = 0,
+        static SpeciesSimulationRunner Boundary(int rabbits = 3, int plants = 6, int foxes = 2, int max = 0,
             SpeciesId? player = null)
         {
             var cells = new Grid<SpeciesCell>(12, 8);
-            for (var i = 0; i < hares; i++) cells.SetCell(i % 12, i / 12, new SpeciesCell(SpeciesIds.Herbivore, energy: 20));
+            for (var i = 0; i < rabbits; i++) cells.SetCell(i % 12, i / 12, new SpeciesCell(SpeciesIds.Herbivore, energy: 20));
             for (var i = 0; i < plants; i++) cells.SetCell(i % 12, 5 + i / 12, SpeciesCell.Grass(10));
             for (var i = 0; i < foxes; i++) cells.SetCell(i, 7, new SpeciesCell(SpeciesIds.Carnivore, energy: 20));
             var run = new SimulationRunState(cells, player ?? SpeciesIds.Herbivore, 123, 10f);
@@ -47,7 +47,7 @@ namespace SaltyGame.Tests
         [Test]
         public void RefillClampsToPoolAndRejectsAtCapacityWhileNpcGrantsIgnorePool()
         {
-            var runner = Boundary(hares: 48);
+            var runner = Boundary(rabbits: 48);
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Herbivore, 10, "refresh", out var actual), Is.True);
             Assert.That(actual, Is.EqualTo(2));
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Herbivore, 1, "refresh", out actual), Is.False);
@@ -59,7 +59,7 @@ namespace SaltyGame.Tests
         [Test]
         public void RejectedChangesAreAtomicAndOnlyThePlayerSpeciesHasARemovalFloor()
         {
-            var runner = Boundary(hares: 1, foxes: 1);
+            var runner = Boundary(rabbits: 1, foxes: 1);
             var before = runner.Run.Cells;
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Herbivore, -1, "test", out _), Is.False);
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Plant, -7, "test", out _), Is.False);
@@ -67,7 +67,7 @@ namespace SaltyGame.Tests
             Assert.That(runner.Run.Cells, Is.SameAs(before));
             Assert.That(runner.Run.PopulationInterventions, Is.Empty);
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Carnivore, -1, "test", out _), Is.True);
-            runner = Boundary(hares: 1, foxes: 1, player: SpeciesIds.Carnivore);
+            runner = Boundary(rabbits: 1, foxes: 1, player: SpeciesIds.Carnivore);
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Carnivore, -1, "test", out _), Is.False);
             Assert.That(runner.TryChangeBoundaryPopulation(SpeciesIds.Herbivore, -1, "test", out _), Is.True);
         }
@@ -86,7 +86,7 @@ namespace SaltyGame.Tests
         [Test]
         public void RemovalPreservesTheOtherLayerAndDoesNotCreateDeathEvents()
         {
-            var runner = Boundary(hares: 2, plants: 0, foxes: 0);
+            var runner = Boundary(rabbits: 2, plants: 0, foxes: 0);
             var run = runner.Run;
             var creature = run.Cells.GetCell(0, 0);
             run.Cells.SetCell(0, 0, SpeciesCell.Grass(8).WithEntity(creature.SpeciesId, 1, 20, 0, 0, 0f,

@@ -175,10 +175,10 @@ namespace SaltyGame
         public bool targetIsAlpha;
         public string terrainId;
         public float terrainEnergy;
-        public int harePopulation;
+        public int rabbitPopulation;
         public int foxPopulation;
         public int plantPopulation;
-        public int localHareDensity;
+        public int localRabbitDensity;
         public int localFoxDensity;
         public int localPlantResourceDensity;
     }

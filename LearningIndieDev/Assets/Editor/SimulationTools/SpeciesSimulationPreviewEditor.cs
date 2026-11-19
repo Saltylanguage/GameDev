@@ -60,14 +60,14 @@ namespace SaltyGame.EditorTools
             EditorGUILayout.LabelField("Manual Simulation Testing", EditorStyles.boldLabel);
             if (preview.gameObject.scene.path == "Assets/Scenes/ForestEdge_D5_VisualReview.unity")
             {
-                EditorGUILayout.HelpBox("D5 visual review: 54x32, 325/30/15, Hare vision 9, Fox energy 160. Reset prepares a fresh six-phase expedition and clears previous purchases and Mutations.", MessageType.Info);
+                EditorGUILayout.HelpBox("D5 visual review: 54x32, 325/30/15, Rabbit vision 9, Fox energy 160. Reset prepares a fresh six-phase expedition and clears previous purchases and Mutations.", MessageType.Info);
                 visualReviewSeed = EditorGUILayout.IntField("Visual Review Seed", visualReviewSeed);
                 if (GUILayout.Button("Reset D5 Review to Seed"))
                 {
                     TryResetD5VisualReview(preview, visualReviewSeed, out runtimeMessage);
                 }
             }
-            EditorGUILayout.HelpBox("S4 developer fixture: Forest Edge, Hare, 36x20, 400/20/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
+            EditorGUILayout.HelpBox("S4 developer fixture: Forest Edge, Rabbit, 36x20, 400/20/10, 0.1-second steps, six 100-tick phases. Coupled responses off. Does not save a preset or change scenario assets.", MessageType.Info);
             using (new EditorGUI.DisabledScope(!preview.SettingsEditable))
             {
                 var wrapEdges = EditorGUILayout.Toggle(new GUIContent("Wrap Edges", "Connect top/bottom and left/right for all species."), preview.WrapEdges);
@@ -94,7 +94,7 @@ namespace SaltyGame.EditorTools
             if (run != null && run.PopulationHistory.Count > 0)
             {
                 var initial = run.PopulationHistory[0];
-                EditorGUILayout.LabelField("Actual Tick-Zero Plants / Hares / Foxes", $"{initial.GetCount(new SpeciesId("plant"))} / {initial.GetCount(new SpeciesId("hare"))} / {initial.GetCount(new SpeciesId("fox"))}");
+                EditorGUILayout.LabelField("Actual Tick-Zero Plants / Rabbits / Foxes", $"{initial.GetCount(new SpeciesId("plant"))} / {initial.GetCount(new SpeciesId("rabbit"))} / {initial.GetCount(new SpeciesId("fox"))}");
                 EditorGUILayout.LabelField("Rules Fingerprint", run.RulesetFingerprint);
                 if (preview.ActiveSpeciesRules.TryGetValue(preview.PlayerSpecies, out var playerRules))
                 {
@@ -147,7 +147,7 @@ namespace SaltyGame.EditorTools
             preview.ResetToStart();
             if (!preview.TrySetJourneyPrototypeEnabled(false)
                 || !preview.TrySelectScenario(scenarioIndex, out message)
-                || !preview.TrySetPlayerSpecies("hare", out message)
+                || !preview.TrySetPlayerSpecies("rabbit", out message)
                 || !preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                     "54", "32", seed.ToString(CultureInfo.InvariantCulture), "0", "0", "600", "0.1",
                     "0", "0", "0", false, "325", "30", "15", out message)
@@ -178,12 +178,13 @@ namespace SaltyGame.EditorTools
                 return false;
             }
             return preview.TrySelectScenario(scenarioIndex, out message)
-                && preview.TrySetPlayerSpecies("hare", out message)
+                && preview.TrySetPlayerSpecies("rabbit", out message)
                 && preview.TryApplyGlobalSettingsForTicksWithStartingPopulations(
                     "36", "20", seed.ToString(CultureInfo.InvariantCulture), "720", "0", "600", "0.1",
                     "0", "0", "0", false, "400", "20", "10", out message)
                 && preview.TryApplyExperimentalFeatures(true, false, "0", out message)
-                && preview.TryApplyContinuousPhases(true, "100", out message);
+                && preview.TryApplyContinuousPhases(true, "100", out message)
+                && preview.TryApplyWrapEdges(false, out message);
         }
     }
 }

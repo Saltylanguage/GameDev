@@ -68,7 +68,7 @@ for (const experiment of data.experiments) {
   const lines = [
     `Experiment: ${experiment.name}. Owner: ${experiment.owner}.`,
     `Question: ${experiment.question}`,
-    `Starting Hares / Foxes / Plants: ${experiment.populations}. Map: ${experiment.map}.`,
+    `Starting Rabbits / Foxes / Plants: ${experiment.populations}. Map: ${experiment.map}.`,
     `Seeds: ${experiment.seeds}. ${experiment.timing}.`,
     `Automatic strategies: ${experiment.strategies}. Purchase policies: ${experiment.policies}.`,
     `Stat overrides: ${experiment.overrides}.`,
@@ -84,7 +84,7 @@ for (const experiment of data.experiments) {
   contextRow++;
 }
 for (const note of [
-  `Export goal: at least ${data.goals[0]} Hares, ${data.goals[1]} Foxes and ${data.goals[2]} Plants at each condition's final horizon. These review criteria do not change the simulation.`,
+  `Export goal: at least ${data.goals[0]} Rabbits, ${data.goals[1]} Foxes and ${data.goals[2]} Plants at each condition's final horizon. These review criteria do not change the simulation.`,
   'Counts and rates cover every matching run. Unknown goal outcomes leave the rate blank. Endpoint averages use actual final ticks, including early extinctions.',
   '95% Wilson intervals assume independent seed trials within each condition. A two-seed screen has wide uncertainty. Shared seeds across conditions are paired observations.',
   'Sorted by the goal success lower bound, then run count. Promising results are discovery candidates; confirmation needs new seeds. No-purchase success covers only the recorded horizon.',
@@ -123,7 +123,7 @@ if (!data.choiceImpact.rows.length) {
 }
 write(review, 0, [['Simulation run review']]);
 write(review, 1, [[`${data.exportedRows} rows shown / ${data.totalRuns.toLocaleString('en-US')} matching runs. ${data.selection}.`]]);
-write(review, 2, [[data.selectionMode === 'promising' ? 'Shortlist order: goal met, no-purchase goal met, endpoint tick, final Hares / Foxes / Plants, then lowest seed. Use Batch summary for rates.' : `Population order: Hares / Foxes / Plants. ${data.detailedObservations ? 'Detailed' : 'Concise'} observations. Batch summary covers every matching run.`]]);
+write(review, 2, [[data.selectionMode === 'promising' ? 'Shortlist order: goal met, no-purchase goal met, endpoint tick, final Rabbits / Foxes / Plants, then lowest seed. Use Batch summary for rates.' : `Population order: Rabbits / Foxes / Plants. ${data.detailedObservations ? 'Detailed' : 'Concise'} observations. Batch summary covers every matching run.`]]);
 write(review, 4, [data.headers, ...data.rows]);
 const last = data.rows.length + 5;
 review.getRange(`A1:I${last}`).format.font.name = 'Arial';

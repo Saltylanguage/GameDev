@@ -17,8 +17,8 @@ namespace SaltyGame.EditorTests
             var providerObject = new UnityEngine.GameObject("Genome Stats Authoring Test");
             try
             {
-                ConfigureUpgrade(upgrade, "hare.test", "Test Node");
-                ConfigureMap(map, "hare", upgrade);
+                ConfigureUpgrade(upgrade, "rabbit.test", "Test Node");
+                ConfigureMap(map, "rabbit", upgrade);
                 var serialized = new SerializedObject(upgrade);
                 var modifiers = serialized.FindProperty("modifiers");
                 modifiers.arraySize = 1;
@@ -31,7 +31,7 @@ namespace SaltyGame.EditorTests
                 Assert.That(provider.TryCapture(out var reason), Is.True, reason);
                 var selection = new GenomeSimulationSnapshot(new[]
                 {
-                    new SpeciesGenomeSnapshot(new SpeciesId("hare"), new[] { "hare.test" }),
+                    new SpeciesGenomeSnapshot(new SpeciesId("rabbit"), new[] { "rabbit.test" }),
                 });
                 var frozen = selection.Resolve(provider.Snapshot);
                 modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("signedValue").floatValue = 3;
@@ -39,8 +39,8 @@ namespace SaltyGame.EditorTests
                 Assert.That(provider.TryCapture(out reason), Is.True, reason);
                 var next = selection.Resolve(provider.Snapshot);
                 Assert.That(next.Fingerprint, Is.Not.EqualTo(frozen.Fingerprint));
-                Assert.That(frozen.GetSpeciesGenome(new SpeciesId("hare")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(2));
-                Assert.That(next.GetSpeciesGenome(new SpeciesId("hare")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(3));
+                Assert.That(frozen.GetSpeciesGenome(new SpeciesId("rabbit")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(2));
+                Assert.That(next.GetSpeciesGenome(new SpeciesId("rabbit")).ResolvedNodes[0].Modifiers[0].SignedValue, Is.EqualTo(3));
 
                 modifiers.GetArrayElementAtIndex(0).FindPropertyRelative("attributeId").stringValue = "unknown.stat";
                 serialized.ApplyModifiedPropertiesWithoutUndo();
@@ -90,7 +90,7 @@ namespace SaltyGame.EditorTests
         public void ProductionFertileDroppingsOfferIsAuthoredAsGardenerRoot()
         {
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
-                "Assets/Data/Genome/HareGenome.asset");
+                "Assets/Data/Genome/RabbitGenome.asset");
             Assert.That(map, Is.Not.Null);
             Assert.That(map.TryCreateSnapshot(out var snapshot, out var reason), Is.True, reason);
             Assert.That(snapshot.Nodes, Has.Count.EqualTo(11));
@@ -120,13 +120,13 @@ namespace SaltyGame.EditorTests
             Assert.That(upgraded.LitterMinimum, Is.EqualTo(natural.LitterMinimum + 1));
             Assert.That(upgraded.LitterMaximum, Is.EqualTo(natural.LitterMaximum));
 
-            var longStride = snapshot.GetNode("poc.hare.long-stride");
-            var longVision = snapshot.GetNode("poc.hare.long-vision");
-            var toughHide = snapshot.GetNode("poc.hare.tough-hide");
-            var largerLitters = snapshot.GetNode("poc.hare.larger-litters");
-            var efficientDigestion = snapshot.GetNode("poc.hare.efficient-digestion");
-            var foundingHares = snapshot.GetNode("poc.hare.starting-population");
-            var populationReserves = snapshot.GetNode("poc.hare.population-pool");
+            var longStride = snapshot.GetNode("poc.rabbit.long-stride");
+            var longVision = snapshot.GetNode("poc.rabbit.long-vision");
+            var toughHide = snapshot.GetNode("poc.rabbit.tough-hide");
+            var largerLitters = snapshot.GetNode("poc.rabbit.larger-litters");
+            var efficientDigestion = snapshot.GetNode("poc.rabbit.efficient-digestion");
+            var foundingRabbits = snapshot.GetNode("poc.rabbit.starting-population");
+            var populationReserves = snapshot.GetNode("poc.rabbit.population-pool");
             var highCrowding = snapshot.GetNode("high-crowding");
             Assert.That(longStride.BranchName, Is.EqualTo("Trailblazer"));
             Assert.That(longVision.PrerequisiteNodeIds, Does.Contain(longStride.Id));
@@ -139,7 +139,7 @@ namespace SaltyGame.EditorTests
             Assert.That(highCrowding.MaximumRanks, Is.EqualTo(1));
             Assert.That(highCrowding.Apply(natural).CrowdingEnergyReduction,
                 Is.EqualTo(natural.CrowdingEnergyReduction + 0.1f));
-            Assert.That(foundingHares, Is.Not.Null);
+            Assert.That(foundingRabbits, Is.Not.Null);
             Assert.That(populationReserves, Is.Not.Null);
             Assert.That(longStride.Apply(natural).MovementSpeed, Is.EqualTo(natural.MovementSpeed + 0.25f));
             Assert.That(longVision.Apply(natural).Awareness.VisionRange,
@@ -158,8 +158,8 @@ namespace SaltyGame.EditorTests
             var providerObject = new UnityEngine.GameObject("Genome Catalog Provider Test");
             try
             {
-                ConfigureUpgrade(upgrade, "hare.test", "Test Node");
-                ConfigureMap(map, "hare", upgrade);
+                ConfigureUpgrade(upgrade, "rabbit.test", "Test Node");
+                ConfigureMap(map, "rabbit", upgrade);
                 var provider = providerObject.AddComponent<GenomeCatalogProvider>();
                 var serializedProvider = new SerializedObject(provider);
                 serializedProvider.FindProperty("speciesMaps").arraySize = 1;
@@ -168,7 +168,7 @@ namespace SaltyGame.EditorTests
 
                 Assert.That(provider.TryCapture(out var validationMessage), Is.True, validationMessage);
                 Assert.That(provider.Snapshot.SpeciesMaps, Has.Count.EqualTo(1));
-                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("hare")).Nodes, Has.Count.EqualTo(1));
+                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("rabbit")).Nodes, Has.Count.EqualTo(1));
             }
             finally
             {
@@ -188,9 +188,9 @@ namespace SaltyGame.EditorTests
             providerObject.SetActive(false);
             try
             {
-                ConfigureUpgrade(upgrade, "hare.dynamic", "Dynamic Node");
-                ConfigureUpgrade(secondUpgrade, "hare.second", "Second Node");
-                ConfigureMap(map, "hare", upgrade);
+                ConfigureUpgrade(upgrade, "rabbit.dynamic", "Dynamic Node");
+                ConfigureUpgrade(secondUpgrade, "rabbit.second", "Second Node");
+                ConfigureMap(map, "rabbit", upgrade);
 
                 var provider = providerObject.AddComponent<GenomeCatalogProvider>();
                 typeof(GenomeCatalogProvider)
@@ -205,7 +205,7 @@ namespace SaltyGame.EditorTests
                 var changeCount = 0;
                 provider.SnapshotChanged += _ => changeCount++;
                 Assert.That(changeCount, Is.Zero);
-                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("hare")).Nodes[0].DisplayName,
+                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("rabbit")).Nodes[0].DisplayName,
                     Is.EqualTo("Dynamic Node"));
 
                 var upgradeSerialized = new SerializedObject(upgrade);
@@ -217,7 +217,7 @@ namespace SaltyGame.EditorTests
 
                 Assert.That(changeCount, Is.EqualTo(1));
                 Assert.That(provider.Snapshot.Fingerprint, Is.Not.EqualTo(originalFingerprint));
-                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("hare")).Nodes[0].DisplayName,
+                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("rabbit")).Nodes[0].DisplayName,
                     Is.EqualTo("Updated Node"));
 
                 var mapSerialized = new SerializedObject(map);
@@ -229,7 +229,7 @@ namespace SaltyGame.EditorTests
                     .Invoke(map, null);
 
                 Assert.That(changeCount, Is.EqualTo(2));
-                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("hare")).Nodes, Has.Count.EqualTo(2));
+                Assert.That(provider.Snapshot.GetSpeciesMap(new SpeciesId("rabbit")).Nodes, Has.Count.EqualTo(2));
                 Assert.That(provider.TryCapture(out var unchangedValidationMessage), Is.True, unchangedValidationMessage);
                 Assert.That(changeCount, Is.EqualTo(2));
             }
@@ -248,7 +248,7 @@ namespace SaltyGame.EditorTests
             serializedUpgrade.FindProperty("upgradeId").stringValue = id;
             serializedUpgrade.FindProperty("displayName").stringValue = displayName;
             serializedUpgrade.FindProperty("description").stringValue = "Test genome node.";
-            serializedUpgrade.FindProperty("targetSpeciesId").stringValue = "hare";
+            serializedUpgrade.FindProperty("targetSpeciesId").stringValue = "rabbit";
             serializedUpgrade.FindProperty("prerequisiteNodeIds").arraySize = 0;
             serializedUpgrade.ApplyModifiedPropertiesWithoutUndo();
         }

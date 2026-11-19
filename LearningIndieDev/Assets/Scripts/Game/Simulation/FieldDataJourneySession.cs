@@ -46,7 +46,7 @@ namespace SaltyGame
         bool disposed;
         bool shopPurchasesStarted;
         int successfulPopulationInterventionCount;
-        readonly Dictionary<int, int> purchasedHaresBySimulation = new Dictionary<int, int>();
+        readonly Dictionary<int, int> purchasedRabbitsBySimulation = new Dictionary<int, int>();
 
         public event Action<FieldDataJourneySession> StateChanged;
         public event Action<FieldDataJourneySession> Updated;
@@ -130,25 +130,25 @@ namespace SaltyGame
             ? 0
             : (GlobalRound - 1) / FieldDataJourneyDefinition.RoundsPerSimulation;
 
-        public int PurchasedHaresThisSimulation => purchasedHaresBySimulation.TryGetValue(SimulationIndex, out var count) ? count : 0;
-        public int HarePurchaseAllowance
+        public int PurchasedRabbitsThisSimulation => purchasedRabbitsBySimulation.TryGetValue(SimulationIndex, out var count) ? count : 0;
+        public int RabbitPurchaseAllowance
         {
             get
             {
-                var genome = retainedRun.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("hare"));
-                if (genome.HasActiveNode("hare.warren-network"))
-                    return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(genome.PopulationReservesRank);
+                var genome = retainedRun.ActiveGenomeSnapshot.GetSpeciesGenome(new SpeciesId("rabbit"));
+                if (genome.HasActiveNode("rabbit.warren-network"))
+                    return FieldDataPermanentProgressionDefinition.RabbitPurchaseAllowance(genome.PopulationReservesRank);
                 foreach (var node in genome.ResolvedNodes)
                 {
-                    if (node.Id != "hare.warren-network" && node.Id != "poc.hare.population-pool") continue;
+                    if (node.Id != "rabbit.warren-network" && node.Id != "poc.rabbit.population-pool") continue;
                     var points = genome.GetAllocationCapacityPoints(node.Id);
-                    return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(
+                    return FieldDataPermanentProgressionDefinition.RabbitPurchaseAllowance(
                         node.GetRank(points > 0 ? points : node.CapacityPoints));
                 }
-                return FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(0);
+                return FieldDataPermanentProgressionDefinition.RabbitPurchaseAllowance(0);
             }
         }
-        public int HarePurchasesRemaining => Math.Max(0, HarePurchaseAllowance - PurchasedHaresThisSimulation);
+        public int RabbitPurchasesRemaining => Math.Max(0, RabbitPurchaseAllowance - PurchasedRabbitsThisSimulation);
 
         public bool Begin()
         {
@@ -663,9 +663,9 @@ namespace SaltyGame
 
             var quantity = Math.Abs(control.Amount);
             var species = new SpeciesId(control.SpeciesId);
-            if (kind == FieldDataPopulationInterventionKind.AddHare && quantity > HarePurchasesRemaining)
+            if (kind == FieldDataPopulationInterventionKind.AddRabbit && quantity > RabbitPurchasesRemaining)
             {
-                error = "The Hare purchase allowance for this simulation node has been used.";
+                error = "The Rabbit purchase allowance for this simulation node has been used.";
                 return false;
             }
             var currentSnapshot = retainedRun.PopulationHistory[retainedRun.PopulationHistory.Count - 1];
@@ -714,8 +714,8 @@ namespace SaltyGame
                 balanceAfter,
                 prepared.Positions);
             populationInterventions.Add(requestId, receipt);
-            if (kind == FieldDataPopulationInterventionKind.AddHare)
-                purchasedHaresBySimulation[SimulationIndex] = checked(PurchasedHaresThisSimulation + quantity);
+            if (kind == FieldDataPopulationInterventionKind.AddRabbit)
+                purchasedRabbitsBySimulation[SimulationIndex] = checked(PurchasedRabbitsThisSimulation + quantity);
             successfulPopulationInterventionCount++;
             Updated?.Invoke(this);
             return true;
@@ -757,7 +757,7 @@ namespace SaltyGame
 
         bool CanAcquireIncome(FieldDataIncomeOperation operation, decimal value)
         {
-            if (operation == FieldDataIncomeOperation.AddPerHare)
+            if (operation == FieldDataIncomeOperation.AddPerRabbit)
                 return !orderedIncomeModifiers.Exists(modifier => modifier.Operation == operation);
             var current = orderedIncomeModifiers.Find(modifier => modifier.Operation == operation).Value;
             return value == (current == 0m ? 1.5m : current == 1.5m ? 1.75m : current == 1.75m ? 2m : 0m);
@@ -1215,8 +1215,8 @@ namespace SaltyGame
         {
             switch (kind)
             {
-                case FieldDataPopulationInterventionKind.AddHare: return "add-hares";
-                case FieldDataPopulationInterventionKind.RemoveHare: return "remove-hares";
+                case FieldDataPopulationInterventionKind.AddRabbit: return "add-rabbits";
+                case FieldDataPopulationInterventionKind.RemoveRabbit: return "remove-rabbits";
                 case FieldDataPopulationInterventionKind.AddFox: return "add-foxes";
                 case FieldDataPopulationInterventionKind.RemoveFox: return "remove-foxes";
                 case FieldDataPopulationInterventionKind.AddPlants: return "add-plants";

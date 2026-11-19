@@ -10,9 +10,9 @@ from unittest.mock import patch
 import worksheet as w
 
 
-def snapshot(tick, hares, foxes=15, plants=100):
+def snapshot(tick, rabbits, foxes=15, plants=100):
     return dict(tick=tick, species=[dict(speciesId=s, population=p)
-                for s, p in zip(w.SPECIES, (hares, foxes, plants)) if p is not None])
+                for s, p in zip(w.SPECIES, (rabbits, foxes, plants)) if p is not None])
 
 
 def fixture(seed=1, tick=600, final=12):
@@ -25,7 +25,7 @@ def fixture(seed=1, tick=600, final=12):
         purchaseWindows=[dict(decisionTick=400, populationBefore=23, populationAfter=28,
                               requested=5, added=5, spent=50, stopReason='policy-cap', policy='restoration')],
         mutationChoices=[dict(decisionTick=400, chosenUpgradeId='efficient-digestion')],
-        herbivoreStatLines=[dict(speciesId='hare', BIR=10, PREY=20, STRV=13, CRWD=0)])
+        herbivoreStatLines=[dict(speciesId='rabbit', BIR=10, PREY=20, STRV=13, CRWD=0)])
 
 
 class WorksheetChecks(unittest.TestCase):
@@ -39,14 +39,14 @@ class WorksheetChecks(unittest.TestCase):
         self.assertIn('28 -> 12', row[6])
         self.assertIn('-16, excluding the immediate purchase', row[6])
         self.assertEqual(row[7], '')
-        self.assertIn('Tick 400: Efficient digestion; +5 Hares; 50 Field Data', row[4])
+        self.assertIn('Tick 400: Efficient digestion; +5 Rabbits; 50 Field Data', row[4])
         self.assertIn('Not recorded', row[2])
 
     def test_extinction_is_zero_not_missing_or_completion(self):
         row = w.review_row(fixture(tick=491, final=0), self.context, [400, 500])
         self.assertEqual(row[2], 'Not reached')
         self.assertEqual(row[3], 'Tick 491\n0 / 15 / 100')
-        self.assertIn('Hares became extinct by tick 491', row[6])
+        self.assertIn('Rabbits became extinct by tick 491', row[6])
         self.assertIn('Tick 500: not reached', row[4])
 
     def test_missing_population_and_horizon_are_explicit(self):
@@ -76,7 +76,7 @@ class WorksheetChecks(unittest.TestCase):
     def test_peak_includes_post_purchase_observations(self):
         run = fixture()
         run['populationHistory'][0] = snapshot(0, 10)
-        self.assertIn('Highest recorded Hare count: 28 at tick 400',
+        self.assertIn('Highest recorded Rabbit count: 28 at tick 400',
                       w.review_row(run, self.context, [400, 500])[6])
 
     def test_native_evidence_links_preserve_content_and_refuse_duplicate_finalization(self):
@@ -153,10 +153,10 @@ class WorksheetChecks(unittest.TestCase):
 
     def test_actual_settings_and_frozen_experiment_context(self):
         context = dict(self.context, setup=w.settings({'-gridWidth':'54', '-gridHeight':'32', '-wrapEdges':'true',
-            '-startingPopulations':'fox=15,hare=30,plant=325', '-speciesStats':'fox:energy.starting=160,hare:awareness.vision-range=9'}))
+            '-startingPopulations':'fox=15,rabbit=30,plant=325', '-speciesStats':'fox:energy.starting=160,rabbit:awareness.vision-range=9'}))
         self.assertEqual(context['setup']['populations'], '30 / 15 / 325')
         self.assertEqual(context['setup']['map'], '54 × 32 (wrapped)')
-        self.assertIn('Hare vision 9',context['setup']['overrides'])
+        self.assertIn('Rabbit vision 9',context['setup']['overrides'])
         with tempfile.TemporaryDirectory() as directory:
             folder = Path(directory); (folder/'sweep').mkdir()
             notes = folder/'experiment.json'
@@ -181,31 +181,31 @@ class WorksheetChecks(unittest.TestCase):
 
     def test_run_data_numeric_populations_purchases_and_phase_metrics(self):
         run = fixture()
-        run['phaseResults'][0]['herbivoreStatLines'] = [dict(speciesId='hare', APS=.25, APSStatus='Valid')]
+        run['phaseResults'][0]['herbivoreStatLines'] = [dict(speciesId='rabbit', APS=.25, APSStatus='Valid')]
         run['predatorStatLines'] = [dict(speciesId='fox', KIL=20, AHS=-.5, AHSStatus='Valid')]
         data = w.run_data(run, self.context, [400, 500])
-        self.assertEqual(data['Tick 400 before purchases Hare population'],23)
-        self.assertIsNone(data['Tick 500 before purchases Hare population'])
+        self.assertEqual(data['Tick 400 before purchases Rabbit population'],23)
+        self.assertIsNone(data['Tick 500 before purchases Rabbit population'])
         self.assertEqual(data['Tick 500 population status'],'Not recorded')
-        self.assertEqual(data['Run Hare herbivore BIR'],10)
+        self.assertEqual(data['Run Rabbit herbivore BIR'],10)
         self.assertEqual(data['Run Fox predator AHS'],-.5)
-        self.assertEqual(data['Round 4 Hare herbivore APS'],.25)
+        self.assertEqual(data['Round 4 Rabbit herbivore APS'],.25)
         self.assertEqual(data['Decision 4 purchase added'],5)
-        self.assertEqual(data['Decision 4 Hare change after immediate purchase'],-16)
+        self.assertEqual(data['Decision 4 Rabbit change after immediate purchase'],-16)
         self.assertEqual(data['Decision 4 mutation chosenUpgradeId'],'efficient-digestion')
 
     def test_run_data_invalid_rates_are_blank_with_explicit_source_status(self):
         run = fixture(final=0)
         run['herbivoreStatLines'][0].update(APS=0, APSStatus='INVALID', cAVI=0, cAVIStatus='N/A', bAVG=0, bAVGStatus='Valid')
         data = w.run_data(run, self.context, [400, 500])
-        self.assertEqual(data['Hares alive at horizon (0/1)'],0)
-        self.assertEqual(data['Final Hare population'],0)
-        self.assertIsNone(data['Run Hare herbivore APS'])
-        self.assertEqual(data['Run Hare herbivore APS status'],'INVALID')
-        self.assertIsNone(data['Run Hare herbivore cAVI'])
-        self.assertEqual(data['Run Hare herbivore bAVG'],0)
+        self.assertEqual(data['Rabbits alive at horizon (0/1)'],0)
+        self.assertEqual(data['Final Rabbit population'],0)
+        self.assertIsNone(data['Run Rabbit herbivore APS'])
+        self.assertEqual(data['Run Rabbit herbivore APS status'],'INVALID')
+        self.assertIsNone(data['Run Rabbit herbivore cAVI'])
+        self.assertEqual(data['Run Rabbit herbivore bAVG'],0)
         early=w.run_data(fixture(tick=491,final=0),self.context,[400,500])
-        self.assertIsNone(early['Tick 500 before purchases Hare population'])
+        self.assertIsNone(early['Tick 500 before purchases Rabbit population'])
         self.assertEqual(early['Tick 500 population status'],'Not reached')
 
     def test_run_data_selection_matches_review_and_keeps_scalars(self):
@@ -221,28 +221,28 @@ class WorksheetChecks(unittest.TestCase):
 
     def test_run_data_separates_executed_map_and_stat_overrides(self):
         context = dict(self.context, arguments={'-gridWidth':'54', '-gridHeight':'32', '-wrapEdges':'true',
-            '-speciesStats':'fox:energy.starting=160,hare:movement.speed=2.2,hare:reproduction.gestation-ticks=0,fox:reproduction.gestation-ticks=48'})
+            '-speciesStats':'fox:energy.starting=160,rabbit:movement.speed=2.2,rabbit:reproduction.gestation-ticks=0,fox:reproduction.gestation-ticks=48'})
         data = w.run_data(fixture(), context, [400,500])
         self.assertEqual(data['Map width'],54)
         self.assertEqual(data['Map height'],32)
         self.assertEqual(data['Wrap map edges (0/1)'],1)
         self.assertEqual(data['Stat override Fox energy.starting'],160)
-        self.assertEqual(data['Stat override Hare movement.speed'],2.2)
-        self.assertEqual(data['Stat override Hare reproduction.gestation-ticks'],0)
+        self.assertEqual(data['Stat override Rabbit movement.speed'],2.2)
+        self.assertEqual(data['Stat override Rabbit reproduction.gestation-ticks'],0)
         self.assertEqual(data['Stat override Fox reproduction.gestation-ticks'],48)
-        self.assertIn('Hare gestation ticks 0', w.settings(context['arguments'])['overrides'])
+        self.assertIn('Rabbit gestation ticks 0', w.settings(context['arguments'])['overrides'])
         self.assertIn('Fox gestation ticks 48', w.settings(context['arguments'])['overrides'])
-        self.assertNotIn('Stat override Hare energy.starting',data)
+        self.assertNotIn('Stat override Rabbit energy.starting',data)
 
     def test_run_data_fallback_and_known_empty_loadout_are_distinct(self):
         run=fixture()
         run.pop('herbivoreStatLines')
-        run['herbivoreStatLine']=dict(speciesId='hare',BIR=2)
-        run['predatorStatLine']=dict(speciesId='hare',KIL=999)
+        run['herbivoreStatLine']=dict(speciesId='rabbit',BIR=2)
+        run['predatorStatLine']=dict(speciesId='rabbit',KIL=999)
         run['upgradeLoadout']=[dict(upgradeId='seed-dispersal')]
         first=w.run_data(run,self.context,[400,500])
-        self.assertEqual(first['Run Hare herbivore BIR'],2)
-        self.assertNotIn('Run Hare predator KIL',first)
+        self.assertEqual(first['Run Rabbit herbivore BIR'],2)
+        self.assertNotIn('Run Rabbit predator KIL',first)
         run['upgradeLoadout']=[]
         empty=w.run_data(run,self.context,[400,500])
         del run['upgradeLoadout']

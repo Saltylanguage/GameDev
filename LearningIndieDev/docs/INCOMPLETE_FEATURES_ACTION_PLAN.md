@@ -21,7 +21,7 @@ This plan converts the stable-but-incomplete feature inventory into an ordered
 production sequence. The goal is to finish one coherent vertical slice rather
 than continue expanding the number of partially usable systems.
 
-The current product target is Forest Edge: Hare player and Fox opposition;
+The current product target is Forest Edge: Rabbit player and Fox opposition;
 playable plants, including Fern, are on hold. Work is complete only when the player can understand a choice,
 observe its consequence, finish a run, receive a reward, and begin a meaningful
 next run.
@@ -94,7 +94,7 @@ with no visible seam or orientation error.
 - Add readable overlays for selected species, active danger, recent death,
   feeding, reproduction, and upgrade influence without covering the board.
 
-**Exit:** a player can identify terrain, Fern, Hare, Fox, occupied cells, and
+**Exit:** a player can identify terrain, Fern, Rabbit, Fox, occupied cells, and
 the important current pressure without developer explanation.
 
 ### V0.4 — Validate the view in Unity
@@ -127,7 +127,7 @@ Edge carrying limits and player-facing balance remain open by design.
 - Validate the Fox eating/action telemetry fix: reports now separate resolver
   attempts, successes, and failures from pre-resolution behavior-state ticks.
 - Run fixed-seed base comparisons before changing balance values.
-- Establish a meaningful regional Fern carrying limit and compare Hare outcomes
+- Establish a meaningful regional Fern carrying limit and compare Rabbit outcomes
   against the vertical-slice target.
 
 **Exit:** the known seed reproduces, telemetry reconciles, and a fixed multi-seed
@@ -142,7 +142,7 @@ OpenRange, Wetland, and BaselineParity remain explicit Dev Lab/research fixtures
 - Treat OpenRange, Wetland, and BaselineParity as Dev Lab/research fixtures.
 - Validate that scenario assets produce immutable run-start snapshots and stable
   fingerprints.
-- Do not tune the full species library before the Hare slice is understandable.
+- Do not tune the full species library before the Rabbit slice is understandable.
 
 **Exit:** one scenario is product-owned; the others are explicitly experimental
 and cannot silently expand the slice.
@@ -178,9 +178,9 @@ remaining work below is player-facing content and acceptance.
 - Make the results screen explain population changes, deaths by cause, feeding,
   movement, combat, and Mutation contributions.
 
-**Exit:** three Hare Mutation builds produce visibly different, reproducible
+**Exit:** three Rabbit Mutation builds produce visibly different, reproducible
 behavior in the same Forest Edge scenario, with their local effects, likely
-combinations, and wider Hare / Fox / Fern consequences reviewed.
+combinations, and wider Rabbit / Fox / Fern consequences reviewed.
 
 ## Phase 3 — Build the player-facing shell
 
@@ -192,7 +192,7 @@ and Windows player smoke are complete. GalapagOS home-base consolidation and
 the real wallet/progression data remain part of the integrated player slice.
 
 - Preserve the closed Sprint 0 readiness decisions and recorded Sprint 1 ownership.
-- Preserve Main Menu → Lab Overview → Hare Genome preview in
+- Preserve Main Menu → Lab Overview → Rabbit Genome preview in
   `MainMenu.unity` using representative data only.
 - Preserve visible focus, deterministic Back behavior, target-resolution checks,
   and the verified Windows development-build smoke path.
@@ -207,7 +207,7 @@ handoff is connected.
 request, and the results surface can return to Lab. Full production navigation
 acceptance and persistence-backed result settlement remain open.
 
-- Preserve Expedition Setup for Forest Edge + Hare.
+- Preserve Expedition Setup for Forest Edge + Rabbit.
 - Preserve stable scenario/species IDs and selected options in the immutable
   launch request.
 - Replace representative result data only when settlement and persistence have
@@ -220,18 +220,18 @@ acceptance and persistence-backed result settlement remain open.
 - Define versioned profile and settings data with migration/corrupt-save tests.
 - Implement the scientific-data wallet only after run telemetry is trustworthy.
 - Settle earned, spent, banked, and lost data deterministically.
-- Add one permanent Hare Genome-node unlock, one configurable active state, and
+- Add one permanent Rabbit Genome-node unlock, one configurable active state, and
   one predetermined first-victory unlock.
 - Resolve every participating species' frozen active Genome at simulation
   launch, including species that are not player-controlled, without mutating
   authored base data. Mutations remain exclusive to Species Simulations.
-- Add the smallest useful Hare mastery objective.
+- Add the smallest useful Rabbit mastery objective.
 - Keep active-run save/resume, multiple profiles, cloud saves, and broad Genome
   trees out of the first slice.
 
 **Exit:** a fresh profile can complete a run, receive one defined unlock,
-restart, turn the Genome node on or off, and see it affect Hare on the next run
-only when active—even when Hare is not the selected species.
+restart, turn the Genome node on or off, and see it affect Rabbit on the next run
+only when active—even when Rabbit is not the selected species.
 
 ## Phase 5 — Research and developer tooling
 

@@ -9,15 +9,15 @@ namespace SaltyGame.EditorTests
         {
             var modifiers = new[]
             {
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
                 Modifier("payout-double-01", "population-payout-double", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m),
             };
 
             Assert.That(FieldDataIncome.TryCalculate(20, 20, modifiers, out var receipt, out var error), Is.True, error);
             Assert.That(receipt.SelectedPopulation, Is.EqualTo(20));
-            Assert.That(receipt.HarePopulation, Is.EqualTo(20));
+            Assert.That(receipt.RabbitPopulation, Is.EqualTo(20));
             Assert.That(receipt.Steps.Count, Is.EqualTo(2));
-            Assert.That(receipt.Steps[0].InstanceId, Is.EqualTo("hare-bonus-01"));
+            Assert.That(receipt.Steps[0].InstanceId, Is.EqualTo("rabbit-bonus-01"));
             Assert.That(receipt.Steps[0].InputAmount, Is.EqualTo(20m));
             Assert.That(receipt.Steps[0].OutputAmount, Is.EqualTo(40m));
             Assert.That(receipt.Steps[1].InstanceId, Is.EqualTo("payout-double-01"));
@@ -33,7 +33,7 @@ namespace SaltyGame.EditorTests
             var modifiers = new[]
             {
                 Modifier("payout-double-01", "population-payout-double", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m),
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
             };
 
             Assert.That(FieldDataIncome.TryCalculate(20, 20, modifiers, out var receipt, out var error), Is.True, error);
@@ -63,7 +63,7 @@ namespace SaltyGame.EditorTests
         {
             var modifiers = new[]
             {
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
                 Modifier("payout-half-01", "population-payout-half", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m),
             };
 
@@ -76,7 +76,7 @@ namespace SaltyGame.EditorTests
         public void RejectsInvalidPopulationOperationsAndDuplicateInstances()
         {
             AssertInvalid(-1, 0, new FieldDataIncomeModifierInstance[0], "Population");
-            AssertInvalid(1, 1, new[] { Modifier("bad", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 2m) }, "+1");
+            AssertInvalid(1, 1, new[] { Modifier("bad", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 2m) }, "+1");
             AssertInvalid(1, 1, new[] { Modifier("bad", "population-payout-half", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.25m) }, "×1.5 and ×2");
             AssertInvalid(1, 1, new[] { Modifier("same", "population-payout-half", FieldDataIncomeOperation.MultiplyPopulationPayout, 1.5m), Modifier("same", "population-payout-double", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m) }, "unique");
             AssertInvalid(1, 1, new[] { Modifier("unknown", "unknown", (FieldDataIncomeOperation)999, 1m) }, "unsupported operation");
@@ -87,7 +87,7 @@ namespace SaltyGame.EditorTests
         {
             var modifiers = new[]
             {
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
             };
 
             Assert.That(FieldDataIncome.TryCalculate(int.MaxValue, int.MaxValue, modifiers, out var receipt, out var error), Is.False);
@@ -118,19 +118,19 @@ namespace SaltyGame.EditorTests
         {
             var firstOrder = new[]
             {
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
                 Modifier("payout-double-01", "population-payout-double", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m),
             };
             var secondOrder = new[]
             {
                 Modifier("payout-double-01", "population-payout-double", FieldDataIncomeOperation.MultiplyPopulationPayout, 2m),
-                Modifier("hare-bonus-01", "field-data-per-hare", FieldDataIncomeOperation.AddPerHare, 1m),
+                Modifier("rabbit-bonus-01", "field-data-per-rabbit", FieldDataIncomeOperation.AddPerRabbit, 1m),
             };
 
             Assert.That(FieldDataIncome.TryCalculate(20, 20, firstOrder, out var firstReceipt, out var error), Is.True, error);
             Assert.That(FieldDataIncome.TryCalculate(20, 20, secondOrder, out var secondReceipt, out error), Is.True, error);
             Assert.That(firstReceipt.Award, Is.EqualTo(80));
-            Assert.That(firstReceipt.Steps[0].InstanceId, Is.EqualTo("hare-bonus-01"));
+            Assert.That(firstReceipt.Steps[0].InstanceId, Is.EqualTo("rabbit-bonus-01"));
             Assert.That(secondReceipt.Award, Is.EqualTo(60));
         }
 
@@ -145,11 +145,11 @@ namespace SaltyGame.EditorTests
 
         static void AssertInvalid(
             int selectedPopulation,
-            int harePopulation,
+            int rabbitPopulation,
             FieldDataIncomeModifierInstance[] modifiers,
             string expectedError)
         {
-            Assert.That(FieldDataIncome.TryCalculate(selectedPopulation, harePopulation, modifiers, out var receipt, out var error), Is.False);
+            Assert.That(FieldDataIncome.TryCalculate(selectedPopulation, rabbitPopulation, modifiers, out var receipt, out var error), Is.False);
             Assert.That(receipt, Is.Null);
             Assert.That(error, Does.Contain(expectedError));
         }

@@ -20,7 +20,7 @@ namespace SaltyGame.EditorTools
             var map = AssetDatabase.LoadAssetAtPath<JourneyMapAsset>(folder + "/ForestEdgeJourney.asset");
             if (map == null) throw new InvalidOperationException("Forest Edge journey is missing.");
             var refresh = PopulationEncounter(folder, "RestStop", "rest-stop", "REST STOP",
-                "Choose one refresh before the next cycle: Hares within your population pool, or Plants. You may continue without a refresh.",
+                "Choose one refresh before the next cycle: Rabbits within your population pool, or Plants. You may continue without a refresh.",
                 JourneyNodeKind.Refresh, 2, map.GetNode("seedfall").NextNodes[0]);
             var gamble = PopulationEncounter(folder, "SeedCache", "seed-cache", "SEED CACHE",
                 "An uncertain cache could renew the food supply or spoil existing Plants. The odds are shown before you choose. You may leave it alone.",
@@ -94,11 +94,11 @@ namespace SaltyGame.EditorTools
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(folder + "/RabbitSelectionPOC.asset");
             if (map == null) throw new InvalidOperationException("Rabbit selection POC map is missing.");
             var nodes = new List<GenomeUpgradeAsset>(map.Upgrades);
-            AddPopulationNode(folder, nodes, "StartingPopulation", "poc.hare.starting-population", "Founding Hares",
-                "+5 Hares at the start of a new journey. A larger colony consumes more food. Does not refill each round.",
+            AddPopulationNode(folder, nodes, "StartingPopulation", "poc.rabbit.starting-population", "Founding Rabbits",
+                "+5 Rabbits at the start of a new journey. A larger colony consumes more food. Does not refill each round.",
                 SpeciesAttributeIds.StartingPopulation, 5);
-            AddPopulationNode(folder, nodes, "PopulationPool", "poc.hare.population-pool", "Population Reserves",
-                "+10 population pool capacity. Refreshes and ordinary population grants can restore Hares up to this limit. Births may exceed it.",
+            AddPopulationNode(folder, nodes, "PopulationPool", "poc.rabbit.population-pool", "Population Reserves",
+                "+10 population pool capacity. Refreshes and ordinary population grants can restore Rabbits up to this limit. Births may exceed it.",
                 SpeciesAttributeIds.PopulationPoolCapacity, 10);
             var serialized = new SerializedObject(map);
             var upgrades = serialized.FindProperty("upgrades");
@@ -121,7 +121,7 @@ namespace SaltyGame.EditorTools
                 serialized.FindProperty("upgradeId").stringValue = id;
                 serialized.FindProperty("displayName").stringValue = name;
                 serialized.FindProperty("description").stringValue = description;
-                serialized.FindProperty("targetSpeciesId").stringValue = "hare";
+                serialized.FindProperty("targetSpeciesId").stringValue = "rabbit";
                 serialized.FindProperty("branchName").stringValue = "Warren";
                 serialized.FindProperty("rabbitDataPrice").longValue = 1;
                 serialized.FindProperty("capacityPoints").intValue = 2;
@@ -150,14 +150,14 @@ namespace SaltyGame.EditorTools
             };
             var herbivores = new[]
             {
-                CreateHerbivore("hare", "plant", 2.2f, 6, 0.04f, 16, 96, 24, 2, 3, 2, 0f),
+                CreateHerbivore("rabbit", "plant", 2.2f, 6, 0.04f, 16, 96, 24, 2, 3, 2, 0f),
                 CreateHerbivore("deer", "fern", 1.4f, 20, 0.2f),
                 CreateHerbivore("snail", "reed", 0.55f, 10, 0.3f),
                 CreateHerbivore("beetle", "reed", 1.8f, 12, 0.25f),
             };
             var carnivores = new[]
             {
-                CreateCarnivore("fox", "hare", 1.0f, 120, 0.03f, 80, 240, 120, 6),
+                CreateCarnivore("fox", "rabbit", 1.0f, 120, 0.03f, 80, 240, 120, 6),
                 CreateCarnivore("wolf", "deer", 0.8f, 36, 0.02f),
                 CreateCarnivore("owl", "snail", 0.9f, 28, 0.02f),
                 CreateCarnivore("stoat", "beetle", 1.0f, 28, 0.02f),

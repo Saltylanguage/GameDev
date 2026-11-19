@@ -27,7 +27,7 @@ namespace SaltyGame
         public GenomeCatalogSnapshot Catalog => definition.Catalog;
         public string Status { get; private set; }
         public void ClearStatus() { Status = null; }
-        public bool HasLicense => profile.UnlockedGenomeSpeciesIds.Contains(definition.HareMap.SpeciesId);
+        public bool HasLicense => profile.UnlockedGenomeSpeciesIds.Contains(definition.RabbitMap.SpeciesId);
         public int CapacityUsed => Capacity(genome?.ActiveNodeIds ?? Array.Empty<string>());
         public int SelectedCapacity => Capacity(selection);
         public string CapacityText => $"{CapacityUsed} / {definition.ActiveCapacity}";
@@ -40,18 +40,18 @@ namespace SaltyGame
                 definition.ConversionResearchPrices[profile.ConversionResearchLevel], "Research Data"));
         public bool CanResearch => OwnerReason == null && profile.ConversionResearchLevel < definition.MaximumResearchLevel
             && profile.ResearchData >= definition.ConversionResearchPrices[profile.ConversionResearchLevel];
-        public string LicenseOffer => HasLicense ? "HARE PATH OWNED" : $"UNLOCK HARE · {FieldDataPermanentProgressionDefinition.HareLicensePrice} HARE DATA";
-        public string LicenseReason => OwnerReason ?? (HasLicense ? "Permanent Hare path license retained."
-            : SpendQuote(HareData, FieldDataPermanentProgressionDefinition.HareLicensePrice, "Hare Data"));
-        public bool CanLicense => OwnerReason == null && !HasLicense && HareData >= FieldDataPermanentProgressionDefinition.HareLicensePrice;
+        public string LicenseOffer => HasLicense ? "RABBIT PATH OWNED" : $"UNLOCK RABBIT · {FieldDataPermanentProgressionDefinition.RabbitLicensePrice} RABBIT DATA";
+        public string LicenseReason => OwnerReason ?? (HasLicense ? "Permanent Rabbit path license retained."
+            : SpendQuote(RabbitData, FieldDataPermanentProgressionDefinition.RabbitLicensePrice, "Rabbit Data"));
+        public bool CanLicense => OwnerReason == null && !HasLicense && RabbitData >= FieldDataPermanentProgressionDefinition.RabbitLicensePrice;
         public string ResetOffer => $"RESET · {FieldDataPermanentProgressionDefinition.ResetResearchDataFee} RD · NO REFUND";
-        public string ResetReason => OwnerReason ?? (!HasLicense ? "Unlock the Hare path first."
+        public string ResetReason => OwnerReason ?? (!HasLicense ? "Unlock the Rabbit path first."
             : genome == null || genome.ActiveNodeIds.Count == 0 ? "No active loadout to reset."
             : SpendQuote(profile.ResearchData, FieldDataPermanentProgressionDefinition.ResetResearchDataFee, "Research Data")
                 + " Ownership stays; active nodes clear. Each replacement needs another reset.");
         public bool CanReset => OwnerReason == null && HasLicense && genome != null && genome.ActiveNodeIds.Count > 0
             && profile.ResearchData >= FieldDataPermanentProgressionDefinition.ResetResearchDataFee;
-        public long HareData => profile.SpeciesDataWallets.TryGetValue(definition.HareMap.SpeciesId, out var balance) ? balance : 0;
+        public long RabbitData => profile.SpeciesDataWallets.TryGetValue(definition.RabbitMap.SpeciesId, out var balance) ? balance : 0;
         string OwnerReason => profile == null || !profile.HasLoadedProfile || profile.ProfileId != profileId
             || !session.Current.HasLoadedProfile || session.Current.ProfileId != profileId
                 ? "Reopen Gene Lab for the currently selected profile."
@@ -61,7 +61,7 @@ namespace SaltyGame
         {
             profile = snapshot ?? ProfileSessionSnapshot.Empty;
             genome = null;
-            profile?.TryGetGenomeProfile(definition.HareMap.SpeciesId, out genome);
+            profile?.TryGetGenomeProfile(definition.RabbitMap.SpeciesId, out genome);
             var identity = string.Join("|", genome?.ActiveNodeIds ?? Array.Empty<string>());
             if (generation != (genome?.ResetGeneration ?? 0) || activeIdentity != identity || snapshot?.ProfileId != profileId)
             {
@@ -81,44 +81,44 @@ namespace SaltyGame
             : IsOwned(id) ? IsSelected(id) ? "OWNED · SELECTED" : "OWNED · UNEQUIPPED"
             : !HasLicense ? "PATH LOCKED" : "NOT OWNED";
         bool HasUnappliedReset => genome != null && genome.ResetGeneration > 0 && genome.ActiveNodeIds.Count == 0;
-        public string NodeOffer(string id) => id == "hare.warren-network" && IsOwned(id)
+        public string NodeOffer(string id) => id == "rabbit.warren-network" && IsOwned(id)
             ? genome.PopulationReservesRank >= FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
-                ? "RANK 5 / 5 · MAXIMUM" : $"RESEARCH RANK {genome.PopulationReservesRank + 1} / 5 · {FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1)} HARE DATA"
+                ? "RANK 5 / 5 · MAXIMUM" : $"RESEARCH RANK {genome.PopulationReservesRank + 1} / 5 · {FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1)} RABBIT DATA"
             : IsOwned(id) ? "PERMANENTLY OWNED"
             : HasUnappliedReset ? "APPLY REPLACEMENT FIRST"
             : CapacityUsed >= definition.ActiveCapacity ? $"RESEARCH · {FieldDataPermanentProgressionDefinition.NodePrice} DATA"
             : FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? $"BUY · {FieldDataPermanentProgressionDefinition.NodePrice} DATA (TEST)"
-            : $"BUY + EQUIP · {FieldDataPermanentProgressionDefinition.NodePrice} HARE DATA";
+            : $"BUY + EQUIP · {FieldDataPermanentProgressionDefinition.NodePrice} RABBIT DATA";
         public string NodeReason(string id)
         {
             if (OwnerReason != null) return OwnerReason;
-            if (!HasLicense) return "Unlock the Hare path first.";
-            if (!definition.HareMap.TryGetNode(id ?? string.Empty, out var node)) return "Select a Hare Genome node.";
-            if (id == "hare.warren-network" && IsOwned(id))
-                return $"Rank {genome.PopulationReservesRank} / 5 · {FieldDataPermanentProgressionDefinition.HarePurchaseAllowance(genome.PopulationReservesRank)} purchased Hares per simulation node. One active capacity point at any rank.";
+            if (!HasLicense) return "Unlock the Rabbit path first.";
+            if (!definition.RabbitMap.TryGetNode(id ?? string.Empty, out var node)) return "Select a Rabbit Genome node.";
+            if (id == "rabbit.warren-network" && IsOwned(id))
+                return $"Rank {genome.PopulationReservesRank} / 5 · {FieldDataPermanentProgressionDefinition.RabbitPurchaseAllowance(genome.PopulationReservesRank)} purchased Rabbits per simulation node. One active capacity point at any rank.";
             if (IsOwned(id)) return genome.ActiveNodeIds.Count == 0
                 ? "Permanently owned. Add or remove it in the selection below; applying is free."
                 : "Permanently owned. Change the active loadout through a paid reset.";
             if (HasUnappliedReset) return "Apply your replacement selection before buying a new node.";
             var missing = node.PrerequisiteNodeIds.Where(parent => !IsOwned(parent))
-                .Select(parent => definition.HareMap.GetNode(parent).DisplayName).ToArray();
+                .Select(parent => definition.RabbitMap.GetNode(parent).DisplayName).ToArray();
             if (missing.Length > 0) return "Own first: " + string.Join(", ", missing) + ".";
             var active = genome?.ActiveNodeIds ?? Array.Empty<string>();
             if (CapacityUsed < definition.ActiveCapacity) active = active.Concat(new[] { id }).ToArray();
-            try { definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(definition.HareMap.SpeciesId,
+            try { definition.FreezeOwnedLoadout(new SpeciesGenomeProfile(definition.RabbitMap.SpeciesId,
                 (genome?.UnlockedNodeIds ?? Array.Empty<string>()).Concat(new[] { id }), active)); }
             catch (InvalidOperationException error) { return error.Message; }
-            return SpendQuote(HareData, node.RabbitDataPrice, "Hare Data")
+            return SpendQuote(RabbitData, node.RabbitDataPrice, "Rabbit Data")
                 + (CapacityUsed >= definition.ActiveCapacity ? " Loadout full: research is owned but not equipped." : " Buying also equips this Genome node.")
                 + (FieldDataPermanentProgressionDefinition.HasProvisionalResearchPrice(id) ? " Price and path are provisional." : string.Empty);
         }
         public bool CanBuyNode(string id) => OwnerReason == null && HasLicense &&
-            ((id == "hare.warren-network" && IsOwned(id) && genome.PopulationReservesRank < FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
-                && HareData >= FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1))
+            ((id == "rabbit.warren-network" && IsOwned(id) && genome.PopulationReservesRank < FieldDataPermanentProgressionDefinition.PopulationReservesMaximumRank
+                && RabbitData >= FieldDataPermanentProgressionDefinition.PopulationReservesResearchCost(genome.PopulationReservesRank + 1))
             || (!IsOwned(id) && !HasUnappliedReset
-            && definition.HareMap.TryGetNode(id ?? string.Empty, out var node) && HareData >= node.RabbitDataPrice
+            && definition.RabbitMap.TryGetNode(id ?? string.Empty, out var node) && RabbitData >= node.RabbitDataPrice
             && node.PrerequisiteNodeIds.All(IsOwned)));
-        public string ArrangementReason => OwnerReason ?? (!HasLicense ? "Unlock the Hare path first."
+        public string ArrangementReason => OwnerReason ?? (!HasLicense ? "Unlock the Rabbit path first."
             : genome == null || genome.ActiveNodeIds.Count > 0 ? "Pay for a reset before choosing a replacement loadout."
             : SelectedCapacity > definition.ActiveCapacity ? "Selection exceeds 8 points; remove a node."
             : "Select owned nodes, then apply the whole selection for free. Applying locks this loadout until another paid reset.");
@@ -136,7 +136,7 @@ namespace SaltyGame
         public bool License()
         {
             if (!CanLicense) return Reject(LicenseReason);
-            return Complete(session.TryPurchaseHareGenomeLicense(profileId, out var error), error, "Permanent Hare path license saved.");
+            return Complete(session.TryPurchaseRabbitGenomeLicense(profileId, out var error), error, "Permanent Rabbit path license saved.");
         }
         public bool BuyNode(string id)
         {
@@ -144,12 +144,12 @@ namespace SaltyGame
             var message = IsOwned(id) ? "Population Reserves rank saved."
                 : CapacityUsed >= definition.ActiveCapacity ? "Research saved. Loadout full, so the Genome node was not equipped."
                 : "Purchase saved. Genome node equipped for the next journey.";
-            return Complete(session.TryPurchaseHareGenomeNode(profileId, id, out var error), error, message);
+            return Complete(session.TryPurchaseRabbitGenomeNode(profileId, id, out var error), error, message);
         }
         public bool Reset()
         {
             if (!CanReset) return Reject(ResetReason);
-            return Complete(session.TryResetGenomeLoadout(profileId, definition.HareMap.SpeciesId, generation, out var error), error,
+            return Complete(session.TryResetGenomeLoadout(profileId, definition.RabbitMap.SpeciesId, generation, out var error), error,
                 "Reset saved. Ownership retained, no refund. Select owned nodes and apply once for free.");
         }
         public bool Toggle(string id)
@@ -162,8 +162,8 @@ namespace SaltyGame
         public bool Apply()
         {
             if (!CanApply) return Reject(ArrangementReason);
-            var ordered = definition.HareMap.Nodes.Where(node => selection.Contains(node.Id)).Select(node => node.Id).ToArray();
-            return Complete(session.TryArrangeGenomeLoadout(profileId, definition.HareMap.SpeciesId, generation, ordered, out var error), error,
+            var ordered = definition.RabbitMap.Nodes.Where(node => selection.Contains(node.Id)).Select(node => node.Id).ToArray();
+            return Complete(session.TryArrangeGenomeLoadout(profileId, definition.RabbitMap.SpeciesId, generation, ordered, out var error), error,
                 "Loadout saved for the next journey. Another replacement requires a paid reset.");
         }
         bool Reject(string reason) { Status = reason; return false; }

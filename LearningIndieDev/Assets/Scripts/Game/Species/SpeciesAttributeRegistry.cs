@@ -351,7 +351,8 @@ namespace SaltyGame
                 rules.DistributeMatingEnergyToOffspring,
                 crowdingEnergyReduction,
                 gestationTicks,
-                maximumHealth);
+                maximumHealth,
+                rules.MaximumPopulation);
         }
 
         static IReadOnlyDictionary<string, SpeciesAttributeDefinition> CreateDefinitions()

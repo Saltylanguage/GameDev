@@ -11,16 +11,16 @@ namespace SaltyGame.EditorTests
         public void AuthoredCatalogMatchesTheSingleRuntimeDefinition()
         {
             var map = AssetDatabase.LoadAssetAtPath<SpeciesGenomeMapAsset>(
-                FieldDataPermanentProgressionDefinition.HareMapPath);
+                FieldDataPermanentProgressionDefinition.RabbitMapPath);
             Assert.That(map, Is.Not.Null);
             var definition = FieldDataPermanentProgressionDefinition.CreateStarter();
             Assert.DoesNotThrow(() => definition.ValidateAuthoredMap(map.CreateSnapshot()));
-            Assert.That(map.Upgrades, Has.Length.EqualTo(definition.HareMap.Nodes.Count));
+            Assert.That(map.Upgrades, Has.Length.EqualTo(definition.RabbitMap.Nodes.Count));
             foreach (var node in map.Upgrades)
             {
-                Assert.That(node.UpgradeId, Does.StartWith("hare."));
+                Assert.That(node.UpgradeId, Does.StartWith("rabbit."));
                 Assert.That(AssetDatabase.GetAssetPath(node),
-                    Does.StartWith("Assets/Data/TestData/Genome/HareGenome/"));
+                    Does.StartWith("Assets/Data/TestData/Genome/RabbitGenome/"));
             }
         }
     }
