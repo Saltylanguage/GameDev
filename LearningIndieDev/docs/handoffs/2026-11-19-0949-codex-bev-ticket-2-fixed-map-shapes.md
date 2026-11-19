@@ -46,7 +46,7 @@ The [fixed map shapes card](https://trello.com/c/9c6kJfkg/160-bev-ticket-2-new-m
 
 ## Next useful step
 
-Review the local branch for publication, then continue the authored-map work with Bev-Ticket-3.
+Review the local branch for publication and Trello closeout. The working-tree ForestEdge Oval is the local playtest configuration. The next proposed implementation slice is one seeded irregular land layout with a connected playable area. Resolve the pending VS-A1 topology decision before integrating water, and agree on seam behavior for disconnected islands before adding them to the generator.
 
 ## Creature tracking and seam verification
 
@@ -59,3 +59,7 @@ Review the local branch for publication, then continue the authored-map work wit
 
 - The Field Ledger has a vertical scrolling area that ends above the pinned Zoom controls. The event card, population, Cell Inspection, and Field Notes remain reachable when the ledger overflows.
 - The focused PlayMode regression displays the Hare Loss card on the Oval scenario, sends a mouse wheel event, and verifies that the full tracking button can be scrolled into view and used above Zoom. Passed and inspected at [1280x720](F:/ForkBin/GameDev-Bev-Ticket-2/LearningIndieDev/artifacts/visual-evidence-20261119-142557/field-ledger-scrolled-with-event.png) and [1920x1080](../../artifacts/visual-evidence-20261119-142823/field-ledger-scrolled-with-event.png). The existing [Cross tracking regression](../../artifacts/unity-tests-20261119-142832/PlayMode-results.json) also passed.
+
+## November 19 manual playtest
+
+- Bevin confirmed the Field Ledger fix and reported that wrapping appeared to work on the Oval. The tested local code was `74263a8` with the uncommitted ForestEdge Oval scenario at Height 55. This observation complements the automated seam and rendering checks.
